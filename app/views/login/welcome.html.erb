@@ -1,0 +1,9 @@
+<H1>Welcome to CBRAIN, <%= User.find(session[:user_id]).full_name %></H1>
+
+<P>
+
+Go to <%= link_to "your file manager", :controller => :manager, :action => :index %>
+
+<P>
+
+You can also <%= link_to 'logout', :action => "logout" %>.
