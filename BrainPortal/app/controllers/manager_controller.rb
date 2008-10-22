@@ -1,6 +1,6 @@
 class ManagerController < ApplicationController
 
-   before_filter :authorize, :except => :content    # in application.rb
+   before_filter :authorize, :except => [:content, :list]    # in application.rb
 
    def index
        user_id = session[:user_id]
@@ -54,14 +54,26 @@ class ManagerController < ApplicationController
    def content
      begin
        userfile = Userfile.find(params[:id])
-       vaultfile = userfile.vaultname
-       content = IO.read(vaultfile)
+       #vaultfile = userfile.vaultname
+       #content = IO.read(vaultfile)
        # userfile.content = content
-       result = Hash.new()
-       result[:userfile] = userfile
-       result[:content]  = content
-       render :xml => result 
+       #result = Hash.new()
+       #result[:userfile] = userfile
+       #result[:content]  = content
+       #render :xml => result 
+       
+       #render :text => content
+       send_file userfile.vaultname
        return
+     rescue
+       render :nothing => true
+     end
+   end
+   
+   def list
+     begin
+       userfiles = Userfile.find(:all)
+       render :xml => userfiles
      rescue
        render :nothing => true
      end
