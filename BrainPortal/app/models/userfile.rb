@@ -41,6 +41,10 @@ class Userfile < ActiveRecord::Base
         name.gsub(/[^\w._-]/, '')
         name
     end 
-
+    
+    def self.directory(file_name)
+      base = self.base_part_of(file_name)
+      file_name.sub(/#{base}$/, '')
+    end
 
 end

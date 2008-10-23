@@ -36,6 +36,14 @@ class LoginController < ApplicationController
           redirect_to :action => :index
       end
     end
+    
+    def check_auth
+      if params[:id] && params[:id].to_i == session[:user_id].to_i
+        render :xml => {:answer => 'yes'}
+      else
+        render :xml => {:answer => 'no'}
+      end
+    end
 
     def logout
       session[:user_id] = nil

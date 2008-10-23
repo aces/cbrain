@@ -8,6 +8,7 @@
        <th>Created</th>
        <th>Modified</th>
        <th colspan="1">Operations</th>
+       <th colspan="1">Convert</th>
    </tr>
    <% for userfile in @userfiles %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -17,6 +18,9 @@
          <td><%= h(userfile.created_at) -%></td>
          <td><%= h(userfile.updated_at) -%></td>
          <td><%= button_to 'Delete', { :action => 'delete', :id => userfile, :method => :post, :confirm => "Sure?" } -%></td>
+         <% if userfile.base_name =~ /\.mnc$/%>
+            <td><%= button_to 'Convert to JIV', { :action => 'minc2jiv', :id => userfile} -%></td>
+         <% end %>
        </tr>
    <% end %>
 </table>
