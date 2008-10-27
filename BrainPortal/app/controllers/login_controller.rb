@@ -1,4 +1,17 @@
+
+#
+# CBRAIN Project
+#
+# Login controller
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
 class LoginController < ApplicationController
+
+    Revision_info="$Id$"
 
     def index
       if session[:user_id]
@@ -13,9 +26,8 @@ class LoginController < ApplicationController
       username = params[:username] || "Nothing"
       password = params[:password] || "Nothing"
       begin
-        users = User.find(:all, :conditions => { :user_name => username } )
-        raise "No such user" if users.size != 1
-        user = users[0]
+        user = User.find_by_user_name(username)
+        raise "No such user" if user.nil?
         dbpasswd = user.crypt_password
         salt     = dbpasswd[0,2]
         upassword = password.crypt(salt)

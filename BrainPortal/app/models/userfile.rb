@@ -1,4 +1,16 @@
+
+#
+# CBRAIN Project
+#
+# Userfile model
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
 require "pathname"
+require "base64"
 
 class Userfile < ActiveRecord::Base
 
@@ -6,18 +18,59 @@ class Userfile < ActiveRecord::Base
     validates_uniqueness_of   :base_name, :scope => [ :owner_id ]
     validates_numericality_of :owner_id
 
+    Revision_info="$Id$"
+
     public
 
-    # These are temp storage variables used when uploading a new file
-    attr_accessor :tmp_basename, :tmp_type, :content
+    # The "content" attribute is fetched/stored to a file, on demand;
+    # it is not saved in the database like other ActiveRecord attributes
 
-    def upload_file(upload_field)
-      self.tmp_basename = Userfile.base_part_of(upload_field.original_filename)
-      self.tmp_type     = upload_field.content_type.chomp
-      self.content      = upload_field.read
+    def content
+      @content ||= self.read_content
+      @content
     end
 
-    # Names of files in the vault are "{CBRAIN_VAULT}/nnn/basename" where nnn is user_id
+    def content=(newcontent)
+      @content = newcontent
+      self.file_size = @content.size
+      @content
+    end
+
+    # These two methods return/sets the content based on base64 encoding
+    def content_base64
+      @content ||= self.read_content
+      Base64.encode64(@content)
+    end
+
+    def content_base64=(encoded)
+      self.content=(Base64.decode64(encoded))
+    end
+
+    # This xml converter serializes all the normal fields
+    # plus it adds a synthetic field 'content_base64' that
+    # encodes the "content" pseudo-attribute in a XML-friendly way
+    def to_xml   # this one adds a <content> tag
+      super :methods => [ :content_base64 ], :dasherize => false, :skip_types => true
+    end
+
+    # This method forces read from the external file
+    def read_content
+      @content = IO.read(self.vaultname)
+      @content
+    end
+
+    def save_content
+      out = File.new(self.vaultname, "w")
+      out.write(@content)
+      out.close()
+    end
+
+    def delete_content
+      vaultname = self.vaultname
+      File.unlink(vaultname) if File.exists?(vaultname)
+    end
+
+    # Names of files in the vault are "{CBRAIN_VAULT}/user_name/basename"
     def vaultname
       user_id   = self.owner_id
       user_name = User.id2name(user_id)
@@ -32,19 +85,22 @@ class Userfile < ActiveRecord::Base
       user_id  = self.owner_id
       User.id2name(user_id) || "???"  # this class method caches its result
     end
-   
 
-    private
 
-    def self.base_part_of(file_name)
-        name = File.basename(file_name)
-        name.gsub(/[^\w._-]/, '')
-        name
-    end 
-    
-    def self.directory(file_name)
-      base = self.base_part_of(file_name)
-      file_name.sub(/#{base}$/, '')
+    # These are ActiveRecords callbacks, invoked automatically
+    # at different stages of the object's lifecycle
+
+    def after_save
+      self.save_content
+    end
+    def after_update
+      self.save_content
+    end
+    def after_create
+      self.save_content
+    end
+    def after_destroy
+      self.delete_content
     end
 
 end
