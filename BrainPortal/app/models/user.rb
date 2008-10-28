@@ -6,8 +6,12 @@
 #
 # Original author: Pierre Rioux
 #
+# $Id$
+#
 
 class User < ActiveRecord::Base
+
+  Revision_info="$Id$"
 
   @@id2name = nil    # Cache hash: id => name
 

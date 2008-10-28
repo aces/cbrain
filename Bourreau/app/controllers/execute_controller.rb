@@ -1,4 +1,17 @@
+
+#
+# CBRAIN Project
+#
+# Execution controller for the Bourreau service
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
 class ExecuteController < ApplicationController
+
+    Revision_info="$Id$"
 
     def wordcount
         id = params[:id]
