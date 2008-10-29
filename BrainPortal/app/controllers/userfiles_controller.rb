@@ -6,7 +6,7 @@
 #
 # Original code provided by Jade Meskill, blog owner of
 # http://iamruinous.com/2007/10/01/creating-an-activeresource-compatible-controller/
-# Obtained her permission on October 27th, 2008.
+# Obtained his permission on October 27th, 2008.
 #
 # Modified by Pierre Rioux
 #

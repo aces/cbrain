@@ -55,14 +55,12 @@ class Userfile < ActiveRecord::Base
 
     # This method forces read from the external file
     def read_content
-      @content = IO.read(self.vaultname)
+      @content = File.read(self.vaultname)
       @content
     end
 
     def save_content
-      out = File.new(self.vaultname, "w")
-      out.write(@content)
-      out.close()
+      out = File.open(self.vaultname, "w") { |io| io.write(@content) }
     end
 
     def delete_content
