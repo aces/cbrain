@@ -45,26 +45,116 @@ class ManagerController < ApplicationController
        userfile.content   = upload_stream.read   # also fills file_size
        userfile.base_name = clean_basename
        userfile.owner_id  = user_id
-       userfile.save!
 
-       flash[:notice] = "File '" + clean_basename + "' added"
-       redirect_to :action => :index
-
-   end
-
-   def delete
-       user_id = session[:user_id]
-       userfile = Userfile.find(params[:id])
-       if userfile && userfile.owner_id == session[:user_id]
-           userfile.destroy
-           basename = userfile.base_name
-           #vaultfile = userfile.vaultname
-           #File.delete(vaultfile) if File.exists?(vaultfile)
-           #Userfile.delete(params[:id])
-           flash[:notice] = "File '" + basename + "' deleted"
+       if userfile.save
+           flash[:notice] = "File '" + clean_basename + "' added"
+       else
+           flash[:notice] = "File '" + clean_basename + "' could not be added (internal error?)"
        end
-       redirect_to :action => "index"
+       redirect_to :action => :index
    end
+
+   def operation
+     user_id     = session[:user_id]
+     operation   = params[:operation]
+     filelist    = params[:filelist] || []
+
+     flash[:error]  ||= ""
+     flash[:notice] ||= ""
+
+     flash[:error] += "Operation #{operation} filelist '#{filelist.join(",")}'\n"
+
+     if operation.nil? || operation.empty?
+       flash[:error] += "No operation selected? Selection cleared.\n"
+       redirect_to :action => :index
+       return
+     end
+
+     if filelist.empty?
+       flash[:error] += "No file selected? Selection cleared.\n"
+       redirect_to :action => :index
+       return
+     end
+
+     # TODO: filter out right away from the filelist IDs that do not belong to the user
+
+     # TODO: replace "case" and make each operation a private method ?
+     case operation
+
+       when "delete"
+
+         filelist.each do |id|
+           userfile = Userfile.find(id, :conditions => { :owner_id => user_id } )
+           if userfile.nil?
+             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
+             next
+           end
+           basename = userfile.base_name
+           userfile.destroy
+           flash[:notice] += "File #{basename} deleted.\n"
+         end
+
+       when "minc2jiv"
+
+         #flash[:error] = "Minc2JIV not yet implemented"
+         filelist.each do |id|
+           userfile = Userfile.find(id, :conditions => { :owner_id => user_id } )
+           if userfile.nil?
+             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
+             next
+           end
+           basename = userfile.base_name
+
+           if basename !~ /\.mnc$/
+             flash[:error] += "File #{basename} doesn't seem to be a MINC file (no .mnc extension)\n"
+             next
+           end
+
+           # Temporary; should use new general exec mechanism
+           # with CBRAIN::Bourreau_execution_URL
+
+           url  = URI.parse("http://localhost:2500/execute/minc2jiv/#{id}.xml")
+puts("Calling #{url.to_s}\n")
+           resp = Net::HTTP.get_response(url)
+           xml  = resp.body.to_s # xml text
+puts("GOT XML: #{xml}---\n");
+           if xml =~ /Saved 2 files/i       # temporary; this DEPENDS on XML created by minc2jiv()
+               flash[:notice] += "- Properly converted '#{basename}'\n"
+           else
+               flash[:error]  += "- Problem converting '#{basename}':<PRE>#{xml}</PRE>\n"
+           end
+
+
+         end
+
+       when "wait"
+
+         sleep 5
+         flash[:error] = "Slept for some time\n"
+
+       else
+
+         flash[:error] = "Unknown operation #{operation}"
+
+     end
+
+     redirect_to :action => :index
+   end
+
+ #  def delete
+ #      user_id = session[:user_id]
+ #      userfile = Userfile.find(params[:id])
+ #      if userfile && userfile.owner_id == session[:user_id]
+ #          userfile.destroy
+ #          basename = userfile.base_name
+ #          #vaultfile = userfile.vaultname
+ #          #File.delete(vaultfile) if File.exists?(vaultfile)
+ #          #Userfile.delete(params[:id])
+ #          flash[:notice] ||= ""
+ #          flash[:notice] += "File '" + basename + "' deleted"
+ #      end
+ #      redirect_to :action => "index"
+ #  end
 
    def content
      begin
@@ -85,7 +175,7 @@ class ManagerController < ApplicationController
      end
    end
    
-   def list
+   def old_list
      begin
        userfiles = Userfile.find_all_by_owner_id(params[:id])
        render :xml => userfiles
@@ -94,7 +184,7 @@ class ManagerController < ApplicationController
      end
    end
    
-   def minc2jiv
+   def old_minc2jiv
 
      userfile = Userfile.find(params[:id])
      vaultfile = userfile.vaultname
@@ -149,5 +239,16 @@ class ManagerController < ApplicationController
      name.gsub(/[\000-\037\177-\377]/, '')     # sanitize
      name
    end
+
+#   def erase_one_file_by_id(id)
+#       user_id = session[:user_id]
+#       userfile = Userfile.find(id)
+#       return false unless userfile && userfile.owner_id == session[:user_id]
+#       userfile.destroy
+#       basename = userfile.base_name
+#       flash[:notice] ||= ""
+#       flash[:notice] += "File '" + basename + "' deleted"
+#       true
+#   end
 
 end

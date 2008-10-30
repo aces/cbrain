@@ -9,22 +9,24 @@
 # $Id$
 #
 
+# CBRAIN deployment constants
+# This file is used both by BrainPortal and Bourreau
 class CBRAIN
-
-    Revision_info="$Id$"
 
     public
 
-    def self.filevault_dir  # TODO make it change with dev/prod/test env ?!?
-        "vault"
-    end
+    Revision_info="$Id$"
 
-    def self.filemanager_resource_url
-        "http://localhost:3000/"
-    end
+    # BrainPortal constants
+    Filevault_dir            = "vault"   # relative to mongrel's cwd at startup! todo!
+    Userfiles_resource_URL   = "http://localhost:3000/"
 
-    unless File.directory?(self.filevault_dir)
-        raise "CBRAIN configuration error: file vault #{self.filevault_dir} does not exist!"
+    # Bourreau constants
+    Bourreau_execution_URL   = "http://localhost:2500/"
+
+    # Run-time checks
+    unless File.directory?(Filevault_dir) # todo: check only for BrainPortal
+        raise "CBRAIN configuration error: file vault #{Filevault_dir} does not exist!"
     end
 
 end

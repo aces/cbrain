@@ -62,7 +62,12 @@
 
         <!-- main rendering area -->
         <div id="main">
-            <p class="error"><%= flash[:notice] -%></p>
+            <% if ! flash[:error].nil? && ! flash[:error].empty? %>
+               <p class="error"><%= flash[:error].gsub(/\n/,"<BR>") -%></p>
+            <% end %>
+            <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
+               <p class="notice"><%= flash[:notice].gsub(/\n/,"<BR>") -%></p>
+            <% end %>
             <%= yield :layout %>
         </div>
 

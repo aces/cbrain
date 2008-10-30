@@ -1,0 +1,177 @@
+/* CBRAIN styles */
+
+body{
+        background-image:url(/images/bg.gif);
+        background-repeat:repeat-x;
+        background-color:#FFFFFF;
+        margin:0;
+        padding:0;
+        font-family:Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    color: #226;
+}
+
+table {
+  margin: 1em 1em 1em 0;
+  /* border: 3px #aaaaaa solid; */
+  background: #ddddff;
+  padding: 2px;
+  border-spacing: 2 2;
+}
+
+th {
+    background: #c9e1a2;
+}
+
+.error {
+  width: 400px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  background-color: #ffeeee;
+}
+
+.notice {
+  width: 400px;
+  border: 2px solid green;
+  padding: 7px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  background-color: #eeffee;
+}
+
+.login table {
+    margin: 2em 2em 2em 2em;
+    background: red;
+    border-spacing: 0 0;
+}
+.login td {
+    background: blue;
+}
+.login th {
+    background: white;
+}
+    
+
+.list-odd {
+    background: #ccffff;
+}
+
+.list-even {
+    background: #ffffcc;
+}
+
+/*
+#banner {
+    background: red;
+}
+
+#banner img {
+    float: left;
+}
+*/
+
+#columns {
+    /* background: red; */
+}
+
+#main {
+    margin-left: 8em;
+    padding-top: 4ex;
+    padding-left: 2em;
+    background: white;
+}
+
+#side {
+    float: left;
+    padding-top: 0em;
+    padding-left: 1em;
+    padding-bottom: 1em;
+    width: 7em;
+    height: 20em;
+/*    background: #141; */
+    background:url(/images/left_deco.jpg);
+    background-repeat: no-repeat;
+}
+
+#side a:link {color: #000000}     /* unvisited link */
+#side a:visited {color: #000099}  /* visited link */
+
+
+#top_container{
+        width:760px;
+}
+#top_all{
+        height:76px;
+        width:760px;
+        width:100%;
+}
+#top_language{;
+        top:10px;
+        width:100%;
+        position:absolute;
+}
+#top_language_inside{
+        padding-right:20px;
+        
+}
+
+#top_language_inside a{
+float:right;
+        text-decoration:none;
+        font-size:80%;
+        color:#FFFFFF;
+        
+}
+#top_language_mcgill{
+        float:right;
+        display:block;
+        width:80px;
+        height:22px;
+        background:url(/images/top_mcgill.gif);
+}
+#top_01{
+        background-image:url(/images/top_01.gif);
+        width:87px;
+        height:76px;
+        float:left;
+}
+#top_02{
+        background-image:url(/images/top_02.gif);
+        width:176px;
+        height:76px;
+        float:left;
+}
+#top_03{
+        background-image:url(/images/top_03.jpg);
+        width:380px;
+        height:76px;
+        float:left;
+}
+#top_03 h1{
+        color:white;
+        float:right;
+}
+
+#top_04{
+        background-image:url(/images/top_04.gif);
+        width:17px;
+        height:76px;
+        float:left;
+}
+
+#top_04 h2{
+        display:none;
+}
+
+#top_05{
+        background-image:url(/images/top_05.gif);
+        width:100px;
+        height:76px;
+        float:left;
+        vertical-align:text-bottom;
+}
+

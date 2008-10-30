@@ -97,9 +97,9 @@ class ExecuteController < ApplicationController
 
       # Cleanup
       begin
-        File.unlink(tmpmincfile)
-        File.unlink(tmpheader_file)
-        File.unlink(tmprawbyte_file)
+        #File.unlink(tmpmincfile)
+        #File.unlink(tmpheader_file)
+        #File.unlink(tmprawbyte_file)
       rescue
         # Oh well.
       end

@@ -15,7 +15,7 @@ class Userfile < ActiveResource::Base
 
     Revision_info="$Id$"
 
-    self.site = CBRAIN.filemanager_resource_url
+    self.site = CBRAIN::Userfiles_resource_URL
 
     # Creates a temporary copy of the content of the file
     # in a temporary directory; options are

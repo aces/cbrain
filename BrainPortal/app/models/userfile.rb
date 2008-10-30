@@ -73,8 +73,7 @@ class Userfile < ActiveRecord::Base
       user_id   = self.owner_id
       user_name = User.id2name(user_id)
       basename  = self.base_name
-      vaultdir  = CBRAIN.filevault_dir
-      userdir   = Pathname.new(vaultdir) + user_name
+      userdir   = Pathname.new(CBRAIN::Filevault_dir) + user_name
       Dir.mkdir(userdir.to_s) unless File.directory?(userdir.to_s) # TODO : create only when creating user?
       (userdir + basename).to_s
     end

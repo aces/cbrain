@@ -13,30 +13,43 @@
 -%>
 <h1>Welcome. These are your files:</h1>
 
-<table>
+<% form_tag("/manager/operation", :method => :post) do %>
+
+<table class="filelist">
    <tr>
+       <th>Select</th>
        <th>Owner</th>
        <th>Filename</th>
        <th>Size</th>
        <th>Created</th>
        <th>Modified</th>
-       <th colspan="1">Operations</th>
-       <th colspan="1">Convert</th>
    </tr>
    <% for userfile in @userfiles %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%= check_box_tag("filelist[]", userfile.id.to_s) %></td>
          <td><%= h(userfile.ownername) -%></td>
          <td><%= h(userfile.base_name) -%></td>
          <td><%= h(userfile.file_size) -%></td>
          <td><%= h(userfile.created_at) -%></td>
          <td><%= h(userfile.updated_at) -%></td>
-         <td><%= button_to 'Delete', { :action => 'delete', :id => userfile, :method => :post, :confirm => "Sure?" } -%></td>
-         <% if userfile.base_name =~ /\.mnc$/%>
-            <td><%= button_to 'Convert to JIV', { :action => 'minc2jiv', :id => userfile} -%></td>
-         <% end %>
        </tr>
    <% end %>
 </table>
+
+Operations: <%=
+    # TODO make dynamic?
+    select_tag("operation",
+    '
+    <option value=""></option>
+    <option value="delete">Delete selected files</option>
+    <option value="minc2jiv">Convert MINC to JIV</option>
+    <option value="wait">Sleep</option>
+    '
+) %>
+
+<%= submit_tag("Apply operation") %>
+
+<% end %>
 
 <h3>Add a new file:</h3>
 
