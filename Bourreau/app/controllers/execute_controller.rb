@@ -52,7 +52,9 @@ class ExecuteController < ApplicationController
 
       # Extract info about request
       mincfile_id        = params[:id]
+puts "MINC2JIV: GETTING #{mincfile_id}\n"
       mincfile           = Userfile.find(mincfile_id)
+puts "MINC2JIV: GOT IT  #{mincfile_id}\n"
       mincfile.after_find  # PATCH. Once active resource implements callbacks, remove this
 
       # Create work files

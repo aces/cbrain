@@ -19,7 +19,9 @@ class CBRAIN
 
     # BrainPortal constants
     Filevault_dir            = "vault"   # relative to mongrel's cwd at startup! todo!
-    Userfiles_resource_URL   = "http://localhost:3000/"
+
+    # FileShuttle constants
+    Userfiles_resource_URL   = "http://localhost:3500/"
 
     # Bourreau constants
     Bourreau_execution_URL   = "http://localhost:2500/"

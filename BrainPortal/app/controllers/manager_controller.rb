@@ -129,7 +129,7 @@ puts("GOT XML: #{xml}---\n");
 
        when "wait"
 
-         sleep 5
+         sleep 20
          flash[:error] = "Slept for some time\n"
 
        else

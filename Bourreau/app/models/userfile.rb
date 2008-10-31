@@ -84,7 +84,10 @@ class Userfile < ActiveResource::Base
 #
 #    end
 
+    # TODO support create too?
     def save
+
+puts "===USERFILE ACTIVERESOURCE MODEL: SAVING\n"
 
       # Do some temporary damage for recoding
       content = self.attributes.delete("content")
