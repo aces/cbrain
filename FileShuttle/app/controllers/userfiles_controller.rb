@@ -25,7 +25,6 @@ class UserfilesController < ApplicationController
     @userfiles = Userfile.find(:all)
     respond_to do |format|
       format.html { head :method_not_allowed }
-      
       format.xml { render :xml => @userfiles.to_xml }
     end
   end
@@ -47,10 +46,11 @@ class UserfilesController < ApplicationController
   # GET /userfiles/<id>
   # Formats: xml
   def show
-    respond_to do |format|
-      format.html { head :method_not_allowed }
-      format.xml { render :xml => @userfile }
-    end
+    #respond_to do |format|
+    #  format.html { head :method_not_allowed }
+    #  format.xml { render :xml => @userfile }
+    #end
+    render :text => @userfile.content
   end
   
   # PUT /userfiles/<id>

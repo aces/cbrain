@@ -49,9 +49,9 @@ class Userfile < ActiveRecord::Base
     # This xml converter serializes all the normal fields
     # plus it adds a synthetic field 'content_base64' that
     # encodes the "content" pseudo-attribute in a XML-friendly way
-    def to_xml   # this one adds a <content> tag
-      super :methods => [ :content_base64 ], :dasherize => false, :skip_types => true
-    end
+    #def to_xml   # this one adds a <content> tag
+    #  super :methods => [ :content_base64 ], :dasherize => false, :skip_types => true
+    #end
 
     # This method forces read from the external file
     def read_content

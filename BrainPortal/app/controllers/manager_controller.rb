@@ -231,6 +231,12 @@ puts("GOT XML: #{xml}---\n");
       
       redirect_to :action => :index
    end
+   
+   def test_execution
+     exec = Execution.new("hello", ["one", "two", "three"], :high => 5, :low => 2)
+     resp = exec.send
+     render :xml => resp
+   end
 
    private
 

@@ -117,5 +117,9 @@ puts "MINC2JIV: GOT IT  #{mincfile_id}\n"
       end
 
   end
+  
+  def run
+    render :xml => request.body.read
+  end
 
 end
