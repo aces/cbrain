@@ -100,4 +100,17 @@ class Userfile < ActiveRecord::Base
       self.delete_content
     end
 
+    # Creates a temporary copy of the content of the file
+    # in a temporary directory; options are
+    #     :basename => "myname" # provide the temp file's basename.
+    #     :ext => ".abc"        # will give the extension ".abc" to the temp file
+    # Returns the full pathname to the temp file, usually like "/tmp/x-1234567"
+    def mktemp(options = {})
+        extension = options[:ext]      || ""
+        basename  = options[:basename] || ("x" + self.object_id.to_s)
+        tmpfilename = Pathname.new(Dir.tmpdir) + (basename + extension)
+        File.open(tmpfilename.to_s,"w") { |io| io.write(self.content) }
+        tmpfilename
+    end
+
 end

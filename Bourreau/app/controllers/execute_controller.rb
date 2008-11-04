@@ -18,9 +18,9 @@ class ExecuteController < ApplicationController
     def wordcount
       id = params[:id]
       userfile = Userfile.find(id)
-      userfile.after_find
-      tmpfile = userfile.mktemp
-      wcoutio = IO.popen("wc \"#{tmpfile}\"")
+      #tmpfile = userfile.mktemp
+      #wcoutio = IO.popen("wc \"#{tmpfile}\"")
+      wcoutio = IO.popen("wc \"#{userfile.vaultname}\"")
       wcout = wcoutio.read
       wcoutio.close
 
@@ -33,11 +33,9 @@ class ExecuteController < ApplicationController
       ret = resultfile.save()
 
       answerxml = Hash.new();
-      answerxml[:status]     = "Ok I've done it"
+      answerxml[:status]     = "Ok I've run \"wc\" on the file"
       answerxml[:wc_out]     = wcout
-      #answerxml[:ret]        = ret
       answerxml[:retclass]   = ret.class
-      #answerxml[:resultfile] = Userfile.headers
 
       respond_to do |format|
         format.html { head :method_not_allowed }
@@ -47,32 +45,22 @@ class ExecuteController < ApplicationController
     end
 
     # Takes a minc file, transforms it into a .header and .raw_byte.gz
-    # TODO: run convertion is a properly controlled sandbox
     def minc2jiv
 
       # Extract info about request
       mincfile_id        = params[:id]
-puts "MINC2JIV: GETTING #{mincfile_id}\n"
       mincfile           = Userfile.find(mincfile_id)
-puts "MINC2JIV: GOT IT  #{mincfile_id}\n"
-      mincfile.after_find  # PATCH. Once active resource implements callbacks, remove this
+      vaultname          = mincfile.vaultname
 
       # Create work files
-      tmpmincfile = mincfile.mktemp(:ext => ".mnc")  # path to a copy of the content
-
-      # This is all clumsy, we need a simpler /tmp execution sandbox
-      pathtmpfile       = Pathname.new(tmpmincfile)
-      pathdir, pathbase = pathtmpfile.split
-      tmpdir    = pathdir.to_s
-      plainbase = pathbase.to_s.sub(/\.mnc$/,"")    # needed to find the outputs
-      
-      # Convert
-      system("minc2jiv.pl -output_path \"#{tmpdir}\" \"#{tmpmincfile}\"")
-      #system("echo 'minc2jiv.pl -output_path \"#{tmpdir}\" \"#{tmpmincfile}\"'")
+      sandbox = SandboxTmp.new()
+      sandboxdir = sandbox.tmpfulldirname
+      File.symlink(vaultname,(sandbox.tmpfulldirname + "/in.mnc"))
+      sandbox.bash("minc2jiv.pl -output_path . in.mnc")
 
       # Return results
-      tmpheader_file  = "#{tmpdir}/#{plainbase}.header"
-      tmprawbyte_file = "#{tmpdir}/#{plainbase}.raw_byte.gz"
+      tmpheader_file  = "#{sandboxdir}/in.header"
+      tmprawbyte_file = "#{sandboxdir}/in.raw_byte.gz"
    
       success = 0
       if (File.exists?(tmpheader_file) && File.exists?(tmprawbyte_file))
@@ -99,9 +87,7 @@ puts "MINC2JIV: GOT IT  #{mincfile_id}\n"
 
       # Cleanup
       begin
-        #File.unlink(tmpmincfile)
-        #File.unlink(tmpheader_file)
-        #File.unlink(tmprawbyte_file)
+        sandbox.destroy
       rescue
         # Oh well.
       end
