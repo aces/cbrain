@@ -15,7 +15,7 @@ class ManagerController < ApplicationController
 
    Revision_info="$Id$"
 
-   before_filter :authorize, :except => [:content, :list]    # in application.rb
+   before_filter :authorize, :except => [:content, :old_list]    # in application.rb
 
    def index
        user_id = session[:user_id]
@@ -176,12 +176,12 @@ puts("GOT XML: #{xml}---\n");
    end
    
    def old_list
-     begin
+     #begin
        userfiles = Userfile.find_all_by_owner_id(params[:id])
        render :xml => userfiles
-     rescue
-       render :nothing => true
-     end
+     #rescue
+    #   render :nothing => true
+    # end
    end
    
    def old_minc2jiv
