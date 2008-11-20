@@ -1,0 +1,19 @@
+<h1>New userfile</h1>
+
+<% form_for(@userfile) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :size %><br />
+    <%= f.text_field :size %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= button_to 'Cancel', userfiles_path, :method => :get %>

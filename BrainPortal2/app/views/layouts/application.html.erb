@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">
+<%
+
+#
+# CBRAIN Project
+#
+# Main web site layout
+#
+# Original author: Pierre Rioux
+#
+# $Id: cbrain.html.erb 30 2008-10-30 20:08:58Z prioux $
+#
+
+-%>
+<html>
+
+<head>
+    <title>CBRAIN Project</title>
+    <%= stylesheet_link_tag "manager", :media => "all" %>
+</head>
+
+<body id="cbrain">
+
+    <div id="banner">
+        <div id='top_language'>
+            <div id='top_language_inside'>
+            <!-- <a href="fr">Fran&ccedil;ais</a> -->
+            <br/>
+
+            <a id='top_language_mcgill' href="http://www.mcgill.ca">&nbsp;</a>
+            </div>
+        </div>
+                
+        <div id="top_container">
+            <div id="top_all">
+                <div id="top_01"></div>
+                <div id="top_02"></div>
+                <div id="top_03"><h1>CBRAIN</H1></div>
+                <div id="top_04"><h2>BIC - McConnell Brain Imaging Center</h2></div>
+                <div id="top_05"></div>
+            </div><!--top_all-->
+        </div><!--top_container-->
+    </div>
+
+
+    <!-- menu + main -->
+    <div id="columns">
+        
+        <!-- menu on the side -->
+        <div id="side">
+            <h3>Menu</h3>
+            <% if session[:user_id] %>
+                <%= link_to 'Home', home_path %><br/>
+                <%= link_to 'Files', userfiles_path %><br/>
+                <%= link_to 'Logout', logout_path %><br/>
+            <% else %>
+                <a href="/login">Login</a><br/>
+            <% end %>
+            <a href="todo">Help</a><br/>
+            
+            <% if current_user && current_user.role == 'admin' %>
+                  <BR>
+                  <h3>Admin Menu</h3>
+                  <%= link_to 'Users', users_path %><br/>
+                  <%= link_to 'Groups', groups_path %><br/> 
+                  <%= link_to 'Institutions', :controller => :institutions, :action => :index %><br/>
+            <% end %>
+        </div>
+        
+        <!-- main rendering area -->
+          <div id="main">
+              <% if ! flash[:error].nil? && ! flash[:error].empty? %>
+                 <p class="error"><%= flash[:error].gsub(/\n/,"<BR>") -%></p>
+              <% end %>
+              <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
+                 <p class="notice"><%= flash[:notice].gsub(/\n/,"<BR>") -%></p>
+              <% end %>
+              <%= yield :layout %>
+          </div>
+
+    </div>
+
+</body>
+</html>
+    
+

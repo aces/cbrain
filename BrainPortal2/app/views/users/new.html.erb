@@ -1,0 +1,35 @@
+<%= error_messages_for :user %>
+<% form_for :user, :url => users_path do |f| -%>
+<p><label for="login">Full Name</label><br/>
+<%= f.text_field :full_name %></p>
+
+<p><label for="login">Login</label><br/>
+<%= f.text_field :login %></p>
+
+<p><label for="email">Email</label><br/>
+<%= f.text_field :email %></p>
+
+<p><label for="role">Role</label><br/>
+<%= f.select :role, %w{admin manager user}, :prompt => 'Select a Role' %></p>
+
+<br/>
+<label for="groups">Groups</label>
+<table>
+   <% for group in @groups %>
+       <tr>
+         <td><%= check_box_tag("groups[]", group.id.to_s) %></td>
+         <td><%= h(group.name) -%></td>
+       </tr>
+   <% end %>
+</table>
+
+<p><label for="password">Password</label><br/>
+<%= f.password_field :password %></p>
+
+<p><label for="password_confirmation">Confirm Password</label><br/>
+<%= f.password_field :password_confirmation %></p>
+
+<p><%= submit_tag 'Create User' %></p>
+<% end -%>
+
+<%= button_to 'Cancel', users_path, :method => :get %>

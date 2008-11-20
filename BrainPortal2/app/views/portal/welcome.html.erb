@@ -1,0 +1,23 @@
+<%
+
+#
+# CBRAIN Project
+#
+# Login manager welcome layout
+#
+# Original author: Pierre Rioux
+#
+# $Id: welcome.html.erb 43 2008-11-05 15:54:04Z tsherif $
+#
+
+-%>
+<H1>Welcome to CBRAIN, <%= current_user.full_name %></H1>
+
+<P>
+
+<b>Number of files on your account:</b> <%= current_user.userfiles.size %><br>
+<b>Groups you belong to:</b>
+<%= current_user.groups.collect{|g| h g.name}.join(', ') %>
+<P>
+
+<h3>Please select an option from the menu to the right.</h3>

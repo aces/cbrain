@@ -1,0 +1,32 @@
+<table>
+   <tr>
+      <td><b>Name:</b></td>
+      <td><%=h @userfile.name %></td>
+   </tr>
+   <tr>
+      <td><b>Owner:</b></td>
+      <td><%=h @userfile.user.full_name %></td>
+   </tr>
+   <tr>
+      <td><b>Size:</b></td>
+      <td><%=h @userfile.size %></td>
+   </tr>
+   <tr>
+      <td><b>Parent:</b></td>
+      <td><%=h @userfile.parent.name rescue ""%></td>
+   </tr>
+   <tr>
+      <td><b>Children:</b></td>
+      <td><%=@userfile.children.map{|c| h(c.name)}.join("<br>") %></td>
+   </tr>
+   <tr>
+      <td><b>Created at:</b></td>
+      <td><%=h @userfile.created_at %></td>
+   </tr>
+   <tr>
+      <td><b>Modified at:</b></td>
+      <td><%=h @userfile.updated_at %></td>
+   </tr>
+</table>
+
+<%= link_to 'Index', userfiles_path %>

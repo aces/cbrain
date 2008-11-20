@@ -1,0 +1,21 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  institution_id: 1
+  manager_id: 1
+  street: MyString
+  building: MyString
+  room: MyString
+  phone: MyString
+  fax: MyString
+
+two:
+  name: MyString
+  institution_id: 1
+  manager_id: 1
+  street: MyString
+  building: MyString
+  room: MyString
+  phone: MyString
+  fax: MyString

@@ -1,0 +1,31 @@
+<h1>Current Users</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Login</th>
+    <th>Email</th>
+    <th>Groups</th>
+    <th>Role</th>
+    <th>Number of Files</th>
+  </tr>
+
+<% for user in @users %>
+  <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <td><%=h user.full_name %></td>
+    <td><%=h user.login %></td>
+    <td><%=h user.email %></td>
+    <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
+    <td><%=h user.role %></td>
+    <td><%=h user.userfiles.size %></td>
+    <% unless user.login == 'admin' %>
+      <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>
+      <td><%= button_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete %></td>
+    <% end %>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= button_to 'Create New User', new_user_path %>

@@ -1,0 +1,55 @@
+<%
+
+#
+# CBRAIN Project
+#
+# File manager main layout
+#
+# Original author: Pierre Rioux
+#
+# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+#
+
+-%>
+<h1>Welcome. These are your files:</h1>
+
+<% form_tag("/userfiles/operation", :method => :post) do %>
+
+<table>
+   <tr>
+       <th>Select</th>
+       <th>Filename</th>
+       <th>Size</th>
+   </tr>
+   <% for userfile in @userfiles %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%= check_box_tag("filelist[]", userfile.id.to_s) %></td>
+         <td>
+            <%= '&nbsp' * 4 * userfile.level + '&#x21b3;' if userfile.level > 0 -%>
+            <%= link_to h(userfile.name), userfile %>
+         </td>
+         <td><%= h(userfile.size) -%></td>
+       </tr>
+   <% end %>
+</table>
+
+Operations: <%= select_tag(
+   "operation", 
+   %{<option value="">Select an Operation</option>} + options_for_select(['Convert MINC to JIV', 'Delete'])
+   ) %>
+
+<%= submit_tag("Apply Operation") %>
+
+<% end %>
+
+<h3>Add a new file:</h3>
+
+<%
+   form_tag( "/userfiles", :multipart => true, :method => :post ) do
+%>
+      <%= file_field_tag("upload_file") %>
+      <%= submit_tag("Upload file")     %>
+<% end %>
+
+</body>
+</html>

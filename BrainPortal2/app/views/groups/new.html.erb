@@ -1,0 +1,43 @@
+<h1>Create New Group</h1>
+
+<% form_for(@group) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :institution_id, 'Institution' %><br />
+    <%= f.select :institution_id, @institution_names, :prompt => 'Select an Institution' %>
+  </p>
+  <p>
+    <%= f.label :manager_id %><br />
+    <%= f.text_field :manager_id %>
+  </p>
+  <p>
+    <%= f.label :street %><br />
+    <%= f.text_field :street %>
+  </p>
+  <p>
+    <%= f.label :building %><br />
+    <%= f.text_field :building %>
+  </p>
+  <p>
+    <%= f.label :room %><br />
+    <%= f.text_field :room %>
+  </p>
+  <p>
+    <%= f.label :phone %><br />
+    <%= f.text_field :phone %>
+  </p>
+  <p>
+    <%= f.label :fax %><br />
+    <%= f.text_field :fax %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= button_to 'Cancel', groups_path, :method => :get %>

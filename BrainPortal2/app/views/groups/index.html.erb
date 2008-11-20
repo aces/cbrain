@@ -1,0 +1,34 @@
+<h1>Groups</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Institution</th>
+    <th>Manager</th>
+    <th>Street</th>
+    <th>Building</th>
+    <th>Room</th>
+    <th>Phone</th>
+    <th>Fax</th>
+  </tr>
+
+<% for group in @groups %>
+  <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <td><%=h group.name %></td>
+    <td><%=h group.institution.name %></td>
+    <td><%=h group.manager_id %></td>
+    <td><%=h group.street %></td>
+    <td><%=h group.building %></td>
+    <td><%=h group.room %></td>
+    <td><%=h group.phone %></td>
+    <td><%=h group.fax %></td>
+    <td><%= button_to 'Show', group, :method => :get %></td>
+    <td><%= button_to 'Edit', edit_group_path(group), :method => :get %></td>
+    <td><%= button_to 'Delete', group, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= button_to 'Create New Group', new_group_path %>

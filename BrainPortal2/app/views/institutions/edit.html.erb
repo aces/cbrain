@@ -1,0 +1,27 @@
+<h1>Editing Institution</h1>
+
+<% form_for(@institution) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.label :city %><br />
+    <%= f.text_field :city %>
+  </p>
+  <p>
+    <%= f.label :province %><br />
+    <%= f.text_field :province %>
+  </p>
+  <p>
+    <%= f.label :country %><br />
+    <%= f.text_field :country %>
+  </p>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= button_to 'Cancel', institutions_path, :method => :get %>
