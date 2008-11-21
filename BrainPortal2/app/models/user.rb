@@ -1,6 +1,10 @@
 require 'digest/sha1'
 class User < ActiveRecord::Base
   has_many                :userfiles
+  has_many                :managed_groups,
+                          :class_name => 'Group',
+                          :foreign_key => 'manager_id',
+                          :dependent => :nullify
   has_and_belongs_to_many :groups
   
   

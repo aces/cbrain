@@ -5,9 +5,11 @@
     <th>Name</th>
     <th>Login</th>
     <th>Email</th>
+    <th>Managed Groups</th>
     <th>Groups</th>
     <th>Role</th>
     <th>Number of Files</th>
+    <th/><th/>
   </tr>
 
 <% for user in @users %>
@@ -15,13 +17,14 @@
     <td><%=h user.full_name %></td>
     <td><%=h user.login %></td>
     <td><%=h user.email %></td>
+    <td><%= user.managed_groups.map{|g| h(g.name)}.join("<br>") %></td>
     <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
     <td><%=h user.role %></td>
     <td><%=h user.userfiles.size %></td>
     <% unless user.login == 'admin' %>
       <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>
       <td><%= button_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete %></td>
-    <% end %>
+    <% else %><td/><td/><% end %>
   </tr>
 <% end %>
 </table>

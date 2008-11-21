@@ -12,9 +12,9 @@
     <%= f.select :institution_id, @institution_names, :prompt => 'Select an Institution' %>
   </p>
   <p>
-    <%= f.label :manager_id %><br />
-    <%= f.text_field :manager_id %>
-  </p>
+      <%= f.label :manager_id, 'Manager' %><br />
+      <%= f.select :manager_id, @manager_names, :prompt => 'Select a Manager' %>
+   </p>
   <p>
     <%= f.label :street %><br />
     <%= f.text_field :street %>
@@ -35,6 +35,16 @@
     <%= f.label :fax %><br />
     <%= f.text_field :fax %>
   </p>
+  <br/>
+  <label for="users">Users:</label>
+  <table>
+     <% for user in User.find(:all).reject{|u| u.login == 'admin'}  %>
+         <tr>
+           <td><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+           <td><%= h(user.full_name) -%></td>
+         </tr>
+     <% end %>
+  </table>
   <p>
     <%= f.submit "Create" %>
   </p>

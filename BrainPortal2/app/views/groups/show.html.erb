@@ -1,41 +1,42 @@
+<h1>Group details for <%= h @group.name %></h1>
 <table>
-   <tr>
+   <tr class="list-even">
       <td><b>Name:</b></td>
       <td><%=h @group.name %></td>
    </tr>
-   <tr>
+   <tr class="list-even">
       <td><b>Institution:</b></td>
       <td><%=h @group.institution.name %></td>
   </td>
-  <tr>
+  <tr class="list-even">
      <td><b>Manager:</b></td>
      <td><%=h @group.manager_id %></td>
   </td>
-  <tr>
+  <tr class="list-even">
       <td><b>Street:</b></td>
       <td><%=h @group.street %></td>
   </tr>
-  <tr>
+  <tr class="list-even">
         <td><b>Building:</b></td>
         <td><%=h @group.building %></td>
    </tr>
-   <tr>
+   <tr class="list-even">
       <td><b>Room:</b></td>
       <td><%=h @group.room %></td>
    </tr>
-   <tr>
+   <tr class="list-even">
       <td><b>Phone:</b></td>
       <td><%=h @group.phone %></td>
    </tr>
-   <tr>
+   <tr class="list-even">
       <td><b>Fax:</b></td>
       <td><%=h @group.fax %></td>
    </tr>
 </table>
 
 <p>
-<table cellspacing="7">
-  <tr><td><b>Members:</b></td></tr>
+<table>
+  <tr><td/><td><b>Members</b></td></tr>
   <tr>
     <th>Name</th>
     <th>Login</th>
@@ -43,7 +44,7 @@
   </tr>
 
 <% @group.users.each do |user| %>
-  <tr>
+  <tr class=<%= cycle("list-even", "list-odd")%> >
     <td><%=h user.full_name %></td>
     <td><%=h user.login %></td>
     <td><%=h user.email %></td>

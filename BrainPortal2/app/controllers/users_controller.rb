@@ -28,12 +28,6 @@ class UsersController < ApplicationController
     # reset_session
     
     @user = User.new(params[:user])
-    unless params[:groups].blank?
-      for group_id in params[:groups]
-        @user.groups << Group.find(group_id)
-      end
-    end
-
     @user.save
     
     if @user.errors.empty?
@@ -52,13 +46,7 @@ class UsersController < ApplicationController
     @user.groups.delete_all
     
     respond_to do |format|
-      if @user.update_attributes(params[:user])
-        unless params[:groups].blank?
-          for group_id in params[:groups]
-            @user.groups << Group.find(group_id)
-          end
-        end
-        
+      if @user.update_attributes(params[:user])        
         flash[:notice] = 'User was successfully updated.'
         format.html { redirect_to users_path }
         format.xml  { head :ok }

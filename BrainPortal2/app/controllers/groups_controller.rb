@@ -26,7 +26,8 @@ class GroupsController < ApplicationController
   def new
     @group = Group.new
     @institution_names = Institution.find(:all).map{|i| i.name}
-
+    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.map{|i| i.full_name}
+    
     respond_to do |format|
       format.html # new.html.erb
       format.xml  { render :xml => @group }
@@ -37,12 +38,15 @@ class GroupsController < ApplicationController
   def edit
     @group = Group.find(params[:id])
     @institution_names = Institution.find(:all).map{|i| i.name}
+    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.map{|i| i.full_name}
   end
 
   # POST /groups
   # POST /groups.xml
   def create
     params[:group][:institution_id] = Institution.find_by_name(params[:group][:institution_id]).id unless params[:group][:institution_id].blank?
+    params[:group][:manager_id] = User.find_by_full_name(params[:group][:manager_id]).id unless params[:group][:manager_id].blank?
+    
     @group = Group.new(params[:group])
 
     respond_to do |format|
@@ -63,6 +67,7 @@ class GroupsController < ApplicationController
   def update
     @group = Group.find(params[:id])
     params[:group][:institution_id] = Institution.find_by_name(params[:group][:institution_id]).id if params[:group][:institution_id]
+    params[:group][:manager_id] = User.find_by_full_name(params[:group][:manager_id]).id if params[:group][:manager_id]
     
     respond_to do |format|
       if @group.update_attributes(params[:group])

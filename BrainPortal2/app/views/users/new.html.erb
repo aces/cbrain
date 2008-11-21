@@ -13,11 +13,11 @@
 <%= f.select :role, %w{admin manager user}, :prompt => 'Select a Role' %></p>
 
 <br/>
-<label for="groups">Groups</label>
+<label for="groups">Groups:</label>
 <table>
    <% for group in @groups %>
        <tr>
-         <td><%= check_box_tag("groups[]", group.id.to_s) %></td>
+         <td><%= check_box_tag("user[group_ids][]", group.id.to_s) %></td>
          <td><%= h(group.name) -%></td>
        </tr>
    <% end %>
