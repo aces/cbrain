@@ -15,12 +15,14 @@ class UserfilesController < ApplicationController
   # GET /userfiles/1
   # GET /userfiles/1.xml
   def show
-    @userfile = Userfile.find(params[:id])
+    @userfile = current_user.userfiles.find(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
     end
+  rescue
+   access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
 
   # GET /userfiles/new
@@ -36,7 +38,9 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles/1/edit
   def edit
-    @userfile = Userfile.find(params[:id])
+    @userfile = current_user.userfiles.find(params[:id])
+  rescue
+    access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
 
   # POST /userfiles

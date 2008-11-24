@@ -60,10 +60,11 @@ module AuthenticatedSystem
     # behavior in case the user is not authorized
     # to access the requested action.  For example, a popup window might
     # simply close itself.
-    def access_denied
+    def access_denied(message = 'You must login to see this page.')
       respond_to do |format|
         format.html do
           store_location
+          flash[:error] = message
           redirect_to new_session_path
         end
         format.any do
@@ -115,6 +116,11 @@ module AuthenticatedSystem
     
     ####STUFF TAREK ADDED############
     def admin_role_required
-      current_user.role == 'admin' || access_denied
+      current_user.role == 'admin' || access_error('Access denied.', 401)
     end
+    
+    def access_error(message, status)
+        render(:text => "<h2>#{message}</h2>", :status => status)
+    end 
+    
 end

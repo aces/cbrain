@@ -1,12 +1,25 @@
 class UsersController < ApplicationController
-  before_filter :login_required, :admin_role_required
+  before_filter :login_required
+  before_filter :admin_role_required, :except => [:show, :edit, :update]
   
   def index
-    @users = User.find(:all)
+    raise "Hello"
+    @users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])
 
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @users }
+    end
+  end
+  
+  # GET /user/1
+  # GET /user/1.xml
+  def show
+    @user = User.find(params[:id], :include => :groups)
+
+    respond_to do |format|
+      format.html # show.html.erb
+      format.xml  { render :xml => @userfile }
     end
   end
 
@@ -16,7 +29,11 @@ class UsersController < ApplicationController
   end
   
   def edit
-    @user = User.find(params[:id])
+    @user = User.find(params[:id], :include => :groups)
+    if !edit_permission? @user
+      access_error("Access denied.", 401)
+      return
+    end
     @groups = Group.find(:all)
   end 
 
@@ -43,12 +60,12 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update
     @user = User.find(params[:id])
-    @user.groups.delete_all
+    params[:user][:group_ids] ||= []
     
     respond_to do |format|
       if @user.update_attributes(params[:user])        
         flash[:notice] = 'User was successfully updated.'
-        format.html { redirect_to users_path }
+        format.html { redirect_to @user }
         format.xml  { head :ok }
       else
         @groups = Group.find(:all)

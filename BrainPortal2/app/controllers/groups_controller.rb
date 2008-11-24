@@ -1,8 +1,9 @@
 class GroupsController < ApplicationController
+  before_filter :login_required, :admin_role_required
   # GET /groups
   # GET /groups.xml
   def index
-    @groups = Group.find(:all)
+    @groups = Group.find(:all, :include => [:manager, :users, :institution])
 
     respond_to do |format|
       format.html # index.html.erb
@@ -13,7 +14,7 @@ class GroupsController < ApplicationController
   # GET /groups/1
   # GET /groups/1.xml
   def show
-    @group = Group.find(params[:id])
+    @group = Group.find(params[:id], :include => [:users, :manager])
 
     respond_to do |format|
       format.html # show.html.erb
@@ -44,9 +45,6 @@ class GroupsController < ApplicationController
   # POST /groups
   # POST /groups.xml
   def create
-    params[:group][:institution_id] = Institution.find_by_name(params[:group][:institution_id]).id unless params[:group][:institution_id].blank?
-    params[:group][:manager_id] = User.find_by_full_name(params[:group][:manager_id]).id unless params[:group][:manager_id].blank?
-    
     @group = Group.new(params[:group])
 
     respond_to do |format|
@@ -66,8 +64,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   def update
     @group = Group.find(params[:id])
-    params[:group][:institution_id] = Institution.find_by_name(params[:group][:institution_id]).id if params[:group][:institution_id]
-    params[:group][:manager_id] = User.find_by_full_name(params[:group][:manager_id]).id if params[:group][:manager_id]
+    params[:group][:user_ids] ||= []
     
     respond_to do |format|
       if @group.update_attributes(params[:group])

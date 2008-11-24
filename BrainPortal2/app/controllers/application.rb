@@ -3,6 +3,7 @@
 
 class ApplicationController < ActionController::Base
   include AuthenticatedSystem
+  helper_method :check_role, :not_admin_user
   helper :all # include all helpers, all the time
 
   # See ActionController::RequestForgeryProtection for details
@@ -13,4 +14,18 @@ class ApplicationController < ActionController::Base
   # Uncomment this to filter the contents of submitted sensitive data parameters
   # from your application log (in this case, all fields with names like "password"). 
   # filter_parameter_logging :password
+  
+  protected
+    
+  def check_role(role)
+    current_user && current_user.role.to_sym == role
+  end
+  
+  def not_admin_user(user)
+    user && user.login != 'admin'
+  end
+  
+  def edit_permission?(user)
+    current_user && user && (current_user == user || current_user.role == 'admin')
+  end
 end

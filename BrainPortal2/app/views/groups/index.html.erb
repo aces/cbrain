@@ -5,24 +5,18 @@
     <th>Name</th>
     <th>Institution</th>
     <th>Manager</th>
-    <th>Street</th>
-    <th>Building</th>
-    <th>Room</th>
+    <th>Members</th>
     <th>Phone</th>
-    <th>Fax</th>
     <th/><th/><th/>
   </tr>
 
 <% for group in @groups %>
   <tr class="<%= cycle('list-odd', 'list-even') %>">
     <td><%=h group.name %></td>
-    <td><%=h group.institution.name %></td>
+    <td><%=h group.institution.name%></td>
     <td><%=h group.manager.full_name rescue "" %></td>
-    <td><%=h group.street %></td>
-    <td><%=h group.building %></td>
-    <td><%=h group.room %></td>
+    <td><%= group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
     <td><%=h group.phone %></td>
-    <td><%=h group.fax %></td>
     <td><%= button_to 'Show', group, :method => :get %></td>
     <td><%= button_to 'Edit', edit_group_path(group), :method => :get %></td>
     <td><%= button_to 'Delete', group, :confirm => 'Are you sure?', :method => :delete %></td>

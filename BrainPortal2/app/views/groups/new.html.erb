@@ -9,12 +9,12 @@
   </p>
   <p>
     <%= f.label :institution_id, 'Institution' %><br />
-    <%= f.select :institution_id, @institution_names, :prompt => 'Select an Institution' %>
+     <%= f.collection_select :institution_id, Institution.find(:all), :id, :name, :prompt => 'Select an Institution' %>
   </p>
   <p>
       <%= f.label :manager_id, 'Manager' %><br />
-      <%= f.select :manager_id, @manager_names, :prompt => 'Select a Manager' %>
-   </p>
+      <%= f.collection_select :manager_id, User.find_all_by_role('manager'), :id, :full_name, :prompt => 'Select a Manager' %>
+  </p>
   <p>
     <%= f.label :street %><br />
     <%= f.text_field :street %>

@@ -9,11 +9,11 @@
   </p>
   <p>
     <%= f.label :institution_id, 'Institution' %><br />
-     <%= f.select :institution_id, @institution_names, :prompt => 'Select an Institution' %>
+     <%= f.collection_select :institution_id, Institution.find(:all), :id, :name, :prompt => 'Select an Institution' %>
   </p>
   <p>
       <%= f.label :manager_id, 'Manager' %><br />
-      <%= f.select :manager_id, @manager_names, :prompt => 'Select a Manager' %>
+      <%= f.collection_select :manager_id, User.find_all_by_role('manager'), :id, :full_name, :prompt => 'Select a Manager' %>
   </p>
   <p>
     <%= f.label :street %><br />
@@ -41,11 +41,7 @@
   <table>
      <% for user in User.find(:all).reject{|u| u.login == 'admin'} %>
          <tr>
-           <% if @group.users.include? user %>
-              <td><%= check_box_tag("group[user_ids][]", user.id.to_s, true) %></td>
-           <% else %>
-              <td><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
-           <% end %>  
+            <td><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.include?(user)) %></td> 
            <td><%= h(user.full_name) -%></td>
          </tr>
      <% end %>
