@@ -1,0 +1,40 @@
+<h1>Account details for <%= h @user.full_name %></h1>
+<table>
+   <tr class="list-even">
+      <td><b>Name:</b></td>
+      <td><%=h @user.full_name %></td>
+   </tr>
+   <tr class="list-even">
+      <td><b>Login:</b></td>
+      <td><%=h @user.login %></td>
+  </td>
+  <tr class="list-even">
+      <td><b>Role:</b></td>
+      <td><%=h @user.role %></td>
+  </tr>
+  <tr class="list-even">
+     <td><b>Email:</b></td>
+     <td><%=h @user.email %></td>
+  </td>
+</table>
+
+<p>
+<table>
+  <td/><td><b>Groups</b></td></tr>
+    <tr>
+      <th>Name</th>
+      <th>Manager</th>
+      <th>Members</th>
+    </tr>
+  
+<% @user.groups.each do |group| %>
+  <tr class=<%= cycle("list-even", "list-odd")%> >
+    <td><%=h group.name %></td>
+    <td><%=h group.manager.full_name rescue "" %></td>
+    <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
+<% end %>
+</table>
+</p>
+
+<%= button_to 'Edit', edit_user_path(@user), :method => :get %><br/>
+<%= link_to 'Index', users_path %>

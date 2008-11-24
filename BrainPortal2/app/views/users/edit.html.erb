@@ -1,32 +1,33 @@
+<h4>Update Information</h4>
 <%= error_messages_for :user %>
 <% form_for @user do |f| -%>
 <p><label for="login">Full Name</label><br/>
 <%= f.text_field :full_name %></p>
 
-<p><label for="login">Login</label><br/>
-<%= f.text_field :login %></p>
-
 <p><label for="email">Email</label><br/>
 <%= f.text_field :email %></p>
 
-<p><label for="role">Role</label><br/>
-<%= f.select :role, %w{admin manager user}, :prompt => 'Select a role' %></p>
+<% if check_role(:admin) && not_admin_user(@user) %>
+   <p><label for="login">Login</label><br/>
+   <%= f.text_field :login %></p>
 
-<br/>
-<label for="groups">Groups:</label>
-<table>
-   <% for group in @groups %>
+   <p><label for="role">Role</label><br/>
+   <%= f.select :role, %w{admin manager user}, :prompt => 'Select a role' %></p>
+
+
+   <br/>
+   <label for="groups">Groups:</label>
+   <table>
+      <% for group in @groups %>
        <tr>
-         <% if @user.groups.include? group %>
-            <td><%= check_box_tag("user[group_ids][]", group.id.to_s, true) %></td>
-         <% else %>
-            <td><%= check_box_tag("user[group_ids][]", group.id.to_s) %></td>
-         <% end %>
+         <td><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
          <td><%= h(group.name) -%></td>
        </tr>
-   <% end %>
-</table>
-
+       <% end %>
+   </table>
+<% end %>
+<br/>
+<h4>Create a new password (leave blank to keep the old one.)</h4>
 <p><label for="password">Password</label><br/>
 <%= f.password_field :password %></p>
 
