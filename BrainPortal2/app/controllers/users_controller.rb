@@ -3,7 +3,6 @@ class UsersController < ApplicationController
   before_filter :admin_role_required, :except => [:show, :edit, :update]
   
   def index
-    raise "Hello"
     @users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])
 
     respond_to do |format|
