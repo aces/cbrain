@@ -65,24 +65,26 @@ class ExecuteController < ApplicationController
       success = 0
       if (File.exists?(tmpheader_file) && File.exists?(tmprawbyte_file))
 
-        owner_id           = mincfile.owner_id
-        orig_plainbasename = mincfile.base_name.sub(/\.mnc$/,"")
+        owner_id           = mincfile.user.id
+        orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
 
         headerfile = Userfile.new(
-            :owner_id  => owner_id,
-            :base_name => orig_plainbasename + ".header",
+            :user_id  => owner_id,
+            :name => orig_plainbasename + ".header",
             :content   => File.read(tmpheader_file)
         )
 
         success += 1 if headerfile.save
+        headerfile.move_to_child_of(mincfile)
 
         rawbytefile = Userfile.new(
-            :owner_id  => owner_id,
-            :base_name => orig_plainbasename + ".raw_byte.gz",
+            :user_id  => owner_id,
+            :name => orig_plainbasename + ".raw_byte.gz",
             :content   => File.read(tmprawbyte_file)
         )
 
         success += 1 if rawbytefile.save
+        rawbytefile.move_to_child_of(mincfile)
       end
 
       # Cleanup

@@ -1,1 +1,1 @@
-../../../BrainPortal/app/models/user.rb
+/Users/Tarek/Code/rails/BrainPortal2/app/models/user.rb
