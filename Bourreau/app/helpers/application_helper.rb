@@ -19,7 +19,7 @@ class SandboxTmp
 
   # TODO make protected/private or attr_reader some of these
   attr_accessor :tmpdirbase, :tmpfulldirname, :savecwd
-  attr_accessor :stdout, :stderr
+  attr_accessor :stdout,     :stderr
 
   # This method creates a temp directory where execution
   # can proceed. There is a single option, :tmpdirbase,

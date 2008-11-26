@@ -18,8 +18,6 @@ class ExecuteController < ApplicationController
     def wordcount
       id = params[:id]
       userfile = Userfile.find(id)
-      #tmpfile = userfile.mktemp
-      #wcoutio = IO.popen("wc \"#{tmpfile}\"")
       wcoutio = IO.popen("wc \"#{userfile.vaultname}\"")
       wcout = wcoutio.read
       wcoutio.close
@@ -104,6 +102,24 @@ class ExecuteController < ApplicationController
         format.xml  { render :xml => answerxml }
       end
 
+  end
+
+  def mincheader
+    # Extract info about request
+    mincfile_id        = params[:id]
+    mincfile           = Userfile.find(mincfile_id)
+    vaultname          = mincfile.vaultname
+   
+    # Execute mincheader
+    sb = SandboxTmp.new
+    sb.bash("mincheader \"#{vaultname}\"", :capout => true)
+    info = sb.stdout
+    sb.destroy
+
+    respond_to do |format|
+      format.html { head   :method_not_allowed }
+      format.xml  { render :xml => { :mincheader => info } }
+    end
   end
   
   def run
