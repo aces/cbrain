@@ -1,13 +1,12 @@
 #!/bin/bash
 
-cd BrainPortal 
+cd BrainPortal || exit 20
 script/server -p 3000 &
 
-cd ../jiv
-script/server -p 2000 &
+cd ../Bourreau || exit 20
+script/server -p 3050 &
 
-cd ../Bourreau 
-script/server -p 2500 &
+cd ../jiv      || exit 20
+script/server -p 3070 &
 
-cd ../FileShuttle
-script/server -p 3500 &
+
