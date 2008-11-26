@@ -1,7 +1,7 @@
 class PortalController < ApplicationController
-  before_filter :login_required
   
   def welcome
+    redirect_to '/login/' unless current_user      
   end
 
 end

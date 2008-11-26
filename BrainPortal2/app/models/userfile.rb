@@ -2,6 +2,21 @@ class Userfile < ActiveRecord::Base
   acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to :user
   
+  def self.search(type, term = nil)
+    if type
+      case type.to_sym
+      when :name_search
+         find(:all, :conditions => ["name LIKE ?", "%#{term}%"])
+      when :minc
+         find(:all, :conditions => ["name LIKE ?", "%.mnc"])
+      when :jiv
+         find(:all, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
+       end
+    else
+      find(:all)
+    end
+  end
+  
   def content
     @content ||= self.read_content
     @content

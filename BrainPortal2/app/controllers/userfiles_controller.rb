@@ -4,7 +4,8 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index
-    @userfiles = current_user.userfiles.find(:all)
+    #raise "#{params[:search_type]} #{params[:search_term]}"
+    @userfiles = current_user.userfiles.search(params[:search_type], params[:search_term])
 
     respond_to do |format|
       format.html # index.html.erb

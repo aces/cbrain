@@ -26,8 +26,8 @@ class GroupsController < ApplicationController
   # GET /groups/new.xml
   def new
     @group = Group.new
-    @institution_names = Institution.find(:all).map{|i| i.name}
-    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.map{|i| i.full_name}
+    @institution_names = Institution.find(:all).collect(&:name)
+    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
     
     respond_to do |format|
       format.html # new.html.erb
@@ -38,8 +38,8 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit
     @group = Group.find(params[:id])
-    @institution_names = Institution.find(:all).map{|i| i.name}
-    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.map{|i| i.full_name}
+    @institution_names = Institution.find(:all).collect(&:name)
+    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
   end
 
   # POST /groups
