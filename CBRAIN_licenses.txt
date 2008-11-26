@@ -7,10 +7,12 @@
 #
 
 - awesome_nested_set
-  MIT
+  MIT License
+  http://github.com/collectiveidea/awesome_nested_set/tree/master
 
 - RESTFUL authentication
-  ?
+  Rails' (MIT) License
+  http://github.com/technoweenie/restful-authentication/tree/master
 
 - ActiveResource sample controller code
   Original code provided by Jade Meskill, blog owner of
@@ -21,3 +23,6 @@
   Sun Industry Standards Source License
   http://gridengine.sunsource.net/Gridengine_SISSL_license.html
 
+- acts_as_taggable_on_steroids (rails plugin)
+  Rails' (MIT) License
+  http://agilewebdevelopment.com/plugins/acts_as_taggable_on_steroids
