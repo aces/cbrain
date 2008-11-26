@@ -42,7 +42,7 @@ class CBRAIN
       # Bourreau constants
       DRMAA_sharedir           = "/opt/gridengine/gridshare"
 
-    when /T/i        # Tarek's machine
+    when /tbox.local/i      # Tarek's machine
       # BrainPortal constants
       Filevault_dir            = "/Users/Tarek/Code/rails/BrainPortal/vault"
 
