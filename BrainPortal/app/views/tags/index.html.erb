@@ -1,0 +1,22 @@
+<h1>Listing tags</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>User</th>
+  </tr>
+
+<% for tag in @tags %>
+  <tr>
+    <td><%=h tag.name %></td>
+    <td><%= link_to 'Show', tag %></td>
+    <td><%= link_to 'Edit', edit_tag_path(tag) %></td>
+    <td><%= link_to 'Destroy', tag, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= button_to 'Create New Tag', new_tag_path, :method => :get %>
+<%= button_to 'Back to Files', userfiles_path, :method => :get  %>

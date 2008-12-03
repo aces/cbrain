@@ -1,0 +1,14 @@
+<% title "Tag Info" %>
+
+<table>
+   <tr class="list-even">
+      <td><b>Name:</b></td>
+      <td><%=h @tag.name %></td>
+   </tr class="list-odd">
+   <tr class="list-even">
+      <td><b>Associated with Files:</b></td>
+      <td><%= @tag.userfiles.collect{|f| h(f.name)}.join("<br>") %></td>
+   </tr>
+</table>
+
+<%= link_to 'Index', tags_path %>
