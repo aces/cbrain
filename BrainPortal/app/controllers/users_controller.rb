@@ -1,4 +1,18 @@
+
+#
+# CBRAIN Project
+#
+# Users controller for the BrainPortal interface
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class UsersController < ApplicationController
+
+  Revision_info="$Id$"
+
   before_filter :login_required
   before_filter :admin_role_required, :except => [:show, :edit, :update]
   

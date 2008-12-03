@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20081125183755) do
+ActiveRecord::Schema.define(:version => 20081201181424) do
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -20,33 +20,58 @@ ActiveRecord::Schema.define(:version => 20081125183755) do
     t.text     "log"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
 
-  create_table "sessions", :force => true do |t|
-    t.string   "session_id", :null => false
-    t.text     "data"
+  create_table "groups", :force => true do |t|
+    t.string   "name"
+    t.integer  "institution_id"
+    t.integer  "manager_id"
+    t.string   "street"
+    t.string   "building"
+    t.string   "room"
+    t.string   "phone"
+    t.string   "fax"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
-  add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+  create_table "groups_users", :id => false, :force => true do |t|
+    t.integer "group_id"
+    t.integer "user_id"
+  end
+
+  create_table "institutions", :force => true do |t|
+    t.string   "name"
+    t.string   "city"
+    t.string   "province"
+    t.string   "country"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "userfiles", :force => true do |t|
-    t.integer  "owner_id"
-    t.string   "base_name"
-    t.integer  "file_size"
+    t.string   "name"
+    t.integer  "size"
+    t.integer  "user_id"
+    t.integer  "parent_id"
+    t.integer  "lft"
+    t.integer  "rgt"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "users", :force => true do |t|
-    t.string   "user_name"
+    t.string   "full_name"
+    t.string   "login"
+    t.string   "email"
+    t.string   "crypted_password",          :limit => 40
+    t.string   "salt",                      :limit => 40
+    t.string   "remember_token"
+    t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "crypt_password"
-    t.string   "full_name"
-    t.string   "groups"
+    t.string   "role"
   end
 
 end

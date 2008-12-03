@@ -1,6 +1,3 @@
-<% title 'Files' %>
-
-
 <%
 
 #
@@ -14,6 +11,8 @@
 #
 
 -%>
+
+<% title 'Files' %>
 
 <h1>Welcome. These are your files:</h1>
 <% form_tag userfiles_path, {:method => :get} do %>
@@ -47,7 +46,15 @@
 
 Operations: <%= select_tag(
    "operation", 
-   %{<option value="">Select an Operation</option>} + options_for_select(['Convert MINC to JIV', 'Delete'])
+    '
+    <option value="">Select an operation</option>
+
+    <optgroup label="Scientific operations">
+    <option value="minc2jiv">Convert selected MINC files to JIV</option>
+
+    <optgroup label="Management operations">
+    <option value="delete">Delete selected files</option>
+    '
    ) %>
 
 <%= submit_tag("Apply Operation") %>
@@ -62,6 +69,3 @@ Operations: <%= select_tag(
       <%= file_field_tag("upload_file") %>
       <%= submit_tag("Upload file")     %>
 <% end %>
-
-</body>
-</html>

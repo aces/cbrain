@@ -1,4 +1,18 @@
+
+#
+# CBRAIN Project
+#
+# Userfile model
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class Userfile < ActiveRecord::Base
+
+  Revision_info="$Id$"
+
   acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to :user
   

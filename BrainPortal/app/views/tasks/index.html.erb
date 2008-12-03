@@ -1,0 +1,70 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+#
+
+-%>
+
+<% title 'Tasks' %>
+
+<h1>Welcome. These are your current and past tasks:</h1>
+
+<% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
+
+<table>
+   <tr>
+       <th>Select</th>
+       <th>Task Name</th>
+       <th>Current Status</th>
+       <th>Time Submitted</th>
+       <th>Last Updated</th>
+       <% if current_user.login == "admin" %>
+         <th>Owner</th>
+       <% end %>
+   </tr>
+   <% for task in @tasks %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%= check_box_tag("tasklist[]", task.id.to_s) %></td>
+         <td><%= h(task.class.to_s.sub(/^Drmaa/,"")) %></td>
+         <td><%= h(task.status) %></td>
+         <td><%= h(task.created_at) -%></td>
+         <td><%= h(task.updated_at) -%></td>
+         <% if current_user.login == "admin" %>
+           <td><%= h(User.find_by_id((task.user_id) || 1).login) -%></td>
+         <% end %>
+       </tr>
+   <% end %>
+</table>
+
+Operations: <%= select_tag(
+   "operation",
+    '
+    <option value="">Select an operation</option>
+
+    <optgroup label="Operations for ready tasks">
+    <option value="postprocess">Trigger postprocessing of selected tasks</option>
+
+    <optgroup label="Operations for queued tasks">
+    <option value="hold">Hold queued tasks</option>
+    <option value="release">Release held tasks</option>
+
+    <optgroup label="Operations for running tasks">
+    <option value="suspend">Suspend running tasks</option>
+    <option value="resume">Resume suspended tasks</option>
+
+    <optgroup label="Operations for all tasks">
+    <option value="terminate">Terminate selected tasks</option>
+    <option value="delete">Remove selected tasks</option>
+    '
+   ) %>
+
+<%= submit_tag("Apply Operation") %>
+
+<% end %>
+

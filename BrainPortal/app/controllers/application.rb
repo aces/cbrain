@@ -1,7 +1,14 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
+#
+# CBRAIN project
+#
+# $Id$
 
 class ApplicationController < ActionController::Base
+
+  Revision_info="$Id$"
+
   include AuthenticatedSystem
   helper_method :check_role, :not_admin_user
   helper :all # include all helpers, all the time

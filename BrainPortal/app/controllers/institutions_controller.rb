@@ -1,4 +1,18 @@
+
+#
+# CBRAIN Project
+#
+# Institutions controller for the BrainPortal interface
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class InstitutionsController < ApplicationController
+
+  Revision_info="$Id$"
+
   before_filter :login_required, :admin_role_required
   # GET /institutions
   # GET /institutions.xml

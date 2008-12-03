@@ -1,5 +1,19 @@
+
+#
+# CBRAIN Project
+#
+# User model
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 require 'digest/sha1'
 class User < ActiveRecord::Base
+
+  Revision_info="$Id$"
+
   has_many                :userfiles
   has_many                :managed_groups,
                           :class_name => 'Group',

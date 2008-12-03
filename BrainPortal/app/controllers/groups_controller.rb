@@ -1,4 +1,18 @@
+
+#
+# CBRAIN Project
+#
+# Groups controller for the BrainPortal interface
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class GroupsController < ApplicationController
+
+  Revision_info="$Id$"
+
   before_filter :login_required, :admin_role_required
   # GET /groups
   # GET /groups.xml

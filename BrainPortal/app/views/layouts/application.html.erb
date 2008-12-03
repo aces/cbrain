@@ -52,6 +52,7 @@
             <% if session[:user_id] %>
                 <%= link_to 'Home', home_path %><br/>
                 <%= link_to 'Files', userfiles_path %><br/>
+                <%= link_to 'Tasks', :controller => :tasks, :action => :index %><br/>
                 <%= link_to 'My Account', current_user %><br/>
                 <%= link_to 'Logout', logout_path %><br/>
             <% else %>
@@ -83,5 +84,3 @@
 
 </body>
 </html>
-    
-

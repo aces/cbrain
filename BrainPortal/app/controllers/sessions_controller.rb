@@ -1,5 +1,18 @@
+
+#
+# CBRAIN Project
+#
+# Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.  
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class SessionsController < ApplicationController
+
+  Revision_info="$Id$"
 
   # render new.rhtml
   def new

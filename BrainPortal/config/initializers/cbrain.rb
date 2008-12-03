@@ -23,7 +23,8 @@ class CBRAIN
   # BrainPortal constants
 
   # Bourreau constants
-  Bourreau_execution_URL   = "http://localhost:3050/"
+  Bourreau_execution_URL     = "http://localhost:3050/"
+  Bourreau_task_resource_URL = "#{Bourreau_execution_URL}"
 
   # Configuration constants that depend on the hostname
   case Socket.gethostname
