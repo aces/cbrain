@@ -11,15 +11,35 @@
 #
 
 -%>
-
+<table>
 <% title 'Files' %>
 
 <h1>Welcome. These are your files:</h1>
+<tr>
 <% form_tag userfiles_path, {:method => :get} do %>
-   <%= text_field_tag :search_term, params[:search_term] %>
+   <td><%= text_field_tag :search_term, @search_term %></td>
    <%= hidden_field_tag :search_type, :name_search %>
-   <%= submit_tag "Search", :name => nil %>
+   <td><%= submit_tag "Search Names", :name => nil %></td>
 <% end %>
+<tr/>
+
+<tr>
+<% form_tag userfiles_path, {:method => :get} do %>
+   <td>
+   <%= select_tag(
+      :search_term, 
+      %{<option value="">Select a Tag</option>} + options_for_select(current_user.tags.collect(&:name))
+      ) 
+   %>
+   </td>
+   <%= hidden_field_tag :search_type, :tag_search %>
+   <td><%= submit_tag "Search Tags", :name => nil %></td>
+<% end %>
+   <td><%= button_to "Manage Tags", tags_path, :method => :get %></td>
+</tr>
+</table>
+
+<strong>Show:</strong>
 <%= link_to 'All Files', userfiles_path %>
 <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
 <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
@@ -28,18 +48,22 @@
 
 <table>
    <tr>
-       <th>Select</th>
+       <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
        <th>Filename</th>
        <th>Size</th>
+       <th colspan="2">Tags</th>
+       <th/>
    </tr>
    <% for userfile in @userfiles %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= check_box_tag("filelist[]", userfile.id.to_s) %></td>
+         <td><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
          <td>
             <%= '&nbsp' * 4 * userfile.level + '&#x21b3;' if userfile.level > 0 -%>
             <%= link_to h(userfile.name), userfile %>
          </td>
          <td><%= h(userfile.size) -%></td>
+         <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
+         <td><%= link_to 'Edit Tags', edit_userfile_path(userfile), :method => :get %></td>
        </tr>
    <% end %>
 </table>
@@ -60,6 +84,8 @@ Operations: <%= select_tag(
 <%= submit_tag("Apply Operation") %>
 
 <% end %>
+
+<br/>
 
 <h3>Add a new file:</h3>
 

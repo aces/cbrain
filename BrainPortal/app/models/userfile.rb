@@ -14,20 +14,23 @@ class Userfile < ActiveRecord::Base
   Revision_info="$Id$"
 
   acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
-  belongs_to :user
+  belongs_to              :user
+  has_and_belongs_to_many :tags
   
   def self.search(type, term = nil)
     if type
       case type.to_sym
+      when :tag_search
+        files = find(:all, :include => :tags).select{|f| f.tags.find_by_name(term)} rescue find(:all, :include => :tags)
       when :name_search
-         find(:all, :conditions => ["name LIKE ?", "%#{term}%"])
+        find(:all, :include => :tags, :conditions => ["name LIKE ?", "%#{term}%"])
       when :minc
-         find(:all, :conditions => ["name LIKE ?", "%.mnc"])
+        find(:all, :include => :tags, :conditions => ["name LIKE ?", "%.mnc"])
       when :jiv
-         find(:all, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
-       end
+        find(:all, :include => :tags, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
+      end
     else
-      find(:all)
+      find(:all, :include =>:tags)
     end
   end
   

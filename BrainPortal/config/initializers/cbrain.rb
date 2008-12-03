@@ -45,7 +45,7 @@ class CBRAIN
 
     when /tbox.local/i      # Tarek's machine
       # BrainPortal constants
-      Filevault_dir            = "/Users/Tarek/Code/rails/BrainPortal/vault"
+      Filevault_dir            = "/Users/Tarek/Code/rails/trunk/BrainPortal/vault"
 
       # Bourreau constants
       DRMAA_sharedir           = "/Users/Tarek/Code/create_this/anywhere/with/mode/4755"

@@ -18,9 +18,9 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index
-    #raise "#{params[:search_type]} #{params[:search_term]}"
     @userfiles = current_user.userfiles.search(params[:search_type], params[:search_term])
-
+    @search_term = params[:search_term] if params[:search_type] == :name_search
+  
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @userfiles }
@@ -36,8 +36,8 @@ class UserfilesController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
     end
-  rescue
-   access_error("File doesn't exist or you do not have permission to access it.", 404)
+  #rescue
+   #access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
 
   # GET /userfiles/new
@@ -54,6 +54,7 @@ class UserfilesController < ApplicationController
   # GET /userfiles/1/edit
   def edit
     @userfile = current_user.userfiles.find(params[:id])
+    @tags = current_user.tags.find(:all)
   rescue
     access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
@@ -92,7 +93,7 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update
-    @userfile = Userfile.find(params[:id])
+    @userfile = current_user.userfiles.find(params[:id])
 
     respond_to do |format|
       if @userfile.update_attributes(params[:userfile])

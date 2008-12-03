@@ -43,6 +43,10 @@
       <td><b>Modified at:</b></td>
       <td><%=h @userfile.updated_at %></td>
    </tr>
+   <tr class="list-even">
+      <td><b>Tags:</b></td>
+      <td><%= @userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
+   </tr>
 </table>
 
 <%= link_to 'Index', userfiles_path %>
