@@ -1,0 +1,24 @@
+<% title h("Edit Tags for #{@userfile.name}") %>
+
+<h1>Edit Tags for <%= h @userfile.name %></h1>
+
+<% form_for(@userfile) do |f| %>
+  <%= f.error_messages %>
+  
+  <label for="Tags">Tags:</label>
+  <table>
+     <% for tag in @tags %>
+         <tr>
+            <td><%= check_box_tag("userfile[tag_ids][]", tag.id.to_s, @userfile.tags.include?(tag)) %></td> 
+           <td><%= h(tag.name) -%></td>
+         </tr>
+     <% end %>
+  </table>
+  
+  
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= button_to 'Cancel', tags_path , :method => :get %>
