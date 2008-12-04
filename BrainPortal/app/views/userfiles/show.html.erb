@@ -15,36 +15,36 @@
 
 <h1>File details for <%= h @userfile.name %></h1>
 <table>
-   <tr class="list-even">
-      <td><b>Name:</b></td>
+   <tr class="list-odd">
+      <th>Name:</th>
       <td><%=h @userfile.name %></td>
    </tr class="list-odd">
    <tr class="list-even">
-      <td><b>Owner:</b></td>
+      <th>Owner:</th>
       <td><%=h @userfile.user.full_name %></td>
    </tr>
-   <tr class="list-even">
-      <td><b>Size:</b></td>
+   <tr class="list-odd">
+      <th>Size:</th>
       <td><%=h @userfile.size %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Parent:</b></td>
+      <th>Parent:</th>
       <td><%=h @userfile.parent.name rescue ""%></td>
    </tr>
-   <tr class="list-even">
-      <td><b>Children:</b></td>
+   <tr class="list-odd">
+      <th>Children:</th>
       <td><%=@userfile.children.map{|c| h(c.name)}.join("<br>") %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Created at:</b></td>
+      <th>Created at:</th>
       <td><%=h @userfile.created_at %></td>
    </tr>
-   <tr class="list-even">
-      <td><b>Modified at:</b></td>
+   <tr class="list-odd">
+      <th>Modified at:</th>
       <td><%=h @userfile.updated_at %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Tags:</b></td>
+      <th>Tags:</th>
       <td><%= @userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
    </tr>
 </table>

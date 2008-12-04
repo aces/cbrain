@@ -16,13 +16,15 @@ h1 {
 table {
   margin: 1em 1em 1em 0;
   /* border: 3px #aaaaaa solid; */
-  background: #ddddff;
+  /* background: #a8e3f3; */
+  background: #000000;
   padding: 2px;
   border-spacing: 2 2;
 }
 
 th {
-    background: #c9e1a2;
+    /* background: #5ba2d4; */
+    background: #05a3d6;
 }
 
 .error {
@@ -57,11 +59,15 @@ th {
     
 
 .list-odd {
-    background: #ccffff;
+    background: #bbbbbb;
 }
 
 .list-even {
-    background: #ffffcc;
+    background: #dddddd;
+}
+
+.info {
+    background: #ffffff;
 }
 
 /*

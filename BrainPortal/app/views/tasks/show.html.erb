@@ -19,37 +19,37 @@
 
    <tr>
        <th>Task Name</th>
-       <td><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
+       <td class="info"><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
    </tr>
 
    <tr>
        <th>Current Status</th>
-       <td><%= h(@task.status) %></td>
+       <td class="info"><%= h(@task.status) %></td>
    </tr>
 
    <tr>
        <th>Time Submitted</th>
-       <td><%= h(@task.created_at) -%></td>
+       <td class="info"><%= h(@task.created_at) -%></td>
    </tr>
 
    <tr>
        <th>Last Updated</th>
-       <td><%= h(@task.updated_at) -%></td>
+       <td class="info"><%= h(@task.updated_at) -%></td>
    </tr>
 
    <tr>
        <th>Owner</th>
-       <td><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
+       <td class="info"><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
    </tr>
 
    <tr>
        <th>DRMAA Job ID</th>
-       <td><%= h(@task.drmaa_jobid) -%></td>
+       <td class="info"><%= h(@task.drmaa_jobid) -%></td>
    </tr>
 
    <tr>
        <th>DRMAA Work Directory</th>
-       <td><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
+       <td class="info"><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
    </tr>
 
    <tr>
@@ -57,7 +57,7 @@
    </tr>
 
    <tr>
-       <td colspan="2"><pre><%= h(@task.params.attributes.to_xml :root => "Params") -%></pre></td>
+       <td colspan="2" class="info"><pre><%= h(@task.params.attributes.to_xml :root => "Params") -%></pre></td>
    </tr>
 
    <tr>
@@ -65,7 +65,7 @@
    </tr>
 
    <tr>
-       <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
+       <td colspan="2" class="info"><pre><%= h(@task.log) -%></pre></td>
    </tr>
 
 </table>

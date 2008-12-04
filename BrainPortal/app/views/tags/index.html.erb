@@ -2,12 +2,12 @@
 
 <table>
   <tr>
-    <th>Name</th>
-    <th>User</th>
+    <th>Tag Name</th>
+    <th colspan="3">Operations</th>
   </tr>
 
 <% for tag in @tags %>
-  <tr>
+  <tr class="<%= cycle( 'list-odd', 'list-even') -%>">
     <td><%=h tag.name %></td>
     <td><%= link_to 'Show', tag %></td>
     <td><%= link_to 'Edit', edit_tag_path(tag) %></td>

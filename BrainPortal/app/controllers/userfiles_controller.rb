@@ -19,7 +19,7 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   def index
     @userfiles = current_user.userfiles.search(params[:search_type], params[:search_term])
-    @search_term = params[:search_term] if params[:search_type] == :name_search
+    @search_term = params[:search_term] if params[:search_type] == 'name_search'
   
     respond_to do |format|
       format.html # index.html.erb

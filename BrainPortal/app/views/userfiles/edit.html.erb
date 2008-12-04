@@ -6,9 +6,10 @@
   <%= f.error_messages %>
   
   <label for="Tags">Tags:</label>
+
   <table>
      <% for tag in @tags %>
-         <tr>
+         <tr class="<%= cycle('list-odd', 'list-even') %>">
             <td><%= check_box_tag("userfile[tag_ids][]", tag.id.to_s, @userfile.tags.include?(tag)) %></td> 
            <td><%= h(tag.name) -%></td>
          </tr>

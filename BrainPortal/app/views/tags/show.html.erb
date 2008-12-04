@@ -2,11 +2,11 @@
 
 <table>
    <tr class="list-even">
-      <td><b>Name:</b></td>
+      <th>Name</th>
       <td><%=h @tag.name %></td>
-   </tr class="list-odd">
+   </tr>
    <tr class="list-even">
-      <td><b>Associated with Files:</b></td>
+      <th>Associated with Files</th>
       <td><%= @tag.userfiles.collect{|f| h(f.name)}.join("<br>") %></td>
    </tr>
 </table>
