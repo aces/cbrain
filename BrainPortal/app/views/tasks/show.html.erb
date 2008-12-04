@@ -1,0 +1,71 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+#
+
+-%>
+
+<% title 'Task Info' %>
+
+<h1>Task Information</h1>
+
+<table>
+
+   <tr>
+       <th>Task Name</th>
+       <td><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
+   </tr>
+
+   <tr>
+       <th>Current Status</th>
+       <td><%= h(@task.status) %></td>
+   </tr>
+
+   <tr>
+       <th>Time Submitted</th>
+       <td><%= h(@task.created_at) -%></td>
+   </tr>
+
+   <tr>
+       <th>Last Updated</th>
+       <td><%= h(@task.updated_at) -%></td>
+   </tr>
+
+   <tr>
+       <th>Owner</th>
+       <td><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
+   </tr>
+
+   <tr>
+       <th>DRMAA Job ID</th>
+       <td><%= h(@task.drmaa_jobid) -%></td>
+   </tr>
+
+   <tr>
+       <th>DRMAA Work Directory</th>
+       <td><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
+   </tr>
+
+   <tr>
+       <th colspan="2">Parameters</th>
+   </tr>
+
+   <tr>
+       <td colspan="2"><pre><%= h(@task.params.attributes.to_xml :root => "Params") -%></pre></td>
+   </tr>
+
+   <tr>
+       <th colspan="2">Processing Log</th>
+   </tr>
+
+   <tr>
+       <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
+   </tr>
+
+</table>

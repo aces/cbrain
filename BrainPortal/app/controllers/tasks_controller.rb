@@ -23,6 +23,21 @@ class TasksController < ApplicationController
     end
   end
 
+  # GET /tasks/1
+  # GET /tasks/1.xml
+  def show
+    @task = DrmaaTask.find(params[:id])
+
+    respond_to do |format|
+      format.html # show.html.erb
+      format.xml  { render :xml => @task }
+    end
+
+  rescue
+    access_error("Task doesn't exist or you do not have permission to access it.", 404)
+
+  end
+
   def operation
 
     operation   = params[:operation]
