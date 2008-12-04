@@ -92,12 +92,14 @@ th {
 }
 
 #side {
+    text-align: right;
     float: right;
-    padding-top: 5em;
-    padding-left: 2em;
-    padding-bottom: 1em;
     width: 6em;
-    height: 30em;
+    height: 100%;
+    padding-top: 5em;
+    padding-left: 0em;
+    padding-right: 1em;
+    padding-bottom: 1em;
 /*    background: #141; */
     background:url(/images/left_deco.jpg);
     background-repeat: no-repeat;
