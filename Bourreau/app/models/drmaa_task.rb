@@ -266,8 +266,11 @@ public
   def addlog(message)
     log = self.log
     log = "" if log.nil? || log.empty?
+    calling_info   = caller[0]
+    calling_method = calling_info.match(/in `(.*)'/) ? $1 : "unknown"
     log += 
       Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") +
+      calling_method + "() " +
       message.sub(/\s*$/,"\n")
     self.log = log
   end
