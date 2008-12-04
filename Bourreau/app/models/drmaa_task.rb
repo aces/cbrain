@@ -50,6 +50,11 @@ class DrmaaTask < ActiveRecord::Base
 
 public
 
+  def initialize(arguments = {})
+    super(arguments)
+    self.addlog("#{Revision_info.svn_id_file} revision #{Revision_info.svn_id_rev}")
+  end
+
   # This needs to be redefined in a subclass.
   # Returning true means that everything went fine
   # during setup; returning false will mark the
@@ -138,6 +143,7 @@ public
   # then cleanup the temporary grid-aware directory.
   def post_process
     self.update_status
+    self.addlog("Attempting PostProcessing")
     if self.status != "Data Ready"
       raise "post_process() called on a job that is not in Data Ready state"
     end
@@ -259,13 +265,10 @@ public
 
   def addlog(message)
     log = self.log
-    log = "" if log.nil?
-    sio = StringIO.new(log,"a")
-    logger = Logger.new(sio)
-    logger.datetime_format = "%Y-%m-%d %H:%M:%S "
-    #log.level = Logger::WARN
-    logger.info(message.sub(/\s*$/,""))
-    logger.close()
+    log = "" if log.nil? || log.empty?
+    log += 
+      Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") +
+      message.sub(/\s*$/,"\n")
     self.log = log
   end
 
