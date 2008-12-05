@@ -19,14 +19,16 @@
 <table>
 
 <% form_tag userfiles_path, {:method => :get} do %>
+<%= hidden_field_tag :search_type, 'name_search' %>
 <tr>
    <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
-   <td><%= submit_tag "Search Names", :name => :search_type, :value => :name_search %></td>
+   <td><%= submit_tag "Search Names" %></td>
 <tr/>
 <% end %>
 
-<% form_tag userfiles_path, {:method => :get} do %>
 <tr>
+<% form_tag userfiles_path, {:method => :get} do %>
+<%= hidden_field_tag :search_type, 'tag_search' %>
    <td>
    <%= select_tag(
       :search_term, 
@@ -34,10 +36,10 @@
       ) 
    %>
    </td>
-   <td><%= submit_tag "Search Tags", :name => :search_type, :value => :tag_search %></td>
+   <td><%= submit_tag "Search Tags" %></td>
+<% end %>
    <td><%= button_to "Manage Tags", tags_path, :method => :get %></td>
 </tr>
-<% end %>
 </table>
 
 
@@ -59,7 +61,7 @@
        <th>Size</th>
        <th colspan="2">Tags</th>
    </tr>
-   <% for userfile in @userfiles %>
+   <% for userfile in @userfiles.sort %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
          <td><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
          <td>
