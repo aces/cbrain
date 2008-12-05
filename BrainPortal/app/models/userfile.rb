@@ -51,12 +51,17 @@ class Userfile < ActiveRecord::Base
   end
   
   def save_content
-    out = File.open(self.vaultname, "w") { |io| io.write(@content) }
+      return if @content.nil?
+      finalname = self.vaultname
+      tmpname   = finalname + ".tmp"
+      out = File.open(tmpname, "w") { |io| io.write(@content) }
+      File.rename(tmpname,finalname)
   end
 
   def delete_content
     vaultname = self.vaultname
     File.unlink(vaultname) if File.exists?(vaultname)
+    @content=nil
   end
   
   
