@@ -15,13 +15,13 @@
 
 <h1>Account details for <%= h @user.full_name %></h1>
 <table>
-   <tr class="list-even">
-      <td><b>Name:</b></td>
-      <td><%=h @user.full_name %></td>
-   </tr>
-   <tr class="list-even">
-      <td><b>Login:</b></td>
-      <td><%=h @user.login %></td>
+  <tr class="list-even">
+     <td><b>Name:</b></td>
+     <td><%=h @user.full_name %></td>
+  </tr>
+  <tr class="list-even">
+     <td><b>Login:</b></td>
+     <td><%=h @user.login %></td>
   </td>
   <tr class="list-even">
       <td><b>Role:</b></td>
@@ -34,13 +34,17 @@
 </table>
 
 <p>
+
 <table>
-  <td/><td><b>Groups</b></td></tr>
-    <tr>
-      <th>Name</th>
-      <th>Manager</th>
-      <th>Members</th>
-    </tr>
+   <tr>
+     <th colspan="3">Groups</th>
+   </tr>
+
+   <tr>
+     <th>Name</th>
+     <th>Manager</th>
+     <th>Members</th>
+   </tr>
   
 <% @user.groups.each do |group| %>
   <tr class=<%= cycle("list-even", "list-odd")%> >
