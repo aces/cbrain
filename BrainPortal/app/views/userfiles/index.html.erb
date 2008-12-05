@@ -58,6 +58,7 @@
    <tr>
        <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
        <th>Filename</th>
+       <th>Creation Date</th>
        <th>Size</th>
        <th colspan="2">Tags</th>
    </tr>
@@ -68,6 +69,7 @@
             <%= '&nbsp' * 4 * userfile.level + '&#x21b3;' if userfile.level > 0 -%>
             <%= link_to h(userfile.name), userfile %>
          </td>
+         <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
          <td><%= h(userfile.size) -%></td>
          <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
          <td><%= link_to 'Edit Tags', edit_userfile_path(userfile), :method => :get %></td>
