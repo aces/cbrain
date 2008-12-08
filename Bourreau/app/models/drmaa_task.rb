@@ -142,11 +142,16 @@ public
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
   def post_process
-    self.update_status
+
     self.addlog("Attempting PostProcessing")
+
+    # Make sure jobs is ready.
+    self.update_status
     if self.status != "Data Ready"
       raise "post_process() called on a job that is not in Data Ready state"
     end
+
+    # Call the subclass-provided save_results()
     saveok = false
     begin
       Dir.chdir(self.drmaa_workdir) do
@@ -155,14 +160,26 @@ public
     rescue => e
       self.addlog("Exception raised when saving results: #{e.inspect}")
     end
-    self.removeDRMAAworkdir
-    if ! saveok
-      self.status = "Failed To PostProcess"
-      return false
-    else
+
+    # Everything went OK according the save_results
+    if saveok
       self.status = "Completed"
+      self.removeDRMAAworkdir
       return true
     end
+
+    # Some error occured; let's log the content of the job's stderr file
+    errfile = "#{self.drmaa_workdir}/.qsub.sh.err"
+    if File.exist?(errfile)
+      self.addlog("--- Start of content of stderr file for job ---")
+      IO.readlines(errfile).each { |line| self.addlog(line, :prefix => ">" ) }
+      self.addlog("--- End of content of stderr file for job ---")
+    end
+
+    self.status = "Failed To PostProcess"
+    self.removeDRMAAworkdir
+    return false
+
   end
 
   # Possible returned status values:
@@ -255,23 +272,14 @@ public
     end
   end
 
-#  def addlog(message)
-#    message = message.sub(/\s*$/,"\n")
-#    log = self.log
-#    log = "" if log.blank?
-#    log += message
-#    self.log = log
-#  end
-
-  def addlog(message)
+  def addlog(message, options = {})
     log = self.log
     log = "" if log.nil? || log.empty?
     calling_info   = caller[0]
-    calling_method = calling_info.match(/in `(.*)'/) ? $1 : "unknown"
+    calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "()") : "unknown()" )
     log += 
       Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") +
-      calling_method + "() " +
-      message.sub(/\s*$/,"\n")
+      calling_method + " " + message.sub(/\s*$/,"\n")
     self.log = log
   end
 
@@ -356,8 +364,9 @@ protected
 
     # Create a bash command script out of the text
     # lines supplied by the subclass
-    id = self.object_id.to_s.gsub(/\D/,"") || self.object_id.to_s
-    qsubfile = ".qsub-#{id}.sh"
+    #id = self.object_id.to_s.gsub(/\D/,"") || self.object_id.to_s
+    #qsubfile = ".qsub-#{id}.sh"
+    qsubfile = ".qsub.sh"   # also used in post_process() !
     io = File.open(qsubfile,"w")
 # TODO use 'here' document
     io.write(
