@@ -37,11 +37,11 @@
    </tr>
    <tr class="list-even">
       <th>Created at:</th>
-      <td><%=h(to_localtime(@userfile.created_at)) %></td>
+      <td><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
    </tr>
    <tr class="list-odd">
       <th>Modified at:</th>
-      <td><%=h(to_localtime(@userfile.updated_at)) %></td>
+      <td><%=h(to_localtime(@userfile.updated_at.to_s)) %></td>
    </tr>
    <tr class="list-even">
       <th>Tags:</th>
