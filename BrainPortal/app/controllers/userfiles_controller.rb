@@ -156,6 +156,8 @@ class UserfilesController < ApplicationController
           mj.save
           flash[:notice] += "Started Minc2Jiv on file '#{userfile.name}'.\n"
         end
+        redirect_to :controller => :tasks, :action => :index
+        return
 
       when "delete"
 

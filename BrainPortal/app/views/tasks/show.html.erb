@@ -29,12 +29,12 @@
 
    <tr>
        <th>Time Submitted</th>
-       <td class="info"><%= h(@task.created_at) -%></td>
+       <td class="info"><%= h(to_localtime(@task.created_at.to_s)) -%></td>
    </tr>
 
    <tr>
        <th>Last Updated</th>
-       <td class="info"><%= h(@task.updated_at) -%></td>
+       <td class="info"><%= h(to_localtime(@task.updated_at.to_s)) -%></td>
    </tr>
 
    <tr>
