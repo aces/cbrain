@@ -50,7 +50,7 @@ class Userfile < ActiveRecord::Base
       when 'file'
         case term
         when 'jiv'
-          current_files = current_files.select{ |f| f.name =~ /(\.raw_byte|\.header)$/  }
+          current_files = current_files.select{ |f| f.name =~ /(\.raw_byte(\.gz)?|\.header)$/  }
         when 'minc'
           current_files = current_files.select{ |f| f.name =~ /\.mnc$/  }
         end
