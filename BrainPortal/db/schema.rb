@@ -9,6 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
+
 ActiveRecord::Schema.define(:version => 20081201181424) do
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -48,6 +49,17 @@ ActiveRecord::Schema.define(:version => 20081201181424) do
     t.string   "country"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "logged_exceptions", :force => true do |t|
+    t.string   "exception_class"
+    t.string   "controller_name"
+    t.string   "action_name"
+    t.text     "message"
+    t.text     "backtrace"
+    t.text     "environment"
+    t.text     "request"
+    t.datetime "created_at"
   end
 
   create_table "tags", :force => true do |t|

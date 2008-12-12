@@ -10,6 +10,8 @@ class ApplicationController < ActionController::Base
   Revision_info="$Id$"
 
   include AuthenticatedSystem
+  include ExceptionLoggable
+  
   helper_method :check_role, :not_admin_user
   helper :all # include all helpers, all the time
 
@@ -22,7 +24,7 @@ class ApplicationController < ActionController::Base
   # from your application log (in this case, all fields with names like "password"). 
   # filter_parameter_logging :password
   
-  protected
+  private
     
   def check_role(role)
     current_user && current_user.role.to_sym == role
@@ -34,5 +36,11 @@ class ApplicationController < ActionController::Base
   
   def edit_permission?(user)
     current_user && user && (current_user == user || current_user.role == 'admin')
+  end
+  
+  if RAILS_ENV == 'development'
+    def local_request?
+      CBRAIN::LOCAL_STATUS
+    end
   end
 end

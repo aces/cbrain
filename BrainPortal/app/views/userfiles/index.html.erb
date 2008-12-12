@@ -25,33 +25,29 @@
    <td><%= submit_tag "Search Names" %></td>
 <tr/>
 <% end %>
-
-<tr>
-<% form_tag userfiles_path, {:method => :get} do %>
-<%= hidden_field_tag :search_type, 'tag_search' %>
-   <td>
-   <%= select_tag(
-      :search_term, 
-      %{<option value="">Select a Tag</option>} + options_for_select(current_user.tags.collect(&:name))
-      ) 
-   %>
-   </td>
-   <td><%= submit_tag "Search Tags" %></td>
-<% end %>
-   <td><%= button_to "Manage Tags", tags_path, :method => :get %></td>
-</tr>
 </table>
 
 
 
 
 
-<strong>Show:</strong>
-<%= link_to 'All Files', userfiles_path %>
+<strong>Add filter:</strong>
+<%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
 <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
 <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
-
-
+<br>
+<strong>Filter tags:</strong>
+<% current_user.tags.collect(&:name).each do |tag| %>
+   <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
+<% end %>
+<%= button_to "Manage Tags", tags_path, :method => :get %>
+<br>
+<strong>Current filters:</strong>
+<% session[:current_filters].each do |filter|%>
+   <%= filter %>
+   <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
+   <%= ' / ' %>
+<% end %>
 <% form_tag(operation_userfiles_path, :method => :post) do %>
 
 <table class="userfiles">
@@ -76,6 +72,7 @@
        </tr>
    <% end %>
 </table>
+
 
 Operations: <%= select_tag(
    "operation", 

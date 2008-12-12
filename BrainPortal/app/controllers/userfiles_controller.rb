@@ -18,9 +18,17 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index
-    @userfiles = current_user.userfiles.search(params[:search_type], params[:search_term])
+    session[:current_filters] ||= []
+    
+    @filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
+    session[:current_filters] = [] if params[:search_type] == 'none'
+    session[:current_filters] << @filter unless @filter.blank? || session[:current_filters].include?(@filter)
+    session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
+    
+    @userfiles = Userfile.apply_filters(current_user.userfiles.find(:all), session[:current_filters])
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
-  
+    
+    
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @userfiles }
