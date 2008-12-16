@@ -99,13 +99,21 @@ class UserfilesController < ApplicationController
     userfile.content = upload_stream.read   # also fills file_size
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
-
-    if userfile.save
-      flash[:notice] = "File '" + clean_basename + "' added."
+    
+    if userfile.name =~ /\.tar(\.gz)?$/
+      success, filenames = userfile.extract
+      if success
+        flash[:notice] = filenames.map{|f| "File #{f} added."}.join("\n")
+      else
+        flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
+      end
     else
-      flash[:error]  = "File '" + clean_basename + "' could not be added (internal error?)."
+      if userfile.save
+        flash[:notice] = "File '" + clean_basename + "' added."
+      else
+        flash[:error]  = "File '" + clean_basename + "' could not be added (internal error?)."
+      end
     end
-
     redirect_to :action => :index
   end
 

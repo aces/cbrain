@@ -19,6 +19,28 @@ class Userfile < ActiveRecord::Base
   
   validates_uniqueness_of :name, :scope => :user_id
   
+  def extract
+    success = true
+    self.save_content
+    
+    options = self.name =~ /\.gz$/ ? 'xzvf' : 'xvf'
+    files = Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
+      `tar #{options} #{self.name}`.split(/\s+/)
+    end    
+    files.each do |file|
+      if old = self.user.userfiles.find_by_name(file)
+        Userfile.delete(old)
+      end
+      u = Userfile.new
+      u.name    = file
+      u.user_id = self.user_id
+      u.size = File.size(u.vaultname)
+      success = false unless u.save(false)
+    end
+    File.delete(self.vaultname)
+    [success, files]
+  end
+  
   def self.search(type, term = nil)
     filter_name = get_filter_name(type, term)
     files = if type

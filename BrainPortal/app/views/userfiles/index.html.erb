@@ -20,6 +20,7 @@
 
 <% form_tag userfiles_path, {:method => :get} do %>
 <%= hidden_field_tag :search_type, 'name_search' %>
+<%= hidden_field_tag :view_all, params[:view_all] %>
 <tr>
    <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
    <td><%= submit_tag "Search Names" %></td>
@@ -27,7 +28,72 @@
 <% end %>
 </table>
 
+<strong>Add filter:</strong>
+<%= link_to 'All Files', userfiles_path(:search_type  => :none, :view_all  => params[:view_all]) %>
+<%= link_to 'MINC Files', userfiles_path(:search_type => :minc, :view_all  => params[:view_all]) %>
+<%= link_to 'JIV Files', userfiles_path(:search_type => :jiv, :view_all  => params[:view_all]) %>
+<br>
+<strong>Filter tags:</strong>
+<% current_user.tags.collect(&:name).each do |tag| %>
+   <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag, :view_all  => params[:view_all]) %>
+<% end %>
+<%= button_to "Manage Tags", tags_path, :method => :get %>
+<br>
 
-<%= render :partial => 'userfiles', :object  => @userfiles.sort %>
+<strong>Current filters:</strong>
+<% session[:current_filters].each do |filter|%>
+   <%= filter %>
+   <%= link_to "x", userfiles_path(:remove_filter  => filter, :view_all  => params[:view_all]) %>
+   <%= ' / ' %>
+<% end %>
+<% if current_user.has_role? :admin %>
+   <br><br>
+   <strong>Admin options:</strong>
+   <%= link_to params[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => !params[:view_all]) %>
+<% end %>
+<% form_tag(operation_userfiles_path(:view_all  => params[:view_all]), :method => :post) do %>
+   <table class="userfiles">
+      <tr>
+          <th><%= link_to 'Select All', userfiles_path(:select_all => true, :view_all  => params[:view_all]) %></th>
+          <% if params[:view_all] %>
+            <th>Owner</th>
+          <% end %>
+          <th>Filename</th>
+          <th>Creation Date</th>
+          <th>Size</th>
+          <th colspan="2">Tags</th>
+      </tr>
+         <%= render :partial => 'userfile', :collection  => @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort} %>
+   </table>
+
+   Operations: <%= select_tag(
+      "operation", 
+       '
+       <option value="">Select an operation</option>
+
+       <optgroup label="Scientific operations">
+       <option value="minc2jiv">Convert selected MINC files to JIV</option>
+
+       <optgroup label="Management operations">
+       <option value="download">Download selected files</option>       
+       <option value="delete">Delete selected files</option>
+       '
+      ) %>
+
+   <%= submit_tag("Apply Operation") %>
+
+<% end %>
+
+<br/>
+
+<h3>Add a new file:</h3>
+
+<%
+   form_tag( "/userfiles", :multipart => true, :method => :post ) do
+%>
+      <%= file_field_tag("upload_file") %>
+      <%= submit_tag("Upload file")     %>
+<% end %>
+
 
 
