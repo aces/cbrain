@@ -65,7 +65,8 @@
                   <h3>Admin Menu</h3>
                   <%= link_to 'Users', users_path %><br/>
                   <%= link_to 'Groups', groups_path %><br/> 
-                  <%= link_to 'Institutions', :controller => :institutions, :action => :index %><br/>
+                  <%= link_to 'Institutions', institutions_path %><br/>
+                  <%= link_to 'Exception Log', :controller  => :logged_exceptions, :action  => :index %><br/>                  
             <% end %>
         </div>
         

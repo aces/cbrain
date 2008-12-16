@@ -1,0 +1,80 @@
+<strong>Add filter:</strong>
+<%= link_to 'All Files', userfiles_path(:search_type  => :none, :view_all  => params[:view_all]) %>
+<%= link_to 'MINC Files', userfiles_path(:search_type => :minc, :view_all  => params[:view_all]) %>
+<%= link_to 'JIV Files', userfiles_path(:search_type => :jiv, :view_all  => params[:view_all]) %>
+<br>
+<strong>Filter tags:</strong>
+<% current_user.tags.collect(&:name).each do |tag| %>
+   <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag, :view_all  => params[:view_all]) %>
+<% end %>
+<%= button_to "Manage Tags", tags_path, :method => :get %>
+<br>
+<strong>Current filters:</strong>
+<% session[:current_filters].each do |filter|%>
+   <%= filter %>
+   <%= link_to "x", userfiles_path(:remove_filter  => filter, :view_all  => params[:view_all]) %>
+   <%= ' / ' %>
+<% end %>
+<% if current_user.has_role? :admin %>
+   <br><br>
+   <strong>Admin options:</strong>
+   <%= link_to params[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => !params[:view_all]) %>
+<% end %>
+<% form_tag(operation_userfiles_path(:view_all  => params[:view_all]), :method => :post) do %>
+   <table class="userfiles">
+      <tr>
+          <th><%= link_to 'Select All', userfiles_path(:select_all => true, :view_all  => params[:view_all]) %></th>
+          <% if params[:view_all] %>
+            <th>Owner</th>
+          <% end %>
+          <th>Filename</th>
+          <th>Creation Date</th>
+          <th>Size</th>
+          <th colspan="2">Tags</th>
+      </tr>
+      <% for userfile in userfiles.sort_by(&:user_id) do %>
+         <tr class="<%= cycle('list-odd', 'list-even') %>">
+            <td><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
+            <% if params[:view_all] %>
+               <td><%= userfile.user.login %></td>
+            <% end %>
+            <td>
+               <%= '&nbsp' * 4 * userfile.level + '&#x21b3;' if userfile.level > 0 -%>
+               <%= link_to h(userfile.name), userfile %>
+            </td>
+            <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
+            <td><%= h(userfile.size) -%></td>
+            <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
+            <td><%= link_to 'Edit Tags', edit_userfile_path(userfile, :view_all  => params[:view_all]), :method => :get %></td>
+         </tr>
+      <% end %>
+   </table>
+
+   Operations: <%= select_tag(
+      "operation", 
+       '
+       <option value="">Select an operation</option>
+
+       <optgroup label="Scientific operations">
+       <option value="minc2jiv">Convert selected MINC files to JIV</option>
+
+       <optgroup label="Management operations">
+       <option value="download">Download selected files</option>       
+       <option value="delete">Delete selected files</option>
+       '
+      ) %>
+
+   <%= submit_tag("Apply Operation") %>
+
+<% end %>
+
+<br/>
+
+<h3>Add a new file:</h3>
+
+<%
+   form_tag( "/userfiles", :multipart => true, :method => :post ) do
+%>
+      <%= file_field_tag("upload_file") %>
+      <%= submit_tag("Upload file")     %>
+<% end %>

@@ -89,6 +89,10 @@ class User < ActiveRecord::Base
   def recently_activated?
     @activated
   end
+  
+  def has_role?(role)
+    return self.role == role.to_s
+  end
 
   protected
     # before filter 

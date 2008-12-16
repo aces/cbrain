@@ -25,7 +25,13 @@ class UserfilesController < ApplicationController
     session[:current_filters] << @filter unless @filter.blank? || session[:current_filters].include?(@filter)
     session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
     
-    @userfiles = Userfile.apply_filters(current_user.userfiles.find(:all), session[:current_filters])
+    unless params[:view_all] && current_user.has_role?(:admin)
+      @userfiles = current_user.userfiles.find(:all)
+    else
+      @userfiles = Userfile.find(:all)
+    end
+    
+    @userfiles = Userfile.apply_filters(@userfiles, session[:current_filters])
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     
     
@@ -38,14 +44,16 @@ class UserfilesController < ApplicationController
   # GET /userfiles/1
   # GET /userfiles/1.xml
   def show
-    @userfile = current_user.userfiles.find(params[:id])
-
+    unless current_user.has_role? :admin
+      @userfile = current_user.userfiles.find(params[:id])
+    else
+      @userfile = Userfile.find(params[:id])
+    end
+    
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
     end
-  #rescue
-   #access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
 
   # GET /userfiles/new
@@ -61,10 +69,13 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles/1/edit
   def edit
-    @userfile = current_user.userfiles.find(params[:id])
+    if current_user.has_role? :admin
+      @userfile = Userfile.find(params[:id])
+    else
+      @userfile = current_user.userfiles.find(params[:id])      
+    end
+    
     @tags = current_user.tags.find(:all)
-  rescue
-    access_error("File doesn't exist or you do not have permission to access it.", 404)
   end
 
   # POST /userfiles
@@ -101,12 +112,16 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update
-    @userfile = current_user.userfiles.find(params[:id])
-
+    if current_user.has_role? :admin
+      @userfile = Userfile.find(params[:id])
+    else
+      @userfile = current_user.userfiles.find(params[:id])      
+    end
+    
     respond_to do |format|
       if @userfile.update_attributes(params[:userfile])
         flash[:notice] = 'Userfile was successfully updated.'
-        format.html { redirect_to(@userfile) }
+        format.html { redirect_to(userfiles_url(:view_all  => params[:view_all])) }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
@@ -130,6 +145,7 @@ class UserfilesController < ApplicationController
   def operation
     operation   = params[:operation]
     filelist    = params[:filelist] || []
+    collection = current_user.has_role?(:admin) ? Userfile : current_user.userfiles
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -153,7 +169,7 @@ class UserfilesController < ApplicationController
       when "minc2jiv"
 
         filelist.each do |id|
-          userfile = current_user.userfiles.find(id)
+          userfile = collection.find(id)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
@@ -170,7 +186,7 @@ class UserfilesController < ApplicationController
       when "delete"
 
         filelist.each do |id|
-          userfile = current_user.userfiles.find(id)
+          userfile = collection.find(id)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
@@ -180,11 +196,21 @@ class UserfilesController < ApplicationController
           flash[:notice] += "File #{basename} deleted.\n"
         end
 
-      when "wait"
-
-        sleep 20
-        flash[:error] = "Slept for some time\n"
-
+      when "download"
+        if filelist.size == 1
+          send_file collection.find(filelist[0]).vaultname
+        else
+          filenames = filelist.collect do |id| 
+            f = collection.find(id)
+            Pathname.new(f.user.login) + f.name
+          end.join(" ")
+          Dir.chdir(CBRAIN::Filevault_dir)
+          `tar czf #{current_user.login}_files.tar.gz #{filenames}`
+          Dir.chdir(RAILS_ROOT)
+          send_file "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz", :stream  => false
+          File.delete "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz"
+        end
+        return
       else
 
         flash[:error] = "Unknown operation #{operation}"

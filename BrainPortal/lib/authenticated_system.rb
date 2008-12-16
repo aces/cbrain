@@ -116,11 +116,11 @@ module AuthenticatedSystem
     
     ####STUFF TAREK ADDED############
     def admin_role_required
-      current_user.role == 'admin' || access_error('Access denied.', 401)
+      current_user.role == 'admin' || access_error(401)
     end
     
-    def access_error(message, status)
-        render(:text => "<h2>#{message}</h2>", :status => status)
+    def access_error(status)
+        render(:file => ('public/' + status.to_s + '.html'))
     end 
     
 end

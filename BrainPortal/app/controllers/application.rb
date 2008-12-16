@@ -37,10 +37,4 @@ class ApplicationController < ActionController::Base
   def edit_permission?(user)
     current_user && user && (current_user == user || current_user.role == 'admin')
   end
-  
-  if RAILS_ENV == 'development'
-    def local_request?
-      CBRAIN::LOCAL_STATUS
-    end
-  end
 end

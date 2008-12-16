@@ -35,8 +35,8 @@
    <table>
       <% for group in @groups %>
        <tr>
-         <td><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
-         <td><%= h(group.name) -%></td>
+         <td class="info"><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
+         <td class="info"><%= h(group.name) -%></td>
        </tr>
        <% end %>
    </table>

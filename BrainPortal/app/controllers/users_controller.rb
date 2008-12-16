@@ -44,7 +44,7 @@ class UsersController < ApplicationController
   def edit
     @user = User.find(params[:id], :include => :groups)
     if !edit_permission? @user
-      access_error("Access denied.", 401)
+      access_error(401)
       return
     end
     @groups = Group.find(:all)

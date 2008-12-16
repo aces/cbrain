@@ -56,8 +56,8 @@
   <table>
      <% for user in User.find(:all).reject{|u| u.login == 'admin'} %>
          <tr>
-            <td><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.include?(user)) %></td> 
-           <td><%= h(user.full_name) -%></td>
+            <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.include?(user)) %></td> 
+           <td class="info"><%= h(user.full_name) -%></td>
          </tr>
      <% end %>
   </table>

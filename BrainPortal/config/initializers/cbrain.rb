@@ -26,9 +26,6 @@ class CBRAIN
   Bourreau_execution_URL     = "http://localhost:3050/"
   Bourreau_task_resource_URL = "#{Bourreau_execution_URL}"
   
-  if RAILS_ENV == 'development'
-    LOCAL_STATUS = true
-  end
 
   # Configuration constants that depend on the hostname
   case Socket.gethostname

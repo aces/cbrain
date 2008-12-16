@@ -1,14 +1,12 @@
 ActionController::Routing::Routes.draw do |map|
   map.resources :tags, :groups, :institutions, :users
   map.resource :session
-  map.resources :userfiles, :collection => {:operation => :post}
+  map.resources :userfiles, :collection => {:view_all => :get, :operation => :post}
 
   map.home '', :controller => 'portal', :action => 'welcome'
   map.signup '/signup', :controller => 'users', :action => 'new'
   map.login '/login', :controller => 'sessions', :action => 'new'
   map.logout '/logout', :controller => 'sessions', :action => 'destroy'
-  map.toggle_local '/toggle_local', :controller => 'portal', :action => 'toggle_local_status'
-
   
   map.connect 'tasks/:action/:id', :controller => 'tasks'
   map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions"

@@ -34,7 +34,7 @@ class TasksController < ApplicationController
     end
 
   rescue
-    access_error("Task doesn't exist or you do not have permission to access it.", 404)
+    access_error(404)
 
   end
 

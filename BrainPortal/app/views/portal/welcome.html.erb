@@ -19,10 +19,5 @@
 <b>Groups you belong to:</b>
 <%= current_user.groups.collect{|g| h g.name}.join(', ') %>
 <P>
-   
-<% if RAILS_ENV == 'development' && current_user.role == 'admin' %>
-   Incoming requests are considered:<strong><%= @local_request ? 'Local' : 'Public' %></strong><br>
- <%= button_to "Toggle Local Status", :action => "toggle_local_status" %>
-<% end %>
 
 <h3>Please select an option from the menu to the right.</h3>
