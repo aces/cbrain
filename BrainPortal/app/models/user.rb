@@ -93,6 +93,10 @@ class User < ActiveRecord::Base
   def has_role?(role)
     return self.role == role.to_s
   end
+  
+  def vault_dir
+    Pathname.new(CBRAIN::Filevault_dir) + self.login
+  end
 
   protected
     # before filter 

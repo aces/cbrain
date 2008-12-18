@@ -23,10 +23,14 @@ class Userfile < ActiveRecord::Base
     success = true
     self.save_content
     
-    options = self.name =~ /\.gz$/ ? 'xzvf' : 'xvf'
     files = Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
-      `tar #{options} #{self.name}`.split(/\s+/)
-    end    
+      if self.name =~ /\.tar(\.gz)?$/
+        `tar xvf #{self.name}`.split(/\s+/)        
+      else
+        `unzip -o #{self.name}`.split("\n").grep(/ing:/).map{|x| x.strip.split(/\s+/)[1]}
+      end
+    end
+           
     files.each do |file|
       if old = self.user.userfiles.find_by_name(file)
         Userfile.delete(old)
@@ -35,8 +39,11 @@ class Userfile < ActiveRecord::Base
       u.name    = file
       u.user_id = self.user_id
       u.size = File.size(u.vaultname)
-      success = false unless u.save(false)
+      if File.file? u.vaultname
+        success = false unless u.save(false)
+      end
     end
+    
     File.delete(self.vaultname)
     [success, files]
   end
@@ -120,7 +127,12 @@ class Userfile < ActiveRecord::Base
 
   def delete_content
     vaultname = self.vaultname
-    File.unlink(vaultname) if File.exists?(vaultname)
+    File.unlink(vaultname) if File.file?(vaultname)
+    
+    directory = File.dirname(vaultname)
+    if (Pathname.new(directory) != self.user.vault_dir) && Dir.entries(directory).size <= 2
+      Dir.rmdir(directory) if File.directory?(directory)
+    end
     @content=nil
   end
   

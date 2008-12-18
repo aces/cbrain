@@ -100,7 +100,7 @@ class UserfilesController < ApplicationController
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
     
-    if userfile.name =~ /\.tar(\.gz)?$/
+    if userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       success, filenames = userfile.extract
       if success
         flash[:notice] = filenames.map{|f| "File #{f} added."}.join("\n")
