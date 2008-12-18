@@ -24,7 +24,7 @@
        <th>Current Status</th>
        <th>Time Submitted</th>
        <th>Last Updated</th>
-       <% if current_user.login == "admin" %>
+       <% if current_user.role == 'admin' %>
          <th>Owner</th>
        <% end %>
    </tr>
@@ -35,7 +35,7 @@
          <td><%= h(task.status) %></td>
          <td><%= h(to_localtime(task.created_at.to_s)) -%></td>
          <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
-         <% if current_user.login == "admin" %>
+         <% if current_user.role == 'admin' %>
            <td><%= h(User.find_by_id((task.user_id) || 1).login) -%></td>
          <% end %>
        </tr>

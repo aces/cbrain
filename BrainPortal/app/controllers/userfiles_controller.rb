@@ -191,6 +191,23 @@ class UserfilesController < ApplicationController
         redirect_to :controller => :tasks, :action => :index
         return
 
+      when "civet"
+
+        filelist.each do |id|
+          userfile = current_user.userfiles.find(id)
+          if userfile.nil?
+            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
+            next
+          end
+          mj = DrmaaCivet.new
+          mj.user_id = current_user.id
+          mj.params = { :mincfile_id => id }
+          mj.save
+          flash[:notice] += "Started Civet on file '#{userfile.name}'.\n"
+        end
+        redirect_to :controller => :tasks, :action => :index
+        return
+
       when "delete"
 
         filelist.each do |id|

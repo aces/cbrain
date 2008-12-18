@@ -9,6 +9,8 @@
 # $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
 #
 
+require 'base64'
+
 -%>
 
 <% title 'Task Info' %>
@@ -66,6 +68,25 @@
 
    <tr>
        <td colspan="2" class="info"><pre><%= h(@task.log) -%></pre></td>
+   </tr>
+
+</table>
+
+<br>
+
+<table>
+   <tr>
+       <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
+   </tr>
+
+   <% prettystdout="(None)" ; prettystderr="(None)"
+      prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
+      prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
+   %>
+
+   <tr>
+       <td class="info" valign="top"><pre><%= h(prettystdout) -%></pre></td>
+       <td class="info" valign="top"><pre><%= h(prettystderr) -%></pre></td>
    </tr>
 
 </table>

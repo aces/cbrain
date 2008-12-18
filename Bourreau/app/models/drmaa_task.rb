@@ -12,6 +12,7 @@
 require 'drmaa'
 require 'logger'
 require 'stringio'
+require 'base64'
 
 # Used to launch new jobs
 class CbrainDRMAAJob < DRMAA::JobTemplate
@@ -292,6 +293,8 @@ public
   def to_xml(options = {})
     options[:methods] ||= []
     options[:methods] << :type unless options[:methods].include?(:type)
+    options[:methods] << :capt_stdout_b64 unless options[:methods].include?(:capt_stdout_b64)
+    options[:methods] << :capt_stderr_b64 unless options[:methods].include?(:capt_stderr_b64)
     super options
   end
 
@@ -372,7 +375,8 @@ protected
     io.write(
       "#!/bin/sh\n" +
       "\n" +
-      "# Script created automatically by #{self.class.to_s} #{Revision_info}\n" +
+      "# Script created automatically by #{self.class.to_s}\n" +
+      "# #{Revision_info}\n" +
       "\n" +
       commands.join("\n") +
       "\n" )
@@ -412,6 +416,33 @@ protected
        system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
        self.drmaa_workdir = nil
     end
+  end
+
+  def after_initialize
+     return if self.new_record?
+     workdir = self.drmaa_workdir
+     return unless workdir
+     stdoutfile = "#{workdir}/.qsub.sh.out"
+     stderrfile = "#{workdir}/.qsub.sh.err"
+     #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
+     #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
+     if File.exist?(stdoutfile)
+        io = IO.popen("tail -30 #{stdoutfile} | fold -b80 | tail -30","r")
+        @capt_stdout_b64 = Base64.encode64(io.read)
+     end
+     if File.exist?(stderrfile)
+        io = IO.popen("tail -30 #{stderrfile} | fold -b80 | tail -30","r")
+        @capt_stderr_b64 = Base64.encode64(io.read)
+     end
+
+  end
+
+  def capt_stdout_b64
+     @capt_stdout_b64
+  end
+
+  def capt_stderr_b64
+     @capt_stderr_b64
   end
 
 end

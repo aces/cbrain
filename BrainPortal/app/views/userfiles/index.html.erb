@@ -51,6 +51,8 @@
    <strong>Admin options:</strong>
    <%= link_to params[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => !params[:view_all]) %>
 <% end %>
+
+
 <% form_tag(operation_userfiles_path(:view_all  => params[:view_all]), :method => :post) do %>
    <table class="userfiles">
       <tr>
@@ -73,6 +75,7 @@
 
        <optgroup label="Scientific operations">
        <option value="minc2jiv">Convert selected MINC files to JIV</option>
+       <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>
 
        <optgroup label="Management operations">
        <option value="download">Download selected files</option>       

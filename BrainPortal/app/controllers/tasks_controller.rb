@@ -16,7 +16,7 @@ class TasksController < ApplicationController
   before_filter :login_required
   
   def index
-    if current_user.login == "admin"
+    if current_user.role == 'admin'
       @tasks = DrmaaTask.find(:all)
     else
       @tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } )

@@ -9,8 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-
-ActiveRecord::Schema.define(:version => 20081201181424) do
+ActiveRecord::Schema.define(:version => 20081204190439) do
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"

@@ -43,6 +43,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_sleepers,  :controller => :tasks
   map.resources :drmaa_snoozers,  :controller => :tasks
   map.resources :drmaa_minc2jivs, :controller => :tasks
+  map.resources :drmaa_civets,    :controller => :tasks
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
