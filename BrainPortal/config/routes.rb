@@ -1,12 +1,15 @@
 ActionController::Routing::Routes.draw do |map|
   map.resources :tags, :groups, :institutions, :users
   map.resource :session
-  map.resources :userfiles, :collection => {:view_all => :get, :operation => :post}
+  map.resources :userfiles, :collection => {:view_all => :get, :operation => :post}, :member  => {:content  => :get}
 
-  map.home '', :controller => 'portal', :action => 'welcome'
-  map.signup '/signup', :controller => 'users', :action => 'new'
-  map.login '/login', :controller => 'sessions', :action => 'new'
-  map.logout '/logout', :controller => 'sessions', :action => 'destroy'
+  map.home    '', :controller => 'portal', :action => 'welcome'
+  map.signup  '/signup', :controller => 'users', :action => 'new'
+  map.login   '/login', :controller => 'sessions', :action => 'new'
+  map.logout  '/logout', :controller => 'sessions', :action => 'destroy'
+  map.jiv     '/jiv', :controller  => 'jiv', :action  => 'index'
+  map.jiv_display '/jiv/show', :controller  => 'jiv', :action  => 'show'
+
   
   map.connect 'tasks/:action/:id', :controller => 'tasks'
   map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions"

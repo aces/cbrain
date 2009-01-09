@@ -24,10 +24,6 @@ class ApplicationController < ActionController::Base
   # from your application log (in this case, all fields with names like "password"). 
   # filter_parameter_logging :password
   
-  def local_request?
-    false
-  end 
-  
   private
     
   def check_role(role)
@@ -42,3 +38,5 @@ class ApplicationController < ActionController::Base
     current_user && user && (current_user == user || current_user.role == 'admin')
   end
 end
+
+

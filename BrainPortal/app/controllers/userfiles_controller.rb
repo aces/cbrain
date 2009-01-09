@@ -26,12 +26,12 @@ class UserfilesController < ApplicationController
     session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
     
     unless params[:view_all] && current_user.has_role?(:admin)
-      @userfiles = current_user.userfiles.find(:all)
+      @userfiles = current_user.userfiles.find(:all, :include  => :tags)
     else
-      @userfiles = Userfile.find(:all)
+      @userfiles = Userfile.find(:all, :include  => :tags)
     end
     
-    @userfiles = Userfile.apply_filters(@userfiles, session[:current_filters])
+    @userfiles = Userfile.paginate(@userfiles, session[:current_filters], params[:page] || 1)
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     
     
@@ -54,6 +54,11 @@ class UserfilesController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
     end
+  end
+  
+  
+  def content
+    send_file current_user.userfiles.find(params[:id]).vaultname
   end
 
   # GET /userfiles/new
@@ -90,17 +95,11 @@ class UserfilesController < ApplicationController
     userfile         = Userfile.new()
     clean_basename   = File.basename(upload_stream.original_filename)
 
-    if current_user.userfiles.exists?(:name => clean_basename)
-        flash[:error] = "File '" + clean_basename + "' already exists."
-        redirect_to :action => :index
-        return
-    end
-
     userfile.content = upload_stream.read   # also fills file_size
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
     
-    if userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
+    if params[:auto_extract] && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       success, filenames = userfile.extract
       if success
         flash[:notice] = filenames.map{|f| "File #{f} added."}.join("\n")
@@ -108,6 +107,11 @@ class UserfilesController < ApplicationController
         flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
       end
     else
+      if current_user.userfiles.exists?(:name => userfile.name)
+          flash[:error] = "File '" + userfile.name + "' already exists."
+          redirect_to :action => :index
+          return
+      end
       if userfile.save
         flash[:notice] = "File '" + clean_basename + "' added."
       else

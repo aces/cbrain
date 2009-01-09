@@ -67,24 +67,36 @@ class Userfile < ActiveRecord::Base
     [files, filter_name]
   end
   
+  def self.paginate(files, filters, page)
+    current_files = apply_filters(files, filters)
+
+    WillPaginate::Collection.create(page, 50) do |pager|
+      pager.replace(current_files[pager.offset, pager.per_page])
+      pager.total_entries = current_files.size
+      pager
+    end
+  end
+    
   def self.apply_filters(files, filters)
     current_files = files
+    
     filters.each do |filter|
       type, term = filter.split(':')
       case type
       when 'name'
-        current_files = current_files.select{ |f| f.name =~ /#{term}/  }
+        current_files = current_files.select{ |f| f.name =~ /#{term}/ }
       when 'tag'
-        current_files = current_files.select{ |f| f.tags.find_by_name(term)  }        
+        current_files = current_files.select{ |f| f.tags.find_by_name(term)  }
       when 'file'
         case term
         when 'jiv'
-          current_files = current_files.select{ |f| f.name =~ /(\.raw_byte(\.gz)?|\.header)$/  }
+          current_files = current_files.select{ |f| f.name =~ /(\.raw_byte(\.gz)?|\.header)$/ }
         when 'minc'
-          current_files = current_files.select{ |f| f.name =~ /\.mnc$/  }
+          current_files = current_files.select{ |f| f.name =~ /\.mnc$/ }
         end
       end
     end
+    
     current_files
   end
     

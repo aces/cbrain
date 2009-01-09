@@ -68,6 +68,10 @@
          <%= render :partial => 'userfile', :collection  => @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort} %>
    </table>
 
+   <%= will_paginate %>
+   
+   <br>
+
    Operations: <%= select_tag(
       "operation", 
        '
@@ -94,8 +98,11 @@
 <%
    form_tag( "/userfiles", :multipart => true, :method => :post ) do
 %>
+
       <%= file_field_tag("upload_file") %>
       <%= submit_tag("Upload file")     %>
+      <br>
+      Auto-extract archived files: <%= check_box_tag("auto_extract", true, true) %>
 <% end %>
 
 
