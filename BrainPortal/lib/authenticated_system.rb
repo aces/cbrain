@@ -120,7 +120,7 @@ module AuthenticatedSystem
     end
     
     def access_error(status)
-        render(:file => ('public/' + status.to_s + '.html'))
+        render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
     end 
     
 end

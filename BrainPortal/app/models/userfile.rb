@@ -130,11 +130,11 @@ class Userfile < ActiveRecord::Base
   end
   
   def save_content
-      return if @content.nil?
-      finalname = self.vaultname
-      tmpname   = finalname + ".tmp"
-      out = File.open(tmpname, "w") { |io| io.write(@content) }
-      File.rename(tmpname,finalname)
+    return if @content.nil?
+    finalname = self.vaultname
+    tmpname   = finalname + ".tmp"
+    out = File.open(tmpname, "w") { |io| io.write(@content) }
+    File.rename(tmpname,finalname)
   end
 
   def delete_content

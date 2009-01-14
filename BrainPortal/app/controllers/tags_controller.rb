@@ -1,6 +1,9 @@
 class TagsController < ApplicationController
   # GET /tags
   # GET /tags.xml
+  
+  before_filter :login_required
+  
   def index
     @tags = current_user.tags.find(:all)
     @userfiles = current_user.userfiles.find(:all)

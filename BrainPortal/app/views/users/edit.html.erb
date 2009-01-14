@@ -52,4 +52,4 @@
 <p><%= submit_tag 'Update' %></p>
 <% end -%>
 
-<%= button_to 'Cancel', users_path, :method => :get %>
+<%= button_to 'Cancel', check_role(:admin) ? users_path : home_path, :method => :get %>

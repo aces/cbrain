@@ -1,9 +1,331 @@
-# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
-
-one:
-  name: MyString
-  size: 1
-
-two:
-  name: MyString
-  size: 1
+--- 
+userfiles_033: 
+  name: count.rb
+  updated_at: 2009-01-09 19:04:37
+  size: "109"
+  lft: "1099"
+  id: "822"
+  user_id: "3"
+  rgt: "1100"
+  parent_id: 
+  created_at: 2009-01-09 19:04:37
+userfiles_022: 
+  name: ruby/movies
+  updated_at: 2008-12-17 22:42:54
+  size: "13132"
+  lft: "67"
+  id: "305"
+  user_id: "3"
+  rgt: "68"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_011: 
+  name: nihchp__avg_controls_lt_age12_64.raw_byte
+  updated_at: 2008-12-11 20:50:56
+  size: "7109137"
+  lft: "37"
+  id: "73"
+  user_id: "3"
+  rgt: "38"
+  parent_id: 
+  created_at: 2008-12-11 20:50:56
+userfiles_023: 
+  name: ruby/ouput.mnc
+  updated_at: 2008-12-17 22:42:54
+  size: "5909464"
+  lft: "69"
+  id: "306"
+  user_id: "3"
+  rgt: "70"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_012: 
+  name: CList.rtf
+  updated_at: 2008-12-16 20:08:11
+  size: "553"
+  lft: "39"
+  id: "74"
+  user_id: "3"
+  rgt: "44"
+  parent_id: 
+  created_at: 2008-12-16 20:08:11
+userfiles_001: 
+  name: average_305.mnc
+  updated_at: 2008-11-21 16:33:28
+  size: "5909296"
+  lft: "7"
+  id: "54"
+  user_id: "3"
+  rgt: "12"
+  parent_id: 
+  created_at: 2008-11-21 16:33:28
+userfiles_024: 
+  name: ruby/output
+  updated_at: 2008-12-17 22:42:54
+  size: "0"
+  lft: "71"
+  id: "307"
+  user_id: "3"
+  rgt: "72"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_013: 
+  name: DVD.jpg
+  updated_at: 2008-12-16 20:08:19
+  size: "31060"
+  lft: "40"
+  id: "75"
+  user_id: "3"
+  rgt: "43"
+  parent_id: "74"
+  created_at: 2008-12-16 20:08:19
+userfiles_002: 
+  name: CList.rtf
+  updated_at: 2008-11-24 18:54:39
+  size: "553"
+  lft: "19"
+  id: "62"
+  user_id: "2"
+  rgt: "20"
+  parent_id: 
+  created_at: 2008-11-24 18:54:39
+userfiles_025: 
+  name: ruby/seq.rb
+  updated_at: 2008-12-17 22:42:54
+  size: "490"
+  lft: "73"
+  id: "308"
+  user_id: "3"
+  rgt: "74"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_014: 
+  name: ruby/arabic.rb
+  updated_at: 2008-12-17 22:42:54
+  size: "75"
+  lft: "51"
+  id: "297"
+  user_id: "3"
+  rgt: "52"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_003: 
+  name: CList.rtf
+  updated_at: 2008-11-25 20:03:31
+  size: "553"
+  lft: "21"
+  id: "64"
+  user_id: "1"
+  rgt: "22"
+  parent_id: 
+  created_at: 2008-11-25 20:03:31
+userfiles_026: 
+  name: ruby/tarek.tar.gz
+  updated_at: 2008-12-17 22:42:54
+  size: "351"
+  lft: "75"
+  id: "309"
+  user_id: "3"
+  rgt: "76"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_015: 
+  name: ruby/average_305.mnc
+  updated_at: 2008-12-17 22:42:54
+  size: "5909296"
+  lft: "53"
+  id: "298"
+  user_id: "3"
+  rgt: "54"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_004: 
+  name: VHS.jpg
+  updated_at: 2008-11-25 20:03:42
+  size: "40604"
+  lft: "25"
+  id: "66"
+  user_id: "1"
+  rgt: "26"
+  parent_id: 
+  created_at: 2008-11-25 20:03:42
+userfiles_027: 
+  name: ruby/untar.rb
+  updated_at: 2008-12-17 22:42:54
+  size: "84"
+  lft: "77"
+  id: "310"
+  user_id: "3"
+  rgt: "78"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_016: 
+  name: ruby/callminc.rb
+  updated_at: 2008-12-17 22:42:54
+  size: "32"
+  lft: "55"
+  id: "299"
+  user_id: "3"
+  rgt: "56"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_005: 
+  name: SVN output V42.rtf
+  updated_at: 2008-11-25 20:05:03
+  size: "1891"
+  lft: "27"
+  id: "67"
+  user_id: "1"
+  rgt: "28"
+  parent_id: 
+  created_at: 2008-11-25 20:05:03
+userfiles_028: 
+  name: colin27.header
+  updated_at: 2009-01-09 16:58:02
+  size: "114"
+  lft: "1083"
+  id: "813"
+  user_id: "3"
+  rgt: "1084"
+  parent_id: 
+  created_at: 2009-01-09 16:58:02
+userfiles_017: 
+  name: ruby/callminc.rb~
+  updated_at: 2008-12-17 22:42:54
+  size: "29"
+  lft: "57"
+  id: "300"
+  user_id: "3"
+  rgt: "58"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_006: 
+  name: average_305.mnc
+  updated_at: 2008-11-25 20:29:36
+  size: "5909296"
+  lft: "29"
+  id: "68"
+  user_id: "1"
+  rgt: "30"
+  parent_id: 
+  created_at: 2008-11-25 20:29:36
+userfiles_030: 
+  name: tarek.tar.gz
+  updated_at: 2009-01-09 19:04:24
+  size: "351"
+  lft: "1093"
+  id: "819"
+  user_id: "3"
+  rgt: "1094"
+  parent_id: 
+  created_at: 2009-01-09 19:04:24
+userfiles_029: 
+  name: colin27.raw_byte
+  updated_at: 2009-01-09 16:58:13
+  size: "7109137"
+  lft: "1085"
+  id: "814"
+  user_id: "3"
+  rgt: "1086"
+  parent_id: 
+  created_at: 2009-01-09 16:58:13
+userfiles_018: 
+  name: ruby/count.rb
+  updated_at: 2008-12-17 22:42:54
+  size: "109"
+  lft: "59"
+  id: "301"
+  user_id: "3"
+  rgt: "60"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_007: 
+  name: b_305.mnc
+  updated_at: 2008-12-05 18:38:20
+  size: "5909296"
+  lft: "41"
+  id: "69"
+  user_id: "3"
+  rgt: "42"
+  parent_id: "75"
+  created_at: 2008-12-05 18:38:20
+userfiles_031: 
+  name: arabic.rb
+  updated_at: 2009-01-09 19:04:37
+  size: "75"
+  lft: "1095"
+  id: "820"
+  user_id: "3"
+  rgt: "1096"
+  parent_id: 
+  created_at: 2009-01-09 19:04:37
+userfiles_020: 
+  name: ruby/gbye
+  updated_at: 2008-12-17 22:42:54
+  size: "0"
+  lft: "63"
+  id: "303"
+  user_id: "3"
+  rgt: "64"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_019: 
+  name: ruby/count.rb~
+  updated_at: 2008-12-17 22:42:54
+  size: "93"
+  lft: "61"
+  id: "302"
+  user_id: "3"
+  rgt: "62"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_008: 
+  name: phantom_003_crisp.header
+  updated_at: 2008-12-11 20:50:23
+  size: "97"
+  lft: "31"
+  id: "70"
+  user_id: "3"
+  rgt: "32"
+  parent_id: 
+  created_at: 2008-12-11 20:50:23
+userfiles_032: 
+  name: callminc.rb
+  updated_at: 2009-01-09 19:04:37
+  size: "32"
+  lft: "1097"
+  id: "821"
+  user_id: "3"
+  rgt: "1098"
+  parent_id: 
+  created_at: 2009-01-09 19:04:37
+userfiles_021: 
+  name: ruby/hello
+  updated_at: 2008-12-17 22:42:54
+  size: "0"
+  lft: "65"
+  id: "304"
+  user_id: "3"
+  rgt: "66"
+  parent_id: 
+  created_at: 2008-12-17 22:42:54
+userfiles_010: 
+  name: nihchp__avg_controls_lt_age12_64.header
+  updated_at: 2008-12-11 20:50:43
+  size: "131"
+  lft: "35"
+  id: "72"
+  user_id: "3"
+  rgt: "36"
+  parent_id: 
+  created_at: 2008-12-11 20:50:43
+userfiles_009: 
+  name: phantom_003_crisp.raw_byte
+  updated_at: 2008-12-11 20:50:34
+  size: "7109137"
+  lft: "33"
+  id: "71"
+  user_id: "3"
+  rgt: "34"
+  parent_id: 
+  created_at: 2008-12-11 20:50:34

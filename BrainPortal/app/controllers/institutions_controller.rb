@@ -25,17 +25,6 @@ class InstitutionsController < ApplicationController
     end
   end
 
-  # GET /institutions/1
-  # GET /institutions/1.xml
-  def show
-    @institution = Institution.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @institution }
-    end
-  end
-
   # GET /institutions/new
   # GET /institutions/new.xml
   def new

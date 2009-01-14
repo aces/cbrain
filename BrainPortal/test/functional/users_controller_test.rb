@@ -17,40 +17,54 @@ class UsersControllerTest < Test::Unit::TestCase
     @response   = ActionController::TestResponse.new
   end
 
-  def test_should_allow_signup
+  def test_should_allow_creation_as_admin
     assert_difference 'User.count' do
-      create_user
-      assert_response :redirect
+      create_user_as_admin
+      assert_redirected_to users_path
+    end
+  end
+  
+  def test_should_not_allow_creation_as_user
+    assert_no_difference 'User.count' do
+      create_user_as_user
+      assert_response 401
+    end
+  end
+  
+  def test_should_not_allow_creation_as_manager
+    assert_no_difference 'User.count' do
+      create_user_as_manager
+      assert_response 401
     end
   end
 
-  def test_should_require_login_on_signup
+  def test_should_require_login_on_creation_as_admin
     assert_no_difference 'User.count' do
-      create_user(:login => nil)
+      create_user_as_admin(:login => nil)
       assert assigns(:user).errors.on(:login)
       assert_response :success
     end
   end
 
-  def test_should_require_password_on_signup
+  def test_should_require_password_on_creation_as_admin
     assert_no_difference 'User.count' do
-      create_user(:password => nil)
+      create_user_as_admin(:password => nil)
       assert assigns(:user).errors.on(:password)
       assert_response :success
     end
   end
 
-  def test_should_require_password_confirmation_on_signup
+  def test_should_require_password_confirmation_on_creation_as_admin
     assert_no_difference 'User.count' do
-      create_user(:password_confirmation => nil)
+      create_user_as_admin(:password_confirmation => nil)
       assert assigns(:user).errors.on(:password_confirmation)
       assert_response :success
     end
   end
 
-  def test_should_require_email_on_signup
+  def test_should_require_email_on_creation_as_admin
     assert_no_difference 'User.count' do
-      create_user(:email => nil)
+      create_user_as_admin(:email => nil)
       assert assigns(:user).errors.on(:email)
       assert_response :success
     end
@@ -60,8 +74,20 @@ class UsersControllerTest < Test::Unit::TestCase
   
 
   protected
-    def create_user(options = {})
-      post :create, :user => { :login => 'quire', :email => 'quire@example.com',
-        :password => 'quire', :password_confirmation => 'quire' }.merge(options)
+    def create_user_as_admin(options = {})
+      post :create, {:user => option_hash(options)}, {:user_id  => users(:users_001).id}
+    end
+    
+    def create_user_as_user(options = {})
+      post :create, {:user => option_hash(options)}, {:user_id  => users(:users_005).id}
+    end
+    
+    def create_user_as_manager(options = {})
+      post :create, {:user => option_hash(options)}, {:user_id  => users(:users_002).id}
+    end
+    
+    def option_hash(options)
+      { :full_name  => 'quire', :login => 'quire', :email => 'quire@example.com',
+        :password => 'quire', :password_confirmation => 'quire', :role  => 'user' }.merge(options)
     end
 end

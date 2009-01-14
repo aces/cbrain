@@ -1,8 +1,15 @@
 require 'test_helper'
 
 class PortalControllerTest < ActionController::TestCase
-  # Replace this with your real tests.
-  def test_truth
-    assert true
+  fixtures :users
+  
+  def test_should_not_get_welcome_without_user
+    get :welcome
+    assert_redirected_to login_path
+  end
+  
+  def test_should_get_welcome_with_user
+    get :welcome, {}, {:user_id  => users(:users_005).id}
+    assert_response :success
   end
 end
