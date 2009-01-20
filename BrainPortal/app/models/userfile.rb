@@ -23,18 +23,38 @@ class Userfile < ActiveRecord::Base
     success = true
     self.save_content
     
-    files = Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
+    successful_files = []
+    failed_files = []
+    nested_files = []
+    Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
       if self.name =~ /\.tar(\.gz)?$/
-        `tar xvf #{self.name}`.split(/\s+/)        
+        all_files = `tar tf #{self.name}`.split
+        all_files.each do |file_name|
+          if Userfile.find_by_name(file_name)
+            failed_files << file_name
+          elsif file_name =~ /\//
+            nested_files << file_name
+          else
+            `tar xvf #{self.name} #{file_name}`
+            successful_files << file_name
+          end
+        end
       else
-        `unzip -o #{self.name}`.split("\n").grep(/ing:/).map{|x| x.strip.split(/\s+/)[1]}
+        all_files = `unzip -l #{self.name}`.split("\n")[3..-3].map{ |line|  line.split[3]}
+        all_files.each do |file_name|
+          if Userfile.find_by_name(file_name)
+            failed_files << file_name
+          elsif file_name =~ /\//
+            nested_files << file_name
+          else
+            `unzip #{self.name} #{file_name}`
+            successful_files << file_name
+          end
+        end
       end
     end
            
-    files.each do |file|
-      if old = self.user.userfiles.find_by_name(file)
-        Userfile.delete(old)
-      end
+    successful_files.each do |file|
       u = Userfile.new
       u.name    = file
       u.user_id = self.user_id
@@ -45,7 +65,7 @@ class Userfile < ActiveRecord::Base
     end
     
     File.delete(self.vaultname)
-    [success, files]
+    [success, successful_files, failed_files, nested_files]
   end
   
   def self.search(type, term = nil)
@@ -126,6 +146,7 @@ class Userfile < ActiveRecord::Base
   
   def vaultname
     directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login
+    Dir.mkdir(directory) unless File.directory?(directory)
     (directory + self.name).to_s
   end
   

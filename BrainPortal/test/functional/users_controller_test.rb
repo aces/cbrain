@@ -17,7 +17,7 @@ class UsersControllerTest < Test::Unit::TestCase
     @response   = ActionController::TestResponse.new
   end
 
-  def test_should_allow_creation_as_admin
+  def test_should_allow_creation_as_admin   
     assert_difference 'User.count' do
       create_user_as_admin
       assert_redirected_to users_path

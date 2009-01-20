@@ -99,10 +99,13 @@ class UserfilesController < ApplicationController
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
     
+    #TODO: put .zip support back in.
     if params[:auto_extract] && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
-      success, filenames = userfile.extract
+      success, successful_files, failed_files, nested_files = userfile.extract
       if success
-        flash[:notice] = filenames.map{|f| "File #{f} added."}.join("\n")
+        flash[:notice] = successful_files.map{|f| "File #{f} added."}.join("\n")
+        flash[:error]  = failed_files.map{|f| "File '" + f + "' already exists."}.join("\n") + "\n"
+        flash[:error]  += nested_files.map{|f| "File #{f} could not be added as it is #{f =~ /\/$/ ? '' : 'in'} a directory."}.join("\n")
       else
         flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
       end
