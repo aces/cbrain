@@ -92,7 +92,7 @@
 <% end %>
 
 <br/>
-
+<hr>
 <h3>Add a new file:</h3>
 
 <%
@@ -103,6 +103,18 @@
       <%= submit_tag("Upload file")     %>
       <br>
       Auto-extract archived files: <%= check_box_tag("auto_extract", true, true) %>
+      <br><br>
+      <% if @user_tags %>
+         Tags for uploaded file:
+         <table>
+            <% for tag in @user_tags %>
+                <tr class="<%= cycle('list-odd', 'list-even') %>">
+                   <td><%= check_box_tag("tags[]", tag.id.to_s) %></td> 
+                  <td><%= h(tag.name) -%></td>
+                </tr>
+            <% end %>
+         </table>
+      <% end %>
 <% end %>
 
 

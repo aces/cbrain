@@ -10,4 +10,5 @@
    <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
    <td><%= h(userfile.size) -%></td>
    <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
-   <td><%= link_to 'Edit Tags', edit_userfile_path(userfile, :view_all  => params[:view_all]), :method => :get %></td>               </tr>
+   <td><%= link_to 'Edit Tags', edit_userfile_path(userfile, :view_all  => params[:view_all]), :method => :get %></td>
+</tr>

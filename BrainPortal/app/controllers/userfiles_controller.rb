@@ -33,6 +33,7 @@ class UserfilesController < ApplicationController
     
     @userfiles = Userfile.paginate(@userfiles, session[:current_filters], params[:page] || 1)
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
+    @user_tags = current_user.tags.find(:all)
     
     
     respond_to do |format|
@@ -92,14 +93,13 @@ class UserfilesController < ApplicationController
       return
     end
 
-    userfile         = Userfile.new()
+    userfile         = Userfile.new(:tag_ids  => params[:tags])
     clean_basename   = File.basename(upload_stream.original_filename)
 
     userfile.content = upload_stream.read   # also fills file_size
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
     
-    #TODO: put .zip support back in.
     if params[:auto_extract] && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       success, successful_files, failed_files, nested_files = userfile.extract
       if success
