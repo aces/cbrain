@@ -55,7 +55,7 @@ class Userfile < ActiveRecord::Base
     end
            
     successful_files.each do |file|
-      u = Userfile.new
+      u = Userfile.new(:tag_ids  => self.tag_ids)
       u.name    = file
       u.user_id = self.user_id
       u.size = File.size(u.vaultname)

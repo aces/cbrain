@@ -15,7 +15,7 @@ class UserfilesControllerTest < ActionController::TestCase
 
   
 
-  def test_should_create_and_destroy_userfile
+  def test_should_create_not_clobber_and_destroy_userfile
     filename = 'test__xxx__yyy__1234321.txt'
     assert !Userfile.find_by_name(filename)
     
@@ -26,6 +26,10 @@ class UserfilesControllerTest < ActionController::TestCase
     vaultname = Userfile.find_by_name(filename).vaultname
     assert(File.exists?(vaultname), 'File content not saved.')
     assert_redirected_to userfiles_path
+    
+    assert_no_difference('Userfile.count') do
+      post :create, {:upload_file  => fixture_file_upload("files/#{filename}")}, {:user_id  => users(:users_001).id}
+    end 
     
     assert_difference('Userfile.count', -1) do
       post :operation, {:operation  => 'delete', :filelist  => [Userfile.find_by_name(filename).id]}, {:user_id  => users(:users_001).id}
