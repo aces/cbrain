@@ -118,6 +118,8 @@ public
   # This is called automatically when the object
   # is first saved. A temporary, grid-aware working
   # directory is created for the job.
+  #
+  # TODO add exception handling
   def start_all
     self.makeDRMAAworkdir
     Dir.chdir(self.drmaa_workdir) do

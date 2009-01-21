@@ -11,6 +11,18 @@
 
 ActiveRecord::Schema.define(:version => 20090121160531) do
 
+  create_table "drmaa_tasks", :force => true do |t|
+    t.string   "type"
+    t.string   "drmaa_jobid"
+    t.string   "drmaa_workdir"
+    t.text     "params"
+    t.string   "status"
+    t.text     "log"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+  end
+
   create_table "groups", :force => true do |t|
     t.string   "name"
     t.integer  "institution_id"

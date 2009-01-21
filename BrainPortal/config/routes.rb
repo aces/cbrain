@@ -14,6 +14,8 @@ ActionController::Routing::Routes.draw do |map|
   map.connect 'tasks/:action/:id', :controller => 'tasks'
   map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions"
 
+  map.connect 'civet/:action/:id', :controller => 'civet'
+
   # The priority is based upon order of creation: first created -> highest priority.
 
   # Sample of regular route:

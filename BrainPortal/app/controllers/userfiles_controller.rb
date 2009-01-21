@@ -200,18 +200,19 @@ class UserfilesController < ApplicationController
 
       when "civet"
 
-        filelist.each do |id|
-          userfile = current_user.userfiles.find(id)
-          if userfile.nil?
-            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
-            next
-          end
-          mj = DrmaaCivet.new
-          mj.user_id = current_user.id
-          mj.params = { :mincfile_id => id }
-          mj.save
-          flash[:notice] += "Started Civet on file '#{userfile.name}'.\n"
-        end
+        # TODO we need a new method to invoke the params page,
+        # as this way (POST /civet/edit/id) can only work with
+        # a single file.
+        redirect_to :controller => :civet, :action => :edit, :id => filelist[0]
+        return
+
+      when "dcm2mnc"
+
+        dm = DrmaaDcm2mnc.new
+        dm.user_id = current_user.id
+        dm.params = { :dicom_ids => filelist.join(",") }
+        dm.save
+        flash[:notice] += "Started Dcm2Mnc on your files.\n"
         redirect_to :controller => :tasks, :action => :index
         return
 
