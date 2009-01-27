@@ -20,7 +20,6 @@
 
 <% form_tag userfiles_path, {:method => :get} do %>
 <%= hidden_field_tag :search_type, 'name_search' %>
-<%= hidden_field_tag :view_all, params[:view_all] %>
 <tr>
    <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
    <td><%= submit_tag "Search Names" %></td>
@@ -29,13 +28,13 @@
 </table>
 
 <strong>Add filter:</strong>
-<%= link_to 'All Files', userfiles_path(:search_type  => :none, :view_all  => params[:view_all]) %>
-<%= link_to 'MINC Files', userfiles_path(:search_type => :minc, :view_all  => params[:view_all]) %>
-<%= link_to 'JIV Files', userfiles_path(:search_type => :jiv, :view_all  => params[:view_all]) %>
+<%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
+<%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
+<%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
 <br>
 <strong>Filter tags:</strong>
 <% current_user.tags.collect(&:name).each do |tag| %>
-   <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag, :view_all  => params[:view_all]) %>
+   <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
 <% end %>
 <%= button_to "Manage Tags", tags_path, :method => :get %>
 <br>
@@ -43,21 +42,21 @@
 <strong>Current filters:</strong>
 <% session[:current_filters].each do |filter|%>
    <%= filter %>
-   <%= link_to "x", userfiles_path(:remove_filter  => filter, :view_all  => params[:view_all]) %>
+   <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
    <%= ' / ' %>
 <% end %>
-<% if current_user.has_role? :admin %>
+<% if current_user.has_role?(:admin) %>
    <br><br>
    <strong>Admin options:</strong>
-   <%= link_to params[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => !params[:view_all]) %>
+   <%= link_to session[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:toggle_view_all => true ) %>
 <% end %>
 
 
-<% form_tag(operation_userfiles_path(:view_all  => params[:view_all]), :method => :post) do %>
+<% form_tag(operation_userfiles_path(:method => :post)) do %>
    <table class="userfiles">
       <tr>
-          <th><%= link_to 'Select All', userfiles_path(:select_all => true, :view_all  => params[:view_all]) %></th>
-          <% if params[:view_all] %>
+          <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
+          <% if session[:view_all] && current_user.has_role?(:admin)%>
             <th>Owner</th>
           <% end %>
           <th>Filename</th>
@@ -103,7 +102,7 @@
       <%= file_field_tag("upload_file") %>
       <%= submit_tag("Upload file")     %>
       <br>
-      Auto-extract archived files: <%= check_box_tag("auto_extract", true, true) %>
+      Archived files: <%= select_tag(:archive, options_for_select([['Auto-extract', 'extract'],['Create collection', 'collection'],['Save file', 'save']])) %>
       <br><br>
       <% if @user_tags %>
          Tags for uploaded file:

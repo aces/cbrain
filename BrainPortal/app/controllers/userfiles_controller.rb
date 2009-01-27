@@ -25,7 +25,11 @@ class UserfilesController < ApplicationController
     session[:current_filters] << @filter unless @filter.blank? || session[:current_filters].include?(@filter)
     session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
     
-    unless params[:view_all] && current_user.has_role?(:admin)
+    if params[:toggle_view_all] && current_user.has_role?(:admin)
+      session[:view_all] = !session[:view_all]
+    end
+    
+    unless session[:view_all] && current_user.has_role?(:admin)
       @userfiles = current_user.userfiles.find(:all, :include  => :tags)
     else
       @userfiles = Userfile.find(:all, :include  => :tags)
@@ -88,19 +92,25 @@ class UserfilesController < ApplicationController
   # POST /userfiles.xml
   def create
     upload_stream = params[:upload_file]   # an object encoding the file data stream
-    if upload_stream == "" || upload_stream.nil?
+    if upload_stream.blank?
       redirect_to :action => :index
       return
     end
-
-    userfile         = Userfile.new(:tag_ids  => params[:tags])
-    clean_basename   = File.basename(upload_stream.original_filename)
-
-    userfile.content = upload_stream.read   # also fills file_size
-    userfile.name    = clean_basename
-    userfile.user_id = current_user.id
     
-    if params[:auto_extract] && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
+    userfile = nil
+
+    if params[:archive] == 'collection'
+      userfile         = FileCollection.new(:tag_ids  => params[:tags])
+    else
+      userfile         = SingleFile.new(:tag_ids  => params[:tags])
+    end
+    
+    clean_basename   = File.basename(upload_stream.original_filename)
+    userfile.content = upload_stream.read   # also fills file_size
+    userfile.user_id = current_user.id
+    userfile.name    = clean_basename
+    
+    if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       success, successful_files, failed_files, nested_files = userfile.extract
       if success
         flash[:notice] = successful_files.map{|f| "File #{f} added."}.join("\n")
@@ -108,6 +118,19 @@ class UserfilesController < ApplicationController
         flash[:error]  += nested_files.map{|f| "File #{f} could not be added as it is #{f =~ /\/$/ ? '' : 'in'} a directory."}.join("\n")
       else
         flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
+      end
+    elsif params[:archive] == 'collection' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
+      collection_name = userfile.name.split('.')[0]
+      if current_user.userfiles.exists?(:name => collection_name)
+        flash[:error] = "File '" + collection_name + "' already exists."
+        redirect_to :action => :index
+        return
+      end
+        
+      if userfile.extract_collection  
+        flash[:notice] = "Collection '#{userfile.name}' created."
+      else
+        flash[:error] = "Collection '#{userfile.name}' could not be created."
       end
     else
       if current_user.userfiles.exists?(:name => userfile.name)
@@ -135,8 +158,8 @@ class UserfilesController < ApplicationController
     
     respond_to do |format|
       if @userfile.update_attributes(params[:userfile])
-        flash[:notice] = 'Userfile was successfully updated.'
-        format.html { redirect_to(userfiles_url(:view_all  => params[:view_all])) }
+        flash[:notice] = "Tags for #{@userfile.name} successfully updated."
+        format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
@@ -177,7 +200,6 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # TODO: filter out right away from the filelist IDs that do not belong to the user
     # TODO: replace "case" and make each operation a private method ?
     case operation
 
@@ -230,7 +252,7 @@ class UserfilesController < ApplicationController
         end
 
       when "download"
-        if filelist.size == 1
+        if filelist.size == 1 && collection.find(filelist[0]).is_a?(SingleFile)
           send_file collection.find(filelist[0]).vaultname
         else
           filenames = filelist.collect do |id| 

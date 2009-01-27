@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090121160531) do
+ActiveRecord::Schema.define(:version => 20090127191511) do
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -92,6 +92,7 @@ ActiveRecord::Schema.define(:version => 20090121160531) do
     t.integer  "rgt"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type"
   end
 
   create_table "users", :force => true do |t|

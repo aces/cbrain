@@ -25,16 +25,18 @@
    </tr>
    <tr class="list-odd">
       <th>Size:</th>
-      <td><%=h @userfile.size %></td>
+      <td><%=h @userfile.format_size %></td>
    </tr>
-   <tr class="list-even">
-      <th>Parent:</th>
-      <td><%=h @userfile.parent.name rescue ""%></td>
-   </tr>
-   <tr class="list-odd">
-      <th>Children:</th>
-      <td><%=@userfile.children.map{|c| h(c.name)}.join("<br>") %></td>
-   </tr>
+   <% if @userfile.is_a? SingleFile %>
+      <tr class="list-even">
+         <th>Parent:</th>
+         <td><%=h @userfile.parent.name rescue ""%></td>
+      </tr>
+      <tr class="list-odd">
+         <th>Children:</th>
+         <td><%=@userfile.children.map{|c| h(c.name)}.join("<br>") %></td>
+      </tr>
+   <% end %>
    <tr class="list-even">
       <th>Created at:</th>
       <td><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
@@ -47,6 +49,12 @@
       <th>Tags:</th>
       <td><%= @userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
    </tr>
+   <% if @userfile.is_a? FileCollection %>
+      <tr class="list-odd">
+         <th>Files:</th>
+         <td><%=@userfile.list_files.map{|f| f.sub(/^#{@userfile.name + '/'}/, "")  }.join("<br>") %></td>
+      </tr>
+   <% end %>
 </table>
 
 <%= link_to 'Index', userfiles_path %>
