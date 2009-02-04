@@ -14,10 +14,11 @@ class ApplicationController < ActionController::Base
   
   helper_method :check_role, :not_admin_user
   helper :all # include all helpers, all the time
+  filter_parameter_logging :password, :login, :email, :full_name, :role
 
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
-  protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
+  protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'  
   
   # See ActionController::Base for details 
   # Uncomment this to filter the contents of submitted sensitive data parameters
@@ -39,4 +40,15 @@ class ApplicationController < ActionController::Base
   end
 end
 
+LoggedExceptionsController.class_eval do
+  # set the same session key as the app
+  session :session_key => '_BrainPortal2_session'
+  
+  include AuthenticatedSystem
+  protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
 
+  before_filter :login_required, :admin_role_required
+
+  # optional, sets the application name for the rss feeds
+  self.application_name = "BrainPortal"
+end

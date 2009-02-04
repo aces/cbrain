@@ -1,0 +1,29 @@
+<% title 'Files' %>
+
+<h1>Feedback</h1>
+
+<table>
+   <tr>
+      <th>Summary</th>
+      <th>Author</th>
+      <th>Posted at</th>
+      <% if current_user.has_role? :admin %>
+         <th colspan="2"/>
+      <% end %>
+   </tr>
+<% for feedback in @feedbacks %>
+  <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <td><%=link_to h(feedback.summary), feedback %></td>
+    <td><%= h feedback.user.login %></td>
+    <td><%= h(to_localtime(feedback.created_at.to_s)) %></td>
+    <% if current_user.has_role? :admin %>
+       <td><%= button_to 'Edit', edit_feedback_path(feedback) %></td>
+       <td><%= button_to 'Destroy', feedback, :confirm => 'Are you sure?', :method => :delete %></td>
+   <% end %>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'Give Feedback', new_feedback_path %>

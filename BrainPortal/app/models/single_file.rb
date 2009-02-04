@@ -93,12 +93,15 @@ class SingleFile < Userfile
   def after_save
     self.save_content
   end
+  
   def after_update
     self.save_content
   end
+  
   def after_create
     self.save_content
   end
+  
   def after_destroy
     self.delete_content
   end

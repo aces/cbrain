@@ -21,6 +21,7 @@ class User < ActiveRecord::Base
                           :dependent => :nullify
   has_and_belongs_to_many :groups
   has_many                :tags
+  has_many                :feedbacks
   
   
   # Virtual attribute for the unencrypted password

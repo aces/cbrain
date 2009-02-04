@@ -21,14 +21,3 @@ config.action_view.cache_template_loading            = true
 # Disable delivery errors, bad email addresses will be ignored
 # config.action_mailer.raise_delivery_errors = false
 
-config.after_initialize do
-  require 'application' unless Object.const_defined?(:ApplicationController)
-  LoggedExceptionsController.class_eval do
-    # set the same session key as the app
-    session :session_key => '_BrainPortal2_session'
-
-    # include any custom auth modules you need
-    include AuthenticatedSystem
-    before_filter :login_required, :admin_role_required
-  end
-end

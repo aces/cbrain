@@ -67,8 +67,11 @@
          <%= render :partial => 'userfile', :collection  => @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort} %>
    </table>
 
-   <%= will_paginate %>
-   
+   <% unless params[:one_page] %>
+      <%= will_paginate %>
+   <% end %>   
+   <%= link_to "Toggle Pagination", userfiles_path(:one_page => !params[:one_page]) %>
+   <br>
    <br>
 
    Operations: <%= select_tag(

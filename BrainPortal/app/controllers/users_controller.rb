@@ -14,7 +14,7 @@ class UsersController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :admin_role_required, :except => [:show, :edit, :update]
+  before_filter :admin_role_required, :except => [:show, :edit, :update]  
   
   def index
     @users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])

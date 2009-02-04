@@ -49,25 +49,30 @@
         <!-- menu on the side -->
         <div id="side">
             <center><h3>Menu</h3></center>
+            <ul>
             <% if session[:user_id] %>
-                <%= link_to 'Home', home_path %><br/>
-                <%= link_to 'Files', userfiles_path %><br/>
-                <%= link_to 'Jiv Viewer', jiv_path %><br/>                
-                <%= link_to 'Tasks', :controller => :tasks, :action => :index %><br/>
-                <%= link_to 'My Account', current_user %><br/>
-                <%= link_to 'Logout', logout_path %><br/>
+              <li><%= link_to 'Home', home_path %></li>
+              <li><%= link_to 'Files', userfiles_path %></li>
+              <li><%= link_to 'Jiv Viewer', jiv_path %></li>                
+              <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
+              <li><%= link_to 'My Account', current_user %></li>
+              <li><%= link_to 'Feedback', feedbacks_path %></li>
+              <li><%= link_to 'Logout', logout_path %></li>
             <% else %>
-                <a href="/login">Login</a><br/>
+                <li><a href="/login">Login</a></li>
             <% end %>
-            <a href="todo">Help</a><br/>
+            <li><a href="todo">Help</a></li>
+            </ul>
             
             <% if current_user && current_user.role == 'admin' %>
                   <BR>
-                  <h3>Admin Menu</h3>
-                  <%= link_to 'Users', users_path %><br/>
-                  <%= link_to 'Groups', groups_path %><br/> 
-                  <%= link_to 'Institutions', institutions_path %><br/>
-                  <%= link_to 'Exception Log', :controller  => :logged_exceptions, :action  => :index %><br/>                  
+                  <center><h3>Admin Menu</h3></center>
+                  <ul>
+                     <li><%= link_to 'Users', users_path %></li>
+                     <li><%= link_to 'Groups', groups_path %></li> 
+                     <li><%= link_to 'Institutions', institutions_path %></li>
+                     <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+                  </ul>                  
             <% end %>
         </div>
         

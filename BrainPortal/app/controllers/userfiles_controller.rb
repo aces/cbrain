@@ -35,7 +35,11 @@ class UserfilesController < ApplicationController
       @userfiles = Userfile.find(:all, :include  => :tags)
     end
     
-    @userfiles = Userfile.paginate(@userfiles, session[:current_filters], params[:page] || 1)
+    
+    @userfiles = Userfile.apply_filters(@userfiles, session[:current_filters])
+    unless params[:one_page]
+      @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
+    end
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
     
@@ -273,6 +277,30 @@ class UserfilesController < ApplicationController
     end
 
     redirect_to :action => :index
+  end
+  
+  def extract
+    success = failure = 0
+    params[:filelist].each do |file|
+      userfile = SingleFile.new(:name  => File.basename(file))
+      Dir.chdir(current_user.vault_dir) do
+        userfile.content = File.read(file)
+        userfile.user_id = current_user.id
+        if userfile.save
+          success += 1
+        else
+          failure += 1
+        end
+      end
+      if success > 0        
+        flash[:notice] = "#{success} files were successfuly extracted."
+      end
+      if failure > 0
+        flash[:error] =  "#{failure} files could not be extracted."
+      end  
+    end
+    
+    redirect_to :action  => :index
   end
   
 end

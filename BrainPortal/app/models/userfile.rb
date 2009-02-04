@@ -38,12 +38,10 @@ class Userfile < ActiveRecord::Base
     [files, filter_name]
   end
   
-  def self.paginate(files, filters, page)
-    current_files = apply_filters(files, filters)
-
+  def self.paginate(files, page)
     WillPaginate::Collection.create(page, 50) do |pager|
-      pager.replace(current_files[pager.offset, pager.per_page])
-      pager.total_entries = current_files.size
+      pager.replace(files[pager.offset, pager.per_page])
+      pager.total_entries = files.size
       pager
     end
   end
@@ -88,6 +86,10 @@ class Userfile < ActiveRecord::Base
     directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login
     Dir.mkdir(directory) unless File.directory?(directory)
     (directory + self.name).to_s
+  end
+  
+  def list_files
+    [self.name]
   end
   
 end

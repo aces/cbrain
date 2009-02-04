@@ -9,15 +9,11 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090127191511) do
+ActiveRecord::Schema.define(:version => 20090130164327) do
 
-  create_table "drmaa_tasks", :force => true do |t|
-    t.string   "type"
-    t.string   "drmaa_jobid"
-    t.string   "drmaa_workdir"
-    t.text     "params"
-    t.string   "status"
-    t.text     "log"
+  create_table "feedbacks", :force => true do |t|
+    t.string   "summary"
+    t.text     "details"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"

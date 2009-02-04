@@ -1,7 +1,9 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :feedbacks
+
   map.resources :tags, :groups, :institutions, :users
   map.resource :session
-  map.resources :userfiles, :collection => {:view_all => :get, :operation => :post}, :member  => {:content  => :get}
+  map.resources :userfiles, :collection => {:operation => :post, :extract  => :post}, :member  => {:content  => :get}
   map.resources :single_files, :controller  => :userfiles
   map.resources :file_collection, :controller  => :userfiles
 
@@ -14,7 +16,7 @@ ActionController::Routing::Routes.draw do |map|
 
   
   map.connect 'tasks/:action/:id', :controller => 'tasks'
-  map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions"
+  map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
   map.connect 'civet/:action/:id', :controller => 'civet'
 
