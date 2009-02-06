@@ -40,6 +40,9 @@ class CBRAIN
       # Establish tunnel
       system("ssh -n -f -N -R 3050:localhost:3050 prioux@montague.bic.mni.mcgill.ca")
 
+      # TODO Environment to be set using variables ?
+      ENV['LD_LIBRARY_PATH']   = "/usr/pbs/lib64:/home/prioux/drmaa/lib:/usr/lib64:/usr/lib64/mysql:/home/prioux/share/lib:/usr/X11R6/lib/X11:/usr/X11R6/lib:/usr/lib/X11:/usr/lib:/usr/lib:/usr/ucblib:/usr/local/lib/X11"
+
     #----  HUIA  ----
 
     when "huia.bic.mni.mcgill.ca"
