@@ -82,10 +82,51 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  # Full pathname to file in the vault; note that this could
+  # be a pathname on a cache directory on the local machine.
   def vaultname
-    directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login
-    Dir.mkdir(directory) unless File.directory?(directory)
+    directory = Pathname.new( CBRAIN::FilevaultIsLocal ? CBRAIN::Filevault_dir : CBRAIN::Vaultcache_dir) + self.user.login
+    Dir.mkdir(directory) if ! File.directory?(directory)
     (directory + self.name).to_s
+  end
+
+  # Full path name of the real vault file, likely to be on a remote machine.
+  # This method is expected to be called only by applications running on
+  # remote hosts
+  def mainvaultname
+    raise "Vault directory is local for #{self.name}" if CBRAIN::FilevaultIsLocal
+    directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login
+    (directory + self.name).to_s
+  end
+
+  # Synchronize official file to local cached copy
+  def rsync_command_filevault_to_vaultcache
+    return "true # #{self.vaultname}" if CBRAIN::FilevaultIsLocal  # "true" is the shell command!
+    filevault_host = CBRAIN::Filevault_host
+    filevault_user = CBRAIN::Filevault_user
+
+    filevault_name  = self.mainvaultname
+    vaultcache_name = self.vaultname
+
+    remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
+    # TODO we get all sorts of problems if the filenames contain spaces or quotes.
+    # Proper escaping would be necessary; see rsync(1)
+    "rsync -a -x --delete '#{remote_name}' '#{vaultcache_name}'"
+  end
+
+  # Synchronize local cached copy to official file
+  def rsync_command_vaultcache_to_filevault
+    return "true # #{self.vaultname}" if CBRAIN::FilevaultIsLocal  # "true" is the shell command!
+    filevault_host = CBRAIN::Filevault_host
+    filevault_user = CBRAIN::Filevault_user
+
+    filevault_name  = self.mainvaultname
+    vaultcache_name = self.vaultname
+
+    remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
+    # TODO we get all sorts of problems if the filenames contain spaces or quotes.
+    # Proper escaping would be necessary; see rsync(1)
+    "rsync -a -x --delete '#{vaultcache_name}' '#{remote_name}'"
   end
   
   def list_files
