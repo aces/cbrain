@@ -32,7 +32,7 @@ module DRMAA
 end
 
 # This is the core ActiveRecord functionality for
-# launching GridEngine jobs using DRMAA; when a new
+# launching GridEngine/PBS jobs using DRMAA; when a new
 # application needs to be supported, it's only necessary
 # to subclass DrmaaTask and provide the code for the three
 # methods setup(), drmaa_commands() and save_results().
@@ -118,32 +118,37 @@ public
   # This is called automatically when the object
   # is first saved. A temporary, grid-aware working
   # directory is created for the job.
-  #
-  # TODO add exception handling
   def start_all
     self.makeDRMAAworkdir
-    Dir.chdir(self.drmaa_workdir) do
-      self.addlog("Setting up.")
-      unless self.setup
-         self.addlog("Failed To Setup")
-         self.status = "Failed To Setup"
-         return self
+    begin
+      Dir.chdir(self.drmaa_workdir) do
+        self.addlog("Setting up.")
+        unless self.setup
+           self.addlog("Failed To Setup")
+           self.status = "Failed To Setup"
+           return self
+        end
+        unless self.run
+           self.addlog("Failed To Start")
+           self.status = "Failed To Start"
+           self.removeDRMAAworkdir
+           return self
+        end
       end
-      unless self.run
-         self.addlog("Failed To Start")
-         self.status = "Failed To Start"
-         self.removeDRMAAworkdir
-         return self
-      end
+    rescue => e
+      self.addlog("Exception raised when setting up: #{e.inspect}")
+      self.status = "Failed To Setup"
     end
     self
   end
 
-  # This is called either automatically (todo) or
+  # This is called either automatically TODO or
   # manually to finish processing a job that has
   # successfully run on the cluster. The main purpose
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
+  #
+  # TODO trigger this automatically when 'Data Ready' state is reached.
   def post_process
 
     self.addlog("Attempting PostProcessing")
@@ -166,8 +171,21 @@ public
 
     # Everything went OK according the save_results
     if saveok
-      self.status = "Completed"
-      self.removeDRMAAworkdir
+      self.addlog("Starting asynchronous postprocessing.")
+      self.status = "Post Processing"
+      self.save
+      Kernel.fork do
+        postsync  = @post_rsync_cmds || []
+        Dir.chdir(self.drmaa_workdir) do
+          # TODO we need some way to make sure the rsync worked properly
+          # TODO intercept/log messages from rsync ?
+          postsync.each { |com| system("#{com}")  }
+        end
+        self.status = "Completed"
+        self.removeDRMAAworkdir
+        self.save
+        Kernel.exit!
+      end
       return true
     end
 
@@ -207,6 +225,7 @@ public
     return ar_status if ar_status.match(/^(Failed.*|Data Ready|Terminated|Completed)$/)
 
     drmaastatus = self.drmaa_status
+    #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")
 
     # Steady states
     if drmaastatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
@@ -353,7 +372,7 @@ protected
   def drmaa_status
     begin 
       state = @@DRMAA_session.job_ps(self.drmaa_jobid)
-    rescue
+    rescue => e
       return "Does Not Exist"
     end
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
@@ -362,24 +381,28 @@ protected
 
   # Expects that the WD has already been changed
   def run
-    self.addlog("Launching Grid Engine job.")
+    self.addlog("Launching DRMAA job.")
 
     name     = self.class.to_s.gsub(/^Drmaa/i,"")
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
+    workdir  = self.drmaa_workdir
+    presync  = @pre_rsync_cmds || []
 
     # Create a bash command script out of the text
     # lines supplied by the subclass
-    #id = self.object_id.to_s.gsub(/\D/,"") || self.object_id.to_s
-    #qsubfile = ".qsub-#{id}.sh"
     qsubfile = ".qsub.sh"   # also used in post_process() !
     io = File.open(qsubfile,"w")
-# TODO use 'here' document
+
     io.write(
       "#!/bin/sh\n" +
       "\n" +
       "# Script created automatically by #{self.class.to_s}\n" +
       "# #{Revision_info}\n" +
       "\n" +
+      "# rsync section\n" +
+      presync.join("\n") +
+      "\n\n" +
+      "# User commands section\n" +
       commands.join("\n") +
       "\n" )
     io.close
@@ -388,16 +411,18 @@ protected
     job = CbrainDRMAAJob.new   # TODO see if we can use DRMAA::JobTemplate directly
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
-    job.stdout  = ":" + qsubfile + ".out"
-    job.stderr  = ":" + qsubfile + ".err"
+    job.stdout  = ":#{workdir}/#{qsubfile}.out"   # see also after_initialize() later
+    job.stderr  = ":#{workdir}/#{qsubfile}.err"   # see also after_initialize() later
     job.join    = false
-    job.wd      = self.drmaa_workdir
+    job.wd      = workdir
     job.name    = name
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
-    self.drmaa_jobid = @@DRMAA_session.run(job)
+    jobid            = @@DRMAA_session.run(job)
+    jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
+    self.drmaa_jobid = jobid
     self.status      = "Queued"
     return true
 
@@ -429,11 +454,11 @@ protected
      #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
      #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
      if File.exist?(stdoutfile)
-        io = IO.popen("tail -30 #{stdoutfile} | fold -b80 | tail -30","r")
+        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 80 | tail -30","r")
         @capt_stdout_b64 = Base64.encode64(io.read)
      end
      if File.exist?(stderrfile)
-        io = IO.popen("tail -30 #{stderrfile} | fold -b80 | tail -30","r")
+        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 80 | tail -30","r")
         @capt_stderr_b64 = Base64.encode64(io.read)
      end
 
@@ -445,6 +470,16 @@ protected
 
   def capt_stderr_b64
      @capt_stderr_b64
+  end
+
+  def pre_synchronize_userfile(userfile)
+    @pre_rsync_cmds ||= []
+    @pre_rsync_cmds << userfile.rsync_command_filevault_to_vaultcache
+  end
+
+  def post_synchronize_userfile(userfile)
+    @post_rsync_cmds ||= []
+    @post_rsync_cmds << userfile.rsync_command_vaultcache_to_filevault
   end
 
 end
