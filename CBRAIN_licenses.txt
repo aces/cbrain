@@ -26,3 +26,8 @@
 - acts_as_taggable_on_steroids (rails plugin)
   Rails' (MIT) License
   http://agilewebdevelopment.com/plugins/acts_as_taggable_on_steroids
+
+- Sample code for forking subprocesses that are ActiveRecord safe
+  Original code provided by Scott Persinger
+  From his blog: http://geekblog.vodpod.com/?p=26
+

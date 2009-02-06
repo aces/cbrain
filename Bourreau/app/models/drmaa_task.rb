@@ -151,56 +151,79 @@ public
   # TODO trigger this automatically when 'Data Ready' state is reached.
   def post_process
 
-    self.addlog("Attempting PostProcessing")
-
-    # Make sure jobs is ready.
+    # Make sure job is ready.
     self.update_status
     if self.status != "Data Ready"
       raise "post_process() called on a job that is not in Data Ready state"
     end
 
-    # Call the subclass-provided save_results()
-    saveok = false
-    begin
-      Dir.chdir(self.drmaa_workdir) do
-        saveok = self.save_results
-      end
-    rescue => e
-      self.addlog("Exception raised when saving results: #{e.inspect}")
-    end
+    self.addlog("Starting asynchronous postprocessing.")
+    self.status = "Post Processing"
+    self.save
 
-    # Everything went OK according the save_results
-    if saveok
-      self.addlog("Starting asynchronous postprocessing.")
-      self.status = "Post Processing"
-      self.save
-      Kernel.fork do
-        postsync  = @post_rsync_cmds || []
+    # Asynchronous processing
+    self.spawn do
+      begin
+        saveok = false
         Dir.chdir(self.drmaa_workdir) do
-          # TODO we need some way to make sure the rsync worked properly
-          # TODO intercept/log messages from rsync ?
-          postsync.each { |com| system("#{com}")  }
+          # Call the subclass-provided save_results()
+          saveok = self.save_results
         end
-        self.status = "Completed"
-        self.removeDRMAAworkdir
-        self.save
-        Kernel.exit!
+        if ! saveok
+          self.status = "Failed To PostProcess"
+        else
+          postsync  = @post_rsync_cmds || []
+          Dir.chdir(self.drmaa_workdir) do
+            # TODO we need some way to make sure the rsync worked properly
+            # TODO intercept/log messages from rsync ?
+            postsync.each { |com| system("#{com}")  }
+            system("sleep 20")
+          end
+          self.addlog("Asynchronous postprocessing completed.")
+          self.status = "Completed"
+        end
+      rescue => e
+        self.addlog("Exception raised when post processing results: #{e.inspect}")
+        self.status = "Failed To PostProcess"
       end
-      return true
+      self.save
+      #self.removeDRMAAworkdir
     end
 
-    # Some error occured; let's log the content of the job's stderr file
-    errfile = "#{self.drmaa_workdir}/.qsub.sh.err"
-    if File.exist?(errfile)
-      self.addlog("--- Start of content of stderr file for job ---")
-      IO.readlines(errfile).each { |line| self.addlog(line, :prefix => ">" ) }
-      self.addlog("--- End of content of stderr file for job ---")
+    return true
+
+#    # Some error occured; let's log the content of the job's stderr file
+#    errfile = "#{self.drmaa_workdir}/.qsub.sh.err"
+#    if File.exist?(errfile)
+#      self.addlog("--- Start of content of stderr file for job ---")
+#      IO.readlines(errfile).each { |line| self.addlog(line, :prefix => ">" ) }
+#      self.addlog("--- End of content of stderr file for job ---")
+#    end
+#
+#    self.status = "Failed To PostProcess"
+#    #self.removeDRMAAworkdir
+#    return false
+
+  end
+
+  # Most of the code in this method comes from a blog entry
+  # by Scott Persinger, in http://geekblog.vodpod.com/?p=26
+  def spawn
+    dbconfig = ActiveRecord::Base.remove_connection
+    pid = fork do
+      begin
+        # Monkey-patch Mongrel to not remove its pid file in the child
+        require 'mongrel'
+        Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
+        ActiveRecord::Base.establish_connection(dbconfig)
+        yield
+      ensure
+        ActiveRecord::Base.remove_connection
+      end
+      Kernel.exit!
     end
-
-    self.status = "Failed To PostProcess"
-    #self.removeDRMAAworkdir
-    return false
-
+    Process.detach(pid)
+    ActiveRecord::Base.establish_connection(dbconfig)
   end
 
   # Possible returned status values:
@@ -219,10 +242,12 @@ public
       raise "Unknown blank status obtained from Active Record"
     end
 
-    # Final states that we can't get out of
-    # except for "Data Ready" which can be moved to "Completed"
-    # through the method call save_results()
-    return ar_status if ar_status.match(/^(Failed.*|Data Ready|Terminated|Completed)$/)
+    # Final states that we can't get out of, except for:
+    # - "Data Ready" which can be moved to "Post Processing"
+    #    through the method call save_results()
+    # - "Post Processing" which will be moved to "Completed"
+    #    through the method call save_results()
+    return ar_status if ar_status.match(/^(Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
 
     drmaastatus = self.drmaa_status
     #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")

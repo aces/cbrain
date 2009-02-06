@@ -246,7 +246,9 @@ class UserfilesController < ApplicationController
 
         dm = DrmaaDcm2mnc.new
         dm.user_id = current_user.id
-        dm.params = { :dicom_ids => filelist.join(",") }
+        # TODO what to do when more than one collection selected ?
+        # TODO check that the ID is really a collection right away ?
+        dm.params = { :dicom_colid => filelist[0] }
         dm.save
         flash[:notice] += "Started Dcm2Mnc on your files.\n"
         redirect_to :controller => :tasks, :action => :index

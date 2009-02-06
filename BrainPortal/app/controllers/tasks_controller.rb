@@ -59,13 +59,16 @@ class TasksController < ApplicationController
     end
 
     tasklist.each do |task_id|
+
       begin 
         task = DrmaaTask.find(task_id.to_i)
       rescue
         flash[:error] += "Task #{task_id} does not exist."
         next
       end
-      # todo: verify that task belong to current_user here ?
+
+      continue if task.user_id != current_user.id && current_user.role != 'admin'
+
       case operation
         when "postprocess"
           task.status = "postprocess"  # keyword is significant
@@ -88,6 +91,7 @@ class TasksController < ApplicationController
           task.status = "Terminated"
           task.save
       end
+
       flash[:notice] += "Sent '#{operation}' operation to task #{task.id}.\n"
     end
 
