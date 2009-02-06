@@ -131,7 +131,7 @@ public
         unless self.run
            self.addlog("Failed To Start")
            self.status = "Failed To Start"
-           self.removeDRMAAworkdir
+           #self.removeDRMAAworkdir
            return self
         end
       end
@@ -198,7 +198,7 @@ public
     end
 
     self.status = "Failed To PostProcess"
-    self.removeDRMAAworkdir
+    #self.removeDRMAAworkdir
     return false
 
   end
