@@ -39,32 +39,33 @@ class Userfile < ActiveRecord::Base
   end
   
   def self.paginate(files, page)
-    WillPaginate::Collection.create(page, 50) do |pager|
-      pager.replace(files[pager.offset, pager.per_page])
+    per_page = 50
+    offset = (page.to_i - 1) * per_page    
+    
+     while files[offset] && files[offset].level > 0
+        offset += 1
+      end
+      while files[offset + per_page] && files[offset + per_page].level > 0
+        per_page += 1
+      end
+    
+    WillPaginate::Collection.create(page, per_page) do |pager|
+      pager.replace(files[offset, per_page])
       pager.total_entries = files.size
       pager
     end
   end
     
   def self.apply_filters(files, filters)
-    current_files = files
+    current_files = files 
     
     filters.each do |filter|
       type, term = filter.split(':')
-      case type
-      when 'name'
-        current_files = current_files.select{ |f| f.name =~ /#{term}/ }
-      when 'tag'
-        current_files = current_files.select{ |f| f.tags.find_by_name(term)  }
-      when 'file'
-        case term
-        when 'jiv'
-          current_files = current_files.select{ |f| f.name =~ /(\.raw_byte(\.gz)?|\.header)$/ }
-        when 'minc'
-          current_files = current_files.select{ |f| f.name =~ /\.mnc$/ }
-        end
-      end
+      current_files = current_files.select{ |f| f.tags.find_by_name(term)  }
     end
+    
+    @filters = filters
+    @files = current_files
     
     current_files
   end
@@ -79,6 +80,35 @@ class Userfile < ActiveRecord::Base
       'file:jiv'
     when 'minc'
       'file:minc'      
+    end
+  end
+  
+  def self.convert_filters_to_sql_query(filters)
+    query = []
+    arguments = []
+    
+    filters.each do |filter|
+      type, term = filter.split(':')
+      case type
+      when 'name'
+        query << "userfiles.name LIKE ?"
+        arguments << "%#{term}%"
+      when 'file'
+        case term
+        when 'jiv'
+          query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
+          arguments += ["%.raw_byte", "%.raw_byte.gz", "%.header"]
+        when 'minc'
+          query << "(userfiles.name LIKE ?)"
+          arguments << "%.mnc"
+        end
+      end
+    end
+    
+    unless query.empty?
+      [query.join(" AND ")] + arguments 
+    else
+      []
     end
   end
   

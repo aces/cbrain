@@ -29,14 +29,16 @@ class UserfilesController < ApplicationController
       session[:view_all] = !session[:view_all]
     end
     
+    tag_filters, name_filters  = session[:current_filters].partition{|filter| filter.split(':')[0] == 'tag'}
+    
     unless session[:view_all] && current_user.has_role?(:admin)
-      @userfiles = current_user.userfiles.find(:all, :include  => :tags)
+      @userfiles = current_user.userfiles.find(:all, :include  => :tags, :conditions => Userfile.convert_filters_to_sql_query(name_filters))
     else
-      @userfiles = Userfile.find(:all, :include  => :tags)
+      @userfiles = Userfile.find(:all, :include  => :tags, :conditions => Userfile.convert_filters_to_sql_query(name_filters))
     end
     
-    
-    @userfiles = Userfile.apply_filters(@userfiles, session[:current_filters])
+    @userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
+    @userfiles = Userfile.apply_filters(@userfiles, tag_filters)
     unless params[:one_page]
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
     end
@@ -185,7 +187,15 @@ class UserfilesController < ApplicationController
   end
   
   def operation
-    operation   = params[:operation]
+    
+    if params[:commit] == 'Download Selected Files'
+      operation = 'download'
+    elsif params[:commit] == 'Delete Selected Files'
+      operation = 'delete'
+    else
+      operation   = params[:operation]
+    end
+    
     filelist    = params[:filelist] || []
     collection = current_user.has_role?(:admin) ? Userfile : current_user.userfiles
 

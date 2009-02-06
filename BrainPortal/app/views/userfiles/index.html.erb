@@ -64,7 +64,7 @@
           <th>Size</th>
           <th colspan="2">Tags</th>
       </tr>
-         <%= render :partial => 'userfile', :collection  => @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort} %>
+         <%= render :partial => 'userfile', :collection  => @userfiles %>
    </table>
 
    <% unless params[:one_page] %>
@@ -83,14 +83,12 @@
        <option value="minc2jiv">Convert selected MINC files to JIV</option>
        <option value="dcm2mnc">Convert selected DICOM files to MINC</option>
        <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>
-
-       <optgroup label="Management operations">
-       <option value="download">Download selected files</option>       
-       <option value="delete">Delete selected files</option>
        '
       ) %>
-
-   <%= submit_tag("Apply Operation") %>
+  
+   <%= submit_tag("Apply Operation") %><br><br>
+    <%= submit_tag("Download Selected Files") %>
+    <%= submit_tag("Delete Selected Files", :confirm  => 'Are you sure you want to delete the selected files?') %>
 
 <% end %>
 
