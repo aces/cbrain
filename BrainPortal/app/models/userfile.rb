@@ -139,6 +139,10 @@ class Userfile < ActiveRecord::Base
     vaultcache_name = self.vaultname
 
     remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
+
+    # Adjust depending on whether or not we're syncing a directory (FileCollection)
+    remote_name   += "/" if self.is_a?(FileCollection)
+
     # TODO we get all sorts of problems if the filenames contain spaces or quotes.
     # Proper escaping would be necessary; see rsync(1)
     "rsync -a -x --delete '#{remote_name}' '#{vaultcache_name}'"
@@ -154,6 +158,10 @@ class Userfile < ActiveRecord::Base
     vaultcache_name = self.vaultname
 
     remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
+
+    # Adjust depending on whether or not we're syncing a directory (FileCollection)
+    vaultcache_name += "/" if self.is_a?(FileCollection)
+
     # TODO we get all sorts of problems if the filenames contain spaces or quotes.
     # Proper escaping would be necessary; see rsync(1)
     "rsync -a -x --delete '#{vaultcache_name}' '#{remote_name}'"

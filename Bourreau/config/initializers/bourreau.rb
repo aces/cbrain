@@ -59,9 +59,9 @@ class CBRAIN
       Quarantine_dir           = "/usr/local/bic"
       CIVET_dir                = "/usr/local/bic/CIVET"
 
-    #----  PIERRE'S  ----
+    #----  PIERRE'S, local  ----
 
-    when /montague/
+    when /montagueX/
       # Filevault constants
       Filevault_host           = "localhost"
       Filevault_user           = ""  # not used, since it's on localhost
@@ -70,6 +70,22 @@ class CBRAIN
       # Local bourreau constants
       DRMAA_sharedir           = "/opt/gridengine/gridshare"
       Vaultcache_dir           = ""  # not used, since it's local
+
+      # Software installation paths
+      Quarantine_dir           = "/usr/local/bic"
+      CIVET_dir                = "/usr/local/bic/CIVET"
+
+    #----  PIERRE'S, fake remote  ----
+
+    when /montague/
+      # Filevault constants
+      Filevault_host           = "montague.bic.mni.mcgill.ca"
+      Filevault_user           = "prioux"
+      Filevault_dir            = "/home/prioux/CBRAIN/trunk/FileVault"
+
+      # Local bourreau constants
+      DRMAA_sharedir           = "/opt/gridengine/gridshare"
+      Vaultcache_dir           = "/home/prioux/CBRAIN/trunk/VaultCache"
 
       # Software installation paths
       Quarantine_dir           = "/usr/local/bic"
@@ -100,7 +116,7 @@ class CBRAIN
 
   # This variable is used to optimize the case when Bourreau
   # runs on the same server as BrainPortal
-  FilevaultIsLocal = (Filevault_host == "localhost" || hostname == Filevault_host)
+  FilevaultIsLocal = (Filevault_host == "localhost")
 
   # Run-time checks
   if FilevaultIsLocal

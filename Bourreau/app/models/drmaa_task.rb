@@ -176,8 +176,12 @@ public
           Dir.chdir(self.drmaa_workdir) do
             # TODO we need some way to make sure the rsync worked properly
             # TODO intercept/log messages from rsync ?
-            postsync.each { |com| system("#{com}")  }
-            system("sleep 20")
+            postsync.each do |com|
+              # self.addlog("Executing: #{com}")
+              # x=`#{com}`
+              # self.addlog(x) unless x.match(/^\s*$/)
+              system(com)
+            end
           end
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
@@ -210,7 +214,7 @@ public
   # by Scott Persinger, in http://geekblog.vodpod.com/?p=26
   def spawn
     dbconfig = ActiveRecord::Base.remove_connection
-    pid = fork do
+    pid = Kernel.fork do
       begin
         # Monkey-patch Mongrel to not remove its pid file in the child
         require 'mongrel'
@@ -481,10 +485,12 @@ protected
      if File.exist?(stdoutfile)
         io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 80 | tail -30","r")
         @capt_stdout_b64 = Base64.encode64(io.read)
+        io.close
      end
      if File.exist?(stderrfile)
         io = IO.popen("tail -30 #{stderrfile} | fold -b -w 80 | tail -30","r")
         @capt_stderr_b64 = Base64.encode64(io.read)
+        io.close
      end
 
   end
