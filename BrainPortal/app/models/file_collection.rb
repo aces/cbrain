@@ -12,7 +12,7 @@ class FileCollection < Userfile
       if self.name =~ /\.tar(\.gz)?$/
         `tar xvf #{self.name}`
       else
-        `unzip #{self.name} #{file_name}`
+        `unzip #{self.name}`
       end
     end
     
