@@ -52,7 +52,7 @@
          <th>Tags:</th>
          <td colspan="2"><%= @userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
       </tr>
-      <% if @userfile.is_a? FileCollection %>
+      <% if @userfile.is_a?(FileCollection) && @userfile.size > 0 %>
          <tr class="list-odd">
             <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
             <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
