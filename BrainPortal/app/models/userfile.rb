@@ -41,13 +41,14 @@ class Userfile < ActiveRecord::Base
   def self.paginate(files, page)
     per_page = 50
     offset = (page.to_i - 1) * per_page    
-    
-     while files[offset] && files[offset].level > 0
-        offset += 1
-      end
-      while files[offset + per_page] && files[offset + per_page].level > 0
-        per_page += 1
-      end
+    # if files.size > 50
+    #    while files[offset] && files[offset].level > 0
+    #       offset += 1
+    #     end
+    #     while files[offset + per_page] && files[offset + per_page].level > 0
+    #       per_page += 1
+    #     end
+    # end
     
     WillPaginate::Collection.create(page, per_page) do |pager|
       pager.replace(files[offset, per_page])

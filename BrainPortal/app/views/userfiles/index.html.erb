@@ -67,10 +67,10 @@
          <%= render :partial => 'userfile', :collection  => @userfiles %>
    </table>
 
-   <% unless params[:one_page] %>
+   <% unless session[:one_page] %>
       <%= will_paginate %>
    <% end %>   
-   <%= link_to "Toggle Pagination", userfiles_path(:one_page => !params[:one_page]) %>
+   <%= link_to "Toggle Pagination", userfiles_path(:one_page => !session[:one_page]) %>
    <br>
    <br>
 
