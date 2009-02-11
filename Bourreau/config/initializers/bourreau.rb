@@ -27,7 +27,7 @@ class CBRAIN
       # Filevault constants
       Filevault_host           = "montague.bic.mni.mcgill.ca"
       Filevault_user           = "prioux"
-      Filevault_dir            = "/home/prioux/CBRAIN/trunk/FileVault"
+      Filevault_dir            = "/home/prioux/CBRAIN/FileVault"
 
       # Local bourreau constants
       DRMAA_sharedir           = "/home/prioux/CBrain/gridshare"

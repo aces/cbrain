@@ -36,7 +36,7 @@ class CBRAIN
 
     when /montague/
 
-      Filevault_dir            = "/home/prioux/CBRAIN/trunk/FileVault"
+      Filevault_dir            = "/home/prioux/CBRAIN/FileVault"
 
     #----  TAREK'S  ----
 
