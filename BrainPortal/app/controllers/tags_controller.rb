@@ -50,10 +50,11 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to(@tag) }
+        format.html { redirect_to userfiles_path }
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
-        format.html { render :action => "new" }
+        flash[:error] = 'Tag requires a name.'
+        format.html { redirect_to userfiles_path }
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
     end

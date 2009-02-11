@@ -40,10 +40,10 @@ class UserfilesController < ApplicationController
     @userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_filters(@userfiles, tag_filters)
     
-    if params[:one_page]
-      session[:one_page] = !session[:one_page]
+    if params[:pagination]
+      session[:pagination] = (params[:pagination] == 'on')
     end
-    unless session[:one_page]
+    if session[:pagination]
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
     end
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
@@ -196,6 +196,8 @@ class UserfilesController < ApplicationController
       operation = 'download'
     elsif params[:commit] == 'Delete Selected Files'
       operation = 'delete'
+    elsif params[:commit] == 'Update Tags for Selected Files'
+      operation = 'tag_update'
     else
       operation   = params[:operation]
     end
@@ -286,6 +288,19 @@ class UserfilesController < ApplicationController
           File.delete "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz"
         end
         return
+      when 'tag_update'
+        filelist.each do |id|
+          userfile = collection.find(id)
+          if userfile.nil?
+            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
+            next
+          end
+          if userfile.update_attributes(:tag_ids => params[:tags])
+            flash[:notice] += "Tags for #{userfile.name} successfully updated."
+          else
+            flash[:error] += "Tags for #{userfile.name} could not be updated."
+          end
+        end
       else
 
         flash[:error] = "Unknown operation #{operation}"

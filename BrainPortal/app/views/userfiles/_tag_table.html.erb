@@ -1,0 +1,8 @@
+<table>
+   <% for tag in tags %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <td><%= check_box_tag("tags[]", tag.id.to_s) %></td> 
+         <td><%= h(tag.name) -%></td>
+       </tr>
+   <% end %>
+</table>

@@ -35,6 +35,10 @@
 <% current_user.tags.collect(&:name).each do |tag| %>
    <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
 <% end %>
+<% form_tag tags_path do %>
+   <%= text_field_tag 'tag[name]' %>
+   <%= submit_tag "New Tag" %>
+<% end %>
 <%= button_to "Manage Tags", tags_path, :method => :get %>
 <br>
 
@@ -66,10 +70,10 @@
          <%= render :partial => 'userfile', :collection  => @userfiles %>
    </table>
 
-   <% unless session[:one_page] %>
+   <% if session[:pagination] %>
       <%= will_paginate %>
    <% end %>   
-   <%= link_to "Toggle Pagination", userfiles_path(:one_page => !session[:one_page]) %>
+   <%= link_to "Toggle Pagination", userfiles_path(:pagination => (session[:pagination] ? 'off' : 'on')) %>
    <br>
    <br>
 
@@ -81,15 +85,20 @@
        <optgroup label="Scientific operations">
        <option value="minc2jiv">Convert selected MINC files to JIV</option>
        <option value="dcm2mnc">Convert selected DICOM collection to MINC files</option>
-       <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>
-       <optgroup label="Management operations">
-        <option value="merge">Merge selected files into collection</option>
+       <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>  
        '
       ) %>
   
    <%= submit_tag("Apply Operation") %><br><br>
     <%= submit_tag("Download Selected Files") %>
     <%= submit_tag("Delete Selected Files", :confirm  => 'Are you sure you want to delete the selected files?') %>
+    <br>
+    <% if @user_tags %>
+    <br><br>
+       Tag update:
+       <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+    <% end %>
+    <%= submit_tag("Update Tags for Selected Files") %>
 
 <% end %>
 
@@ -108,14 +117,7 @@
       <br><br>
       <% if @user_tags %>
          Tags for uploaded file:
-         <table>
-            <% for tag in @user_tags %>
-                <tr class="<%= cycle('list-odd', 'list-even') %>">
-                   <td><%= check_box_tag("tags[]", tag.id.to_s) %></td> 
-                  <td><%= h(tag.name) -%></td>
-                </tr>
-            <% end %>
-         </table>
+         <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
       <% end %>
 <% end %>
 
