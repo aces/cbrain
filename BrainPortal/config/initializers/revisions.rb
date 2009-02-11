@@ -11,6 +11,8 @@
 
 class String
 
+  Revision_info="$Id$"
+
   def svn_id_rev
     if revm = self.match(/\s+(\d+)\s+/)
       revm[1]
