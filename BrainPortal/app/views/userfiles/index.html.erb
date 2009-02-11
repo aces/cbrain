@@ -15,7 +15,6 @@
 
 <h1>Welcome. These are your files:</h1>
 
-
 <table>
 
 <% form_tag userfiles_path, {:method => :get} do %>
@@ -83,6 +82,8 @@
        <option value="minc2jiv">Convert selected MINC files to JIV</option>
        <option value="dcm2mnc">Convert selected DICOM collection to MINC files</option>
        <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>
+       <optgroup label="Management operations">
+        <option value="merge">Merge selected files into collection</option>
        '
       ) %>
   

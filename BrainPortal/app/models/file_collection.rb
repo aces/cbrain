@@ -1,5 +1,6 @@
+require 'ftools'
+
 class FileCollection < Userfile 
-  #TODO: everything here 
   def extract_collection
     collection_name = self.name.split('.')[0]
     directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login + collection_name
@@ -14,18 +15,40 @@ class FileCollection < Userfile
       else
         `unzip #{self.name}`
       end
+      
+      if common_base = self.get_common_base(self.list_files)
+        File.rename(common_base, ".")
+      end
     end
     
     File.unlink(directory + self.name) if File.file?(directory + self.name) 
     
+    
+    
     self.name = collection_name
-    self.size = self.list_files.size
+    self.flatten
+    
     self.save
   end
 
   def content=(newcontent)
     @content = newcontent
     @content
+  end
+  
+  def size
+    self.list_files.size
+  end
+  
+  def get_common_base(files)
+    return nil if files.empty?
+    base = ""
+    source = dirs[0].split('/')
+    source.each_with_index do |dir, i|
+      break unless dirs.all? {|d| d =~ /^#{base + dir + '/'}/}
+      base += dir + '/'
+    end
+    base
   end
   
   def save_content(directory)
@@ -71,6 +94,35 @@ class FileCollection < Userfile
   
   def after_destroy
     self.delete_content
+  end
+    
+  def flatten
+    dir_name = self.vaultname
+
+    Dir.chdir(dir_name) do
+
+      files = `find . -type f`.split("\n")
+
+      base = ""
+      source = files[0].split('/')
+      source.each do |dir|
+        break unless files.all? {|d| d =~ /^#{base + dir + '/'}/}
+        base += dir + '/'
+      end
+      
+      Dir.entries(base).each do |entry|
+        unless entry == "." || entry == ".."
+          File.move(base + entry, "./")
+        end
+      end
+
+      base_dirs = base.split('/')
+      base_dirs.shift               #remove the .
+      while !base_dirs.empty?
+        Dir.rmdir(base_dirs.join('/'))
+        base_dirs.pop
+      end
+    end
   end
   
 end
