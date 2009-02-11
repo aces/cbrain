@@ -6,7 +6,7 @@
 #
 # Original author: Pierre Rioux
 #
-# $Id: cbrain.rb 40 2008-11-03 20:30:49Z tsherif $
+# $Id$
 #
 
 class String
