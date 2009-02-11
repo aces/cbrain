@@ -65,7 +65,7 @@ class CBRAIN
       # Filevault constants
       Filevault_host           = "localhost"
       Filevault_user           = ""  # not used, since it's on localhost
-      Filevault_dir            = "/home/prioux/CBRAIN/trunk/FileVault"
+      Filevault_dir            = "/home/prioux/CBRAIN/FileVault"
 
       # Local bourreau constants
       DRMAA_sharedir           = "/opt/gridengine/gridshare"
@@ -81,11 +81,11 @@ class CBRAIN
       # Filevault constants
       Filevault_host           = "montague.bic.mni.mcgill.ca"
       Filevault_user           = "prioux"
-      Filevault_dir            = "/home/prioux/CBRAIN/trunk/FileVault"
+      Filevault_dir            = "/home/prioux/CBRAIN/FileVault"
 
       # Local bourreau constants
       DRMAA_sharedir           = "/opt/gridengine/gridshare"
-      Vaultcache_dir           = "/home/prioux/CBRAIN/trunk/VaultCache"
+      Vaultcache_dir           = "/home/prioux/CBRAIN/VaultCache"
 
       # Software installation paths
       Quarantine_dir           = "/usr/local/bic"
