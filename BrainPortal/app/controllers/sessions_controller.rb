@@ -5,7 +5,8 @@
 # Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.  
 #
-# Original author: Tarek Sherif
+# Original author: restful_authentication plugin
+# Modified by: Tarek Sherif
 #
 # $Id$
 #

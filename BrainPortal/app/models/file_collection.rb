@@ -1,6 +1,21 @@
+#
+# CBRAIN Project
+#
+# File collection model.
+# Represents an entry in the userfile list that corresponds to multiple files.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 require 'ftools'
 
 class FileCollection < Userfile 
+  
+  Revision_info="$Id$"
+  
+  #extract a collection from an archive
   def extract_collection
     collection_name = self.name.split('.')[0]
     directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login + collection_name
@@ -40,6 +55,7 @@ class FileCollection < Userfile
     self.list_files.size
   end
   
+  #find longest common root of a list of file paths.
   def get_common_base(files)
     return nil if files.empty?
     base = ""
@@ -88,6 +104,7 @@ class FileCollection < Userfile
     end
   end
   
+  #format size for display
   def format_size
     "#{self.size} files" 
   end
@@ -96,6 +113,7 @@ class FileCollection < Userfile
     self.delete_content
   end
     
+  # remove common root from a directory structure.
   def flatten
     dir_name = self.vaultname
 

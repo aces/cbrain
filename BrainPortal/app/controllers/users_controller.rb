@@ -4,7 +4,8 @@
 #
 # Users controller for the BrainPortal interface
 #
-# Original author: Tarek Sherif
+# Original author: restful_authentication plugin
+# Modified by: Tarek Sherif
 #
 # $Id$
 #

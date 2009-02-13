@@ -4,7 +4,7 @@
 #
 # Userfile model
 #
-# Original author: Tarek Sherif
+# Original author: Tarek Sherif (based on the original by P. Rioux)
 #
 # $Id$
 #
@@ -62,11 +62,8 @@ class Userfile < ActiveRecord::Base
     
     filters.each do |filter|
       type, term = filter.split(':')
-      current_files = current_files.select{ |f| f.tags.find_by_name(term)  }
+      current_files = current_files.select{ |f| f.tags.any?{|t| t.name == term}  }
     end
-    
-    @filters = filters
-    @files = current_files
     
     current_files
   end

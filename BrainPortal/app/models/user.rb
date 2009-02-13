@@ -4,7 +4,8 @@
 #
 # User model
 #
-# Original author: Tarek Sherif
+# Original author: restful authentication plugin
+# Modified by: Tarek Sherif
 #
 # $Id$
 #

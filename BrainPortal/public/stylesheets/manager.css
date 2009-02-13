@@ -7,6 +7,7 @@ body{
         margin:0;
         padding:0;
         font-family:Arial, Helvetica, sans-serif;
+		font-size: 75%;
 }
 
 h1 {
@@ -23,12 +24,16 @@ table {
 }
 
 .userfiles {
-  width: 80%
+  width: 60%
 }
 
 th {
     /* background: #5ba2d4; */
     background: #05a3d6;
+}
+
+td {
+	padding: 0;
 }
 
 .error {
@@ -98,7 +103,7 @@ th {
 #side {
     text-align: left;
     float: right;
-    width: 6em;
+    width: 8em;
     height: 100%;
     padding-top: 5em;
     padding-left: 0em;
@@ -107,6 +112,17 @@ th {
 /*    background: #141; */
     background:url(/images/left_deco.jpg);
     background-repeat: no-repeat;
+}
+
+#userfile-side {
+	text-align: left;
+    float: right;
+    width: 26em;
+    height: 100%;
+    padding-top: 5em;
+    padding-left: 0em;
+    padding-right: 4em;
+    padding-bottom: 1em;
 }
 
 #side a:link {color: #000000}     /* unvisited link */
@@ -120,6 +136,7 @@ th {
         height:76px;
         width:760px;
         width:100%;
+		font-size: 120%;		
 }
 #top_language{;
         top:10px;

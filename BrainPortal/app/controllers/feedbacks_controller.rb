@@ -1,6 +1,19 @@
+
+#
+# CBRAIN Project
+#
+# Controller for the user feedback resource.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class FeedbacksController < ApplicationController
   before_filter :login_required
   before_filter :admin_role_required, :only => [:edit, :update, :delete]
+  
+  Revision_info="$Id$"
   
   # GET /feedbacks
   # GET /feedbacks.xml

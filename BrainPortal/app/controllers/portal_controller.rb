@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Portals controller for the BrainPortal interface
+# Contoller for the entrypoint to cbrain
 #
 # Original author: Tarek Sherif
 #

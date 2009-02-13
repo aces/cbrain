@@ -1,4 +1,19 @@
+#
+# CBRAIN Project
+#
+# Single file model
+# Represents an entry in the userfile table that corresponds to a single file.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class SingleFile < Userfile
+  
+  Revision_info="$Id$"
+  
+  #Extract files from an archive and register them in the db
   def extract
     success = true
     self.save_content
@@ -59,6 +74,7 @@ class SingleFile < Userfile
     @content
   end
   
+  #format size for display in the view
   def format_size
     if self.size > 10**9
       "#{self.size/10**9} GB"

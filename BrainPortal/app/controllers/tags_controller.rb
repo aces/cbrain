@@ -1,9 +1,18 @@
+#
+# CBRAIN Project
+#
+# Controller for tags resource.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 class TagsController < ApplicationController
-  # GET /tags
-  # GET /tags.xml
-  
   before_filter :login_required
   
+  # GET /tags
+  # GET /tags.xml
   def index
     @tags = current_user.tags.find(:all)
     @userfiles = current_user.userfiles.find(:all)
