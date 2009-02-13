@@ -24,7 +24,7 @@ table {
 }
 
 .userfiles {
-  width: 60%
+/*  width: 60% */
 }
 
 th {
@@ -33,7 +33,8 @@ th {
 }
 
 td {
-	padding: 0;
+	padding: 0em;
+	padding-left: 0.3em;
 }
 
 .error {
@@ -103,7 +104,7 @@ td {
 #side {
     text-align: left;
     float: right;
-    width: 8em;
+    width: 7%;
     height: 100%;
     padding-top: 5em;
     padding-left: 0em;
@@ -117,7 +118,7 @@ td {
 #userfile-side {
 	text-align: left;
     float: right;
-    width: 26em;
+    width: 22%;
     height: 100%;
     padding-top: 5em;
     padding-left: 0em;

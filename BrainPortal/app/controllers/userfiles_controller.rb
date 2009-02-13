@@ -123,9 +123,16 @@ class UserfilesController < ApplicationController
     if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       success, successful_files, failed_files, nested_files = userfile.extract
       if success
-        flash[:notice] = successful_files.map{|f| "File #{f} added."}.join("\n")
-        flash[:error]  = failed_files.map{|f| "File '" + f + "' already exists.\n"}.join
-        flash[:error]  += nested_files.map{|f| "File #{f} could not be added as it is #{f =~ /\/$/ ? '' : 'in'} a directory."}.join("\n")
+        if successful_files.size > 0
+          flash[:notice] = "#{successful_files.size} files successfully added."          
+        end
+        if failed_files.size > 0
+          flash[:error]  = "#{failed_files.size} files could not be added.\n"          
+        end
+        if nested_files.size > 0
+          flash[:error] ||= ""
+          flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."          
+        end
       else
         flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
       end
