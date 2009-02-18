@@ -15,15 +15,30 @@ class SingleFile < Userfile
   
   #Extract files from an archive and register them in the db
   def extract
-    success = true
+    status = :success
     self.save_content
-    
+    all_files = []
     successful_files = []
     failed_files = []
     nested_files = []
+    
     Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
       if self.name =~ /\.tar(\.gz)?$/
         all_files = `tar tf #{self.name}`.split("\n")
+      else
+        all_files = `unzip -l #{self.name}`.split("\n")[3..-3].map{ |line|  line.split[3]}
+      end
+    
+      count = all_files.select{ |f| f !~ /\// }.size
+    
+      #max of 50 files can be added to the file list at a time.
+      if count > 50
+        return [:overflow, -1, -1, -1]
+      end 
+    
+      
+    
+      if self.name =~ /\.tar(\.gz)?$/
         all_files.each do |file_name|
           if Userfile.find_by_name(file_name)
             failed_files << file_name
@@ -35,7 +50,6 @@ class SingleFile < Userfile
           end
         end
       else
-        all_files = `unzip -l #{self.name}`.split("\n")[3..-3].map{ |line|  line.split[3]}
         all_files.each do |file_name|
           if Userfile.find_by_name(file_name)
             failed_files << file_name
@@ -55,12 +69,12 @@ class SingleFile < Userfile
       u.user_id = self.user_id
       u.size = File.size(u.vaultname)
       if File.file? u.vaultname
-        success = false unless u.save(false)
+        status = :failed unless u.save(false)
       end
     end
     
     File.delete(self.vaultname)
-    [success, successful_files, failed_files, nested_files]
+    [status, successful_files, failed_files, nested_files]
   end
   
   def content

@@ -45,6 +45,41 @@ class FileCollection < Userfile
     
     self.save
   end
+  
+  def merge_collections(file_ids)
+    userfiles = Userfile.find(file_ids)
+    
+    full_names = userfiles.inject([]){|list, file| list += file.list_files}    
+    raw_names = full_names.map{ |file| file.sub(/^.+\//, "") }
+    
+    unless raw_names.uniq == raw_names
+      return :collision
+    end
+    
+    suffix = Time.now.to_i
+    
+    while self.user.userfiles.any?{ |f| f.name == "Collection-#{suffix}"}
+      suffix += 1
+    end
+    
+    self.name = "Collection-#{suffix}"
+    
+    Dir.mkdir(self.vaultname) unless File.directory?(self.vaultname)
+    
+    userfiles.each do |file|
+      if file.is_a? FileCollection
+        `cp -n -R #{file.vaultname}/ #{self.vaultname}`
+      else
+        `cp -n #{file.vaultname} #{self.vaultname}`
+      end
+    end
+    
+    if self.save
+      :success
+    else
+      :failure
+    end
+  end
 
   def content=(newcontent)
     @content = newcontent

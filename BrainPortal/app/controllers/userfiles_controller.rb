@@ -19,6 +19,7 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   def index
     session[:current_filters] ||= []
+    session[:pagination] ||= 'on'
     
     @filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     session[:current_filters] = [] if params[:search_type] == 'none'
@@ -41,9 +42,9 @@ class UserfilesController < ApplicationController
     @userfiles = Userfile.apply_filters(@userfiles, tag_filters)
     
     if params[:pagination]
-      session[:pagination] = (params[:pagination] == 'on')
+      session[:pagination] = params[:pagination]
     end
-    if session[:pagination]
+    if session[:pagination] == 'on'
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
     end
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
@@ -121,8 +122,8 @@ class UserfilesController < ApplicationController
     userfile.name    = clean_basename
     
     if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
-      success, successful_files, failed_files, nested_files = userfile.extract
-      if success
+      status, successful_files, failed_files, nested_files = userfile.extract
+      if status == :success
         if successful_files.size > 0
           flash[:notice] = "#{successful_files.size} files successfully added."          
         end
@@ -133,6 +134,8 @@ class UserfilesController < ApplicationController
           flash[:error] ||= ""
           flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."          
         end
+      elsif status == :overflow
+        flash[:error] = "Maximum of 50 files can be auto-extracted at a time.\nCreate a collection if you wish to add more."
       else
         flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
       end
@@ -205,6 +208,8 @@ class UserfilesController < ApplicationController
       operation = 'delete'
     elsif params[:commit] == 'Update Tags for Selected Files'
       operation = 'tag_update'
+    elsif params[:commit] == 'Merge Files into Collection'
+      operation = 'merge_collections'
     else
       operation   = params[:operation]
     end
@@ -308,10 +313,18 @@ class UserfilesController < ApplicationController
             flash[:error] += "Tags for #{userfile.name} could not be updated."
           end
         end
+      when 'merge_collections'
+        collection = FileCollection.new(:user_id  => current_user.id)
+        status = collection.merge_collections(filelist)
+        if status == :success
+          flash[:notice] = "Collection #{collection.name} was created."
+        elsif status == :collision
+          flash[:error] = "There was a collision in file names. Collection merge aborted."
+        else
+          flash[:error] = "Collection merge fails (internal error?)."
+        end 
       else
-
         flash[:error] = "Unknown operation #{operation}"
-
     end
 
     redirect_to :action => :index

@@ -13,109 +13,123 @@
 -%>
 <% title 'Files' %>
 
-<h1>Welcome. These are your files:</h1>
-<div id="userfile-side">
-   <table>
-   <% form_tag userfiles_path, {:method => :get} do %>
-   <%= hidden_field_tag :search_type, 'name_search' %>
+<table class="userfiles">
    <tr>
-      <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
-      <td><%= submit_tag "Search Names" %></td>
-   <tr/>
-   <% end %>
-   </table>
+   
+    <td colspan="2">
+   <h1>Welcome. These are your files:</h1>
 
-   <strong>Add filter:</strong>
-   <%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
-   <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
-   <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
    <br>
-   <strong>Filter tags:</strong>
-   <% current_user.tags.collect(&:name).each do |tag| %>
-      <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
+
+   <strong>Current filters:</strong>
+   <% session[:current_filters].each do |filter|%>
+      <%= filter %>
+      <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
+      <%= ' / ' %>
    <% end %>
-   <% form_tag tags_path do %>
-      <%= text_field_tag 'tag[name]' %>
-      <%= submit_tag "New Tag" %>
+   <% if current_user.has_role?(:admin) %>
+      <br><br>
+      <strong>Admin options:</strong>
+      <%= link_to session[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:toggle_view_all => true ) %>
+      <br><br>
    <% end %>
-   <%= button_to "Manage Tags", tags_path, :method => :get %>  
+   </td>
+   </tr>
    
-   <hr>
-   <h3>Add a new file:</h3>
-
-   <%
-      form_tag( "/userfiles", :multipart => true, :method => :post ) do
-   %>
-
-         <%= file_field_tag("upload_file") %>
-         <%= submit_tag("Upload file")     %>
-         <br>
-         Archived files: <%= select_tag(:archive, options_for_select([['Auto-extract', 'extract'],['Create collection', 'collection'],['Save file', 'save']])) %>
-         <br><br>
-         <% if @user_tags %>
-            Tags for uploaded file:
-            <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
-         <% end %>
-   <% end %>
- </div>
-
-<br>
-
-<strong>Current filters:</strong>
-<% session[:current_filters].each do |filter|%>
-   <%= filter %>
-   <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
-   <%= ' / ' %>
-<% end %>
-<% if current_user.has_role?(:admin) %>
-   <br><br>
-   <strong>Admin options:</strong>
-   <%= link_to session[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:toggle_view_all => true ) %>
-   <br><br>
-<% end %>
-
-<% form_tag(operation_userfiles_path(:method => :post)) do %>
+   <tr>
+   <td>
+   <% form_tag(operation_userfiles_path(:method => :post)) do %>
     
-      <% if session[:pagination] %>
-           <%= will_paginate %>
-        <% end %>   
-        <%= link_to "Toggle Pagination", userfiles_path(:pagination => (session[:pagination] ? 'off' : 'on')) %>
-   <table class="userfiles">
-      <tr>
-          <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
-          <% if session[:view_all] && current_user.has_role?(:admin)%>
-            <th>Owner</th>
-          <% end %>
-          <th>Filename</th>
-          <th>Creation Date</th>
-          <th>Size</th>
-          <th colspan="2">Tags</th>
-      </tr>
-         <%= render :partial => 'userfile', :collection  => @userfiles %>
-   </table>      
+         <% if session[:pagination] == 'on' %>
+              <%= will_paginate %>
+           <% end %>   
+           <%= link_to "Toggle Pagination", userfiles_path(:pagination => (session[:pagination] ? 'off' : 'on')) %>
+      <table class="userfiles">
+         <tr>
+             <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
+             <% if session[:view_all] && current_user.has_role?(:admin)%>
+               <th>Owner</th>
+             <% end %>
+             <th>Filename</th>
+             <th>Creation Date</th>
+             <th>Size</th>
+             <th colspan="2">Tags</th>
+         </tr>
+            <%= render :partial => 'userfile', :collection  => @userfiles %>
+      </table>      
    
-      <%= submit_tag("Download Selected Files") %>
-      <%= submit_tag("Delete Selected Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br><br>
-      Operations: <%= select_tag(
-           "operation", 
-            '
-            <option value="">Select an operation</option>
+         <%= submit_tag("Download Selected Files") %>
+         <%= submit_tag("Merge Files into Collection") %>
+         <%= submit_tag("Delete Selected Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br><br>
+         Operations: <%= select_tag(
+              "operation", 
+               '
+               <option value="">Select an operation</option>
 
-            <optgroup label="Scientific operations">
-            <option value="minc2jiv">Convert selected MINC files to JIV</option>
-            <option value="dcm2mnc">Convert selected DICOM collection to MINC files</option>
-            <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>  
-            '
-           ) %>
+               <optgroup label="Scientific operations">
+               <option value="minc2jiv">Convert selected MINC files to JIV</option>
+               <option value="dcm2mnc">Convert selected DICOM collection to MINC files</option>
+               <option value="civet">Process selected MINC files through a simple CIVET pipeline</option>  
+               '
+              ) %>
 
-        <%= submit_tag("Apply Operation") %><br><br>
-         <% if @user_tags %>
-           <br>
-              Tag update:
-              <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
-              <%= submit_tag("Update Tags for Selected Files") %>  
-           <% end %>
-<% end %>
+           <%= submit_tag("Apply Operation") %><br><br>
+            <% if @user_tags %>
+              <br>
+                 Tag update:
+                 <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+                 <%= submit_tag("Update Tags for Selected Files") %>  
+              <% end %>
+
+   <% end %>
+   </td>
+   <td class="table-menu">
+      <table>
+      <% form_tag userfiles_path, {:method => :get} do %>
+      <%= hidden_field_tag :search_type, 'name_search' %>
+      <tr>
+         <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
+         <td><%= submit_tag "Search Names" %></td>
+      <tr/>
+      <% end %>
+      </table>
+
+      <strong>Add filter:</strong>
+      <%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
+      <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
+      <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
+      <br>
+      <strong>Filter tags:</strong>
+      <% current_user.tags.collect(&:name).each do |tag| %>
+         <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
+      <% end %>
+      <% form_tag tags_path do %>
+         <%= text_field_tag 'tag[name]' %>
+         <%= submit_tag "New Tag" %>
+      <% end %>
+      <%= button_to "Manage Tags", tags_path, :method => :get %>  
+
+      <hr>
+      <h3>Add a new file:</h3>
+
+      <%
+         form_tag( "/userfiles", :multipart => true, :method => :post ) do
+      %>
+
+            <%= file_field_tag("upload_file") %>
+            <%= submit_tag("Upload file")     %>
+            <br>
+            Archived files: <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
+            <br><br>
+            <% if @user_tags %>
+               Tags for uploaded file:
+               <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+            <% end %>
+      <% end %>
+    </td>
+</tr>
+ 
+</table>
 
 
 

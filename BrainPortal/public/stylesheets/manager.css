@@ -25,6 +25,11 @@ table {
 
 .userfiles {
 /*  width: 60% */
+	background: none;
+}
+
+.table-menu {
+	vertical-align: top;
 }
 
 th {
@@ -35,6 +40,10 @@ th {
 td {
 	padding: 0em;
 	padding-left: 0.3em;
+}
+
+ul {
+	
 }
 
 .error {
@@ -124,6 +133,10 @@ td {
     padding-left: 0em;
     padding-right: 4em;
     padding-bottom: 1em;
+}
+
+#userfile-main{
+	
 }
 
 #side a:link {color: #000000}     /* unvisited link */
