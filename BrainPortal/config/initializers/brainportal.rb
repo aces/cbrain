@@ -6,7 +6,7 @@
 #
 # Original author: Pierre Rioux
 #
-# $Id: cbrain.rb 40 2008-11-03 20:30:49Z tsherif $
+# $Id$
 #
 
 require 'socket'
@@ -15,8 +15,8 @@ class CBRAIN
 
   public
 
-  Revision_info="$Id: cbrain.rb 40 2008-11-03 20:30:49Z tsherif $"
-  Redmine_Version="0.3"
+  Revision_info="$Id$"
+  Redmine_Version="0.4"
 
   # BrainPortal constants
   Bourreau_task_resource_URL = "http://localhost:3050/"
@@ -58,10 +58,10 @@ class CBRAIN
 
   # Other constants that are used in Bourreau but not in BrainPortal,
   # yet must still be initialized for BrainPortal to run.
-  Filevault_host = "localhost"   # dummy; brain portal doesn't need this
-  Filevault_user = ""            # dummy; brain portal doesn't need this
-  Vaultcache_dir = ""            # dummy; brain portal doesn't need this
-  FilevaultIsLocal = true;       # not dummy, must be 'true'.
+  Filevault_host   = "localhost"   # dummy; brain portal doesn't need this
+  Filevault_user   = ""            # dummy; brain portal doesn't need this
+  Vaultcache_dir   = ""            # dummy; brain portal doesn't need this
+  FilevaultIsLocal = true;         # not dummy, must be 'true'.
 
 end
 

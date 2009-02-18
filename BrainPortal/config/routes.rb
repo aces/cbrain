@@ -15,10 +15,12 @@ ActionController::Routing::Routes.draw do |map|
   map.jiv_display '/jiv/show', :controller  => 'jiv', :action  => 'show'
 
   
-  map.connect 'tasks/:action/:id', :controller => 'tasks'
-  map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
+  map.connect 'tasks/:action',                   :controller => 'tasks'
+  map.connect 'tasks/:action/:cluster_name/:id', :controller => 'tasks'
 
   map.connect 'civet/:action/:id', :controller => 'civet'
+
+  map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
   # The priority is based upon order of creation: first created -> highest priority.
 

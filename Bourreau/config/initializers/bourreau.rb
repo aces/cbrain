@@ -6,7 +6,7 @@
 #
 # Original author: Pierre Rioux
 #
-# $Id: cbrain.rb 40 2008-11-03 20:30:49Z tsherif $
+# $Id$
 #
 
 require 'socket'
@@ -15,7 +15,7 @@ class CBRAIN
 
   public
 
-  Revision_info="$Id: cbrain.rb 40 2008-11-03 20:30:49Z tsherif $"
+  Revision_info="$Id$"
 
   # Configuration constants that depend on the hostname
   hostname = Socket.gethostname

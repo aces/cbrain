@@ -16,16 +16,30 @@ class TasksController < ApplicationController
   before_filter :login_required
   
   def index
-    if current_user.role == 'admin'
-      @tasks = DrmaaTask.find(:all)
-    else
-      @tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } )
+    @tasks = []
+    CBRAIN_CLUSTERS::CBRAIN_cluster_list.each do |cluster_name|
+      DrmaaTask.adjust_site(cluster_name)
+      begin
+        if current_user.role == 'admin'
+          tasks = DrmaaTask.find(:all) || []
+        else
+          tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
+        end
+        tasks = [ tasks ] unless tasks.is_a?(Array)
+        @tasks.concat(tasks)
+      rescue => e
+        flash[:error] ||= ""
+        flash[:error] += "Cluster '#{cluster_name}' doesn't seem to be available: #{e.inspect}\n"
+      end
     end
+    @tasks
   end
 
   # GET /tasks/1
   # GET /tasks/1.xml
   def show
+    cluster_name = params[:cluster_name]
+    DrmaaTask.adjust_site(cluster_name)
     @task = DrmaaTask.find(params[:id])
 
     respond_to do |format|
@@ -58,9 +72,11 @@ class TasksController < ApplicationController
       return
     end
 
-    tasklist.each do |task_id|
+    tasklist.each do |task_cl_id|
 
+      (cluster_name,task_id) = task_cl_id.split(/,/)
       begin 
+        DrmaaTask.adjust_site(cluster_name)
         task = DrmaaTask.find(task_id.to_i)
       rescue
         flash[:error] += "Task #{task_id} does not exist."

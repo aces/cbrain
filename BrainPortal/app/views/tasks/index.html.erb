@@ -21,6 +21,7 @@
    <tr>
        <th>Select</th>
        <th>Task Name</th>
+       <th>Cluster Name</th>
        <th>Current Status</th>
        <th>Time Submitted</th>
        <th>Last Updated</th>
@@ -30,8 +31,9 @@
    </tr>
    <% for task in @tasks %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= check_box_tag("tasklist[]", task.id.to_s) %></td>
-         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :id => task.id %></td>
+         <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s) %></td>
+         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :cluster_name => task.cluster_name, :id => task.id %></td>
+         <td><%= h(task.cluster_name) %></td>
          <td><%= h(task.status) %></td>
          <td><%= h(to_localtime(task.created_at.to_s)) -%></td>
          <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
@@ -39,6 +41,9 @@
            <td><%= h(User.find_by_id((task.user_id) || 1).login) -%></td>
          <% end %>
        </tr>
+   <% end %>
+   <% if @tasks.nil? || @tasks.empty? %>
+     <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
    <% end %>
 </table>
 

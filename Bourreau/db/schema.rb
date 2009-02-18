@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20081201181424) do
+ActiveRecord::Schema.define(:version => 20090216200134) do
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -18,6 +18,15 @@ ActiveRecord::Schema.define(:version => 20081201181424) do
     t.text     "params"
     t.string   "status"
     t.text     "log"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+    t.string   "cluster_name"
+  end
+
+  create_table "feedbacks", :force => true do |t|
+    t.string   "summary"
+    t.text     "details"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
@@ -50,6 +59,39 @@ ActiveRecord::Schema.define(:version => 20081201181424) do
     t.datetime "updated_at"
   end
 
+  create_table "logged_exceptions", :force => true do |t|
+    t.string   "exception_class"
+    t.string   "controller_name"
+    t.string   "action_name"
+    t.text     "message"
+    t.text     "backtrace"
+    t.text     "environment"
+    t.text     "request"
+    t.datetime "created_at"
+  end
+
+  create_table "sessions", :force => true do |t|
+    t.string   "session_id", :null => false
+    t.text     "data"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
+  add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "tags", :force => true do |t|
+    t.string   "name"
+    t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "tags_userfiles", :id => false, :force => true do |t|
+    t.integer "tag_id"
+    t.integer "userfile_id"
+  end
+
   create_table "userfiles", :force => true do |t|
     t.string   "name"
     t.integer  "size"
@@ -59,6 +101,7 @@ ActiveRecord::Schema.define(:version => 20081201181424) do
     t.integer  "rgt"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type"
   end
 
   create_table "users", :force => true do |t|

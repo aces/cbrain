@@ -492,7 +492,6 @@ protected
         @capt_stderr_b64 = Base64.encode64(io.read)
         io.close
      end
-
   end
 
   def capt_stdout_b64
