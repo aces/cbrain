@@ -28,15 +28,15 @@ class TasksController < ApplicationController
         tasks = [ tasks ] unless tasks.is_a?(Array)
         @tasks.concat(tasks)
       rescue => e
-        flash[:error] ||= ""
-        flash[:error] += "Cluster '#{cluster_name}' doesn't seem to be available: #{e.inspect}\n"
+        flash.now[:error] ||= ""
+        flash.now[:error] += "Cluster '#{cluster_name}' is down: #{e.to_s}"
       end
     end
     @tasks
   end
 
-  # GET /tasks/1
-  # GET /tasks/1.xml
+  # GET /tasks/Montague/1
+  # GET /tasks/Montague/1.xml
   def show
     cluster_name = params[:cluster_name]
     DrmaaTask.adjust_site(cluster_name)
