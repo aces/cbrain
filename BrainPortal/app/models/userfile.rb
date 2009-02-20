@@ -115,7 +115,7 @@ class Userfile < ActiveRecord::Base
       new_order = 'type, ' + new_order
     end
     
-    if new_order == current_order
+    if new_order == current_order && new_order != 'lft'
       new_order += ' DESC'
     end
       

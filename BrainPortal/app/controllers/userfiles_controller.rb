@@ -20,7 +20,7 @@ class UserfilesController < ApplicationController
   def index
     session[:current_filters] ||= []
     session[:pagination] ||= 'on'
-    session[:order] ||= 'name'
+    session[:order] ||= 'lft'
     
     @filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     session[:current_filters] = [] if params[:search_type] == 'none'
@@ -40,11 +40,11 @@ class UserfilesController < ApplicationController
     unless session[:view_all] && current_user.has_role?(:admin)
       @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
                                                 :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                                :order => session[:order])
+                                                :order => "userfiles.#{session[:order]}")
     else
       @userfiles = Userfile.find(:all, :include  => :tags, 
                                   :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                  :order => session[:order])
+                                  :order => "userfiles.#{session[:order]}")
     end
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
