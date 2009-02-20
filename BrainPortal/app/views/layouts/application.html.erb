@@ -11,6 +11,13 @@
 # $Id: cbrain.html.erb 30 2008-10-30 20:08:58Z prioux $
 #
 
+
+greek_alphabet = [ 'alpha',  'beta',  'gamma',   'delta', 'epsilon',
+                   'zeta',   'eta',   'theta',   'iota',  'kappa',
+                   'lambda', 'mu',    'nu',      'xi',    'omicron',
+                   'pi',     'rho',   'sigma',   'tau',   'upsilon',
+                   'phi',    'chi',   'psi',     'omega' ]
+
 -%>
 <html>
 
@@ -35,7 +42,7 @@
             <div id="top_all">
                 <div id="top_01"></div>
                 <div id="top_02"></div>
-                <div id="top_03"><h1>CBRAIN <%= CBRAIN::Redmine_Version -%> <small><small><small>BETA</small></small></small></H1></div>
+                <div id="top_03"><h1>CBRAIN <%= CBRAIN::Redmine_Version -%> <small><small><small><%= greek_alphabet[(Time.now.to_i / 180) % 24] %></small></small></small></H1></div>
                 <div id="top_04"><h2>BIC - McConnell Brain Imaging Center</h2></div>
                 <div id="top_05"></div>
             </div><!--top_all-->
