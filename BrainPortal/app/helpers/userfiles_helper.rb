@@ -16,4 +16,10 @@ module UserfilesHelper
     
     icon
   end
+  
+  def tree_view_icon(order, level)
+    if order == 'lft'
+      '&nbsp' * 4 * level + '&#x21b3;'
+    end
+  end
 end

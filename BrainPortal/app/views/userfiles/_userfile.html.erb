@@ -4,7 +4,7 @@
       <td><%= userfile.user.login %></td>
    <% end %>
    <td>
-      <%= '&nbsp' * 4 * userfile.level + '&#x21b3;' if userfile.level > 0 -%>
+      <%=  tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_to h(userfile.name), userfile_path(userfile) %>
       <%= userfile.is_a?(FileCollection) ? "(Collection)" : "" %>      
    </td>
