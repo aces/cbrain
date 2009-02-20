@@ -42,7 +42,7 @@ greek_alphabet = [ 'alpha',  'beta',  'gamma',   'delta', 'epsilon',
             <div id="top_all">
                 <div id="top_01"></div>
                 <div id="top_02"></div>
-                <div id="top_03"><h1>CBRAIN <%= CBRAIN::Redmine_Version -%> <small><small><small><%= greek_alphabet[(Time.now.to_i / 180) % 24] %></small></small></small></H1></div>
+                <div id="top_03"><h1>CBRAIN <%= CBRAIN::Redmine_Version -%> <small><small><small><%= greek_alphabet[(Time.now.to_i / 180) % 24].upcase %></small></small></small></H1></div>
                 <div id="top_04"><h2>BIC - McConnell Brain Imaging Center</h2></div>
                 <div id="top_05"></div>
             </div><!--top_all-->
