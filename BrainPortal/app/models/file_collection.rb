@@ -31,9 +31,9 @@ class FileCollection < Userfile
         `unzip #{self.name}`
       end
       
-      if common_base = self.get_common_base(self.list_files)
-        File.rename(common_base, ".")
-      end
+      # if common_base = self.get_common_base(self.list_files)
+      #         File.rename(common_base, ".")
+      #       end
     end
     
     File.unlink(directory + self.name) if File.file?(directory + self.name) 
@@ -41,7 +41,11 @@ class FileCollection < Userfile
     
     
     self.name = collection_name
+    
+    
     self.flatten
+    
+    self.size = self.list_files.size
     
     self.save
   end
@@ -74,6 +78,8 @@ class FileCollection < Userfile
       end
     end
     
+    self.size = self.list_files.size
+    
     if self.save
       :success
     else
@@ -84,10 +90,6 @@ class FileCollection < Userfile
   def content=(newcontent)
     @content = newcontent
     @content
-  end
-  
-  def size
-    self.list_files.size
   end
   
   #find longest common root of a list of file paths.
@@ -127,7 +129,7 @@ class FileCollection < Userfile
     @content=nil 
   end
   
-  def list_files
+  def list_files    
     Dir.chdir(self.user.vault_dir) do
       @file_list ||= `find #{self.name} -type f`.split("\n")
     end

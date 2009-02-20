@@ -110,6 +110,18 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  def self.set_order(new_order, current_order)
+    if new_order == 'size'
+      new_order = 'type, ' + new_order
+    end
+    
+    if new_order == current_order
+      new_order += ' DESC'
+    end
+      
+    new_order
+  end
+  
   # Full pathname to file in the vault; note that this could
   # be a pathname on a cache directory on the local machine.
   def vaultname

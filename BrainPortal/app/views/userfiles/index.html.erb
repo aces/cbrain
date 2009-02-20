@@ -43,17 +43,17 @@
          <% if session[:pagination] == 'on' %>
               <%= will_paginate %>
            <% end %>   
-           <%= link_to "Toggle Pagination", userfiles_path(:pagination => (session[:pagination] ? 'off' : 'on')) %>
+           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_pagination_toggle(session[:pagination])) %>
       <table class="userfiles">
          <tr>
              <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
              <% if session[:view_all] && current_user.has_role?(:admin)%>
-               <th>Owner</th>
+               <th><%= link_to "Owner", userfiles_path(:order  => 'user_id') %><%= set_order_icon('user_id', session[:order]) %></th>
              <% end %>
-             <th>Filename</th>
-             <th>Creation Date</th>
-             <th>Size</th>
-             <th colspan="2">Tags</th>
+             <th><%= link_to "Filename", userfiles_path(:order  => 'name') %><%= set_order_icon('name', session[:order]) %></th>
+             <th><%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %><%= set_order_icon('created_at', session[:order]) %></th>
+             <th><%= link_to "Size", userfiles_path(:order  => 'size') %><%= set_order_icon('size', session[:order]) %></th>
+             <th>Tags</th>
          </tr>
             <%= render :partial => 'userfile', :collection  => @userfiles %>
       </table>      
