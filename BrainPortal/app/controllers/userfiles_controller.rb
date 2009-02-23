@@ -185,13 +185,21 @@ class UserfilesController < ApplicationController
       @userfile = current_user.userfiles.find(params[:id])      
     end
     
+    old_name = @userfile.name
+    
+    attributes = (params[:single_file] || params[:file_collection] || {}).merge(params[:userfile] || {})
+    attributes[:tag_ids] ||= []
+          
     respond_to do |format|
-      if @userfile.update_attributes(params[:userfile])
-        flash[:notice] = "Tags for #{@userfile.name} successfully updated."
+      if @userfile.update_attributes(attributes)
+        File.rename(current_user.vault_dir + old_name, @userfile.vaultname)
+        flash[:notice] = "#{@userfile.name} successfully updated."
         format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }
       else
-        format.html { render :action => "edit" }
+        @userfile.name = old_name
+        @tags = current_user.tags
+        format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
     end

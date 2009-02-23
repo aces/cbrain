@@ -18,6 +18,7 @@ class Userfile < ActiveRecord::Base
   has_and_belongs_to_many :tags
   
   validates_uniqueness_of :name, :scope => :user_id
+  validates_presence_of   :name
   
   def self.search(type, term = nil)
     filter_name = get_filter_name(type, term)
