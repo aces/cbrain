@@ -47,7 +47,7 @@ class DrmaaTask < ActiveResource::Base
   def adjust_site
     cluster_name = self.cluster_name
     raise "ActiveRecord for DrmaaTask missing cluster_name ?!?" unless cluster_name
-    self.class.send('adjust_site',cluster_name)
+    self.class.adjust_site(cluster_name)
     self
   end
 

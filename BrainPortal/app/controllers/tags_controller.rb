@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -9,6 +10,9 @@
 #
 
 class TagsController < ApplicationController
+
+  Revision_info = "$Id$"
+
   before_filter :login_required
   
   # GET /tags
