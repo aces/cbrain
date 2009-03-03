@@ -46,6 +46,10 @@ class CBRAIN
 
     #-------------------
 
+    when /morpheus/
+
+      Filevault_dir            = "/home/mathieu/cbrain/FileVault"
+
     else
       raise "Configuration error: unsupported BrainPortal hostname '#{hostname}'."
 

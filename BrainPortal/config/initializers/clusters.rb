@@ -19,7 +19,7 @@ class CBRAIN_CLUSTERS
 
   # This is used by BrainPortal as the list of available clusters.
   # The defaults/prefered cluster is the first one
-  CBRAIN_cluster_list = [ "Montague", "Clumeq1" ]
+  CBRAIN_cluster_list = [ "unf-montreal" ]
   
   # This hash maps short names of clusters to the Bourreau resource URI
   # running on the clusters' frontends
@@ -28,7 +28,8 @@ class CBRAIN_CLUSTERS
       "Huia"      => "http://huia.bic.mni.mcgill.ca:3050/",
       "Clumeq1"   => "http://localhost:3090/",
       "Krylov"    => "http://krylov.clumeq.mcgill.ca:3050/", # does not work, need tunneling, see "Clumeq1" tunneled on 3090
-      "Localhost" => "http://localhost:3050/"
+      "Localhost" => "http://localhost:3050/",
+      "unf-montreal" => "http://morpheus.criugm.qc.ca:3050/"
   }
 
   # Set my OWN cluster name if I'm Bourreau
@@ -39,6 +40,8 @@ class CBRAIN_CLUSTERS
         BOURREAU_CLUSTER_NAME = "Huia"   # case sensitive
       when /montague/
         BOURREAU_CLUSTER_NAME = "Montague"   # case sensitive
+      when /morpheus/
+        BOURREAU_CLUSTER_NAME = "unf-montreal"   # case sensitive; through tunneling
       when /krylov/
         BOURREAU_CLUSTER_NAME = "Clumeq1"   # case sensitive; through tunneling
     else

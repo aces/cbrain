@@ -75,6 +75,22 @@ class CBRAIN
       Quarantine_dir           = "/usr/local/bic"
       CIVET_dir                = "/usr/local/bic/CIVET"
 
+    #----  MATHIEU'S, local  ----
+
+    when /morpheus/
+      # Filevault constants
+      Filevault_host           = "localhost"
+      Filevault_user           = ""  # not used, since it's on localhost
+      Filevault_dir            = "/home/mathieu/cbrain/FileVault"
+
+      # Local bourreau constants
+      DRMAA_sharedir           = "/data/datascan/.gridshare"
+      Vaultcache_dir           = ""  # not used, since it's local
+
+      # Software installation paths
+      Quarantine_dir           = "/opt/share/mni"
+      CIVET_dir                = "/opt/share/mni/CIVET-1.1.9"
+
     #----  PIERRE'S, fake remote  ----
 
     when /montague/
