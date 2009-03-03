@@ -402,10 +402,30 @@ protected
     begin 
       state = @@DRMAA_session.job_ps(self.drmaa_jobid)
     rescue => e
-      return "Does Not Exist"
+      state = DRMAA::STATE_UNDETERMINED
+      if DRMAA.drm_system == 'PBS/Torque'
+        state = self.qstat_status
+      end
     end
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
     return status
+  end
+
+  # This is a patch for PBS which does NOT allow us to query jobs
+  # that were not started in this session (aarrgh) so we parse the
+  # output of the 'qstat' command. Yuk.
+  def qstat_status
+    begin
+      io = IO.popen("qstat -f #{self.drmaa_jobid} | grep 'job_state = '")
+      stateline = io.readline
+      io.close
+      return DRMAA::STATE_USER_ON_HOLD   if stateline.match(/ = .*H/)
+      return DRMAA::STATE_QUEUED_ACTIVE  if stateline.match(/ = .*Q/)
+      return DRMAA::STATE_RUNNING        if stateline.match(/ = .*R/)
+      return DRMAA::STATE_USER_SUSPENDED if stateline.match(/ = .*S/)
+    rescue
+      return DRMAA::STATE_UNDETERMINED
+    end
   end
 
   # Expects that the WD has already been changed
@@ -436,7 +456,7 @@ protected
       "\n" )
     io.close
 
-     # Create the DRMAA job object
+    # Create the DRMAA job object
     job = CbrainDRMAAJob.new   # TODO see if we can use DRMAA::JobTemplate directly
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
@@ -445,6 +465,13 @@ protected
     job.join    = false
     job.wd      = workdir
     job.name    = name
+
+    # Log version of DRMAA lib, e.g.
+    # Using DRMAA for 'PBS/Torque' version '1.0' implementation 'PBS DRMAA v. 1.0 <http://sourceforge.net/projects/pbspro-drmaa/>'
+    drm     = DRMAA.drm_system
+    version = DRMAA.version
+    impl    = DRMAA.drmaa_implementation
+    self.addlog("Using DRMAA for '#{drm}' version '#{version}' implementation '#{impl}'")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked

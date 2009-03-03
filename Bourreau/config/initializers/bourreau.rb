@@ -25,9 +25,9 @@ class CBRAIN
 
     when "krylov.clumeq.mcgill.ca"   # CLUMEQ
       # Filevault constants
-      Filevault_host           = "montague.bic.mni.mcgill.ca"
-      Filevault_user           = "prioux"
-      Filevault_dir            = "/home/prioux/CBRAIN/FileVault"
+      Filevault_host           = "huia.bic.mni.mcgill.ca"
+      Filevault_user           = "cbrain"
+      Filevault_dir            = "/home/cbrain/CBrainPortal/FileVault"
 
       # Local bourreau constants
       DRMAA_sharedir           = "/home/prioux/CBrain/gridshare"
@@ -38,10 +38,14 @@ class CBRAIN
       CIVET_dir                = "/home/clepage/quarantines/Linux-x86_64/CIVET-1.1.9"
 
       # Establish tunnel
-      system("ssh -n -f -N -R 3050:localhost:3050 prioux@montague.bic.mni.mcgill.ca")
+      system("ssh -f -n -N -R 3090:localhost:3050 cbrain@huia.bic.mni.mcgill.ca")
 
       # TODO Environment to be set using variables ?
       ENV['LD_LIBRARY_PATH']   = "/usr/pbs/lib64:/home/prioux/drmaa/lib:/usr/lib64:/usr/lib64/mysql:/home/prioux/share/lib:/usr/X11R6/lib/X11:/usr/X11R6/lib:/usr/lib/X11:/usr/lib:/usr/lib:/usr/ucblib:/usr/local/lib/X11"
+      # TODO the PERL5LIB path should maybe be set in the DrmaaTask's commands ?
+      ENV['PERL5LIB'] ||= ""
+      ENV['PERL5LIB'] += ":" if ENV['PERL5LIB'] != ""
+      ENV['PERL5LIB'] += "/home/prioux/share/lib/perl5/site_perl/5.8.5"
 
     #----  HUIA  ----
 
