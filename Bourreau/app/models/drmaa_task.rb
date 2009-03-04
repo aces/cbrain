@@ -366,7 +366,7 @@ public
 protected
 
   # Class constants
-  @@DRMAA_session ||= DRMAA::Session.session_cache  # See comment at top of file
+  @@DRMAA_session = DRMAA::Session.session_cache  # See comment at top of file
 
   # The list of possible DRMAA states is larger than
   # the ones we need for CBRAIN, so here is a mapping
