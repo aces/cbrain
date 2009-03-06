@@ -19,14 +19,15 @@ class CbrainDRMAAJob < DRMAA::JobTemplate
 end
 
 # This new class method caches the DRMAA::Session object;
-# it's needed for initializing the constant class variable
-# @@DRMAA_Session because only one Session object can be created
+# it's needed for initializing the DRMAA session becaus3
+# only one Session object can be created
 # during an active ruby execution, and mongrel reloads
 # and reninitalizes all the rails classes at every request.
 module DRMAA
   class Session
     def Session.session_cache
       @@session_cache ||= DRMAA::Session.new
+      @@session_cache
     end
   end
 end
@@ -137,6 +138,7 @@ public
       end
     rescue => e
       self.addlog("Exception raised when setting up: #{e.inspect}")
+      e.backtrace.each { |m| self.addlog(m) if m.match(/Bourreau/) }
       self.status = "Failed To Setup"
     end
     self
@@ -276,7 +278,7 @@ public
   def terminate
     return unless self.status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
     begin
-      @@DRMAA_session.terminate(self.drmaa_jobid)
+      DRMAA::Session.session_cache.terminate(self.drmaa_jobid)
       self.status = "Terminated"
     rescue
       # nothing to do
@@ -286,7 +288,7 @@ public
   def suspend
     return unless self.status == "On CPU"
     begin
-      @@DRMAA_session.suspend(self.drmaa_jobid)
+      DRMAA::Session.session_cache.suspend(self.drmaa_jobid)
       self.status = "Suspended"
     rescue
       # nothing to do
@@ -296,7 +298,7 @@ public
   def resume
     begin
       return unless self.status == "Suspended"
-      @@DRMAA_session.resume(self.drmaa_jobid)
+      DRMAA::Session.session_cache.resume(self.drmaa_jobid)
       self.status = "On CPU"
     rescue
       # nothing to do
@@ -306,7 +308,7 @@ public
   def hold
     return unless self.status == "Queued"
     begin
-      @@DRMAA_session.hold(self.drmaa_jobid)
+      DRMAA::Session.session_cache.hold(self.drmaa_jobid)
       self.status = "On Hold"
     rescue
       # nothing to do
@@ -316,7 +318,7 @@ public
   def release
     begin
       return unless self.status == "Suspended"
-      @@DRMAA_session.release(self.drmaa_jobid)
+      DRMAA::Session.session_cache.release(self.drmaa_jobid)
       self.status = "Queued"
     rescue
       # nothing to do
@@ -365,9 +367,6 @@ public
 
 protected
 
-  # Class constants
-  @@DRMAA_session = DRMAA::Session.session_cache  # See comment at top of file
-
   # The list of possible DRMAA states is larger than
   # the ones we need for CBRAIN, so here is a mapping
   # to our shorter list. Note that when a job finishes
@@ -400,7 +399,7 @@ protected
   # See also the comments for @@DRMAA_States_To_Status
   def drmaa_status
     begin 
-      state = @@DRMAA_session.job_ps(self.drmaa_jobid)
+      state = DRMAA::Session.session_cache.job_ps(self.drmaa_jobid)
     rescue => e
       state = DRMAA::STATE_UNDETERMINED
       if DRMAA.drm_system == 'PBS/Torque'
@@ -457,6 +456,7 @@ protected
     io.close
 
     # Create the DRMAA job object
+    DRMAA::Session.session_cache   # Make sure it's loaded.
     job = CbrainDRMAAJob.new   # TODO see if we can use DRMAA::JobTemplate directly
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
@@ -476,7 +476,7 @@ protected
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
-    jobid            = @@DRMAA_session.run(job)
+    jobid            = DRMAA::Session.session_cache.run(job)
     jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
     self.drmaa_jobid = jobid
     self.status      = "Queued"
