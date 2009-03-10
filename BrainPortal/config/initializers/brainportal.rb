@@ -16,7 +16,7 @@ class CBRAIN
   public
 
   Revision_info="$Id$"
-  Redmine_Version="0.4"
+  Redmine_Version="0.5"
 
   # BrainPortal constants
   Bourreau_task_resource_URL = "http://localhost:3050/"
