@@ -17,7 +17,7 @@
    <tr>
    
     <td colspan="2">
-   <h1>Bienvenue. These are your files:</h1>
+   <h1>Welcome. These are your files:</h1>
 
    <br>
 
@@ -30,7 +30,7 @@
    <% if current_user.has_role?(:admin) %>
       <br><br>
       <strong>Admin options:</strong>
-      <%= link_to session[:view_all] ? "Show your files ": "Show all files on the system", userfiles_path(:toggle_view_all => true ) %>
+      <%= link_to session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(session[:view_all]) ) %>
       <br><br>
    <% end %>
    </td>
@@ -44,13 +44,13 @@
               <%= will_paginate %>
            <% end %>
          <% if @userfiles.total_pages > 1 %>  
-           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_pagination_toggle(session[:pagination])) %>
+           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
          <% end %>
          <%= link_to "Tree View", userfiles_path(:order  => 'lft') %>
       <table class="userfiles">
          <tr>
              <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
-             <% if session[:view_all] && current_user.has_role?(:admin)%>
+             <% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
                <th><%= link_to "Owner", userfiles_path(:order  => 'user_id') %><%= set_order_icon('user_id', session[:order]) %></th>
              <% end %>
              <th><%= link_to "Filename", userfiles_path(:order  => 'name') %><%= set_order_icon('name', session[:order]) %></th>
@@ -122,7 +122,7 @@
             <%= file_field_tag("upload_file") %>
             <%= submit_tag("Upload file")     %>
             <br>
-            Archived files: <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
+            Archived files: <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
             <br><br>
             <% if @user_tags %>
                Tags for uploaded file:

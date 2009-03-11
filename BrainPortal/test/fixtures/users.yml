@@ -24,17 +24,17 @@ users_005:
   created_at: 2008-11-21 16:32:21
   email: ash@here
 users_006: 
-  salt: 5074360763666242f4a05064e3f0ac088f06240a
-  updated_at: 2008-11-24 19:22:55
-  crypted_password: 5ec241ad16f843bab16721ee706ef350c9e90a43
-  role: manager
+  salt: 9b79680b4e1299b66e52bfcdcfb1bc8b76196793
+  updated_at: 2009-01-13 19:47:49
+  crypted_password: 1d37d05bd00352fb7a87defe0ca620f94bf2143a
+  role: user
   remember_token_expires_at: 
   id: "6"
   remember_token: 
-  login: nguy
-  full_name: New Guy
-  created_at: 2008-11-21 19:44:14
-  email: lskdjf
+  login: helmy
+  full_name: Helmy Sherif
+  created_at: 2009-01-13 19:47:49
+  email: helmy@here
 users_001: 
   salt: f1b77887bac0116acdb87fc67c88b3680db6cc5a
   updated_at: 2008-11-20 18:02:38

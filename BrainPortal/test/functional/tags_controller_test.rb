@@ -37,7 +37,7 @@ class TagsControllerTest < ActionController::TestCase
       post :create, {:tag => {:name  => 'tag' }}, {:user_id => tags(:tags_001).user.id}
     end
 
-    assert_redirected_to tag_path(assigns(:tag))
+    assert_redirected_to userfiles_path
   end
 
   def test_should_not_show_tag_without_user

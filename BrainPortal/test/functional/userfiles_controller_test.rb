@@ -39,21 +39,32 @@ class UserfilesControllerTest < ActionController::TestCase
     assert_redirected_to userfiles_path
   end
 
-  def test_should_show_userfile
-    get :show, {:id => userfiles(:userfiles_001).id}, {:user_id  => userfiles(:userfiles_001).user.id}
-    assert_response :success
-  end
-
   def test_should_get_edit
     get :edit, {:id => userfiles(:userfiles_001).id}, {:user_id  => userfiles(:userfiles_001).user.id}
     assert_response :success
   end
 
   def test_should_update_userfile
-    put :update, {:id => userfiles(:userfiles_001).id, :userfile => {:tag_ids  => [tags(:tags_001).id]}}, {:user_id  => userfiles(:userfiles_001).user.id}
-    assert userfiles(:userfiles_001).tags.count == 1
-    assert userfiles(:userfiles_001).tags.find(:first).id == tags(:tags_001).id
+    filename = 'test__xxx__yyy__1234321.txt'
+    new_name = 'the_new_file'
+    assert !Userfile.find_by_name(filename)
+    
+    assert_difference('Userfile.count') do
+      post :create, {:upload_file  => fixture_file_upload("files/#{filename}")}, {:user_id  => users(:users_003).id}
+    end
+    
+    file = Userfile.find_by_name(filename)
+    
+    put :update, {:id => file.id, :userfile => {:name  => new_name, :tag_ids  => [file.user.tags.first.id]}}, {:user_id  => file.user.id}
+    
+    file = Userfile.find_by_name(new_name)
+    assert file.tags.count == 1
+    assert file.tags.find(:first).id == tags(:tags_001).id
+    assert file.name == new_name
+    
     assert_redirected_to userfiles_path
+    
+    File.unlink(file.vaultname)
   end
 
 end

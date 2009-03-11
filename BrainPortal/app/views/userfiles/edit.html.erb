@@ -65,25 +65,79 @@
 <% end %>
 <br>
    <% if @userfile.is_a?(FileCollection) && @userfile.size > 0 %>
-      <table>
       <% form_tag(extract_userfiles_path) do %>
-      <tr class="list-odd">
-         <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
-         <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
-         <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
-         <% for file in @userfile.list_files[1..-1] %>
-            <tr class="list-odd">
-               <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
-               <td><%= check_box_tag("filelist[]", file) %></td>
+      <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
+         <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>
+         <table class="userfiles">
+            <tr>
+               <th>Final</th>
+               <th>Native</th>
+               <th>Surfaces</th>
             </tr>
-         <% end %>
-      </tr>
-      
+            <tr class="list-odd">
+               <td>
+                  <%= @userfile.list_final.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/final/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_native.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/native/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_surfaces.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/surfaces/" + file) + file}.join('<br>') %>
+               </td>
+            </tr>
+            <tr>
+               <th>Classify</th>
+               <th>Thickness</th>
+               <th>Verify</th>
+            </tr>
+            <tr class="list-odd">
+               <td>
+                  <%= @userfile.list_classify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/classify/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_thickness.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/thickness/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_verify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/verify/" + file) + file}.join('<br>') %>
+               </td>
+            </tr>
+            <tr>
+               <th>Linear Transformations</th>
+               <th>Non-linear Transformations</th>
+               <th>Surface Transformations</th>
+            </tr>
+            <tr class="list-odd">
+               <td>
+                  <%= @userfile.list_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/linear/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_non_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/nonlinear/" + file) + file}.join('<br>') %>
+               </td>
+               <td>
+                  <%= @userfile.list_surfreg_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/surfreg/" + file) + file}.join('<br>') %>
+               </td>
+            </tr>
+         </table>
+      <% else %>
+      <% if @userfile.is_a?(CivetCollection) %>
+         <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
+      <% end %>
+      <table>
+         <tr class="list-odd">
+            <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
+            <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
+            <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
+            <% for file in @userfile.list_files[1..-1] %>
+               <tr class="list-odd">
+                  <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
+                  <td><%= check_box_tag("filelist[]", file) %></td>
+               </tr>
+            <% end %>
+         </tr>
+      <% end %>
       </table>
       <%= submit_tag "Extract Files from Collection" %>
       <% end %>
-   <% else %>
-      </table>
    <% end %>
 <br>
 

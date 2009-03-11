@@ -1,6 +1,6 @@
 module UserfilesHelper
-  def set_pagination_toggle(pagination)
-   pagination == 'on' ? 'off' : 'on'
+  def set_toggle(old_value)
+   old_value == 'on' ? 'off' : 'on'
   end
   
   def set_order_icon(location, session_order)

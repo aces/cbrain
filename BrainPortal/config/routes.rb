@@ -6,6 +6,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :userfiles, :collection => {:operation => :post, :extract  => :post}, :member  => {:content  => :get}
   map.resources :single_files, :controller  => :userfiles
   map.resources :file_collection, :controller  => :userfiles
+  map.resources :civet_collection, :controller  => :userfiles
 
   map.home    '', :controller => 'portal', :action => 'welcome'
   map.signup  '/signup', :controller => 'users', :action => 'new'

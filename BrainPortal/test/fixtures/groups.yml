@@ -2,7 +2,7 @@
 groups_002: 
   name: NLP Group
   updated_at: 2008-11-24 19:23:26
-  manager_id: "6"
+  manager_id: 
   id: "2"
   institution_id: "2"
   fax: ""

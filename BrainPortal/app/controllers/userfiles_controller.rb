@@ -27,8 +27,8 @@ class UserfilesController < ApplicationController
     session[:current_filters] << @filter unless @filter.blank? || session[:current_filters].include?(@filter)
     session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
     
-    if params[:toggle_view_all] && current_user.has_role?(:admin)
-      session[:view_all] = !session[:view_all]
+    if params[:view_all] && current_user.has_role?(:admin)
+      session[:view_all] = params[:view_all]
     end
     
     if params[:order] && !params[:page]
@@ -36,8 +36,8 @@ class UserfilesController < ApplicationController
     end
     
     tag_filters, name_filters  = session[:current_filters].partition{|filter| filter.split(':')[0] == 'tag'}
-    
-    unless session[:view_all] && current_user.has_role?(:admin)
+        
+    unless session[:view_all] == 'on' && current_user.has_role?(:admin)
       @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
                                                 :conditions => Userfile.convert_filters_to_sql_query(name_filters),
                                                 :order => "userfiles.#{session[:order]}")
@@ -48,7 +48,7 @@ class UserfilesController < ApplicationController
     end
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
-    @userfiles = Userfile.apply_filters(@userfiles, tag_filters)
+    @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
     
     if params[:pagination]
       session[:pagination] = params[:pagination]
@@ -99,6 +99,12 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles/1/edit
   def edit
+    session[:full_civet_display] ||= 'on'
+    
+    if params[:full_civet_display]
+      session[:full_civet_display] = params[:full_civet_display]
+    end
+    
     if current_user.has_role? :admin
       @userfile = Userfile.find(params[:id])
     else
@@ -121,6 +127,9 @@ class UserfilesController < ApplicationController
 
     if params[:archive] == 'collection'
       userfile         = FileCollection.new(:tag_ids  => params[:tags])
+    elsif params[:archive] == 'civet collection'
+      userfile         = CivetCollection.new(:tag_ids  => params[:tags])
+      params[:archive] = 'collection'
     else
       userfile         = SingleFile.new(:tag_ids  => params[:tags])
     end
@@ -187,9 +196,10 @@ class UserfilesController < ApplicationController
     
     old_name = @userfile.name
     
-    attributes = (params[:single_file] || params[:file_collection] || {}).merge(params[:userfile] || {})
-    attributes[:tag_ids] ||= []
-          
+    
+    attributes = (params[:single_file] || params[:file_collection] || {}).merge(params[:userfile] || {})    
+    attributes['tag_ids'] ||= []
+    
     respond_to do |format|
       if @userfile.update_attributes(attributes)
         File.rename(current_user.vault_dir + old_name, @userfile.vaultname)

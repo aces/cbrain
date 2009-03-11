@@ -20,28 +20,40 @@ class Userfile < ActiveRecord::Base
   validates_uniqueness_of :name, :scope => :user_id
   validates_presence_of   :name
   
-  def self.search(type, term = nil)
-    filter_name = get_filter_name(type, term)
-    files = if type
-              case type.to_sym
-                when :tag_search
-                  find(:all, :include => :tags).select{|f| f.tags.find_by_name(term)} rescue find(:all, :include => :tags)
-                when :name_search
-                  find(:all, :include => :tags, :conditions => ["name LIKE ?", "%#{term}%"])
-                when :minc
-                  find(:all, :include => :tags, :conditions => ["name LIKE ?", "%.mnc"])
-                when :jiv
-                  find(:all, :include => :tags, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
-                end
-            else
-              find(:all, :include =>:tags)
-            end
-    [files, filter_name]
-  end
+  ## 
+  ## Old search method: No longer used.
+  ##
+  # def self.search(type, term = nil)
+  #     filter_name = get_filter_name(type, term)
+  #     files = if type
+  #               case type.to_sym
+  #                 when :tag_search
+  #                   find(:all, :include => :tags).select{|f| f.tags.find_by_name(term)} rescue find(:all, :include => :tags)
+  #                 when :name_search
+  #                   find(:all, :include => :tags, :conditions => ["name LIKE ?", "%#{term}%"])
+  #                 when :minc
+  #                   find(:all, :include => :tags, :conditions => ["name LIKE ?", "%.mnc"])
+  #                 when :jiv
+  #                   find(:all, :include => :tags, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
+  #                 end
+  #             else
+  #               find(:all, :include =>:tags)
+  #             end
+  #     [files, filter_name]
+  #   end
   
+  
+  ###
+  # Pagination for the userfile index page.
+  #  Had to be modified a bit so it handles filtered results properly
+  ##
   def self.paginate(files, page)
     per_page = 50
     offset = (page.to_i - 1) * per_page    
+    
+    ##The following was an attempt to make it so children files appear on the 
+    ## same page as their parents.
+    ## So far it was causing way too many problems, and I'm not sure it's worth it.
     # if files.size > 50
     #    while files[offset] && files[offset].level > 0
     #       offset += 1
@@ -58,17 +70,29 @@ class Userfile < ActiveRecord::Base
     end
   end
     
-  def self.apply_filters(files, filters)
+  ###
+  # Filters files based on tags.
+  #   The reason this is done seperately from the sql queries
+  #   is that tag filtering involves complicated joins that would
+  #   make generating the queries unwieldly.
+  ###
+  def self.apply_tag_filters(files, filters)
     current_files = files 
     
     filters.each do |filter|
       type, term = filter.split(':')
-      current_files = current_files.select{ |f| f.tags.any?{|t| t.name == term}  }
+      if type == 'tag'
+        current_files = current_files.select{ |f| f.tags.any?{|t| t.name == term}  }
+      end
     end
     
     current_files
   end
     
+  ###  
+  # Utility method for converting post parameters into the filter format
+  #  used by the app.
+  ###
   def self.get_filter_name(type, term)
     case type
     when 'name_search'
@@ -82,6 +106,12 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  ###
+  # For the name and file filters, the filtering is done directly
+  # in the sql query.
+  # This method combines the appropriate filters into a single
+  # sql query.
+  ### 
   def self.convert_filters_to_sql_query(filters)
     query = []
     arguments = []
@@ -90,7 +120,7 @@ class Userfile < ActiveRecord::Base
       type, term = filter.split(':')
       case type
       when 'name'
-        query << "userfiles.name LIKE ?"
+        query << "(userfiles.name LIKE ?)"
         arguments << "%#{term}%"
       when 'file'
         case term
@@ -111,6 +141,9 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  ###
+  # Set the attribute by which to sort the file list.
+  ###
   def self.set_order(new_order, current_order)
     if new_order == 'size'
       new_order = 'type, ' + new_order
