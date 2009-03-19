@@ -49,17 +49,19 @@
       <th>Modified at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s)) %></td>
    </tr>
-   <tr class="list-odd">
-      <th rowspan="<%= @tags.size %>" valign="top">Tags:</th>
-      <td><%= @tags[0].name %></td>
-      <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
-      <% for tag in @tags[1..-1] %>
-         <tr class="list-odd">
-            <td><%= tag.name %></td>
-            <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag)) %></td>
-         </tr>
-      <% end %>
-   </tr>
+   <% unless @tags.empty? %>
+      <tr class="list-odd">
+         <th rowspan="<%= @tags.size %>" valign="top">Tags:</th>
+         <td><%= @tags[0].name %></td>
+         <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
+         <% for tag in @tags[1..-1] %>
+            <tr class="list-odd">
+               <td><%= tag.name %></td>
+               <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag)) %></td>
+            </tr>
+         <% end %>
+      </tr>
+   <% end %>
 </table>
 <%= submit_tag "Update Fields" %>
 <% end %>

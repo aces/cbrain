@@ -278,7 +278,18 @@ class UserfilesController < ApplicationController
         end
         redirect_to :controller => :tasks, :action => :index
         return
-
+        
+      when "mincaverage"
+        ma = DrmaaMincaverage.new
+        filehash = {}
+        filelist.each_with_index{ |id, i| filehash[i] =  id}
+        ma.user_id = current_user.id
+        ma.params = { :filelist => filehash, :out_name  => "average_#{Time.now.to_i}.mnc" }
+        ma.save
+        flash[:notice] += "Started mincaverage'.\n"
+        redirect_to :controller => :tasks, :action => :index
+        return
+      
       when "civet"
 
         # TODO we need a new method to invoke the params page,
