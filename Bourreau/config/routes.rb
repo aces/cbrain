@@ -45,6 +45,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_minc2jivs, :controller => :tasks
   map.resources :drmaa_civets,    :controller => :tasks
   map.resources :drmaa_dcm2mncs,  :controller => :tasks
+  map.resources :drmaa_mincaverages,  :controller => :tasks
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
