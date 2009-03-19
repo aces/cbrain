@@ -53,8 +53,12 @@ class TasksController < ApplicationController
   end
 
   def operation
-
-    operation   = params[:operation]
+    if params[:commit] == 'Trigger postprocessing of selected tasks'
+      operation = 'postprocess'
+    else
+      operation   = params[:operation]
+    end
+    
     tasklist    = params[:tasklist] || []
 
     flash[:error]  ||= ""

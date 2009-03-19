@@ -31,7 +31,7 @@
    </tr>
    <% for task in @tasks %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s) %></td>
+         <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s, task.status == 'Data Ready') %></td>
          <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :cluster_name => task.cluster_name, :id => task.id %></td>
          <td><%= h(task.cluster_name) %></td>
          <td><%= h(task.status) %></td>
@@ -46,14 +46,12 @@
      <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
    <% end %>
 </table>
+<%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
 
-Operations: <%= select_tag(
+Other operations: <%= select_tag(
    "operation",
     '
     <option value="">Select an operation</option>
-
-    <optgroup label="Operations for ready tasks">
-    <option value="postprocess">Trigger postprocessing of selected tasks</option>
 
     <optgroup label="Operations for queued tasks">
     <option value="hold">Hold queued tasks</option>
