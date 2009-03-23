@@ -295,7 +295,7 @@ class UserfilesController < ApplicationController
         # TODO we need a new method to invoke the params page,
         # as this way (POST /civet/edit/id) can only work with
         # a single file.
-        redirect_to :controller => :civet, :action => :edit, :id => filelist[0]
+        redirect_to :controller => :civet, :action => :edit, :ids => filelist
         return
 
       when "dcm2mnc"
