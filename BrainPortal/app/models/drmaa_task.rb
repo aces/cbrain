@@ -19,7 +19,6 @@ class DrmaaTask < ActiveResource::Base
   # per sessions as we fetch our ActiveResource objects from
   # multiple Bourreau servers.
   self.site = CBRAIN_CLUSTERS::Clusters_resource_sites[CBRAIN_CLUSTERS::CBRAIN_cluster_list[0]]
-
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
   # stream; this methods will use the attribute 'type',
