@@ -66,6 +66,6 @@ Rails::Initializer.run do |config|
   # config.active_record.observers = :cacher, :garbage_collector
   
   config.after_initialize do
-    load File.join(RAILS_ROOT, "config", "conditional_initializers", "#{HostConfigInfo::Configuration}.rb")
+    load File.join(RAILS_ROOT, "config", "conditional_initializers", "#{HostConfigInfo::Configuration}.bourreau.rb")
   end
 end
