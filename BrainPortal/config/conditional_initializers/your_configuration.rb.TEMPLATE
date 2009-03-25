@@ -1,0 +1,42 @@
+#
+# CBRAIN Project
+#
+# Custom configuration template for BrainPortal
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
+###############################################################################
+#INSTRUCTIONS:
+#  1. Rename this file to '<your_new_configuration>.rb' where 
+#      <your_new_cofiguration> matches the name given in 'configuration.rb'
+#  2. Set up the constants below to whatever is required for your configuration.
+#  3. Add any other code that you only want run for your configuration.
+###############################################################################
+class CBRAIN
+  Filevault_dir            = "/your/filevault/dir"
+  
+  # Run-time checks
+  unless File.directory?(Filevault_dir)
+    raise "CBRAIN configuration error: file vault '#{Filevault_dir}' does not exist!"
+  end
+end
+
+class CBRAIN_CLUSTERS
+  # This is used by BrainPortal as the list of available clusters.
+  # The defaults/prefered cluster is the first one
+  CBRAIN_cluster_list = [ "cluster_a", "cluster_b", "cluster_c" ]
+
+  # This hash maps short names of clusters to the Bourreau resource URI
+  # running on the clusters' frontends
+  Clusters_resource_sites = { # keys are case-sensitive
+      "cluster_a"  => "http://cluster_a_url.ca/",
+      "cluster_b"  => "http://cluster_b_url.ca/",
+      "cluster_c"  => "http://cluster_c_url.ca/",
+  }
+  
+  BOURREAU_CLUSTER_NAME = nil    # on BrainPortal, we don't need this
+
+end

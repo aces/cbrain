@@ -1,0 +1,25 @@
+#
+# CBRAIN Project
+#
+# Define initialization configuration for clusters
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
+
+###############################################################################
+#INSTRUCTIONS:
+#  1. Rename this file to 'configuration.rb'
+#  2. Replace 'your_configuration' below with the name of your configuration
+#     (this can be any name of your choosing that isn't already in use)
+#  3. Create a file in this directory named '<your_new_configuration>.rb' with
+#     the code you want executed for your configuration.
+#     (you may use 'your_configuration.rb.TEMPLATE' as a guide)
+#
+#  IMPORTANT!: DO NOT COMMIT 'configuration.rb' TO SVN.
+###############################################################################
+module Initialization_Configuration
+  Configuration = 'your_configuration'
+end
