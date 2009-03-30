@@ -25,9 +25,9 @@ class SingleFile < Userfile
     
     Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
       if self.name =~ /\.tar(\.gz)?$/
-        all_files = `tar tf #{self.name}`.split("\n")
+        all_files = IO.popen("tar tf #{self.name.gsub("'", "'\\\\''")}").readlines.map(&:chomp)
       else
-        all_files = `unzip -l #{self.name}`.split("\n")[3..-3].map{ |line|  line.split[3]}
+        all_files = IO.popen("unzip -l #{self.name.gsub("'", "'\\\\''")}").readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]}
       end
     
       count = all_files.select{ |f| f !~ /\// }.size
@@ -46,7 +46,7 @@ class SingleFile < Userfile
           elsif file_name =~ /\//
             nested_files << file_name
           else
-            `tar xvf #{self.name} #{file_name}`
+            system("tar xvf '#{self.name.gsub("'", "'\\\\''")}' '#{file_name.gsub("'", "'\\\\''")}'")
             successful_files << file_name
           end
         end
@@ -57,7 +57,7 @@ class SingleFile < Userfile
           elsif file_name =~ /\//
             nested_files << file_name
           else
-            `unzip #{self.name} #{file_name}`
+            system("unzip '#{self.name.gsub("'", "'\\\\''")}' '#{file_name.gsub("'", "'\\\\''")}'")
             successful_files << file_name
           end
         end

@@ -2,7 +2,7 @@ require 'test_helper'
 
 class UserfileTest < ActiveSupport::TestCase
   # Replace this with your real tests
-  fixtures :userfiles, :users
+  fixtures :userfiles, :users, :tags
   
   def test_should_not_allow_same_userfile_for_same_user
     t = SingleFile.new(:name  => 'file', :user_id  => 1)

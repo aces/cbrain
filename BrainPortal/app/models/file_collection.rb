@@ -23,13 +23,12 @@ class FileCollection < Userfile
     
     Dir.mkdir(directory) unless File.directory?(directory)
     self.save_content(directory)
-    
     files = []
     Dir.chdir(directory) do
       if self.name =~ /\.tar(\.gz)?$/
-        `tar xvf #{self.name}`
+        system("tar xvf '#{self.name.gsub("'", "'\\\\''")}'")
       else
-        `unzip #{self.name}`
+        system("unzip '#{self.name.gsub("'", "'\\\\''")}'") 
       end
       
       # if common_base = self.get_common_base(self.list_files)
@@ -37,10 +36,9 @@ class FileCollection < Userfile
       #       end
     end
     
-    File.unlink(directory + self.name) if File.file?(directory + self.name) 
     
-    
-    
+    File.unlink(directory + self.name) if File.file?(directory + self.name)  
+        
     self.name = collection_name
     
     
@@ -72,10 +70,11 @@ class FileCollection < Userfile
     Dir.mkdir(self.vaultname) unless File.directory?(self.vaultname)
     
     userfiles.each do |file|
+      
       if file.is_a? FileCollection
-        `cp -n -R #{file.vaultname}/ #{self.vaultname}`
+        system("cp -f -R '#{file.vaultname.gsub("'", "'\\\\''")}/' '#{self.vaultname.gsub("'", "'\\\\''")}'")
       else
-        `cp -n #{file.vaultname} #{self.vaultname}`
+        system("cp -f '#{file.vaultname.gsub("'", "'\\\\''")}' '#{self.vaultname.gsub("'", "'\\\\''")}'")
       end
     end
     
@@ -132,13 +131,13 @@ class FileCollection < Userfile
   
   def list_files    
     Dir.chdir(self.user.vault_dir) do
-      @file_list ||= `find #{self.name} -type f`.split("\n")
+      @file_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type f").readlines.map(&:chomp)
     end
   end
   
   def list_dirs
     Dir.chdir(self.user.vault_dir) do
-      @dir_list ||= `find #{self.name} -type d`.split("\n").reverse
+      @dir_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type d").readlines.map(&:chomp).reverse
     end
   end
   
@@ -155,10 +154,8 @@ class FileCollection < Userfile
   def flatten
     dir_name = self.vaultname
 
-    Dir.chdir(dir_name) do
-
-      files = `find . -type f`.split("\n")
-
+    Dir.chdir(dir_name) do      
+      files = IO.popen("find . -type f").readlines.map(&:chomp)
       base = ""
       source = files[0].split('/')
       source.each do |dir|
