@@ -17,7 +17,7 @@ class TasksController < ApplicationController
 
   Revision_info="$Id$"
 
-  before_filter :find_or_initialize_task, :except => [ :index ]
+  before_filter :find_or_initialize_task, :except => [ :index, :ping ]
 
   # GET /tasks
   # Formats: xml
@@ -133,6 +133,15 @@ class TasksController < ApplicationController
         subtype = subtypekey.camelize.sub(/^drmaa_/i,"Drmaa")
       end
       @task = Class.const_get(subtype).new(subtypehash)
+    end
+  end
+
+  # GET /ping
+  def ping
+    @message = DrmaaTask.ping
+    respond_to do |format|
+      format.html { render :action => 'ping' }
+      format.xml  { render :xml => { :message => @message } }
     end
   end
   
