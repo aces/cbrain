@@ -25,10 +25,13 @@ end
 # and reninitalizes all the rails classes at every request.
 module DRMAA
   class Session
+
+    # Opens a session once, then cache it
     def Session.session_cache
       @@session_cache ||= DRMAA::Session.new
       @@session_cache
     end
+
   end
 end
 
@@ -344,7 +347,7 @@ public
   # in the ActiveResource model for DrmaaTask on BrainPortal)
   def to_xml(options = {})
     options[:methods] ||= []
-    options[:methods] << :type unless options[:methods].include?(:type)
+    options[:methods] << :type            unless options[:methods].include?(:type)
     options[:methods] << :capt_stdout_b64 unless options[:methods].include?(:capt_stdout_b64)
     options[:methods] << :capt_stderr_b64 unless options[:methods].include?(:capt_stderr_b64)
     super options
@@ -363,6 +366,37 @@ public
   def before_destroy
     self.terminate
     self.removeDRMAAworkdir
+  end
+
+  # Tests session with a dummy task
+  # This is crazy, the ONLY way to make sure the PBS session
+  # is still active is to submit a dummy job!
+  # To be called every 10 minutes, to keep the session alive
+  # (as it times out after 15).
+  def self.ping
+    return "OK (NOT Torque)" unless DRMAA.drm_system == "PBS/Torque"
+    begin
+      DRMAA::Session.session_cache.terminate(@@ping_jobid) if class_variable_defined?('@@ping_jobid')
+    ensure
+      @@ping_jobid = nil
+    end
+    begin
+      DRMAA::Session.session_cache
+      job         = CbrainDRMAAJob.new
+      job.command = "/bin/true"
+      job.arg     = [ ]
+      job.stdout  = ":/dev/null"
+      job.stderr  = ":/dev/null"
+      job.join    = true
+      job.name    = "TruePing"
+      @@ping_jobid = DRMAA::Session.session_cache.run(job)
+      @@ping_jobid = @@ping_jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
+      return "OK (Torque)"
+    rescue DRMAA::DRMAACommunicationError => e
+      return "Torque DRMAA session is dead! #{e.message}"
+    rescue => e
+      return "Torque DRMAA session internal error: #{e.message}"
+    end
   end
 
 protected
