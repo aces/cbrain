@@ -39,6 +39,7 @@ ActionController::Routing::Routes.draw do |map|
   # Note: These default routes make all actions in every controller accessible via GET requests. You should
   # consider removing the them or commenting them out if you're using named routes and resources.
   #map.resources :tasks
+  map.connect  ':drmaa_tasks/ping.:format', :controller => 'tasks', :action => 'ping'
   map.resources :drmaa_tasks,     :controller => :tasks
   map.resources :drmaa_sleepers,  :controller => :tasks
   map.resources :drmaa_snoozers,  :controller => :tasks
