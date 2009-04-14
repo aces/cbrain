@@ -9,19 +9,14 @@
 # $Id$
 #
 
-require 'socket'
+require 'socket';
 
 class CBRAIN
     
   public
 
   Revision_info="$Id$"
-  Redmine_Version="0.5"
-
-  # BrainPortal constants
-  Bourreau_task_resource_URL = "http://localhost:3050/"
-  #Bourreau_task_resource_URL = "http://krylov.clumeq.mcgill.ca:3050/" # does not work, need tunnelling
-  
+  Redmine_Version="0.7"
 
   # Other constants that are used in Bourreau but not in BrainPortal,
   # yet must still be initialized for BrainPortal to run.
@@ -31,3 +26,4 @@ class CBRAIN
   FilevaultIsLocal = true;         # not dummy, must be 'true'.
 
 end
+

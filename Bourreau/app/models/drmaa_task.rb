@@ -9,26 +9,22 @@
 # $Id$
 #
 
-require 'drmaa'
+require 'scir'
 require 'logger'
 require 'stringio'
 require 'base64'
 
-# Used to launch new jobs
-class CbrainDRMAAJob < DRMAA::JobTemplate
-end
-
 # This new class method caches the DRMAA::Session object;
-# it's needed for initializing the DRMAA session becaus3
+# it's needed for initializing the DRMAA session because
 # only one Session object can be created
 # during an active ruby execution, and mongrel reloads
 # and reninitalizes all the rails classes at every request.
-module DRMAA
+module Scir
   class Session
 
     # Opens a session once, then cache it
     def Session.session_cache
-      @@session_cache ||= DRMAA::Session.new
+      @@session_cache = Scir::Session.new_session unless self.class_variable_defined?('@@session_cache')
       @@session_cache
     end
 
@@ -36,7 +32,7 @@ module DRMAA
 end
 
 # This is the core ActiveRecord functionality for
-# launching GridEngine/PBS jobs using DRMAA; when a new
+# launching GridEngine/PBS jobs using Scir; when a new
 # application needs to be supported, it's only necessary
 # to subclass DrmaaTask and provide the code for the three
 # methods setup(), drmaa_commands() and save_results().
@@ -281,7 +277,7 @@ public
   def terminate
     return unless self.status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
     begin
-      DRMAA::Session.session_cache.terminate(self.drmaa_jobid)
+      Scir::Session.session_cache.terminate(self.drmaa_jobid)
       self.status = "Terminated"
     rescue
       # nothing to do
@@ -291,7 +287,7 @@ public
   def suspend
     return unless self.status == "On CPU"
     begin
-      DRMAA::Session.session_cache.suspend(self.drmaa_jobid)
+      Scir::Session.session_cache.suspend(self.drmaa_jobid)
       self.status = "Suspended"
     rescue
       # nothing to do
@@ -301,7 +297,7 @@ public
   def resume
     begin
       return unless self.status == "Suspended"
-      DRMAA::Session.session_cache.resume(self.drmaa_jobid)
+      Scir::Session.session_cache.resume(self.drmaa_jobid)
       self.status = "On CPU"
     rescue
       # nothing to do
@@ -311,7 +307,7 @@ public
   def hold
     return unless self.status == "Queued"
     begin
-      DRMAA::Session.session_cache.hold(self.drmaa_jobid)
+      Scir::Session.session_cache.hold(self.drmaa_jobid)
       self.status = "On Hold"
     rescue
       # nothing to do
@@ -321,7 +317,7 @@ public
   def release
     begin
       return unless self.status == "Suspended"
-      DRMAA::Session.session_cache.release(self.drmaa_jobid)
+      Scir::Session.session_cache.release(self.drmaa_jobid)
       self.status = "Queued"
     rescue
       # nothing to do
@@ -368,37 +364,6 @@ public
     self.removeDRMAAworkdir
   end
 
-  # Tests session with a dummy task
-  # This is crazy, the ONLY way to make sure the PBS session
-  # is still active is to submit a dummy job!
-  # To be called every 10 minutes, to keep the session alive
-  # (as it times out after 15).
-  def self.ping
-    return "OK (NOT Torque)" unless DRMAA.drm_system == "PBS/Torque"
-    begin
-      DRMAA::Session.session_cache.terminate(@@ping_jobid) if class_variable_defined?('@@ping_jobid')
-    ensure
-      @@ping_jobid = nil
-    end
-    begin
-      DRMAA::Session.session_cache
-      job         = CbrainDRMAAJob.new
-      job.command = "/bin/true"
-      job.arg     = [ ]
-      job.stdout  = ":/dev/null"
-      job.stderr  = ":/dev/null"
-      job.join    = true
-      job.name    = "TruePing"
-      @@ping_jobid = DRMAA::Session.session_cache.run(job)
-      @@ping_jobid = @@ping_jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
-      return "OK (Torque)"
-    rescue DRMAA::DRMAACommunicationError => e
-      return "Torque DRMAA session is dead! #{e.message}"
-    rescue => e
-      return "Torque DRMAA session internal error: #{e.message}"
-    end
-  end
-
 protected
 
   # The list of possible DRMAA states is larger than
@@ -412,17 +377,17 @@ protected
   @@DRMAA_States_To_Status ||= {
                                # The textual strings are important
                                # ---------------------------------
-    DRMAA::STATE_UNDETERMINED          => "Does Not Exist",
-    DRMAA::STATE_QUEUED_ACTIVE         => "Queued",
-    DRMAA::STATE_SYSTEM_ON_HOLD        => "On Hold",
-    DRMAA::STATE_USER_ON_HOLD          => "On Hold",
-    DRMAA::STATE_USER_SYSTEM_ON_HOLD   => "On Hold",
-    DRMAA::STATE_RUNNING               => "On CPU",
-    DRMAA::STATE_SYSTEM_SUSPENDED      => "Suspended",
-    DRMAA::STATE_USER_SUSPENDED        => "Suspended",
-    DRMAA::STATE_USER_SYSTEM_SUSPENDED => "Suspended",
-    DRMAA::STATE_DONE                  => "Does Not Exist",
-    DRMAA::STATE_FAILED                => "Does Not Exist"
+    Scir::STATE_UNDETERMINED          => "Does Not Exist",
+    Scir::STATE_QUEUED_ACTIVE         => "Queued",
+    Scir::STATE_SYSTEM_ON_HOLD        => "On Hold",
+    Scir::STATE_USER_ON_HOLD          => "On Hold",
+    Scir::STATE_USER_SYSTEM_ON_HOLD   => "On Hold",
+    Scir::STATE_RUNNING               => "On CPU",
+    Scir::STATE_SYSTEM_SUSPENDED      => "Suspended",
+    Scir::STATE_USER_SUSPENDED        => "Suspended",
+    Scir::STATE_USER_SYSTEM_SUSPENDED => "Suspended",
+    Scir::STATE_DONE                  => "Does Not Exist",
+    Scir::STATE_FAILED                => "Does Not Exist"
   }
 
   # Returns "On CPU", "Queued", "On Hold", "Suspended" or "Does Not Exist"
@@ -432,34 +397,34 @@ protected
   # which is which based only on DRMAA::Session#job_ps()
   # See also the comments for @@DRMAA_States_To_Status
   def drmaa_status
-    begin 
-      state = DRMAA::Session.session_cache.job_ps(self.drmaa_jobid)
-    rescue => e
-      state = DRMAA::STATE_UNDETERMINED
-      if DRMAA.drm_system == 'PBS/Torque'
-        state = self.qstat_status
-      end
-    end
+#    begin 
+      state = Scir::Session.session_cache.job_ps(self.drmaa_jobid)
+#    rescue => e
+#      state = Scir::STATE_UNDETERMINED
+#      if Scir.drm_system == 'PBS/Torque'
+#        state = self.qstat_status
+#      end
+#    end
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
     return status
   end
 
-  # This is a patch for PBS which does NOT allow us to query jobs
-  # that were not started in this session (aarrgh) so we parse the
-  # output of the 'qstat' command. Yuk.
-  def qstat_status
-    begin
-      io = IO.popen("qstat -f #{self.drmaa_jobid} | grep 'job_state = '")
-      stateline = io.readline
-      io.close
-      return DRMAA::STATE_USER_ON_HOLD   if stateline.match(/ = .*H/)
-      return DRMAA::STATE_QUEUED_ACTIVE  if stateline.match(/ = .*Q/)
-      return DRMAA::STATE_RUNNING        if stateline.match(/ = .*R/)
-      return DRMAA::STATE_USER_SUSPENDED if stateline.match(/ = .*S/)
-    rescue
-      return DRMAA::STATE_UNDETERMINED
-    end
-  end
+#  # This is a patch for PBS which does NOT allow us to query jobs
+#  # that were not started in this session (aarrgh) so we parse the
+#  # output of the 'qstat' command. Yuk.
+#  def qstat_status
+#    begin
+#      io = IO.popen("qstat -f #{self.drmaa_jobid} | grep 'job_state = '")
+#      stateline = io.readline
+#      io.close
+#      return DRMAA::STATE_USER_ON_HOLD   if stateline.match(/ = .*H/)
+#      return DRMAA::STATE_QUEUED_ACTIVE  if stateline.match(/ = .*Q/)
+#      return DRMAA::STATE_RUNNING        if stateline.match(/ = .*R/)
+#      return DRMAA::STATE_USER_SUSPENDED if stateline.match(/ = .*S/)
+#    rescue
+#      return DRMAA::STATE_UNDETERMINED
+#    end
+#  end
 
   # Expects that the WD has already been changed
   def run
@@ -490,8 +455,8 @@ protected
     io.close
 
     # Create the DRMAA job object
-    DRMAA::Session.session_cache   # Make sure it's loaded.
-    job = CbrainDRMAAJob.new   # TODO see if we can use DRMAA::JobTemplate directly
+    Scir::Session.session_cache   # Make sure it's loaded.
+    job = Scir::JobTemplate.new_jobtemplate
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
     job.stdout  = ":#{workdir}/#{qsubfile}.out"   # see also after_initialize() later
@@ -501,16 +466,16 @@ protected
     job.name    = name
 
     # Log version of DRMAA lib, e.g.
-    # Using DRMAA for 'PBS/Torque' version '1.0' implementation 'PBS DRMAA v. 1.0 <http://sourceforge.net/projects/pbspro-drmaa/>'
-    drm     = DRMAA.drm_system
-    version = DRMAA.version
-    impl    = DRMAA.drmaa_implementation
-    self.addlog("Using DRMAA for '#{drm}' version '#{version}' implementation '#{impl}'")
+    # Using Scir for 'PBS/Torque' version '1.0' implementation 'PBS DRMAA v. 1.0 <http://sourceforge.net/projects/pbspro-drmaa/>'
+    drm     = Scir.drm_system
+    version = Scir.version
+    impl    = Scir.drmaa_implementation
+    self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
-    jobid            = DRMAA::Session.session_cache.run(job)
+    jobid            = Scir::Session.session_cache.run(job)
     jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
     self.drmaa_jobid = jobid
     self.status      = "Queued"
