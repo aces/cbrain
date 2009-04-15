@@ -28,7 +28,7 @@ module Scir
   STATE_DONE                  = 0x30
   STATE_FAILED                = 0x40
 
-  def Scir.implementation
+  def Scir.drmaa_implementation
     Revision_info.svn_id_file
   end
 

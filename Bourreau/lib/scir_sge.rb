@@ -25,16 +25,16 @@ class ScirSgeSession < Scir::Session
             if paragraphs[i+1] =~ /<state>(\w+)/
               state = Regexp.last_match[1]
               # The ORDER of these things is important here
-              return SCIR::STATE_RUNNING        if state =~ /r/i
-              return SCIR::STATE_USER_SUSPENDED if state =~ /s/i
-              return SCIR::STATE_USER_ON_HOLD   if state =~ /h/i
-              return SCIR::STATE_QUEUED_ACTIVE  if state =~ /q/i
+              return Scir::STATE_RUNNING        if state =~ /r/i
+              return Scir::STATE_USER_SUSPENDED if state =~ /s/i
+              return Scir::STATE_USER_ON_HOLD   if state =~ /h/i
+              return Scir::STATE_QUEUED_ACTIVE  if state =~ /q/i
             end
-            return SCIR::STATE_UNDETERMINED
+            return Scir::STATE_UNDETERMINED
           end
         end
       end
-      return SCIR::STATE_UNDETERMINED
+      return Scir::STATE_UNDETERMINED
     end
   end
 

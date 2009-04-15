@@ -20,14 +20,14 @@ class ScirPbsSession < Scir::Session
     IO.popen("qstat -f #{shell_escape(jid)} 2>/dev/null","r") do |i|
       i.readlines.each do |line|
         next unless line.match(/job_state\s*=\s*(\W+)/)
-        return SCIR::STATE_RUNNING        if line.match(/ = .*R/i)
-        return SCIR::STATE_QUEUED_ACTIVE  if line.match(/ = .*Q/i)
-        return SCIR::STATE_USER_ON_HOLD   if line.match(/ = .*H/i)
-        return SCIR::STATE_USER_SUSPENDED if line.match(/ = .*S/i)
-        return SCIR::STATE_UNDETERMINED
+        return Scir::STATE_RUNNING        if line.match(/ = .*R/i)
+        return Scir::STATE_QUEUED_ACTIVE  if line.match(/ = .*Q/i)
+        return Scir::STATE_USER_ON_HOLD   if line.match(/ = .*H/i)
+        return Scir::STATE_USER_SUSPENDED if line.match(/ = .*S/i)
+        return Scir::STATE_UNDETERMINED
       end
     end
-    return SCIR::STATE_UNDETERMINED
+    return Scir::STATE_UNDETERMINED
   end
 
   def hold(jid)
