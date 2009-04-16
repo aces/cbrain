@@ -83,9 +83,8 @@ class ScirPbsJobTemplate < Scir::JobTemplate
       self.command == "/bin/bash" && self.arg.size == 1
     raise "Error: stdin not supported" if self.stdin
 
-    command  = ""
-    command += "cd #{shell_escape(self.wd)};"     if self.wd
-    command += "qsub "
+    command  = "qsub "
+    command += "-d #{shell_escape(self.wd)} "     if self.wd
     command += "-N #{shell_escape(self.name)} "   if self.name
     command += "-o #{shell_escape(self.stdout)} " if self.stdout
     command += "-e #{shell_escape(self.stderr)} " if self.stderr
