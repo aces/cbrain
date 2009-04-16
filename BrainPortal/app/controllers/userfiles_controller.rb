@@ -197,7 +197,7 @@ class UserfilesController < ApplicationController
     old_name = @userfile.name
     
     
-    attributes = (params[:single_file] || params[:file_collection] || {}).merge(params[:userfile] || {})    
+    attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})    
     attributes['tag_ids'] ||= []
     
     respond_to do |format|
