@@ -11,5 +11,6 @@ class PortalControllerTest < ActionController::TestCase
   def test_should_get_welcome_with_user
     get :welcome, {}, {:user_id  => users(:users_005).id}
     assert_response :success
+    assert_template 'portal/welcome'
   end
 end

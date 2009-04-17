@@ -66,8 +66,12 @@ class FileCollectionTest < ActiveSupport::TestCase
     col2 = FileCollection.new(:content  => File.read('test/fixtures/files/myzip.zip'),
                               :user_id  => users(:users_001).id,
                               :name  => 'myzip.zip')
-    col1.extract_collection
-    col2.extract_collection
+      
+    
+    assert_difference('Userfile.count', 2) do
+      col1.extract_collection
+      col2.extract_collection
+    end
     
     col3 = FileCollection.new(:user_id  => users(:users_001).id)
     
@@ -78,13 +82,37 @@ class FileCollectionTest < ActiveSupport::TestCase
     assert File.directory?(col3.vaultname)
     
     assert_equal col3.list_files.size, (col1.size + col2.size)
-    
-    col1.destroy
-    col2.destroy
-    assert_difference('Userfile.count', -1) do
+        
+    assert_difference('Userfile.count', -3) do
+      col1.destroy
+      col2.destroy
       col3.destroy
     end
 
     assert !File.directory?(col3.vaultname)
-  end                      
+  end      
+  
+  def test_directory_flattening
+    col1 = FileCollection.new(:content  => File.read('test/fixtures/files/rename.tar'),
+                              :user_id  => users(:users_001).id,
+                              :name  => 'rename.tar')
+
+    assert_difference('Userfile.count') do
+      col1.extract_collection
+    end
+    
+    assert File.directory?(col1.vaultname)
+    
+    col1.list_files.each do |file|
+      assert file !~ /^one\//
+    end
+    
+    assert !File.directory?(col1.vaultname + 'one')
+    
+    assert_difference('Userfile.count', -1) do
+      col1.destroy
+    end
+
+    assert !File.directory?(col1.vaultname)
+  end                
 end

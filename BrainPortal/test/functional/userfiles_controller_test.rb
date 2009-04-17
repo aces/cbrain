@@ -11,6 +11,8 @@ class UserfilesControllerTest < ActionController::TestCase
   def test_should_get_index_with_user
     get :index, {}, {:user_id  => users(:users_005).id}
     assert_response :success
+    assert_template 'userfiles/index'
+    assert assigns(:userfiles)
   end
 
   
@@ -42,6 +44,8 @@ class UserfilesControllerTest < ActionController::TestCase
   def test_should_get_edit
     get :edit, {:id => userfiles(:userfiles_001).id}, {:user_id  => userfiles(:userfiles_001).user.id}
     assert_response :success
+    assert_template 'userfiles/edit'
+    assert assigns(:userfile)
   end
 
   def test_should_update_userfile
@@ -66,5 +70,46 @@ class UserfilesControllerTest < ActionController::TestCase
     
     File.unlink(file.vaultname)
   end
+  
+  def test_view_all_with_user
+    get :index, {:view_all => true}, {:user_id => users(:users_005).id}
+    assert !session[:view_all]
+    assert_template 'userfiles/index'    
+  end
+  
+  def test_view_all_with_admin
+    get :index, {:view_all => true}, {:user_id => users(:users_001).id}
+    assert session[:view_all]
+    assert_template 'userfiles/index'
+  end
+  
+  def test_pagination
+    get :index, {}, {:user_id => users(:users_005).id}
+    assert_equal session[:pagination], 'on'
+    assert_equal assigns(:userfiles).class, WillPaginate::Collection
+    
+    get :index, {:pagination  => 'off'}, {:user_id => users(:users_005).id}
+    assert_equal session[:pagination], 'off'
+    assert_equal assigns(:userfiles).class, Array
+  end
+  
+  def test_minc_filtering_and_all_files
+    get :index, {:search_type => 'minc', :pagination  => 'off'}, {:user_id => users(:users_003).id}
+    assert_response :success
+    assert_template 'userfiles/index'
+    assert assigns(:userfiles).all? { |file| file.name[-4..-1] == '.mnc'}
+    
+    get :index, {:search_type => 'none', :pagination  => 'off'}, {:user_id => users(:users_003).id}
+    assert_response :success
+    assert_template 'userfiles/index'
+    assert_equal assigns(:userfiles).size, users(:users_003).userfiles.size
+  end
 
+  def test_jiv_filtering
+    get :index, {:search_type => 'jiv', :pagination  => 'off'}, {:user_id => users(:users_003).id}
+    assert_response :success
+    assert_template 'userfiles/index'
+    assert assigns(:userfiles).all? { |file| file.name =~ /\.header|\.raw_byte(\.gz)?$/ }
+  end
+  
 end

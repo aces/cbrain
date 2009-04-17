@@ -17,6 +17,7 @@ class GroupsControllerTest < ActionController::TestCase
   def test_should_get_index_with_admin_user
     get :index, {}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'groups/index'
   end
   
   def test_should_not_show_without_user
@@ -32,6 +33,7 @@ class GroupsControllerTest < ActionController::TestCase
   def test_should_show_with_admin_user
     get :show, {:id => groups(:groups_001).id}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'groups/show'
   end
 
   def test_should_not_get_new_without_user
@@ -47,6 +49,7 @@ class GroupsControllerTest < ActionController::TestCase
   def test_should_get_new_with_admin_user
     get :new, {}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'groups/new'
   end
 
   def test_should_not_create_without_user

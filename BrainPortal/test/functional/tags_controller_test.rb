@@ -13,6 +13,7 @@ class TagsControllerTest < ActionController::TestCase
     get :index, {}, {:user_id => tags(:tags_001).user.id}
     assert_response :success
     assert_not_nil assigns(:tags)
+    assert_template 'tags/index'
   end
 
   def test_should_not_get_new_without_user
@@ -23,6 +24,7 @@ class TagsControllerTest < ActionController::TestCase
   def test_should_get_new_with_user
     get :new, {}, {:user_id => tags(:tags_001).user.id}
     assert_response :success
+    assert_template 'tags/new'
   end  
 
   def test_should_not_create_without_user
@@ -48,6 +50,7 @@ class TagsControllerTest < ActionController::TestCase
   def test_should_show_tag
     get :show, {:id => tags(:tags_001).id}, {:user_id => tags(:tags_001).user.id}
     assert_response :success
+    assert_template 'tags/show'
   end
 
   def test_should_not_get_edit_without_user
@@ -58,6 +61,7 @@ class TagsControllerTest < ActionController::TestCase
   def test_should_get_edit
     get :edit, {:id => tags(:tags_001).id}, {:user_id => tags(:tags_001).user.id}
     assert_response :success
+    assert_template 'tags/edit'
   end
   
   def test_should_not_update_tag_without_user

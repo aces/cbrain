@@ -17,6 +17,7 @@ class InstitutionsControllerTest < ActionController::TestCase
   def test_should_get_index_with_admin_user
     get :index, {}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'institutions/index'
   end
 
   def test_should_not_get_new_without_user
@@ -32,6 +33,7 @@ class InstitutionsControllerTest < ActionController::TestCase
   def test_should_get_new_with_admin_user
     get :new, {}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'institutions/new'    
   end
 
   def test_should_not_create_without_user
@@ -71,6 +73,7 @@ class InstitutionsControllerTest < ActionController::TestCase
   def test_should_get_edit_with_admin_user
     get :edit, {:id => institutions(:institutions_001).id}, {:user_id  => users(:users_001).id}
     assert_response :success
+    assert_template 'institutions/edit'  
   end
 
   def test_should_not_update_without_user

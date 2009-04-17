@@ -43,7 +43,7 @@
          <% if session[:pagination] == 'on' %>
               <%= will_paginate %>
            <% end %>
-         <% if @userfiles.total_pages > 1 %>  
+         <% if @userfile_count > 50 %>  
            <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
          <% end %>
          <%= link_to "Tree View", userfiles_path(:order  => 'lft') %>

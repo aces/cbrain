@@ -66,7 +66,7 @@
 <%= submit_tag "Update Fields" %>
 <% end %>
 <br>
-   <% if @userfile.is_a?(FileCollection) && @userfile.size > 0 %>
+   <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
       <% form_tag(extract_userfiles_path) do %>
       <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
          <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>

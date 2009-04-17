@@ -46,6 +46,7 @@ class UserfilesController < ApplicationController
                                   :conditions => Userfile.convert_filters_to_sql_query(name_filters),
                                   :order => "userfiles.#{session[:order]}")
     end
+    @userfile_count = @userfiles.size
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
@@ -53,6 +54,7 @@ class UserfilesController < ApplicationController
     if params[:pagination]
       session[:pagination] = params[:pagination]
     end
+    
     if session[:pagination] == 'on'
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
     end
