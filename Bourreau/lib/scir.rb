@@ -37,7 +37,7 @@ module Scir
   end
 
   def Scir.drm_system
-    self.class.to_s
+    Scir.session_subclass
   end
 
   def Scir.session_subclass=(subclassname)
@@ -117,12 +117,14 @@ end
 class JobTemplate
 
   # We only support a subset of DRMAA's job template
-  attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join
+  attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue
 
   def self.new_jobtemplate(params = {})
     subclassname = Scir.jobtemplate_subclass
     subclass     = Class.const_get(subclassname)
-    return subclass.new(params)
+    returning subclass.new(params) do |job|
+      job.queue = CBRAIN_CLUSTERS::DEFAULT_QUEUE if ( ! CBRAIN_CLUSTERS::DEFAULT_QUEUE.blank? ) && ( job.queue.blank? )
+    end
   end
 
   def initialize(params = {})
