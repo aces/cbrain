@@ -92,8 +92,10 @@ class ScirSgeJobTemplate < Scir::JobTemplate
     raise "Error: stdin not supported" if self.stdin
 
     command  = ""
+    command += "cd #{shell_escape(self.wd)};"     if self.wd
     command += "qsub "
-    command += "-wd #{shell_escape(self.wd)} "    if self.wd
+#    command += "-wd #{shell_escape(self.wd)} "    if self.wd
+    command += "-cwd "                            if self.wd
     command += "-N #{shell_escape(self.name)} "   if self.name
     command += "-o #{shell_escape(self.stdout)} " if self.stdout
     command += "-e #{shell_escape(self.stderr)} " if self.stderr
