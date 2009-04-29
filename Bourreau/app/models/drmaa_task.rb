@@ -329,9 +329,12 @@ public
     log = "" if log.nil? || log.empty?
     calling_info   = caller[0]
     calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "()") : "unknown()" )
+    lines = message.split(/\s*\n/)
+    lines.pop while lines.size > 0 && lines[-1] == ""
+    message = lines.join("\n") + "\n"
     log += 
       Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") +
-      calling_method + " " + message.sub(/\s*$/,"\n")
+      calling_method + " " + message
     self.log = log
   end
 
