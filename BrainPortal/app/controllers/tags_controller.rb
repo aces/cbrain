@@ -56,7 +56,7 @@ class TagsController < ApplicationController
 
   # POST /tags
   # POST /tags.xml
-  def create
+  def create    
     @tag = Tag.new(params[:tag])
     @tag.user_id = current_user.id
 

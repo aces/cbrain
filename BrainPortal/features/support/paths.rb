@@ -15,10 +15,13 @@ module NavigationHelpers
     case page_name
     
     when /the homepage/
-      root_path
-    when /userfiles (page|index)/
-      userfiles_path
-    
+      home_path
+    when /the login page/
+      new_session_path
+    when /the (\S+) (page|index)/
+      "/#{$~[1]}"
+    when /(new|create) (\S+) (page)?/
+      "/#{$~[2]}s/new"
     # Add more page name => path mappings here
     
     else

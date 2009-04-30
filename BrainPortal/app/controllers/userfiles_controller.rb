@@ -17,7 +17,7 @@ class UserfilesController < ApplicationController
   
   # GET /userfiles
   # GET /userfiles.xml
-  def index
+  def index    
     session[:current_filters] ||= []
     session[:pagination] ||= 'on'
     session[:order] ||= 'lft'
