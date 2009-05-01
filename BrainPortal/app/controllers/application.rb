@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include ExceptionLoggable
   
-  helper_method :check_role, :not_admin_user
+  helper_method :check_role, :not_admin_user, :current_session
   helper :all # include all helpers, all the time
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
@@ -37,6 +37,10 @@ class ApplicationController < ActionController::Base
   
   def edit_permission?(user)
     current_user && user && (current_user == user || current_user.role == 'admin')
+  end
+  
+  def current_session
+    @session ||= Session.new(session)
   end
 end
 

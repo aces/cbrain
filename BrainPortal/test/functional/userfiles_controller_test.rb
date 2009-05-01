@@ -30,11 +30,11 @@ class UserfilesControllerTest < ActionController::TestCase
     assert_redirected_to userfiles_path
     
     assert_no_difference('Userfile.count') do
-      post :create, {:upload_file  => fixture_file_upload("files/#{filename}")}, {:user_id  => users(:users_001).id}
+      post :create, {:upload_file  => fixture_file_upload("files/#{filename}")}
     end 
     
     assert_difference('Userfile.count', -1) do
-      post :operation, {:operation  => 'delete', :filelist  => [Userfile.find_by_name(filename).id]}, {:user_id  => users(:users_001).id}
+      post :operation, {:operation  => 'delete', :filelist  => [Userfile.find_by_name(filename).id]}
     end
     
     assert(!File.exists?(vaultname), 'File content not deleted.')
@@ -59,7 +59,7 @@ class UserfilesControllerTest < ActionController::TestCase
     
     file = Userfile.find_by_name(filename)
     
-    put :update, {:id => file.id, :userfile => {:name  => new_name, :tag_ids  => [file.user.tags.first.id]}}, {:user_id  => file.user.id}
+    put :update, {:id => file.id, :userfile => {:name  => new_name, :tag_ids  => [file.user.tags.first.id]}}
     
     file = Userfile.find_by_name(new_name)
     assert file.tags.count == 1
@@ -72,25 +72,26 @@ class UserfilesControllerTest < ActionController::TestCase
   end
   
   def test_view_all_with_user
-    get :index, {:view_all => true}, {:user_id => users(:users_005).id}
+    get :index, {:view_all => 'on'}, {:user_id => users(:users_005).id}
     assert !session[:view_all]
     assert_template 'userfiles/index'    
   end
   
   def test_view_all_with_admin
-    get :index, {:view_all => true}, {:user_id => users(:users_001).id}
-    assert session[:view_all]
+    get :index, {:view_all => 'on'}, {:user_id => users(:users_001).id}
+    assert_equal session[:view_all], 'on'
     assert_template 'userfiles/index'
   end
   
   def test_pagination
-    get :index, {}, {:user_id => users(:users_005).id}
-    assert_equal session[:pagination], 'on'
-    assert_equal assigns(:userfiles).class, WillPaginate::Collection
-    
-    get :index, {:pagination  => 'off'}, {:user_id => users(:users_005).id}
-    assert_equal session[:pagination], 'off'
-    assert_equal assigns(:userfiles).class, Array
+      get :index, {}, {:user_id => users(:users_005).id}
+      assert_equal session[:pagination], 'on'
+      assert_equal assigns(:userfiles).class, WillPaginate::Collection
+      
+      
+      get :index, {:pagination  => 'off'}     
+      assert_equal session[:pagination], 'off'
+      assert_equal assigns(:userfiles).class, Array
   end
   
   def test_minc_filtering_and_all_files
@@ -99,7 +100,7 @@ class UserfilesControllerTest < ActionController::TestCase
     assert_template 'userfiles/index'
     assert assigns(:userfiles).all? { |file| file.name[-4..-1] == '.mnc'}
     
-    get :index, {:search_type => 'none', :pagination  => 'off'}, {:user_id => users(:users_003).id}
+    get :index, {:search_type => 'none', :pagination  => 'off'}
     assert_response :success
     assert_template 'userfiles/index'
     assert_equal assigns(:userfiles).size, users(:users_003).userfiles.size

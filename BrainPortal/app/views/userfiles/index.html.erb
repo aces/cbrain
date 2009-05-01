@@ -22,7 +22,7 @@
    <br>
 
    <strong>Current filters:</strong>
-   <% session[:current_filters].each do |filter|%>
+   <% current_session.current_filters.each do |filter|%>
       <%= filter %>
       <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
       <%= ' / ' %>
@@ -30,7 +30,7 @@
    <% if current_user.has_role?(:admin) %>
       <br><br>
       <strong>Admin options:</strong>
-      <%= link_to session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(session[:view_all]) ) %>
+      <%= link_to current_session.view_all? ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(current_session.view_all) ) %>
       <br><br>
    <% end %>
    </td>
@@ -40,22 +40,22 @@
    <td>
    <% form_tag(operation_userfiles_path(:method => :post)) do %>
     
-         <% if session[:pagination] == 'on' %>
+         <% if current_session.paginate? %>
               <%= will_paginate %>
            <% end %>
          <% if @userfile_count > 50 %>  
-           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
+           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(current_session.pagination)) %>
          <% end %>
          <%= link_to "Tree View", userfiles_path(:order  => 'lft') %>
       <table class="userfiles">
          <tr>
              <th><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
-             <% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
-               <th><%= link_to "Owner", userfiles_path(:order  => 'user_id') %><%= set_order_icon('user_id', session[:order]) %></th>
+             <% if current_session.view_all? %>
+               <th><%= link_to "Owner", userfiles_path(:order  => 'user_id') %><%= set_order_icon('user_id', current_session.order) %></th>
              <% end %>
-             <th><%= link_to "Filename", userfiles_path(:order  => 'name') %><%= set_order_icon('name', session[:order]) %></th>
-             <th><%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %><%= set_order_icon('created_at', session[:order]) %></th>
-             <th><%= link_to "Size", userfiles_path(:order  => 'size') %><%= set_order_icon('size', session[:order]) %></th>
+             <th><%= link_to "Filename", userfiles_path(:order  => 'name') %><%= set_order_icon('name', current_session.order) %></th>
+             <th><%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %><%= set_order_icon('created_at', current_session.order) %></th>
+             <th><%= link_to "Size", userfiles_path(:order  => 'size') %><%= set_order_icon('size', current_session.order) %></th>
              <th>Tags</th>
          </tr>
             <%= render :partial => 'userfile', :collection  => @userfiles %>

@@ -18,46 +18,28 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index    
-    session[:current_filters] ||= []
-    session[:pagination] ||= 'on'
-    session[:order] ||= 'lft'
-    
-    @filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
-    session[:current_filters] = [] if params[:search_type] == 'none'
-    session[:current_filters] << @filter unless @filter.blank? || session[:current_filters].include?(@filter)
-    session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
-    
-    if params[:view_all] && current_user.has_role?(:admin)
-      session[:view_all] = params[:view_all]
-    end
-    
-    if params[:order] && !params[:page]
-      session[:order] = Userfile.set_order(params[:order], session[:order])
-    end
-    
-    tag_filters, name_filters  = session[:current_filters].partition{|filter| filter.split(':')[0] == 'tag'}
+    current_session.update(params)
         
-    unless session[:view_all] == 'on' && current_user.has_role?(:admin)
+    tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
+        
+    unless current_session.view_all? 
       @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
                                                 :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                                :order => "userfiles.#{session[:order]}")
+                                                :order => "userfiles.#{current_session.order}")
     else
       @userfiles = Userfile.find(:all, :include  => :tags, 
                                   :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                  :order => "userfiles.#{session[:order]}")
+                                  :order => "userfiles.#{current_session.order}")
     end
     @userfile_count = @userfiles.size
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
-    
-    if params[:pagination]
-      session[:pagination] = params[:pagination]
-    end
-    
-    if session[:pagination] == 'on'
+
+    if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
     end
+
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
     
