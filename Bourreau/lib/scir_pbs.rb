@@ -84,6 +84,7 @@ class ScirPbsJobTemplate < Scir::JobTemplate
     raise "Error: stdin not supported" if self.stdin
 
     command  = "qsub "
+    command += "-S /bin/bash "                    # Always
     command += "-d #{shell_escape(self.wd)} "     if self.wd
     command += "-N #{shell_escape(self.name)} "   if self.name
     command += "-o #{shell_escape(self.stdout)} " if self.stdout
