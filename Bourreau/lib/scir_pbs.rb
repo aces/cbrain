@@ -31,7 +31,7 @@ class ScirPbsSession < Scir::Session
   end
 
   def hold(jid)
-    IO.popen("qhold #{shell_escape(jid)} 2>&1") do |i|
+    IO.popen("qhold #{shell_escape(jid)} 2>&1","r") do |i|
       p = i.readlines
       raise "Error holding: #{p.join("\n")}" if p.size > 0
       return
@@ -39,7 +39,7 @@ class ScirPbsSession < Scir::Session
   end
 
   def release(jid)
-    IO.popen("qrls #{shell_escape(jid)} 2>&1") do |i|
+    IO.popen("qrls #{shell_escape(jid)} 2>&1","r") do |i|
       p = i.readlines
       raise "Error releasing: #{p.join("\n")}" if p.size > 0
       return
@@ -55,7 +55,7 @@ class ScirPbsSession < Scir::Session
   end
 
   def terminate(jid)
-    IO.popen("qdel #{shell_escape(jid)} 2>&1") do |i|
+    IO.popen("qdel #{shell_escape(jid)} 2>&1","r") do |i|
       p = i.readlines
       raise "Error deleting: #{p.join("\n")}" if p.size > 0
       return
@@ -90,6 +90,7 @@ class ScirPbsJobTemplate < Scir::JobTemplate
     command += "-o #{shell_escape(self.stdout)} " if self.stdout
     command += "-e #{shell_escape(self.stderr)} " if self.stderr
     command += "-j oe "                           if self.join
+    command += "-q #{shell_escape(self.queue)} "  if self.queue
     command += "#{shell_escape(self.arg[0])}"
 
     return command
