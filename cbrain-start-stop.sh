@@ -85,9 +85,8 @@ if [ "$#" -eq 1 ] ; then
     command="$1"
 fi
 
-BrainPortal_PORT=3000
-Bourreau_PORT=3050
-jiv_PORT=3070
+BrainPortal_PORT=3001
+Bourreau_PORT=3051
 
 if [ "$command" = "start" ] ; then
 
@@ -105,15 +104,6 @@ if [ "$command" = "start" ] ; then
         echo "Bourreau started on port $Bourreau_PORT"
     else
         echo "Could not start Bourreau on port $Bourreau_PORT"
-        exit 10
-    fi
-    cd ..
-
-    cd jiv || exit 10
-    if script/server -d -p $jiv_PORT /dev/null 2>/dev/null ; then
-        echo "jiv started on port $jiv_PORT"
-    else
-        echo "Could not start jiv on port $jiv_PORT"
         exit 10
     fi
     cd ..
