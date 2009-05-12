@@ -9,7 +9,7 @@ class Session
   def update(params)
     filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     @session[:current_filters] = [] if params[:search_type] == 'none'
-    @session[:current_filters] << filter unless filter.blank? || @session[:current_filters].include?(filter)
+    @session[:current_filters] |= [filter] unless filter.blank?
     @session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
     
     if params[:view_all] && User.find(@session[:user_id]).has_role?(:admin)

@@ -216,7 +216,7 @@ class UserfilesController < ApplicationController
     if params[:commit] == 'Download Selected Files'
       operation = 'download'
     elsif params[:commit] == 'Delete Selected Files'
-      operation = 'delete'
+      operation = 'delete_files'
     elsif params[:commit] == 'Update Tags for Selected Files'
       operation = 'tag_update'
     elsif params[:commit] == 'Merge Files into Collection'
@@ -270,16 +270,12 @@ class UserfilesController < ApplicationController
         ma.user_id = current_user.id
         ma.params = { :filelist => filehash, :out_name  => "average_#{Time.now.to_i}.mnc" }
         ma.save
-        flash[:notice] += "Started mincaverage'.\n"
+        flash[:notice] += "Started mincaverage.\n"
         redirect_to :controller => :tasks, :action => :index
         return
       
       when "civet"
-
-        # TODO we need a new method to invoke the params page,
-        # as this way (POST /civet/edit/id) can only work with
-        # a single file.
-        redirect_to :controller => :civet, :action => :edit, :ids => filelist
+        redirect_to :controller => :civet, :action => :new, :ids => filelist, :task => "DrmaaCivet"
         return
 
       when "dcm2mnc"
@@ -294,8 +290,8 @@ class UserfilesController < ApplicationController
         redirect_to :controller => :tasks, :action => :index
         return
 
-      when "delete"
-
+      when "delete_files"
+        
         filelist.each do |id|
           userfile = collection.find(id)
           if userfile.nil?

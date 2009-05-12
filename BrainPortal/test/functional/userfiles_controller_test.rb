@@ -34,7 +34,7 @@ class UserfilesControllerTest < ActionController::TestCase
     end 
     
     assert_difference('Userfile.count', -1) do
-      post :operation, {:operation  => 'delete', :filelist  => [Userfile.find_by_name(filename).id]}
+      post :operation, {:operation  => 'delete_files', :filelist  => [Userfile.find_by_name(filename).id]}
     end
     
     assert(!File.exists?(vaultname), 'File content not deleted.')

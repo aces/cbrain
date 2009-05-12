@@ -49,7 +49,6 @@ class TasksController < ApplicationController
 
   rescue
     access_error(404)
-
   end
 
   def operation

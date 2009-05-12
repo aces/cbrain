@@ -99,6 +99,17 @@ class DrmaaTask < ActiveResource::Base
     cluster_list = CBRAIN_CLUSTERS::CBRAIN_cluster_list
     cluster_list.slice(rand(cluster_list.size))  # a random one
   end
-
+  
+  def self.has_params?
+    false
+  end
+  
+  def self.get_default_params(params = {})
+    nil
+  end
+  
+  def self.launch(params = {})
+    nil
+  end
 end
 
