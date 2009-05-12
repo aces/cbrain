@@ -1,0 +1,27 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+#
+
+-%>
+
+<% title 'CIVET Parameters' %>
+
+<h1>New CIVET task</h1>
+
+<%
+     form_tag( '/tasks/create' ) do 
+-%>
+
+<%= hidden_field_tag :task, @task_class.name %>
+
+<%= render :partial => @task_class.name.downcase, :locals  => {:default_args  => @default_args} %>
+
+<% end %>
+

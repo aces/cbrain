@@ -222,7 +222,8 @@ class UserfilesController < ApplicationController
     elsif params[:commit] == 'Merge Files into Collection'
       operation = 'merge_collections'
     else
-      operation   = params[:operation]
+      operation   = 'cluster_task'
+      task = params[:operation]
     end
     
     filelist    = params[:filelist] || []
@@ -245,49 +246,8 @@ class UserfilesController < ApplicationController
 
     # TODO: replace "case" and make each operation a private method ?
     case operation
-
-      when "minc2jiv"
-
-        filelist.each do |id|
-          userfile = collection.find(id)
-          if userfile.nil?
-            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
-            next
-          end
-          mj = DrmaaMinc2jiv.new
-          mj.user_id = current_user.id
-          mj.params = { :mincfile_id => id }
-          mj.save
-          flash[:notice] += "Started Minc2Jiv on file '#{userfile.name}'.\n"
-        end
-        redirect_to :controller => :tasks, :action => :index
-        return
-        
-      when "mincaverage"
-        ma = DrmaaMincaverage.new
-        filehash = {}
-        filelist.each_with_index{ |id, i| filehash[i] =  id}
-        ma.user_id = current_user.id
-        ma.params = { :filelist => filehash, :out_name  => "average_#{Time.now.to_i}.mnc" }
-        ma.save
-        flash[:notice] += "Started mincaverage.\n"
-        redirect_to :controller => :tasks, :action => :index
-        return
-      
-      when "civet"
-        redirect_to :controller => :civet, :action => :new, :ids => filelist, :task => "DrmaaCivet"
-        return
-
-      when "dcm2mnc"
-
-        dm = DrmaaDcm2mnc.new
-        dm.user_id = current_user.id
-        # TODO what to do when more than one collection selected ?
-        # TODO check that the ID is really a collection right away ?
-        dm.params = { :dicom_colid => filelist[0] }
-        dm.save
-        flash[:notice] += "Started Dcm2Mnc on your files.\n"
-        redirect_to :controller => :tasks, :action => :index
+      when "cluster_task"
+        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task
         return
 
       when "delete_files"

@@ -100,16 +100,17 @@ class DrmaaTask < ActiveResource::Base
     cluster_list.slice(rand(cluster_list.size))  # a random one
   end
   
-  def self.has_params?
+  #predicate indicating whether or not the given takes any command line arguments
+  def self.has_args?
     false
   end
   
-  def self.get_default_params(params = {})
-    nil
+  def self.get_default_args(params = {})
+    {}
   end
   
   def self.launch(params = {})
-    nil
+    ""      #returns a string to be used in flash[:notice]
   end
 end
 

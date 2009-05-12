@@ -50,6 +50,32 @@ class TasksController < ApplicationController
   rescue
     access_error(404)
   end
+  
+  def new
+    @task_class = Class.const_get(params[:task])
+    
+    if @task_class.has_args?
+      @default_args  = @task_class.get_default_args(params)  # provided first time we enter the edit page
+    else
+      redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids]
+      return
+    end
+    
+    respond_to do |format|
+      format.html # new.html.erb
+    end
+
+  end
+
+  def create
+    @task_class = Class.const_get(params[:task])
+    
+    flash[:notice] ||= ""
+    flash[:notice] += @task_class.launch(params)
+    
+    redirect_to :controller => :tasks, :action => :index
+
+  end
 
   def operation
     if params[:commit] == 'Trigger postprocessing of selected tasks'
