@@ -11,17 +11,6 @@
 
 -%>
 
-<% title 'CIVET Parameters' %>
+<%= render :partial => @task_class.name.tableize.singularize, :locals  => {:default_args  => @default_args} %>
 
-<h1>New CIVET task</h1>
-
-<%
-     form_tag( '/tasks/create' ) do 
--%>
-
-<%= hidden_field_tag :task, @task_class.name %>
-
-<%= render :partial => @task_class.name.downcase, :locals  => {:default_args  => @default_args} %>
-
-<% end %>
 

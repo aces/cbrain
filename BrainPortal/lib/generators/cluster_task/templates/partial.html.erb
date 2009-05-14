@@ -1,0 +1,20 @@
+<!-- 
+   Partial to be rendered for <%= "Drmaa#{class_name}" %>
+-->
+<%% title '<%= class_name %> Parameters' %>
+
+<h1>New <%= class_name %> task</h1>
+
+<%%
+     form_tag( '/tasks/create' ) do 
+-%>
+
+<%%= hidden_field_tag :task, '<%= "Drmaa#{class_name}" %>' %>
+
+<!-- 
+   Render form fields here.
+-->
+
+<%%= submit_tag 'Start <%= class_name %>' %>
+
+<%% end %>
