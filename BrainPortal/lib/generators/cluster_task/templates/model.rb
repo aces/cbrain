@@ -21,7 +21,7 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   def self.has_args?
     <% if options[:no_view] %>false<% else %>true<% end %>
   end
-  
+<% unless options[:no_view] %>  
   #########################################################################
   #This method should return a hash containing the default arguments for
   # <%= file_name %>. These can be used to set up the tasks/new form.
@@ -29,7 +29,7 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   def self.get_default_args(params = {})
     {}
   end
-  
+<% end %>
   #########################################################################
   #This method actually launches the <%= file_name %> job on the cluster, 
   # and returns the flash message to be displayed.
