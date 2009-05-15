@@ -2,12 +2,12 @@
 #
 # CBRAIN Project
 #
-# DrmaaTask subclass; this file is a TEMPLATE for creating a
-# new processing class.
+# <%= "Drmaa#{class_name}" %> subclass for running <%= name %>
 #
-# Original author: Pierre Rioux
+# Original author:
+# Template author: Pierre Rioux
 #
-# $Id$
+# $Id: drmaa_TEMPLATE.rb 150 2009-03-02 20:45:51Z prioux $
 #
 
 # GENERAL INSTRUCTIONS:
@@ -46,14 +46,9 @@
 #      userfile's content back to the BrainPortal's host.
 
 
-# Class declaration: You need to replace the word TEMPLATE by a name
-# for the type of processing you are trying to accomplish. E.g. DrmaaCivet or
-# DrmaaMinc2jiv ; casing is important, it must work with the camelize()
-# and uncamelize() Rails functions. Also, the name of the file must be
-# adjusted accordingly.
-class DrmaaTEMPLATE < DrmaaTask
+class <%= "Drmaa#{class_name}" %> < DrmaaTask
 
-  Revision_info="$Id$"
+  Revision_info="$Id: drmaa_TEMPLATE.rb 150 2009-03-02 20:45:51Z prioux $"
 
   def setup
     params       = self.params
@@ -65,7 +60,7 @@ class DrmaaTEMPLATE < DrmaaTask
     params       = self.params
     user_id      = self.user_id
     [
-      "echo Shell Command",
+      "<%= name %>",
       "true"
     ]
   end

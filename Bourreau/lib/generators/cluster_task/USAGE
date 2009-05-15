@@ -1,0 +1,9 @@
+Description:
+    Stubs out a model for a new cluster task. Pass the task name as the 
+    first argument.
+    
+Example:
+    ./script/generate cluster_task mincinfo
+    
+    The following file will be generated:
+    app/models/drmaa_mincinfo.rb

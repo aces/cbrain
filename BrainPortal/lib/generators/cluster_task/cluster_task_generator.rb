@@ -9,7 +9,11 @@ class ClusterTaskGenerator < Rails::Generator::NamedBase
     
     puts '-' * 70
     puts ""
-    puts "Add the following line to the 'Operations' menu in app/views/userfiles/index.html.erb"
+    if options[:command] == :destroy
+      puts "Remove the following line (or whatever it was changed to) from the 'Operations' menu in app/views/userfiles/index.html.erb"
+    else
+      puts "Add the following line to the 'Operations' menu in app/views/userfiles/index.html.erb"
+    end
     puts %(  <option value="Drmaa#{class_name}">Launch #{class_name}</option>)
     puts ""
     puts '-' * 70

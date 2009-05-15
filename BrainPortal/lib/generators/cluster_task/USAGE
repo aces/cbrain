@@ -1,0 +1,19 @@
+Description:
+    Stubs out a model and (optionally) a view for a new cluster 
+    task. Pass the task name as the first argument.
+    
+    The view created is a form where the user may input arguments 
+    for tasks that require them.
+    
+Examples:
+    ./script/generate cluster_task civet
+    
+    The following files will be generated:
+    app/models/drmaa_civet.rb
+    app/views/tasks/_drmaa_civet.html.erb
+
+
+    ./script/generate cluster_task mincinfo
+    
+    The following file will be generated:
+    app/models/drmaa_mincinfo.rb
