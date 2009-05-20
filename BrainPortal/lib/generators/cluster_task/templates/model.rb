@@ -25,6 +25,8 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   #########################################################################
   #This method should return a hash containing the default arguments for
   # <%= file_name %>. These can be used to set up the tasks/new form.
+  #If an exception is raised here it will cause a redirect to the 
+  # userfiles index page where the exception message will be displayed.
   #########################################################################
   def self.get_default_args(params = {})
     {}
@@ -33,6 +35,9 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   #########################################################################
   #This method actually launches the <%= file_name %> job on the cluster, 
   # and returns the flash message to be displayed.
+  #If an exception is raised here it will cause a redirect to the 
+  # tasks/new page for <%= name %> where the exception message will be 
+  # displayed.
   #########################################################################
   def self.launch(params)
     flash = "Flash[:notice] message."
