@@ -52,10 +52,16 @@ class TasksController < ApplicationController
   end
   
   def new
-    @task_class = Class.const_get(params[:task])
+    @task_class = Class.const_get(params[:task])    
     
     if @task_class.has_args?
-      @default_args  = @task_class.get_default_args(params)  # provided first time we enter the edit page
+      begin
+        @default_args  = @task_class.get_default_args(params)
+      rescue  => e
+        flash[:error] = e.to_s
+        redirect_to userfiles_path
+        return
+      end
     else
       redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids]
       return
@@ -69,9 +75,15 @@ class TasksController < ApplicationController
 
   def create
     @task_class = Class.const_get(params[:task])
-    
-    flash[:notice] ||= ""
-    flash[:notice] += @task_class.launch(params)
+        
+    begin
+      flash[:notice] ||= ""
+      flash[:notice] += @task_class.launch(params)
+    rescue  => e
+      flash[:error] = e.to_s
+      redirect_to :action  => :new, :file_ids => params[:file_ids], :task  => params[:task]
+      return
+    end
     
     redirect_to :controller => :tasks, :action => :index
 
