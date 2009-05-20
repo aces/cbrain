@@ -102,7 +102,13 @@ class Userfile < ActiveRecord::Base
     when 'jiv'
       'file:jiv'
     when 'minc'
-      'file:minc'      
+      'file:minc'
+    when 'cw5'
+      'file:cw5'
+    when 'flt'
+      'file:flt'
+    when 'mls'
+      'file:mls'            
     end
   end
   
@@ -130,6 +136,16 @@ class Userfile < ActiveRecord::Base
         when 'minc'
           query << "(userfiles.name LIKE ?)"
           arguments << "%.mnc"
+        when 'cw5'
+          query << "(userfiles.name LIKE ?  OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
+          arguments += ["%.flt", "%.mls", "%.bin", "%.cw5" ]
+        when 'flt'
+          query << "(userfiles.name LIKE ?)"
+          arguments += ["%.flt"]
+        when 'mls'
+          query << "(userfiles.name LIKE ?)"
+          arguments += ["%.mls"]
+          
         end
       end
     end

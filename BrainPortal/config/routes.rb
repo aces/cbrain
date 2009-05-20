@@ -20,7 +20,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect 'tasks/:action/:cluster_name/:id', :controller => 'tasks'
 
   map.connect 'civet/:action/:id', :controller => 'civet'
-
+  map.connect 'cw5filter/:action/:id', :controller => 'cw5filter'
   map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
   # The priority is based upon order of creation: first created -> highest priority.

@@ -48,6 +48,9 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_dcm2mncs,  :controller => :tasks
   map.resources :drmaa_mincaverages,  :controller => :tasks
 
+  #UNF resources
+  map.resources :drmaa_cw5filters,     :controller => :tasks  
+
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
 
