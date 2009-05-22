@@ -26,6 +26,7 @@ class UserfilesController < ApplicationController
       @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
                                                 :conditions => Userfile.convert_filters_to_sql_query(name_filters),
                                                 :order => "userfiles.#{current_session.order}")
+
     else
       @userfiles = Userfile.find(:all, :include  => :tags, 
                                   :conditions => Userfile.convert_filters_to_sql_query(name_filters),
@@ -42,7 +43,7 @@ class UserfilesController < ApplicationController
 
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
-    
+    @user_groups = current_user.groups.find(:all)
     
     respond_to do |format|
       format.html # index.html.erb
@@ -110,19 +111,20 @@ class UserfilesController < ApplicationController
     userfile = nil
 
    if params[:archive] == 'collection'
-      userfile         = FileCollection.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
+      userfile         = FileCollection.new(:tag_ids  => params[:tags])
     elsif params[:archive] == 'civet collection'
-      userfile         = CivetCollection.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
+      userfile         = CivetCollection.new(:tag_ids  => params[:tags])
       params[:archive] = 'collection'
     else
-      userfile         = SingleFile.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
+      userfile         = SingleFile.new(:tag_ids  => params[:tags])
     end
     
     clean_basename   = File.basename(upload_stream.original_filename)
     userfile.content = upload_stream.read   # also fills file_size
     userfile.user_id = current_user.id
     userfile.name    = clean_basename
-    
+    userfile.update_attributes(params[:group])
+
     if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       status, successful_files, failed_files, nested_files = userfile.extract
       if status == :success
@@ -281,6 +283,7 @@ class UserfilesController < ApplicationController
           File.delete "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz"
         end
         return
+
       when 'tag_update'
         filelist.each do |id|
           userfile = collection.find(id)
