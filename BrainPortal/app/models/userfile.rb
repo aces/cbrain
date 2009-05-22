@@ -16,6 +16,10 @@ class Userfile < ActiveRecord::Base
   acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
   has_and_belongs_to_many :tags
+
+  #A- A userfile has one group
+  belongs_to              :group
+     		   
   
   validates_uniqueness_of :name, :scope => :user_id
   validates_presence_of   :name

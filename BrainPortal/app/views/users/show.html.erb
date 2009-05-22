@@ -42,14 +42,12 @@
 
    <tr>
      <th>Name</th>
-     <th>Manager</th>
      <th>Members</th>
    </tr>
   
 <% @user.groups.each do |group| %>
   <tr class=<%= cycle("list-even", "list-odd")%> >
     <td><%=h group.name %></td>
-    <td><%=h group.manager.full_name rescue "" %></td>
     <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
 <% end %>
 </table>

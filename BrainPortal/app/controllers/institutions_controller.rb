@@ -14,6 +14,7 @@ class InstitutionsController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required, :admin_role_required
+
   # GET /institutions
   # GET /institutions.xml
   def index
@@ -39,6 +40,7 @@ class InstitutionsController < ApplicationController
   # GET /institutions/1/edit
   def edit
     @institution = Institution.find(params[:id])
+    @groups = Group.find(:all)
   end
 
   # POST /institutions
@@ -61,7 +63,9 @@ class InstitutionsController < ApplicationController
   # PUT /institutions/1
   # PUT /institutions/1.xml
   def update
-    @institution = Institution.find(params[:id])
+
+    @institution = Institution.find(params[:id], :include => :groups)
+    #params[:institution][:group_id] ||= []
 
     respond_to do |format|
       if @institution.update_attributes(params[:institution])

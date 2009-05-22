@@ -16,8 +16,8 @@ class SessionsController < ApplicationController
   Revision_info="$Id$"
 
   # render new.rhtml
-  def new
-  end
+  #def new
+  #end
 
   def create
     self.current_user = User.authenticate(params[:login], params[:password])
@@ -29,7 +29,7 @@ class SessionsController < ApplicationController
       redirect_back_or_default('/')
       flash[:notice] = "Logged in successfully"
     else
-      flash[:error] = 'Invalid user name or password.'
+      flash[:error] = 'Invalid user name or password, Silly.'
       render :action => 'new'
     end
   end

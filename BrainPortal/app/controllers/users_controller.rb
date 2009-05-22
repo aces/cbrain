@@ -18,8 +18,8 @@ class UsersController < ApplicationController
   before_filter :admin_role_required, :except => [:show, :edit, :update]  
   
   def index
-    @users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])
-
+    #@users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])
+    @users = User.find(:all, :include => [:groups, :userfiles])
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @users }
@@ -73,12 +73,11 @@ class UsersController < ApplicationController
   # PUT /users/1
   # PUT /users/1.xml
   def update
-    @user = User.find(params[:id])
+    @user = User.find(params[:id], :include => :groups)
     params[:user][:group_ids] ||= []
-    
     respond_to do |format|
-      if @user.update_attributes(params[:user])        
-        flash[:notice] = 'User was successfully updated.'
+      if @user.update_attributes(params[:user])
+        flash[:notice] = 'User was successfully updated #{@user.name}.'
         format.html { redirect_to @user }
         format.xml  { head :ok }
       else

@@ -21,11 +21,11 @@
    </tr>
    <tr class="list-even">
       <td><b>Institution:</b></td>
-      <td><%=h @group.institution.name %></td>
-  </td>
-  <tr class="list-even">
-     <td><b>Manager:</b></td>
-     <td><%=h @group.manager_id %></td>
+      <% if (@group.institution != nil) %>
+	      <td><%=h @group.institution.name %></td>
+      <% else %>
+		<td></td>
+	<% end %>
   </td>
   <tr class="list-even">
       <td><b>Street:</b></td>

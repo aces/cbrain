@@ -27,19 +27,33 @@
       <th>Owner:</th>
       <td colspan="2"><%=h @userfile.user.full_name %></td>
    </tr>
-   <tr class="list-odd">
+    <tr class="list-odd">
       <th>Size:</th>
-      <td colspan="2"><%=h @userfile.format_size %></td>
+      <td colspan="2"><%=h @userfile.size %></td>
    </tr>
-   <% if @userfile.is_a? SingleFile %>
+  
+  
+   <%if @userfile.is_a? SingleFile %>
       <tr class="list-even">
          <th>Parent:</th>
          <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
-      <tr class="list-odd">
-         <th>Children:</th>
-         <td colspan="2"><%=@userfile.children.map{|c| h(c.name)}.join("<br>") %></td>
+
+       <tr class="list-even">
+         <th>Task:</th>
+         <td colspan="2"><%= @userfile.task rescue ""%></td>
       </tr>
+     
+      <tr class="list-even">
+         <th>Children:</th>
+         <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
+      </tr>
+
+       <tr class="list-even">
+         <th>Group:</th>
+         <td colspan="2"><%= @userfile.group.name rescue ""%></td>
+      </tr>
+   
    <% end %>
    <tr class="list-even">
       <th>Created at:</th>
@@ -62,6 +76,7 @@
          <% end %>
       </tr>
    <% end %>
+ 
 </table>
 <%= submit_tag "Update Fields" %>
 <% end %>

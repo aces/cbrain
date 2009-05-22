@@ -16,13 +16,17 @@ class User < ActiveRecord::Base
   Revision_info="$Id$"
 
   has_many                :userfiles
-  has_many                :managed_groups,
-                          :class_name => 'Group',
-                          :foreign_key => 'manager_id',
-                          :dependent => :nullify
+
+  #begin takeout - no more manger_id
+  #has_many                :managed_groups,
+  #                        :class_name => 'Group',
+  #                        :foreign_key => 'manager_id',
+  #                           :dependent => :nullify
+
   has_and_belongs_to_many :groups
   has_many                :tags
   has_many                :feedbacks
+
   
   
   # Virtual attribute for the unencrypted password

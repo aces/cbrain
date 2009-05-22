@@ -1,14 +1,21 @@
 <tr class="<%= cycle('list-odd', 'list-even') %>">
    <td><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
-   <% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
-      <td><%= userfile.user.login %></td>
-   <% end %>
+   <td><%= userfile.user.full_name %></td>
    <td>
       <%=  tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_to h(userfile.name), edit_userfile_path(userfile) %>
       <%= userfile.is_a?(FileCollection) ? "(Collection)" : "" %>      
    </td>
    <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
-   <td><%= h(userfile.format_size)-%></td>
-   <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") %></td>
+   <% if userfile.size != nil %>
+	<td><%= h(userfile.format_size)-%></td>
+   <% else %>
+	<td></td>
+   <% end %>
+   <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") -%></td>
+       <% if userfile.group != nil %>
+	    <td><%= userfile.group.name -%></td>
+       <% else %>
+	    <td></td>
+	<% end %>
 </tr>

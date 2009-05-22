@@ -13,6 +13,8 @@ class DrmaaTask < ActiveResource::Base
 
   Revision_info="$Id$"
 
+
+
   # This sets the default resource address to the first cluster
   # listed in the clusters.rb initializer file; it probably
   # will be overriden in each subclasses, often several times

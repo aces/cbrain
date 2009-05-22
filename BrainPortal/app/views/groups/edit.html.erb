@@ -26,11 +26,7 @@
     <%= f.label :institution_id, 'Institution' %><br />
      <%= f.collection_select :institution_id, Institution.find(:all), :id, :name, :prompt => 'Select an Institution' %>
   </p>
-  <p>
-      <%= f.label :manager_id, 'Manager' %><br />
-      <%= f.collection_select :manager_id, User.find_all_by_role('manager'), :id, :full_name, :prompt => 'Select a Manager' %>
-  </p>
-  <p>
+   <p>
     <%= f.label :street %><br />
     <%= f.text_field :street %>
   </p>
@@ -56,8 +52,9 @@
   <table>
      <% for user in User.find(:all).reject{|u| u.login == 'admin'} %>
          <tr>
-            <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.include?(user)) %></td> 
-           <td class="info"><%= h(user.full_name) -%></td>
+
+           <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.include?(user) ) %></td>
+            <td class="info"><%= h(user.full_name) -%></td>
          </tr>
      <% end %>
   </table>

@@ -109,13 +109,13 @@ class UserfilesController < ApplicationController
     
     userfile = nil
 
-    if params[:archive] == 'collection'
-      userfile         = FileCollection.new(:tag_ids  => params[:tags])
+   if params[:archive] == 'collection'
+      userfile         = FileCollection.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
     elsif params[:archive] == 'civet collection'
-      userfile         = CivetCollection.new(:tag_ids  => params[:tags])
+      userfile         = CivetCollection.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
       params[:archive] = 'collection'
     else
-      userfile         = SingleFile.new(:tag_ids  => params[:tags])
+      userfile         = SingleFile.new(:tag_ids  => params[:tags], :group_ids  => params[:groups])
     end
     
     clean_basename   = File.basename(upload_stream.original_filename)
@@ -193,6 +193,7 @@ class UserfilesController < ApplicationController
       else
         @userfile.name = old_name
         @tags = current_user.tags
+	@groups = current_user.groups
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
@@ -221,6 +222,8 @@ class UserfilesController < ApplicationController
       operation = 'tag_update'
     elsif params[:commit] == 'Merge Files into Collection'
       operation = 'merge_collections'
+    elsif params[:commit] == 'Update Groups for Selected Files'
+      operation = 'group_update'
     else
       operation   = 'cluster_task'
       task = params[:operation]
@@ -291,6 +294,21 @@ class UserfilesController < ApplicationController
             flash[:error] += "Tags for #{userfile.name} could not be updated."
           end
         end
+
+  when "group_update"
+      filelist.each do |id|
+          userfile = collection.find(id)
+          if userfile.nil?
+            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
+            next
+          end
+          if userfile.update_attributes(params[:group])
+            flash[:notice] += "Group for #{userfile.name} successfully updated."
+          else
+            flash[:error] += "Group for #{userfile.name} could not be updated."
+          end
+    end
+
       when 'merge_collections'
         collection = FileCollection.new(:user_id  => current_user.id)
         status = collection.merge_collections(filelist)
@@ -331,5 +349,4 @@ class UserfilesController < ApplicationController
     
     redirect_to :action  => :index
   end
-  
 end

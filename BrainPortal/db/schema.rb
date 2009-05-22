@@ -9,7 +9,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090130164327) do
+ActiveRecord::Schema.define(:version => 20090514150933) do
+
+  create_table "drmaa_tasks", :force => true do |t|
+    t.string   "type"
+    t.string   "drmaa_jobid"
+    t.string   "drmaa_workdir"
+    t.text     "params"
+    t.string   "status"
+    t.text     "log"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+    t.string   "cluster_name"
+  end
 
   create_table "feedbacks", :force => true do |t|
     t.string   "summary"
@@ -89,6 +102,8 @@ ActiveRecord::Schema.define(:version => 20090130164327) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "type"
+    t.string   "task"
+    t.integer  "group_id"
   end
 
   create_table "users", :force => true do |t|

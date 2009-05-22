@@ -17,9 +17,10 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index
-    @groups = Group.find(:all, :include => [:manager, :users, :institution])
+    @groups = Group.find(:all, :include => [:users, :institution, :userfiles])
 
-    respond_to do |format|
+    #@groups = Group.find(:all, :include => [:users])
+     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @groups }
     end
@@ -28,7 +29,9 @@ class GroupsController < ApplicationController
   # GET /groups/1
   # GET /groups/1.xml
   def show
-    @group = Group.find(params[:id], :include => [:users, :manager])
+    #@group = Group.find(params[:id], :include => [:users, :manager])
+    @group = Group.find(params[:id], :include => [:users])
+    
 
     respond_to do |format|
       format.html # show.html.erb
@@ -41,8 +44,8 @@ class GroupsController < ApplicationController
   def new
     @group = Group.new
     @institution_names = Institution.find(:all).collect(&:name)
-    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
-    
+   # @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
+   #@manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
     respond_to do |format|
       format.html # new.html.erb
       format.xml  { render :xml => @group }
@@ -52,8 +55,8 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit
     @group = Group.find(params[:id])
-    @institution_names = Institution.find(:all).collect(&:name)
-    @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
+   # @institution_names = Institution.find(:all).collect(&:name)
+  #  @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
   end
 
   # POST /groups
@@ -77,8 +80,9 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update
-    @group = Group.find(params[:id])
+    @group = Group.find(params[:id], :include => :institution)
     params[:group][:user_ids] ||= []
+    params[:group][:institution_id] ||= []
     
     respond_to do |format|
       if @group.update_attributes(params[:group])
@@ -93,6 +97,7 @@ class GroupsController < ApplicationController
     end
   end
 
+ 
   # DELETE /groups/1
   # DELETE /groups/1.xml
   def destroy
@@ -104,4 +109,8 @@ class GroupsController < ApplicationController
       format.xml  { head :ok }
     end
   end
+
+  
+
+
 end

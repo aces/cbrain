@@ -14,14 +14,15 @@ class TasksController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  
+   
   def index
     @tasks = []
     CBRAIN_CLUSTERS::CBRAIN_cluster_list.each do |cluster_name|
       DrmaaTask.adjust_site(cluster_name)
       begin
         if current_user.role == 'admin'
-          tasks = DrmaaTask.find(:all) || []
+          #tasks = DrmaaTask.find(:all) || []
+          tasks = DrmaaTask.find(:all, :include => :users) || []
         else
           tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
         end
@@ -32,7 +33,7 @@ class TasksController < ApplicationController
         flash.now[:error] += "Cluster '#{cluster_name}' is down: #{e.to_s}"
       end
     end
-    @tasks
+   
   end
 
   # GET /tasks/Montague/1
@@ -156,4 +157,5 @@ class TasksController < ApplicationController
 
   end
 
+  
 end

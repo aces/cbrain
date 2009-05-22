@@ -13,7 +13,8 @@ class Institution < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  has_many :groups
-  validates_presence_of :name
+  has_many                :groups
+  
+  validates_presence_of   :name
 
 end

@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+
+
   map.resources :feedbacks
 
   map.resources :tags, :groups, :institutions, :users

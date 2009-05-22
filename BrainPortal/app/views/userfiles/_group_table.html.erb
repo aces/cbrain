@@ -1,0 +1,8 @@
+<table>
+
+ <% if current_user.has_role?(:admin)%>
+	 <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, options = {:prompt => "-Select a group-"}, :class => :group) %>
+  <% else %>
+	 <%= collection_select(:userfile, :group_id, groups, :id, :name, options = {:prompt => "-Select a group-"}, :class => :group) %>
+  <% end %>
+</table>

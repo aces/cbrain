@@ -47,6 +47,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_civets,    :controller => :tasks
   map.resources :drmaa_dcm2mncs,  :controller => :tasks
   map.resources :drmaa_mincaverages,  :controller => :tasks
+  map.resources :drmaa_mincmaths,  :controller => :tasks
 
   #UNF resources
   map.resources :drmaa_cw5filters,     :controller => :tasks  

@@ -69,6 +69,7 @@ class SingleFile < Userfile
       u.name    = file
       u.user_id = self.user_id
       u.size = File.size(u.vaultname)
+      u.group_id = self.group_id
       if File.file? u.vaultname
         status = :failed unless u.save(false)
       end

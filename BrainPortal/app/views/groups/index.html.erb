@@ -19,8 +19,7 @@
   <tr>
     <th>Name</th>
     <th>Institution</th>
-    <th>Manager</th>
-    <th>Members</th>
+     <th>Members</th>
     <th>Phone</th>
     <th colspan="3"/>
   </tr>
@@ -28,8 +27,11 @@
 <% for group in @groups %>
   <tr class="<%= cycle('list-odd', 'list-even') %>">
     <td><%=h group.name %></td>
-    <td><%=h group.institution.name%></td>
-    <td><%=h group.manager.full_name rescue "" %></td>
+    <% if (group.institution_id != nil) %>
+	    <td><%=h group.institution.name %></td>
+    <% else %>
+	    <td></td>
+    <% end %>
     <td><%= group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
     <td><%=h group.phone %></td>
     <td><%= button_to 'Show', group, :method => :get %></td>
