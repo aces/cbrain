@@ -57,6 +57,7 @@ class TasksController < ApplicationController
   # GET /tasks/<id>
   # Formats: xml
   def show
+    @task.capture_job_out_err
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml { render :xml => @task }

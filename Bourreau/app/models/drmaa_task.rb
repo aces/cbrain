@@ -367,6 +367,26 @@ public
     self.removeDRMAAworkdir
   end
 
+  def capture_job_out_err
+     return if self.new_record?
+     workdir = self.drmaa_workdir
+     return unless workdir
+     stdoutfile = "#{workdir}/.qsub.sh.out"
+     stderrfile = "#{workdir}/.qsub.sh.err"
+     #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
+     #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
+     if File.exist?(stdoutfile)
+        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 80 | tail -30","r")
+        @capt_stdout_b64 = Base64.encode64(io.read)
+        io.close
+     end
+     if File.exist?(stderrfile)
+        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 80 | tail -30","r")
+        @capt_stderr_b64 = Base64.encode64(io.read)
+        io.close
+     end
+  end
+
 protected
 
   # The list of possible DRMAA states is larger than
@@ -501,26 +521,6 @@ protected
        system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
        self.drmaa_workdir = nil
     end
-  end
-
-  def after_initialize
-     return if self.new_record?
-     workdir = self.drmaa_workdir
-     return unless workdir
-     stdoutfile = "#{workdir}/.qsub.sh.out"
-     stderrfile = "#{workdir}/.qsub.sh.err"
-     #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
-     #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
-     if File.exist?(stdoutfile)
-        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 80 | tail -30","r")
-        @capt_stdout_b64 = Base64.encode64(io.read)
-        io.close
-     end
-     if File.exist?(stderrfile)
-        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 80 | tail -30","r")
-        @capt_stderr_b64 = Base64.encode64(io.read)
-        io.close
-     end
   end
 
   def capt_stdout_b64
