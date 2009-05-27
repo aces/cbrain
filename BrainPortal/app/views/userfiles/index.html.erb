@@ -73,13 +73,14 @@
               "operation", 
                '
                <option value="">Select an operation</option>
-
                <optgroup label="Scientific operations">
                <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
                <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
                <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
                <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-	       <option value="DrmaaMincmath">Mincmath</option>
+	       	   <option value="DrmaaMincmath">Mincmath</option>
+	           <option value="DrmaaCw5filter">Apply a filter over a simple optical cw5 file</option>
+			   <option value="DrmaaCw5">Process selected Cw5 files through a simple optical Cw5 pipeline</option>
                '
               ) %>
 
@@ -117,6 +118,7 @@
       <%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
       <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
       <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
+      <%= link_to 'CW5 Files', userfiles_path(:search_type => :cw5) %>
       <br>
       <strong>Filter tags:</strong>
       <% current_user.tags.collect(&:name).each do |tag| %>

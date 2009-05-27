@@ -51,6 +51,8 @@ ActionController::Routing::Routes.draw do |map|
 
   #UNF resources
   map.resources :drmaa_cw5filters,     :controller => :tasks  
+  map.resources :drmaa_matlab,         :controller => :tasks
+  map.resources :drmaa_cw5s,            :controller => :tasks  
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
