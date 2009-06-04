@@ -12,7 +12,7 @@
 class UserfilesController < ApplicationController
 
   Revision_info="$Id$"
-
+  
   before_filter :login_required
   
   # GET /userfiles
@@ -23,10 +23,11 @@ class UserfilesController < ApplicationController
     tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
         
     unless current_session.view_all? 
-      @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
-                                                :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                                :order => "userfiles.#{current_session.order}")
-
+	    @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
+	      :conditions => Userfile.convert_filters_to_sql_query(name_filters),
+	     :order => "userfiles.#{current_session.order}")
+	  
+	
     else
       @userfiles = Userfile.find(:all, :include  => :tags, 
                                   :conditions => Userfile.convert_filters_to_sql_query(name_filters),
