@@ -30,5 +30,5 @@ class Group < ActiveRecord::Base
   #                        :foreign_key => 'manager_id'
   #A-take this out
 
-  validates_presence_of   :name, :institution_id
+  validates_presence_of   :name
 end
