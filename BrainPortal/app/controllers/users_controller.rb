@@ -59,8 +59,16 @@ class UsersController < ApplicationController
     # reset_session
     
     @user = User.new(params[:user])
-    @user.save
 
+    newGroup = Group.new(:name => @user.login)
+    newGroup.save
+#    everyoneGroup = Group.find_by_name("everyone")
+    group_ids = @user.group_ids
+    group_ids << newGroup.id
+#    group_ids << everyoneGroup.id
+    @user.group_ids = group_ids
+
+    @user.save
 
     if @user.errors.empty?
       redirect_to(users_url)
