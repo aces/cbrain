@@ -61,8 +61,6 @@ class UsersController < ApplicationController
     @user = User.new(params[:user])
     @user.save
 
-    newGroup = Group.new(:name => @user.full_name)
-    @user.Group.update_attributes(newGroup)    
 
     if @user.errors.empty?
       redirect_to(users_url)
