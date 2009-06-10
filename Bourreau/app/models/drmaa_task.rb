@@ -141,7 +141,7 @@ public
         end
       rescue => e
         self.addlog("Exception raised when setting up: #{e.inspect}")
-        e.backtrace.each { |m| self.addlog(m) if m.match(/Bourreau/) }
+        e.backtrace.slice(0,10).each { |m| self.addlog(m) }
         self.status = "Failed To Setup"
       end
       self.save
@@ -501,7 +501,8 @@ protected
 
   def makeDRMAAworkdir
     name = self.class.to_s.gsub(/^Drmaa/,"")
-    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{name}-" + $$.to_s + self.object_id.to_s)
+    user = User.find_by_id(self.user_id).login
+    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-" + $$.to_s + self.object_id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
     unless Dir.mkdir(self.drmaa_workdir,0700)
        raise "Cannot create directory #{self.drmaa_workdir}: $!"
