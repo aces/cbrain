@@ -250,7 +250,7 @@ public
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
+    return ar_status if ar_status.match(/^(Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
 
     drmaastatus = self.drmaa_status
     #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")
