@@ -9,7 +9,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090514150933) do
+ActiveRecord::Schema.define(:version => 20090605184533) do
+
+  create_table "data_providers", :force => true do |t|
+    t.string   "name"
+    t.string   "type"
+    t.integer  "user_id"
+    t.integer  "group_id"
+    t.string   "remote_user"
+    t.string   "remote_host"
+    t.integer  "remote_port"
+    t.string   "remote_dir"
+    t.boolean  "online"
+    t.boolean  "read_only"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "description"
+  end
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -57,6 +73,7 @@ ActiveRecord::Schema.define(:version => 20090514150933) do
     t.string   "country"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "group_id"
   end
 
   create_table "logged_exceptions", :force => true do |t|
@@ -104,6 +121,7 @@ ActiveRecord::Schema.define(:version => 20090514150933) do
     t.string   "type"
     t.string   "task"
     t.integer  "group_id"
+    t.integer  "data_provider_id"
   end
 
   create_table "users", :force => true do |t|

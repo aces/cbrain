@@ -62,10 +62,10 @@ class UsersController < ApplicationController
 
     newGroup = Group.new(:name => @user.login)
     newGroup.save
-#    everyoneGroup = Group.find_by_name("everyone")
+    everyoneGroup = Group.find_by_name("everyone")
     group_ids = @user.group_ids
     group_ids << newGroup.id
-#    group_ids << everyoneGroup.id
+    group_ids << everyoneGroup.id
     @user.group_ids = group_ids
 
     @user.save
@@ -86,7 +86,7 @@ class UsersController < ApplicationController
     params[:user][:group_ids] ||= []
     respond_to do |format|
       if @user.update_attributes(params[:user])
-        flash[:notice] = 'User was successfully updated #{@user.name}.'
+        flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to @user }
         format.xml  { head :ok }
       else

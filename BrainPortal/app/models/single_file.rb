@@ -10,86 +10,84 @@
 # $Id$
 #
 
+require 'fileutils'
+
 class SingleFile < Userfile
   
   Revision_info="$Id$"
   
   #Extract files from an archive and register them in the db
   def extract
+
+    archive_file_name = self.name                      # "abc.tar.gz" or "abc.zip"
+    collection_name = archive_file_name.split('.')[0]  # "abc"
+    self.name = collection_name
+
+    tmparchivefile = "/tmp/#{$$}-#{archive_file_name}"
+    escaped_tmparchivefile = tmparchivefile.gsub("'", "'\\\\''")
+    File.open(tmparchivefile, "w") { |io| io.write(@content) }
+
     status = :success
-    self.save_content
     all_files = []
     successful_files = []
     failed_files = []
     nested_files = []
     
-    Dir.chdir(Pathname.new(CBRAIN::Filevault_dir) + self.user.login) do
-      if self.name =~ /\.tar(\.gz)?$/
-        all_files = IO.popen("tar tf #{self.name.gsub("'", "'\\\\''")}").readlines.map(&:chomp)
+    if archive_file_name =~ /\.tar(\.gz)?$/i
+      all_files = IO.popen("tar -tf #{escaped_tmparchivefile}").readlines.map(&:chomp)
+    else
+      all_files = IO.popen("unzip -l #{escaped_tmparchivefile}").readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]}
+    end
+    
+    count = all_files.select{ |f| f !~ /\// }.size
+    
+    #max of 50 files can be added to the file list at a time.
+    if count > 50
+      File.unlink(tmparchivefile)
+      return [:overflow, -1, -1, -1]
+    end 
+    
+    workdir = tmparchivefile + ".workdir"
+    Dir.mkdir(workdir)
+    Dir.chdir(workdir) do
+      if archive_file_name =~ /\.tar(\.gz)?$/
+        system("tar -xvf '#{escaped_tmparchivefile}'")
       else
-        all_files = IO.popen("unzip -l #{self.name.gsub("'", "'\\\\''")}").readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]}
+        system("unzip '#{escaped_tmparchivefile}'")
       end
-    
-      count = all_files.select{ |f| f !~ /\// }.size
-    
-      #max of 50 files can be added to the file list at a time.
-      if count > 50
-        return [:overflow, -1, -1, -1]
-      end 
-    
-      
-    
-      if self.name =~ /\.tar(\.gz)?$/
-        all_files.each do |file_name|
-          if Userfile.find_by_name(file_name)
-            failed_files << file_name
-          elsif file_name =~ /\//
-            nested_files << file_name
-          else
-            system("tar xvf '#{self.name.gsub("'", "'\\\\''")}' '#{file_name.gsub("'", "'\\\\''")}'")
-            successful_files << file_name
-          end
-        end
+   end
+
+    all_files.each do |file_name|
+      if Userfile.find_by_name(file_name)
+        failed_files << file_name
+      elsif file_name =~ /\//
+        nested_files << file_name
       else
-        all_files.each do |file_name|
-          if Userfile.find_by_name(file_name)
-            failed_files << file_name
-          elsif file_name =~ /\//
-            nested_files << file_name
-          else
-            system("unzip '#{self.name.gsub("'", "'\\\\''")}' '#{file_name.gsub("'", "'\\\\''")}'")
-            successful_files << file_name
-          end
-        end
+        successful_files << file_name
       end
     end
            
-    successful_files.each do |file|
-      u = SingleFile.new(:tag_ids  => self.tag_ids)
-      u.name    = file
-      u.user_id = self.user_id
-      u.size = File.size(u.vaultname)
-      u.group_id = self.group_id
-      if File.file? u.vaultname
-        status = :failed unless u.save(false)
+    Dir.chdir(workdir) do
+      successful_files.each do |file|
+        u = SingleFile.new(:tag_ids  => self.tag_ids)
+        u.name             = file
+        u.data_provider_id = self.data_provider_id
+        u.user_id          = self.user_id
+        u.group_id         = self.group_id
+        u.content          = File.read(file)
+        unless u.save(false)
+          status = :failed
+        end
       end
     end
+
+    File.unlink(tmparchivefile)
+    FileUtils.remove_dir(workdir, true)
     
-    File.delete(self.vaultname)
     [status, successful_files, failed_files, nested_files]
   end
-  
-  def content
-    @content ||= self.read_content
-    @content
-  end
 
-  def content=(newcontent)
-    @content = newcontent
-    self.size = @content.size
-    @content
-  end
-  
+
   #format size for display in the view
   def format_size
     if self.size > 10**9
@@ -102,25 +100,50 @@ class SingleFile < Userfile
       "#{self.size} bytes"     
     end 
   end
+
+  ########################################################
+  # CONTENT access methods
+  ########################################################
+  
+  # Gets the content of the file; caches it in memory.
+  # Consider using the provider's cache_readhandle() instead
+  # of storing the whole content into memory, if you can.
+  def content
+    return @content unless @content.nil?
+    provider = self.data_provider
+    provider.cache_readhandle(self) do |io|
+      @content = io.read
+    end
+    @content
+  end
+
+  # Sets the content of the file in memory.
+  # Consider using the provider's cache_writehandle() instead
+  # of storing the whole content into memory, if you can.
+  def content=(newcontent)
+    @content = newcontent
+    self.size = @content.size
+    self
+  end
   
   def save_content
     return if @content.nil?
-    finalname = self.vaultname
-    tmpname   = finalname + ".tmp"
-    out = File.open(tmpname, "w") { |io| io.write(@content) }
-    File.rename(tmpname,finalname)
+    provider = self.data_provider
+    provider.cache_writehandle(self) do |io|
+      io.write(@content)
+    end
+    self
   end
 
   def delete_content
-    vaultname = self.vaultname
-    File.unlink(vaultname) if File.file?(vaultname)
-    
-    directory = File.dirname(vaultname)
-    if (Pathname.new(directory) != self.user.vault_dir) && Dir.entries(directory).size <= 2
-      Dir.rmdir(directory) if File.directory?(directory)
-    end
+    provider = self.data_provider
+    provider.provider_erase(self)
     @content=nil
   end
+  
+  ########################################################
+  # Lifecycle callbacks
+  ########################################################
   
   def after_save
     self.save_content
@@ -137,4 +160,5 @@ class SingleFile < Userfile
   def after_destroy
     self.delete_content
   end
+
 end

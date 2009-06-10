@@ -6,7 +6,7 @@
 #
 # Original author: Tarek Sherif
 #
-# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+# $Id$
 #
 
 -%>
@@ -19,57 +19,57 @@
 <%= f.error_messages %>
 
 <table>
-   <tr class="list-odd">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Name:</th>
       <td colspan="2"><%= f.text_field :name %></td>
    </tr class="list-odd">
-   <tr class="list-even">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Owner:</th>
       <td colspan="2"><%=h @userfile.user.full_name %></td>
    </tr>
-    <tr class="list-odd">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Size:</th>
       <td colspan="2"><%=h @userfile.size %></td>
    </tr>
   
   
    <%if @userfile.is_a? SingleFile %>
-      <tr class="list-even">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
          <th>Parent:</th>
          <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
 
-       <tr class="list-even">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
          <th>Task:</th>
          <td colspan="2"><%= @userfile.task rescue ""%></td>
       </tr>
      
-      <tr class="list-even">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
          <th>Children:</th>
          <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
 
-       <tr class="list-even">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
          <th>Group:</th>
          <td colspan="2"><%= @userfile.group.name rescue ""%></td>
       </tr>
    
    <% end %>
-   <tr class="list-even">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Created at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
    </tr>
-   <tr class="list-odd">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Modified at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s)) %></td>
    </tr>
    <% unless @tags.empty? %>
-      <tr class="list-odd">
-         <th rowspan="<%= @tags.size %>" valign="top">Tags:</th>
+      <tr class="list-even">
+         <th rowspan="<%= @tags.size %>">Tags:</th>
          <td><%= @tags[0].name %></td>
          <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
          <% for tag in @tags[1..-1] %>
-            <tr class="list-odd">
+            <tr class="list-even">
                <td><%= tag.name %></td>
                <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag)) %></td>
             </tr>
@@ -83,6 +83,7 @@
 <br>
    <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
       <% form_tag(extract_userfiles_path) do %>
+      <%= hidden_field_tag :collection_id, @userfile.id %>
       <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
          <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>
          <table class="userfiles">

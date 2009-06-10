@@ -7,7 +7,7 @@
 #
 # Original author: Pierre Rioux
 #
-# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+# $Id$
 #
 
 -%>
@@ -62,6 +62,7 @@
 	     <% else %>
 		<th>Groups</th>
 	     <% end %>
+             <th>Provider</th>
          </tr>
             <%= render :partial => 'userfile', :collection  => @userfiles %>
       </table>      
@@ -143,16 +144,16 @@
             <%= submit_tag("Upload file")     %>
             <br>
             Archived files: <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
-            <br><br>
             <% if @user_tags %>
-               Tags for uploaded file:
+               <br>Tags for uploaded file:
                <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
             <% end %>
-	     <br><br>
 	     <% if @user_groups %>
-               Groups for uploaded file:
+	       <br>Groups for uploaded file:
                <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
             <% end %>
+            <BR>Data Provider for uploaded file:
+            <%= render :partial => 'providers' %>
       <% end %>
     </td>
 </tr>

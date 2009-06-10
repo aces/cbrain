@@ -23,16 +23,15 @@ class UserfilesController < ApplicationController
     tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
         
     unless current_session.view_all? 
-	    @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
-	      :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-	     :order => "userfiles.#{current_session.order}")
-	  
-	
+      @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
+        :conditions => Userfile.convert_filters_to_sql_query(name_filters),
+        :order => "userfiles.#{current_session.order}")
     else
       @userfiles = Userfile.find(:all, :include  => :tags, 
-                                  :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-                                  :order => "userfiles.#{current_session.order}")
+        :conditions => Userfile.convert_filters_to_sql_query(name_filters),
+        :order => "userfiles.#{current_session.order}")
     end
+
     @userfile_count = @userfiles.size
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
@@ -67,21 +66,25 @@ class UserfilesController < ApplicationController
     end
   end
   
-  
+  # Returns the content of a file; used mostly by JIV
+  # GET /userfiles/1/content
   def content
-    send_file current_user.userfiles.find(params[:id]).vaultname
+    userfile = current_user.userfiles.find(params[:id])
+    userfile.sync_to_cache
+    send_file userfile.cache_full_path
   end
 
   # GET /userfiles/new
   # GET /userfiles/new.xml
-  def new
-    @userfile = Userfile.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @userfile }
-    end
-  end
+# NOT USED?
+#  def new
+#    @userfile = Userfile.new
+#
+#    respond_to do |format|
+#      format.html # new.html.erb
+#      format.xml  { render :xml => @userfile }
+#    end
+#  end
 
   # GET /userfiles/1/edit
   def edit
@@ -110,8 +113,12 @@ class UserfilesController < ApplicationController
     end
     
     userfile = nil
+    data_provider_id = params[:data_provider_id]
+    if data_provider_id.empty?
+      data_provider_id = DataProvider.find_first_online_rw(current_user).id
+    end
 
-   if params[:archive] == 'collection'
+    if params[:archive] == 'collection'
       userfile         = FileCollection.new(:tag_ids  => params[:tags])
     elsif params[:archive] == 'civet collection'
       userfile         = CivetCollection.new(:tag_ids  => params[:tags])
@@ -119,12 +126,13 @@ class UserfilesController < ApplicationController
     else
       userfile         = SingleFile.new(:tag_ids  => params[:tags])
     end
-    
+
     clean_basename   = File.basename(upload_stream.original_filename)
-    userfile.content = upload_stream.read   # also fills file_size
-    userfile.user_id = current_user.id
     userfile.name    = clean_basename
-    userfile.update_attributes(params[:group])
+    userfile.user_id = current_user.id
+    userfile.data_provider_id = data_provider_id
+    userfile.content = upload_stream.read   # also fills file_size
+    userfile.group_id = params[:userfile][:group_id]
 
     if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       status, successful_files, failed_files, nested_files = userfile.extract
@@ -158,7 +166,7 @@ class UserfilesController < ApplicationController
         flash[:error] = "Collection '#{userfile.name}' could not be created."
       end
     else
-      if current_user.userfiles.exists?(:name => userfile.name)
+      if current_user.userfiles.exists?(:name => userfile.name, :data_provider_id => data_provider_id)
           flash[:error] = "File '" + userfile.name + "' already exists."
           redirect_to :action => :index
           return
@@ -187,16 +195,23 @@ class UserfilesController < ApplicationController
     attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})    
     attributes['tag_ids'] ||= []
     
+    flash[:notice] ||= ""
     respond_to do |format|
       if @userfile.update_attributes(attributes)
-        File.rename(current_user.vault_dir + old_name, @userfile.vaultname)
+        # TODO implement rename using data provider API (TODO)
         flash[:notice] = "#{@userfile.name} successfully updated."
+        if @userfile.name != old_name
+           flash[:notice] = "#{@userfile.name} has NOT been renamed, as renaming is not yet supported."
+           @userfile.name = old_name
+           @userfile.save
+        end
         format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }
       else
+        flash[:error] = "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.tags
-	@groups = current_user.groups
+        @groups = current_user.groups
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
@@ -271,17 +286,26 @@ class UserfilesController < ApplicationController
 
       when "download"
         if filelist.size == 1 && collection.find(filelist[0]).is_a?(SingleFile)
-          send_file collection.find(filelist[0]).vaultname
+          userfile = collection.find(filelist[0])
+          userfile.sync_to_cache
+          send_file userfile.cache_full_path
         else
+          cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
+          #cacherootdirlen = cacherootdir.to_s.size
           filenames = filelist.collect do |id| 
-            f = collection.find(id)
-            Pathname.new(f.user.login) + f.name
-          end.join(" ")
-          Dir.chdir(CBRAIN::Filevault_dir)
-          `tar czf #{current_user.login}_files.tar.gz #{filenames}`
-          Dir.chdir(RAILS_ROOT)
-          send_file "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz", :stream  => false
-          File.delete "#{Pathname.new(CBRAIN::Filevault_dir) + current_user.login}_files.tar.gz"
+            u = collection.find(id)
+            u.sync_to_cache
+            full = u.cache_full_path.to_s        # /a/b/c/prov/x/y/basename
+            #full = full[cacherootdirlen+1,9999]  # prov/x/y/basename
+            full = "'" + full.gsub("'", "'\\\\''") + "'"
+          end
+          filenames_with_spaces = filenames.join(" ")
+          tarfile = "/tmp/#{current_user.login}_files.tar.gz"
+          Dir.chdir(cacherootdir) do
+            system("tar -czf #{tarfile} #{filenames_with_spaces}")
+          end
+          send_file tarfile, :stream  => false
+          File.delete tarfile
         end
         return
 
@@ -299,14 +323,14 @@ class UserfilesController < ApplicationController
           end
         end
 
-  when "group_update"
+    when "group_update"
       filelist.each do |id|
           userfile = collection.find(id)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
           end
-          if userfile.update_attributes(params[:group])
+          if userfile.update_attributes(:group_id => params[:userfile][:group_id])
             flash[:notice] += "Group for #{userfile.name} successfully updated."
           else
             flash[:error] += "Group for #{userfile.name} could not be updated."
@@ -314,7 +338,7 @@ class UserfilesController < ApplicationController
     end
 
       when 'merge_collections'
-        collection = FileCollection.new(:user_id  => current_user.id)
+        collection = FileCollection.new(:user_id  => current_user.id, :data_provider_id => (params[:data_provider_id] || DataProvider.find_first_online_rw(current_user).id) )
         status = collection.merge_collections(filelist)
         if status == :success
           flash[:notice] = "Collection #{collection.name} was created."
@@ -332,11 +356,14 @@ class UserfilesController < ApplicationController
   
   def extract
     success = failure = 0
+    collection_id = params[:collection_id]
+    collection = FileCollection.find(collection_id)
+    collection_path = collection.cache_full_path
+    provider_id = collection.data_provider_id
     params[:filelist].each do |file|
-      userfile = SingleFile.new(:name  => File.basename(file))
-      Dir.chdir(current_user.vault_dir) do
+      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :data_provider_id => provider_id)
+      Dir.chdir(collection_path.parent) do
         userfile.content = File.read(file)
-        userfile.user_id = current_user.id
         if userfile.save
           success += 1
         else
@@ -353,4 +380,5 @@ class UserfilesController < ApplicationController
     
     redirect_to :action  => :index
   end
+
 end

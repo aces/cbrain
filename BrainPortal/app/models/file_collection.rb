@@ -16,37 +16,35 @@ class FileCollection < Userfile
   
   Revision_info="$Id$"
   
-  #extract a collection from an archive
+  # Extract a collection from an archive
   def extract_collection
-    collection_name = self.name.split('.')[0]
-    directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login + collection_name
-    
-    Dir.mkdir(directory) unless File.directory?(directory)
-    self.save_content(directory)
-    files = []
-    Dir.chdir(directory) do
-      if self.name =~ /\.tar(\.gz)?$/
-        system("tar xvf '#{self.name.gsub("'", "'\\\\''")}'")
-      else
-        system("unzip '#{self.name.gsub("'", "'\\\\''")}'") 
-      end
-      
-      # if common_base = self.get_common_base(self.list_files)
-      #         File.rename(common_base, ".")
-      #       end
-    end
-    
-    
-    File.unlink(directory + self.name) if File.file?(directory + self.name)  
-        
+
+    archive_file_name = self.name                      # "abc.tar.gz" or "abc.zip"
+    collection_name = archive_file_name.split('.')[0]  # "abc"
     self.name = collection_name
-    
+
+    tmparchivefile = "/tmp/#{$$}-#{archive_file_name}"
+    File.open(tmparchivefile, "w") { |io| io.write(@content) }
+
+    self.cache_prepare
+    directory = self.cache_full_path
+    Dir.mkdir(directory) unless File.directory?(directory)
+    Dir.chdir(directory) do
+      escaped_tmparchivefile = tmparchivefile.gsub("'", "'\\\\''")
+      if archive_file_name =~ /\.tar(\.gz)?$/i
+        system("tar -xvf '#{escaped_tmparchivefile}'")
+      else
+        system("unzip '#{escaped_tmparchivefile}'") 
+      end
+    end
+
+    File.unlink(tmparchivefile)
     
     self.flatten
-    
     self.size = self.list_files.size
-    
     self.save
+    self.sync_to_provider
+
   end
   
   def merge_collections(file_ids)
@@ -55,7 +53,7 @@ class FileCollection < Userfile
     full_names = userfiles.inject([]){|list, file| list += file.list_files}    
     raw_names = full_names.map{ |file| file.sub(/^.+\//, "") }
     
-    unless raw_names.uniq == raw_names
+    unless raw_names.uniq.size == raw_names.size
       return :collision
     end
     
@@ -66,32 +64,38 @@ class FileCollection < Userfile
     end
     
     self.name = "Collection-#{suffix}"
-    
-    Dir.mkdir(self.vaultname) unless File.directory?(self.vaultname)
+    self.cache_prepare
+    destname = self.cache_full_path.to_s
+    Dir.mkdir(destname) unless File.directory?(destname)
     
     userfiles.each do |file|
+
+      file.sync_to_cache
+      filename = file.cache_full_path.to_s
       
       if file.is_a? FileCollection
-        system("cp -f -R '#{file.vaultname.gsub("'", "'\\\\''")}/' '#{self.vaultname.gsub("'", "'\\\\''")}'")
+        system("cp -f -R '#{filename.gsub("'", "'\\\\''")}/' '#{destname.gsub("'", "'\\\\''")}'")
       else
-        system("cp -f '#{file.vaultname.gsub("'", "'\\\\''")}' '#{self.vaultname.gsub("'", "'\\\\''")}'")
+        system("cp -f '#{filename.gsub("'", "'\\\\''")}' '#{destname.gsub("'", "'\\\\''")}'")
       end
     end
     
     self.size = self.list_files.size
     
     if self.save
+      self.sync_to_provider
       :success
     else
       :failure
     end
   end
 
+  # Shoudl be removed; content of tar files should not be kept in memory
   def content=(newcontent)
     @content = newcontent
     @content
   end
-  
+
   #find longest common root of a list of file paths.
   def get_common_base(files)
     return nil if files.empty?
@@ -104,39 +108,18 @@ class FileCollection < Userfile
     base
   end
   
-  def save_content(directory)
-    return if @content.nil?
-    finalname =  directory + self.name 
-    tmpname   = directory + (self.name + '.tmp')
-    out = File.open(tmpname, "w") { |io| io.write(@content) }
-    File.rename(tmpname,finalname)
-  end
-
   def delete_content
-    vaultname = self.vaultname
-    
-    self.list_files.each do |f|
-      file = self.user.vault_dir + f
-      File.unlink(file) if File.file?(file)      
-    end
-    
-    self.list_dirs.each do |d|
-      dir = self.user.vault_dir + d
-      Dir.rmdir(dir) if File.directory?(dir)
-    end
-    
-    Dir.rmdir(vaultname) if File.directory?(vaultname)
-    @content=nil 
+    self.provider_erase
   end
   
   def list_files    
-    Dir.chdir(self.user.vault_dir) do
+    Dir.chdir(self.cache_full_path.parent) do
       @file_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type f").readlines.map(&:chomp)
     end
   end
   
   def list_dirs
-    Dir.chdir(self.user.vault_dir) do
+    Dir.chdir(self.cache_full_path.parent) do
       @dir_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type d").readlines.map(&:chomp).reverse
     end
   end
@@ -146,13 +129,13 @@ class FileCollection < Userfile
     "#{self.size} files" 
   end
   
-  def after_destroy
+  def before_destroy
     self.delete_content
   end
     
   # remove common root from a directory structure.
   def flatten
-    dir_name = self.vaultname
+    dir_name = self.cache_full_path
 
     Dir.chdir(dir_name) do      
       files = IO.popen("find . -type f").readlines.map(&:chomp)
@@ -176,6 +159,7 @@ class FileCollection < Userfile
         base_dirs.pop
       end
     end
+
   end
   
 end

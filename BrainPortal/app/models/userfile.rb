@@ -15,6 +15,7 @@ class Userfile < ActiveRecord::Base
 
   acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
+  belongs_to              :data_provider
   has_and_belongs_to_many :tags
 
   #A- A userfile has one group
@@ -23,29 +24,6 @@ class Userfile < ActiveRecord::Base
   
   validates_uniqueness_of :name, :scope => :user_id
   validates_presence_of   :name
-  
-  ## 
-  ## Old search method: No longer used.
-  ##
-  # def self.search(type, term = nil)
-  #     filter_name = get_filter_name(type, term)
-  #     files = if type
-  #               case type.to_sym
-  #                 when :tag_search
-  #                   find(:all, :include => :tags).select{|f| f.tags.find_by_name(term)} rescue find(:all, :include => :tags)
-  #                 when :name_search
-  #                   find(:all, :include => :tags, :conditions => ["name LIKE ?", "%#{term}%"])
-  #                 when :minc
-  #                   find(:all, :include => :tags, :conditions => ["name LIKE ?", "%.mnc"])
-  #                 when :jiv
-  #                   find(:all, :include => :tags, :conditions => ["name LIKE ? OR name LIKE ?", "%.raw_byte%", "%.header"])
-  #                 end
-  #             else
-  #               find(:all, :include =>:tags)
-  #             end
-  #     [files, filter_name]
-  #   end
-  
   
   ###
   # Pagination for the userfile index page.
@@ -141,7 +119,7 @@ class Userfile < ActiveRecord::Base
           query << "(userfiles.name LIKE ?)"
           arguments << "%.mnc"
         when 'cw5'
-          query << "(userfiles.name LIKE ?  OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
+          query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
           arguments += ["%.flt", "%.mls", "%.bin", "%.cw5" ]
         when 'flt'
           query << "(userfiles.name LIKE ?)"
@@ -159,6 +137,7 @@ class Userfile < ActiveRecord::Base
     else
       []
     end
+
   end
   
   ###
@@ -176,63 +155,37 @@ class Userfile < ActiveRecord::Base
     new_order
   end
   
-  # Full pathname to file in the vault; note that this could
-  # be a pathname on a cache directory on the local machine.
-  def vaultname
-    directory = Pathname.new( CBRAIN::FilevaultIsLocal ? CBRAIN::Filevault_dir : CBRAIN::Vaultcache_dir) + self.user.login
-    Dir.mkdir(directory) if ! File.directory?(directory)
-    (directory + self.name).to_s
-  end
-
-  # Full path name of the real vault file, likely to be on a remote machine.
-  # This method is expected to be called only by applications running on
-  # remote hosts
-  def mainvaultname
-    raise "Vault directory is local for #{self.name}" if CBRAIN::FilevaultIsLocal
-    directory = Pathname.new(CBRAIN::Filevault_dir) + self.user.login
-    (directory + self.name).to_s
-  end
-
-  # Synchronize official file to local cached copy
-  def rsync_command_filevault_to_vaultcache
-    return "true # #{self.vaultname}" if CBRAIN::FilevaultIsLocal  # "true" is the shell command!
-    filevault_host = CBRAIN::Filevault_host
-    filevault_user = CBRAIN::Filevault_user
-
-    filevault_name  = self.mainvaultname
-    vaultcache_name = self.vaultname
-
-    remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
-
-    # Adjust depending on whether or not we're syncing a directory (FileCollection)
-    remote_name   += "/" if self.is_a?(FileCollection)
-
-    # TODO we get all sorts of problems if the filenames contain spaces or quotes.
-    # Proper escaping would be necessary; see rsync(1)
-    "rsync -a -x --delete '#{remote_name}' '#{vaultcache_name}'"
-  end
-
-  # Synchronize local cached copy to official file
-  def rsync_command_vaultcache_to_filevault
-    return "true # #{self.vaultname}" if CBRAIN::FilevaultIsLocal  # "true" is the shell command!
-    filevault_host = CBRAIN::Filevault_host
-    filevault_user = CBRAIN::Filevault_user
-
-    filevault_name  = self.mainvaultname
-    vaultcache_name = self.vaultname
-
-    remote_name    = "#{filevault_user}@#{filevault_host}:#{filevault_name}"
-
-    # Adjust depending on whether or not we're syncing a directory (FileCollection)
-    vaultcache_name += "/" if self.is_a?(FileCollection)
-
-    # TODO we get all sorts of problems if the filenames contain spaces or quotes.
-    # Proper escaping would be necessary; see rsync(1)
-    "rsync -a -x --delete '#{vaultcache_name}' '#{remote_name}'"
-  end
-  
   def list_files
     [self.name]
+  end
+
+  ##############################################
+  # Data Provider easy access methods
+  ##############################################
+
+  # See the description in class DataProvider
+  def sync_to_cache
+    self.data_provider.sync_to_cache(self)
+  end
+
+  # See the description in class DataProvider
+  def sync_to_provider
+    self.data_provider.sync_to_provider(self)
+  end
+
+  # See the description in class DataProvider
+  def cache_prepare
+    self.data_provider.cache_prepare(self)
+  end
+  
+  # See the description in class DataProvider
+  def cache_full_path
+    self.data_provider.cache_full_path(self)
+  end
+
+  # See the description in class DataProvider
+  def provider_erase
+    self.data_provider.provider_erase(self)
   end
   
 end

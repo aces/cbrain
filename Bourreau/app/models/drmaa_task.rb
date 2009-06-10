@@ -54,6 +54,8 @@ public
   def initialize(arguments = {})
     super(arguments)
     self.addlog("#{Revision_info.svn_id_file} revision #{Revision_info.svn_id_rev}")
+    @pre_sync_userfiles = []
+    @post_sync_userfiles = []
   end
 
   # This needs to be redefined in a subclass.
@@ -119,26 +121,30 @@ public
   # is first saved. A temporary, grid-aware working
   # directory is created for the job.
   def start_all
-    self.makeDRMAAworkdir
-    begin
-      Dir.chdir(self.drmaa_workdir) do
-        self.addlog("Setting up.")
-        unless self.setup
-           self.addlog("Failed To Setup")
-           self.status = "Failed To Setup"
-           return self
+    self.addlog("Setting up.")
+    self.spawn do
+      begin
+        self.makeDRMAAworkdir
+        Dir.chdir(self.drmaa_workdir) do
+          if ! self.setup
+            self.addlog("Failed To Setup")
+            self.status = "Failed To Setup"
+          else
+            self.addlog("Synchronizing input files.") if @pre_sync_userfiles.size > 0
+            @pre_sync_userfiles.each { |userfile| userfile.sync_to_cache }
+            if ! self.run
+              self.addlog("Failed To Start")
+              self.status = "Failed To Start"
+              #self.removeDRMAAworkdir
+            end
+          end
         end
-        unless self.run
-           self.addlog("Failed To Start")
-           self.status = "Failed To Start"
-           #self.removeDRMAAworkdir
-           return self
-        end
+      rescue => e
+        self.addlog("Exception raised when setting up: #{e.inspect}")
+        e.backtrace.each { |m| self.addlog(m) if m.match(/Bourreau/) }
+        self.status = "Failed To Setup"
       end
-    rescue => e
-      self.addlog("Exception raised when setting up: #{e.inspect}")
-      e.backtrace.each { |m| self.addlog(m) if m.match(/Bourreau/) }
-      self.status = "Failed To Setup"
+      self.save
     end
     self
   end
@@ -173,17 +179,8 @@ public
         if ! saveok
           self.status = "Failed To PostProcess"
         else
-          postsync  = @post_rsync_cmds || []
-          Dir.chdir(self.drmaa_workdir) do
-            # TODO we need some way to make sure the rsync worked properly
-            # TODO intercept/log messages from rsync ?
-            postsync.each do |com|
-              # self.addlog("Executing: #{com}")
-              # x=`#{com}`
-              # self.addlog(x) unless x.match(/^\s*$/)
-              system(com)
-            end
-          end
+          self.addlog("Synchronizing output files.") if @post_sync_userfiles.size > 0
+          @post_sync_userfiles.each { |userfile| userfile.sync_to_provider }
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
         end
@@ -456,7 +453,6 @@ protected
     name     = self.class.to_s.gsub(/^Drmaa/i,"")
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
     workdir  = self.drmaa_workdir
-    presync  = @pre_rsync_cmds || []
 
     # Create a bash command script out of the text
     # lines supplied by the subclass
@@ -469,9 +465,6 @@ protected
       "# Script created automatically by #{self.class.to_s}\n" +
       "# #{Revision_info}\n" +
       "\n" +
-      "# rsync section\n" +
-      presync.join("\n") +
-      "\n\n" +
       "# User commands section\n" +
       commands.join("\n") +
       "\n" )
@@ -532,13 +525,11 @@ protected
   end
 
   def pre_synchronize_userfile(userfile)
-    @pre_rsync_cmds ||= []
-    @pre_rsync_cmds << userfile.rsync_command_filevault_to_vaultcache
+    @pre_sync_userfiles << userfile
   end
 
   def post_synchronize_userfile(userfile)
-    @post_rsync_cmds ||= []
-    @post_rsync_cmds << userfile.rsync_command_vaultcache_to_filevault
+    @post_sync_userfiles << userfile
   end
 
 end

@@ -1,0 +1,17 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  group_id: 1
+  remote_user: MyString
+  remote_host: MyString
+  remote_port: 1
+  remote_dir: MyString
+
+two:
+  name: MyString
+  group_id: 1
+  remote_user: MyString
+  remote_host: MyString
+  remote_port: 1
+  remote_dir: MyString

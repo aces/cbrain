@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -16,12 +17,19 @@
 #  3. Add any other code that you only want run for your configuration.
 ###############################################################################
 class CBRAIN
-  Filevault_dir            = "/your/filevault/dir"
+
+  # Data Providers constants
+  Filevault_dir            = "/your/filevault/dir"   # Soon to be obsolete
+  DataProviderCache_dir    = "/your/local/portal/cache/here"
   
   # Run-time checks
   unless File.directory?(Filevault_dir)
     raise "CBRAIN configuration error: file vault '#{Filevault_dir}' does not exist!"
   end
+  unless File.directory?(DataProviderCache_dir)
+    raise "CBRAIN configuration error: data provider cache dir '#{DataProviderCache_dir}' does not exist!"
+  end
+
 end
 
 class CBRAIN_CLUSTERS

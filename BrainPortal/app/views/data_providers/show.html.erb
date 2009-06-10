@@ -1,0 +1,138 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+-%>
+
+<% title 'Data Provider Info' %>
+
+<h1>Information about a Data Provider</h1>
+
+<% if @provider.is_alive? %>
+    <p class="notice">This data provider is alive.</p>
+<% else %>
+    <p class="error">This data provider is NOT RESPONDING!</p>
+<% end %>
+
+<table>
+
+   <tr>
+     <th colspan="2">Implementation information</th>
+   </tr>
+
+   <tr>
+       <th>Name</th>
+       <td class="info"><%= h(@provider.name) %></h1>
+   </tr>
+
+   <tr>
+       <th>Class</th>
+       <td class="info"><%= h(@provider.class.to_s) %></td>
+   </tr>
+
+   <tr>
+       <th>Description</th>
+       <td class="info"><%= h(@provider.description) %></td>
+   </tr>
+
+   <tr>
+     <th colspan="2">Access information</th>
+   </tr>
+
+   <tr>
+       <th>Owner</th>
+       <td class="info"><%= h(@provider.user.login) %></td>
+   </tr>
+
+   <tr>
+       <th>Group</th>
+       <td class="info"><%= h(@provider.group.name) %></td>
+   </tr>
+
+   <tr>
+       <th>Status</th>
+       <td class="info"><%= h(@provider.online ? "Online" : "Offline") %></td>
+   </tr>
+
+   <tr>
+       <th>Mode</th>
+       <td class="info"><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
+   </tr>
+
+   <tr>
+     <th colspan="2">Network Parameters</th>
+   </tr>
+
+   <tr>
+       <th>Remote Host</th>
+       <td class="info"><%= h(@provider.remote_host) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote User</th>
+       <td class="info"><%= h(@provider.remote_user) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote Directory</th>
+       <td class="info"><%= h(@provider.remote_dir) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote Port</th>
+       <td class="info"><%= h(@provider.remote_port) %></td>
+   </tr>
+
+
+<% if check_role(:admin) || @provider.user_id == current_user.id %>
+
+<tr><td class="info" align="center" colspan="2">
+<table>
+  <tr>
+    <td class="info">
+      <%= button_to 'Edit', edit_data_provider_path(@provider), :method => :get %>
+    </td>
+    <td class="info">
+      <%= button_to 'Delete', data_provider_path(@provider), :confirm => 'Are you sure?', :method => :delete %>
+    </td>
+    <td class="info">
+      <%= button_to 'Browse', browse_data_provider_path(@provider), :method => :get %>
+    </td>
+  </tr>
+</table>
+</td></tr>
+
+<% end %>
+
+</table>
+
+<table>
+  <tr>
+    <th colspan="3">File Registration Statistics</th>
+  </tr>
+  <tr>
+    <th>User</th><th>Number of SingleFiles</th><th>Number Of FileCollections</th>
+  </tr>
+  <%
+      User.all.each do |user|
+        id    = user.id
+        login = user.login
+        userfiles = user.userfiles.select { |u| u.data_provider_id == @provider.id }
+        sf = fc = 0
+        userfiles.each { |u| sf += 1 if u.is_a?(SingleFile) }
+        userfiles.each { |u| fc += 1 if u.is_a?(FileCollection) }
+  %>
+    <tr>
+      <td class="info"><%= h(login) %></td>
+      <td class="info"><%= h(sf.to_s) %></td>
+      <td class="info"><%= h(fc.to_s) %></td>
+    </tr>
+  <% end %>
+</table>

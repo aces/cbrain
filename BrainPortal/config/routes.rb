@@ -3,7 +3,8 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :feedbacks
 
-  map.resources :tags, :groups, :institutions, :users
+  map.resources :tags, :groups, :institutions, :users, :data_providers
+  map.resources :data_providers, :member => { :browse => :get, :register => :post }
   map.resource :session
   map.resources :userfiles, :collection => {:operation => :post, :extract  => :post}, :member  => {:content  => :get}
   map.resources :single_files, :controller  => :userfiles

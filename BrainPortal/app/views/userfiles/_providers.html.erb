@@ -1,0 +1,10 @@
+<% 
+
+    myproviders = DataProvider.find(:all, :conditions => { :online => true, :read_only => false })
+    myproviders = myproviders.select { |p| p.can_be_accessed_by(current_user) }
+    myproviders_names_ids = myproviders.collect do |p|
+      [ p.name, p.id ]
+    end
+
+%>
+<%= select_tag "data_provider_id", '<option value="">---</option>' + options_for_select(myproviders_names_ids) %>

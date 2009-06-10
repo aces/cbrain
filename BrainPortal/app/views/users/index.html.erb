@@ -6,7 +6,7 @@
 #
 # Original author: Tarek Sherif
 #
-# $Id: index.html.erb 38 2008-10-31 17:13:03Z prioux $
+# $Id$
 #
 
 -%>
@@ -23,7 +23,7 @@
     <th>Groups</th>
     <th>Role</th>
     <th>Number of Files</th>
-    <th colspan="2"/>
+    <th colspan="2">Operations</th>
   </tr>
 
 <% for user in @users %>
@@ -37,7 +37,7 @@
     <% unless user.login == 'admin' %>
       <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>
       <td><%= button_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete %></td>
-    <% else %><td/><td/><% end %>
+    <% else %><td colspan="2"></td><% end %>
   </tr>
 <% end %>
 </table>
