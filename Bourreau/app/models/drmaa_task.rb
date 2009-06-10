@@ -122,6 +122,7 @@ public
   # directory is created for the job.
   def start_all
     self.addlog("Setting up.")
+    self.status = "Setting Up"
     self.spawn do
       begin
         self.makeDRMAAworkdir
