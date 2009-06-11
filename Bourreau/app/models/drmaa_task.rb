@@ -95,37 +95,16 @@ public
     true
   end
 
-  # 'Saving' an object for the first time
-  # automatically starts the job! Saving an
-  # object further on will trigger an update,
-  # which affects only the job's 'status'
-  def save
-    if self.status.blank?
-      self.start_all
-      return true # we do not actually save here!
-    end
-    super
-  end
-
-  # 'Saving' an object for the first time
-  # automatically starts the job! Saving an
-  # object further on will trigger an update,
-  # which affects only the job's 'status'
-  def save!
-    if self.status.blank?
-      self.start_all
-      return true # we do not actually save here!
-    end
-    super
-  end
-
-  # This is called automatically when the object
-  # is first saved. A temporary, grid-aware working
-  # directory is created for the job.
+  # This should be called only once when the object is new;
+  # the object will be saved once in the main thread
+  # and possibly several times in a background thread.
+  # A temporary, grid-aware working directory is created
+  # for the job.
   def start_all
     self.addlog("Setting up.")
     self.status = "Setting Up"
-    self.spawn do
+    save_status = self.save
+    save_status && self.spawn do
       begin
         self.makeDRMAAworkdir
         Dir.chdir(self.drmaa_workdir) do
@@ -149,7 +128,7 @@ public
       end
       self.save
     end
-    self
+    save_status
   end
 
   # This is called either automatically TODO or
