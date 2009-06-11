@@ -102,6 +102,7 @@ public
   def save
     if self.status.blank?
       self.start_all
+      return true # we do not actually save here!
     end
     super
   end
@@ -113,6 +114,7 @@ public
   def save!
     if self.status.blank?
       self.start_all
+      return true # we do not actually save here!
     end
     super
   end
