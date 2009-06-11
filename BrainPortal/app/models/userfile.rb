@@ -188,4 +188,14 @@ class Userfile < ActiveRecord::Base
     self.data_provider.provider_erase(self)
   end
   
+  # See the description in class DataProvider
+  def cache_readhandle(&block)
+    self.data_provider.cache_readhandle(self,&block)
+  end
+
+  # See the description in class DataProvider
+  def cache_writehandle(&block)
+    self.data_provider.cache_writehandle(self,&block)
+  end
+
 end
