@@ -43,7 +43,7 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       
-      if @task.save
+      if @task.start_all # this saves an preliminary object which we get here
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
