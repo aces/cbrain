@@ -508,10 +508,12 @@ protected
   end
 
   def pre_synchronize_userfile(userfile)
+    @pre_sync_userfiles ||= []
     @pre_sync_userfiles << userfile
   end
 
   def post_synchronize_userfile(userfile)
+    @post_sync_userfiles ||= []
     @post_sync_userfiles << userfile
   end
 
