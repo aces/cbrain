@@ -212,8 +212,8 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    basenames = params[:basenames]
-    dirtypes  = params[:directorytypes]
+    basenames = params[:basenames] || []
+    dirtypes  = params[:directorytypes] || []
 
     base2type = {}
     dirtypes.select { |typebase| ! typebase.empty? }.each do |typebase|
