@@ -21,8 +21,7 @@ class Userfile < ActiveRecord::Base
   #A- A userfile has one group
   belongs_to              :group
      		   
-  
-  validates_uniqueness_of :name, :scope => :user_id
+  validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
   
   ###
@@ -189,6 +188,11 @@ class Userfile < ActiveRecord::Base
   end
   
   # See the description in class DataProvider
+  def provider_rename(newname)
+    self.data_provider.provider_rename(self,newname)
+  end
+  
+  # See the description in class DataProvider
   def cache_readhandle(&block)
     self.data_provider.cache_readhandle(self,&block)
   end
@@ -196,6 +200,16 @@ class Userfile < ActiveRecord::Base
   # See the description in class DataProvider
   def cache_writehandle(&block)
     self.data_provider.cache_writehandle(self,&block)
+  end
+
+  # See the description in class DataProvider
+  def cache_copy_from_local_file(filename)
+    self.data_provider.cache_copy_from_local_file(self,filename)
+  end
+
+  # See the description in class DataProvider
+  def cache_copy_to_local_file(filename)
+    self.data_provider.cache_copy_to_local_file(self,filename)
   end
 
 end

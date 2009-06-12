@@ -68,7 +68,7 @@ class CbrainLocalDataProvider < DataProvider
   end
 
   def impl_provider_erase(userfile)  #:nodoc:
-    basename = userfile.name
+    basename  = userfile.name
     username  = userfile.user.login
     twolevels = cache_subdirs(basename)
     FileUtils.remove_entry(cache_full_path(basename), true)
@@ -77,6 +77,30 @@ class CbrainLocalDataProvider < DataProvider
       Dir.rmdir(Pathname.new(remote_dir) + username + twolevels[0])
     rescue
     end
+    true
+  end
+
+  def impl_provider_rename(userfile,newname)  #:nodoc:
+    oldname   = userfile.name
+    username  = userfile.user.login
+    oldpath   = userfile.cache_full_path
+    old2levs  = cache_subdirs(oldname)
+    new2levs  = cache_subdirs(newname)
+    newlev1 = Pathname.new(remote_dir) + username + new2levs[0]
+    newlev2 = newlev1 + new2levs[1]
+    newpath = newlev2 + newname
+    begin
+      Dir.mkdir(newlev1.to_s) unless File.directory?(newlev1.to_s)
+      Dir.mkdir(newlev2.to_s) unless File.directory?(newlev2.to_s)
+      FileUtils.remove_entry(newpath.to_s, true)
+    rescue
+    end
+    return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
+    userfile.name = newname
+    return true if userfile.save
+    userfile.name = oldname # restore it
+    FileUtils.move(newpath.to_s,oldpath.to_s)  # restore it !
+    false 
   end
 
   def impl_provider_list_all #:nodoc:

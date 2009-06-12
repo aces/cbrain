@@ -63,6 +63,20 @@ class VaultLocalDataProvider < DataProvider
     FileUtils.remove_entry(cache_full_path(userfile), true)
   end
 
+  def impl_provider_rename(userfile,newname) #:nodoc:
+    username  = userfile.user.login
+    userdir   = Pathname.new(remote_dir) + username
+    oldname   = userfile.cache_full_path
+    newname   = userdir + newname
+    begin
+      FileUtils.mv(oldname.to_s,newname.to_s, :force => true)
+      userfile.name = newname
+      userfile.save
+    rescue
+      return false
+    end
+  end
+
   def impl_provider_list_all #:nodoc:
     raise "This data provider cannot be browsed."
   end

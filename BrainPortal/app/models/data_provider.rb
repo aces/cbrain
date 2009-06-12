@@ -32,11 +32,14 @@ require 'pathname'
 # * cache_full_path(userfile)
 # * cache_readhandle(userfile)
 # * cache_writehandle(userfile)
+# * cache_copy_from_local_file(userfile,localfilename)
+# * cache_copy_to_local_file(userfile,localfilename)
 # * cache_erase(userfile)
 #
 # = Provider-side methods:
 #
 # * provider_erase(userfile)
+# * provider_rename(userfile,newname)
 # * provider_list_all
 #
 # Most methods raise an exception if the provider's +online+ attribute is
@@ -50,6 +53,7 @@ require 'pathname'
 # * impl_sync_to_cache(userfile)
 # * impl_sync_to_provider(userfile)
 # * impl_provider_erase(userfile)
+# * impl_provider_rename(userfile,newname)
 # * impl_provider_list_all()
 class DataProvider < ActiveRecord::Base
 
@@ -152,6 +156,35 @@ class DataProvider < ActiveRecord::Base
     sync_to_provider(userfile)
   end
 
+  # This method provides a quick way to set the cache's file
+  # content to an exact copy of +localfile+, a locally accessible file.
+  # The syncronization method +sync_to_provider+ will automatically
+  # be called after the copy is performed.
+  def cache_copy_from_local_file(userfile,localpath)
+    raise "Error: provider is offline."   unless self.online
+    raise "Error: provider is read_only." if self.read_only
+    raise "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
+    cache_erase(userfile)
+    cache_prepare(userfile)
+    dest = cache_full_path(userfile)
+    FileUtils.cp_r(localpath,dest)
+    sync_to_provider(userfile)
+  end
+
+  # This method provides a quick way to copy the cache's file
+  # to an exact copy +localfile+, a locally accessible file.
+  # The syncronization method +sync_to_cache+ will automatically
+  # be called before the copy is performed.
+  def cache_copy_to_local_file(userfile,localpath)
+    raise "Error: provider is offline."   unless self.online
+    raise "Error: provider is read_only." if self.read_only
+    sync_to_cache(userfile)
+    FileUtils.remove_entry(localpath.to_s, true)
+    source = cache_full_path(userfile)
+    FileUtils.cp_r(source,localpath)
+    true
+  end
+
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
@@ -170,6 +203,21 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is read_only." if self.read_only
     cache_erase(userfile)
     impl_provider_erase(userfile)
+  end
+
+  # Renames +userfile+ on the provider side.
+  # This will also rename the name attribute IN the
+  # userfile object. A check for name collision on the
+  # provider is performed first. The method returns
+  # true if the rename operation was successful.
+  def provider_rename(userfile,newname)
+    raise "Error: provider is offline."   unless self.online
+    raise "Error: provider is read_only." if self.read_only
+    return true if newname == userfile.name
+    target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
+    return false if target_exists
+    cache_erase(userfile)
+    impl_provider_rename(userfile,newname)
   end
 
   # This method provides a way for a client of the provider
@@ -242,6 +290,10 @@ class DataProvider < ActiveRecord::Base
     raise "Error: method not yet implemented in subclass."
   end
 
+  def impl_provider_rename(userfile,newname) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
   def impl_provider_list_all #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
@@ -249,7 +301,7 @@ class DataProvider < ActiveRecord::Base
 
 
   # This utility method escapes properly any string such that
-  # it becomes a literal in a bash command; the string return
+  # it becomes a literal in a bash command; the string returned
   # will include the surrounding single quotes.
   #
   #   shell_escape("Mike O'Connor")

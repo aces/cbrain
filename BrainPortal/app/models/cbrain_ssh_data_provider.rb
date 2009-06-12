@@ -41,6 +41,43 @@ class CbrainSshDataProvider < SshDataProvider
     level2  = level1                   + twolevels[1]
     full    = level2                   + basename
     bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c '( rm -rf #{full};rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
+    true
+  end
+
+  def impl_provider_rename(userfile,newname)  #:nodoc:
+    oldname   = userfile.name
+    username  = userfile.user.login
+
+    old2levs  = cache_subdirs(oldname)
+    oldpath   = Pathname.new(remote_dir) + username + old2levs[0] + old2levs[1] + oldname
+
+    new2levs  = cache_subdirs(newname)
+    newlev1   = Pathname.new(remote_dir) + username + new2levs[0]
+    newlev2   = newlev1 + new2levs[1]
+    newpath   = newlev2 + newname
+
+    # We should create a nice state machine for the remote rename operations
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+
+      begin
+        sftp.mkdir!(newlev1.to_s)
+        sftp.mkdir!(newlev2.to_s)
+      rescue ; end
+
+      req = sftp.lstat(newpath).wait
+      return "a" if req.response.ok?   # file already exists ?
+
+      req = sftp.rename(oldpath.to_s,newpath.to_s).wait
+      return "b" unless req.response.ok?
+
+      userfile.name = newname
+      return true if userfile.save
+
+      # Restore everything
+      userfile.name = oldname
+      sftp.rename(newpath.to_s,oldpath.to_s).wait
+      return false
+    end
   end
 
   def impl_provider_list_all #:nodoc:

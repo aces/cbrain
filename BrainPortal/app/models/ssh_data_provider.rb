@@ -23,7 +23,7 @@ require 'net/sftp'
 class SshDataProvider < DataProvider
 
   def impl_is_alive? #:nodoc:
-     text = bash_this("ssh -x -n -o ConnectTimeout=1 -o StrictHostKeyChecking=false -o PasswordAuthentication=false #{self.option_port} #{self.ssh_user_host} true </dev/null 2>&1")
+     text = bash_this("ssh -x -n -o ConnectTimeout=1 -o StrictHostKeyChecking=false -o PasswordAuthentication=false -o KbdInteractiveAuthentication=no -o KbdInteractiveDevices=false #{self.option_port} #{self.ssh_user_host} true </dev/null 2>&1")
      return(text.blank? ? true : false);
   end
 
@@ -46,9 +46,6 @@ class SshDataProvider < DataProvider
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
-    raise "Error: provider is offline!"   if self.online    == false;
-    raise "Error: provider is read-only!" if self.read_only == true;
-
     basename    = userfile.name
     localfull   = cache_full_pathname(basename)
     remotefull  = remote_full_path(userfile)
@@ -62,16 +59,34 @@ class SshDataProvider < DataProvider
   end
 
   def impl_provider_erase(userfile) #:nodoc:
-    raise "Error: provider is offline!"   if self.online    == false;
-    raise "Error: provider is read-only!" if self.read_only == true;
     full     = remote_full_path(userfile)
     bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c 'rm -rf #{full} >/dev/null 2>&1'\"")
   end
 
+  def impl_provider_rename(userfile,newname) #:nodoc:
+    oldpath   = remote_full_path(userfile)
+    remotedir = oldpath.parent
+    newpath   = remotedir + newname
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+      begin
+        att = sftp.lstat!(newpath.to_s)
+        return false # means file exists already
+      end rescue
+      begin
+        sftp.rename!(oldpath.to_s,newpath.to_s)
+        userfile.name = newname
+        userfile.save
+        return true
+      rescue
+        return false
+      end
+    end
+    false
+  end
+
   def impl_provider_list_all #:nodoc:
-    raise "Error: provider is offline!"   if self.online    == false;
     list = []
-    Net::SFTP.start(remote_host,remote_user) do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
       sftp.dir.foreach(remote_dir) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
@@ -131,7 +146,7 @@ class SshDataProvider < DataProvider
   #   "rsync -e 'ssh -x -p 1234'"
   def rsync_over_ssh_prefix
     prefix = "rsync"
-    ssh    = "ssh -x"
+    ssh    = "ssh -x -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o KbdInteractiveDevices=false"
     unless self.remote_port.blank? || self.remote_port == 0
       ssh += " -p #{self.remote_port.to_s}"
     end
