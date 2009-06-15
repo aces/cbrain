@@ -188,27 +188,32 @@ class UserfilesController < ApplicationController
     else
       @userfile = current_user.userfiles.find(params[:id])      
     end
-    
-    old_name = @userfile.name
-    
+
+    flash[:notice] ||= ""
+    flash[:error] ||= ""
     
     attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})    
     attributes['tag_ids'] ||= []
     
-    flash[:notice] ||= ""
+    old_name = @userfile.name
+    new_name = attributes[:name] || old_name
+    if ! Userfile.is_legal_filename?(new_name)
+      flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
+      new_name = old_name
+    end
+
+    attributes[:name] = old_name # we must NOT rename the file yet
+    
     respond_to do |format|
       if @userfile.update_attributes(attributes)
-        # TODO implement rename using data provider API (TODO)
-        flash[:notice] = "#{@userfile.name} successfully updated."
-        if @userfile.name != old_name
-           flash[:notice] = "#{@userfile.name} has NOT been renamed, as renaming is not yet supported."
-           @userfile.name = old_name
-           @userfile.save
+        flash[:notice] += "#{@userfile.name} successfully updated."
+        if new_name != old_name
+           @userfile.provider_rename(new_name) # this also modifies and saves @userfile
         end
         format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }
       else
-        flash[:error] = "#{@userfile.name} has NOT been updated."
+        flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.tags
         @groups = current_user.groups
