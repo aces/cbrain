@@ -9,24 +9,104 @@ require 'fileutils'
 require 'pathname'
 
 #
-# This abstract class describe an external 'data provider'
-# for CBRAIN files. The API consist in these methods:
+# = Data Provider interface
 #
-# = Status methods:
+# This abstract class describe an external 'data provider'
+# for CBRAIN files.
+#
+# A data provider models a pair of endpoints: the *provider* side
+# is where files are stored permanently, while the *cache* side
+# is where files are stored in transit to being created and accessed.
+# Typically, the *provider* side is a remote host or service, while
+# the *cache* side is a filesystem local to the Rails application.
+# Most programming tasks requires calling the methods on the *cache* side.
+#
+# Most API methods work on a +Userfile+ object, which provides a
+# name and a user ID for the object that are used to represent
+# its content as a file. Since Userfiles have a data provider
+# associated with them, this means that renaming a userfile +u+ would
+# involve these steps:
+#
+#    data_provider_id = u.data_provider_id
+#    data_provider    = DataProvider.find_by_id(data_provider_id)
+#    data_provider.provider_rename(u,"newname")
+#
+# However, two shorthands can be used:
+#
+# * Use Rails's ability to link models directly:
+#
+#    u.data_provider.provider_rename(u,"newname")
+#
+# * Use the fact that the +Userfile+ model has already been extended to provide access to the DataProvider methods directly:
+#
+#    u.provider_rename("newname")   # note that u is no longer supplied in argument
+#
+# == The API to write new files
+#
+# A typical scenario to *create* a new userfile and store its
+# content (the string "ABC") on the provider looks like this:
+#
+#    u = SingleFile.new( :user_id => 2, :data_provider_id => 3, :name => "filename" )
+#    u.cache_writehandle do |fh|
+#      fh.write("ABC")   
+#    done
+#    u.save
+#
+# Note that when the block provided to cache_writehandle() ends, a
+# sync to the provider is automatically performed.
+#
+# Alternatively, if the content "ABC" of the file comes from another local
+# file +localfile+, then the code can be rewritten as:
+#
+#    u = SingleFile.new( :user_id => 2, :data_provider_id => 3, :name => "filename" )
+#    u.cache_copy_from_local_file(localfile)
+#    u.save
+#
+# == The API to read files
+#
+# A typical scenario to *read* data from a userfile +u+ looks like this:
+#
+#    u.cache_readhandle do |fh|
+#      data = fh.read
+#    done
+#
+# Alternatively, if the data is to be sent to a local file +localfile+, then
+# the code can be rewritten simply as:
+#
+#    u.cache_copy_to_local_file(localfile)
+#
+# == Handling FileCollections content
+#
+# The cache_readhandle() and cache_writehandle() methods *cannot* be used
+# to access FileCollections, as these are modeled on the filesystem by
+# subdirectories. However, the methods cache_copy_to_local_file() and
+# cache_copy_from_local_file() will work perfectly well, assuming that
+# the +localfile+ they are given in argument is itself a local subdirectory.
+#
+# When creating new FileCollections, the cache_prepare() method should be
+# called once first, then the cache_full_path() can be used to obtain
+# a full path to the subdirectory where the collection will be created
+# (note that the subdirectory itself will not be created for you).
+#
+# = Here is the complete list of API methods:
+#
+# == Status methods:
 #
 # * is_alive?
 # * is_alive!
 #
-# = Access restriction methods:
+# == Access restriction methods:
 #
-# * can_be_accessed_by(user)
+# * can_be_accessed_by(user)    # user is a User object
 #
-# = Synchronization methods:
+# == Synchronization methods:
 #
 # * sync_to_cache(userfile)
 # * sync_to_provider(userfile)
 #
-# = Cache-side methods:
+# Note that both of these are also present in the +Userfile+ model.
+#
+# == Cache-side methods:
 #
 # * cache_prepare(userfile)
 # * cache_full_path(userfile)
@@ -36,17 +116,24 @@ require 'pathname'
 # * cache_copy_to_local_file(userfile,localfilename)
 # * cache_erase(userfile)
 #
-# = Provider-side methods:
+# Note that all of these are also present in the +Userfile+ model.
+#
+# == Provider-side methods:
 #
 # * provider_erase(userfile)
 # * provider_rename(userfile,newname)
 # * provider_list_all
 #
+# Note that provider_erase() and provider_rename() are also present in
+# the +Userfile+ model.
+#
+# = Aditional notes
+#
 # Most methods raise an exception if the provider's +online+ attribute is
 # false, or if trying to perform some write operation and the provider's
 # +read_only+ attribute is true.
 #
-# = A proper implementation in a subclass must have the following
+# == A proper implementation in a subclass must have the following
 # methods defined:
 #
 # * impl_is_alive?
