@@ -32,6 +32,8 @@ class VaultSmartDataProvider < DataProvider
     end
   end
 
+  # API METHODS
+
   def is_alive? #:nodoc:
     @provider.is_alive?
   end
@@ -64,12 +66,24 @@ class VaultSmartDataProvider < DataProvider
     @provider.cache_writehandle(userfile,&block)
   end
 
+  def cache_copy_from_local_file(userfile,localfilename) #:nodoc:
+    @provider.cache_copy_from_local_file(userfile,localfilename)
+  end
+
+  def cache_copy_to_local_file(userfile,localfilename) #:nodoc:
+    @provider.cache_copy_from_local_file(userfile,localfilename)
+  end
+
   def cache_erase(userfile) #:nodoc:
     @provider.cache_erase(userfile)
   end
 
   def provider_erase(userfile) #:nodoc:
     @provider.provider_erase(userfile)
+  end
+
+  def provider_rename(userfile,newname) #:nodoc:
+    @provider.provider_rename(userfile,newname)
   end
 
   def provider_list_all #:nodoc:

@@ -153,6 +153,18 @@ class Userfile < ActiveRecord::Base
       
     new_order
   end
+
+  # This method returns true if the string +basename+ is an
+  # acceptable name for a userfile. We restrict the filenames
+  # to contain printable characters only, with no slashes
+  # or ASCII nulls, and starts with a letter or digit.
+  #
+  # TODO: support accented characters? Transform them?
+  def self.is_legal_filename?(basename)
+    return true if basename.match(/^[a-zA-Z0-9][\w\~\!\@\#\$\%\^\&\*\(\)\-\+\=\:\;\[\]\{\}\|\<\>\,\.\?]*$/)
+    
+    false
+  end
   
   def list_files
     [self.name]

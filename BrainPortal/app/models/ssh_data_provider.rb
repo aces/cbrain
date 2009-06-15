@@ -67,13 +67,17 @@ class SshDataProvider < DataProvider
     oldpath   = remote_full_path(userfile)
     remotedir = oldpath.parent
     newpath   = remotedir + newname
+
+    oldpath   = oldpath.to_s
+    newpath   = newpath.to_s
+
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
       begin
-        att = sftp.lstat!(newpath.to_s)
+        att = sftp.lstat!(newpath)
         return false # means file exists already
       end rescue
       begin
-        sftp.rename!(oldpath.to_s,newpath.to_s)
+        sftp.rename!(oldpath,newpath)
         userfile.name = newname
         userfile.save
         return true

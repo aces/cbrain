@@ -88,18 +88,24 @@ class CbrainLocalDataProvider < DataProvider
     new2levs  = cache_subdirs(newname)
     newlev1 = Pathname.new(remote_dir) + username + new2levs[0]
     newlev2 = newlev1 + new2levs[1]
-    newpath = newlev2 + newname
+    newpath = newlev2 + newname.to_s
+
+    newlev1 = newlev1.to_s
+    newlev2 = newlev2.to_s
+    oldpath = oldpath.to_s
+    newpath = newpath.to_s
+
     begin
-      Dir.mkdir(newlev1.to_s) unless File.directory?(newlev1.to_s)
-      Dir.mkdir(newlev2.to_s) unless File.directory?(newlev2.to_s)
-      FileUtils.remove_entry(newpath.to_s, true)
+      Dir.mkdir(newlev1) unless File.directory?(newlev1)
+      Dir.mkdir(newlev2) unless File.directory?(newlev2)
+      FileUtils.remove_entry(newpath, true)
     rescue
     end
-    return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
+    return false unless FileUtils.move(oldpath,newpath)
     userfile.name = newname
     return true if userfile.save
     userfile.name = oldname # restore it
-    FileUtils.move(newpath.to_s,oldpath.to_s)  # restore it !
+    FileUtils.move(newpath,oldpath)  # restore it !
     false 
   end
 

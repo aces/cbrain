@@ -56,18 +56,25 @@ class CbrainSshDataProvider < SshDataProvider
     newlev2   = newlev1 + new2levs[1]
     newpath   = newlev2 + newname
 
+    newlev1 = newlev1.to_s
+    newlev2 = newlev2.to_s
+    oldpath = oldpath.to_s
+    newpath = newpath.to_s
+
     # We should create a nice state machine for the remote rename operations
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
 
       begin
-        sftp.mkdir!(newlev1.to_s)
-        sftp.mkdir!(newlev2.to_s)
+        sftp.mkdir!(newlev1)
+      rescue ; end
+      begin
+        sftp.mkdir!(newlev2)
       rescue ; end
 
       req = sftp.lstat(newpath).wait
       return "a" if req.response.ok?   # file already exists ?
 
-      req = sftp.rename(oldpath.to_s,newpath.to_s).wait
+      req = sftp.rename(oldpath,newpath).wait
       return "b" unless req.response.ok?
 
       userfile.name = newname
@@ -75,7 +82,7 @@ class CbrainSshDataProvider < SshDataProvider
 
       # Restore everything
       userfile.name = oldname
-      sftp.rename(newpath.to_s,oldpath.to_s).wait
+      sftp.rename(newpath,oldpath).wait
       return false
     end
   end

@@ -111,6 +111,8 @@ class DataProvider < ActiveRecord::Base
 
   # Returns the full path to the file or subdirectory
   # where the cached content of +userfile+ is located.
+  # The value returned is a Pathname object, so be careful
+  # to call to_s() on it when using it as necessary.
   def cache_full_path(userfile)
     raise "Error: provider is offline."   unless self.online
     cache_full_pathname(userfile.name)
@@ -217,7 +219,7 @@ class DataProvider < ActiveRecord::Base
     target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
     return false if target_exists
     cache_erase(userfile)
-    impl_provider_rename(userfile,newname)
+    impl_provider_rename(userfile,newname.to_s)
   end
 
   # This method provides a way for a client of the provider

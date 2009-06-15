@@ -64,13 +64,12 @@ class VaultLocalDataProvider < DataProvider
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
-    username  = userfile.user.login
-    userdir   = Pathname.new(remote_dir) + username
-    oldname   = userfile.cache_full_path
-    newname   = userdir + newname
+    oldpath   = userfile.cache_full_path
+    userdir   = oldpath.parent
+    newpath   = userdir + newname
     begin
-      FileUtils.mv(oldname.to_s,newname.to_s, :force => true)
-      userfile.name = newname
+      FileUtils.mv(oldpath.to_s,newpath.to_s, :force => true)
+      userfile.name = newname.to_s
       userfile.save
     rescue
       return false
