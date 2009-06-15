@@ -71,7 +71,7 @@ class CbrainLocalDataProvider < DataProvider
     basename  = userfile.name
     username  = userfile.user.login
     twolevels = cache_subdirs(basename)
-    FileUtils.remove_entry(cache_full_path(basename), true)
+    FileUtils.remove_entry(cache_full_path(userfile).to_s, true)
     begin
       Dir.rmdir(Pathname.new(remote_dir) + username + twolevels[0] + twolevels[1])
       Dir.rmdir(Pathname.new(remote_dir) + username + twolevels[0])
