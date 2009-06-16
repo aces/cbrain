@@ -59,7 +59,7 @@ class UsersController < ApplicationController
     # reset_session
     
     @user = User.new(params[:user])
-
+        
     newGroup = Group.new(:name => @user.login)
     newGroup.save
     everyoneGroup = Group.find_by_name("everyone")
@@ -69,8 +69,17 @@ class UsersController < ApplicationController
     @user.group_ids = group_ids
 
     @user.save
-
+    
     if @user.errors.empty?
+      begin 
+        UserPreference.create!(:user_id => @user.id, :data_provider_id => DataProvider.first, :bourreau_id => CBRAIN_CLUSTERS::CBRAIN_cluster_list[0])
+      rescue => e
+        @user.destroy
+        flash.now[:error] = "Could not create user preferences record (#{e.message}) please try again."
+        @groups = Group.find(:all)
+        render :action => 'new'
+        return
+      end
       redirect_to(users_url)
       flash[:notice] = "User successfully created."
     else
