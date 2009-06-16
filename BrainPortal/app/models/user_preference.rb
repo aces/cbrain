@@ -9,4 +9,8 @@ class UserPreference < ActiveRecord::Base
     self.other_options ||= {}
     self.other_options.merge!(options)
   end
+  
+  def before_create
+    self.other_options ||= {}
+  end
 end
