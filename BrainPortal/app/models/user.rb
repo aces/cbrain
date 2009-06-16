@@ -26,6 +26,7 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :groups
   has_many                :tags
   has_many                :feedbacks
+  has_one                 :user_preference
 
   
   

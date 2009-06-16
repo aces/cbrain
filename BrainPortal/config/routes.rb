@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :user_preferences
+
 
 
   map.resources :feedbacks

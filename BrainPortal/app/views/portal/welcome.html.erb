@@ -17,7 +17,11 @@
 
 <b>Number of files on your account:</b> <%= current_user.userfiles.size %><br>
 <b>Groups you belong to:</b>
-<%= current_user.groups.collect{|g| h g.name}.join(', ') %>
+<%= current_user.groups.collect{|g| h g.name}.join(', ') %><br>
+<b>Default Data Provider:</b>
+<%= current_user.user_preference.data_provider.name %><br>
+<b>Default Execution Server:</b>
+<%= current_user.user_preference.bourreau_id %><br>
 <P>
 
 <h3>Please select an option from the menu to the right.</h3>

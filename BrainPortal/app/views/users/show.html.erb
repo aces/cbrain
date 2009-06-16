@@ -30,6 +30,14 @@
   <tr class="list-even">
      <td><b>Email:</b></td>
      <td><%=h @user.email %></td>
+  </tr>
+  <tr class="list-even">
+     <td><b>Default Execution Server: </b></td>
+     <td><%= h @user.user_preference.bourreau_id %>  </td>
+  </tr>
+  <tr class="list-even">
+     <td><b> Default Data Provider:</b></td>
+     <td><%=h @user.user_preference.data_provider.name %></td>
   </td>
 </table>
 
@@ -53,5 +61,8 @@
 </table>
 </p>
 
-<%= button_to 'Edit', edit_user_path(@user), :method => :get %><br/>
+<%= button_to 'Edit Account Info', edit_user_path(@user), :method => :get %><br/>
+<%= button_to 'Edit Preferences', user_preferences_path, :method => :get %><br/>
+
+
 <%= link_to 'Index', users_path %>

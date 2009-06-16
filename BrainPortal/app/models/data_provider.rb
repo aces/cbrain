@@ -144,8 +144,9 @@ require 'pathname'
 # * impl_provider_list_all()
 class DataProvider < ActiveRecord::Base
 
-  belongs_to :user
-  belongs_to :group
+  belongs_to  :user
+  belongs_to  :group
+  has_many    :user_preferences
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
@@ -158,7 +159,7 @@ class DataProvider < ActiveRecord::Base
   end
 
   # Raises an exception if is_alive? is +false+, otherwise
-  # it return +true+.
+  # it returns +true+.
   def is_alive!
     raise "Error: data provider is not accessible right now." unless self.is_alive?
     true

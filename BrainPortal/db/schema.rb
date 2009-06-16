@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090605184533) do
+ActiveRecord::Schema.define(:version => 20090615174412) do
 
   create_table "data_providers", :force => true do |t|
     t.string   "name"
@@ -22,9 +22,9 @@ ActiveRecord::Schema.define(:version => 20090605184533) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -107,6 +107,15 @@ ActiveRecord::Schema.define(:version => 20090605184533) do
   create_table "tags_userfiles", :id => false, :force => true do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
+  end
+
+  create_table "user_preferences", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "bourreau_id"
+    t.integer  "data_provider_id"
+    t.text     "other_options"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "userfiles", :force => true do |t|

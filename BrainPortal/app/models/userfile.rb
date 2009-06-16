@@ -28,10 +28,10 @@ class Userfile < ActiveRecord::Base
   # Pagination for the userfile index page.
   #  Had to be modified a bit so it handles filtered results properly
   ##
-  def self.paginate(files, page)
-    per_page = 50
+  def self.paginate(files, page, prefered_per_page)
+    per_page = (prefered_per_page || default_num_pages).to_i
     offset = (page.to_i - 1) * per_page    
-    
+        
     ##The following was an attempt to make it so children files appear on the 
     ## same page as their parents.
     ## So far it was causing way too many problems, and I'm not sure it's worth it.
@@ -49,6 +49,10 @@ class Userfile < ActiveRecord::Base
       pager.total_entries = files.size
       pager
     end
+  end
+  
+  def self.default_num_pages
+    "50"
   end
     
   ###

@@ -36,9 +36,9 @@ class UserfilesController < ApplicationController
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
-
+    
     if current_session.paginate?
-      @userfiles = Userfile.paginate(@userfiles, params[:page] || 1)
+      @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, current_user.user_preference.other_options["userfiles_per_page"])
     end
 
     @search_term = params[:search_term] if params[:search_type] == 'name_search'

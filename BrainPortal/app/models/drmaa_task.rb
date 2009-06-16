@@ -98,8 +98,12 @@ class DrmaaTask < ActiveResource::Base
   # Choose a random cluster name from the configured list
   # of legal cluster names.
   def select_cluster
-    cluster_list = CBRAIN_CLUSTERS::CBRAIN_cluster_list
-    cluster_list.slice(rand(cluster_list.size))  # a random one
+    if @@prefered_cluster
+      @@prefered_cluster
+    else
+      cluster_list = CBRAIN_CLUSTERS::CBRAIN_cluster_list
+      cluster_list.slice(rand(cluster_list.size))  # a random one
+    end
   end
   
   #predicate indicating whether or not the given takes any command line arguments
@@ -107,12 +111,24 @@ class DrmaaTask < ActiveResource::Base
     false
   end
   
-  def self.get_default_args(params = {})
+  def self.get_default_args(params = {}, saved_args = nil)
     {}
   end
   
   def self.launch(params = {})
     ""      #returns a string to be used in flash[:notice]
+  end
+  
+  def self.save_options(params)
+    {}      #create the hash of options to be saved
+  end
+  
+  def self.prefered_cluster
+    @@prefered_cluster
+  end
+  
+  def self.prefered_cluster=(cluster)
+    @@prefered_cluster = cluster
   end
 end
 

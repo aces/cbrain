@@ -53,11 +53,16 @@ class TasksController < ApplicationController
   end
   
   def new
-    @task_class = Class.const_get(params[:task])    
-    
+    @task_class = params[:task].constantize
+    if current_user.has_role? :admin
+      @files = Userfile.find(params[:file_ids])
+    else
+      @files = current_user.userfiles.find(params[:file_ids])
+    end   
+        
     if @task_class.has_args?
       begin
-        @default_args  = @task_class.get_default_args(params)
+        @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
       rescue  => e
         flash[:error] = e.to_s
         redirect_to userfiles_path
@@ -75,7 +80,13 @@ class TasksController < ApplicationController
   end
 
   def create
-    @task_class = Class.const_get(params[:task])
+    @task_class = params[:task].constantize
+    @task_class.prefered_cluster = current_user.user_preference.bourreau_id
+    
+    if params[:save_as_defaults]
+      current_user.user_preference.update_options(params[:task]  => @task_class.save_options(params))
+      current_user.user_preference.save
+    end
         
     begin
       flash[:notice] ||= ""

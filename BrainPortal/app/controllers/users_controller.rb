@@ -29,7 +29,7 @@ class UsersController < ApplicationController
   # GET /user/1
   # GET /user/1.xml
   def show
-    @user = User.find(params[:id], :include => :groups)
+    @user = User.find(params[:id], :include => [:groups, :user_preference])
 
     respond_to do |format|
       format.html # show.html.erb
