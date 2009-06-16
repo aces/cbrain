@@ -140,15 +140,22 @@ class DataProvidersController < ApplicationController
   end
 
   def destroy
-    @user     = current_user
     id        = params[:id]
+    @user     = current_user
     @provider = DataProvider.find_by_id(id)
 
-    if !check_role(:admin) && @provider.user_id != @user.id
-      flash[:error] = "You cannot remove provider that you do not own."
-    else
+    userfiles = Userfile.find(:all, :conditions => { :data_provider_id => id })
+    if ! userfiles.empty?
+      flash[:error] = "You cannot remove a provider that has still files registered on it."
+      redirect_to :action => :show, :id => id
+      return
+    end
+
+    if check_role(:admin) || @provider.user_id == @user.id
       @provider.destroy
       flash[:notice] = "Provider successfully deleted."
+    else
+      flash[:error] = "You cannot remove a provider that you do not own."
     end
 
     redirect_to :action => :index
