@@ -76,15 +76,16 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles/new
   # GET /userfiles/new.xml
-# NOT USED?
-#  def new
-#    @userfile = Userfile.new
-#
-#    respond_to do |format|
-#      format.html # new.html.erb
-#      format.xml  { render :xml => @userfile }
-#    end
-#  end
+  def new
+    @user_groups = current_user.groups.find(:all)
+    @user_tags = current_user.tags.find(:all)
+    
+    upload_stream = params[:upload_file]   # an object encoding the file data stream
+    respond_to do |format|
+      format.html # new.html.erb
+      format.xml  { render :xml => @userfile }
+    end
+  end
 
   # GET /userfiles/1/edit
   def edit
@@ -106,7 +107,8 @@ class UserfilesController < ApplicationController
   # POST /userfiles
   # POST /userfiles.xml
   def create
-    upload_stream = params[:upload_file]   # an object encoding the file data stream
+  
+     upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
       redirect_to :action => :index
       return
@@ -131,8 +133,8 @@ class UserfilesController < ApplicationController
     userfile.name    = clean_basename
     userfile.user_id = current_user.id
     userfile.data_provider_id = data_provider_id
+    userfile.group_id = params[:userfile][:group_id] if params[:userfile] && params[:userfile][:group]
     userfile.content = upload_stream.read   # also fills file_size
-    userfile.group_id = params[:userfile][:group_id]
 
     if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
       status, successful_files, failed_files, nested_files = userfile.extract
@@ -177,7 +179,7 @@ class UserfilesController < ApplicationController
         flash[:error]  = "File '" + clean_basename + "' could not be added (internal error?)."
       end
     end
-    redirect_to :action => :index
+    redirect_to :action => :new
   end
 
   # PUT /userfiles/1
@@ -237,15 +239,15 @@ class UserfilesController < ApplicationController
   
   def operation
     
-    if params[:commit] == 'Download Selected Files'
+    if params[:commit] == 'Download Files'
       operation = 'download'
-    elsif params[:commit] == 'Delete Selected Files'
+    elsif params[:commit] == 'Delete Files'
       operation = 'delete_files'
-    elsif params[:commit] == 'Update Tags for Selected Files'
+    elsif params[:commit] == 'Update Tags'
       operation = 'tag_update'
     elsif params[:commit] == 'Merge Files into Collection'
       operation = 'merge_collections'
-    elsif params[:commit] == 'Update Groups for Selected Files'
+    elsif params[:commit] == 'Update Groups'
       operation = 'group_update'
     else
       operation   = 'cluster_task'

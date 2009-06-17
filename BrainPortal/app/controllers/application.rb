@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
 
   include AuthenticatedSystem
   include ExceptionLoggable
-  
+
   helper_method :check_role, :not_admin_user, :current_session
   helper :all # include all helpers, all the time
   filter_parameter_logging :password, :login, :email, :full_name, :role
