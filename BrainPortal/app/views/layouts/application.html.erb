@@ -12,61 +12,78 @@
 #
 
 -%>
+
+
 <html>
 
 <head>
     <title>CBRAIN Project <%= yield :title %></title>
     <%= stylesheet_link_tag "manager", :media => "all" %>
+	<%= stylesheet_link_tag "swapselect" %>
+
 </head>
 
 <body id="cbrain">
 
-    <div id="banner">
-        <div id='top_language'>
-            <div id='top_language_inside'>
+<div id = "main-content">
+<div id="wrapper">
+    <div id="top-menu">
+	<div id='account'>
+	<ul>
+		<li>
+			<% if session[:user_id] %>
+			    	<a class="logout" href="/logout">Sign out</a>
+		     <% else %>
+			    	<a class="login" href="/login">Sign in</a>
+			 <% end %>
+		</li>
+	</ul>
             <!-- <a href="fr">Fran&ccedil;ais</a> -->
-            <br/>
-
-            <a id='top_language_mcgill' href="http://www.mcgill.ca">&nbsp;</a>
-            </div>
-        </div>
-                
-        <div id="top_container">
-            <div id="top_all">
-                <div id="top_01"></div>
-                <div id="top_02"></div>
-                <div id="top_03"><h1>CBRAIN <%= CBRAIN::Redmine_Version -%></h1></div>
-                <div id="top_04"><h2>BIC - McConnell Brain Imaging Center</h2></div>
-                <div id="top_05"></div>
-            </div><!--top_all-->
-        </div><!--top_container-->
+        <br/>
     </div>
+	
+     <% if session[:user_id] %>
+	     <div id="loggedas">Logged in as <%=h current_user.full_name %></div>
+     <% end %>
+     <ul>
+	    <li>
+		    <a class="home" href="/">Home</a>
+	    </li>
+	    <li><a href="/users/1">My Account</a></li>
+	     <!-- <a class="mypage" href="/my/page">My page</a> -->
+	    </li>
+	    </ul>
 
-
-    <!-- menu + main -->
-    <div id="columns">
-        
-        <!-- menu on the side -->
-        <div id="side">
-            <center><h3>Menu</h3></center>
-            <ul>
-            <% if session[:user_id] %>
-              <li><%= link_to 'Home', home_path %></li>
-              <li><%= link_to 'Files', userfiles_path %></li>
-              <li><%= link_to 'Jiv Viewer', jiv_path %></li>                
-              <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
-              <li><%= link_to 'Data Providers', data_providers_path %></li>
-              <li><%= link_to 'My Account', current_user %></li>
-              <li><%= link_to 'Feedback', feedbacks_path %></li>
-              <li><%= link_to 'Logout', logout_path %></li>
-            <% else %>
+    </div>
+    <div id="header">
+	    <h1>CBrain</h1>
+		<div id= "top_01"><div>
+	    <div id = "main-menu">
+	    <ul>
+                <% if session[:user_id] %>
+		<li><%= link_to 'Home', home_path %></li>
+		<li><%= link_to 'Files', userfiles_path %></li>
+		<li><%= link_to 'Upload File', new_userfile_path %></li>
+                <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
+		<li><%= link_to 'Jiv Viewer', jiv_path %></li>                
+                <li><%= link_to 'Feedback', feedbacks_path %></li>      
+                <li><%= link_to 'Logout', logout_path %></li>     
+                <% else %>                                          
                 <li><a href="/login">Login</a></li>
-            <% end %>
-            <li><a href="todo">Help</a></li>
-            </ul>
-            
-            <% if current_user && current_user.role == 'admin' %>
-                  <BR>
+            <% end %>               
+		</div>
+       </div>
+    </div>    
+</div>  
+
+
+<div id = "main">
+   <div id = "sidebar">
+	 <div class = "page-specific-sidebar">
+		 <%= yield :sidebar %>
+	</div>
+		<% if current_user && current_user.role == 'admin' %>
+		  <BR>
                   <center><h3>Admin Menu</h3></center>
                   <ul>
                      <li><%= link_to 'Users', users_path %></li>
@@ -74,21 +91,36 @@
                      <li><%= link_to 'Institutions', institutions_path %></li>
                      <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
                   </ul>                  
-            <% end %>
-        </div>
+	  <% end %>
+   </div>
         
         <!-- main rendering area -->
-          <div id="main">
-              <% if ! flash[:error].nil? && ! flash[:error].empty? %>
-                 <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
-              <% end %>
-              <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-                 <p class="notice"><%= h(flash[:notice]).gsub(/\n/,"<BR>") -%></p>
-              <% end %>
-              <%= yield :layout %>
-          </div>
+   <div id="content">
+	<% if ! flash[:error].nil? && ! flash[:error].empty? %>
+               <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
+        <% end %>
+        <%= yield :layout %>
+        </div>
+  </div>
+</div>
+</div>  
 
-    </div>
+</div>
+  <div id="footer">
+	
+	<div id = "topfooter">
+	<div id="leftfoot">
+	</div>
+	<div id = "rightfoot">
+	</div>
+	</div>
+	<div id="bottomfooter">
+		<p>Montreal Neurological Institute<br>
+		527 Avenue Des Pins, Montreal, Quebec, Canada<br>
+		Copyright ©</p>
+	</div>
+  </div>
+
 
 </body>
 </html>
