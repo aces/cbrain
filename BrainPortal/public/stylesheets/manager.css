@@ -287,8 +287,8 @@ a.issue.closed, .issue.closed a { text-decoration: line-through; }
 .loginbox {
 	background-color:#FFEBC1;
 	border:2px solid #FDBF3B;
-	margin-top:5em;
 	width: 20em;
+	margin-top: 4em;
 	float: center;
 	padding:1em;
 }
@@ -384,6 +384,7 @@ a.issue.closed, .issue.closed a { text-decoration: line-through; }
 
 .welcomepage{
 	width: 100%;
+	height: 100%;
 	
 }
 
@@ -489,16 +490,17 @@ float: right;
 background-repeat:no-repeat;
 }
 
-
-
-
-
 .notice {
   border: 1px;
-  padding: 7px;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
+  padding: 1em;
+  width: 15em;
+  padding-bottom: 1em;
+  margin-bottom: 2em;
+  margin-right: 4em;
+  float: left;
   background-color: #ffffdd;
+word-wrap: break-word;	
+  
 }
 
 .error {

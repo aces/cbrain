@@ -13,9 +13,11 @@
 
 <% title 'Login' %>
 
+<div class = "loginbox">
+
 <% form_tag session_path do -%>
 
-<div class = "loginbox">
+
 
 <table class = "logintable"">
 	<tr>
@@ -35,5 +37,5 @@
 <%= check_box_tag 'remember_me' %></p>
 -->
 <center><p><%= submit_tag 'Log in' %></p></center>
-</div>
 <% end -%>
+</div>

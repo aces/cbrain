@@ -10,159 +10,172 @@
 # $Id$
 #
 
--%>
-<% title 'Files' %>
-
-
-<% #Side bar stuff goes here -%>
+-%><% title 'Files' %><% #Side bar stuff goes here -%>
 
 <% content_for(:sidebar) do %>
-
-<% 
+	
+	<% 
 #If there is something going on - a notice that something has been done - put here
 -%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
+			<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
+			<div class = "notice">
+				<%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
+			</div>
+		<% end %>
+		<center>
+			<h3>
+				Current filters
+			</h3>
+		</center>
+		<ul>
+			<% session[:current_filters].each do |filter|%>
+			<li>
+				<%= filter %><%= link_to "x", userfiles_path(:remove_filter  => filter) %>
+			</li><% end %>
+		</ul><% if current_user.has_role?(:admin) %>
+		<p>
+			<br>
+			<br>
+		</p>
+		<center>
+			<h3>
+				Admin options
+			</h3>
+		</center>
+		<ul>
+			<li>
+				<%= link_to session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(session[:view_all]) ) %>
+			</li>
+		</ul>
+		<p>
+			<br>
+			<br>
+			<% end %> 
+			<% end %>
+		</p>
+		<div class="search">
+			<table class="searchtable">
+				<% form_tag userfiles_path, {:method => :get} do %>
+				<%= hidden_field_tag :search_type, 'name_search' %>
+				<tr>
+					<td colspan="2">
+						<%= text_field_tag :search_term, @search_term %>
+					</td>
+					<td>
+						<%= submit_tag "Search Names" %>
+					</td>
+				</tr><% end %>
+			</table>
+		</div>
+		
+		<div class="filesheader">
+			
+			<div class="filters">
+				<br>
+				<strong>Add filter:</strong><br>
+				<%= link_to 'All Files', userfiles_path(:search_type  => :none) %> <%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %> <%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %><br>
+				<strong>Filter tags:</strong><br>
+				<% current_user.tags.collect(&:name).each do |tag| %> <%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %> 
+					<% end %> 
+					<% form_tag tags_path do %> 
+						<%= text_field_tag 'tag[name]' %> 
+						<%= submit_tag "New Tag" %> 
+					<% end %> 
+					<%= button_to "Manage Tags", tags_path, :method => :get %>
+			</div>
+			
+	<% form_tag(operation_userfiles_path(:method => :post)) do %>
+			<div class="tags">
+				<% if @user_tags %><br>
+				Tag update:<br>
+				<%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %> 
+				<%= submit_tag("Update Tags") %> 
+				<% end %>
+			</div>
+			
+			<div class="groups">
+				<% if @user_groups %><br>
+				Group Update: <%= render :partial => 'group_table', :locals => {:groups => @user_groups} %>
+				<%= submit_tag("Update Groups") %> 
+				<% end %>
+			</div>
+		</div>
+		<div class="fileoperations">
+			<b>File Operations:</b><br>
+			<br>
+			<div class="filemanipulation">
+				<%= select_tag(
+									"operation", 
+									'
+											<option value="">Select an operation</option>
+											<optgroup label="Scientific operations">
+											<option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
+											<option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
+											<option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
+											<option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
+								   '
+									) %>
+									<%= submit_tag("Apply Operation") %><br>
+				<br>
+			</div><%= submit_tag("Download Files") %>
+			<%= submit_tag("Merge Files into Collection") %>
+			<%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br>
+			<br>
+		</div>
 
-
-
-<center><h3> Current filters </h3></center>
-<ul>
-<% session[:current_filters].each do |filter|%>
-   	<li>
-     	<%= filter %>
-        <%= link_to "x", userfiles_path(:remove_filter  => filter) %>
-	</li>
-<% end %>
-</ul>
-
-
-
-
-<% if current_user.has_role?(:admin) %>
-<br><br>
-<center><h3>Admin options</h3></center>
-      <ul>
-              <li>
-                  <%= link_to session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(session[:view_all]) ) %>
-              </li>
-      </ul>
-<br><br>
-<% end %>
-<% end %>
-
-    <div class = "search">
-
-      <table class= "searchtable">
-              <% form_tag userfiles_path, {:method => :get} do %>
-              <%= hidden_field_tag :search_type, 'name_search' %>
-      <tr>
-         <td colspan="2"><%= text_field_tag :search_term, @search_term %></td>
-         <td><%= submit_tag "Search Names" %></td>
-      <tr/>
-              <% end %>
-      </table>
-   </div>
-      
-       
-    <div class = "filesheader">
-            	<div class = "filters">
-                  	<br>
-                  	<strong>Add filter:</strong><br>
-                        	<%= link_to 'All Files', userfiles_path(:search_type  => :none) %>
-                        	<%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %>
-                        	<%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %>
-                  		<br>
-                  	<strong>Filter tags:</strong><br>
-                  		<% current_user.tags.collect(&:name).each do |tag| %>
-                        	<%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %>
-                  		<% end %>
-                 	<% form_tag tags_path do %>
-                        <%= text_field_tag 'tag[name]' %>
-                        <%= submit_tag "New Tag" %>
-                		<% end %>
-                	<%= button_to "Manage Tags", tags_path, :method => :get %>  
-        		</div>
-
-        <div class = "tags"> 
-                <% if @user_tags %>
-                <br>
-                Tag update:<br>
-                        <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
-                        <%= submit_tag("Update Tags") %>  
-                <% end %>
-        </div>
-
-        <div class = "groups">
-              
-                <% if @user_groups %>
-	        <br>
-		        Group Update:
-        		<%= render :partial => 'group_table', :locals => {:groups => @user_groups} %>
-	        	<%= submit_tag("Update Groups") %>
-                <% end %>
-        </div>
-   	</div>
-
-	<div class = "fileoperations" >
-	           <b>File Operations:</b><br><br>  
-			    <div class = "filemanipulation">
-	               <%= select_tag(
-	                "operation", 
-	                '
-	                        <option value="">Select an operation</option>
-	                        <optgroup label="Scientific operations">
-	                        <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-	                        <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-	                        <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
-	                        <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-	               '
-	                ) %>
-				<%= submit_tag("Apply Operation") %><br><br>
-				</div>
-
-	                <%= submit_tag("Download Files") %>
-	                <%= submit_tag("Merge Files into Collection") %>
-	                <%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br><br>
-
-
-	</div>
-
-
-
-
-     
-<div class = "pages">
-
-<% if session[:pagination] == 'on' %>
-       <%= will_paginate %>
-<% end %>
-
-<% if @userfiles.total_pages > 1 %>  
-                <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
-<% end %>
-</div>
-
-<table class = "userfilesdisplay">
-	<thead>
-<tr>
-    <th class = 'centered-selectall'><%= link_to 'Select All', userfiles_path(:select_all => true) %></th>
-    <% if ((session[:view_all] == 'on' && current_user.has_role?(:admin))|| current_user) %>
-          <th><%= link_to "Owner", userfiles_path(:order  => 'user_id') %><%= set_order_icon('user_id', session[:order]) %></th>
-    <% end %>
-          <th><%= link_to "Filename", userfiles_path(:order  => 'name') %><%= set_order_icon('name', session[:order]) %></th>
-          <th><%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %><%= set_order_icon('created_at', session[:order]) %></th>
-          <th><%= link_to "Size", userfiles_path(:order  => 'size') %><%= set_order_icon('size', session[:order]) %></th>
-          <th>Tags</th>
-             <% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
-               <th><%= link_to "Groups", userfiles_path(:order  => 'group_id') %><%= set_order_icon('group_id', session[:order]) %></th>
-	     <% else %>
-		<th>Groups</th>
-	     <% end %>
-          <th>Provider</th>
-</tr>
-</thead>
-<tbody>
-    <%= render :partial => 'userfile', :collection  => @userfiles %>
-</tbody>
-</table>      
-
+	
+		<div class="pages">
+			<% if session[:pagination] == 'on' %>
+				<%= will_paginate %>
+			<% end %>
+			<% if @userfiles.total_pages > 1 %>
+					<%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
+			<% end %>
+		</div>
+	
+		<table class="userfilesdisplay">
+			<thead>
+				<tr>
+					<th class='centered-selectall'>
+						<%= link_to 'Select All', userfiles_path(:select_all => true) %>
+					</th><% if ((session[:view_all] == 'on' && current_user.has_role?(:admin))|| current_user) %>
+					<th>
+						<%= link_to "Owner", userfiles_path(:order  => 'user_id') %>
+						<%= set_order_icon('user_id', session[:order]) %>
+					</th><% end %>
+					<th>
+						<%= link_to "Filename", userfiles_path(:order  => 'name') %>
+						<%= set_order_icon('name', session[:order]) %>
+					</th>
+					<th>
+						<%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %>
+						<%= set_order_icon('created_at', session[:order]) %>
+					</th>
+					<th>
+						<%= link_to "Size", userfiles_path(:order  => 'size') %>
+						<%= set_order_icon('size', session[:order]) %>
+					</th>
+					<th>
+						Tags
+					</th>
+					<% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
+					<th>
+						<%= link_to "Groups", userfiles_path(:order  => 'group_id') %>
+						<%= set_order_icon('group_id', session[:order]) %>
+					</th><% else %>
+					<th>
+						Groups
+					</th>
+					<% end %>
+					<th>
+						Provider
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<%= render :partial => 'userfile', :collection  => @userfiles %>
+			</tbody>
+				<% end %>
+		</table>
