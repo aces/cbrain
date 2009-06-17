@@ -435,7 +435,9 @@ protected
     name     = self.class.to_s.gsub(/^Drmaa/i,"")
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
     workdir  = self.drmaa_workdir
-
+    
+    self.addlog("\n\nTask commands:\n#{commands.join("\n")}\n")
+    
     # Create a bash command script out of the text
     # lines supplied by the subclass
     qsubfile = ".qsub.sh"   # also used in post_process() !

@@ -79,6 +79,7 @@ class UserfilesController < ApplicationController
   def new
     @user_groups = current_user.groups.find(:all)
     @user_tags = current_user.tags.find(:all)
+    @data_providers = DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by(current_user) }
     
     upload_stream = params[:upload_file]   # an object encoding the file data stream
     respond_to do |format|

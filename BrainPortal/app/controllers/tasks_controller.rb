@@ -33,7 +33,6 @@ class TasksController < ApplicationController
         flash.now[:error] += "Cluster '#{cluster_name}' is down: #{e.to_s}"
       end
     end
-   
   end
 
   # GET /tasks/Montague/1
@@ -58,7 +57,8 @@ class TasksController < ApplicationController
       @files = Userfile.find(params[:file_ids])
     else
       @files = current_user.userfiles.find(params[:file_ids])
-    end   
+    end
+    @data_providers = DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by(current_user) }
         
     if @task_class.has_args?
       begin
@@ -82,6 +82,7 @@ class TasksController < ApplicationController
   def create
     @task_class = params[:task].constantize
     @task_class.prefered_cluster = current_user.user_preference.bourreau_id
+    @task_class.data_provider_id = params[:data_provider_id] || current_user.user_preference.data_provider
     
     if params[:save_as_defaults]
       current_user.user_preference.update_options(params[:task]  => @task_class.save_options(params))
@@ -93,7 +94,11 @@ class TasksController < ApplicationController
       flash[:notice] += @task_class.launch(params)
     rescue  => e
       flash[:error] = e.to_s
-      redirect_to :action  => :new, :file_ids => params[:file_ids], :task  => params[:task]
+      if @task_class.has_args?
+        redirect_to :action  => :new, :file_ids => params[:file_ids], :task  => params[:task]
+      else
+        redirect_to userfiles_path
+      end
       return
     end
     

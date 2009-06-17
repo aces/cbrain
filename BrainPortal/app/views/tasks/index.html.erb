@@ -36,10 +36,11 @@
          <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
        </tr>
    <% end %>
-   <% if @tasks.nil? || @tasks.empty? %>
+   <% if @tasks.blank? %>
      <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
    <% end %>
 </table>
+
 <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
 
 Other operations: <%= select_tag(

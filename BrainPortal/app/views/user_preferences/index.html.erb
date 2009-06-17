@@ -8,10 +8,10 @@
    <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile.default_num_pages )%>
   </p>
   <p>
-    Default execution server: <%= f.select :bourreau_id, CBRAIN_CLUSTERS::CBRAIN_cluster_list.collect{|cluster| [cluster, cluster]} %>
+    Default execution server: <%= f.select :bourreau_id, CBRAIN_CLUSTERS::CBRAIN_cluster_list.collect{|cluster| [cluster, cluster]}, :include_blank => true  %>
   </p>
   <p>
-    Default data provider: <%= f.collection_select :data_provider_id, DataProvider.find(:all), :id, :name%>
+    Default data provider: <%= f.collection_select :data_provider_id, DataProvider.find(:all), :id, :name, :include_blank => true %>
   </p>
   <p>
    Options saved for tasks:

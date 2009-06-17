@@ -13,8 +13,6 @@ class DrmaaTask < ActiveResource::Base
 
   Revision_info="$Id$"
 
-
-
   # This sets the default resource address to the first cluster
   # listed in the clusters.rb initializer file; it probably
   # will be overriden in each subclasses, often several times
@@ -116,6 +114,10 @@ class DrmaaTask < ActiveResource::Base
   def save
     self.cluster_name = select_cluster unless self.cluster_name
     adjust_site
+    self.params ||= {}
+    if self.params.respond_to? :[]
+      self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
+    end    
     super
   end
 
@@ -124,14 +126,17 @@ class DrmaaTask < ActiveResource::Base
   def save!
     self.cluster_name = select_cluster unless self.cluster_name
     adjust_site
+    if self.params.respond_to? :[]
+      self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
+    end
     super
   end
 
   # Choose a random cluster name from the configured list
   # of legal cluster names.
   def select_cluster
-    if @@prefered_cluster
-      @@prefered_cluster
+    unless DrmaaTask.prefered_cluster.blank?
+      DrmaaTask.prefered_cluster
     else
       cluster_list = CBRAIN_CLUSTERS::CBRAIN_cluster_list
       cluster_list.slice(rand(cluster_list.size))  # a random one
@@ -156,11 +161,23 @@ class DrmaaTask < ActiveResource::Base
   end
   
   def self.prefered_cluster
-    @@prefered_cluster
+    @@prefered_cluster ||= nil
   end
   
   def self.prefered_cluster=(cluster)
     @@prefered_cluster = cluster
+  end
+  
+  def self.data_provider_id
+    @@data_provider_id ||= nil
+  end
+  
+  def self.data_provider_id=(provider)
+    if provider.is_a? DataProvider
+      @@data_provider_id = provider.id
+    else
+      @@data_provider_id = provider
+    end
   end
 end
 

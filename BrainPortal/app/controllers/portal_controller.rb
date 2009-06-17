@@ -15,6 +15,11 @@ class PortalController < ApplicationController
   
   def welcome
     redirect_to '/login/' unless current_user
+    
+    @num_files              = current_user.userfiles.size
+    @groups                 = current_user.groups.collect{|g| g.name}.join(', ')
+    @default_data_provider  = current_user.user_preference.data_provider.name if current_user.user_preference.data_provider
+    @default_bourreau       = current_user.user_preference.bourreau_id
   end
   
 end

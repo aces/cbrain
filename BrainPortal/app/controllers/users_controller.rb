@@ -30,6 +30,8 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show
     @user = User.find(params[:id], :include => [:groups, :user_preference])
+    @default_data_provider  = @user.user_preference.data_provider.name if current_user.user_preference.data_provider
+    @default_bourreau       = @user.user_preference.bourreau_id
 
     respond_to do |format|
       format.html # show.html.erb
@@ -72,7 +74,7 @@ class UsersController < ApplicationController
     
     if @user.errors.empty?
       begin 
-        UserPreference.create!(:user_id => @user.id, :data_provider_id => DataProvider.first, :bourreau_id => CBRAIN_CLUSTERS::CBRAIN_cluster_list[0])
+        UserPreference.create!(:user_id => @user.id)
       rescue => e
         @user.destroy
         flash.now[:error] = "Could not create user preferences record (#{e.message}) please try again."

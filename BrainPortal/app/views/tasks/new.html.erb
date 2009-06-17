@@ -11,6 +11,6 @@
 
 -%>
 
-<%= render :partial => @task_class.name.tableize.singularize, :locals  => {:default_args  => @default_args, :files  => @files} %>
+<%= render :partial => @task_class.name.tableize.singularize, :locals  => {:default_args  => @default_args, :files  => @files, :data_providers  => @data_providers} %>
 
 
