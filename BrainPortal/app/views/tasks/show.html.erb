@@ -64,7 +64,7 @@ require 'base64'
    </tr>
 
    <tr>
-       <td colspan="2" class="info"><pre><%= h(@task.params.attributes.to_xml :root => "Params") -%></pre></td>
+       <td colspan="2" class="info"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
    </tr>
 
    <tr>

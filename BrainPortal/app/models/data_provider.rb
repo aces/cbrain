@@ -151,6 +151,8 @@ class DataProvider < ActiveRecord::Base
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
 
+  validate :valid_name?  # makes sure the name is a simple identifier
+
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?
@@ -361,6 +363,12 @@ class DataProvider < ActiveRecord::Base
     FileUtils.remove_dir(cache_providerdir, true)  # recursive
   end
 
+  # Makes sure that the record has a valid simple name
+  def valid_name? #:nodoc:
+    name = self.name
+    return false unless name && name.match(/^[a-zA-Z0-9][\w\-\=\.\+]*$/)
+    true
+  end
 
   protected
 

@@ -24,7 +24,7 @@ class DrmaaTask < ActiveResource::Base
 
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
-  # stream; this methods will use the attribute 'type',
+  # stream; this method will use the attribute 'type',
   # if available, to select the class of the object being
   # reconstructed.
   def self.instantiate_record(record, prefix_options = {})
@@ -39,6 +39,38 @@ class DrmaaTask < ActiveResource::Base
         resource.adjust_site
       end
     end
+  end
+
+  # This is an override of the ActiveResource method
+  # used to instanciate objects received from the XML
+  # stream; normally attributes that contain complex types
+  # (like arrays and hashes) are recreated as sub-resources,
+  # but for the "params" attribute we want the hash table
+  # itself, so this routine provides this modification in
+  # the behavior of the normal +load+ method.
+  def load(attributes)
+    raise ArgumentError, "expected an attributes Hash, got #{attributes.inspect}" unless attributes.is_a?(Hash)
+    @prefix_options, attributes = split_options(attributes)
+    attributes.each do |key, value|
+      # Start of CBRAIN patch
+      if key.to_s == "params"
+        @attributes["params"] = value
+        next
+      end
+      # End of CBRAIN patch
+      @attributes[key.to_s] =
+        case value
+          when Array
+            resource = find_or_create_resource_for_collection(key)
+            value.map { |attrs| attrs.is_a?(String) ? attrs.dup : resource.new(attrs) }
+          when Hash
+            resource = find_or_create_resource_for(key)
+            resource.new(value)
+          else
+            value.dup rescue value
+        end
+    end
+    self
   end
 
   # This instance method resets the class' "site" attribute
