@@ -8,25 +8,60 @@
 #
 # $Id$
 #
-
 -%>
 
-<h1>New userfile</h1>
 
-<% form_for(@userfile) do |f| %>
-  <%= f.error_messages %>
 
-  <p>
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </p>
-  <p>
-    <%= f.label :size %><br />
-    <%= f.text_field :size %>
-  </p>
-  <p>
-    <%= f.submit "Create" %>
-  </p>
+
+<%
+form_tag( "/userfiles", :multipart => true, :method => :post ) do
+%>
+
+<div class = "uploadbox">
+<br>
+<h3>File Upload Options:</h3>
+<br><br>
+<div class = "fileupload">
+	Select file to upload:<br>
+</div>	
+	<%= file_field_tag("upload_file") %>
+	<br><br>
+
+<div class = "uploadtags">
+Select tags for file:<br>
+</div>
+<% if @user_tags %>
+     <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+<% else %>
+     <p>There are currently no tags available.</p>
 <% end %>
 
-<%= button_to 'Cancel', userfiles_path, :method => :get %>
+
+<div class= "uploadgroups">
+Groups for uploaded file:<br>
+</div>
+	<% if @user_groups %>
+		   <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
+	<% else %>
+	       <p>You do not belong to any groups.</p>
+	 <% end %>
+<br><br>
+
+<div class= "fileoptions">
+File Options: <br>
+</div>
+	 <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
+<br><br>
+
+<div class = "dataprovider">
+Data Provider for uploaded file:<br>
+</div>
+	<%= render :partial => 'providers' %>
+<br><br>
+	<div class = "fileuploadbutton">
+	Upload file:
+	</div>
+	<%= submit_tag("Upload file")     %>
+
+</div>
+<%end%>

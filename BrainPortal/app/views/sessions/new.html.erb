@@ -14,16 +14,26 @@
 <% title 'Login' %>
 
 <% form_tag session_path do -%>
-<p><label for="login">Login</label><br/>
-<%= text_field_tag 'login' %></p>
 
-<p><label for="password">Password</label><br/>
-<%= password_field_tag 'password' %></p>
+<div class = "loginbox">
+
+<table class = "logintable"">
+	<tr>
+        <label for="login"><td align ="right">Login</td></label>
+		<td align="left"><%= text_field_tag 'login' %></td>
+	</tr>
+	<tr>	
+		<label for="password"><td align="right">Password</td></label>
+		<td align ="left"><%= password_field_tag 'password' %></td>
+	</tr>
+</table>
+		
+
 
 <!-- Uncomment this if you want this functionality
 <p><label for="remember_me">Remember me:</label>
 <%= check_box_tag 'remember_me' %></p>
 -->
-
-<p><%= submit_tag 'Log in' %></p>
+<center><p><%= submit_tag 'Log in' %></p></center>
+</div>
 <% end -%>

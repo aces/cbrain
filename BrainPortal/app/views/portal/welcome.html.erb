@@ -11,17 +11,31 @@
 #
 
 -%>
-<H1>Welcome to CBRAIN, <%= current_user.full_name %></H1>
+<br><br>
+<H2><center>Welcome to CBRAIN, <%= current_user.full_name %></center></H2>
+<br>
 
-<P>
+<div class = "welcomepage">
+<table class = "welcometable">
+	<tbody>
+	<tr>
+		<td><b>Number of files on your account:</b></td>
+		<td class = "welcomeresult"><%= current_user.userfiles.size %><br><br></td>
+	</tr>
+	<tr>
+		<td><b>Groups you belong to:</b></td>
+		<td class = "welcomeresult"><%= current_user.groups.collect{|g| h g.name}.join(', ') %><br><br></td>
+	</tr>
+	<tr>
+		<td><b>Default Data Provider:</b></td>
+		<td class = "welcomeresult"><%= current_user.user_preference.data_provider.name %><br><br></td>
+	</tr>
+	<tr>
+		<td><b>Default Execution Server:</b></td>
+		<td class = "welcomeresult"><%= current_user.user_preference.bourreau_id %><br><br></td>
+	</tr>
+	</tbody>
+</table>	
+</div>
 
-<b>Number of files on your account:</b> <%= current_user.userfiles.size %><br>
-<b>Groups you belong to:</b>
-<%= current_user.groups.collect{|g| h g.name}.join(', ') %><br>
-<b>Default Data Provider:</b>
-<%= current_user.user_preference.data_provider.name %><br>
-<b>Default Execution Server:</b>
-<%= current_user.user_preference.bourreau_id %><br>
-<P>
 
-<h3>Please select an option from the menu to the right.</h3>

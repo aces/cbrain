@@ -39,7 +39,8 @@
        <% end %>
    </table>
 <% end %>
-<br/>
+<br>
+
 <h4>Create a new password (leave blank to keep the old one.)</h4>
 <p><label for="password">Password</label><br/>
 <%= f.password_field :password %></p>
@@ -51,3 +52,4 @@
 <% end -%>
 
 <%= button_to 'Cancel', check_role(:admin) ? users_path : home_path, :method => :get %>
+</div>
