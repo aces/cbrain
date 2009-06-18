@@ -22,6 +22,8 @@ require 'net/sftp'
 #
 class SshDataProvider < DataProvider
 
+  Revision_info="$Id$"
+
   def impl_is_alive? #:nodoc:
      text = bash_this("ssh -x -n -o ConnectTimeout=1 -o StrictHostKeyChecking=false -o PasswordAuthentication=false -o KbdInteractiveAuthentication=no -o KbdInteractiveDevices=false #{self.option_port} #{self.ssh_user_host} true </dev/null 2>&1")
      return(text.blank? ? true : false);

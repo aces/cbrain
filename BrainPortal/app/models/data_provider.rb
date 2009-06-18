@@ -144,6 +144,8 @@ require 'pathname'
 # * impl_provider_list_all()
 class DataProvider < ActiveRecord::Base
 
+  Revision_info="$Id$"
+
   belongs_to  :user
   belongs_to  :group
   has_many    :user_preferences
@@ -152,6 +154,12 @@ class DataProvider < ActiveRecord::Base
   validates_presence_of   :name, :user_id, :group_id
 
   validate :valid_name?  # makes sure the name is a simple identifier
+
+  # This method returns the revision info string for the
+  # current class.
+  def revision_info
+    self.class.const_get("Revision_info")
+  end
 
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.

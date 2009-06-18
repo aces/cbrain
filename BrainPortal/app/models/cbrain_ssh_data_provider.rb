@@ -21,6 +21,8 @@
 #
 class CbrainSshDataProvider < SshDataProvider
 
+  Revision_info="$Id$"
+
   def impl_sync_to_provider(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login

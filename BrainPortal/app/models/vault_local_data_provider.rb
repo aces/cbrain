@@ -28,6 +28,8 @@
 #
 class VaultLocalDataProvider < DataProvider
 
+  Revision_info="$Id$"
+
   def impl_is_alive? #:nodoc:
     return true if File.directory?(remote_dir)
     false
