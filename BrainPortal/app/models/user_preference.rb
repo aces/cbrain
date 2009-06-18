@@ -1,4 +1,7 @@
 class UserPreference < ActiveRecord::Base
+
+  Revision_info="$Id$"
+
   belongs_to  :user
   belongs_to  :data_provider
   serialize   :other_options

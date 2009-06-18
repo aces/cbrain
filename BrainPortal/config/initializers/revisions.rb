@@ -9,6 +9,22 @@
 # $Id$
 #
 
+class Object
+
+  def self.revision_info
+    if self.const_defined?("Revision_info")
+      self.const_get("Revision_info")
+    else
+      "$" + "Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor " + "$"
+    end
+  end
+
+  def revision_info
+    self.class.revision_info
+  end
+
+end
+
 class String
 
   Revision_info="$Id$"
@@ -25,7 +41,7 @@ class String
     if revm = self.match(/^\$Id:\s+(.*?)\s+\d+/)
       revm[1]
     else
-      "(fn?)"
+      "(file?)"
     end
   end
 
@@ -33,7 +49,7 @@ class String
     if revm = self.match(/(\d\d\d\d-\d\d-\d\d)/)
       revm[1]
     else
-      "(fn?)"
+      "(date?)"
     end
   end
 
@@ -41,7 +57,7 @@ class String
     if revm = self.match(/(\d\d:\d\d:\d\d\S*)/)
       revm[1]
     else
-      "(fn?)"
+      "(time?)"
     end
   end
 
@@ -49,7 +65,7 @@ class String
     if revm = self.match(/(\S*)\s+\$$/)
       revm[1]
     else
-      "(fn?)"
+      "(author?)"
     end
   end
 

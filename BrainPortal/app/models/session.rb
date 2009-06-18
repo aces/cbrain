@@ -1,4 +1,7 @@
 class Session
+
+  Revision_info="$Id$"
+
   def initialize(session)
     @session = session
     @session[:current_filters] ||= []

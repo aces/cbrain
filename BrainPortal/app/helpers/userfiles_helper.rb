@@ -1,4 +1,7 @@
 module UserfilesHelper
+
+  Revision_info="$Id$"
+
   def set_toggle(old_value)
    old_value == 'on' ? 'off' : 'on'
   end

@@ -155,12 +155,6 @@ class DataProvider < ActiveRecord::Base
 
   validate :valid_name?  # makes sure the name is a simple identifier
 
-  # This method returns the revision info string for the
-  # current class.
-  def revision_info
-    self.class.const_get("Revision_info")
-  end
-
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?

@@ -38,6 +38,16 @@
    </tr>
 
    <tr>
+       <th>Revision Info (DataProvider)</th>
+       <td class="info"><%= h(DataProvider.revision_info.svn_id_pretty_rev_author_date) %></td>
+   </tr>
+
+   <tr>
+       <th>Revision Info (<%= @provider.class.to_s %>)</th>
+       <td class="info"><%= h(@provider.revision_info.svn_id_pretty_rev_author_date) %></td>
+   </tr>
+
+   <tr>
        <th>Description</th>
        <td class="info"><%= h(@provider.description) %></td>
    </tr>

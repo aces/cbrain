@@ -53,7 +53,10 @@ public
 
   def initialize(arguments = {})
     super(arguments)
-    self.addlog("#{Revision_info.svn_id_file} revision #{Revision_info.svn_id_rev}")
+    baserev = Revision_info
+    subrev  = self.revision_info
+    self.addlog("#{baserev.svn_id_file} revision #{baserev.svn_id_rev}")
+    self.addlog("#{subrev.svn_id_file} revision #{subrev.svn_id_rev}")
     @pre_sync_userfiles = []
     @post_sync_userfiles = []
   end
@@ -471,6 +474,14 @@ protected
     version = Scir.version
     impl    = Scir.drmaa_implementation
     self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'")
+
+    impl_revinfo = Scir::Session.session_cache.revision_info
+    impl_file    = impl_revinfo.svn_id_file
+    impl_rev     = impl_revinfo.svn_id_rev
+    impl_author  = impl_revinfo.svn_id_author
+    impl_date    = impl_revinfo.svn_id_date
+    impl_time    = impl_revinfo.svn_id_time
+    self.addlog("Implementation subclass '#{impl_file}' revision '#{impl_rev}' from '#{imple_date + " " + impl_time}'")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
