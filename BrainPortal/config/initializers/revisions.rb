@@ -53,4 +53,16 @@ class String
     end
   end
 
+  def svn_id_pretty_rev_date_time
+    self.svn_id_rev + " " + self.svn_id_date + " " + self.svn_id_time
+  end
+
+  def svn_id_pretty_author_rev
+    self.svn_id_author + " " + self.svn_id_rev
+  end
+
+  def svn_id_pretty_rev_author_date
+    self.svn_id_rev + " " + self.svn_id_author + " " + self.svn_id_date
+  end
+
 end
