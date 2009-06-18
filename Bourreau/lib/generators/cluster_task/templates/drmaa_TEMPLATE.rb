@@ -7,7 +7,7 @@
 # Original author:
 # Template author: Pierre Rioux
 #
-# $Id: drmaa_TEMPLATE.rb 150 2009-03-02 20:45:51Z prioux $
+# $Id$
 #
 
 # GENERAL INSTRUCTIONS:
@@ -48,7 +48,7 @@
 
 class <%= "Drmaa#{class_name}" %> < DrmaaTask
 
-  Revision_info="$Id: drmaa_TEMPLATE.rb 150 2009-03-02 20:45:51Z prioux $"
+  Revision_info="$Id$"
 
   def setup
     params       = self.params
