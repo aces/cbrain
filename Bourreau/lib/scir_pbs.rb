@@ -14,7 +14,13 @@ require 'scir'
 
 class ScirPbsSession < Scir::Session
 
+  Revision_info="$Id$"
+
   Scir.session_subclass = self.to_s
+
+  def revision_info
+    self.class.const_get("Revision_info")
+  end
 
   def job_ps(jid)
     IO.popen("qstat -f #{shell_escape(jid)} 2>/dev/null","r") do |i|

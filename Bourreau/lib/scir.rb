@@ -15,6 +15,10 @@ module Scir
 
   Revision_info="$Id$"
 
+  def Scir.revision_info
+    self.const_get("Revision_info")
+  end
+
   # These constants are the same as the ones used for DRMAA
   STATE_UNDETERMINED          = 0x00
   STATE_QUEUED_ACTIVE         = 0x10
@@ -29,11 +33,11 @@ module Scir
   STATE_FAILED                = 0x40
 
   def Scir.drmaa_implementation
-    Revision_info.svn_id_file
+    Scir.revision_info.svn_id_file
   end
 
   def Scir.version
-    Revision_info.svn_id_rev
+    Scir.revision_info.svn_id_rev
   end
 
   def Scir.drm_system
@@ -57,6 +61,12 @@ module Scir
   end
 
 class Session
+
+  Revision_info="$Id$"
+
+  def revision_info
+    self.class.const_get("Revision_info")
+  end
 
 public
 
