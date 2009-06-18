@@ -14,7 +14,10 @@ class PortalController < ApplicationController
   Revision_info="$Id$"
   
   def welcome
-    redirect_to '/login/' unless current_user
+    unless current_user
+      redirect_to login_path 
+      return
+    end
     
     @num_files              = current_user.userfiles.size
     @groups                 = current_user.groups.collect{|g| g.name}.join(', ')

@@ -74,10 +74,11 @@ class SingleFile < Userfile
         u.data_provider_id = self.data_provider_id
         u.user_id          = self.user_id
         u.group_id         = self.group_id
-        u.content          = File.read(file)
         unless u.save(false)
           status = :failed
-        end
+        else
+          u.cache_copy_from_local_file(file)
+        end      
       end
     end
 
