@@ -481,7 +481,7 @@ protected
     impl_author  = impl_revinfo.svn_id_author
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
-    self.addlog("Implementation subclass '#{impl_file}' revision '#{impl_rev}' from '#{imple_date + " " + impl_time}'")
+    self.addlog("Implementation subclass '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
