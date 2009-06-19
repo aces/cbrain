@@ -113,7 +113,9 @@
       <%= button_to 'Delete', data_provider_path(@provider), :confirm => 'Are you sure?', :method => :delete %>
     </td>
     <td class="info">
-      <%= button_to 'Browse', browse_data_provider_path(@provider), :method => :get %>
+      <% if @provider.is_browsable? %>
+        <%= button_to 'Browse', browse_data_provider_path(@provider), :method => :get %>
+      <% end %>
     </td>
   </tr>
 </table>

@@ -64,10 +64,6 @@ class Session
 
   Revision_info="$Id$"
 
-  def revision_info
-    self.class.const_get("Revision_info")
-  end
-
 public
 
   def self.new_session(check_delay = 5)

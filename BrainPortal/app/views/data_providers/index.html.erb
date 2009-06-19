@@ -45,7 +45,7 @@
             <% end %>
          </td>
          <td>
-            <% if check_role(:admin) || prov.can_be_accessed_by(current_user) %>
+            <% if prov.is_browsable? && (check_role(:admin) || prov.can_be_accessed_by(current_user)) %>
             <%= button_to 'Browse', browse_data_provider_path(prov), :method => :get %>
             <% end %>
          </td>

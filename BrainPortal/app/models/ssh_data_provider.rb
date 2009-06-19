@@ -29,6 +29,10 @@ class SshDataProvider < DataProvider
      return(text.blank? ? true : false);
   end
 
+  def is_browsable? #:nodoc:
+    true
+  end
+
   def impl_sync_to_cache(userfile) #:nodoc:
     basename    = userfile.name
     localfull   = cache_full_pathname(basename)

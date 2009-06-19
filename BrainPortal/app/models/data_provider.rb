@@ -94,6 +94,7 @@ require 'pathname'
 #
 # * is_alive?
 # * is_alive!
+# * is_browsable?
 #
 # == Access restriction methods:
 #
@@ -167,6 +168,13 @@ class DataProvider < ActiveRecord::Base
   def is_alive!
     raise "Error: data provider is not accessible right now." unless self.is_alive?
     true
+  end
+
+  # This method returns true if the provider is 'browsable', that is
+  # you can call provider_list_all() without fear of an exception.
+  # Most data providers are not browsable.
+  def is_browsable?
+    false
   end
 
   # Returns true if +user+ can access this provider.

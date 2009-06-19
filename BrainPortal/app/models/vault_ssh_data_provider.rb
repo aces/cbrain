@@ -21,6 +21,10 @@ class VaultSshDataProvider < SshDataProvider
 
   Revision_info="$Id$"
 
+  def is_browsable? #:nodoc:
+    false
+  end
+
   def impl_sync_to_provider(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login
