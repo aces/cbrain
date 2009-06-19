@@ -252,9 +252,12 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if self.read_only
     cache_prepare(userfile)
-    File.open(cache_full_path(userfile),"w") do |fh|
+    localpath = cache_full_path(userfile)
+    File.open(localpath,"w") do |fh|
       yield(fh)
     end
+    userfile.size = File.size(localpath)
+    userfile.save
     sync_to_provider(userfile)
   end
 
@@ -270,6 +273,12 @@ class DataProvider < ActiveRecord::Base
     cache_prepare(userfile)
     dest = cache_full_path(userfile)
     FileUtils.cp_r(localpath,dest)
+    userfile.size = if File.directory?(localpath)
+      Dir.entries(localpath).select { |e| e != "." && e != ".." }.size
+    else
+      File.size(localpath)
+    end
+    userfile.save
     sync_to_provider(userfile)
   end
 
