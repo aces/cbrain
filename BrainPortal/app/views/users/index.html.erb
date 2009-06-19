@@ -10,10 +10,12 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title "Users"%>
 
-<h3>Current Users</h3>
+<h2>Current Users</h2>
+<div class = "generalbox">
 
 <table>
   <tr>
@@ -45,3 +47,5 @@
 <br />
 
 <%= button_to 'Create New User', new_user_path, :method => :get %>
+</div>
+</div>

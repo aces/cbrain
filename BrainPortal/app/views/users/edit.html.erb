@@ -10,10 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title 'Edit User Information' %>
 
-<h4>Update Information</h4>
+<h2>Update Information</h2>
+<div class = "generalbox">
+
 <%= error_messages_for :user %>
 <% form_for @user do |f| -%>
 <p><label for="login">Full Name</label><br/>
@@ -41,7 +44,7 @@
 <% end %>
 <br>
 
-<h4>Create a new password (leave blank to keep the old one.)</h4>
+<h3>Create a new password (leave blank to keep the old one.)</h3>
 <p><label for="password">Password</label><br/>
 <%= f.password_field :password %></p>
 
@@ -52,4 +55,5 @@
 <% end -%>
 
 <%= button_to 'Cancel', check_role(:admin) ? users_path : home_path, :method => :get %>
+</div>
 </div>

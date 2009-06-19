@@ -11,16 +11,21 @@
 
 -%>
 
+<div class = "generalcontent">
+
+
 <% title "#{@group.name}"%>
 
-<h1>Group details for <%= h @group.name %></h1>
+<h2>Group details for <%= h @group.name %></h2>
+
+<div class = "generalbox">
 <table>
    <tr class="list-even">
-      <td><b>Name:</b></td>
+      <td class = "title"><b>Name:</b></td>
       <td><%=h @group.name %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Institution:</b></td>
+      <td class = "title"><b>Institution:</b></td>
       <% if (@group.institution != nil) %>
 	      <td><%=h @group.institution.name %></td>
       <% else %>
@@ -28,23 +33,23 @@
 	<% end %>
   </td>
   <tr class="list-even">
-      <td><b>Street:</b></td>
+      <td class = "title"><b>Street:</b></td>
       <td><%=h @group.street %></td>
   </tr>
   <tr class="list-even">
-        <td><b>Building:</b></td>
+        <td class = "title"><b>Building:</b></td>
         <td><%=h @group.building %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Room:</b></td>
+      <td class = "title"><b>Room:</b></td>
       <td><%=h @group.room %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Phone:</b></td>
+      <td class = "title"><b>Phone:</b></td>
       <td><%=h @group.phone %></td>
    </tr>
    <tr class="list-even">
-      <td><b>Fax:</b></td>
+      <td class = "title"><b>Fax:</b></td>
       <td><%=h @group.fax %></td>
    </tr>
 </table>
@@ -69,3 +74,5 @@
 
 <%= button_to 'Edit', edit_group_path(@group), :method => :get %><br/>
 <%= link_to 'Index', groups_path %>
+</div>
+</div>

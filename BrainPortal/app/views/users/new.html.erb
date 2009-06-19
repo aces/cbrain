@@ -10,8 +10,11 @@
 #
 
 -%>
+<div class = "generalcontent">
+<h2>Create New User</h2>
 
 <% title 'Create New User' %>
+<div class = "generalbox">
 
 <%= error_messages_for :user %>
 <% form_for :user, :url => users_path do |f| -%>
@@ -48,3 +51,5 @@
 <% end -%>
 
 <%= button_to 'Cancel', users_path, :method => :get %>
+</div>
+</div>

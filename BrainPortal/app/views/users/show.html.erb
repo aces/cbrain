@@ -10,35 +10,37 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title "Account Info"%>
 
-<h4>Account details for <%= h @user.full_name %></h4>
-<BR>
+<h2>Account details for <%= h @user.full_name %></h2>
+<div class = "generalbox">
+
 <table>
   <tr class="list-even">
-     <td><b>Name:</b></td>
-     <td><%=h @user.full_name %></td>
+     <td class = "title"><b>Name:</b></td>
+     <td class = "tabletext"><%=h @user.full_name %></td>
   </tr>
   <tr class="list-even">
-     <td><b>Login:</b></td>
-     <td><%=h @user.login %></td>
+     <td class = "title"><b>Login:</b></td>
+     <td class = "tabletext"><%=h @user.login %></td>
   </td>
   <tr class="list-even">
-      <td><b>Role:</b></td>
-      <td><%=h @user.role %></td>
+      <td class = "title"><b>Role:</b></td>
+      <td class = "tabletext"><%=h @user.role %></td>
   </tr>
   <tr class="list-even">
-     <td><b>Email:</b></td>
-     <td><%=h @user.email %></td>
+     <td class = "title"><b>Email:</b></td>
+     <td class = "tabletext"><%=h @user.email %></td>
   </tr>
   <tr class="list-even">
-     <td><b>Default Execution Server: </b></td>
-     <td><%= h @default_bourreau %>  </td>
+     <td class = "title"><b>Default Execution Server: </b></td>
+     <td class = "tabletext"><%= h @default_bourreau %>  </td>
   </tr>
   <tr class="list-even">
-     <td><b> Default Data Provider:</b></td>
-     <td><%=h @default_data_provider %></td>
+     <td class = "title"><b> Default Data Provider:</b></td>
+     <td class = "tabletext"><%=h @default_data_provider %></td>
   </td>
 </table>
 
@@ -50,8 +52,8 @@
    </tr>
 
    <tr>
-     <th>Name</th>
-     <th>Members</th>
+     <th class = "subtitle">Name</th>
+     <th class = "subtitle">Members</th>
    </tr>
   
 <% @user.groups.each do |group| %>
@@ -67,3 +69,5 @@
 
 
 <%= link_to 'Index', users_path %>
+</div>
+</div>

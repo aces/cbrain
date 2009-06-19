@@ -10,10 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title "Edit Data Provider" %>
 
-<h4>Edit Data Provider</h4>
+<h2>Edit Data Provider</h2>
+
+<div class = "generalbox">
 
 <%= error_messages_for :data_provider %>
 
@@ -64,3 +67,5 @@
 <% end -%>
 
 <%= button_to 'Cancel', data_providers_path, :method => :get %>
+</div>
+</div>

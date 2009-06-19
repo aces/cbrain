@@ -10,10 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title 'Browse Data Provider' %>
 
-<h1>Files Available On Data Provider '<%= @provider.name %>'</h1>
+<h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
+
+<div class = "generalbox">
 
 <% #form_tag("/data_providers/#{@provider.id.to_s}/register") do
  %>
@@ -74,3 +77,5 @@
 <%= submit_tag 'Register' %>
 
 <% end %>
+</div>
+</div>

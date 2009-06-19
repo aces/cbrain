@@ -10,17 +10,16 @@
 #
 -%>
 
-
-
+<div class = "generalcontent">
+<h2>File Upload Options:</h2>
 
 <%
 form_tag( "/userfiles", :multipart => true, :method => :post ) do
 %>
-
 <div class = "uploadbox">
-<br>
-<h3>File Upload Options:</h3>
-<br><br>
+
+<div class = "uploadwrapper">
+
 <div class = "fileupload">
 	Select file to upload:<br>
 </div>	
@@ -64,4 +63,7 @@ Data Provider for uploaded file:<br>
 	<%= submit_tag("Upload file")     %>
 
 </div>
+</div>
+</div>
 <%end%>
+</div>

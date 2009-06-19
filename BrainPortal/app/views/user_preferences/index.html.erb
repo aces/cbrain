@@ -1,4 +1,8 @@
-<h1>Account preferences for <%= @user_preference.user.login %></h1>
+
+<div class = "generalcontent">
+
+<h2>Account preferences for <%= @user_preference.user.login %></h2>
+<div class = "generalbox">
 
 <% form_for(@user_preference) do |f| %>
   <%= f.error_messages %>
@@ -29,3 +33,5 @@
 <%= button_to 'Reset to Defaults', @user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
 
 <%= link_to 'Back to Account Page', current_user %>
+</div>
+</div>

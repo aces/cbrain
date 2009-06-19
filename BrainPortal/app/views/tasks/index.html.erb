@@ -13,36 +13,21 @@
 
 <% title 'Tasks' %>
 
-<h1>Welcome. These are your current and past tasks:</h1>
 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
-<table>
-   <tr>
-       <th>Select</th>
-       <th>Task Name</th>
-       <th>Cluster Name</th>
-       <th>Current Status</th>
-       <th>Time Submitted</th>
-       <th>Last Updated</th>
-   </tr>
-   <% for task in @tasks %>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s, task.status == 'Data Ready') %></td>
-         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :cluster_name => task.cluster_name, :id => task.id %></td>
-         <td><%= h(task.cluster_name) %></td>
-         <td><%= h(task.status) %></td>
-         <td><%= h(to_localtime(task.created_at.to_s)) -%></td>
-         <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
-       </tr>
-   <% end %>
-   <% if @tasks.blank? %>
-     <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
-   <% end %>
-</table>
+<div class = "generalcontent">
 
+<h2>Tasks</h2>
+	
+<div class = "tasksbox">
+<div class = "tasksmenuoptions">
+	
+<div class = "taskstrigger">
 <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
+</div>
 
+<div class = "tasksoperation">
 Other operations: <%= select_tag(
    "operation",
     '
@@ -65,4 +50,35 @@ Other operations: <%= select_tag(
 <%= submit_tag("Apply Operation") %>
 
 <% end %>
+</div>
+</div>
+</div>
+
+
+<table class = "taskstable">
+   <tr>
+       <th>Select</th>
+       <th>Task Name</th>
+       <th>Cluster Name</th>
+       <th>Current Status</th>
+       <th>Time Submitted</th>
+       <th>Last Updated</th>
+   </tr>
+   <% for task in @tasks %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s, task.status == 'Data Ready') %></td>
+         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :cluster_name => task.cluster_name, :id => task.id %></td>
+         <td><%= h(task.cluster_name) %></td>
+         <td><%= h(task.status) %></td>
+         <td><%= h(to_localtime(task.created_at.to_s)) -%></td>
+         <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
+       </tr>
+   <% end %>
+   <% if @tasks.blank? %>
+     <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
+   <% end %>
+</table>
+</div>
+
+
 

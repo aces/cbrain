@@ -10,12 +10,19 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title 'Data Providers' %>
 
-<h1>Configured CBRAIN Data Providers</h1>
+<h2>Data Providers</h2>
+<div class = "dataproviderbox">
 
-<table>
+<div class = "dataprovidermenuoptions">
+<%= button_to 'Create New Data Provider', new_data_provider_path, :method => :get %>
+</div>
+</div>
+
+<table class = "dataprovidertable">
    <tr>
        <th>Provider Name</th>
        <th>Owner</th>
@@ -58,4 +65,5 @@
 
 </table>
 
-<%= button_to 'Create New Data Provider', new_data_provider_path, :method => :get %>
+</div>
+</div>

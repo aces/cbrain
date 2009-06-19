@@ -10,10 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title 'Edit Institution' %>
 
-<h1>Editing Institution</h1>
+<h2>Editing Institution</h2>
+
+<div class = "generalbox">
 
 <% form_for(@institution) do |f| %>
   <%= f.error_messages %>
@@ -39,3 +42,5 @@
  </p>
 <% end %>
 <%= button_to 'Cancel', institutions_path, :method => :get %>
+</div>
+</div>

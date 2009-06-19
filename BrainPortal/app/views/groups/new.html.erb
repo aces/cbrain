@@ -10,10 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title 'New Group' %>
 
-<h1>Create New Group</h1>
+<h2>Create New Group</h2>
+
+<div class = "generalbox">
 
 <% form_for(@group) do |f| %>
   <%= f.error_messages %>
@@ -62,3 +65,5 @@
 <% end %>
 
 <%= button_to 'Cancel', groups_path, :method => :get %>
+</div>
+</div>

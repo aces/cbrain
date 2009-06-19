@@ -10,11 +10,13 @@
 #
 
 -%>
+<div class = "generalcontent">
 
 <% title "File Info: #{@userfile.name}" %>
 
-<h1>File details for <%= h @userfile.name %></h1>
+<h2>File details for <%= h @userfile.name %></h2>
 
+<div class = "generalbox">
 <% form_for(@userfile) do |f| %>
 <%= f.error_messages %>
 
@@ -160,3 +162,5 @@
 <br>
 
 <%= link_to 'Index', userfiles_path %>
+</div>
+</div>

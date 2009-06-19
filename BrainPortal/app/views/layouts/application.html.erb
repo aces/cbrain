@@ -19,7 +19,6 @@
 <head>
     <title>CBRAIN Project <%= yield :title %></title>
     <%= stylesheet_link_tag "manager", :media => "all" %>
-	<%= stylesheet_link_tag "swapselect" %>
 
 </head>
 
@@ -28,19 +27,19 @@
 <div id = "main-content">
 <div id="wrapper">
     <div id="top-menu">
-	<div id='account'>
-	<ul>
-		<li>
-			<% if session[:user_id] %>
-			    	<a class="logout" href="/logout">Sign out</a>
-		     <% else %>
-			    	<a class="login" href="/login">Sign in</a>
-			 <% end %>
-		</li>
-	</ul>
+		<div id='account'>
+			<ul>
+				<li>
+				<% if session[:user_id] %>
+			    		<a class="logout" href="/logout">Sign out</a>
+		     	<% else %>
+			    		<a class="login" href="/login">Sign in</a>
+			 	<% end %>
+				</li>
+			</ul>
             <!-- <a href="fr">Fran&ccedil;ais</a> -->
-        <br/>
-    </div>
+        <br>
+    	</div>
 	
      <% if session[:user_id] %>
 	     <div id="loggedas">Logged in as <%=h current_user.full_name %></div>
@@ -58,25 +57,30 @@
 		<div id= "top_01"><div>
 	    <div id = "main-menu">
 	    <ul>
-                <% if session[:user_id] %>
-		<li><%= link_to 'Home', home_path %></li>
+        <% if session[:user_id] %>
 		<li><%= link_to 'Files', userfiles_path %></li>
 		<li><%= link_to 'Upload File', new_userfile_path %></li>
-                <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
+        <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
+		<li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
 		<li><%= link_to 'Jiv Viewer', jiv_path %></li>                
-                <li><%= link_to 'Feedback', feedbacks_path %></li>      
-                <li><%= link_to 'Logout', logout_path %></li>     
-                <% else %>                                          
-                <li><a href="/login">Login</a></li>
-            <% end %>               
+		<li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
+
+                <% end %>               
 		</div>
-       </div>
-    </div>    
+    </div>
+ </div>    
 </div>  
 
 
 <div id = "main">
    <div id = "sidebar">
+	
+			<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
+			<div class = "notice">
+				<%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
+			</div>
+		<% end %>
+	
 	 <div class = "page-specific-sidebar">
 		 <%= yield :sidebar %>
 	</div>
@@ -96,14 +100,12 @@
    <div id="content">
 	<% if ! flash[:error].nil? && ! flash[:error].empty? %>
                <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
-        <% end %>
-        <%= yield :layout %>
-        </div>
+    <% end %>
+    <%= yield :layout %>
+    </div>
   </div>
-</div>
 </div>  
 
-</div>
   <div id="footer">
 	
 	<div id = "topfooter">

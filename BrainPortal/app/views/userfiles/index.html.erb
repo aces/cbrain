@@ -19,11 +19,7 @@
 -%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
-			<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-			<div class = "notice">
-				<%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
-			</div>
-		<% end %>
+		
 		<center>
 			<h3>
 				Current filters
@@ -49,14 +45,14 @@
 				<%= link_to session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", userfiles_path(:view_all => set_toggle(session[:view_all]) ) %>
 			</li>
 		</ul>
-		<p>
 			<br>
 			<br>
 			<% end %> 
 			<% end %>
-		</p>
-		<div class="search">
-			<table class="searchtable">
+
+<div class = "userfilescontent">
+<div class = "search">
+		<table class="searchtable">
 				<% form_tag userfiles_path, {:method => :get} do %>
 				<%= hidden_field_tag :search_type, 'name_search' %>
 				<tr>
@@ -68,8 +64,10 @@
 					</td>
 				</tr><% end %>
 			</table>
-		</div>
-		
+</div>
+	
+			<div class= "userfilescontent">
+	
 		<div class="filesheader">
 			
 			<div class="filters">
@@ -115,7 +113,11 @@
 											<option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
 											<option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
 											<option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-								   '
+											<option value="DrmaaMincmath">Mincmath</option>
+											<option value="DrmaaCw5filter">Apply a filter over a simple optical cw5 file</option>
+											<option value="DrmaaCw5">Process selected Cw5 files through a simple optical Cw5 pipeline</option
+											<option value="DrmaaMincresample">Launch Mincresample</option>
+									'
 									) %>
 									<%= submit_tag("Apply Operation") %><br>
 				<br>
@@ -138,7 +140,7 @@
 		<table class="userfilesdisplay">
 			<thead>
 				<tr>
-					<th class='centered-selectall'>
+					<th>
 						<%= link_to 'Select All', userfiles_path(:select_all => true) %>
 					</th><% if ((session[:view_all] == 'on' && current_user.has_role?(:admin))|| current_user) %>
 					<th>
@@ -179,3 +181,5 @@
 			</tbody>
 				<% end %>
 		</table>
+</div>
+</div>

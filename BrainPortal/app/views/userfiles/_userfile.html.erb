@@ -1,6 +1,6 @@
-<tr>
+ <tr class="<%= cycle('list-odd', 'list-even') %>">
    <td class = 'checkbox'><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
-   <td><%= userfile.user.full_name %></td>
+   <td class = "centered"><%= userfile.user.full_name %></td>
    <td>
       <%=  tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_to h(userfile.name), edit_userfile_path(userfile) %>
@@ -12,11 +12,11 @@
    <% else %>
 	<td></td>
    <% end %>
-   <td><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") -%></td>
+   <td class = "centered"><center><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") -%></center></td>
        <% if userfile.group != nil %>
-	    <td><%= userfile.group.name -%></td>
+	    <td class = "centered"><%= userfile.group.name -%></td>
        <% else %>
 	    <td></td>
 	<% end %>
-   <td><%= link_to h(userfile.data_provider.name), data_provider_path(userfile.data_provider) %></td>
+   <td class = "centered"><%= link_to h(userfile.data_provider.name), data_provider_path(userfile.data_provider) %></td>
 </tr>
