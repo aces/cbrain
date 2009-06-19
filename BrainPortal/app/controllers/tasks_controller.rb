@@ -52,7 +52,7 @@ class TasksController < ApplicationController
   end
   
   def new
-    @task_class = params[:task].constantize
+    @task_class = Class.const_get(params[:task].to_s)
     if current_user.has_role? :admin
       @files = Userfile.find(params[:file_ids])
     else
