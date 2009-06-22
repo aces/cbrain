@@ -25,6 +25,8 @@ ActionController::Routing::Routes.draw do |map|
   map.connect 'tasks/:action/:cluster_name/:id', :controller => 'tasks'
 
   map.connect 'civet/:action/:id', :controller => 'civet'
+  map.connect 'mnc2nii/:action/:id', :controller => 'mnc2nii'  
+  
   map.connect 'cw5filter/:action/:id', :controller => 'cw5filter'
   map.connect 'cw5/:action/:id', :controller => 'cw5'  
   map.connect "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
