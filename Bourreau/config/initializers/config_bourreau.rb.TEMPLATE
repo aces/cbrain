@@ -1,0 +1,49 @@
+
+#
+# CBRAIN Project
+#
+# Configuration file for Bourreau
+#
+# Original author: Pierre Rioux
+#
+# $Id: your_configuration.brainportal.rb.TEMPLATE 230 2009-06-10 23:01:34Z prioux $
+#
+
+# Instructions:
+#
+# 1) Copy this file as 'config_bourreau.rb' in the current directory.
+#
+# 2) Edit your copy to suit your deployment environement.
+#    DO NOT CHECK-IN your file 'config_bourreau.rb' !
+#
+# 3) Leave this template alone; when new configuration options are
+#    added to CBRAIN, they will show up here as this file is under version
+#    control. The file 'validation_bourreau.rb' will warn you and
+#    you'll have to update your .rb file based on the .rb.TEMPLATE.
+
+class CBRAIN
+
+  # Data Providers constants
+  Filevault_dir            = "/your/filevault/dir"   # Soon to be obsolete
+  DataProviderCache_dir    = "/your/local/bourreau/cache/here" # Must differ from Portal's, if you're running both
+
+  # Local bourreau constants 
+  DRMAA_sharedir           = "/your/drmaa/shared/dir" # a writable directory also visible from all cluster nodes
+
+  # Software installation paths (must be visible from the cluster nodes)
+  Quarantine_dir           = "/your/civet/quarantine/dir"
+  CIVET_dir                = "/your/civet/dir"
+  
+  # Name of current Bourreau application
+  # It's important that the name match one of the names
+  # given on the BrainPortal side in CBRAIN::Cluster_list
+  # and CBRAIN::Clusters_resource_sites
+  BOURREAU_CLUSTER_NAME    = "nameit"
+
+  # Your local cluster management system: one of 'PBS', 'SGE', or 'UNIX'
+  CLUSTER_TYPE             = ""
+
+  # Default cluster queue to use; leave empty to use cluster's default
+  DEFAULT_QUEUE            = ""
+
+end
