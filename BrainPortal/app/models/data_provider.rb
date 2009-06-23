@@ -123,6 +123,7 @@ require 'pathname'
 #
 # * provider_erase(userfile)
 # * provider_rename(userfile,newname)
+# * provider_move_to_otherprovider(userfile,otherprovider)
 # * provider_list_all
 #
 # Note that provider_erase() and provider_rename() are also present in
@@ -329,6 +330,36 @@ class DataProvider < ActiveRecord::Base
     impl_provider_rename(userfile,newname.to_s)
   end
 
+
+  # Move a +userfile+ from the current provider to
+  # +otherprovider+
+  def provider_move_to_otherprovider(userfile,otherprovider)
+    raise "Error: provider #{self.name} is offline."   unless self.online
+    raise "Error: provider #{self.name} is read_only." if self.read_only
+    raise "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
+    raise "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
+    return true if self.id == otherprovider.id
+    target_exists = Userfile.find_by_name_and_data_provider_id(userfile.name,otherprovider.id)
+    return false if target_exists
+
+    # Get path to cached copy on current provider
+    sync_to_cache(userfile)
+    currentcache = userfile.cache_full_path
+
+    # Copy to other provider
+    userfile.provider_id = otherprovider.id
+    otherprovider.cache_copy_from_local_file(currentcache)
+
+    # Erase on current provider
+    userfile.provider_id = self.id  # temporarily set it back
+    cache_erase(userfile)
+    impl_provider_erase(userfile)
+    userfile.provider_id = otherprovider.id  # must return it to true value
+
+    true
+  end
+
+
   # This method provides a way for a client of the provider
   # to get a list of files on the provider's side, files
   # that are not necessarily yet registered as +userfiles+.
@@ -352,6 +383,11 @@ class DataProvider < ActiveRecord::Base
   end
 
 
+  #################################################################
+  # Utility Non-API
+  #################################################################
+
+
   # This method is a TRANSITION utility method; it returns
   # any provider that's read/write for the user. The method
   # is used by interface pages not yet modified to ask the
@@ -363,20 +399,6 @@ class DataProvider < ActiveRecord::Base
     raise "No online rw provider found for user '#{user.login}" if providers.size == 0
     providers.sort! { |a,b| a.id <=> b.id }
     providers[0]
-  end
-
-
-
-  # ActiveRecord callbacks
-
-  # This creates the PROVIDER's cache directory
-  def before_save #:nodoc:
-    mkdir_cache_providerdir
-  end
-
-  # This destroys the PROVIDER's cache directory
-  def after_destroy #:nodoc:
-    FileUtils.remove_dir(cache_providerdir, true)  # recursive
   end
 
   # Makes sure that the record has a valid simple name
@@ -396,7 +418,25 @@ class DataProvider < ActiveRecord::Base
     Dir.mkdir(providerdir) unless File.directory?(providerdir)
   end
 
+
+  #################################################################
+  # ActiveRecord callbacks
+  #################################################################
+
+  # This creates the PROVIDER's cache directory
+  def before_save #:nodoc:
+    mkdir_cache_providerdir
+  end
+
+  # This destroys the PROVIDER's cache directory
+  def after_destroy #:nodoc:
+    FileUtils.remove_dir(cache_providerdir, true)  # recursive
+  end
+
+
+  #################################################################
   protected
+  #################################################################
 
   def impl_is_alive? #:nodoc:
     raise "Error: method not yet implemented in subclass."
