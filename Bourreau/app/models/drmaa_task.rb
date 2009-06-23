@@ -172,19 +172,6 @@ public
     end
 
     return true
-
-#    # Some error occured; let's log the content of the job's stderr file
-#    errfile = "#{self.drmaa_workdir}/.qsub.sh.err"
-#    if File.exist?(errfile)
-#      self.addlog("--- Start of content of stderr file for job ---")
-#      IO.readlines(errfile).each { |line| self.addlog(line, :prefix => ">" ) }
-#      self.addlog("--- End of content of stderr file for job ---")
-#    end
-#
-#    self.status = "Failed To PostProcess"
-#    #self.removeDRMAAworkdir
-#    return false
-
   end
 
   # Most of the code in this method comes from a blog entry
@@ -396,34 +383,10 @@ protected
   # which is which based only on DRMAA::Session#job_ps()
   # See also the comments for @@DRMAA_States_To_Status
   def drmaa_status
-#    begin 
-      state = Scir::Session.session_cache.job_ps(self.drmaa_jobid)
-#    rescue => e
-#      state = Scir::STATE_UNDETERMINED
-#      if Scir.drm_system == 'PBS/Torque'
-#        state = self.qstat_status
-#      end
-#    end
+    state = Scir::Session.session_cache.job_ps(self.drmaa_jobid)
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
     return status
   end
-
-#  # This is a patch for PBS which does NOT allow us to query jobs
-#  # that were not started in this session (aarrgh) so we parse the
-#  # output of the 'qstat' command. Yuk.
-#  def qstat_status
-#    begin
-#      io = IO.popen("qstat -f #{self.drmaa_jobid} | grep 'job_state = '")
-#      stateline = io.readline
-#      io.close
-#      return DRMAA::STATE_USER_ON_HOLD   if stateline.match(/ = .*H/)
-#      return DRMAA::STATE_QUEUED_ACTIVE  if stateline.match(/ = .*Q/)
-#      return DRMAA::STATE_RUNNING        if stateline.match(/ = .*R/)
-#      return DRMAA::STATE_USER_SUSPENDED if stateline.match(/ = .*S/)
-#    rescue
-#      return DRMAA::STATE_UNDETERMINED
-#    end
-#  end
 
   # Expects that the WD has already been changed
   def run
@@ -432,8 +395,6 @@ protected
     name     = self.class.to_s.gsub(/^Drmaa/i,"")
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
     workdir  = self.drmaa_workdir
-    
-    self.addlog("\n\nTask commands:\n#{commands.join("\n")}\n")
     
     # Create a bash command script out of the text
     # lines supplied by the subclass
@@ -475,7 +436,7 @@ protected
     impl_author  = impl_revinfo.svn_id_author
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
-    self.addlog("Implementation subclass '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'")
+    self.addlog("Implementation in file '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
