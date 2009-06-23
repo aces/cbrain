@@ -17,34 +17,32 @@ class FileCollection < Userfile
   Revision_info="$Id$"
   
   # Extract a collection from an archive
-  def extract_collection
-
-    archive_file_name = self.name                      # "abc.tar.gz" or "abc.zip"
-    collection_name = archive_file_name.split('.')[0]  # "abc"
-    self.name = collection_name
-
-    tmparchivefile = "/tmp/#{$$}-#{archive_file_name}"
-    File.open(tmparchivefile, "w") { |io| io.write(@content) }
+  # The user_id, provider_id and name attributes must already be
+  # set at this point.
+  def extract_collection_from_archive_file(archive_file_name)
 
     self.cache_prepare
     directory = self.cache_full_path
     Dir.mkdir(directory) unless File.directory?(directory)
     Dir.chdir(directory) do
-      escaped_tmparchivefile = tmparchivefile.gsub("'", "'\\\\''")
-      if archive_file_name =~ /\.tar(\.gz)?$/i
-        system("tar -xvf '#{escaped_tmparchivefile}'")
-      else
+      escaped_tmparchivefile = archive_file_name.gsub("'", "'\\\\''")
+      if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
+        system("tar -xzf '#{escaped_tmparchivefile}'")
+      elsif archive_file_name =~ /\.tar$/i
+        system("tar -xf '#{escaped_tmparchivefile}'")
+      elsif archive_file_name =~ /\.zip/i
         system("unzip '#{escaped_tmparchivefile}'") 
+      else
+        raise "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
       end
     end
 
-    File.unlink(tmparchivefile)
-    
     self.flatten
     self.size = self.list_files.size
-    self.save
     self.sync_to_provider
+    self.save
 
+    true
   end
   
   def merge_collections(file_ids)
@@ -90,12 +88,6 @@ class FileCollection < Userfile
     end
   end
 
-  # Shoudl be removed; content of tar files should not be kept in memory
-  def content=(newcontent)
-    @content = newcontent
-    @content
-  end
-
   #find longest common root of a list of file paths.
   def get_common_base(files)
     return nil if files.empty?
@@ -106,10 +98,6 @@ class FileCollection < Userfile
       base += dir + '/'
     end
     base
-  end
-  
-  def delete_content
-    self.provider_erase
   end
   
   def list_files    
@@ -126,14 +114,10 @@ class FileCollection < Userfile
   
   #format size for display
   def format_size
-    "#{self.size} files" 
+    "#{self.size || "?"} files" 
   end
   
-  def before_destroy
-    self.delete_content
-  end
-    
-  # remove common root from a directory structure.
+  # Remove common root from a directory structure.
   def flatten
     dir_name = self.cache_full_path
 

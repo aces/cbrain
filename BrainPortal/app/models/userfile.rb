@@ -228,4 +228,13 @@ class Userfile < ActiveRecord::Base
     self.data_provider.cache_copy_to_local_file(self,filename)
   end
 
+  ##################################
+  # Active Record Callbacks
+  ##################################
+
+  # This will work will all subclasses.
+  def before_destroy #:nodoc:
+    self.provider_erase
+  end
+
 end

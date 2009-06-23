@@ -10,6 +10,7 @@
 # $Id$
 #
 
+#
 # GENERAL INSTRUCTIONS:
 # 
 # There are three methods that need to be completed, setup(),
@@ -30,21 +31,13 @@
 # 
 #   d) The method drmaa_commands() must returns an array of shell commands.
 # 
-#   e) The method setup() MUST call the method
-#      pre_synchronize_userfile(userfile) once for each userfile that it
-#      will need to access; this will have the effect of scheduling a rsync
-#      command to synchronize the userfile's content on the BrainPortal's
-#      host with the local cache. IMPORTANT: the rsync command is run
-#      JUST BEFORE the commands returned by drmaa_commands() are executed
-#      as a cluster job, not when pre_synchronize_userfile() is called!
-#      This means that the .name() and .vaultname() methods of Userfile
-#      could return path to files that do not yet exist locally!
-# 
-#   f) The method save_results() MUST call the method
-#      post_synchronize_userfile(userfile) once on any userfile it creates
-#      or updates. This will schedule a rsync command to synchronized the
-#      userfile's content back to the BrainPortal's host.
-
+#   e) Make sure you call the appropriate file syncronization methods
+#      for your input files and output files. For files in input,
+#      you can call userfile.sync_to_cache and get a path to the cached
+#      content with userfile.cache_full_path; for files in output,
+#      we recommand you simply call userfile.cache_copy_from_local_file
+#      (for both SingleFile and FileCollections) and the syncronization
+#      steps will be performed for you.
 
 class <%= "Drmaa#{class_name}" %> < DrmaaTask
 

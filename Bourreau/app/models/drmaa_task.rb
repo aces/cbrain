@@ -57,8 +57,6 @@ public
     subrev  = self.revision_info
     self.addlog("#{baserev.svn_id_file} revision #{baserev.svn_id_rev}")
     self.addlog("#{subrev.svn_id_file} revision #{subrev.svn_id_rev}")
-    @pre_sync_userfiles = []
-    @post_sync_userfiles = []
   end
 
   # This needs to be redefined in a subclass.
@@ -115,8 +113,6 @@ public
             self.addlog("Failed To Setup")
             self.status = "Failed To Setup"
           else
-            self.addlog("Synchronizing input files.") if @pre_sync_userfiles.size > 0
-            @pre_sync_userfiles.each { |userfile| userfile.sync_to_cache }
             if ! self.run
               self.addlog("Failed To Start")
               self.status = "Failed To Start"
@@ -164,8 +160,6 @@ public
         if ! saveok
           self.status = "Failed To PostProcess"
         else
-          self.addlog("Synchronizing output files.") if @post_sync_userfiles.size > 0
-          @post_sync_userfiles.each { |userfile| userfile.sync_to_provider }
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
         end
@@ -518,16 +512,6 @@ protected
 
   def capt_stderr_b64
      @capt_stderr_b64
-  end
-
-  def pre_synchronize_userfile(userfile)
-    @pre_sync_userfiles ||= []
-    @pre_sync_userfiles << userfile
-  end
-
-  def post_synchronize_userfile(userfile)
-    @post_sync_userfiles ||= []
-    @post_sync_userfiles << userfile
   end
 
 end

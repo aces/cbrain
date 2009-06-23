@@ -108,79 +108,137 @@ class UserfilesController < ApplicationController
   # POST /userfiles
   # POST /userfiles.xml
   def create
+
+    flash[:error]  ||= ""
+    flash[:notice] ||= ""
   
-     upload_stream = params[:upload_file]   # an object encoding the file data stream
+    # Get the upload stream object
+    upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
       redirect_to :action => :index
       return
     end
     
-    userfile = nil
+    # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
     if data_provider_id.empty?
       data_provider_id = DataProvider.find_first_online_rw(current_user).id
     end
 
-    if params[:archive] == 'collection'
-      userfile         = FileCollection.new(:tag_ids  => params[:tags])
-    elsif params[:archive] == 'civet collection'
-      userfile         = CivetCollection.new(:tag_ids  => params[:tags])
-      params[:archive] = 'collection'
-    else
-      userfile         = SingleFile.new(:tag_ids  => params[:tags])
+    # Save raw content of the file; we don't know yet
+    # whether it's an archive or not, or if we'll extract it etc.
+    basename               = File.basename(upload_stream.original_filename)
+    tmpcontentfile         = "/tmp/#{$$}-#{basename}"
+    File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+
+    begin # large block to ensure we remove the tmpcontentfile
+
+    # Decide what to do with the raw data
+    if params[:archive] == 'save'  # the simplest case first
+      userfile = SingleFile.new(
+                 :name             => basename,
+                 :user_id          => current_user.id,
+                 :data_provider_id => data_provider_id,
+                 :tag_ids          => params[:tags]
+                 )
+      if params[:userfile] && params[:userfile][:group_id]
+        userfile.group_id = params[:userfile][:group_id]
+      end
+      userfile.cache_copy_from_local_file(tmpcontentfile)
+      if userfile.save
+        flash[:notice] += "File '#{basename}' added."
+        redirect_to :action => :index
+      else
+        flash[:error]  += "File '#{basename}' could not be added (internal error?)."
+        redirect_to :action => :new
+      end
+      return
     end
 
-    clean_basename   = File.basename(upload_stream.original_filename)
-    userfile.name    = clean_basename
-    userfile.user_id = current_user.id
-    userfile.data_provider_id = data_provider_id
-    userfile.group_id = params[:userfile][:group_id] if params[:userfile] && params[:userfile][:group]
-    userfile.content = upload_stream.read   # also fills file_size
-
-    if params[:archive] == 'extract' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
-      status, successful_files, failed_files, nested_files = userfile.extract
-      if status == :success
-        if successful_files.size > 0
-          flash[:notice] = "#{successful_files.size} files successfully added."          
-        end
-        if failed_files.size > 0
-          flash[:error]  = "#{failed_files.size} files could not be added.\n"          
-        end
-        if nested_files.size > 0
-          flash[:error] ||= ""
-          flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."          
-        end
-      elsif status == :overflow
-        flash[:error] = "Maximum of 50 files can be auto-extracted at a time.\nCreate a collection if you wish to add more."
-      else
-        flash[:error]  = "Some or all of the files were not extracted properly (internal error?).\n"
-      end
-    elsif params[:archive] == 'collection' && userfile.name =~ /(\.tar(\.gz)?|\.zip)$/
-      collection_name = userfile.name.split('.')[0]
-      if current_user.userfiles.exists?(:name => collection_name)
-        flash[:error] = "File '" + collection_name + "' already exists."
-        redirect_to :action => :index
+    # We will be processing some archive file.
+    # First, check for supported extensions
+    if basename !~ /(\.tgz|\.tar.gz|\.zip)$/i
+      flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip."
+      redirect_to :action => :new
+      return
+    end
+       
+    # Create a collection
+    if params[:archive] =~ /collection/
+      collection_name = basename.split('.')[0]  # "abc"
+      if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
+        flash[:error] = "File '#{collection_name}' already exists."
+        redirect_to :action => :new
         return
       end
-        
-      if userfile.extract_collection  
-        flash[:notice] = "Collection '#{userfile.name}' created."
+      collectionType = params[:archive] =~/civet/i ? CivetCollection : FileCollection
+      collection = collectionType.new(
+        :name              => collection_name,
+        :user_id           => current_user.id,
+        :data_provider_id  => data_provider_id,
+        :tag_ids           => params[:tags]
+      )
+      if params[:userfile] && params[:userfile][:group_id]
+        collection.group_id = params[:userfile][:group_id]
+      end
+      collection.extract_collection_from_archive_file(tmpcontentfile)
+      if collection.save
+        flash[:notice] = "Collection '#{collection_name}' created."
+        redirect_to :action => :index
       else
-        flash[:error] = "Collection '#{userfile.name}' could not be created."
+        flash[:error] = "Collection '#{collection_name}' could not be created."
+        redirect_to :action => :new
       end
-    else
-      if current_user.userfiles.exists?(:name => userfile.name, :data_provider_id => data_provider_id)
-          flash[:error] = "File '" + userfile.name + "' already exists."
-          redirect_to :action => :index
-          return
-      end
-      if userfile.save
-        flash[:notice] = "File '" + clean_basename + "' added."
-      else
-        flash[:error]  = "File '" + clean_basename + "' could not be added (internal error?)."
-      end
+      return
     end
-    redirect_to :action => :new
+
+    # Prepare for creation of several objects
+    status           = :success
+    successful_files = []
+    failed_files     = []
+    nested_files     = []
+
+    # Create a bunch of userfiles from the archive
+    if params[:archive] == 'extract'
+      attributes = {  # common attributes to all files
+        :user_id           => current_user.id,
+        :data_provider_id  => data_provider_id,
+        :tag_ids           => params[:tags],
+      }
+      if params[:userfile] && params[:userfile][:group_id]
+        attributes["group_id"] = params[:userfile][:group_id]
+      end
+      status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
+    end
+
+    # Report about successes and failures
+    if successful_files.size > 0
+      flash[:notice] += "#{successful_files.size} files successfully added."          
+    end
+    if failed_files.size > 0
+      flash[:error]  += "#{failed_files.size} files could not be added.\n"          
+    end
+    if nested_files.size > 0
+      flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."          
+    end
+
+    if status == :overflow
+      flash[:error] += "Maximum of 50 files can be auto-extracted at a time.\nCreate a collection if you wish to add more."
+      redirect_to :action => :new
+      return
+    end
+
+    if status != :success
+      flash[:error] += "Some or all of the files were not extracted properly.\n"
+      redirect_to :action => :new
+      return
+    end
+
+    ensure
+      File.delete(tmpcontentfile)
+    end
+
+    redirect_to :action => :index
   end
 
   # PUT /userfiles/1
@@ -315,7 +373,7 @@ class UserfilesController < ApplicationController
             system("tar -czf #{tarfile} #{filenames_with_spaces}")
           end
           send_file tarfile, :stream  => false
-          File.delete tarfile
+          File.delete(tarfile)
         end
         return
 
@@ -373,7 +431,7 @@ class UserfilesController < ApplicationController
     params[:filelist].each do |file|
       userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :data_provider_id => provider_id)
       Dir.chdir(collection_path.parent) do
-        userfile.content = File.read(file)
+        userfile.cache_copy_from_local_file(file)
         if userfile.save
           success += 1
         else
@@ -389,6 +447,93 @@ class UserfilesController < ApplicationController
     end
     
     redirect_to :action  => :index
+  end
+
+  private
+
+  # Extract files from an archive and register them in the DB
+  # The first argument is a path to an archive file (tar or zip).
+  # The second argument is a hash of attributes for all the files,
+  # they must contain at least user_id and data_provider_id
+  def extract_from_archive(archive_file_name,attributes = {})
+
+    escaped_archivefile = archive_file_name.gsub("'", "'\\\\''")
+
+    # Check for required attributes
+    data_provider_id    = attributes["data_provider_id"] ||
+                          attributes[:data_provider_id]
+    raise "No data provider ID supplied." unless data_provider_id
+    user_id             = attributes["user_id"]  ||
+                          attributes[:user_id]
+    raise "No user ID supplied." unless user_id
+
+    # Create content list
+    all_files        = []
+    if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
+      all_files = IO.popen("tar -tzf #{escaped_archivefile}").readlines.map(&:chomp)
+    elsif archive_file_name =~ /\.tar$/i
+      all_files = IO.popen("tar -tf #{escaped_archivefile}").readlines.map(&:chomp)
+    elsif archive_file_name =~ /\.zip/i
+      all_files = IO.popen("unzip -l #{escaped_archivefile}").readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]}
+    else
+      raise "Cannot process file with unknown extension: #{archive_file_name}"
+    end
+    
+    count = all_files.select{ |f| f !~ /\// }.size
+    
+    #max of 50 files can be added to the file list at a time.
+    return [:overflow, -1, -1, -1] if count > 50
+
+    workdir = "/tmp/filecollection.#{$$}"
+    Dir.mkdir(workdir)
+    Dir.chdir(workdir) do
+      if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
+        system("tar -xzf '#{escaped_archivefile}'")
+      elsif archive_file_name =~ /\.tar$/i
+        system("tar -xf '#{escaped_archivefile}'")
+      elsif archive_file_name =~ /\.zip/i
+        system("unzip '#{escaped_archivefile}'")
+      else
+        FileUtils.remove_dir(workdir, true)
+        raise "Cannot process file with unknown extension: #{archive_file_name}"
+      end
+    end
+
+    # Prepare for extraction
+    status           = :success
+    successful_files = []
+    failed_files     = []
+    nested_files     = []
+    
+    all_files.each do |file_name|
+      if file_name =~ /\//
+        nested_files << file_name
+      elsif Userfile.find(:first, :conditions => {
+                                     :name             => file_name,
+                                     :user_id          => user_id,
+                                     :data_provider_id => data_provider_id
+                                     }
+                         )
+        failed_files << file_name
+      else
+        successful_files << file_name
+      end
+    end
+           
+    Dir.chdir(workdir) do
+      successful_files.each do |file|
+        u = SingleFile.new(attributes)
+        u.name = file
+        u.cache_copy_from_local_file(file)
+        unless u.save(false)
+          status = :failed
+        end      
+      end
+    end
+
+    FileUtils.remove_dir(workdir, true)
+    
+    [status, successful_files, failed_files, nested_files]
   end
 
 end
