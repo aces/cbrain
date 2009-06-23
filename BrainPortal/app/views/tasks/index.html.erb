@@ -13,6 +13,7 @@
 
 <% title 'Tasks' %>
 
+<%= javascript_include_tag "tableH" %>
 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
@@ -65,7 +66,7 @@ Other operations: <%= select_tag(
        <th>Last Updated</th>
    </tr>
    <% for task in @tasks %>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
+       <tr class ="<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFE5FF')">
          <td><%= check_box_tag("tasklist[]", task.cluster_name + "," + task.id.to_s, task.status == 'Data Ready') %></td>
          <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :cluster_name => task.cluster_name, :id => task.id %></td>
          <td><%= h(task.cluster_name) %></td>

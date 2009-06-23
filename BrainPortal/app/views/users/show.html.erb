@@ -44,8 +44,6 @@
   </td>
 </table>
 
-<p>
-
 <table>
    <tr>
      <th colspan="3">Groups</th>
@@ -62,9 +60,9 @@
     <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
 <% end %>
 </table>
-</p>
-
-<%= button_to 'Edit Account Info', edit_user_path(@user), :method => :get %><br/>
+<br>
+<br>
+<%= button_to 'Edit Account Info', edit_user_path(@user), :method => :get %><br>
 <%= button_to 'Edit Preferences', user_preferences_path, :method => :get %><br/>
 
 

@@ -21,7 +21,7 @@
 
 
 
-<table class = "logintable"">
+<table class = "logintable">
 	<tr>
         <label for="login"><td align ="right">Login</td></label>
 		<td align="left"><%= text_field_tag 'login' %></td>
@@ -31,6 +31,7 @@
 		<td align ="left"><%= password_field_tag 'password' %></td>
 	</tr>
 </table>
+<br>
 		
 
 
@@ -38,8 +39,10 @@
 <p><label for="remember_me">Remember me:</label>
 <%= check_box_tag 'remember_me' %></p>
 -->
+<div class= "login">
 <center><p><%= submit_tag 'Log in' %></p></center>
 <% end -%>
+</div>
 
 </div>
 </div>

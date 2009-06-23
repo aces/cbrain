@@ -53,7 +53,7 @@
 
     </div>
     <div id="header">
-	    <h1>CBrain</h1>
+	    <h1>CBrain <%= CBRAIN::Redmine_Version %></h1>
 		<div id= "top_01"><div>
 	    <div id = "main-menu">
 	    <ul>
@@ -72,7 +72,7 @@
 </div>  
 
 
-<div id = "main">
+<div id = "main" class="">
    <div id = "sidebar">
 	
 			<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
@@ -80,31 +80,29 @@
 				<%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
 			</div>
 		<% end %>
-	
+			<% if current_user && current_user.role == 'admin' %>
+			  <BR>
+				<h3>Admin Menu</h3>
+	                  <ul>
+	                     <li><%= link_to 'Users', users_path %></li>
+	                     <li><%= link_to 'Groups', groups_path %></li> 
+	                     <li><%= link_to 'Institutions', institutions_path %></li>
+	                     <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+	                  </ul>
+			<% end %>
 	 <div class = "page-specific-sidebar">
 		 <%= yield :sidebar %>
 	</div>
-		<% if current_user && current_user.role == 'admin' %>
-		  <BR>
-                  <center><h3>Admin Menu</h3></center>
-                  <ul>
-                     <li><%= link_to 'Users', users_path %></li>
-                     <li><%= link_to 'Groups', groups_path %></li> 
-                     <li><%= link_to 'Institutions', institutions_path %></li>
-                     <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
-                  </ul>                  
-	  <% end %>
    </div>
         
         <!-- main rendering area -->
-   <div id="content">
+  <div id="content">
 	<% if ! flash[:error].nil? && ! flash[:error].empty? %>
                <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
     <% end %>
     <%= yield :layout %>
-    </div>
   </div>
-</div>  
+  </div>
 
   <div id="footer">
 	
