@@ -111,8 +111,7 @@ class SingleFile < Userfile
   # of storing the whole content into memory, if you can.
   def content
     return @content unless @content.nil?
-    provider = self.data_provider
-    provider.cache_readhandle(self) do |io|
+    self.cache_readhandle do |io|
       @content = io.read
     end
     @content
@@ -129,17 +128,16 @@ class SingleFile < Userfile
   
   def save_content
     return if @content.nil?
-    provider = self.data_provider
-    provider.cache_writehandle(self) do |io|
+    self.cache_writehandle do |io|
       io.write(@content)
     end
+    @content=nil
     self
   end
 
   def delete_content
-    provider = self.data_provider
-    provider.provider_erase(self)
     @content=nil
+    self.provider_erase
   end
   
   ########################################################

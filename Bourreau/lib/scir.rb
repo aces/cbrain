@@ -129,7 +129,7 @@ class JobTemplate
     subclassname = Scir.jobtemplate_subclass
     subclass     = Class.const_get(subclassname)
     returning subclass.new(params) do |job|
-      job.queue = CBRAIN_CLUSTERS::DEFAULT_QUEUE if ( ! CBRAIN_CLUSTERS::DEFAULT_QUEUE.blank? ) && ( job.queue.blank? )
+      job.queue = CBRAIN::DEFAULT_QUEUE if ( ! CBRAIN::DEFAULT_QUEUE.blank? ) && ( job.queue.blank? )
     end
   end
 

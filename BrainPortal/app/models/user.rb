@@ -106,6 +106,7 @@ class User < ActiveRecord::Base
   end
 
   protected
+
     # before filter 
     def encrypt_password
       return if password.blank?
@@ -117,15 +118,4 @@ class User < ActiveRecord::Base
       crypted_password.blank? || !password.blank?
     end
     
-    #def after_create
-    #  userdir = Pathname.new(CBRAIN::Filevault_dir) + self.login
-    #  Dir.mkdir(userdir.to_s) unless File.directory?(userdir.to_s)
-    #end
-    
-    #def before_destroy
-    #  self.userfiles.destroy_all
-    #  userdir = Pathname.new(CBRAIN::Filevault_dir) + self.login
-    #  Dir.rmdir(userdir.to_s) if File.directory?(userdir.to_s)
-    #end
-
 end

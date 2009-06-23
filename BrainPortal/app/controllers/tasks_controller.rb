@@ -17,7 +17,7 @@ class TasksController < ApplicationController
    
   def index
     @tasks = []
-    CBRAIN_CLUSTERS::CBRAIN_cluster_list.each do |cluster_name|
+    CBRAIN::Cluster_list.each do |cluster_name|
       DrmaaTask.adjust_site(cluster_name)
       begin
         if current_user.role == 'admin'

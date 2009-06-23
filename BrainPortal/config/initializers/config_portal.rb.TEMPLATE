@@ -1,0 +1,42 @@
+
+#
+# CBRAIN Project
+#
+# Configuration file for BrainPortal
+#
+# Original author: Pierre Rioux
+#
+# $Id: your_configuration.brainportal.rb.TEMPLATE 230 2009-06-10 23:01:34Z prioux $
+#
+
+# Instructions:
+#
+# 1) Copy this file as 'config_portal.rb' in the current directory.
+#
+# 2) Edit your copy to suit your deployment environement.
+#    DO NOT CHECK-IN your file 'config_portal.rb' !
+#
+# 3) Leave this template alone; when new configuration options are
+#    added to CBRAIN, they will show up here as this file is under version
+#    control. The file 'validation_portal.rb' will warn you and
+#    you'll have to update your .rb file based on the .rb.TEMPLATE.
+
+class CBRAIN
+
+  # Data Providers constants
+  Filevault_dir            = "/your/filevault/dir"   # Soon to be obsolete
+  DataProviderCache_dir    = "/your/local/portal/cache/here"
+  
+  # This is used by BrainPortal as the list of available clusters.
+  # The defaults/prefered cluster is the first one
+  Cluster_list = [ "cluster_a", "cluster_b", "cluster_c" ]
+
+  # This hash maps short names of clusters to the Bourreau resource URI
+  # running on the clusters' frontends
+  Clusters_resource_sites = { # keys are case-sensitive
+    "cluster_a"           => "http://cluster_a_url.ca/",
+    "cluster_b"           => "http://cluster_b_url.ca/",
+    "cluster_c"           => "http://cluster_c_url.ca/",
+  }
+  
+end

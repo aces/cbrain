@@ -70,7 +70,4 @@ Rails::Initializer.run do |config|
   # Activate observers that should always be running
   # config.active_record.observers = :cacher, :garbage_collector
   
-  config.after_initialize do
-    load File.join(RAILS_ROOT, "config", "conditional_initializers", "#{HostConfigInfo::Configuration}.bourreau.rb")
-  end
 end

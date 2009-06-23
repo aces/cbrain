@@ -11,7 +11,7 @@ Signal.trap("TERM") do
 end
 
 while($running) do
-  @tasks = DrmaaTask.find(:all, :conditions => {:cluster_name => CBRAIN_CLUSTERS::BOURREAU_CLUSTER_NAME, :status => 'Data Ready' }) || []
+  @tasks = DrmaaTask.find(:all, :conditions => { :cluster_name => CBRAIN::BOURREAU_CLUSTER_NAME, :status => 'Data Ready' }) || []
   
   @tasks.each do |task|
     task.post_process

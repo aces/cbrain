@@ -257,7 +257,6 @@ class DataProvider < ActiveRecord::Base
       yield(fh)
     end
     userfile.size = File.size(localpath)
-    userfile.save
     sync_to_provider(userfile)
   end
 
@@ -278,7 +277,6 @@ class DataProvider < ActiveRecord::Base
     else
       File.size(localpath)
     end
-    userfile.save
     sync_to_provider(userfile)
   end
 
@@ -373,8 +371,7 @@ class DataProvider < ActiveRecord::Base
 
   # This creates the PROVIDER's cache directory
   def before_save #:nodoc:
-    providerdir = cache_providerdir
-    Dir.mkdir(providerdir) unless File.directory?(providerdir)
+    mkdir_cache_providerdir
   end
 
   # This destroys the PROVIDER's cache directory
@@ -387,6 +384,16 @@ class DataProvider < ActiveRecord::Base
     name = self.name
     return false unless name && name.match(/^[a-zA-Z0-9][\w\-\=\.\+]*$/)
     true
+  end
+
+  # This method creates the provider's top-level cache subdirectory.
+  # It is not part of the 'user'-level API for Data Providers;
+  # it's basically used by management layers and initialization code.
+  # It only needs to be called once in the entire lifetime of the
+  # provider, usually in before_save.
+  def mkdir_cache_providerdir
+    providerdir = cache_providerdir
+    Dir.mkdir(providerdir) unless File.directory?(providerdir)
   end
 
   protected

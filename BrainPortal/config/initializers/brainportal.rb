@@ -9,8 +9,6 @@
 # $Id$
 #
 
-require 'socket';
-
 class CBRAIN
     
   public

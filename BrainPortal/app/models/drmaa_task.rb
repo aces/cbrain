@@ -18,7 +18,7 @@ class DrmaaTask < ActiveResource::Base
   # will be overriden in each subclasses, often several times
   # per sessions as we fetch our ActiveResource objects from
   # multiple Bourreau servers.
-  self.site = CBRAIN_CLUSTERS::Clusters_resource_sites[CBRAIN_CLUSTERS::CBRAIN_cluster_list[0]]
+  self.site = CBRAIN::Clusters_resource_sites[CBRAIN::Cluster_list[0]]
 
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
@@ -88,7 +88,7 @@ class DrmaaTask < ActiveResource::Base
   # the cluster_name given in argument.
   def self.adjust_site(cluster_name)
     raise "DrmaaTask not supplied with cluster_name ?!?" unless cluster_name
-    clustersite = CBRAIN_CLUSTERS::Clusters_resource_sites[cluster_name]
+    clustersite = CBRAIN::Clusters_resource_sites[cluster_name]
     raise "Cannot find site URI for cluster name #{cluster_name}" unless site
     return self if clustersite == self.site.to_s # optimize if unchanged
     self.site = clustersite
@@ -138,7 +138,7 @@ class DrmaaTask < ActiveResource::Base
     unless DrmaaTask.prefered_cluster.blank?
       DrmaaTask.prefered_cluster
     else
-      cluster_list = CBRAIN_CLUSTERS::CBRAIN_cluster_list
+      cluster_list = CBRAIN::Cluster_list
       cluster_list.slice(rand(cluster_list.size))  # a random one
     end
   end

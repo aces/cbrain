@@ -23,9 +23,9 @@ class TasksController < ApplicationController
   # Formats: xml
   def index
     if params[:user_id]
-      @tasks = DrmaaTask.find(:all, :conditions => { :cluster_name => CBRAIN_CLUSTERS::BOURREAU_CLUSTER_NAME, :user_id => params[:user_id]} ) || []
+      @tasks = DrmaaTask.find(:all, :conditions => { :cluster_name => CBRAIN::BOURREAU_CLUSTER_NAME, :user_id => params[:user_id]} ) || []
     else
-      @tasks = DrmaaTask.find(:all, :conditions => { :cluster_name => CBRAIN_CLUSTERS::BOURREAU_CLUSTER_NAME } ) || []
+      @tasks = DrmaaTask.find(:all, :conditions => { :cluster_name => CBRAIN::BOURREAU_CLUSTER_NAME } ) || []
     end
     @tasks = [ @tasks ] unless @tasks.is_a?(Array)
     @tasks.each { |t| t.update_status }
@@ -116,7 +116,7 @@ class TasksController < ApplicationController
   
   def find_or_initialize_task
     if params[:id]
-      if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :cluster_name => CBRAIN_CLUSTERS::BOURREAU_CLUSTER_NAME } )
+      if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :cluster_name => CBRAIN::BOURREAU_CLUSTER_NAME } )
         @task.update_status
       else
         render_optional_error_file :not_found
