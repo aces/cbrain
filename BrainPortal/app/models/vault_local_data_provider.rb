@@ -63,6 +63,7 @@ class VaultLocalDataProvider < DataProvider
 
   def impl_provider_erase(userfile) #:nodoc:
     FileUtils.remove_entry(cache_full_path(userfile), true)
+    true
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
@@ -72,7 +73,7 @@ class VaultLocalDataProvider < DataProvider
     begin
       FileUtils.mv(oldpath.to_s,newpath.to_s, :force => true)
       userfile.name = newname.to_s
-      userfile.save
+      return true
     rescue
       return false
     end

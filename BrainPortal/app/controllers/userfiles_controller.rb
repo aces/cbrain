@@ -211,7 +211,9 @@ class UserfilesController < ApplicationController
       if @userfile.update_attributes(attributes)
         flash[:notice] += "#{@userfile.name} successfully updated."
         if new_name != old_name
-           @userfile.provider_rename(new_name) # this also modifies and saves @userfile
+           if @userfile.provider_rename(new_name)
+              @userfile.save
+           end
         end
         format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }

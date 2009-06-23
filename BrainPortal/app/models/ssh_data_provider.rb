@@ -29,6 +29,8 @@ class SshDataProvider < DataProvider
      return(text.blank? ? true : false);
   end
 
+  # Please make sure that subclasses that are not
+  # browsable resets this value to false.
   def is_browsable? #:nodoc:
     true
   end
@@ -67,6 +69,7 @@ class SshDataProvider < DataProvider
   def impl_provider_erase(userfile) #:nodoc:
     full     = remote_full_path(userfile)
     bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c 'rm -rf #{full} >/dev/null 2>&1'\"")
+    true
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
@@ -85,7 +88,6 @@ class SshDataProvider < DataProvider
       begin
         sftp.rename!(oldpath,newpath)
         userfile.name = newname
-        userfile.save
         return true
       rescue
         return false
@@ -160,7 +162,8 @@ class SshDataProvider < DataProvider
     unless self.remote_port.blank? || self.remote_port == 0
       ssh += " -p #{self.remote_port.to_s}"
     end
-    prefix + " -e #{shell_escape(ssh)}"
+    prefix += " -e #{shell_escape(ssh)}"
+    prefix
   end
   
 end

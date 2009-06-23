@@ -105,10 +105,7 @@ class CbrainLocalDataProvider < DataProvider
     end
     return false unless FileUtils.move(oldpath,newpath)
     userfile.name = newname
-    return true if userfile.save
-    userfile.name = oldname # restore it
-    FileUtils.move(newpath,oldpath)  # restore it !
-    false 
+    true
   end
 
   def impl_provider_list_all #:nodoc:

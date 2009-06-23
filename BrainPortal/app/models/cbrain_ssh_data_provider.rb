@@ -78,18 +78,14 @@ class CbrainSshDataProvider < SshDataProvider
       rescue ; end
 
       req = sftp.lstat(newpath).wait
-      return "a" if req.response.ok?   # file already exists ?
+      return false if req.response.ok?   # file already exists ?
 
       req = sftp.rename(oldpath,newpath).wait
-      return "b" unless req.response.ok?
+      return false unless req.response.ok?
 
       userfile.name = newname
-      return true if userfile.save
+      return true
 
-      # Restore everything
-      userfile.name = oldname
-      sftp.rename(newpath,oldpath).wait
-      return false
     end
   end
 

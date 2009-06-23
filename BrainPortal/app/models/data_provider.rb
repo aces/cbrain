@@ -135,7 +135,14 @@ require 'pathname'
 # false, or if trying to perform some write operation and the provider's
 # +read_only+ attribute is true.
 #
-# == A proper implementation in a subclass must have the following
+# None of the methods issue a save() operation on the +userfile+
+# they are given in argument; this means that after a successful
+# provider_rename() or provider_move_to_otherprovider(), the caller
+# must call the save() method explicitely.
+#
+# = Implementations In Subclasses
+#
+# A proper implementation in a subclass must have the following
 # methods defined:
 #
 # * impl_is_alive?
@@ -208,6 +215,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
     mkdir_cache_subdirs(userfile.name)
+    true
   end
 
   # Returns the full path to the file or subdirectory
@@ -305,6 +313,7 @@ class DataProvider < ActiveRecord::Base
       Dir.rmdir(cache_full_dirname(basename))
     rescue
     end
+    true
   end
 
   # Deletes the content of +userfile+ on the provider side.
@@ -324,6 +333,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if self.read_only
     return true if newname == userfile.name
+    return false unless Userfile.is_legal_filename?(newname)
     target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
     return false if target_exists
     cache_erase(userfile)
@@ -522,6 +532,7 @@ class DataProvider < ActiveRecord::Base
     level2 = level1                          + twolevels[1]
     Dir.mkdir(level1) unless File.directory?(level1)
     Dir.mkdir(level2) unless File.directory?(level2)
+    true
   end
 
   # Returns the relative path of the two subdirectory levels:
