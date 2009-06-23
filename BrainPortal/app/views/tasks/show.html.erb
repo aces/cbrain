@@ -82,7 +82,7 @@ require 'base64'
 
 <br>
 
-<table class = "drmaastdouttable">
+<table class = "showtaskstable">
    <tr>
        <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
    </tr>
@@ -93,8 +93,8 @@ require 'base64'
    %>
 
    <tr>
-       <td class="info" valign="top"><pre><%= h(prettystdout) -%></pre></td>
-       <td class="info" valign="top"><pre><%= h(prettystderr) -%></pre></td>
+       <td class="info"><pre><%= h(prettystdout) -%></pre></td>
+       <td class="info"><pre><%= h(prettystderr) -%></pre></td>
    </tr>
 
 </table>
