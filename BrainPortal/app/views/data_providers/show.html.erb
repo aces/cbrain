@@ -10,11 +10,10 @@
 #
 
 -%>
-<div class = "generalcontent">
 
 <% title 'Data Provider Info' %>
 
-<h2>Information about a Data Provider</h2>
+
 <% content_for(:sidebar) do %>
 
 <% if @provider.is_alive? %>
@@ -23,6 +22,11 @@
     <p class="error">This data provider is NOT RESPONDING!</p>
 <% end %>
 <% end %>
+
+<h2>Information about a Data Provider</h2>
+
+
+<div class = "generalcontent">
 
 <div class = "generalbox">
 
