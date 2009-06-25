@@ -101,10 +101,6 @@ class User < ActiveRecord::Base
     return self.role == role.to_s
   end
   
-  def vault_dir
-    raise "THIS IS NO LONGER VALID! USE THE DATA PROVIDER METHODS!"
-  end
-
   protected
 
     # before filter 

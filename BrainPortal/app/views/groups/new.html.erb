@@ -50,9 +50,9 @@
     <%= f.text_field :fax %>
   </p>
   <br/>
-  <label for="users">Users:</label>
+  <label for="users">Users in group:</label>
   <table>
-     <% for user in User.find(:all).reject{|u| u.login == 'admin'}  %>
+     <% for user in User.find(:all) %>
          <tr>
            <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
            <td class="info"><%= h(user.full_name) -%></td>

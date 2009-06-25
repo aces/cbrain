@@ -427,9 +427,9 @@ class UserfilesController < ApplicationController
     collection_id = params[:collection_id]
     collection = FileCollection.find(collection_id)
     collection_path = collection.cache_full_path
-    provider_id = collection.data_provider_id
+    data_provider_id = collection.data_provider_id
     params[:filelist].each do |file|
-      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :data_provider_id => provider_id)
+      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :data_provider_id => data_provider_id)
       Dir.chdir(collection_path.parent) do
         userfile.cache_copy_from_local_file(file)
         if userfile.save

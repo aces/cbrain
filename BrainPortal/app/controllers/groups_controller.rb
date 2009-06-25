@@ -44,6 +44,9 @@ class GroupsController < ApplicationController
   def new
     @group = Group.new
     @institution_names = Institution.find(:all).collect(&:name)
+
+    _add_admin_to_group(@group)
+
    # @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
    #@manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
     respond_to do |format|
@@ -55,6 +58,9 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit
     @group = Group.find(params[:id])
+
+    _add_admin_to_group(@group)
+
    # @institution_names = Institution.find(:all).collect(&:name)
   #  @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
   end
@@ -63,6 +69,8 @@ class GroupsController < ApplicationController
   # POST /groups.xml
   def create
     @group = Group.new(params[:group])
+
+    _add_admin_to_group(@group)
 
     respond_to do |format|
       if @group.save
@@ -84,6 +92,8 @@ class GroupsController < ApplicationController
     params[:group][:user_ids] ||= []
     params[:group][:institution_id] ||= []
     
+    _add_admin_to_group(@group)
+
     respond_to do |format|
       if @group.update_attributes(params[:group])
         flash[:notice] = 'Group was successfully updated.'
@@ -110,7 +120,14 @@ class GroupsController < ApplicationController
     end
   end
 
+  private
   
-
+  # Makes sure all groups contain the 'admin' user
+  def _add_admin_to_group(group) #:nodoc:
+    user_ids = group.user_ids
+    admin_id = User.find_by_login("admin").id
+    user_ids << admin_id unless user_ids.include?(admin_id)
+    group.user_ids = user_ids
+  end
 
 end
