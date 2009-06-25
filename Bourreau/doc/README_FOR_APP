@@ -1,2 +1,13 @@
-Use this README file to introduce your application and point to useful places in the API for learning more.
-Run "rake doc:app" to generate API documentation for your models, controllers, helpers, and libraries.
+= CBRAIN Project : Bourreau
+
+Welcome the the CBRAIN Bourreau application!
+
+== About BrainPortal
+
+Bourreau is the backend side of the CBRAIN architecture. It is a
+Rails application that provides access to a processing cluster.
+
+== The main Ruby classes that are of interest are:
+
+DrmaaTask:: this models a task request to a cluster, and its evolving states. They are ActiveRecord objects.
+Scir:: this module encapsulate an API to the cluster; particular implementations for SGE, PBS and UNIX can be found in Scir::ScirSgeSession, Scir::ScirPbsSession and Scir::ScirLocalSession

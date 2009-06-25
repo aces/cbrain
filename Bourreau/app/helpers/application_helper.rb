@@ -8,12 +8,16 @@ require 'pathname'
 #
 # This class provides a way to execute aribitrary bash commands
 # or ruby instructions in a temporary directory in /tmp, garanteed
-# to not collision with existing temporary files there.
-# Commands and instructions are execute with the current working
-# directory changed to the temporary location. Total cleanup
+# to not collide with existing temporary files there.
+# Commands and instructions are executed with the current working
+# directory changed to the temporary location. A cleanup
 # is performed when the destroy() method is called.
 #
+# Original author: Pierre Rioux
+#
 class SandboxTmp
+
+  Revision_info="$Id$"
 
   public
 

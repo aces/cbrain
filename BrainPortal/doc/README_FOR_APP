@@ -1,2 +1,15 @@
-Use this README file to introduce your application and point to useful places in the API for learning more.
-Run "rake doc:app" to generate API documentation for your models, controllers, helpers, and libraries.
+= CBRAIN Project : BrainPortal
+
+Welcome the the CBRAIN BrainPortal application!
+
+== About BrainPortal
+
+BrainPortal is the frontend side of the CBRAIN architecture. It is a
+Rails application that provides a web-based graphical user interface.
+
+== The main Ruby classes that are of interest are:
+
+Userfile:: this models the user's files are entries in the database; they are ActiveRecord objects
+DataProvider:: this models an external provider for the contents of the userfiles; they are also ActiveRecord objects
+DrmaaTask:: this models a task request to a cluster, and its evolving states. They are ActiveResource objects.
+
