@@ -108,6 +108,7 @@ class ScirSgeJobTemplate < Scir::JobTemplate
     command += "-e #{shell_escape(self.stderr)} " if self.stderr
     command += "-j y "                            if self.join
     command += "-q #{shell_escape(self.queue)} "  if self.queue
+    command += " #{CBRAIN::EXTRA_QSUB_ARGS} "     unless CBRAIN::EXTRA_QSUB_ARGS.empty?
     command += "#{shell_escape(self.arg[0])}"
 
     command

@@ -7,7 +7,7 @@ Welcome the the CBRAIN Bourreau application!
 Bourreau is the backend side of the CBRAIN architecture. It is a
 Rails application that provides access to a processing cluster.
 
-== The main Ruby classes that are of interest are:
+== The main Ruby classes of interest are:
 
 DrmaaTask:: this models a task request to a cluster, and its evolving states. They are ActiveRecord objects.
 Scir:: this module encapsulate an API to the cluster; particular implementations for SGE, PBS and UNIX can be found in Scir::ScirSgeSession, Scir::ScirPbsSession and Scir::ScirLocalSession

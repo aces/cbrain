@@ -15,6 +15,7 @@ Needed_Constants = %w(
                        Filevault_dir DataProviderCache_dir
                        DRMAA_sharedir Quarantine_dir CIVET_dir
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
+                       EXTRA_QSUB_ARGS
                      )
 
 # Constants
