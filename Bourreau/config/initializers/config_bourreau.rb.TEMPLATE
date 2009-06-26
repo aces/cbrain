@@ -46,4 +46,8 @@ class CBRAIN
   # Default cluster queue to use; leave empty to use cluster's default
   DEFAULT_QUEUE            = ""
 
+  # Extra qsub args needed for your local cluster; their
+  # syntax depend on your cluster management system. Default is ""
+  EXTRA_QSUB_ARGS          = ""
+
 end
