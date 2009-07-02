@@ -876,39 +876,68 @@ background-color: #f6f6f6;
 }
 
 .loginbox {
-	background-color:#FFEBC1;
-	border:2px solid #FDBF3B;
-	width: 20em;
-	height: 12em;
-	margin-top: 4em;
-	margin-left: 30em;
-	margin-right: 10em;
-	float: center;
-	padding:1em;
+  margin-top: 1em;
+  margin-right: 1em;
+  margin-bottom: 2em;
+  margin-left: 1em;
+
+  padding-top: 1em;
+  padding-left: 1em;
+  padding-bottom: 2em;
+  padding-right: 2em;
+   
+  float: left;
+  width: 30%;
+  height: 12em;
+
 }
 
 .logintable{
-	border: 0px;
+	
 	float: left;
-	background-color:#FFEBC1;
-	width: 100%;
+  width: 100%;
+  border: 1px;
+  
+  margin-top: 1em;
+  margin-right: 1em;
+  margin-bottom: 2em;
+
+  padding-top: 1em;
+  padding-left: 1em;
+  padding-bottom: 1em;
+  padding-bottom: 1em;
+  
+
+  background-color: #ffffdd;
+	
+	
 }
 
 
 
 .logintable td{
 	border: 0px;
-	background-color:#FFEBC1;
+	background-color:#ffffdd;
 	text-align: right;
+	padding: 2px;
+	margin: 0px;
 	
 }
 
+.logintable td.field{
+	text-align: left;
+	padding: 2px;
+}
+
+
 .logintable tr{
-	background-color:#FFEBC1;
+	margin: 1px;
+	background-color:#ffffdd;
 }
 
 .login{
 	float: right;
+	width:; 50%;
 	
 }
 .uploadtags{
