@@ -7,7 +7,7 @@ Welcome the the CBRAIN BrainPortal application!
 BrainPortal is the frontend side of the CBRAIN architecture. It is a
 Rails application that provides a web-based graphical user interface.
 
-== The main Ruby classes that are of interest are:
+== The main Ruby classes of interest are:
 
 Userfile:: this models the user's files are entries in the database; they are ActiveRecord objects
 DataProvider:: this models an external provider for the contents of the userfiles; they are also ActiveRecord objects
