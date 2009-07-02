@@ -45,10 +45,9 @@
 	     <div id="loggedas">Logged in as <%=h current_user.full_name %></div>
      <% end %>
      <ul>
-	    <li>
-		    <a class="home" href="/">Home</a>
-	    </li>
+	   
 	     <li><%= link_to 'My Account', current_user %></li>
+		 <li><a class="credits" href="/">Credits</a></li>
 	 </ul>
 
     </div>
@@ -58,6 +57,7 @@
 	    <div id = "main-menu">
 	    <ul>
         <% if session[:user_id] %>
+		<li><a class="home" href="/home">Home</a></li>
 		<li><%= link_to 'Files', userfiles_path %></li>
 		<li><%= link_to 'Upload File', new_userfile_path %></li>
         <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>

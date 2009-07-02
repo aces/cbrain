@@ -472,8 +472,14 @@ background-color: #f6f6f6;
 	
 	td.info {
 		border: 0px;
+		text-align: left;
+		text-indent: 0px;
 		
 	}
+	
+	td.taskinfo{
+		border: 0px;
+			}
 	
 
 	
@@ -954,16 +960,42 @@ background-color: #f6f6f6;
 	margin-left: 25px;
 }
 
+.box{
+	
+	float:left; 
+    margin-left: 1em;
+	margin-right: 1em;
+	margin-bottom: 1em;
+	padding-bottom: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    line-height: 1.5em;
+	border: 1px solid #e4e4e4;
+	
+	
+   padding:6px;
+   
+}
 
 .box1{
     padding:6px;
     margin-left: 5px;
-    margin-right: 5px;
+    margin-right: 10px;
     margin-bottom: 10px;
     background-color:#f6f6f6;
     color:#505050;
     line-height:1.5em;
     border: 0px;
+}
+
+.splitleft{
+	float: left;
+	width: 50%;
+}
+
+.splitright{
+	float: right;
+	width: 50%;
 }
 
 

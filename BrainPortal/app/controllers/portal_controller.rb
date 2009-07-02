@@ -25,4 +25,7 @@ class PortalController < ApplicationController
     @default_bourreau       = current_user.user_preference.bourreau_id
   end
   
+  def credits
+  end
+  
 end
