@@ -1,3 +1,14 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# $Id$
+#
+
+-%>
+
  <tr class= "<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFEBE5')">
    <td class = "checkbox"><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
    <td class = "centered"><%= userfile.user.full_name %></td>
