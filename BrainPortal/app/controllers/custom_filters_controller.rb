@@ -1,6 +1,20 @@
+
+#
+# CBRAIN Project
+#
+# RESTful Custom filters Controller
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
+
 class CustomFiltersController < ApplicationController
   
   before_filter :login_required
+  
+  Revision_info="$Id$"
 
   # GET /custom_filters/new
   # GET /custom_filters/new.xml

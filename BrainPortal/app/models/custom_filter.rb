@@ -19,6 +19,8 @@ class CustomFilter < ActiveRecord::Base
   
   attr_accessor :tag_ids
   attr_writer   :query, :variables
+  
+  Revision_info="$Id$"
     
   # def created_date_term=(date)
   #   if date.is_a? Array
@@ -31,6 +33,7 @@ class CustomFilter < ActiveRecord::Base
   #   end
   # end
   
+  #Contains the sql query to be executed by the filter
   def query
     if @query.blank?
       parse_query
@@ -38,6 +41,7 @@ class CustomFilter < ActiveRecord::Base
     @query
   end
   
+  #Contains the array of variables to be interpolated into the query
   def variables
     if @variables.blank?
       parse_query
@@ -47,6 +51,8 @@ class CustomFilter < ActiveRecord::Base
   
   private
   
+  #Convert attributes into an sql query
+  # (stored in @query and @variables)
   def parse_query    
     @query ||= ""
     @variables ||= []
@@ -57,6 +63,7 @@ class CustomFilter < ActiveRecord::Base
     parse_group_query unless self.group_id.blank?
   end
   
+  #Convert tag_ids into an array of tag filters
   def parse_tags
     if self.tag_ids
       self.tags = Tag.find(self.tag_ids).collect{ |t| "tag:#{t.name}" }
@@ -64,6 +71,11 @@ class CustomFilter < ActiveRecord::Base
       self.tags = []
     end
   end
+  
+  ###################################################
+  #The following methods create sql query parts for
+  # each of the attributes.
+  ###################################################
   
   def parse_name_query
     query = 'userfiles.name'
