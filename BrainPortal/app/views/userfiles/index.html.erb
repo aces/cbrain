@@ -98,9 +98,8 @@
 			
 			<div class="tags">
 				<% if @user_tags %><br>
-				Tag update: <br><br>
+				Tag update: <br>
 				<%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %> 
-				<br>
 				<%= submit_tag("Update Tags") %> 
 				<% end %>
 			</div>
