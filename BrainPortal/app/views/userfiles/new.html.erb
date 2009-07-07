@@ -21,18 +21,17 @@ form_tag( "/userfiles", :multipart => true, :method => :post ) do
 <div class = "uploadwrapper">
 
 <div class = "fileupload">
-	Select file to upload:<br>
-</div>	
+	Select file to upload:
+	
 	<%= file_field_tag("upload_file") %>
 	<br><br>
+</div>
 
 <div class = "uploadtags">
 Select tags for file:<br>
 </div>
 <% if @user_tags %>
      <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
-<% else %>
-     <p>There are currently no tags available.</p>
 <% end %>
 
 

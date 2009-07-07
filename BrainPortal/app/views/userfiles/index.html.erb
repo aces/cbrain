@@ -90,7 +90,7 @@
 					<%= text_field_tag 'tag[name]' %> 
 					<%= submit_tag "New Tag" %> 
 				<% end %><br>
-				<%= button_to "Manage Tags", tags_path, :method => :get %>
+				<br><br><br><%= button_to "Manage Tags", tags_path, :method => :get %>
 			</div>
 				
 				
@@ -98,7 +98,7 @@
 			
 			<div class="tags">
 				<% if @user_tags %><br>
-				Tag update: <br>
+				Tag update: <br><br>
 				<%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %> 
 				<%= submit_tag("Update Tags") %> 
 				<% end %>
@@ -106,8 +106,8 @@
 						
 			<div class="groups">
 				<% if @user_groups %><br>
-				Group Update: <%= render :partial => 'group_table', :locals => {:groups => @user_groups} %>
-				<br><br><%= submit_tag("Update Groups") %> 
+				Group Update: <br><br><%= render :partial => 'group_table', :locals => {:groups => @user_groups} %>
+			    <%= submit_tag("Update Groups") %> 
 				<% end %>
 			</div>
 		</div>
