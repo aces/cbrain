@@ -21,7 +21,10 @@ class UserfilesController < ApplicationController
     current_session.update(params)
         
     tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
-        
+    custom_filter_tags = []
+    name_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter.split(':')[1]).tags if filter =~ /^custom:/ }
+    tag_filters |= custom_filter_tags
+
     unless current_session.view_all? 
       @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
         :conditions => Userfile.convert_filters_to_sql_query(name_filters),

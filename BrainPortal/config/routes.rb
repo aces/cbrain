@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :custom_filters
+
   map.resources :user_preferences
 
 

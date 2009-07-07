@@ -93,7 +93,10 @@ class Userfile < ActiveRecord::Base
     when 'flt'
       'file:flt'
     when 'mls'
-      'file:mls'            
+      'file:mls'
+    when 'custom'
+      custom_filter = CustomFilter.find(term)
+      "custom:#{custom_filter.name}"             
     end
   end
   
@@ -108,11 +111,17 @@ class Userfile < ActiveRecord::Base
     arguments = []
     
     filters.each do |filter|
-      type, term = filter.split(':')
+      type, term = filter.split(':')      
       case type
       when 'name'
         query << "(userfiles.name LIKE ?)"
         arguments << "%#{term}%"
+      when 'custom'
+        custom_filter = CustomFilter.find_by_name(term)
+        unless custom_filter.query.blank?
+          query << "(#{custom_filter.query})"
+          arguments += custom_filter.variables
+        end
       when 'file'
         case term
         when 'jiv'
@@ -130,7 +139,6 @@ class Userfile < ActiveRecord::Base
         when 'mls'
           query << "(userfiles.name LIKE ?)"
           arguments += ["%.mls"]
-          
         end
       end
     end

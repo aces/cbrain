@@ -27,6 +27,7 @@ class User < ActiveRecord::Base
   has_many                :tags
   has_many                :feedbacks
   has_one                 :user_preference
+  has_many                :custom_filters
 
   
   

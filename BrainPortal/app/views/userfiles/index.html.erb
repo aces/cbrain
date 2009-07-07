@@ -45,15 +45,25 @@
 				
 				<br>
 				
-				<h3>Filters</h3>
+				<h3>Filters <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br></h3>
 				<ul>
 			    <li><%= link_to 'All Files', userfiles_path(:search_type  => :none) %> </li> 
 				<li><%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %> </li>
-				<li><%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %><br></li>
+				<li><%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %></li>
+				<% current_user.custom_filters.each do |filter| %>
+				  <li>
+				      <%= link_to filter.name, userfiles_path(:search_type => :custom, :search_term  => filter.id) %>
+				      <small><small>
+				         <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
+                     <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
+				      </small></small>
+				      
+              </li>
+				<% end %>
 				</ul>
 				<br>
 				
-				<h3>Custom Filter Tags</h3>
+				<h3>Filter Tags</h3>
 				<ul>
 				<% current_user.tags.collect(&:name).each do |tag| %> 
 					<li><%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %></li>

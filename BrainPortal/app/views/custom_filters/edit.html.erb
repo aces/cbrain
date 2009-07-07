@@ -1,0 +1,71 @@
+<div class = "generalcontent">
+
+<div class = "generalbox">
+<h2>Edit Custom Filter</h2>
+
+<% form_for(@custom_filter) do |f| %>
+  <%= f.error_messages %>
+<table class="userfiles">
+  <tr>
+    <td><strong>Filter name:</strong></td>
+    <td><%= f.text_field :name %></td>
+  </tr>
+  
+  <tr>
+     <td>Filename:</td>
+     <td>
+         <%= f.select :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']]  %>
+         <%= f.text_field :file_name_term %>
+     </td>  
+  </tr>
+  <tr>
+     <td>Creation Date:</td>
+     <td>
+         <%= f.select :created_date_type, [["Don't filter date", ''], ['Before', '<'], ['On', '='], ['After', '>']] %>
+         <%= f.date_select :created_date_term %>
+     </td>
+  </tr>
+  <tr>
+     <td>Size:</td>
+     <td>
+         <%= f.select :size_type, [["Don't filter size", ''], ['=', '='], ['<', '<'], ['>', '>']] %>
+         <%= f.text_field :size_term %> kb
+     </td>
+  </tr>
+      
+      
+			<% if @user_groups %>
+			   <div class="groups">
+   			   <tr>
+   			      <td>Group:</td>
+   			      <td>
+   			         <%= f.collection_select(:group_id, @user_groups, :id, :name, :class => :group, :include_blank  => true) %>
+   			      </td>
+   			   </tr> 
+   			</div>
+			<% end %>      
+      
+			<% if @user_tags %>
+			   <div class="tags">
+   			   <tr>
+   			      <td valign="top">Tags:</td>
+   			      <td>
+   			         <table class="userfiles">
+                        <% for tag in @user_tags %>
+                            <tr class="<%= cycle('list-odd', 'list-even') %>">
+                               <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, @custom_filter.tags.include?("tag:#{tag.name}")) %></td> 
+                              <td><%= h(tag.name) -%></td>
+                            </tr>
+                        <% end %>
+                     </table>
+   			      </td>
+   			   </tr>
+   			</div>
+			<% end %>
+</table>
+		
+      <%= f.submit "Update" %>
+<% end %>
+
+</div>
+</div>
