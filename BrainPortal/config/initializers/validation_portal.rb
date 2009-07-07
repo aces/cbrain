@@ -33,14 +33,20 @@ end
 puts "C> Making sure all providers have proper cache subdirectories..."
 
 # Creating cache dir for Data Providers
-DataProvider.all.each do |p|
-  begin
-    p.mkdir_cache_providerdir
-  rescue => e
-    unless e.to_s.match(/No caching in this provider/i)
-      raise e
+begin
+  DataProvider.all.each do |p|
+    begin
+      p.mkdir_cache_providerdir
+    rescue => e
+      unless e.to_s.match(/No caching in this provider/i)
+        raise e
+      end
     end
   end
+rescue => error
+  if error.to_s.match(/Mysql::Error.*Table.*data_providers.*doesn't exist/i)
+    puts "... skipped: DataProviders table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  else
+    raise error
+  end
 end
-
-
