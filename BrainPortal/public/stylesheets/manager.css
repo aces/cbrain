@@ -350,7 +350,13 @@ color: #0471B4;
 	margin-right: 4em;
 }
 	
-	
+
+.bourreauxmenuoptions{
+	float: left;
+	width: 99%;
+	margin-right: 4em;
+}
+
 .tasksmenu{
 	float:left; 
 	width: 99%;
@@ -875,6 +881,37 @@ background-color: #f6f6f6;
 	padding-left: 1em;
 }
 
+.bourreauxbox{
+	
+	float:left; 
+    width: 100%;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+    margin-left: 1em;
+	margin-bottom: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    line-height: 1.5em;
+	border: 1px solid #e4e4e4;
+}
+
+.bourreauxtable{
+   float: left;
+	width: 100%;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-right: 1px;
+	margin-top: 1em; 
+    margin-left: 1em;
+ 	margin-right: 1em;
+    margin-bottom: 4em;
+    }
+
+.bourreauxmenuoptions{
+	float:left; 
+	padding-left: 1em;
+}
+
 .loginbox {
   margin-top: 1em;
   margin-right: 1em;
@@ -890,6 +927,12 @@ background-color: #f6f6f6;
   width: 30%;
   height: 12em;
 
+}
+
+.tagselect{
+	height: 20px;
+	width: 20px;
+		
 }
 
 .logintable{
