@@ -30,7 +30,7 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show
     @user = User.find(params[:id], :include => [:groups, :user_preference])
-    @default_data_provider  = @user.user_preference.data_provider.name if current_user.user_preference.data_provider
+    @default_data_provider  = @user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = Bourreau.find(@user.user_preference.bourreau_id).name rescue "(Unset)"
 
     respond_to do |format|
