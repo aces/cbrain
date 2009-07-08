@@ -8,6 +8,7 @@ class UserPreferencesController < ApplicationController
   # GET /user_preferences.xml
   def index
     @user_preference = current_user.user_preference || UserPreference.create(:user_id => current_user.id)
+    @bourreaux       = available_bourreaux(current_user)
         
     respond_to do |format|
       format.html # index.html.erb

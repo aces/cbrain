@@ -455,24 +455,28 @@ protected
     self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-" + $$.to_s + self.object_id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
     unless Dir.mkdir(self.drmaa_workdir,0700)
-       raise "Cannot create directory #{self.drmaa_workdir}: $!"
+      raise "Cannot create directory #{self.drmaa_workdir}: $!"
     end
   end
 
   def removeDRMAAworkdir
     if self.drmaa_workdir
-       self.addlog("Removing workdir '#{self.drmaa_workdir}'.")
-       system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
-       self.drmaa_workdir = nil
+      self.addlog("Removing workdir '#{self.drmaa_workdir}'.")
+      system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
+      self.drmaa_workdir = nil
     end
   end
 
   def capt_stdout_b64
-     @capt_stdout_b64
+    @capt_stdout_b64
   end
 
   def capt_stderr_b64
-     @capt_stderr_b64
+    @capt_stderr_b64
+  end
+
+  def ping
+    "ping!"
   end
 
 end

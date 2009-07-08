@@ -13,12 +13,10 @@ class DrmaaTask < ActiveResource::Base
 
   Revision_info="$Id$"
 
-  # This sets the default resource address to the first cluster
-  # listed in the clusters.rb initializer file; it probably
-  # will be overriden in each subclasses, often several times
-  # per sessions as we fetch our ActiveResource objects from
-  # multiple Bourreau servers.
-  self.site = CBRAIN::Clusters_resource_sites[CBRAIN::Cluster_list[0]]
+  # This sets the default resource address to an
+  # invalid URL; it will be replaced as needed by the
+  # URL of a real bourreau ActiveResource later on.
+  self.site = "http://invalid:0000/"
 
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
@@ -73,46 +71,47 @@ class DrmaaTask < ActiveResource::Base
 
   # This instance method resets the class' "site" attribute
   # to point to the proper bourreau URI associated with
-  # the object's cluster_name attribute. It's performed by
-  # the class method of the same name, adjust_site(cluster_name),
+  # the object's bourreau_id attribute. It's performed by
+  # the class method of the same name, adjust_site(bourreau_id),
   # just below.
   def adjust_site
-    cluster_name = self.cluster_name
-    raise "ActiveRecord for DrmaaTask missing cluster_name ?!?" unless cluster_name
-    self.class.adjust_site(cluster_name)
+    bourreau_id = self.bourreau_id
+    raise "ActiveRecord for DrmaaTask missing bourreau_id ?!?" unless bourreau_id
+    self.class.adjust_site(bourreau_id)
     self
   end
 
   # This class method resets the class' "site" attribute
   # to point to the proper bourreau URI associated with
-  # the cluster_name given in argument.
-  def self.adjust_site(cluster_name)
-    raise "DrmaaTask not supplied with cluster_name ?!?" unless cluster_name
-    clustersite = CBRAIN::Clusters_resource_sites[cluster_name]
-    raise "Cannot find site URI for cluster name #{cluster_name}" unless site
+  # the bourreau_id given in argument.
+  def self.adjust_site(bourreau_id)
+    raise "DrmaaTask not supplied with bourreau ID ?!?" unless bourreau_id
+    bourreau = Bourreau.find(bourreau_id)
+    raise "Cannot find site URI for Bourreau ID #{bourreau_id}" unless bourreau
+    clustersite = bourreau.site
     return self if clustersite == self.site.to_s # optimize if unchanged
-    self.site = clustersite
+    self.site = clustersite # class method call
     self
   end
 
   # A patch in the initialization process makes sure that
   # all new active record objects always have an attribute
-  # called 'cluster_name', even a nil one. This is necessary
+  # called 'bourreau_id', even a nil one. This is necessary
   # so that just after initialization, we can call the instance
-  # method .cluster_name and get an answer instead of raising
+  # method .bourreau_id and get an answer instead of raising
   # an exception for method not found. This happens in .save
-  # where an unset cluster name is replaced by a (randomly?)
-  # chosen cluster name.
+  # where an unset bourreau ID is replaced by a (randomly?)
+  # chosen bourreau ID.
   def initialize(options = {})
     returning super(options) do |obj|
-      obj.cluster_name = nil unless obj.attributes.has_key?('cluster_name')
+      obj.bourreau_id  = nil unless obj.attributes.has_key?('bourreau_id')
     end
   end
 
-  # If a cluster name has not been specified, choose one.
+  # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
   def save
-    self.cluster_name = select_cluster unless self.cluster_name
+    self.bourreau_id = select_bourreau unless self.bourreau_id
     adjust_site
     self.params ||= {}
     if self.params.respond_to? :[]
@@ -121,25 +120,27 @@ class DrmaaTask < ActiveResource::Base
     super
   end
 
-  # If a cluster name has not been specified, choose one.
+  # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
   def save!
-    self.cluster_name = select_cluster unless self.cluster_name
+    self.bourreau_id = select_bourreau unless self.bourreau_id
     adjust_site
+    self.params ||= {}
     if self.params.respond_to? :[]
       self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
     end
     super
   end
 
-  # Choose a random cluster name from the configured list
-  # of legal cluster names.
-  def select_cluster
-    unless DrmaaTask.prefered_cluster.blank?
-      DrmaaTask.prefered_cluster
+  # Choose a random Bourreau from the configured list
+  # of legal bourreaux
+  def select_bourreau
+    unless DrmaaTask.prefered_bourreau_id.blank?
+      DrmaaTask.prefered_bourreau_id
     else
-      cluster_list = CBRAIN::Cluster_list
-      cluster_list.slice(rand(cluster_list.size))  # a random one
+      everyone_group_id = Group.find_by_name('everyone').id
+      bourreau_list = Bourreau.find(:all, :conditions => { :group_id => everyone_group_id, online => true })
+      bourreau_list.slice(rand(bourreau_list.size))  # a random one
     end
   end
   
@@ -160,12 +161,12 @@ class DrmaaTask < ActiveResource::Base
     {}      #create the hash of options to be saved
   end
   
-  def self.prefered_cluster
-    @@prefered_cluster ||= nil
+  def self.prefered_bourreau_id
+    @@prefered_bourreau_id ||= nil
   end
   
-  def self.prefered_cluster=(cluster)
-    @@prefered_cluster = cluster
+  def self.prefered_bourreau_id=(id)
+    @@prefered_bourreau_id = id
   end
   
   def self.data_provider_id
@@ -179,5 +180,10 @@ class DrmaaTask < ActiveResource::Base
       @@data_provider_id = provider
     end
   end
+
+  def bourreau
+    Bourreau.find(self.bourreau_id)
+  end
+
 end
 

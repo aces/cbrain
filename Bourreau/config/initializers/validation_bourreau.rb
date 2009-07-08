@@ -44,6 +44,13 @@ end
 
 if CBRAIN::BOURREAU_CLUSTER_NAME.empty? || CBRAIN::BOURREAU_CLUSTER_NAME == "nameit"
   raise "CBRAIN configuration error: this Bourreau has not been given a name!"
+else
+  bourreau = Bourreau.find_by_name(CBRAIN::BOURREAU_CLUSTER_NAME)
+  if bourreau
+    CBRAIN::BOURREAU_ID = bourreau.id # this is my own ID, then.
+  else
+    raise "CBRAIN configuration error: can't find ActiveRecord for a Bourreau with name '#{CBRAIN::BOURREAU_CLUSTER_NAME}'."
+  end
 end
 
 

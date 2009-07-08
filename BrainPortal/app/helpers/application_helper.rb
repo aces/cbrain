@@ -13,4 +13,5 @@ module ApplicationHelper
   def to_localtime(stringtime)
      Time.parse(stringtime).localtime.strftime("%Y-%m-%d %H:%M:%S")
   end
+
 end

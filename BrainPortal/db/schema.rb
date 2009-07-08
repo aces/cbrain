@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090707164845) do
+ActiveRecord::Schema.define(:version => 20090707175220) do
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -37,9 +37,9 @@ ActiveRecord::Schema.define(:version => 20090707164845) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -52,7 +52,7 @@ ActiveRecord::Schema.define(:version => 20090707164845) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.string   "cluster_name"
+    t.integer  "bourreau_id"
   end
 
   create_table "feedbacks", :force => true do |t|
@@ -102,6 +102,22 @@ ActiveRecord::Schema.define(:version => 20090707164845) do
     t.datetime "created_at"
   end
 
+  create_table "remote_resources", :force => true do |t|
+    t.string   "name"
+    t.string   "type"
+    t.integer  "user_id"
+    t.integer  "group_id"
+    t.string   "remote_user"
+    t.string   "remote_host"
+    t.integer  "remote_port"
+    t.string   "remote_dir"
+    t.boolean  "online"
+    t.boolean  "read_only"
+    t.string   "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false
     t.text     "data"
@@ -126,11 +142,11 @@ ActiveRecord::Schema.define(:version => 20090707164845) do
 
   create_table "user_preferences", :force => true do |t|
     t.integer  "user_id"
-    t.string   "bourreau_id"
     t.integer  "data_provider_id"
     t.text     "other_options"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "bourreau_id"
   end
 
   create_table "userfiles", :force => true do |t|

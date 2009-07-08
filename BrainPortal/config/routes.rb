@@ -7,7 +7,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :feedbacks
 
-  map.resources :tags, :groups, :institutions, :users, :data_providers
+  map.resources :tags, :groups, :institutions, :users, :data_providers, :bourreaux
   map.resources :data_providers, :member => { :browse => :get, :register => :post }
   map.resource :session
   map.resources :userfiles, :collection => {:operation => :post, :extract  => :post}, :member  => {:content  => :get}
@@ -25,7 +25,8 @@ ActionController::Routing::Routes.draw do |map|
 
   
   map.connect 'tasks/:action',                   :controller => 'tasks'
-  map.connect 'tasks/:action/:cluster_name/:id', :controller => 'tasks'
+  #map.connect 'tasks/:action/:cluster_name/:id', :controller => 'tasks'
+  map.connect 'tasks/:action/:bourreau_id/:id', :controller => 'tasks'
 
   map.connect 'civet/:action/:id', :controller => 'civet'
   map.connect 'mnc2nii/:action/:id', :controller => 'mnc2nii'  

@@ -169,7 +169,7 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find_by_id(id)
 
-    if !check_role(:admin) && ! @provider.can_be_accessed_by(@user)
+    if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
       flash[:error] = "You cannot browse this provider."
       redirect_to :action => :index
       return
@@ -213,7 +213,7 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find_by_id(id)
 
-    if !check_role(:admin) && ! @provider.can_be_accessed_by(@user)
+    if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
       flash[:error] = "You cannot register files from this provider."
       redirect_to :action => :index
       return

@@ -1,0 +1,60 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+-%>
+<div class = "generalcontent">
+
+<% title "Edit Bourreau" %>
+
+<h2>Edit Bourreau</h2>
+
+<div class = "generalbox">
+
+<%= error_messages_for :bourreau %>
+
+<% form_for :bourreau, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+
+<p><label for="name">Name</label><br/>
+<%= f.text_field :name, { :readonly => false } %></p>
+
+<p><label for="description">Description</label><br/>
+<%= f.text_field :description %></p>
+
+<p><label for="user_id">Owner</label><br/>
+<% userlist = check_role(:admin) ? User.all : [ @bourreau.user ] %>
+<%= f.select :user_id, userlist.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+
+<p><label for="group_id">Group</label><br/>
+<% grouplist = check_role(:admin) ? Group.all : @user.groups %>
+<%= f.select :group_id, grouplist.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
+
+<p><label for="online">Status</label><br/>
+<%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
+
+<p><label for="remote_host">Remote Hostname</label><br/>
+<%= f.text_field :remote_host %></p>
+
+<p><label for="remote_user">Remote Username</label><br/>
+<%= f.text_field :remote_user %></p>
+
+<p><label for="remote_dir">Remote Directory</label><br/>
+<%= f.text_field :remote_dir %></p>
+
+<p><label for="remote_port">Remote Port Number</label><br/>
+<%= f.text_field :remote_port %></p>
+
+<p><%= submit_tag 'Update' %></p>
+
+<% end -%>
+
+<%= button_to 'Cancel', bourreaux_path, :method => :get %>
+</div>
+</div>

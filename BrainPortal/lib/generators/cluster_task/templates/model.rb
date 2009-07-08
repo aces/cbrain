@@ -41,7 +41,7 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   #Default behaviour is to launch the job to the user's prefered cluster,
   # or if the latter is not set, to choose an available cluster at random.
   # You can select a specific cluster to launch to by setting the 
-  # cluster_name attribute on the Drmaa<%= class_name %> object (task.cluster_name) 
+  # bourreau_id attribute on the Drmaa<%= class_name %> object (task.bourreau_id) 
   # explicitly.
   #If an exception is raised here it will cause a redirect to the 
   # tasks/new page for <%= name %> where the exception message will be 

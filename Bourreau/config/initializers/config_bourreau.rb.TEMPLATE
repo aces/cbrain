@@ -34,10 +34,13 @@ class CBRAIN
   Quarantine_dir           = "/your/civet/quarantine/dir"
   CIVET_dir                = "/your/civet/dir"
   
-  # Name of current Bourreau application
+  # Name of current Bourreau application.
   # It's important that the name match one of the names
-  # given on the BrainPortal side in CBRAIN::Cluster_list
-  # and CBRAIN::Clusters_resource_sites
+  # of the configured Bourreau ActiveRecord
+  # (the superclass is RemoteResource, so its in table 'remote_resources').
+  # These records are created automatically by the migrations
+  # implemented in June 2009, and more can be added using the
+  # Portal's interface.
   BOURREAU_CLUSTER_NAME    = "nameit"
 
   # Your local cluster management system: one of 'PBS', 'SGE', or 'UNIX'

@@ -13,9 +13,9 @@ class Userfile < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
+ acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
-  belongs_to              :data_provider
+ belongs_to              :data_provider
   has_and_belongs_to_many :tags
 
   #A- A userfile has one group

@@ -7,7 +7,8 @@ Given /^"([^\"]*)" has (\d+) files$/ do |login, n|
   user = User.find_by_login(login)
   n = n.to_i
   1.upto(n) do |i|
-    single_file = SingleFile.new(:name => i.to_s, :content => i.to_s, :user_id  => user.id)
+    single_file = SingleFile.new(:name => i.to_s, :user_id  => user.id)
+    single_file.cache_writehandle { |io| io.write(i.to_s) }
     single_file.save
   end
 end
@@ -27,12 +28,13 @@ Given /^"([^\"]*)" owns the following userfiles$/ do |login, table|
       end
     end
     name = hash[:name]
-    SingleFile.create!(:name  => name, :user_id  => user.id, :content  => name, :tag_ids => tag_ids)
+    s = SingleFile.create!(:name  => name, :user_id  => user.id, :tag_ids => tag_ids)
+    s.cache_writehandle { |io| io.write(name) }
   end
 end
 
 Then /^"([^\"]*)" should be on the file system$/ do |file|
-  File.exists? Userfile.find_by_name(file).vaultname
+  File.exists? Userfile.find_by_name(file).cache_full_path
 end
 
 Then /^I should see all files for collection "([^\"]*)"$/ do |collection|

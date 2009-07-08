@@ -1,0 +1,150 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+-%>
+
+<% title 'Bourreau Info' %>
+
+
+<% content_for(:sidebar) do %>
+  <% if @bourreau.is_alive? %>
+    <p class="notice">This bourreau is alive.</p>
+  <% else %>
+    <p class="error">This bourreau is NOT RESPONDING!</p>
+  <% end %>
+<% end %>
+
+<h2>Information about a Bourreau</h2>
+
+
+<div class = "generalcontent">
+
+<div class = "generalbox">
+
+<table>
+
+   <tr>
+     <th colspan="2">Implementation information</th>
+   </tr>
+
+   <tr>
+       <th>Name</th>
+       <td class="info"><%= h(@bourreau.name) %></h1>
+   </tr>
+
+   <tr>
+       <th>Class</th>
+       <td class="info"><%= h(@bourreau.class.to_s) %></td>
+   </tr>
+
+   <tr>
+       <th>Revision Info (Bourreau Client)</th>
+       <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
+   </tr>
+
+   <tr>
+       <th>Revision Info (Bourreau Server)</th>
+       <td class="info"><%= h("Not Yet Implemented") %></td>
+   </tr>
+
+   <tr>
+       <th>Description</th>
+       <td class="info"><%= h(@bourreau.description) %></td>
+   </tr>
+
+   <tr>
+     <th colspan="2">Access information</th>
+   </tr>
+
+   <tr>
+       <th>Owner</th>
+       <td class="info"><%= h(@bourreau.user.login) %></td>
+   </tr>
+
+   <tr>
+       <th>Group</th>
+       <td class="info"><%= h(@bourreau.group.name) %></td>
+   </tr>
+
+   <tr>
+       <th>Status</th>
+       <td class="info"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
+   </tr>
+
+   <tr>
+     <th colspan="2">Network Parameters</th>
+   </tr>
+
+   <tr>
+       <th>Remote Host</th>
+       <td class="info"><%= h(@bourreau.remote_host) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote User</th>
+       <td class="info"><%= h(@bourreau.remote_user) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote Directory</th>
+       <td class="info"><%= h(@bourreau.remote_dir) %></td>
+   </tr>
+
+   <tr>
+       <th>Remote Port</th>
+       <td class="info"><%= h(@bourreau.remote_port) %></td>
+   </tr>
+
+
+<% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+
+<tr><td class="info" align="center" colspan="2">
+<table>
+  <tr>
+    <td class="info">
+      <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
+    </td>
+    <td class="info">
+      <%= button_to 'Delete', bourreau_path(@bourreau), :confirm => 'Are you sure?', :method => :delete %>
+    </td>
+  </tr>
+</table>
+</td></tr>
+
+<% end %>
+
+</table>
+
+<table>
+  <tr>
+    <th colspan="3">Task Statistics</th>
+  </tr>
+  <tr>
+    <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
+  </tr>
+  <%
+      DrmaaTask.adjust_site(@bourreau.id)
+      tasks = DrmaaTask.find(:all);
+      User.all.each do |user|
+        id    = user.id
+        login = user.login
+        ct = tt = 0
+        tasks.each { |t| next if t.user_id != id; tt += 1; ct += 1 if t.status == "Completed" }
+  %>
+    <tr>
+      <td class="info"><%= h(login) %></td>
+      <td class="info"><%= h(ct.to_s) %></td>
+      <td class="info"><%= h(tt.to_s) %></td>
+    </tr>
+  <% end %>
+</table>
+</div>
+</div>

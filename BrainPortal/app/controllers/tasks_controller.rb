@@ -17,8 +17,10 @@ class TasksController < ApplicationController
    
   def index
     @tasks = []
-    CBRAIN::Cluster_list.each do |cluster_name|
-      DrmaaTask.adjust_site(cluster_name)
+    @bourreaux = available_bourreaux(current_user)
+    @bourreaux.each do |bourreau|
+      bourreau_id = bourreau.id
+      DrmaaTask.adjust_site(bourreau_id)
       begin
         if current_user.role == 'admin'
           #tasks = DrmaaTask.find(:all) || []
@@ -29,17 +31,18 @@ class TasksController < ApplicationController
         tasks = [ tasks ] unless tasks.is_a?(Array)
         @tasks.concat(tasks)
       rescue => e
+        bourreau_name = bourreau.name
         flash.now[:error] ||= ""
-        flash.now[:error] += "Cluster '#{cluster_name}' is down: #{e.to_s}"
+        flash.now[:error] += "Bourreau '#{bourreau_name}' is down: #{e.to_s}"
       end
     end
   end
 
-  # GET /tasks/Montague/1
-  # GET /tasks/Montague/1.xml
+  # GET /tasks/3/1
+  # GET /tasks/3/1.xml
   def show
-    cluster_name = params[:cluster_name]
-    DrmaaTask.adjust_site(cluster_name)
+    bourreau_id = params[:bourreau_id]
+    DrmaaTask.adjust_site(bourreau_id)
     @task = DrmaaTask.find(params[:id])
 
     respond_to do |format|
@@ -58,7 +61,7 @@ class TasksController < ApplicationController
     else
       @files = current_user.userfiles.find(params[:file_ids])
     end
-    @data_providers = DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by(current_user) }
+    @data_providers = available_data_providers(current_user)
         
     if @task_class.has_args?
       begin
@@ -81,8 +84,8 @@ class TasksController < ApplicationController
 
   def create
     @task_class = params[:task].constantize
-    @task_class.prefered_cluster = current_user.user_preference.bourreau_id
-    @task_class.data_provider_id = params[:data_provider_id] || current_user.user_preference.data_provider
+    @task_class.prefered_bourreau_id = current_user.user_preference.bourreau_id
+    @task_class.data_provider_id     = params[:data_provider_id] || current_user.user_preference.data_provider
     
     if params[:save_as_defaults]
       current_user.user_preference.update_options(params[:task]  => @task_class.save_options(params))
@@ -130,11 +133,11 @@ class TasksController < ApplicationController
       return
     end
 
-    tasklist.each do |task_cl_id|
+    tasklist.each do |task_bid_tid|
 
-      (cluster_name,task_id) = task_cl_id.split(/,/)
+      (bourreau_id,task_id) = task_bid_tid.split(/,/)
       begin 
-        DrmaaTask.adjust_site(cluster_name)
+        DrmaaTask.adjust_site(bourreau_id)
         task = DrmaaTask.find(task_id.to_i)
       rescue
         flash[:error] += "Task #{task_id} does not exist."

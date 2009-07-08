@@ -13,6 +13,7 @@ class ApplicationController < ActionController::Base
   include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session
+  helper_method :available_data_providers, :available_bourreaux
   helper :all # include all helpers, all the time
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
@@ -42,6 +43,15 @@ class ApplicationController < ActionController::Base
   def current_session
     @session ||= Session.new(session)
   end
+
+  def available_data_providers(user)
+    DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by(user) }
+  end
+
+  def available_bourreaux(user)
+    Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by(user) }
+  end
+
 end
 
 LoggedExceptionsController.class_eval do

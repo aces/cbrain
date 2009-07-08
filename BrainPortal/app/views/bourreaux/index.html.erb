@@ -1,0 +1,62 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+-%>
+<div class = "generalcontent">
+
+<% title 'Bourreaux' %>
+
+<h2>Bourreaux</h2>
+<div class = "bourreauxbox">
+
+<div class = "bourreauxmenuoptions">
+<%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
+</div>
+</div>
+
+<table class = "bourreauxtable">
+   <tr>
+       <th>Bourreau Name</th>
+       <th>Owner</th>
+       <th>Group</th>
+       <th>Online?</th>
+       <th>Description</th>
+       <th colspan="2">Operations</th>
+   </tr>
+
+   <% for bour in @bourreaux %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%= link_to bour.name, :controller => :bourreaux, :action => :show, :id => bour.id %></td>
+         <td><%= h(bour.user.login) %></td>
+         <td><%= h(bour.group.name) %></td>
+         <td><%= h(bour.online ? "Yes" : "No") %></td>
+         <td><%= h(bour.description) %></td>
+         <td>
+            <% if check_role(:admin) || bour.user_id == current_user.id %>
+            <%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %>
+            <% end %>
+         </td>
+         <td>
+            <% if check_role(:admin) || bour.user_id == current_user.id %>
+            <%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %>
+            <% end %>
+         </td>
+       </tr>
+   <% end %>
+
+   <% if @bourreaux.nil? || @bourreaux.empty? %>
+     <tr class="list-odd"><td colspan="9">There are no Bourreaux in this list.</td></tr>
+   <% end %>
+
+</table>
+
+</div>
+</div>

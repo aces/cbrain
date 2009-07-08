@@ -1,0 +1,1 @@
+../../../BrainPortal/app/models/remote_resource.rb
