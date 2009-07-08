@@ -4,6 +4,7 @@ class UserPreference < ActiveRecord::Base
 
   belongs_to  :user
   belongs_to  :data_provider
+  belongs_to  :bourreau
   serialize   :other_options
   
   validates_presence_of   :user_id
