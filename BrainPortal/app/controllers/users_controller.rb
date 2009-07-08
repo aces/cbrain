@@ -31,7 +31,7 @@ class UsersController < ApplicationController
   def show
     @user = User.find(params[:id], :include => [:groups, :user_preference])
     @default_data_provider  = @user.user_preference.data_provider.name if current_user.user_preference.data_provider
-    @default_bourreau       = @user.user_preference.bourreau_id
+    @default_bourreau       = Bourreau.find(@user.user_preference.bourreau_id).name
 
     respond_to do |format|
       format.html # show.html.erb
