@@ -30,19 +30,19 @@ form_tag( "/userfiles", :multipart => true, :method => :post ) do
 <div class = "uploadtags">
 Select tags for file:<br>
 </div>
-<% if @user_tags %>
-     <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+<% if @user_tags.empty? then %>
+	There are no tags <br>
+<% else %>
+     <br><br><%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
 <% end %>
 
 
 <div class= "uploadgroups">
 Groups for uploaded file:<br>
 </div>
-	<% if @user_groups %>
+	<% if @user_groups then %>
 		   <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
-	<% else %>
-	       <p>You do not belong to any groups.</p>
-	 <% end %>
+	<% end %>
 <br><br>
 
 <div class= "fileoptions">

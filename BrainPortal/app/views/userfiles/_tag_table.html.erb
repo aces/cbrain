@@ -13,7 +13,7 @@
 		<% if @user_tags.empty? then %>
 			<br>No tags created
 		<% else %>
-		<select name="tags[]" multiple="multiple" size="5">
+		<br><select name="tags[]" multiple="multiple" size="5">
 		<%= options_from_collection_for_select @user_tags, 'id', 'name' %>
 		</select>
 		<% end %>
