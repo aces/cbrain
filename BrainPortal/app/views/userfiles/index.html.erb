@@ -156,7 +156,7 @@
 			<% if session[:pagination] == 'on' %>
 				<%= will_paginate %>
 			<% end %>
-			<% if @userfiles.total_pages > 1 %>
+			<% if @userfile_count > @userfiles_per_page %>
 					<%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
 			<% end %>
 		</div>
