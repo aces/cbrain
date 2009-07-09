@@ -20,10 +20,10 @@
 <div class = "generalcontent">
 
 <h2>Tasks</h2>
-	
+  
 <div class = "tasksbox">
 <div class = "tasksmenuoptions">
-	
+  
 <div class = "taskstrigger">
 <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
 </div>
@@ -68,7 +68,7 @@ Other operations: <%= select_tag(
    <% for task in @tasks %>
        <tr class ="<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFE5FF')">
          <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready') %></td>
-         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id %></td>
+         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
          <td><%= h(task.bourreau.name) %></td>
          <td><%= h(task.status) %></td>
          <td><%= h(to_localtime(task.created_at.to_s)) -%></td>

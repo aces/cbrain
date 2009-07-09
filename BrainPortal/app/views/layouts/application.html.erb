@@ -27,47 +27,45 @@
 <div id = "main-content">
 <div id="wrapper">
     <div id="top-menu">
-		<div id='account'>
-			<ul>
-				<li>
-				<% if session[:user_id] %>
-			    		<a class="logout" href="/logout">Sign out</a>
-		     	<% else %>
-			    		<a class="login" href="/login">Sign in</a>
-			 	<% end %>
-				</li>
-			</ul>
+    <div id='account'>
+      <ul>
+        <li>
+        <% if session[:user_id] %>
+              <a class="logout" href="/logout">Sign out</a>
+          <% else %>
+              <a class="login" href="/login">Sign in</a>
+        <% end %>
+        </li>
+      </ul>
             <!-- <a href="fr">Fran&ccedil;ais</a> -->
         <br>
-    	</div>
-	
+      </div>
+  
      <% if session[:user_id] %>
-	     <div id="loggedas">Logged in as <%=h current_user.full_name %></div>
+       <div id="loggedas">Logged in as <%=h current_user.full_name %></div>
      <% end %>
      <ul>
-	   
-	     <li><%= link_to 'My Account', current_user %></li>
-		 <li><a class="credits" href="/">Credits</a></li>
-	 </ul>
+       <li><%= link_to 'My Account', current_user %></li>
+       <li><a class="credits" href="/">Credits</a></li>
+     </ul>
 
     </div>
     <div id="header">
-	    <h1>CBrain <%= CBRAIN::Redmine_Version %></h1>
-		<div id= "top_01"><div>
-	    <div id = "main-menu">
-	    <ul>
+      <h1>CBrain <%= CBRAIN::Redmine_Version %></h1>
+    <div id= "top_01"><div>
+      <div id = "main-menu">
+    <ul>
         <% if session[:user_id] %>
-		<li><a class="home" href="/home">Home</a></li>
-		<li><%= link_to 'Files', userfiles_path %></li>
-		<li><%= link_to 'Upload File', new_userfile_path %></li>
+    <li><a class="home" href="/home">Home</a></li>
+    <li><%= link_to 'Files', userfiles_path %></li>
+    <li><%= link_to 'Upload File', new_userfile_path %></li>
         <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
-		<li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
-		<li><%= link_to 'Bourreaux', bourreaux_path %></li>
-		<li><%= link_to 'Jiv Viewer', jiv_path %></li>                
-		<li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
-
-                <% end %>               
-		</div>
+    <li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
+    <li><%= link_to 'Bourreaux', bourreaux_path %></li>
+    <li><%= link_to 'Jiv Viewer', jiv_path %></li>                
+    <li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
+    <% end %>               
+    </div>
     </div>
  </div>    
 </div>  
@@ -75,51 +73,47 @@
 
 <div id = "main" class="">
    <div id = "sidebar">
-	
-			<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-			<div class = "notice">
-				<%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
-			</div>
-		<% end %>
-			<% if current_user && current_user.role == 'admin' %>
-			  <BR>
-				<h3>Admin Menu</h3>
-	                  <ul>
-	                     <li><%= link_to 'Users', users_path %></li>
-	                     <li><%= link_to 'Groups', groups_path %></li> 
-	                     <li><%= link_to 'Institutions', institutions_path %></li>
-	                     <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
-	                  </ul>
-			<% end %>
-	 <div class = "page-specific-sidebar">
-		 <%= yield :sidebar %>
-	</div>
-   </div>
+      <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
+        <div class = "notice">
+        <%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
+        </div>
+      <% end %>
+      <% if current_user && current_user.role == 'admin' %>
+        <BR>
+        <h3>Admin Menu</h3>
+                    <ul>
+                       <li><%= link_to 'Users', users_path %></li>
+                       <li><%= link_to 'Groups', groups_path %></li> 
+                       <li><%= link_to 'Institutions', institutions_path %></li>
+                       <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+                    </ul>
+      <% end %>
+<div class = "page-specific-sidebar">
+<%= yield :sidebar %>
+</div>
+</div>
         
-        <!-- main rendering area -->
-  <div id="content">
-	<% if ! flash[:error].nil? && ! flash[:error].empty? %>
-               <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
-    <% end %>
-    <%= yield :layout %>
+<!-- main rendering area -->
+<div id="content">
+<% if ! flash[:error].nil? && ! flash[:error].empty? %>
+    <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
+<% end %>
+<%= yield :layout %>
+</div>
+</div>
+
+<div id="footer">
+  <div id = "topfooter">
+  <div id="leftfoot">
+  </div>
+  <div id = "rightfoot">
   </div>
   </div>
-
-  <div id="footer">
-	
-	<div id = "topfooter">
-	<div id="leftfoot">
-	</div>
-	<div id = "rightfoot">
-	</div>
-	</div>
-	<div id="bottomfooter">
-		<p>Montreal Neurological Institute<br>
-		527 Avenue Des Pins, Montreal, Quebec, Canada<br>
-		Copyright ©</p>
-	</div>
+  <div id="bottomfooter">
+    <p>Montreal Neurological Institute<br>
+    527 Avenue Des Pins, Montreal, Quebec, Canada<br>
+    Copyright ©</p>
   </div>
-
-
+  </div>
 </body>
 </html>

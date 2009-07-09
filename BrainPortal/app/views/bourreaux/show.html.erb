@@ -16,9 +16,9 @@
 
 <% content_for(:sidebar) do %>
   <% if @bourreau.is_alive? %>
-    <p class="notice">This bourreau is alive.</p>
+      <p class="notice">This bourreau is alive.</p>
   <% else %>
-    <p class="error">This bourreau is NOT RESPONDING!</p>
+      <p class="error">This bourreau is NOT RESPONDING!</p>
   <% end %>
 <% end %>
 
@@ -117,10 +117,9 @@
     </td>
   </tr>
 </table>
-</td></tr>
-
+</td>
+</tr>
 <% end %>
-
 </table>
 
 <table>
@@ -131,13 +130,13 @@
     <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
   </tr>
   <%
-      DrmaaTask.adjust_site(@bourreau.id)
-      tasks = DrmaaTask.find(:all);
-      User.all.each do |user|
-        id    = user.id
-        login = user.login
-        ct = tt = 0
-        tasks.each { |t| next if t.user_id != id; tt += 1; ct += 1 if t.status == "Completed" }
+   DrmaaTask.adjust_site(@bourreau.id)
+   tasks = DrmaaTask.find(:all);
+   User.all.each do |user|
+   id    = user.id
+   login = user.login
+   ct = tt = 0
+   tasks.each { |t| next if t.user_id != id; tt += 1; ct += 1 if t.status == "Completed" }
   %>
     <tr>
       <td class="info"><%= h(login) %></td>

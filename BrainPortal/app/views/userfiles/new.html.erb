@@ -21,17 +21,17 @@ form_tag( "/userfiles", :multipart => true, :method => :post ) do
 <div class = "uploadwrapper">
 
 <div class = "fileupload">
-	Select file to upload:
-	
-	<%= file_field_tag("upload_file") %>
-	<br><br>
+  Select file to upload:
+  
+  <%= file_field_tag("upload_file") %>
+  <br><br>
 </div>
 
 <div class = "uploadtags">
 Select tags for file:<br>
 </div>
 <% if @user_tags.empty? then %>
-	There are no tags <br>
+  There are no tags <br>
 <% else %>
      <br><br><%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
 <% end %>
@@ -40,26 +40,26 @@ Select tags for file:<br>
 <div class= "uploadgroups">
 Groups for uploaded file:<br>
 </div>
-	<% if @user_groups then %>
-		   <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
-	<% end %>
+  <% if @user_groups then %>
+       <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
+  <% end %>
 <br><br>
 
 <div class= "fileoptions">
 File Options: <br>
 </div>
-	 <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
+   <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
 <br><br>
 
 <div class = "dataprovider">
 Data Provider for uploaded file:<br>
 </div>
-	<%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
+  <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
 <br><br>
-	<div class = "fileuploadbutton">
-	Upload file:
-	</div>
-	<%= submit_tag("Upload file")     %>
+  <div class = "fileuploadbutton">
+  Upload file:
+  </div>
+  <%= submit_tag("Upload file")     %>
 
 </div>
 </div>

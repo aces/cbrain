@@ -28,6 +28,7 @@
 <tr class="list-odd">
   <td colspan="2"><%= simple_format h(@feedback.details) %></td>
 </tr>
+
 </table>
 
 <% if current_user.has_role?(:admin) || current_user.id == @feedback.user_id %>

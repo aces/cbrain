@@ -16,73 +16,74 @@ require 'base64'
 <% title 'Task Info' %>
 
 
-<div class = "generalcontent">
+  <div class = "generalcontent">
+
 
 <h2>Task Information</h2>
 
-<table class = "showtaskstable">
+
+<table class ="showtaskstable">
 
    <tr>
-       <th>Task Name</th>
+       <td>Task Name</td>
        <td class="info"><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
    </tr>
 
    <tr>
-       <th>Bourreau Name</th>
+       <td>Bourreau Name</th>
        <td class="info"><%= h(@task.bourreau.name) %></td>
    </tr>
 
    <tr>
-       <th>Current Status</th>
+       <td>Current Status</th>
        <td class="info"><%= h(@task.status) %></td>
    </tr>
 
    <tr>
-       <th>Time Submitted</th>
+       <td>Time Submitted</th>
        <td class="info"><%= h(to_localtime(@task.created_at.to_s)) -%></td>
    </tr>
 
    <tr>
-       <th>Last Updated</th>
+       <td>Last Updated</th>
        <td class="info"><%= h(to_localtime(@task.updated_at.to_s)) -%></td>
    </tr>
 
    <tr>
-       <th>Owner</th>
+       <td>Owner</th>
        <td class="info"><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
    </tr>
 
    <tr>
-       <th>DRMAA Job ID</th>
+       <td>DRMAA Job ID</th>
        <td class="info"><%= h(@task.drmaa_jobid) -%></td>
    </tr>
 
    <tr>
-       <th>DRMAA Work Directory</th>
+       <td>DRMAA Work Directory</th>
        <td class="info"><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
    </tr>
 
    <tr>
-       <th colspan="2">Parameters</th>
+       <td width="20%"colspan = "2">Parameters</th>
    </tr>
 
    <tr>
-       <td colspan="2" class="info"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
+       <td colspan="2" width="20%" class="info"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
    </tr>
 
    <tr>
-       <th colspan="2">Processing Log</th>
+       <td colspan="2" width="20%">Processing Log</th>
    </tr>
 
    <tr>
-       <td colspan="2" class="info"><pre><%= h(@task.log) -%></pre></td>
+       <td colspan="2" width="20%" class="info"><pre><%= h(@task.log) -%></pre></td>
    </tr>
 
 </table>
 
-<br>
 
-<table class = "showtaskstable">
+<table>
    <tr>
        <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
    </tr>
@@ -98,4 +99,5 @@ require 'base64'
    </tr>
 
 </table>
+</div>
 </div>

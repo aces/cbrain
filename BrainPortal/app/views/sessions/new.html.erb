@@ -12,28 +12,24 @@
 -%>
 
 <div class = "generalcontent">
-	
+  
 <% title 'Login' %>
 
 <div class = "loginbox">
 
 <% form_tag session_path do -%>
 
-
-
 <table class = "logintable">
-	<tr>
+  <tr>
         <label for="login"><td>Login</td></label>
-		<td class= "field"><%= text_field_tag 'login' %></td>
-	</tr>
-	<tr>	
-		<label for="password"><td>Password</td></label>
-		<td class= "field"><%= password_field_tag 'password' %></td>
-	</tr>
+    <td class= "field"><%= text_field_tag 'login' %></td>
+  </tr>
+  <tr>  
+    <label for="password"><td>Password</td></label>
+    <td class= "field"><%= password_field_tag 'password' %></td>
+  </tr>
 </table>
 <br>
-		
-
 
 <!-- Uncomment this if you want this functionality
 <p><label for="remember_me">Remember me:</label>
@@ -43,6 +39,5 @@
 <center><p><%= submit_tag 'Log in' %></p></center>
 <% end -%>
 </div>
-
 </div>
 </div>

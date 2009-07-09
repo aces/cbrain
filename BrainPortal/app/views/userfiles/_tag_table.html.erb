@@ -10,11 +10,11 @@
 -%>
 
 <table class = "tagtable">
-		<% if @user_tags.empty? then %>
-			<br>No tags created
-		<% else %>
-		<br><select name="tags[]" multiple="multiple" size="5">
-		<%= options_from_collection_for_select @user_tags, 'id', 'name' %>
-		</select>
-		<% end %>
+    <% if @user_tags.empty? then %>
+      <br>No tags created
+    <% else %>
+    <br><select name="tags[]" multiple="multiple" size="5">
+    <%= options_from_collection_for_select @user_tags, 'id', 'name' %>
+    </select>
+    <% end %>
 </table>
