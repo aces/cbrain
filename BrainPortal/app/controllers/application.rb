@@ -29,7 +29,7 @@ class ApplicationController < ActionController::Base
   private
     
   def check_role(role)
-    current_user && current_user.role.to_sym == role
+    current_user && current_user.role.to_sym == role.to_sym
   end
   
   def not_admin_user(user)
