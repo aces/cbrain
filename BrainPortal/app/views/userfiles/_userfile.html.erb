@@ -19,15 +19,15 @@
    </td>
    <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
    <% if userfile.size != nil %>
-	<td><%= h(userfile.format_size)-%></td>
+     <td><%= h(userfile.format_size)-%></td>
    <% else %>
-	<td></td>
+     <td></td>
    <% end %>
    <td class = "centered"><center><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") -%></center></td>
        <% if userfile.group != nil %>
-	    <td class = "centered"><%= userfile.group.name -%></td>
+         <td class = "centered"><%= userfile.group.name -%></td>
        <% else %>
-	    <td></td>
-	<% end %>
+         <td></td>
+       <% end %>
    <td class = "centered"><%= link_to h(userfile.data_provider.name), data_provider_path(userfile.data_provider) %></td>
 </tr>
