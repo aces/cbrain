@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090707175220) do
+ActiveRecord::Schema.define(:version => 20090710222338) do
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -65,15 +65,9 @@ ActiveRecord::Schema.define(:version => 20090707175220) do
 
   create_table "groups", :force => true do |t|
     t.string   "name"
-    t.integer  "institution_id"
-    t.integer  "manager_id"
-    t.string   "street"
-    t.string   "building"
-    t.string   "room"
-    t.string   "phone"
-    t.string   "fax"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type"
   end
 
   create_table "groups_users", :id => false, :force => true do |t|
@@ -88,7 +82,6 @@ ActiveRecord::Schema.define(:version => 20090707175220) do
     t.string   "country"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "group_id"
   end
 
   create_table "logged_exceptions", :force => true do |t|

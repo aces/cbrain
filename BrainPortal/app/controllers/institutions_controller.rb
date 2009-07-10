@@ -40,7 +40,6 @@ class InstitutionsController < ApplicationController
   # GET /institutions/1/edit
   def edit
     @institution = Institution.find(params[:id])
-    @groups = Group.find(:all)
   end
 
   # POST /institutions
@@ -64,7 +63,7 @@ class InstitutionsController < ApplicationController
   # PUT /institutions/1.xml
   def update
 
-    @institution = Institution.find(params[:id], :include => :groups)
+    @institution = Institution.find(params[:id])
     #params[:institution][:group_id] ||= []
 
     respond_to do |format|

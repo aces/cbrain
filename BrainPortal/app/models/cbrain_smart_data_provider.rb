@@ -28,9 +28,9 @@ class CbrainSmartDataProvider < DataProvider
 
   def after_initialize #:nodoc:
     if Socket.gethostname == remote_host && File.directory?(remote_dir)
-      @provider = CbrainLocalDataProvider.new( self.attributes )
+      @provider = CbrainLocalDataProvider.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id} )
     else
-      @provider = CbrainSshDataProvider.new( self.attributes )
+      @provider = CbrainSshDataProvider.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id} )
     end
   end
 

@@ -24,7 +24,6 @@
 
 </div>
 
-
 <table class = "bourreauxtable">
    <tr>
        <th>Bourreau Name</th>
@@ -37,7 +36,7 @@
 
    <% for bour in @bourreaux %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= link_to bour.name, :controller => :bourreaux, :action => :show, :id => bour.id %></td>
+         <td><%= link_if_admin(bour.name, bourreau_path(bour)) %></td>
          <td><%= h(bour.user.login) %></td>
          <td><%= h(bour.group.name) %></td>
          <td><%= h(bour.online ? "Yes" : "No") %></td>

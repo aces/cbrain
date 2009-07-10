@@ -13,8 +13,6 @@ class Group < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  belongs_to              :institution
-
   #A-Many groups belong to many insitutions
   #has_and_belongs_to_many :institutions
 
@@ -31,4 +29,5 @@ class Group < ActiveRecord::Base
   #A-take this out
 
   validates_presence_of   :name
+  validates_uniqueness_of :name
 end

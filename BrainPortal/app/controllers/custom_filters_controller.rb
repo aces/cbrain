@@ -31,7 +31,7 @@ class CustomFiltersController < ApplicationController
 
   # GET /custom_filters/1/edit
   def edit
-    @custom_filter = CustomFilter.find(params[:id])
+    @custom_filter = current_user.custom_filters.find(params[:id])
     @user_groups   = current_user.groups
     @user_tags   = current_user.tags
   end
@@ -39,12 +39,9 @@ class CustomFiltersController < ApplicationController
   # POST /custom_filters
   # POST /custom_filters.xml
   def create    
-    created_date_term = params[:custom_filter].select{ |k,v| k.to_s =~ /^created_date_term/ }.collect{ |e|  e[1]}
-      
     @custom_filter = CustomFilter.new(params[:custom_filter])
     @custom_filter.user_id = current_user.id
-    @custom_filter.created_date_term = created_date_term
-    
+        
     respond_to do |format|
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
@@ -63,7 +60,7 @@ class CustomFiltersController < ApplicationController
   # PUT /custom_filters/1
   # PUT /custom_filters/1.xml
   def update
-    @custom_filter = CustomFilter.find(params[:id])
+    @custom_filter = current_user.custom_filters.find(params[:id])
 
     respond_to do |format|
       if @custom_filter.update_attributes(params[:custom_filter])
@@ -83,7 +80,7 @@ class CustomFiltersController < ApplicationController
   # DELETE /custom_filters/1
   # DELETE /custom_filters/1.xml
   def destroy
-    @custom_filter = CustomFilter.find(params[:id])    
+    @custom_filter = current_user.custom_filters.find(params[:id])    
     current_session.current_filters.delete "custom:#{@custom_filter.name}"
     @custom_filter.destroy
 

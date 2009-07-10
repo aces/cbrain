@@ -14,6 +14,8 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :single_files, :controller  => :userfiles
   map.resources :file_collection, :controller  => :userfiles
   map.resources :civet_collection, :controller  => :userfiles
+  map.resources :work_groups,     :controller => :groups
+  map.resources :system_groups,     :controller => :groups 
 
   map.home    '/home', :controller => 'portal', :action => 'welcome'
   map.information '', :controller => 'portal', :action => 'credits'

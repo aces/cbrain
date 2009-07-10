@@ -42,7 +42,7 @@ class User < ActiveRecord::Base
   validates_length_of       :login,    :within => 3..40
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :email, :case_sensitive => false
-  before_save :encrypt_password
+  before_save               :encrypt_password
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
@@ -104,15 +104,15 @@ class User < ActiveRecord::Base
   
   protected
 
-    # before filter 
-    def encrypt_password
-      return if password.blank?
-      self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
-      self.crypted_password = encrypt(password)
-    end
-      
-    def password_required?
-      crypted_password.blank? || !password.blank?
-    end
+  # before filter 
+  def encrypt_password
+    return if password.blank?
+    self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
+    self.crypted_password = encrypt(password)
+  end
+    
+  def password_required?
+    crypted_password.blank? || !password.blank?
+  end
     
 end

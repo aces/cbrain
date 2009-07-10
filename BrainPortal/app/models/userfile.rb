@@ -15,7 +15,7 @@ class Userfile < ActiveRecord::Base
 
  acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
- belongs_to              :data_provider
+  belongs_to              :data_provider
   has_and_belongs_to_many :tags
 
   #A- A userfile has one group
@@ -23,7 +23,7 @@ class Userfile < ActiveRecord::Base
      		   
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
-  
+    
   ###
   # Pagination for the userfile index page.
   #  Had to be modified a bit so it handles filtered results properly

@@ -41,7 +41,7 @@ class UsersController < ApplicationController
 
   # render new.rhtml
   def new
-    @groups = Group.find(:all)
+    @groups = WorkGroup.find(:all)
   end
   
   def edit
@@ -50,7 +50,7 @@ class UsersController < ApplicationController
       access_error(401)
       return
     end
-    @groups = Group.find(:all)
+    @groups = WorkGroup.find(:all)
   end 
 
   def create
@@ -62,9 +62,9 @@ class UsersController < ApplicationController
     
     @user = User.new(params[:user])
         
-    newGroup = Group.new(:name => @user.login)
+    newGroup = SystemGroup.new(:name => @user.login)
     newGroup.save
-    everyoneGroup = Group.find_by_name("everyone")
+    everyoneGroup = SystemGroup.find_by_name("everyone")
     group_ids = @user.group_ids
     group_ids << newGroup.id
     group_ids << everyoneGroup.id
@@ -85,7 +85,7 @@ class UsersController < ApplicationController
       redirect_to(users_url)
       flash[:notice] = "User successfully created."
     else
-      @groups = Group.find(:all)
+      @groups = WorkGroup.find(:all)
       render :action => 'new'
     end
   end
@@ -101,7 +101,7 @@ class UsersController < ApplicationController
         format.html { redirect_to @user }
         format.xml  { head :ok }
       else
-        @groups = Group.find(:all)
+        @groups = WorkGroup.find(:all)
         format.html { render :action => "edit" }
         format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
       end
@@ -110,11 +110,22 @@ class UsersController < ApplicationController
 
   def destroy
     @user = User.find(params[:id])
-    @user.destroy
+    @user_group = @user.groups.find_by_name(@user.login)
+    
+    if @user.userfiles.empty?   
+      @user.destroy
+      @user_group.destroy if @user_group
 
-    respond_to do |format|
-      format.html { redirect_to(users_url) }
-      format.xml  { head :ok }
+      respond_to do |format|
+        format.html { redirect_to(users_url) }
+        format.xml  { head :ok }
+      end
+    else
+      flash[:error] = "User #{@user.login} cannot be deleted while there are still files on the account."
+      respond_to do |format|
+        format.html { redirect_to(users_url) }
+        format.xml  { render :xml => @user, :status => :unprocessable_entity }
+      end
     end
   end
 end

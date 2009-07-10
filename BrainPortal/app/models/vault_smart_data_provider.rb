@@ -28,9 +28,9 @@ class VaultSmartDataProvider < DataProvider
 
   def after_initialize #:nodoc:
     if Socket.gethostname == remote_host && File.directory?(remote_dir)
-      @provider = VaultLocalDataProvider.new( self.attributes )
+      @provider = VaultLocalDataProvider.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id} )
     else
-      @provider = VaultSshDataProvider.new( self.attributes )
+      @provider = VaultSshDataProvider.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id} )
     end
   end
 

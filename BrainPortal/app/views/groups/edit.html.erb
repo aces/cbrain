@@ -23,30 +23,6 @@
     <%= f.label :name %><br />
     <%= f.text_field :name %>
   </p>
-  <p>
-    <%= f.label :institution_id, 'Institution' %><br />
-     <%= f.collection_select :institution_id, Institution.find(:all), :id, :name, :prompt => 'Select an Institution' %>
-  </p>
-   <p>
-    <%= f.label :street %><br />
-    <%= f.text_field :street %>
-  </p>
-  <p>
-    <%= f.label :building %><br />
-    <%= f.text_field :building %>
-  </p>
-  <p>
-    <%= f.label :room %><br />
-    <%= f.text_field :room %>
-  </p>
-  <p>
-    <%= f.label :phone %><br />
-    <%= f.text_field :phone %>
-  </p>
-  <p>
-    <%= f.label :fax %><br />
-    <%= f.text_field :fax %>
-  </p>
   <br/>
   
   <label for="users">Users in group:</label>

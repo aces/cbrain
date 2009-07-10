@@ -17,7 +17,7 @@ class DataProvidersController < ApplicationController
    
   def index
     @providers = DataProvider.all;
-    if ! check_role(:admin)
+    unless check_role(:admin)
         @providers = @providers.select { |p| p.can_be_accessed_by(current_user) }
     end
   end
@@ -119,12 +119,16 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find_by_id(id)
 
+    if !check_role(:admin) && @provider.user_id != @user.id
+       flash[:error] = "You cannot edit a provider that you do not own."
+       redirect_to :action => :index
+       return
+    end
+
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
 
     @provider.update_attributes(fields)
-
-    @provider.save
 
     if @provider.errors.empty?
       redirect_to(data_providers_url)

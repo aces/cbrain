@@ -23,7 +23,6 @@
     <th>City</th>
     <th>Province</th>
     <th>Country</th>
-    <th>Group</th>
     <th colspan="2"/>
   </tr>
 
@@ -33,7 +32,6 @@
     <td><%=h institution.city %></td>
     <td><%=h institution.province %></td>
     <td><%=h institution.country %></td>
-    <td><%= institution.groups.map{|u| h(u.name)}.join("<br>") %></td>
     <td><%= button_to 'Edit', edit_institution_path(institution), :method => :get %></td>
     <td><%= button_to 'Destroy', institution, :confirm => 'Are you sure?', :method => :delete %></td>
   </tr>

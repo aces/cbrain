@@ -22,27 +22,28 @@
 <table>
   <tr>
     <th>Name</th>
-    <th>Institution</th>
-     <th>Members</th>
-    <th>Phone</th>
+    <th>Type</th>
+    <th>Members</th>
     <th colspan="3"/>
   </tr>
-
-<% for group in @groups %>
-  <tr class="<%= cycle('list-odd', 'list-even') %>">
-    <td><%=h group.name %></td>
-    <% if (group.institution_id != nil) %>
-      <td><%=h group.institution.name %></td>
-    <% else %>
-      <td></td>
-    <% end %>
-    <td><%= group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
-    <td><%=h group.phone %></td>
-    <td><%= button_to 'Show', group, :method => :get %></td>
-    <td><%= button_to 'Edit', edit_group_path(group), :method => :get %></td>
-    <td><%= button_to 'Delete', group, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
-<% end %>
+   <% for group in @system_groups %>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td><%=h group.name %></td>
+         <td><%= group.class.name %></td>
+         <td><%= group.users.map{|u| h(u.login)}.join("<br>") %></td>
+         <td/ colspan="3">
+       </tr>
+   <% end %>
+   <% for group in @work_groups %>
+     <tr class="<%= cycle('list-odd', 'list-even') %>">
+       <td><%=h group.name %></td>
+       <td><%= group.class.name %></td>
+       <td><%= group.users.map{|u| h(u.login)}.join("<br>") %></td>
+       <td><%= button_to 'Show', group_path(group), :method => :get %></td>
+       <td><%= button_to 'Edit', edit_group_path(group), :method => :get %></td>
+       <td><%= button_to 'Delete', group_path(group), :confirm => 'Are you sure?', :method => :delete %></td>
+     </tr>
+   <% end %>
 </table>
 
 <br />

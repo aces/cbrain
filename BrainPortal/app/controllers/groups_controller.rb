@@ -17,7 +17,8 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index
-    @groups = Group.find(:all, :include => [:users, :institution, :userfiles])
+    @system_groups = SystemGroup.find(:all, :include => [:users])
+    @work_groups = WorkGroup.find(:all, :include => [:users])
 
     #@groups = Group.find(:all, :include => [:users])
      respond_to do |format|
@@ -42,8 +43,7 @@ class GroupsController < ApplicationController
   # GET /groups/new
   # GET /groups/new.xml
   def new
-    @group = Group.new
-    @institution_names = Institution.find(:all).collect(&:name)
+    @group = WorkGroup.new
 
     _add_admin_to_group(@group)
 
@@ -57,7 +57,7 @@ class GroupsController < ApplicationController
 
   # GET /groups/1/edit
   def edit
-    @group = Group.find(params[:id])
+    @group = WorkGroup.find(params[:id])
 
     _add_admin_to_group(@group)
 
@@ -68,7 +68,7 @@ class GroupsController < ApplicationController
   # POST /groups
   # POST /groups.xml
   def create
-    @group = Group.new(params[:group])
+    @group = WorkGroup.new(params[:work_group])
 
     _add_admin_to_group(@group)
 
@@ -78,7 +78,6 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        @institution_names = Institution.find(:all).map{|i| i.name}
         format.html { render :action => "new" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -88,9 +87,8 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update
-    @group = Group.find(params[:id], :include => :institution)
-    params[:group][:user_ids] ||= []
-    params[:group][:institution_id] ||= []
+    @group = WorkGroup.find(params[:id])
+    params[:work_group][:user_ids] ||= []
     
     _add_admin_to_group(@group)
 
@@ -100,7 +98,6 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
-         @institution_names = Institution.find(:all).map{|i| i.name}
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -111,7 +108,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1
   # DELETE /groups/1.xml
   def destroy
-    @group = Group.find(params[:id])
+    @group = WorkGroup.find(params[:id])
     @group.destroy
 
     respond_to do |format|
