@@ -9,7 +9,6 @@
 # $Id$
 #
 
-require 'base64'
 
 -%>
 
@@ -21,83 +20,87 @@ require 'base64'
 
 <h2>Task Information</h2>
 
-
-<table class ="showtaskstable">
+<table class ="showtasksdisplay">
 
    <tr>
-       <td>Task Name</td>
+       <th>Task Name</th>
        <td class="info"><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
    </tr>
 
    <tr>
-       <td>Bourreau Name</th>
-       <td class="info"><%= h(@task.bourreau.name) %></td>
+       <th>Bourreau Name</th>
+       <td><%= h(@task.bourreau.name) %></td>
    </tr>
 
-   <tr>
-       <td>Current Status</th>
-       <td class="info"><%= h(@task.status) %></td>
-   </tr>
+     <tr>
+          <th>Bourreau Name</th>
+          <td><%= h(@task.bourreau.name) %></td>
+      </tr>
 
-   <tr>
-       <td>Time Submitted</th>
-       <td class="info"><%= h(to_localtime(@task.created_at.to_s)) -%></td>
-   </tr>
+      <tr>
+          <th>Current Status</th>
+          <td><%= h(@task.status) %></td>
+      </tr>
 
-   <tr>
-       <td>Last Updated</th>
-       <td class="info"><%= h(to_localtime(@task.updated_at.to_s)) -%></td>
-   </tr>
+      <tr>
+          <th>Time Submitted</th>
+          <td><%= h(to_localtime(@task.created_at.to_s)) -%></td>
+      </tr>
 
-   <tr>
-       <td>Owner</th>
-       <td class="info"><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
-   </tr>
+      <tr>
+          <th>Last Updated</th>
+          <td><%= h(to_localtime(@task.updated_at.to_s)) -%></td>
+      </tr>
 
-   <tr>
-       <td>DRMAA Job ID</th>
-       <td class="info"><%= h(@task.drmaa_jobid) -%></td>
-   </tr>
+      <tr>
+          <th>Owner</th>
+          <td><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
+      </tr>
+     
+      <tr>
+          <th>DRMAA Job ID</th>
+          <td><%= h(@task.drmaa_jobid) -%></td>
+      </tr>
 
-   <tr>
-       <td>DRMAA Work Directory</th>
-       <td class="info"><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
-   </tr>
+      <tr>
+          <th>DRMAA Work Directory</th>
+          <td><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
+      </tr>
 
-   <tr>
-       <td width="20%"colspan = "2">Parameters</th>
-   </tr>
+      <tr>
+        <th colspan="2">Parameters</td>
+    </tr>
+    
+       <tr>
+         <td colspan="2"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
+     </tr>
 
-   <tr>
-       <td colspan="2" width="20%" class="info"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
-   </tr>
+     <tr>
+         <th colspan="2">Processing Log</td>
+     </tr>
 
-   <tr>
-       <td colspan="2" width="20%">Processing Log</th>
-   </tr>
+     <tr>
+         <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
+     </tr>    
+    
+   </table>
 
-   <tr>
-       <td colspan="2" width="20%" class="info"><pre><%= h(@task.log) -%></pre></td>
-   </tr>
+   <table class = "showtaskstable">
+      <tr>
+          <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
+      </tr>
 
-</table>
+      <% prettystdout="(None)" ; prettystderr="(None)"
+         prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
+         prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
+      %>
 
+      <tr>
+          <td class="info"><pre><%= h(prettystdout) -%></pre></td>
+          <td class="info"><pre><%= h(prettystderr) -%></pre></td>
+      </tr>
 
-<table>
-   <tr>
-       <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
-   </tr>
+   </table>
 
-   <% prettystdout="(None)" ; prettystderr="(None)"
-      prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
-      prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
-   %>
-
-   <tr>
-       <td class="info"><pre><%= h(prettystdout) -%></pre></td>
-       <td class="info"><pre><%= h(prettystderr) -%></pre></td>
-   </tr>
-
-</table>
-</div>
-</div>
+   </div>
+   </div>
