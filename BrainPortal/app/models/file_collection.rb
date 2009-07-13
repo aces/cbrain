@@ -12,6 +12,9 @@
 
 require 'ftools'
 
+#This model is meant to represent an arbitrary collection files (which
+#may or may not contain subdirectories) registered as a single entry in 
+#the userfiles table. 
 class FileCollection < Userfile 
   
   Revision_info="$Id$"
@@ -45,6 +48,11 @@ class FileCollection < Userfile
     true
   end
   
+  #Merge the collections and files represented by the ids in +file_ids+.
+  #Returns the status of the merge as a *symbol*:
+  #[*success*] if the merge is successful.
+  #[*collision*] if the collections share common file names (the merge is aborted in this case).
+  #[*failure*] if the merge failed for some other reason.
   def merge_collections(file_ids)
     userfiles = Userfile.find(file_ids)
     
@@ -89,35 +97,37 @@ class FileCollection < Userfile
   end
 
   #find longest common root of a list of file paths.
-  def get_common_base(files)
-    return nil if files.empty?
-    base = ""
-    source = dirs[0].split('/')
-    source.each_with_index do |dir, i|
-      break unless dirs.all? {|d| d =~ /^#{base + dir + '/'}/}
-      base += dir + '/'
-    end
-    base
-  end
+  # def get_common_base(files)
+  #     return nil if files.empty?
+  #     base = ""
+  #     source = dirs[0].split('/')
+  #     source.each_with_index do |dir, i|
+  #       break unless dirs.all? {|d| d =~ /^#{base + dir + '/'}/}
+  #       base += dir + '/'
+  #     end
+  #     base
+  #   end
   
+  #Returns an array of the relative paths to all files contained in this collection.
   def list_files    
     Dir.chdir(self.cache_full_path.parent) do
       @file_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type f").readlines.map(&:chomp)
     end
   end
   
+  #Returns an array of the relative paths to all subdirectories contained in this collection.
   def list_dirs
     Dir.chdir(self.cache_full_path.parent) do
       @dir_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type d").readlines.map(&:chomp).reverse
     end
   end
   
-  #format size for display
+  #Format size for display (make it more human-readable).
   def format_size
     "#{self.size || "?"} files" 
   end
   
-  # Remove common root from a directory structure.
+  #Remove the common root (if there is one) from the directory structure of this collection.
   def flatten
     dir_name = self.cache_full_path
 
@@ -145,5 +155,4 @@ class FileCollection < Userfile
     end
 
   end
-  
 end

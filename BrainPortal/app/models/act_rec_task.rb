@@ -2,20 +2,19 @@
 #
 # CBRAIN Project
 #
-# The class to model the drmaa_tasks table as
-# ActiveRecord on the Portal side (because the
-# class DrmaaTask is an ActiveResource!)
-#
-# This doesn't really work well and is only used
-# for certain migrations.
-#
-# DO NOT USE THIS CLASS TO MANIPULATE 'DrmaaTask'
-# ACTIVE RECORDS ON THE PORTAL SIDE!
-#
 # Original author: Pierre Rioux
 #
 # $Id$
 #
+
+
+#
+# This class is used to model DrmaaTasks as
+# ActiveRecord objects on the Portal side (DrmaaTask is an ActiveResource)
+# This doesn't really work well and was only created as a utility to help with
+# certain migrations.
+#
+# = DO NOT USE THIS CLASS TO MANIPULATE 'DrmaaTask' ACTIVE RECORDS ON THE PORTAL SIDE!
 
 class ActRecTask < ActiveRecord::Base
 
@@ -25,11 +24,9 @@ class ActRecTask < ActiveRecord::Base
 
   serialize :params
 
-private
-  # This is an overidde of the ActiveResource method
-  # used to instanciate objects while ignoring
-  # the 'type' column, so all objects are 'ActRecTask's.
-  def self.instantiate(record)
+  private
+
+  def self.instantiate(record) #:nodoc:
     if record.has_key?("type")
       subtype = record.delete("type")
     end

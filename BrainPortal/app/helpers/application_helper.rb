@@ -1,19 +1,23 @@
-# Methods added to this helper will be available to all templates in the application.
-
 require 'time'
 
+#Helper methods for all views.
 module ApplicationHelper
 
   Revision_info="$Id$"
 
+  #Sets the text to be displayed in the title bar when a given view is rendered.
   def title(page_title)
     content_for(:title)  { ' - ' + page_title}
   end
 
+  #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime)
      Time.parse(stringtime).localtime.strftime("%Y-%m-%d %H:%M:%S")
   end
   
+  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
+  #the current user has a role of *admin*. Otherwise, +name+ will be 
+  #displayed as static text.
   def link_if_admin(name, path)
     if check_role(:admin)
       link_to(name, path)

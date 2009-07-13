@@ -1,4 +1,4 @@
-module GroupsHelper
+module GroupsHelper  #:nodoc:
 
   Revision_info="$Id$"
 

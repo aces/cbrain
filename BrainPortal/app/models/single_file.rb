@@ -12,12 +12,13 @@
 
 require 'fileutils'
 
+#Represents a single file uploaded to the system (as opposed to a FileCollection).
 class SingleFile < Userfile
   
   Revision_info="$Id$"
   
-  # Format size for display in the view
-  # This will show the size as "nnn bytes" or "nnn KB" or "nnn MB" or "nnn GB"
+  #Format size for display in the view.
+  #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
   def format_size
     if self.size > 10**9
       "#{self.size/10**9} GB"

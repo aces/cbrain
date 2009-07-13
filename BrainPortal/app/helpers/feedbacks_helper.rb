@@ -1,4 +1,4 @@
-module FeedbacksHelper
+module FeedbacksHelper  #:nodoc:
 
   Revision_info="$Id$"
 

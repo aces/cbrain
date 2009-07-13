@@ -9,7 +9,7 @@
 # $Id$
 #
 
-
+#RESTful controller for the CustomFilter resource.
 class CustomFiltersController < ApplicationController
   
   before_filter :login_required
@@ -18,7 +18,7 @@ class CustomFiltersController < ApplicationController
 
   # GET /custom_filters/new
   # GET /custom_filters/new.xml
-  def new
+  def new #:nodoc:
     @custom_filter = CustomFilter.new
     @user_groups   = current_user.groups
     @user_tags   = current_user.tags
@@ -30,7 +30,7 @@ class CustomFiltersController < ApplicationController
   end
 
   # GET /custom_filters/1/edit
-  def edit
+  def edit #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
     @user_groups   = current_user.groups
     @user_tags   = current_user.tags
@@ -38,7 +38,7 @@ class CustomFiltersController < ApplicationController
 
   # POST /custom_filters
   # POST /custom_filters.xml
-  def create    
+  def create #:nodoc: 
     @custom_filter = CustomFilter.new(params[:custom_filter])
     @custom_filter.user_id = current_user.id
         
@@ -59,7 +59,7 @@ class CustomFiltersController < ApplicationController
 
   # PUT /custom_filters/1
   # PUT /custom_filters/1.xml
-  def update
+  def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
 
     respond_to do |format|
@@ -79,7 +79,7 @@ class CustomFiltersController < ApplicationController
 
   # DELETE /custom_filters/1
   # DELETE /custom_filters/1.xml
-  def destroy
+  def destroy #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])    
     current_session.current_filters.delete "custom:#{@custom_filter.name}"
     @custom_filter.destroy

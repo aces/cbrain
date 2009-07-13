@@ -1,4 +1,4 @@
-module PortalHelper
+module PortalHelper  #:nodoc:
 
   Revision_info="$Id$"
 

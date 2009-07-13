@@ -9,24 +9,22 @@
 # $Id$
 #
 
+#Model representing the Group resource. Groups are meant to represented collective access
+#to certain files (analogous to groups of the Unix OS).
+#
+#=Attributes:
+#[*name*] A string representing a the name of the group.
+#= Associations:
+#*Has* *and* *belongs* *to* *many*:
+#* User
+#*Has* *many*:
+#* Userfile
 class Group < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  #A-Many groups belong to many insitutions
-  #has_and_belongs_to_many :institutions
-
-  #A-many groups and many userfiles
-
   has_and_belongs_to_many :users 
-
-  has_many                :userfiles  
-  
-  #A-again possibly take this out
-  #belongs_to              :manager,
-  #                        :class_name => 'User',
-  #                        :foreign_key => 'manager_id'
-  #A-take this out
+  has_many                :userfiles    
 
   validates_presence_of   :name
   validates_uniqueness_of :name

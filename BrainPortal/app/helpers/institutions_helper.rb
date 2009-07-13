@@ -1,4 +1,4 @@
-module InstitutionsHelper
+module InstitutionsHelper  #:nodoc:
 
   Revision_info="$Id$"
 

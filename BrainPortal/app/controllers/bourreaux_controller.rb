@@ -9,6 +9,8 @@
 # $Id$
 #
 
+#RESTful controller for managing the Bourreau (remote execution server) resource. 
+#All actions except +index+ require *admin* privileges.
 class BourreauxController < ApplicationController
 
   Revision_info="$Id$"
@@ -16,16 +18,15 @@ class BourreauxController < ApplicationController
   before_filter :login_required
   before_filter :admin_role_required, :except => [:index]  
    
-  def index
+  def index #:nodoc:
     @bourreaux = Bourreau.all;
     if ! check_role(:admin)
       @bourreaux = @bourreaux.select { |p| p.can_be_accessed_by(current_user) }
     end
   end
 
-  # GET /bourreaux/1
-  # GET /bourreaux/1.xml
-  def show
+  
+  def show #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
     raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
@@ -39,15 +40,8 @@ class BourreauxController < ApplicationController
   #  access_error(404)
   end
   
-  def edit
+  def edit #:nodoc:
     @user     = current_user
-
-    if !check_role(:admin)
-       flash[:error] = "Only admins can edit a bourreau."
-       redirect_to :action => :index
-       return
-    end
-
     @bourreau = Bourreau.find(params[:id])
 
     respond_to do |format|
@@ -59,15 +53,8 @@ class BourreauxController < ApplicationController
     access_error(404)
   end
 
-  def new
+  def new  #:nodoc:
     @user     = current_user
-
-    if !check_role(:admin)
-       flash[:error] = "Only admins can create a bourreau."
-       redirect_to :action => :index
-       return
-    end
-
     @bourreau = Bourreau.new( :user_id   => @user.id,
                               :group_id  => Group.find_by_name(@user.login).id,
                               :online    => true
@@ -82,14 +69,7 @@ class BourreauxController < ApplicationController
   #  access_error(404)
   end
 
-  def create
-
-    if !check_role(:admin)
-       flash[:error] = "Only admins can create a bourreau."
-       redirect_to :action => :index
-       return
-    end
-
+  def create #:nodoc:
     @user     = current_user
     fields    = params[:bourreau]
 
@@ -108,14 +88,7 @@ class BourreauxController < ApplicationController
     access_error(404)
   end
 
-  def update
-
-    if !check_role(:admin)
-       flash[:error] = "Only admins can modify a bourreau."
-       redirect_to :action => :index
-       return
-    end
-
+  def update #:nodoc:
     @user     = current_user
     id        = params[:id]
     @bourreau = Bourreau.find_by_id(id)
@@ -139,14 +112,7 @@ class BourreauxController < ApplicationController
     access_error(404)
   end
 
-  def destroy
-
-    if !check_role(:admin)
-       flash[:error] = "Only admins can destroy a bourreau."
-       redirect_to :action => :index
-       return
-    end
-
+  def destroy #:nodoc:
     id        = params[:id]
     @user     = current_user
     @bourreau = Bourreau.find_by_id(id)

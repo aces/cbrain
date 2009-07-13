@@ -1,4 +1,4 @@
-module SessionsHelper
+module SessionsHelper  #:nodoc:
 
   Revision_info="$Id$"
 

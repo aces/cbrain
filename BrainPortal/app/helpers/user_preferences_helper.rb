@@ -1,4 +1,4 @@
-module UserPreferencesHelper
+module UserPreferencesHelper  #:nodoc:
 
   Revision_info="$Id$"
 

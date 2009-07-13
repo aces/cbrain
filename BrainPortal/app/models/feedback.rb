@@ -9,6 +9,14 @@
 # $Id$
 #
 
+#Model representing the user feedback resource.
+#
+#=Attributes:
+#[*summary*] A string representing a summary of the issue being raised in this entry.
+#[*details*] Text with a detailed description of the issue being raised in this entry.
+#= Associations:
+#*Belongs* *to*:
+#* User
 class Feedback < ActiveRecord::Base
   belongs_to :user
   

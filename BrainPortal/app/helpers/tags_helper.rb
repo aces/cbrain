@@ -1,4 +1,4 @@
-module TagsHelper
+module TagsHelper  #:nodoc:
 
   Revision_info="$Id$"
 

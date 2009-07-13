@@ -11,15 +11,13 @@
 # $Id$
 #
 
+#Controller for Session creation and destruction.
+#Handles logging in and loggin out of the system.
 class SessionsController < ApplicationController
 
   Revision_info="$Id$"
 
-  # render new.rhtml
-  #def new
-  #end
-
-  def create
+  def create #:nodoc:
     self.current_user = User.authenticate(params[:login], params[:password])
     if logged_in?
       if params[:remember_me] == "1"
@@ -34,7 +32,7 @@ class SessionsController < ApplicationController
     end
   end
 
-  def destroy
+  def destroy #:nodoc:
     self.current_user.forget_me if logged_in?
     cookies.delete :auth_token
     reset_session
