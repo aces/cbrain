@@ -1,4 +1,14 @@
-/* CBRAIN styles */
+/*
+#
+# CBRAIN Project
+#
+# Contoller for the entrypoint to cbrain
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+*/
+
 
 body { 
 	font-family: Verdana, sans-serif; 
@@ -25,6 +35,7 @@ pre {
  white-space: pre-wrap; /* css-3 */
  white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
  white-space: -pre-wrap; /* Opera 4-6 */
+ text-align: left;
  white-space: -o-pre-wrap; /* Opera 7 */
  /* width: 99%; */
  word-wrap: break-word; /* Internet Explorer 5.5+ */
@@ -313,7 +324,13 @@ td.tabletext{
    }
 
 .showtasksdisplay th{
-	width: 20%;
+	width: 40%;
+	text-align: left;
+	
+}
+
+.showtasksdisplay td{
+	text-align: left;
 	
 }
 
@@ -368,6 +385,7 @@ td.tabletext{
 
 td.info {
 	width: 30%;
+	text-align: left;
 	}
 	
 td.taskinfo{
