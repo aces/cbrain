@@ -312,6 +312,11 @@ td.tabletext{
    	margin-bottom: 4em;
    }
 
+.showtasksdisplay th{
+	width: 20%;
+	
+}
+
 .tasksmenu{
 	float:left; 
 	width: 99%;
