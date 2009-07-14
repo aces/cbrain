@@ -29,8 +29,9 @@ class RemoteResource < ActiveRecord::Base
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
-
-  validate :valid_name?  # makes sure the name is a simple identifier
+  validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
+                                 :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
+                                 :allow_blank => true
 
   belongs_to  :user
   belongs_to  :group
@@ -43,15 +44,6 @@ class RemoteResource < ActiveRecord::Base
   #Returns whether or not this resource is active.
   def is_alive?
     false
-  end
-
-  protected
-
-  # Makes sure that the record has a valid simple name
-  def valid_name? #:nodoc:
-    name = self.name
-    return false unless name && name.match(/^[a-zA-Z0-9][\w\-\=\.\+]*$/)
-    true
   end
 
 end

@@ -66,7 +66,7 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
-    #@mode     = "create"
+     @typelist = get_type_list
 
     respond_to do |format|
       format.html { render :action => :new }
@@ -82,36 +82,38 @@ class DataProvidersController < ApplicationController
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
 
+    errors = {}
+  
     if subtype.empty?
-      @provider = DataProvider.new( fields )
-      flash[:error] = "You must specify a type for your provider."
-      render :action => :new
-      return
+      errors[:type] = "must be specified."
+      subclass = DataProvider
+    else
+      subclass  = Class.const_get(subtype) rescue NilClass
+      if subtype == "DataProvider" || ! (subclass < DataProvider)
+        errors[:base] = "Type is not a valid Data Provider class"
+        subclass = DataProvider
+      end
     end
-
-    subclass  = Class.const_get(subtype)
-
-    if subtype == "DataProvider" || ! (subclass < DataProvider)
-      @provider = DataProvider.new( fields )
-      flash[:error] = "Provider class not a Data Provider?!?"
-      render :action => :new
-      return
-    end
-
-    @provider = subclass.new( fields )
+    
+    @provider = subclass.new(fields)
     @provider.save
+    
+    errors.each do |attr, msg|
+      @provider.errors.add(attr, msg)
+    end
 
     if @provider.errors.empty?
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully created."
     else
-      #@mode = "update"
+      @typelist = get_type_list
+       
       render :action => :new
       return
     end
 
-  rescue
-    access_error(404)
+  #rescue
+   # access_error(404)
   end
 
   def update #:nodoc:
@@ -304,6 +306,17 @@ class DataProvidersController < ApplicationController
 
     redirect_to :action => :browse
     
+  end
+  
+  private 
+  
+  def get_type_list
+    typelist = %w{ SshDataProvider } 
+    if check_role(:admin) 
+      typelist += %w{ CbrainSshDataProvider CbrainLocalDataProvider
+                    VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
+    end
+    typelist
   end
 
 end

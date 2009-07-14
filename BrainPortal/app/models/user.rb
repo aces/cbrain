@@ -56,6 +56,8 @@ class User < ActiveRecord::Base
   validates_length_of       :login,    :within => 3..40
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :email, :case_sensitive => false
+  validate                  :prevent_group_collision
+  
   before_save               :encrypt_password
     
   # prevents a user from submitting a crafted form that bypasses activation
@@ -129,5 +131,12 @@ class User < ActiveRecord::Base
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
-    
+  
+  private
+   
+  def prevent_group_collision
+    if self.login && Group.find_by_name(self.login)
+      errors.add(:login, "already in use by a group.")
+    end
+  end
 end

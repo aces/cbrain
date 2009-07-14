@@ -178,8 +178,9 @@ class DataProvider < ActiveRecord::Base
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
-
-  validate :valid_name?  # makes sure the name is a simple identifier  
+  validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
+                                 :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
+                                 :allow_blank => true
 
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
@@ -426,13 +427,6 @@ class DataProvider < ActiveRecord::Base
     raise "No online rw provider found for user '#{user.login}" if providers.size == 0
     providers.sort! { |a,b| a.id <=> b.id }
     providers[0]
-  end
-
-  # Makes sure that the record has a valid simple name
-  def valid_name? #:nodoc:
-    name = self.name
-    return false unless name && name.match(/^[a-zA-Z0-9][\w\-\=\.\+]*$/)
-    true
   end
 
   # This method creates the provider's top-level cache subdirectory.

@@ -17,7 +17,7 @@
 <h2>Create Data Provider</h2>
 
 
-<%= error_messages_for :data_provider %>
+<%= error_messages_for :provider %>
 
 <div class = "generalbox">
 
@@ -30,12 +30,8 @@
 <p><label for="description">Description</label><br/>
 <%= f.text_field :description %></p>
 
-<% typelist = %w{ SshDataProvider CbrainSshDataProvider CbrainLocalDataProvider
-                   VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
-   typelist = %w{ SshDataProvider } unless check_role(:admin)
-%>
 <p><label for="type">Type</label><br/>
-<%= f.select :type, typelist, :prompt => "Select Provider Type" %></p>
+<%= f.select :type, @typelist, :prompt => "Select Provider Type" %></p>
 
 <p><label for="user_id">Owner</label><br/>
 <% userlist = check_role(:admin) ? User.all : [ @provider.user ] %>
