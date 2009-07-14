@@ -9,6 +9,7 @@
 # $Id$
 #
 
+#RESTful controller for the Group resource.
 class GroupsController < ApplicationController
 
   Revision_info="$Id$"
@@ -16,11 +17,10 @@ class GroupsController < ApplicationController
   before_filter :login_required, :admin_role_required
   # GET /groups
   # GET /groups.xml
-  def index
+  def index  #:nodoc:
     @system_groups = SystemGroup.find(:all, :include => [:users])
     @work_groups = WorkGroup.find(:all, :include => [:users])
 
-    #@groups = Group.find(:all, :include => [:users])
      respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @groups }
@@ -29,8 +29,7 @@ class GroupsController < ApplicationController
 
   # GET /groups/1
   # GET /groups/1.xml
-  def show
-    #@group = Group.find(params[:id], :include => [:users, :manager])
+  def show  #:nodoc:
     @group = Group.find(params[:id], :include => [:users])
     
 
@@ -42,13 +41,11 @@ class GroupsController < ApplicationController
 
   # GET /groups/new
   # GET /groups/new.xml
-  def new
+  def new  #:nodoc:
     @group = WorkGroup.new
 
     _add_admin_to_group(@group)
 
-   # @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
-   #@manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
     respond_to do |format|
       format.html # new.html.erb
       format.xml  { render :xml => @group }
@@ -56,18 +53,16 @@ class GroupsController < ApplicationController
   end
 
   # GET /groups/1/edit
-  def edit
+  def edit  #:nodoc:
     @group = WorkGroup.find(params[:id])
 
     _add_admin_to_group(@group)
 
-   # @institution_names = Institution.find(:all).collect(&:name)
-  #  @manager_names = User.find(:all).select{|u| (u.role == 'admin' || u.role == 'manager') && u.login != 'admin'}.collect(&:full_name)
   end
 
   # POST /groups
   # POST /groups.xml
-  def create
+  def create  #:nodoc:
     @group = WorkGroup.new(params[:work_group])
 
     _add_admin_to_group(@group)
@@ -86,7 +81,7 @@ class GroupsController < ApplicationController
 
   # PUT /groups/1
   # PUT /groups/1.xml
-  def update
+  def update #:nodoc:
     @group = WorkGroup.find(params[:id])
     params[:work_group][:user_ids] ||= []
     
@@ -107,7 +102,7 @@ class GroupsController < ApplicationController
  
   # DELETE /groups/1
   # DELETE /groups/1.xml
-  def destroy
+  def destroy  #:nodoc:
     @group = WorkGroup.find(params[:id])
     @group.destroy
 

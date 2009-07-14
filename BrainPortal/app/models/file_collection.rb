@@ -19,7 +19,7 @@ class FileCollection < Userfile
   
   Revision_info="$Id$"
   
-  # Extract a collection from an archive
+  # Extract a collection from an archive.
   # The user_id, provider_id and name attributes must already be
   # set at this point.
   def extract_collection_from_archive_file(archive_file_name)

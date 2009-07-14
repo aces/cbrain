@@ -28,7 +28,7 @@ require 'pathname'
 # involve these steps:
 #
 #    data_provider_id = u.data_provider_id
-#    data_provider    = DataProvider.find_by_id(data_provider_id)
+#    data_provider    = DataProvider.find(data_provider_id)
 #    data_provider.provider_rename(u,"newname")
 #
 # However, two shorthands can be used:
@@ -151,6 +151,23 @@ require 'pathname'
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
 # * impl_provider_list_all()
+#
+# =Attributes:
+# [*name*] A string representing a the name of the data provider.
+# [*remote_user*] A string representing a user name to use to access the remote site of the provider.
+# [*remote_host*] A string representing a the hostname of the data provider.
+# [*remote_port*] An integer representing the port number of the data provider.
+# [*remote_dir*] An string representing the directory of the data provider.
+# [*online*] A boolean value set to whether or not the provider is online.
+# [*read_only*] A boolean value set to whether or not the provider is read only.
+# [*description*] Text with a description of the data provider.
+# 
+# = Associations:
+# *Belongs* *to*:
+# * User
+# * Group
+# *Has* *many*:
+# * UserPreference
 class DataProvider < ActiveRecord::Base
 
   Revision_info="$Id$"

@@ -10,6 +10,7 @@
 # $Id$
 #
 
+#RESTful controller for the User resource.
 class UsersController < ApplicationController
 
   Revision_info="$Id$"
@@ -17,8 +18,7 @@ class UsersController < ApplicationController
   before_filter :login_required
   before_filter :admin_role_required, :except => [:show, :edit, :update]  
   
-  def index
-    #@users = User.find(:all, :include => [:managed_groups, :groups, :userfiles])
+  def index #:nodoc:
     @users = User.find(:all, :include => [:groups, :userfiles])
     respond_to do |format|
       format.html # index.html.erb
@@ -28,7 +28,7 @@ class UsersController < ApplicationController
   
   # GET /user/1
   # GET /user/1.xml
-  def show
+  def show #:nodoc:
     @user = User.find(params[:id], :include => [:groups, :user_preference])
     @default_data_provider  = @user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = @user.user_preference.bourreau.name      rescue "(Unset)"
@@ -40,11 +40,11 @@ class UsersController < ApplicationController
   end
 
   # render new.rhtml
-  def new
+  def new #:nodoc:
     @groups = WorkGroup.find(:all)
   end
   
-  def edit
+  def edit #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     if !edit_permission? @user
       access_error(401)
@@ -53,7 +53,7 @@ class UsersController < ApplicationController
     @groups = WorkGroup.find(:all)
   end 
 
-  def create
+  def create #:nodoc:
     cookies.delete :auth_token
     # protects against session fixation attacks, wreaks havoc with 
     # request forgery protection.
@@ -92,7 +92,7 @@ class UsersController < ApplicationController
 
   # PUT /users/1
   # PUT /users/1.xml
-  def update
+  def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     params[:user][:group_ids] ||= []
     respond_to do |format|
@@ -108,7 +108,7 @@ class UsersController < ApplicationController
     end
   end
 
-  def destroy
+  def destroy #:nodoc:
     @user = User.find(params[:id])
     @user_group = @user.groups.find_by_name(@user.login)
     

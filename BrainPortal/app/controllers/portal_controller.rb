@@ -9,10 +9,12 @@
 # $Id$
 #
 
+#Controller for the entry point into the system.
 class PortalController < ApplicationController
 
   Revision_info="$Id$"
   
+  #Display a user's home page with information about their account.
   def welcome
     unless current_user
       redirect_to login_path 
@@ -25,6 +27,7 @@ class PortalController < ApplicationController
     @default_bourreau       = current_user.user_preference.bourreau.name rescue "(Unset)"
   end
   
+  #Display general information about the CBrain project.
   def credits
 
     @revinfo = { 'Revision'            => 'unknown',

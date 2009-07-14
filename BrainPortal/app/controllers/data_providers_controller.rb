@@ -9,13 +9,14 @@
 # $Id$
 #
 
+#Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
   Revision_info="$Id$"
 
   before_filter :login_required
    
-  def index
+  def index #:nodoc:
     @providers = DataProvider.all;
     unless check_role(:admin)
         @providers = @providers.select { |p| p.can_be_accessed_by(current_user) }
@@ -24,7 +25,7 @@ class DataProvidersController < ApplicationController
 
   # GET /data_providers/1
   # GET /data_providers/1.xml
-  def show
+  def show  #:nodoc:
     @provider = DataProvider.find(params[:id])
 
     raise "Provider not accessible by current user." unless @provider.can_be_accessed_by(current_user)
@@ -38,7 +39,7 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
   
-  def edit
+  def edit #:nodoc:
     @provider = DataProvider.find(params[:id])
     @user     = current_user
     #@mode     = "update"
@@ -58,7 +59,7 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
 
-  def new
+  def new #:nodoc:
     @user     = current_user
     @provider = DataProvider.new( :user_id   => @user.id,
                                   :group_id  => Group.find_by_name(@user.login).id,
@@ -76,7 +77,7 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
 
-  def create
+  def create #:nodoc:
     @user     = current_user
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
@@ -113,11 +114,11 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
 
-  def update
+  def update #:nodoc:
 
     @user     = current_user
     id        = params[:id]
-    @provider = DataProvider.find_by_id(id)
+    @provider = DataProvider.find(id)
 
     if !check_role(:admin) && @provider.user_id != @user.id
        flash[:error] = "You cannot edit a provider that you do not own."
@@ -143,10 +144,10 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
 
-  def destroy
+  def destroy #:nodoc:
     id        = params[:id]
     @user     = current_user
-    @provider = DataProvider.find_by_id(id)
+    @provider = DataProvider.find(id)
 
     userfiles = Userfile.find(:all, :conditions => { :data_provider_id => id })
     if ! userfiles.empty?
@@ -168,10 +169,14 @@ class DataProvidersController < ApplicationController
     access_error(404)
   end
 
+  #Browse the files of a data provider.
+  #This action is only available for data providers that are browsable.
+  #Both registered and unregistered files will appear in the list. 
+  #Unregistered files can be registered here.
   def browse
     @user     = current_user
     id        = params[:id]
-    @provider = DataProvider.find_by_id(id)
+    @provider = DataProvider.find(id)
 
     if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
       flash[:error] = "You cannot browse this provider."
@@ -212,10 +217,12 @@ class DataProvidersController < ApplicationController
   #  access_error(404)
   end
 
+  #Register a given file into the system.
+  #The file's meta data will be saved as a Userfile resource.
   def register
     @user     = current_user
     id        = params[:id]
-    @provider = DataProvider.find_by_id(id)
+    @provider = DataProvider.find(id)
 
     if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
       flash[:error] = "You cannot register files from this provider."
@@ -268,7 +275,7 @@ class DataProvidersController < ApplicationController
     if num_registered > 0
       flash[:notice] += "Registered #{num_registered} files.\n"
     else
-      flash[:notice] += "No file registered.\n"
+      flash[:notice] += "No files registered.\n"
     end
 
     redirect_to :action => :browse

@@ -37,6 +37,12 @@ class ApplicationController < ActionController::Base
     user && user.login != 'admin'
   end
   
+  #Checks that the current user is the same as +user+. Used to ensure permission
+  #for changing account information.
+  def edit_permission?(user)
+    current_user && user && (current_user == user || current_user.role == 'admin')
+  end
+  
   #Returns the current session as a Session object.
   def current_session
     @session ||= Session.new(session)

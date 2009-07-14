@@ -7,11 +7,10 @@
 # $Id$
 #
 
-#Model representing the remote services. 
+#Model representing remote services. 
 #
 #=Attributes:
 #[*name*] A string representing a the name of the remote resource.
-#[*type*] A string representing a the type of remote resource.
 #[*remote_user*] A string representing a user name to use to access the remote site.
 #[*remote_host*] A string representing a the hostname of the remote resource.
 #[*remote_port*] An integer representing the port number of the remote resource.

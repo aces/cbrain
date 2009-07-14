@@ -11,17 +11,31 @@
 #
 
 require 'digest/sha1'
+
+#Model representing CBrain users. 
+#All authentication of user access to the system is handle by the User model.
+#User level access to pages are handle through a given user's +role+ (either *admin* or *user*).
+#
+#=Attributes:
+#[*full_name*] The full name of the user.
+#[*login*] The user's login ID.
+#[*email*] The user's e-mail address.
+#[*role*]  The user's role.
+#= Associations:
+#*Has* *many*:
+#* Userfile
+#* CustomFilter
+#* Tag
+#* Feedback
+#*Has* *one*:
+#* UserPreference
+#*Has* *and* *belongs* *to* *many*:
+#* Group
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
 
   has_many                :userfiles
-
-  #begin takeout - no more manger_id
-  #has_many                :managed_groups,
-  #                        :class_name => 'Group',
-  #                        :foreign_key => 'manager_id',
-  #                           :dependent => :nullify
 
   has_and_belongs_to_many :groups
   has_many                :tags
@@ -55,49 +69,50 @@ class User < ActiveRecord::Base
   end
 
   # Encrypts some data with the salt.
-  def self.encrypt(password, salt)
+  def self.encrypt(password, salt) #:nodoc:
     Digest::SHA1.hexdigest("--#{salt}--#{password}--")
   end
 
   # Encrypts the password with the user salt
-  def encrypt(password)
+  def encrypt(password) #:nodoc:
     self.class.encrypt(password, salt)
   end
 
-  def authenticated?(password)
+  def authenticated?(password) #:nodoc:
     crypted_password == encrypt(password)
   end
 
-  def remember_token?
+  def remember_token? #:nodoc:
     remember_token_expires_at && Time.now.utc < remember_token_expires_at 
   end
 
-  # These create and unset the fields required for remembering users between browser closes
-  def remember_me
+  # These create and unset the fields required for remembering users between browser closes.
+  def remember_me #:nodoc:
     remember_me_for 2.weeks
   end
 
-  def remember_me_for(time)
+  def remember_me_for(time) #:nodoc:
     remember_me_until time.from_now.utc
   end
 
-  def remember_me_until(time)
+  def remember_me_until(time) #:nodoc:
     self.remember_token_expires_at = time
     self.remember_token            = encrypt("#{email}--#{remember_token_expires_at}")
     save(false)
   end
 
-  def forget_me
+  def forget_me #:nodoc:
     self.remember_token_expires_at = nil
     self.remember_token            = nil
     save(false)
   end
 
   # Returns true if the user has just been activated.
-  def recently_activated?
+  def recently_activated? #:nodoc:
     @activated
   end
   
+  #Does this user's role match +role+.
   def has_role?(role)
     return self.role == role.to_s
   end
@@ -105,13 +120,13 @@ class User < ActiveRecord::Base
   protected
 
   # before filter 
-  def encrypt_password
+  def encrypt_password #:nodoc:
     return if password.blank?
     self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
     self.crypted_password = encrypt(password)
   end
     
-  def password_required?
+  def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
     

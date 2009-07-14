@@ -1,3 +1,13 @@
+#
+# CBRAIN Project
+#
+# UserPreference model
+#
+# Original author: Tarek Sherif 
+#
+# $Id$
+#
+
 class UserPreference < ActiveRecord::Base
 
   Revision_info="$Id$"

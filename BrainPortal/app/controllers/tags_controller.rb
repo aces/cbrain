@@ -9,6 +9,7 @@
 # $Id$
 #
 
+#RESTful controller for the Tag resource.
 class TagsController < ApplicationController
 
   Revision_info = "$Id$"
@@ -17,7 +18,7 @@ class TagsController < ApplicationController
   
   # GET /tags
   # GET /tags.xml
-  def index
+  def index #:nodoc:
     @tags = current_user.tags.find(:all)
     @userfiles = current_user.userfiles.find(:all)
 
@@ -29,7 +30,7 @@ class TagsController < ApplicationController
 
   # GET /tags/1
   # GET /tags/1.xml
-  def show
+  def show #:nodoc:
     @tag = current_user.tags.find(params[:id])
 
     respond_to do |format|
@@ -40,7 +41,7 @@ class TagsController < ApplicationController
 
   # GET /tags/new
   # GET /tags/new.xml
-  def new
+  def new #:nodoc:
     @tag = Tag.new
 
     respond_to do |format|
@@ -50,13 +51,13 @@ class TagsController < ApplicationController
   end
 
   # GET /tags/1/edit
-  def edit
+  def edit #:nodoc:
     @tag = current_user.tags.find(params[:id])
   end
 
   # POST /tags
   # POST /tags.xml
-  def create    
+  def create #:nodoc:
     @tag = Tag.new(params[:tag])
     @tag.user_id = current_user.id
 
@@ -75,7 +76,7 @@ class TagsController < ApplicationController
 
   # PUT /tags/1
   # PUT /tags/1.xml
-  def update
+  def update #:nodoc:
     @tag = current_user.tags.find(params[:id])
 
     respond_to do |format|
@@ -92,7 +93,7 @@ class TagsController < ApplicationController
 
   # DELETE /tags/1
   # DELETE /tags/1.xml
-  def destroy
+  def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
     @tag.destroy
 

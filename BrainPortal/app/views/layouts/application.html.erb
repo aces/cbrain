@@ -18,7 +18,7 @@
 
 <head>
     <title>CBRAIN Project <%= yield :title %></title>
-    <%= stylesheet_link_tag "manager", :media => "all" %>
+    <%= stylesheet_link_tag "manager", "scaffold", :media => "all" %>
 
 </head>
 
@@ -87,7 +87,6 @@
                     <ul>
                        <li><%= link_to 'Users', users_path %></li>
                        <li><%= link_to 'Groups', groups_path %></li> 
-                       <li><%= link_to 'Institutions', institutions_path %></li>
                        <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
                     </ul>
       <% end %>

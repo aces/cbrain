@@ -9,13 +9,14 @@
 # $Id$
 #
 
+#Restful controller for the DrmaaTask resource.
 class TasksController < ApplicationController
 
   Revision_info="$Id$"
 
   before_filter :login_required
    
-  def index
+  def index #:nodoc:
     @tasks = []
     @bourreaux = available_bourreaux(current_user)
     @bourreaux.each do |bourreau|
@@ -40,7 +41,7 @@ class TasksController < ApplicationController
 
   # GET /tasks/3/1
   # GET /tasks/3/1.xml
-  def show
+  def show #:nodoc:
     bourreau_id = params[:bourreau_id]
     DrmaaTask.adjust_site(bourreau_id)
     @task = DrmaaTask.find(params[:id])
@@ -54,7 +55,7 @@ class TasksController < ApplicationController
     access_error(404)
   end
   
-  def new
+  def new #:nodoc:
     @task_class = Class.const_get(params[:task].to_s)
     if current_user.has_role? :admin
       @files = Userfile.find(params[:file_ids])
@@ -82,7 +83,7 @@ class TasksController < ApplicationController
 
   end
 
-  def create
+  def create #:nodoc:
     @task_class = params[:task].constantize
     @task_class.prefered_bourreau_id = current_user.user_preference.bourreau_id
     @task_class.data_provider_id     = params[:data_provider_id] || current_user.user_preference.data_provider
@@ -109,6 +110,16 @@ class TasksController < ApplicationController
 
   end
 
+  #This action handles requests to modify the status of a given task.
+  #The operations that are handled are:
+  #[*Postprocess*] If processing of the task is completed, sync files from
+  #                the task's working directory back to the system.
+  #[*Hold*] Put the task on hold (while it is queued).
+  #[*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
+  #[*Suspend*] Stop processing of the task (while it is on cpu).
+  #[*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
+  #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
+  #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database. 
   def operation
     if params[:commit] == 'Trigger postprocessing of selected tasks'
       operation = 'postprocess'

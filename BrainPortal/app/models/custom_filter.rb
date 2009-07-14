@@ -13,14 +13,31 @@
 #CustomFilter is executed an sql query will generated (by the query
 #and variables methods) which can be used as a condition parameter
 #for +finds+ done by the Userfile resource.
+#
+#=Attributes:
+#[*name*] A string representing the name of the filter.
+#[*file_name_type*] The type of filtering done on the filename (+matches+, <tt>begins with</tt>, <tt>ends with</tt> or +contains+).
+#[*file_name_term*] The string or substring to search for in the filename.
+#[*created_date_type*] The type of filtering done on the creation date (+before+, +on+ or +after+).
+#[*created_date_term*] The date to filter against.
+#[*size_type*] The type of filtering done on the file size (>, < or =).
+#[*size_term*] The file size to filter against.
+#[*group_id*] The id of the group to filter on.
+#[*tags*] A serialized hash of tags to filter on.
+#= Associations:
+#*Belongs* *to*:
+#* User
 class CustomFilter < ActiveRecord::Base
-  serialize     :variables
   serialize     :tags
   before_save   :parse_tags
+  
   belongs_to    :user
   
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => :user_id
+  validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!]*$/, 
+                                  :message  => 'nly the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !'
+  
   
   attr_accessor :tag_ids
   attr_writer   :query, :variables

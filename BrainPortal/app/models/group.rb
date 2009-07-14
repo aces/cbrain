@@ -13,7 +13,7 @@
 #to certain files (analogous to groups of the Unix OS).
 #
 #=Attributes:
-#[*name*] A string representing a the name of the group.
+#[*name*] A string representing the name of the group.
 #= Associations:
 #*Has* *and* *belongs* *to* *many*:
 #* User

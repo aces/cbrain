@@ -9,6 +9,7 @@
 # $Id$
 #
 
+#RESTful controller for the Feedback resource.
 class FeedbacksController < ApplicationController
   before_filter :login_required
   before_filter :admin_role_required, :only => [:edit, :update, :delete]
@@ -17,7 +18,7 @@ class FeedbacksController < ApplicationController
   
   # GET /feedbacks
   # GET /feedbacks.xml
-  def index
+  def index #:nodoc:
     @feedbacks = Feedback.find(:all)
 
     respond_to do |format|
@@ -28,7 +29,7 @@ class FeedbacksController < ApplicationController
 
   # GET /feedbacks/1
   # GET /feedbacks/1.xml
-  def show
+  def show #:nodoc:
     @feedback = Feedback.find(params[:id])
 
     respond_to do |format|
@@ -39,7 +40,7 @@ class FeedbacksController < ApplicationController
 
   # GET /feedbacks/new
   # GET /feedbacks/new.xml
-  def new
+  def new #:nodoc:
     @feedback = Feedback.new
 
     respond_to do |format|
@@ -49,13 +50,13 @@ class FeedbacksController < ApplicationController
   end
 
   # GET /feedbacks/1/edit
-  def edit
+  def edit #:nodoc:
     @feedback = Feedback.find(params[:id])
   end
 
   # POST /feedbacks
   # POST /feedbacks.xml
-  def create
+  def create #:nodoc:
     @feedback = Feedback.new(params[:feedback])
     @feedback.user_id = current_user.id
 
@@ -73,7 +74,7 @@ class FeedbacksController < ApplicationController
 
   # PUT /feedbacks/1
   # PUT /feedbacks/1.xml
-  def update
+  def update #:nodoc:
     @feedback = Feedback.find(params[:id])
 
     respond_to do |format|
@@ -90,7 +91,7 @@ class FeedbacksController < ApplicationController
 
   # DELETE /feedbacks/1
   # DELETE /feedbacks/1.xml
-  def destroy
+  def destroy #:nodoc:
     @feedback = Feedback.find(params[:id])
     @feedback.destroy
 
