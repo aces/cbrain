@@ -60,7 +60,7 @@
          <% end %>
          <td><%= h(to_localtime(Time.at(tupmtime).to_s)) %></td>
          <% if tupUF %>
-           <td><%= link_to "Registered", { :controller => 'userfiles', :id => tupUF.id } %></td>
+           <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => tupUF.id } %></td>
          <% else %>
            <td>New</td>
          <% end %>
