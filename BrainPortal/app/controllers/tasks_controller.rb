@@ -33,7 +33,7 @@ class TasksController < ApplicationController
       rescue => e
         bourreau_name = bourreau.name
         flash.now[:error] ||= ""
-        flash.now[:error] += "Bourreau '#{bourreau_name}' is down: #{e.to_s}"
+        flash.now[:error] += "Bourreau '#{bourreau_name}' is down: #{e.to_s}\n"
       end
     end
   end

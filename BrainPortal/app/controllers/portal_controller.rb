@@ -26,6 +26,24 @@ class PortalController < ApplicationController
   end
   
   def credits
+
+    @revinfo = { 'Revision'            => 'unknown',
+                 'Last Changed Author' => 'unknown',
+                 'Last Changed Rev'    => 'unknown',
+                 'Last Changed Date'   => 'unknown'
+               }
+
+    IO.popen("svn info #{RAILS_ROOT}","r") do |fh|
+      fh.each do |line|
+        if line.match(/^Revision|Last Changed/i)
+          comps = line.split(/:\s*/,2)
+          field = comps[0]
+          value = comps[1]
+          @revinfo[field]=value
+        end
+      end
+    end
+
   end
   
 end
