@@ -105,6 +105,8 @@ class UserfilesController < ApplicationController
     else
       @userfile = current_user.userfiles.find(params[:id])      
     end
+
+    @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
     
     @tags = current_user.tags.find(:all)
   end
