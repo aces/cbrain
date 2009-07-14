@@ -11,43 +11,93 @@
 
 
 body { 
-	font-family: Verdana, sans-serif; 
-	font-size: 12px; 
-	color:#484848; 
-	margin: 0; 
-	padding: 0;
-	/*min-width: 900px*/ 
-	max-height:100%; }
+    font-family: Verdana, sans-serif; 
+    font-size: 12px; 
+    color:#484848; 
+    margin: 0; 
+    padding: 0;
+    /*min-width: 900px*/ 
+    max-height:100%; }
 
+/*#######################################################################################################*/
 /*Heading format*/
-h1, h2, h3, h4 { font-family: "Trebuchet MS", Verdana, sans-serif;}
-h1 {margin-top: 5px; margin-bottom: 5px; margin-left: 2px; margin-right: 2px; padding: 1em; text-align: center; font-size: 24px;}
-h3 {font-size: 16px;padding: 2px 10px 1px 0px;margin: 0 0 10px 0; border-bottom: 1px solid #bbbbbb; color: #444;}
-h2{font-size: 20px;padding-top: 10px; padding-bottom: 10px; padding-left: 15px; width: 100%; margin-bottom: 15px; margin-top: 10px; margin-right: 0em; margin-left: 0em; border-bottom: 2px solid #bbbbbb; color: #444;}
+/*#######################################################################################################*/
+h1, h2, h3, h4 { 
+	font-family: "Trebuchet MS", Verdana, sans-serif;
+	}
+
+h1 	{
+	margin-top: 5px; 
+	margin-bottom: 5px; 
+	margin-left: 2px; 
+	margin-right: 2px; 
+	padding: 1em; 
+	text-align: center; 
+	font-size: 24px;
+	}
+	
+h3 	{
+	font-size: 16px;
+	padding: 2px 10px 1px 0px;
+	margin: 0 0 10px 0; 
+	border-bottom: 1px solid #bbbbbb; 
+	color: #444;
+	}
+	
+h2	{
+	font-size: 20px;
+	padding-top: 10px; 
+	padding-bottom: 10px; 
+	padding-left: 15px; 
+	width: 100%; 
+	margin-bottom: 15px; 
+	margin-top: 10px; 
+	margin-right: 0em; 
+	margin-left: 0em; 
+	border-bottom: 2px solid #bbbbbb; 
+	color: #444;
+	}
+	
 #header h1{
     float:left;
     padding: 10px;
 }
 
-
+/*##############################################################################################################*/
+/* For the <pre> formatting tags - allowing the page to resize properly											*/
+/*##############################################################################################################*/
 pre {
- overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
- white-space: pre-wrap; /* css-3 */
- white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
- white-space: -pre-wrap; /* Opera 4-6 */
- text-align: left;
- white-space: -o-pre-wrap; /* Opera 7 */
- /* width: 99%; */
- word-wrap: break-word; /* Internet Explorer 5.5+ */
+	overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+ 	white-space: pre-wrap; /* css-3 */
+ 	white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+ 	white-space: -pre-wrap; /* Opera 4-6 */
+ 	text-align: left;
+ 	white-space: -o-pre-wrap; /* Opera 7 */
+ 	word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
-/***** Layout of layout view *****/
-#wrapper {background: white;}
+/*##############################################################################################################*/
+/* Layout View																									*/
+/*##############################################################################################################*/
+#wrapper {
+	background: white;
+	}
 
-#top-menu {background: #0471B4; color: #fff; height:1.8em; font-size: 0.8em; padding: 2px 2px 0px 6px;}
-#top-menu ul {margin: 0;  padding: 0;}
+#top-menu {
+	background: #0471B4; 
+	color: #fff; 
+	height:1.8em; 
+	font-size: 0.8em; 
+	padding: 2px 2px 0px 6px;
+	}
+	
+#top-menu ul {
+	margin: 0;  
+	padding: 0;
+	}
+	
 #top-menu li {
-	float:left;
+    float:left;
     list-style-type:none;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
@@ -55,781 +105,884 @@ pre {
     }
 
 #top_01{
-	background-image:url(/images/top_01.gif);
-	width:87px;
-	height:76px;
-	margin: 0px;
+    background-image:url(/images/top_01.gif);
+    width:87px;
+    height:76px;
+    margin: 0px;
+    float:right;
+    }
+
+#top-menu a {
+	color: #fff; 
+	padding-right: 8px; 
+	font-weight: bold;
+	}
+	
+#top-menu #loggedas { 
+	float: right; 
+	margin-right: 0.5em; 
+	color: #ffffff; 
+	}
+
+#account {
 	float:right;
 	}
 
-#top-menu a {color: #fff; padding-right: 8px; font-weight: bold;}
-#top-menu #loggedas { float: right; margin-right: 0.5em; color: #ffffff; }
+#header {
+	height:6.333em;
+	margin:0;
+	background-color:#05A3D6;
+	color:#f8f8f8; 
+	position:relative;
+	}
+	
+#header a {
+	color:#f8f8f8;
+	}
 
-#account {float:right;}
+#main-menu {
+	position: absolute;  
+	bottom: 0px;  
+	left:6px; 
+	margin-right: -500px;
+	}
 
-#header {height:6.333em;margin:0;background-color:#05A3D6;color:#f8f8f8; position:relative;}
-#header a {color:#f8f8f8;}
-
-#main-menu {position: absolute;  bottom: 0px;  left:6px; margin-right: -500px;}
-
-#main-menu ul {margin: 0;  padding: 0;}
+#main-menu ul {
+	margin: 0;  
+	padding: 0;
+	}
 
 #main-menu li {
-        	float:left;
-            list-style-type:none;
-            margin: 0px 2px 0px 0px;
-            padding: 0px 0px 0px 0px;
-        	white-space:nowrap;
-        }
+	float:left;
+	list-style-type:none;
+	margin: 0px 2px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	white-space:nowrap;
+}
 
 #main-menu li a{
-        display: block;
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        margin: 0;
-        padding: 4px 10px 4px 10px;
+	display: block;
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	margin: 0;
+	padding: 4px 10px 4px 10px;
     }
 
 #main-menu ul li a:visited{
-	color: #FFFFFF;
+    color: #FFFFFF;
+    }
+    
+#main-menu li a:hover {
+	background:#759FCF; 
+	color:#fff;
+	}
+
+#main {
+	background-color:#EEEEEE;
+	}
+
+/*##############################################################################################################*/
+/* Sidebar View																									*/
+/*##############################################################################################################*/
+#sidebar h3{ 
+	font-size: 18px; 
+	margin-top:14px; 
+	color: #666; 
+	border-bottom: 2px solid #666; 
+	margin-left: 1em;  
+	}
+
+#main.nosidebar #sidebar{ 
+	display: none; 
 	}
 	
-#main-menu li a:hover {background:#759FCF; color:#fff;}
-
-#main {background-color:#EEEEEE;}
-
-/*side bar formatting of layout view*/
-#sidebar h3{ font-size: 18px; margin-top:14px; color: #666; border-bottom: 2px solid #666; margin-left: 1em;  }
-
-#main.nosidebar #sidebar{ display: none; }
-#main.nosidebar #content{ width: auto; border-right: 0; }
+#main.nosidebar #content{ 
+	width: auto; 
+	border-right: 0; 
+	}
 
 #sidebar{ 
-	float: right; 
-	width: 17%;
-	height: 100%; 
-	color: #666;
-	min-height: 600px;	
-	background-color: #EEEEEE;
-	border-left: 1px solid #e4e4e4;	
-	border-bottom: 1px solid #e4e4e4;
-	padding: 10px;
-	padding-bottom: 4px;
-	}
+    float: right; 
+    width: 17%;
+    height: 100%; 
+    color: #666;
+    min-height: 600px;  
+    background-color: #EEEEEE;
+    border-left: 1px solid #e4e4e4; 
+    border-bottom: 1px solid #e4e4e4;
+    padding: 10px;
+    padding-bottom: 4px;
+    }
 
 #sidebar ul li{
-	margin-left: 1em;
-	color: #0471B4;
-	}
+    margin-left: 1em;
+    color: #0471B4;
+    }
 
 #page-specific-sidebar {
-	width: 100%;
-	}
+    width: 100%;
+    }
 
-/*login formatting*/
-#login-form table {margin-top:5em; padding:1em; margin-left: auto; margin-right: auto; border: 2px solid #FDBF3B; background-color:#FFEBC1; }
-#login-form table td {padding: 6px;}
-#login-form label {font-weight: bold;}
+/*##############################################################################################################*/
+/* Login Formatting																								*/
+/*##############################################################################################################*/
+#login-form table {
+	margin-top:5em; 
+	padding:1em; 
+	margin-left: auto; 
+	margin-right: auto; 
+	border: 2px solid #FDBF3B; 
+	background-color:#FFEBC1; 
+	}
+	
+#login-form table td {
+	padding: 6px;
+	}
+	
+#login-form label {
+	font-weight: bold;
+	}
 
 .clear:after{ content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 
-/***** Links formatting*****/
+/*##############################################################################################################*/
+/* Links formatting																								*/
+/*##############################################################################################################*/
 #main-menu a:hover, a:active{
-	background:#ffffff none repeat scroll 0 0; color:#555555;
-	}
+    background:#ffffff none repeat scroll 0 0; 
+	color:#555555;
+    }
 
 a, a:visited{
-	color: #0471B4;
-	text-decoration:none;
-	}
+    color: #0471B4;
+    text-decoration:none;
+    }
 
-/*Content formatting */
+/*##############################################################################################################*/
+/* Content Formatting																							*/
+/*##############################################################################################################*/
 #content { 
-	width: 80%; 
-	float: left;
-	background-color: #ffffff; 
-	height:100%; 
-	padding-bottom: 4px; 
+    width: 80%; 
+    float: left;
+    background-color: #ffffff; 
+    height:100%; 
+    padding-bottom: 4px; 
     padding-bottom:10px;
-	height: 100%;
-	}
+    height: 100%;
+    }
 
-
-/*Index for userfiles - search box formatting */
+/*##############################################################################################################*/
+/* Index Userfiles View -search box formatting																	*/
+/*##############################################################################################################*/
 .searchtable {
     float: right;
-	border: 0px;
-	margin-bottom: 0px;
-	}
+    border: 0px;
+    margin-bottom: 0px;
+    }
 
 .searchtable td{
-	border: 0px;
-	margin-bottom: 0px;
-	}
-	
+    border: 0px;
+    margin-bottom: 0px;
+    }
+    
 .search{
-	float: right;
-	border: 0px;
-	width: 100%;
-	margin-left: 1em;
-	margin-bottom: 0px;	
-	}
-
-/* Formatting for the tag table for tag display */
-.tagtable td{
-	border: 0px;
-	}
-
-.tagtable{
-	border-bottom: 1px solid #9CF;
-	}
-
-/* general formatting for the content of the page - should be applied to all new pages*/
-.generalbox{
-	float: left;
-	width: auto;
-    margin-left: 1em;
-	margin-right: 4em;
-	margin-bottom: 1em;
-	padding: 2em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-	border: 1px solid #e4e4e4;	
-	}
-
-.generalcontent{
-	float: left;
-	width: 99%;
-	margin-right: 4em;
-}
-
-
-/* Formmating for Userfiles header Index view for userfiles which encompasses tag management, tag update and group update */
- .filesheader{
-	float:left; 
+    float: right;
+    border: 0px;
     width: 100%;
     margin-left: 1em;
-	margin-right: 4em;
-	margin-bottom: 1em;
-	padding-bottom: 1em;
+    margin-bottom: 0px; 
+    }
+
+/*##############################################################################################################*/
+/*Formatting for the tag table for tag display 																	*/
+/*##############################################################################################################*/
+.tagtable td{
+    border: 0px;
+    }
+
+.tagtable{
+    border-bottom: 1px solid #9CF;
+    }
+
+/*##############################################################################################################*/
+/* General formatting for the content of the page - should be applied to all new pages							*/																	*/
+/*##############################################################################################################*/
+.generalbox{
+    float: left;
+    width: auto;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    padding: 2em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
+    border: 1px solid #e4e4e4;  
+    }
+
+.generalcontent{
+    float: left;
+    width: 99%;
+    margin-right: 4em;
 	}
 
-/* Content for the userfiles */
+/*##############################################################################################################*/
+/* Userfiles header index view encompasses tag management														*/
+/*##############################################################################################################*/
+ .filesheader{
+    float:left; 
+    width: 100%;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #e4e4e4;
+    }
+
+/*##############################################################################################################*/
+/* Content for userfiles																						*/
+/*##############################################################################################################*/
 .userfilescontent{
-	float: left;
-	width: 99%;
-	margin-right: 4em;
-	}
+    float: left;
+    width: 99%;
+    margin-right: 4em;
+    }
 
-/* Userfiles table formatting */ 
+/*##############################################################################################################*/
+/* Userfiles table formatting																					*/
+/*##############################################################################################################*/
 .list-even{
-	border-bottom: 1px solid #6699CC;
-	}
+    border-bottom: 1px solid #6699CC;
+    }
 
 tr.list-even{
-	border-bottom: 1px solid #6699CC;
-	}
+    border-bottom: 1px solid #6699CC;
+    }
 
-
-/* General formatting for a table */
+/*##############################################################################################################*/
+/* General formatting for a table																				*/
+/*##############################################################################################################*/
 table {
     margin: 1em 1em 1em 0;
     padding: 2px;
     border-spacing: 2px 2px;
-	border: 2px solid #6699CC;
-	}
+    border: 2px solid #6699CC;
+    }
 
  table th{ 
-	width: auto;
-	border: 1px solid #9CF;
-	color: #ffffff;
-	background: #0471B4;
-	padding-left: 10px;
-	padding-right: 10px;
-	text-align: center;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-}
+    width: auto;
+    border: 1px solid #9CF;
+    color: #ffffff;
+    background: #0471B4;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+	}
 
 table td
-	{ 
-	width: auto;
-	border: 1px solid #9CF;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	padding-left: 6px;
-	padding-right: 6px;
-	text-align: center;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #ffffff; 
-	}
+    { 
+    width: auto;
+    border: 1px solid #9CF;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 6px;
+    padding-right: 6px;
+    text-align: center;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #ffffff; 
+    }
 
 td.title {
-	width: auto;
-	background: #0471B4;
-	padding-left: 10px;
-	padding-right: 10px;
-	text-align: center;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;	
-	}
-	
+    width: auto;
+    background: #0471B4;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff; 
+    }
+    
 th.subtitle{
-	width: auto;
-	background-color: #05A3D6;
-	padding-left: 10px;
-	padding-right: 10px;
-	text-align: left;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	}
-	
+    width: auto;
+    background-color: #05A3D6;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    }
+    
 td.tabletext{
-	text-align: left;
-	text-indent: 10px;
-	}
-	
-/*Tasks table formatting*/
+    text-align: left;
+    text-indent: 10px;
+    }
+
+/*##############################################################################################################*/
+/* Show tasks table formatting																					*/
+/*##############################################################################################################*/
 .showtaskscontent{
-	float: left;
-	width: 99%;
-	margin-right: 4em;
-	}	
+    float: left;
+    width: 99%;
+    margin-right: 4em;
+    }   
 
 .showtasksdisplay{
-   	float: left;
-	width: 100%;
-	padding: 6px;
-	margin-top: 0.5em; 
-   	margin-left: 1em;
-   	margin-right: 1em;
-   	margin-bottom: 4em;
+    float: left;
+    width: 100%;
+    padding: 6px;
+    margin-top: 0.5em; 
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-bottom: 4em;
    }
 
 .showtasksdisplay th{
-	width: 40%;
-	text-align: left;
-	
-}
-
-.showtasksdisplay td{
-	text-align: left;
-	
-}
-
-.tasksmenu{
-	float:left; 
-	width: 99%;
-    margin-left: 1em;
-	margin-right: 4em;
-	margin-bottom: 1em;
-	background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-	border: 1px solid #e4e4e4;
+    width: 40%;
+    text-align: left;
 	}
 
+.showtasksdisplay td{
+    text-align: left;
+	}
+
+/*##############################################################################################################*/
+/* Tasks menu formatting																						*/
+/*##############################################################################################################*/
+.tasksmenu{
+    float:left; 
+    width: 99%;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #e4e4e4;
+    }
+
+/*##############################################################################################################*/
+/* Tasks table formatting																						*/
+/*##############################################################################################################*/
 .taskstable{
-	float: left;
-	width: 100%;
-	padding: 6px;
-	margin-top: 2em; 
+    float: left;
+    width: 100%;
+    padding: 6px;
+    margin-top: 2em; 
     margin-left: 1em;
     margin-right: 0em;
     margin-bottom: 4em;
-	padding: 2px;
+    padding: 2px;
 }
 
 .taskstable th
-	{ 
-	border: 0px;
-	background-color: #05A3D6;
-	text-align: left;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	padding: 2px;
-	}
+    { 
+    border: 0px;
+    background-color: #05A3D6;
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    padding: 2px;
+    }
 
 .taskstable td
-	{ 
-	border: 0px;
-	text-align: left;
-	text-indent: 5px;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa; 
-	padding: 2px;
-	}
+    { 
+    border: 0px;
+    text-align: left;
+    text-indent: 5px;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa; 
+    padding: 2px;
+    }
 
 td.info {
-	width: 30%;
-	text-align: left;
-	}
-	
+    width: 30%;
+    text-align: left;
+    }
+    
 td.taskinfo{
-	border: 0px;
-	}
-	
-/* bourreaux menu options formatting*/
-.bourreauxmenuoptions{
-	float: left;
-	width: 99%;
-	margin-right: 4em;
-	}
+    border: 0px;
+    }
 
-/* Show tasks table formatting */
+/*##############################################################################################################*/
+/* Bourreaux menu options formatting																			*/
+/*##############################################################################################################*/
+.bourreauxmenuoptions{
+    float: left;
+    width: 99%;
+    margin-right: 4em;
+    }
+
+/*##############################################################################################################*/
+/* Show tasks table formatting																					*/
+/*##############################################################################################################*/
 .showtaskstable{
-	float: left;
-	width: 80%;
-	padding: 6px;
-	margin-top: 2em; 
+    float: left;
+    width: 80%;
+    padding: 6px;
+    margin-top: 2em; 
     margin-left: 1em;
     margin-right: 0em;
     margin-bottom: 4em;
-	padding: 2px;		
-	}
+    padding: 2px;       
+    }
 
 .showtaskstable th
-	{ 
-	border-bottom: 1px solid #9CF;
-	border-top: 1px solid #9CF;
-	border-left: 1px solid #9CF;
-	border-right: 0px;
-	border-bottom: 1px solid #6699CC;	
-	text-align: left;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	background-color: #0471B4;
-	padding: 2px;
-	}
+    { 
+    border-bottom: 1px solid #9CF;
+    border-top: 1px solid #9CF;
+    border-left: 1px solid #9CF;
+    border-right: 0px;
+    border-bottom: 1px solid #6699CC;   
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    background-color: #0471B4;
+    padding: 2px;
+    }
 
 .showtaskstable td
-	{ 
-	border-bottom: 1px solid #9CF;
-	border-top: 1px solid #9CF;;
-	border-left: 1px solid #9CF;
-	border-right: 1px solid #9CF;
-	text-align: left;
-	text-indent: 0px;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa; 
-	padding: 2px;
-	width: 30%;
-	}
+    { 
+    border-bottom: 1px solid #9CF;
+    border-top: 1px solid #9CF;;
+    border-left: 1px solid #9CF;
+    border-right: 1px solid #9CF;
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa; 
+    padding: 2px;
+    width: 30%;
+    }
 
-/*format of tasks trigger box as part of the tasks index page*/
+/*##############################################################################################################*/
+/* Format of tasks trigger box as part of the tasks index page													*/
+/*##############################################################################################################*/
 .taskstrigger{
-	float:left; 
-	background-color: #f6f6f6;
-	color: #505050;
-	}
-
-/*format of tasks other operations box */
-.tasksoperation{
-	float:left; 
-	margin-left: 1em;
-	background-color: #f6f6f6;
+    float:left; 
+    background-color: #f6f6f6;
     color: #505050;
-	}
-	
-/* Userfiles table display formmating */
+    }
+
+/*##############################################################################################################*/
+/* Format of tasks operations box 																		*/
+/*##############################################################################################################*/
+.tasksoperation{
+    float:left; 
+    margin-left: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    }
+
+/*##############################################################################################################*/
+/* Userfiles Index formatting																					*/
+/*##############################################################################################################*/
 .userfilesdisplay{
     float: left;
-	width: 100%;
-	padding: 6px;
-	margin-top: 0.5em; 
+    width: 100%;
+    padding: 6px;
+    margin-top: 0.5em; 
     margin-left: 1em;
     margin-right: 1em;
     margin-bottom: 4em;
     }
 
 .userfilesdisplay th
-	{ 
-	border: 0px;
-	background-color: #0471B4;
-	text-align: center;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	}
-	
+    { 
+    border: 0px;
+    background-color: #0471B4;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    }
+    
 .userfilesdisplay th a {
-	color: #ffffff;
-	}
-	
+    color: #ffffff;
+    }
+    
 .userfilesdisplay th a:link {
-	color: #ffffff;
-	}
-	
+    color: #ffffff;
+    }
+    
 .userfilesdisplay th{
-	color: #ffffff;
-	}
+    color: #ffffff;
+    }
 
 .userfilesdisplay tr.list-odd td{
-	background-color: #ffffff;	
-	}
+    background-color: #ffffff;  
+    }
 
 .userfilesdisplay td.centered {
-	border: 0px;	
-	text-align: center;
-	text-indent: 0em;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa;	
-	width: auto;
-	padding: 1px;
-	}
+    border: 0px;    
+    text-align: center;
+    text-indent: 0em;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;  
+    width: auto;
+    padding: 1px;
+    }
 
 .userfilesdisplay td {
-	border: 0px;
-	text-align: left;
-	text-indent: 2em;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa;	
-	width: auto;
-	padding: 1px;
-	}
-	
+    border: 0px;
+    text-align: left;
+    text-indent: 2em;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;  
+    width: auto;
+    padding: 1px;
+    }
+    
 table.userfilesdisplay td.checkbox 
-	{
-	text-align: center;
-	}
+    {
+    text-align: center;
+    }
 
 .userfiles 
-	{
-	border: 0px;
-	}
+    {
+    border: 0px;
+    }
 
 .userfiles tr {
-	border: 1px;
-	text-align: left;
-	}
+    border: 1px;
+    text-align: left;
+    }
 
 .userfiles td{
-	border: 0px;
-	text-align: left;
-	}
+    border: 0px;
+    text-align: left;
+    }
 
 .fileoperations{
     float:left; 
     width: 100%;
     margin-left: 1em;
-	margin-right: 4em;
-	margin-bottom: 0.5em;
-	background-color: #f6f6f6;
+    margin-right: 4em;
+    margin-bottom: 0.5em;
+    background-color: #f6f6f6;
     color: #505050;
-	border: 1px solid #e4e4e4;
-	}
+    border: 1px solid #e4e4e4;
+    }
 
 .filemanipulation{
-	float:left;
-	width: 43em;
-	margin-left: 1em;
-	}
+    float:left;
+    width: 43em;
+    margin-left: 1em;
+    }
 
 .filemanagement{
-	float: left;
-	margin-left: 5em;
-	}
+    float: left;
+    margin-left: 5em;
+    }
 
 .filters{float:left; 
     width:20em;
-	margin-left: 1em;
-	}
+    margin-left: 1em;
+    }
 
 .tags{
-	float:left;
-	padding-left: 2em;
-	}
+    float:left;
+    padding-left: 2em;
+    }
 
 .groups{
-	float: left;
-	width: 30em;
-	margin-left: 1em;
-	padding-left: 2em;
-	}
+    float: left;
+    width: 30em;
+    margin-left: 1em;
+    padding-left: 2em;
+    }
 
 .pages{
-	float: left;
-	width: auto;
+    float: left;
+    width: auto;
     margin-left: 1em;
-	margin-right: 4em;
-	margin-bottom: 0em;
-	padding: 0.25em;
+    margin-right: 4em;
+    margin-bottom: 0em;
+    padding: 0.25em;
     background-color: #f6f6f6;
     color: #505050;
-  	border: 1px solid #e4e4e4;
-	}
+    border: 1px solid #e4e4e4;
+    }
 
 .uploadbox{
-	width: 50%;
-	float: left;
-	padding: 2em; 
+    width: 50%;
+    float: left;
+    padding: 2em; 
     margin-left: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
-	margin-bottom: 1em;
-	margin-top: 1em;
-}
+    border: 1px solid #e4e4e4;
+    margin-bottom: 1em;
+    margin-top: 1em;
+	}
 
-/* Tasks table view */
+/*##############################################################################################################*/
+/* Tasks table view						 																		*/
+/*##############################################################################################################*/
 .taskstable{
    float: left;
-	width: 100%;
-	padding: 6px;
-	margin-top: 0.5em; 
+    width: 100%;
+    padding: 6px;
+    margin-top: 0.5em; 
     margin-left: 1em;
     margin-right: 1em;
     margin-bottom: 4em;
     }
 
 .taskstable th
-	{ 
-	background-color: #0471B4;
-	text-align: center;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	}
+    { 
+    background-color: #0471B4;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    }
 
 
 .taskstable td
-	{ 
-	border: 0px;
-	text-align: center;
-	text-indent: 0em;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa;
-	padding: 2px;
-	}
+    { 
+    border: 0px;
+    text-align: center;
+    text-indent: 0em;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;
+    padding: 2px;
+    }
 
 .taskstable tr.list-even td{
-	background-color: #ffffff;	
-	}
+    background-color: #ffffff;  
+    }
 
 .tasksbox{
-	float:left; 
+    float:left; 
     width: 100%;
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
-	padding-left: 0em;
-	padding-right: 0em;
-	margin-right: 1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0em;
+    padding-right: 0em;
+    margin-right: 1em;
     margin-left: 1em;
-	margin-bottom: 1em;
+    margin-bottom: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
-}
+    border: 1px solid #e4e4e4;
+	}
 
 .tasksmenuoptions{
-	float:left; 
-	padding-left: 1em;
-	margin-top: 1em;
-}
+    float:left; 
+    padding-left: 1em;
+    margin-top: 1em;
+	}
 
-/*formatting for the data provider view */
+/*##############################################################################################################*/
+/* Formatting for the data provider view 																		*/
+/*##############################################################################################################*/
 .dataprovidertable{
-   	float: left;
-	width: 100%;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	padding-right: 1px;
-	margin-top: 1em; 
+    float: left;
+    width: 100%;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-right: 1px;
+    margin-top: 1em; 
     margin-left: 1em;
- 	margin-right: 1em;
+    margin-right: 1em;
     margin-bottom: 4em;
     }
 
  .dataprovidertable th
-	{ 
-	border-bottom: 1px solid #9CF;
-	border-top:1px solid #9CF;
-	border-left: 1px solid #9CF;
-	border-right: 0px;
-	border-bottom: 1px solid #6699CC;
-	background-color: #0471B4;
-	text-align: center;
-	text-indent: 0px;
-	font-family: Verdana;
-	font-weight: bold;
-	font-size: 11px;
-	color: #ffffff;
-	}
+    { 
+    border-bottom: 1px solid #9CF;
+    border-top:1px solid #9CF;
+    border-left: 1px solid #9CF;
+    border-right: 0px;
+    border-bottom: 1px solid #6699CC;
+    background-color: #0471B4;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    }
 
  .dataprovidertable td
-	{ 
-	border-bottom: 1px solid #9CF;
-	border-top: 1px solid #9CF;
-	border-left: 1px solid #9CF;
-	border-right: 1px solid #9CF;
-	text-align: center;
-	text-indent: 0em;
-	font-family: Verdana, sans-serif, Arial;
-	font-weight: normal;
-	font-size: 11px;
-	color: #404040;
-	background-color: #fafafa;
-	padding: 2px;
-	}
+    { 
+    border-bottom: 1px solid #9CF;
+    border-top: 1px solid #9CF;
+    border-left: 1px solid #9CF;
+    border-right: 1px solid #9CF;
+    text-align: center;
+    text-indent: 0em;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;
+    padding: 2px;
+    }
 
 .dataproviderbox{
-	float:left; 
+    float:left; 
     width: 100%;
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
     margin-left: 1em;
-	margin-bottom: 1em;
+    margin-bottom: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
-}
+    border: 1px solid #e4e4e4;
+	}
 
 .dataprovidermenuoptions{
-	float:left; 
-	padding-left: 1em;
-}
+    float:left; 
+    padding-left: 1em;
+	}
 
-/*formatting for the bourreaux view */
+/*##############################################################################################################*/
+/* Bourreaux view 																								*/
+/*##############################################################################################################*/
 .bourreauxbox{
-	float:left; 
+    float:left; 
     width: 100%;
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
     margin-left: 1em;
-	margin-bottom: 1em;
+    margin-bottom: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
-	}
+    border: 1px solid #e4e4e4;
+    }
 
 .bourreauxtable{
     float: left;
-	width: 100%;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	padding-right: 1px;
-	margin-top: 1em; 
+    width: 100%;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-right: 1px;
+    margin-top: 1em; 
     margin-left: 1em;
- 	margin-right: 1em;
+    margin-right: 1em;
     margin-bottom: 4em;
     }
 
 .bourreauxmenuoptions{
-	float:left; 
-	padding-left: 1em;
-	}
+    float:left; 
+    padding-left: 1em;
+    }
 
-/*Formatting for the session view*/
+/*##############################################################################################################*/
+/* Session view	(login)		 																					*/
+/*##############################################################################################################*/
 .loginbox {
-  	margin-top: 1em;
-  	margin-right: 1em;
-  	margin-bottom: 2em;
-  	margin-left: 1em;
-  	padding-top: 1em;
-  	padding-left: 1em;
-  	padding-bottom: 2em;
-  	padding-right: 2em;  
-  	float: left;
-  	width: 30%;
-  	height: 12em;
-	}
+    margin-top: 1em;
+    margin-right: 1em;
+    margin-bottom: 2em;
+    margin-left: 1em;
+    padding-top: 1em;
+    padding-left: 1em;
+    padding-bottom: 2em;
+    padding-right: 2em;  
+    float: left;
+    width: 30%;
+    height: 12em;
+    }
 
 .logintable{
-	float: left;
-  	width: 100%;
-  	border: 1px;
-  	margin-top: 1em;
-  	margin-right: 1em;
-  	margin-bottom: 2em;
-  	padding-top: 1em;
-  	padding-left: 1em;
-  	padding-bottom: 1em;
-  	padding-bottom: 1em;
+    float: left;
+    width: 100%;
+    border: 1px;
+    margin-top: 1em;
+    margin-right: 1em;
+    margin-bottom: 2em;
+    padding-top: 1em;
+    padding-left: 1em;
+    padding-bottom: 1em;
+    padding-bottom: 1em;
     background-color: #ffffdd;
-	}
+    }
 
 .logintable td{
-	border: 0px;
-	background-color:#ffffdd;
-	text-align: right;
-	padding: 2px;
-	margin: 0px;
-	}
+    border: 0px;
+    background-color:#ffffdd;
+    text-align: right;
+    padding: 2px;
+    margin: 0px;
+    }
 
 .logintable td.field{
-	text-align: left;
-	padding: 2px;
-	}
-	
+    text-align: left;
+    padding: 2px;
+    }
+    
 .logintable tr{
-	margin: 1px;
-	background-color:#ffffdd;
-	}
+    margin: 1px;
+    background-color:#ffffdd;
+    }
 
 .login{
-	float: right;
-	width: 50%;
-	}
+    float: right;
+    width: 50%;
+    }
 
-
-/*formatting for the Userfiles view (new) */
+/*##############################################################################################################*/
+/* Formatting for the Userfiles view (new) 																		*/
+/*##############################################################################################################*/
 .uploadtags{
     float:left;
     width:20em;
-	margin-left: 2em;
+    margin-left: 2em;
     }
 
 .fileupload{
     float: left;
     width: 30em;
     margin-left: 2em;
- }  
+ 	}  
 
 .uploadgroups{
      float: left;
@@ -847,163 +1000,177 @@ table.userfilesdisplay td.checkbox
     float: left;
     width: 100%;
     margin-left: 25px;
-   	}
+    }
 
 .fileuploadbutton{
     float: left;
     width: 20em;
     margin-left: 25px;
-	}
+    }
 
 .fileoptions{
-	float: left;
-	width: 20em;
-	margin-left: 25px;
-	}
+    float: left;
+    width: 20em;
+    margin-left: 25px;
+    }
 
-/* box for credits */
-.box{	
-	float:left; 
+/*##############################################################################################################*/
+/* Box for credits 																								*/
+/*##############################################################################################################*/
+.box{   
+    float:left; 
     margin-left: 1em;
-	margin-right: 1em;
-	margin-bottom: 1em;
-	padding-bottom: 1em;
+    margin-right: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
-	border: 1px solid #e4e4e4;
-   	padding:6px;
-   	}
+    border: 1px solid #e4e4e4;
+    padding:6px;
+    }
 
-/* splits the screen for credits */
+/*##############################################################################################################*/
+/* Splits the screen for credits 																				*/
+/*##############################################################################################################*/
 .splitleft{
-	float: left;
-	width: 50%;
-	}
+    float: left;
+    width: 50%;
+    }
 
 .splitright{
-	float: right;
-	width: 50%;
-	}
+    float: right;
+    width: 50%;
+    }
 
-/* Formatting for the welcome page */
+/*##############################################################################################################*/
+/* Formatting for the welcome page 																				*/
+/*##############################################################################################################*/
 .welcomepage{
-	width: 100%;
-	height: 100%;
-	float: left;
-	}
+    width: 100%;
+    height: 100%;
+    float: left;
+    }
 
 .welcometable{
-	border: 0px;
-	float: left; 
-	width: 30em;
+    border: 0px;
+    float: left; 
+    width: 30em;
     background-color: #f6f6f6;
     color: #505050;
-	}
+    }
 
 .welcometable td{
-	background-color: #f6f6f6;
-	border: 1px solid #9CF;
-	width: 20em;
-	border: 0px;
-	text-align: left;
-	float: left;
-	}
+    background-color: #f6f6f6;
+    border: 1px solid #9CF;
+    width: 20em;
+    border: 0px;
+    text-align: left;
+    float: left;
+    }
 
 .welcometable td.welcomeresult{
-	background-color: #ffffff;
-	/*background-color: #f6f6f6;*/
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
-	padding-left: 2em;
-	padding-right: 1em;
-	border: 1px solid #9CF;
-	text-align: left;
-	float: left;
-	width: 10em;
-	}
+    background-color: #ffffff;
+    /*background-color: #f6f6f6;*/
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 2em;
+    padding-right: 1em;
+    border: 1px solid #9CF;
+    text-align: left;
+    float: left;
+    width: 10em;
+    }
 
 .welcometable tr{
-	background-color: #f6f6f6;
-	border: 1px solid #9CF;
-	width: 20em;
-	padding: 4px;
-	text-align: left;
-	}
+    background-color: #f6f6f6;
+    border: 1px solid #9CF;
+    width: 20em;
+    padding: 4px;
+    text-align: left;
+    }
 
 .welcometable th{
-	color: #ffffff;
-	background-color: #0471B4;
-	}
+    color: #ffffff;
+    background-color: #0471B4;
+    }
 
-/* Application view main content formatting */
+/*##############################################################################################################*/
+/* Application view main content formatting 																	*/
+/*##############################################################################################################*/
 #main-content{
     min-height: 100%;
-	height:auto;
-	height: 100%;
-	margin: 0 auto -4em;
-	}
+    height:auto;
+    height: 100%;
+    margin: 0 auto -4em;
+    }
 
-/* footer formatting */
+/*##############################################################################################################*/
+/* Footer formatting 																							*/
+/*##############################################################################################################*/
 #footer {
-	height: 2em;
-	clear: both; 
-	border-top: 2px solid #e4e4e4; 
-	font-size: 0.9em; 
-	color: #aaa; 
-	padding: 5px; 
-	text-align: center; 
-	background:#ffffff;
-	}
+    height: 2em;
+    clear: both; 
+    border-top: 2px solid #e4e4e4; 
+    font-size: 0.9em; 
+    color: #aaa; 
+    padding: 5px; 
+    text-align: center; 
+    background:#ffffff;
+    }
 
 #bottomfooter{
     text-align: center;
-	}
+    }
 
 #leftfoot {
-	background-image:url(/images/footer_mcgill_logo.gif);
-	width: 15em;
-	height: 10em;
-	float: left;
-	background-repeat:no-repeat;
-	}
+    background-image:url(/images/footer_mcgill_logo.gif);
+    width: 15em;
+    height: 10em;
+    float: left;
+    background-repeat:no-repeat;
+    }
 
 #rightfoot {
-	background-image:url(/images/footer_mcgill_logo.gif);
-	width: 15em;
-	height: 10em;
-	float: right;
-	background-repeat:no-repeat;
-	}
+    background-image:url(/images/footer_mcgill_logo.gif);
+    width: 15em;
+    height: 10em;
+    float: right;
+    background-repeat:no-repeat;
+    }
 
-/* format for notices */
+/*##############################################################################################################*/
+/* Format for notices 																							*/
+/*##############################################################################################################*/
 .notice {
-  	float: left;
-  	width: 100%;
-  	border: 1px;
-  	margin-top: 1em;
-  	margin-right: 1em;
-  	padding-top: 1em;
-  	padding-left: 1em;
-  	padding-bottom: 1em;
-  	padding-bottom: 1em;
-  	margin-bottom: 2em;
-   	background-color: #ffffdd;
-	}
+    float: left;
+    width: 100%;
+    border: 1px;
+    margin-top: 1em;
+    margin-right: 1em;
+    padding-top: 1em;
+    padding-left: 1em;
+    padding-bottom: 1em;
+    padding-bottom: 1em;
+    margin-bottom: 2em;
+    background-color: #ffffdd;
+    }
 
-/* format for error messages */
+/*##############################################################################################################*/
+/* Format for error messages 																					*/
+/*##############################################################################################################*/
 .error {
-	z-index: 0;
-	width: 97%;
-	border: 1px;
-	padding-top: 1em;
-	padding-bottom: 1em;
-	padding-left: 1em;
-	padding-right: 1em;
-	margin-bottom: 2em;
-	margin-top: 2em;
-	margin-right: 1em;
-	margin-left: 1em;
-	float: left;
-	background-color: #ffeeee;
-	}
+    z-index: 0;
+    width: 97%;
+    border: 1px;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 2em;
+    margin-top: 2em;
+    margin-right: 1em;
+    margin-left: 1em;
+    float: left;
+    background-color: #ffeeee;
+    }
