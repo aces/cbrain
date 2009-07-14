@@ -42,11 +42,7 @@
       tupMESS  = tuplet[5]
     %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <% if tupUF %>
-           <td></td>
-         <% else %>
-           <td><%= check_box_tag("basenames[]",tupname,false) %></td>
-         <% end %>
+         <td><%= check_box_tag("basenames[]",tupname,false) %></td>
          <td><%= h(tupname) %></td>
          <td><%= h(tupsize) %></td>
          <% if tupUF %>
@@ -74,7 +70,8 @@
 
 </table>
 
-<%= submit_tag 'Register' %>
+<%= submit_tag 'Register files' %>
+<%= submit_tag 'UnRegister files' %>
 
 <% end %>
 </div>

@@ -220,9 +220,10 @@ class DataProvidersController < ApplicationController
   #Register a given file into the system.
   #The file's meta data will be saved as a Userfile resource.
   def register
-    @user     = current_user
-    id        = params[:id]
-    @provider = DataProvider.find(id)
+    @user        = current_user
+    user_id      = @user.id
+    provider_id  = params[:id]
+    @provider    = DataProvider.find(provider_id)
 
     if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
       flash[:error] = "You cannot register files from this provider."
@@ -232,6 +233,7 @@ class DataProvidersController < ApplicationController
 
     basenames = params[:basenames] || []
     dirtypes  = params[:directorytypes] || []
+    do_unreg  = params[:commit] =~ /unregister/i
 
     base2type = {}
     dirtypes.select { |typebase| ! typebase.empty? }.each do |typebase|
@@ -241,12 +243,28 @@ class DataProvidersController < ApplicationController
       base2type[base] = type
     end
     
-    num_registered = 0
-    num_skipped    = 0
+    num_registered   = 0
+    num_unregistered = 0
+    num_skipped      = 0
+
     flash[:error]  = ""
     flash[:notice] = ""
 
     basenames.each do |basename|
+
+      # Unregister old files
+
+      if do_unreg
+        unless userfile = Userfile.find(:first, :conditions => { :name => basename, :data_provider_id => provider_id } )
+          num_skipped += 1
+          next
+        end
+        num_unregistered += Userfile.delete(userfile.id)
+        next
+      end
+
+      # Register new files
+
       subtype = "SingleFile"
       if base2type.has_key?(basename)
         subtype = base2type[basename]
@@ -260,9 +278,9 @@ class DataProvidersController < ApplicationController
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
                                :size             => 0,
-                               :user_id          => @user.id,
+                               :user_id          => user_id,
                                :group_id         => @provider.group_id,
-                               :data_provider_id => @provider.id )
+                               :data_provider_id => provider_id )
       if userfile.save
         num_registered += 1
       else
@@ -272,10 +290,16 @@ class DataProvidersController < ApplicationController
 
     end
 
+    if num_skipped > 0
+      flash[:notice] += "Skipped #{num_skipped} files.\n"
+    end
+
     if num_registered > 0
       flash[:notice] += "Registered #{num_registered} files.\n"
+    elsif num_unregistered > 0
+      flash[:notice] += "Unregistered #{num_unregistered} files.\n"
     else
-      flash[:notice] += "No files registered.\n"
+      flash[:notice] += "No files affected.\n"
     end
 
     redirect_to :action => :browse
