@@ -25,7 +25,7 @@ class UserfilesControllerTest < ActionController::TestCase
       post :create, {:upload_file  => fixture_file_upload("files/#{filename}")}, {:user_id  => users(:users_001).id}
     end
     
-    vaultname = Userfile.find_by_name(filename).vaultname
+    vaultname = Userfile.find_by_name(filename).cache_full_path
     assert(File.exists?(vaultname), 'File content not saved.')
     assert_redirected_to userfiles_path
     
@@ -68,7 +68,7 @@ class UserfilesControllerTest < ActionController::TestCase
     
     assert_redirected_to userfiles_path
     
-    File.unlink(file.vaultname)
+    file.destroy
   end
   
   def test_view_all_with_user

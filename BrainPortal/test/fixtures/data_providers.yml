@@ -1,17 +1,13 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
 
 one:
-  name: MyString
+  name: TestVault
+  type: VaultLocalDataProvider
   group_id: 1
-  remote_user: MyString
-  remote_host: MyString
+  online: true
+  read_only: false
+  remote_user: none
+  remote_host: localhost
   remote_port: 1
-  remote_dir: MyString
+  remote_dir: /tmp
 
-two:
-  name: MyString
-  group_id: 1
-  remote_user: MyString
-  remote_host: MyString
-  remote_port: 1
-  remote_dir: MyString

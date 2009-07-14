@@ -71,7 +71,7 @@ class UserStoriesTest < ActionController::IntegrationTest
       post userfiles_path, :upload_file  => fixture_file_upload("files/#{filename}")
     end
     
-    vaultname = Userfile.find_by_name(filename).vaultname
+    vaultname = Userfile.find_by_name(filename).cache_full_path
     assert(File.exists?(vaultname), 'File content not saved.')
     assert_redirected_to userfiles_path
     

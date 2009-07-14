@@ -7,14 +7,9 @@ class GroupTest < ActiveSupport::TestCase
     assert !group.valid?, "Empty group considered valid."
   end
   
-  def test_should_not_create_group_without_institution
-    group = Group.new(:name => 'Evans Lab')
-    assert !group.valid?, "Group without name considered valid."
-  end
-  
-  def test_should_create_group_with_institution_and_name
-    group = Group.new(:name  => 'Evans Lab', :institution_id  =>  1)
-    assert group.valid?
+  def test_should_not_create_group_with_invalid_name
+    group = Group.new(:name => '/a/@% $')
+    assert !group.valid?, "Group with bad name considered valid?"
   end
   
 end
