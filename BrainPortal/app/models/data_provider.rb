@@ -168,7 +168,7 @@ require 'pathname'
 # * Group
 # *Has* *many*:
 # * UserPreference
-class DataProvider < ActiveRecord::Base
+class DataProvider < RemoteResource
 
   Revision_info="$Id$"
 
