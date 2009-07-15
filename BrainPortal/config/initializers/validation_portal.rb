@@ -34,7 +34,8 @@ puts "C> Making sure all providers have proper cache subdirectories..."
 
 # Creating cache dir for Data Providers
 begin
-  DataProvider.all.each do |p|
+  RemoteResource.all.each do |p|
+    next unless p.is_a?(DataProvider)
     begin
       p.mkdir_cache_providerdir
     rescue => e
