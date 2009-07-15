@@ -27,6 +27,11 @@ class FileCollection < Userfile
     self.cache_prepare
     directory = self.cache_full_path
     Dir.mkdir(directory) unless File.directory?(directory)
+
+    if archive_file_name !~ /^\//
+      archive_file_name = Dir.pwd + "/" + archive_file_name
+    end
+
     Dir.chdir(directory) do
       escaped_tmparchivefile = archive_file_name.gsub("'", "'\\\\''")
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
