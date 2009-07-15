@@ -101,7 +101,7 @@ class ScirSgeJobTemplate < Scir::JobTemplate
     command += "cd #{shell_escape(self.wd)};"     if self.wd
     command += "qsub "
     command += "-S /bin/bash "                    # Always
-#    command += "-wd #{shell_escape(self.wd)} "    if self.wd
+    command += "-r no "                           # Always
     command += "-cwd "                            if self.wd
     command += "-N #{shell_escape(self.name)} "   if self.name
     command += "-o #{shell_escape(self.stdout)} " if self.stdout
