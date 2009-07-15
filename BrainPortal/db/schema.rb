@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090715165727) do
+ActiveRecord::Schema.define(:version => 20090714192454) do
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -26,7 +26,21 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.text     "tags"
   end
 
-  add_index "custom_filters", ["user_id"], :name => "index_custom_filters_on_user_id"
+  create_table "data_providers", :force => true do |t|
+    t.string   "name"
+    t.string   "type"
+    t.integer  "user_id"
+    t.integer  "group_id"
+    t.string   "remote_user"
+    t.string   "remote_host"
+    t.integer  "remote_port"
+    t.string   "remote_dir"
+    t.boolean  "online"
+    t.boolean  "read_only"
+    t.string   "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -56,9 +70,6 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.string   "type"
   end
 
-  add_index "groups", ["name"], :name => "index_groups_on_name"
-  add_index "groups", ["type"], :name => "index_groups_on_type"
-
   create_table "groups_users", :id => false, :force => true do |t|
     t.integer "group_id"
     t.integer "user_id"
@@ -86,12 +97,10 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
-
-  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false
@@ -110,8 +119,6 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.datetime "updated_at"
   end
 
-  add_index "tags", ["name"], :name => "index_tags_on_name"
-
   create_table "tags_userfiles", :id => false, :force => true do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
@@ -125,8 +132,6 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.datetime "updated_at"
     t.integer  "bourreau_id"
   end
-
-  add_index "user_preferences", ["user_id"], :name => "index_user_preferences_on_user_id"
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"
@@ -143,11 +148,6 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.integer  "data_provider_id"
   end
 
-  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
-  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
-  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
-  add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
-
   create_table "users", :force => true do |t|
     t.string   "full_name"
     t.string   "login"
@@ -160,8 +160,5 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.datetime "updated_at"
     t.string   "role"
   end
-
-  add_index "users", ["login"], :name => "index_users_on_login"
-  add_index "users", ["role"], :name => "index_users_on_role"
 
 end
