@@ -84,7 +84,7 @@
 <% end %>
 <br>
    <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
-      <% form_tag(extract_userfiles_path) do %>
+      <% form_tag(extract_from_collection_userfiles_path) do %>
       <%= hidden_field_tag :collection_id, @userfile.id %>
       <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
          <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>

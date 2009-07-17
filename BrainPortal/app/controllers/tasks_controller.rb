@@ -107,11 +107,10 @@ class TasksController < ApplicationController
     end
     
     redirect_to :controller => :tasks, :action => :index
-
   end
 
   #This action handles requests to modify the status of a given task.
-  #The operations that are handled are:
+  #Potential operations are:
   #[*Postprocess*] If processing of the task is completed, sync files from
   #                the task's working directory back to the system.
   #[*Hold*] Put the task on hold (while it is queued).

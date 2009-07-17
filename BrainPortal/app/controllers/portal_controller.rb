@@ -27,7 +27,7 @@ class PortalController < ApplicationController
     @default_bourreau       = current_user.user_preference.bourreau.name rescue "(Unset)"
   end
   
-  #Display general information about the CBrain project.
+  #Display general information about the CBRAIN project.
   def credits
 
     @revinfo = { 'Revision'            => 'unknown',

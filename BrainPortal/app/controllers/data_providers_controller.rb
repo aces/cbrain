@@ -310,7 +310,7 @@ class DataProvidersController < ApplicationController
   
   private 
   
-  def get_type_list
+  def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
     if check_role(:admin) 
       typelist += %w{ CbrainSshDataProvider CbrainLocalDataProvider

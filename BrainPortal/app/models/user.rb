@@ -14,7 +14,7 @@ require 'digest/sha1'
 
 #Model representing CBrain users. 
 #All authentication of user access to the system is handle by the User model.
-#User level access to pages are handle through a given user's +role+ (either *admin* or *user*).
+#User level access to pages are handled through a given user's +role+ (either *admin* or *user*).
 #
 #=Attributes:
 #[*full_name*] The full name of the user.
@@ -46,7 +46,7 @@ class User < ActiveRecord::Base
   
   
   # Virtual attribute for the unencrypted password
-  attr_accessor :password
+  attr_accessor :password #:nodoc:
 
   validates_presence_of     :full_name, :login, :email, :role
   validates_presence_of     :password,                   :if => :password_required?
@@ -134,7 +134,7 @@ class User < ActiveRecord::Base
   
   private
    
-  def prevent_group_collision
+  def prevent_group_collision #:nodoc:
     if self.login && Group.find_by_name(self.login)
       errors.add(:login, "already in use by a group.")
     end

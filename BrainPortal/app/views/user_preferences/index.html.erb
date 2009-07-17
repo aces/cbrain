@@ -19,7 +19,7 @@
 
   <p>
    Userfiles per page: 
-   <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile.default_num_pages )%>
+   <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
   </p>
   <p>
     Default execution server: <%= f.select :bourreau_id, @bourreaux.collect{|b| [b.name, b.id]}, :include_blank => true  %>

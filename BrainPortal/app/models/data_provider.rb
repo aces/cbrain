@@ -21,7 +21,7 @@ require 'pathname'
 # the *cache* side is a filesystem local to the Rails application.
 # Most programming tasks requires calling the methods on the *cache* side.
 #
-# Most API methods work on a +Userfile+ object, which provides a
+# Most API methods work on a Userfile object, which provides a
 # name and a user ID for the object that are used to represent
 # its content as a file. Since Userfiles have a data provider
 # associated with them, this means that renaming a userfile +u+ would
@@ -37,7 +37,7 @@ require 'pathname'
 #
 #    u.data_provider.provider_rename(u,"newname")
 #
-# * Use the fact that the +Userfile+ model has already been extended to provide access to the DataProvider methods directly:
+# * Use the fact that the Userfile model has already been extended to provide access to the DataProvider methods directly:
 #
 #    u.provider_rename("newname")   # note that u is no longer supplied in argument
 #
@@ -105,7 +105,7 @@ require 'pathname'
 # * sync_to_cache(userfile)
 # * sync_to_provider(userfile)
 #
-# Note that both of these are also present in the +Userfile+ model.
+# Note that both of these are also present in the Userfile model.
 #
 # == Cache-side methods:
 #
@@ -117,7 +117,7 @@ require 'pathname'
 # * cache_copy_to_local_file(userfile,localfilename)
 # * cache_erase(userfile)
 #
-# Note that all of these are also present in the +Userfile+ model.
+# Note that all of these are also present in the Userfile model.
 #
 # == Provider-side methods:
 #
@@ -127,7 +127,7 @@ require 'pathname'
 # * provider_list_all
 #
 # Note that provider_erase() and provider_rename() are also present in
-# the +Userfile+ model.
+# the Userfile model.
 #
 # = Aditional notes
 #

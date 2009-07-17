@@ -9,7 +9,7 @@
 # $Id$
 #
 
-#Model representing User defined tags.
+#Model representing user-defined tags.
 #
 #=Attributes:
 #[*name*] A string representing the name of the tag.

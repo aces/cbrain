@@ -19,7 +19,7 @@ class VaultSmartDataProvider < DataProvider
 
   Revision_info="$Id$"
 
-  # This methods returns the real data provider used
+  # This method returns the real data provider used
   # for implementing the behavior of all the methods
   # in the provider API. It is useful for debugging.
   def real_provider

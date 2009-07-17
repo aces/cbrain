@@ -10,7 +10,7 @@
 #
 
 #This model represents an group created automatically by the system (as opposed to WorkGroup). 
-#Currently these groups include: 
+#Currently, these groups include: 
 #[*everyone*] 
 #   The group representing all users on the system.
 #[<b>single user groups</b>] 

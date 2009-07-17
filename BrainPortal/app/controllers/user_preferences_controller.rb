@@ -1,3 +1,5 @@
+
+#RESTful controller for the UserPreference resource.
 class UserPreferencesController < ApplicationController
 
   Revision_info="$Id$"
@@ -6,7 +8,7 @@ class UserPreferencesController < ApplicationController
   
   # GET /user_preferences
   # GET /user_preferences.xml
-  def index
+  def index #:nodoc:
     @user_preference = current_user.user_preference || UserPreference.create(:user_id => current_user.id)
     @bourreaux       = available_bourreaux(current_user)
         
@@ -19,7 +21,7 @@ class UserPreferencesController < ApplicationController
 
   # PUT /user_preferences/1
   # PUT /user_preferences/1.xml
-  def update
+  def update #:nodoc:
     @user_preference = current_user.user_preference || UserPreference.create(:user_id => current_user.id)
     @user_preference.update_options(params[:other_options])
 
@@ -37,7 +39,7 @@ class UserPreferencesController < ApplicationController
 
   # DELETE /user_preferences/1
   # DELETE /user_preferences/1.xml
-  def destroy
+  def destroy #:nodoc:
     @user_preference = current_user.user_preference || UserPreference.create(:user_id => current_user.id)
     @user_preference.other_options = {}
 

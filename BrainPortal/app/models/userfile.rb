@@ -9,27 +9,46 @@
 # $Id$
 #
 
+#Abstract model representing files actually registered to the system.
+#
+#<b>Userfile should not be instantiated directly.</b> Instead, all files
+#should be registered through one of the subclasses (SingleFile, FileCollection
+#or CivetCollection as of this writing).
+#
+#=Attributes:
+#[*name*] The name of the file.
+#[*size*] The size of the file.
+#[*task*] The DrmaaTask (if any) that produced this file.
+#=Acts as:
+#[*nested_set*] The nested set module allows for the creation of 
+#               a tree structure of userfiles. Userfiles created
+#               as the output of some processing on a given userfile
+#               will be considered children of that userfile.
+#= Associations:
+#*Belongs* *to*:
+#* User
+#* DataProvider
+#* Group
+#*Has* *and* *belongs* *to* *many*:
+#* Tag
 class Userfile < ActiveRecord::Base
 
   Revision_info="$Id$"
+  Default_num_pages = "50"
 
- acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
+  acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
   belongs_to              :data_provider
-  has_and_belongs_to_many :tags
-
-  #A- A userfile has one group
   belongs_to              :group
+  has_and_belongs_to_many :tags
      		   
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
     
-  ###
-  # Pagination for the userfile index page.
-  #  Had to be modified a bit so it handles filtered results properly
-  ##
+  #Produces the list of files to display for a paginated Userfile index
+  #view.
   def self.paginate(files, page, prefered_per_page)
-    per_page = (prefered_per_page || default_num_pages).to_i
+    per_page = (prefered_per_page || Default_num_pages).to_i
     offset = (page.to_i - 1) * per_page    
         
     ##The following was an attempt to make it so children files appear on the 
@@ -51,16 +70,8 @@ class Userfile < ActiveRecord::Base
     end
   end
   
-  def self.default_num_pages
-    "50"
-  end
-    
-  ###
-  # Filters files based on tags.
-  #   The reason this is done seperately from the sql queries
-  #   is that tag filtering involves complicated joins that would
-  #   make generating the queries unwieldly.
-  ###
+  #Filters the +files+ array of userfiles, based on the 
+  #tag filters in the +filters+ array.
   def self.apply_tag_filters(files, filters)
     current_files = files 
     
@@ -74,10 +85,9 @@ class Userfile < ActiveRecord::Base
     current_files
   end
     
-  ###  
-  # Utility method for converting post parameters into the filter format
-  #  used by the app.
-  ###
+  #Converts a filter request sent as a POST parameter from the
+  #Userfile index page into the format used by the Session model
+  #to store currently active filters.
   def self.get_filter_name(type, term)
     case type
     when 'name_search'
@@ -100,12 +110,10 @@ class Userfile < ActiveRecord::Base
     end
   end
   
-  ###
-  # For the name and file filters, the filtering is done directly
-  # in the sql query.
-  # This method combines the appropriate filters into a single
-  # sql query.
-  ### 
+  #Convert the array of +filters+ into an sql query string
+  #to be used in pulling userfiles from the database.
+  #Note that tag filters will not be converted, as they are
+  #handled by the apply_tag_filters method.
   def self.convert_filters_to_sql_query(filters)
     query = []
     arguments = []
@@ -151,9 +159,8 @@ class Userfile < ActiveRecord::Base
 
   end
   
-  ###
-  # Set the attribute by which to sort the file list.
-  ###
+  #Set the attribute by which to sort the file list
+  #in the Userfile index view.
   def self.set_order(new_order, current_order)
     if new_order == 'size'
       new_order = 'type, ' + new_order
@@ -166,18 +173,19 @@ class Userfile < ActiveRecord::Base
     new_order
   end
 
-  # This method returns true if the string +basename+ is an
-  # acceptable name for a userfile. We restrict the filenames
-  # to contain printable characters only, with no slashes
-  # or ASCII nulls, and starts with a letter or digit.
-  #
-  # TODO: support accented characters? Transform them?
+  #This method returns true if the string +basename+ is an
+  #acceptable name for a userfile. We restrict the filenames
+  #to contain printable characters only, with no slashes
+  #or ASCII nulls, and they must start with a letter or digit.
   def self.is_legal_filename?(basename)
     return true if basename.match(/^[a-zA-Z0-9][\w\~\!\@\#\$\%\^\&\*\(\)\-\+\=\:\;\[\]\{\}\|\<\>\,\.\?]*$/)
     
     false
   end
   
+  #Returns the name of the Userfile in an array (only here to 
+  #maintain compatibility with the overridden method in
+  #FileCollection).
   def list_files
     [self.name]
   end

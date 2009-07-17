@@ -9,6 +9,7 @@
 # $Id$
 #
 
+#RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
   Revision_info="$Id$"
@@ -17,7 +18,7 @@ class UserfilesController < ApplicationController
   
   # GET /userfiles
   # GET /userfiles.xml
-  def index    
+  def index #:nodoc:
     current_session.update(params)
         
     tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
@@ -36,7 +37,7 @@ class UserfilesController < ApplicationController
     end
 
     @userfile_count     = @userfiles.size
-    @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile.default_num_pages).to_i
+    @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     
     #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
@@ -57,7 +58,7 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles/1
   # GET /userfiles/1.xml
-  def show
+  def show #:nodoc:
     unless current_user.has_role? :admin
       @userfile = current_user.userfiles.find(params[:id])
     else
@@ -70,22 +71,21 @@ class UserfilesController < ApplicationController
     end
   end
   
-  # Returns the content of a file; used mostly by JIV
-  # GET /userfiles/1/content
+  #The content action handles requests for file content
+  #by URL. Used mainly by JIV at this point.
   def content
     userfile = current_user.userfiles.find(params[:id])
     userfile.sync_to_cache
     send_file userfile.cache_full_path
   end
 
-  # GET /userfiles/new
-  # GET /userfiles/new.xml
-  def new
+  #The new action displays a view for uploading files.
+  def new 
     @user_groups = current_user.groups.find(:all)
     @user_tags = current_user.tags.find(:all)
     @data_providers = available_data_providers(current_user)
     
-    upload_stream = params[:upload_file]   # an object encoding the file data stream
+    #upload_stream = params[:upload_file]   # an object encoding the file data stream
     respond_to do |format|
       format.html # new.html.erb
       format.xml  { render :xml => @userfile }
@@ -93,7 +93,7 @@ class UserfilesController < ApplicationController
   end
 
   # GET /userfiles/1/edit
-  def edit
+  def edit  #:nodoc:
     session[:full_civet_display] ||= 'on'
     
     if params[:full_civet_display]
@@ -113,6 +113,20 @@ class UserfilesController < ApplicationController
 
   # POST /userfiles
   # POST /userfiles.xml
+  
+  #The create action is used to save uploaded files to a DataProvider.
+  #
+  #Generally, the file is simply saved to the DataProvider as is.
+  #There are, however, special options for archive files (.tar, .tar.gz, or .zip).
+  #Given the value of the +archive+ parameter, the user may perform one
+  #of the following on the uploaded archive.
+  #[*save*] Save the archive to the DataProvider as is.
+  #[*collection*] Extract the files from the archive into a FileCollection.
+  #[*extract*] Extract the files in the archive and individually register
+  #            them as Userfile entries. This option is limited in that
+  #            a maximum of 50 files may be extracted in this way, and
+  #            no files nested within directories will be extracted
+  #            (the +collection+ option has no such limitations).
   def create
 
     flash[:error]  ||= ""
@@ -249,7 +263,7 @@ class UserfilesController < ApplicationController
 
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
-  def update
+  def update  #:nodoc:
     if current_user.has_role? :admin
       @userfile = Userfile.find(params[:id])
     else
@@ -294,7 +308,7 @@ class UserfilesController < ApplicationController
 
   # DELETE /userfiles/1
   # DELETE /userfiles/1.xml
-  def destroy
+  def destroy  #:nodoc:
     @userfile = Userfile.find(params[:id])
     @userfile.destroy
 
@@ -304,6 +318,21 @@ class UserfilesController < ApplicationController
     end
   end
   
+  #This action is for performing a given operation on a Userfile.
+  #
+  #Potential operations are:
+  #[<b>Cluster task</b>] Send userfile to be processed on a cluster by some
+  #                      some analytical tool (see DrmaaTask). These requests
+  #                      are forwarded to the TasksController.
+  #[<b>Download files</b>] Download a set of selected files.
+  #[<b>Update tags</b>] Update the tagging of selected files which a set
+  #                     of specified tags.
+  #[<b>Update groups</b>] Update the group label of selected files.
+  #[<b>Merge files into collection</b>] Merge the selected files and file 
+  #                                     collections into a new file collection.
+  #                                     (see FileCollection).
+  #[<b>Delete files</b>] Delete the selected files (delete the file on disk
+  #                      and purge the record from the database).                           
   def operation
     
     if params[:commit] == 'Download Files'
@@ -428,7 +457,9 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
   
-  def extract
+  #Extract a file from a collection and register it separately
+  #in the database.
+  def extract_from_collection
     success = failure = 0
     collection_id = params[:collection_id]
     collection = FileCollection.find(collection_id)
@@ -457,11 +488,11 @@ class UserfilesController < ApplicationController
 
   private
 
-  # Extract files from an archive and register them in the DB
-  # The first argument is a path to an archive file (tar or zip).
-  # The second argument is a hash of attributes for all the files,
-  # they must contain at least user_id and data_provider_id
-  def extract_from_archive(archive_file_name,attributes = {})
+  #Extract files from an archive and register them in the database.
+  #The first argument is a path to an archive file (tar or zip).
+  #The second argument is a hash of attributes for all the files,
+  #they must contain at least user_id and data_provider_id
+  def extract_from_archive(archive_file_name,attributes = {}) #:nodoc:
 
     escaped_archivefile = archive_file_name.gsub("'", "'\\\\''")
 

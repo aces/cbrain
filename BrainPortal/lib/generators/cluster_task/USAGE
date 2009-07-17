@@ -13,7 +13,7 @@ Examples:
     app/views/tasks/_drmaa_civet.html.erb
 
 
-    ./script/generate cluster_task mincinfo
+    ./script/generate cluster_task mincinfo --no-view
     
     The following file will be generated:
     app/models/drmaa_mincinfo.rb
