@@ -207,6 +207,42 @@ class DataProvider < ActiveRecord::Base
   def can_be_accessed_by(user)
     user.group_ids.include?(group_id)
   end
+  
+  #Find data provider identified by +id+ accessible by +user+.
+  #
+  #*Accessible* data providers  are:
+  #[For *admin* users:] any data provider on the system.
+  #[For regular users:] all data providers that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_accessible_by_user(id, user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+    end
+    
+    find(id, new_options)
+  end
+  
+  #Find all data providers accessible by +user+.
+  #
+  #*Accessible* data providers  are:
+  #[For *admin* users:] any data provider on the system.
+  #[For regular users:] all data providers that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_all_accessible_by_user(user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+    end
+    
+    find(:all, new_options)
+  end
 
   # Synchronizes the content of +userfile+ as stored
   # on the provider into the local cache.

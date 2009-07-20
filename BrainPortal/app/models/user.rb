@@ -56,7 +56,7 @@ class User < ActiveRecord::Base
   validates_length_of       :login,    :within => 3..40
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :email, :case_sensitive => false
-  validate                  :prevent_group_collision
+  validate_on_create        :prevent_group_collision
   
   before_save               :encrypt_password
     

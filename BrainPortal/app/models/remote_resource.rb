@@ -40,6 +40,42 @@ class RemoteResource < ActiveRecord::Base
   def can_be_accessed_by(user)
     user.group_ids.include?(group_id)
   end
+  
+  #Find remote resource identified by +id+ accessible by +user+.
+  #
+  #*Accessible* remote resources  are:
+  #[For *admin* users:] any remote resource on the system.
+  #[For regular users:] all remote resources that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_accessible_by_user(id, user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+    end
+    
+    find(id, new_options)
+  end
+  
+  #Find all remote resources accessible by +user+.
+  #
+  #*Accessible* remote resources  are:
+  #[For *admin* users:] any remote resource on the system.
+  #[For regular users:] all remote resources that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_all_accessible_by_user(user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+    end
+    
+    find(:all, new_options)
+  end
 
   #Returns whether or not this resource is active.
   def is_alive?

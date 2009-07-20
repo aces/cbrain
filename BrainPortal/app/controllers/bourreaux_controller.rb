@@ -19,10 +19,7 @@ class BourreauxController < ApplicationController
   before_filter :admin_role_required, :except => [:index]  
    
   def index #:nodoc:
-    @bourreaux = Bourreau.all;
-    if ! check_role(:admin)
-      @bourreaux = @bourreaux.select { |p| p.can_be_accessed_by(current_user) }
-    end
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
   end
 
   
@@ -43,6 +40,8 @@ class BourreauxController < ApplicationController
   def edit #:nodoc:
     @user     = current_user
     @bourreau = Bourreau.find(params[:id])
+    
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
 
     respond_to do |format|
       format.html { render :action => :edit }
@@ -91,7 +90,9 @@ class BourreauxController < ApplicationController
   def update #:nodoc:
     @user     = current_user
     id        = params[:id]
-    @bourreau = Bourreau.find_by_id(id)
+    @bourreau = Bourreau.find(id)
+    
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
 
     fields    = params[:bourreau]
     subtype   = fields.delete(:type)
@@ -115,7 +116,9 @@ class BourreauxController < ApplicationController
   def destroy #:nodoc:
     id        = params[:id]
     @user     = current_user
-    @bourreau = Bourreau.find_by_id(id)
+    @bourreau = Bourreau.find(id)
+    
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
 
     if @bourreau.destroy
       flash[:notice] = "Bourreau successfully deleted."

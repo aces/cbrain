@@ -26,20 +26,19 @@ class UserfilesController < ApplicationController
     name_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter.split(':')[1]).tags if filter =~ /^custom:/ }
     tag_filters |= custom_filter_tags
 
+    conditions = Userfile.convert_filters_to_sql_query(name_filters)
+
     unless current_session.view_all? 
-      @userfiles = current_user.userfiles.find(:all, :include  => :tags, 
-        :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-        :order => "userfiles.#{current_session.order}")
-    else
-      @userfiles = Userfile.find(:all, :include  => :tags, 
-        :conditions => Userfile.convert_filters_to_sql_query(name_filters),
-        :order => "userfiles.#{current_session.order}")
-    end
+      conditions = Userfile.restrict_access_on_query(current_user, conditions)
+    end  
+      
+    @userfiles = Userfile.find(:all, :include  => [:tags, :user, :data_provider], 
+      :conditions => conditions,
+      :order => "userfiles.#{current_session.order}")
 
     @userfile_count     = @userfiles.size
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     
-    #@userfiles = @userfiles.group_by(&:user_id).inject([]){|f,u| f + u[1].sort}
     @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
     
     if current_session.paginate?
@@ -55,26 +54,11 @@ class UserfilesController < ApplicationController
       format.xml  { render :xml => @userfiles }
     end
   end
-
-  # GET /userfiles/1
-  # GET /userfiles/1.xml
-  def show #:nodoc:
-    unless current_user.has_role? :admin
-      @userfile = current_user.userfiles.find(params[:id])
-    else
-      @userfile = Userfile.find(params[:id])
-    end
-    
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @userfile }
-    end
-  end
   
   #The content action handles requests for file content
   #by URL. Used mainly by JIV at this point.
   def content
-    userfile = current_user.userfiles.find(params[:id])
+    userfile = Userfile.find_accessible_by_user(params[:id], current_user)
     userfile.sync_to_cache
     send_file userfile.cache_full_path
   end
@@ -99,12 +83,8 @@ class UserfilesController < ApplicationController
     if params[:full_civet_display]
       session[:full_civet_display] = params[:full_civet_display]
     end
-    
-    if current_user.has_role? :admin
-      @userfile = Userfile.find(params[:id])
-    else
-      @userfile = current_user.userfiles.find(params[:id])      
-    end
+  
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user)
 
     @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
     
@@ -264,11 +244,7 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-    if current_user.has_role? :admin
-      @userfile = Userfile.find(params[:id])
-    else
-      @userfile = current_user.userfiles.find(params[:id])      
-    end
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user)
 
     flash[:notice] ||= ""
     flash[:error] ||= ""
@@ -306,18 +282,6 @@ class UserfilesController < ApplicationController
     end
   end
 
-  # DELETE /userfiles/1
-  # DELETE /userfiles/1.xml
-  def destroy  #:nodoc:
-    @userfile = Userfile.find(params[:id])
-    @userfile.destroy
-
-    respond_to do |format|
-      format.html { redirect_to(userfiles_url) }
-      format.xml  { head :ok }
-    end
-  end
-  
   #This action is for performing a given operation on a Userfile.
   #
   #Potential operations are:
@@ -351,7 +315,7 @@ class UserfilesController < ApplicationController
     end
     
     filelist    = params[:filelist] || []
-    collection = current_user.has_role?(:admin) ? Userfile : current_user.userfiles
+    conditions = current_user.has_role?(:admin) ? nil : Userfile.restrict_access_on_query(current_user, [])
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -377,7 +341,7 @@ class UserfilesController < ApplicationController
       when "delete_files"
         
         filelist.each do |id|
-          userfile = collection.find(id)
+          userfile = Userfile.find(id, :conditions => conditions)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
@@ -388,15 +352,15 @@ class UserfilesController < ApplicationController
         end
 
       when "download"
-        if filelist.size == 1 && collection.find(filelist[0]).is_a?(SingleFile)
-          userfile = collection.find(filelist[0])
+        if filelist.size == 1 && Userfile.find(filelist[0], :conditions => conditions).is_a?(SingleFile)
+          userfile = Userfile.find(filelist[0], :conditions => conditions)
           userfile.sync_to_cache
           send_file userfile.cache_full_path
         else
           cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
           #cacherootdirlen = cacherootdir.to_s.size
           filenames = filelist.collect do |id| 
-            u = collection.find(id)
+            u = Userfile.find(id, :conditions => conditions)
             u.sync_to_cache
             full = u.cache_full_path.to_s        # /a/b/c/prov/x/y/basename
             #full = full[cacherootdirlen+1,9999]  # prov/x/y/basename
@@ -414,7 +378,7 @@ class UserfilesController < ApplicationController
 
       when 'tag_update'
         filelist.each do |id|
-          userfile = collection.find(id)
+          userfile = Userfile.find(id, :conditions => conditions)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
@@ -428,7 +392,7 @@ class UserfilesController < ApplicationController
 
     when "group_update"
       filelist.each do |id|
-          userfile = collection.find(id)
+          userfile = Userfile.find(id, :conditions => conditions)
           if userfile.nil?
             flash[:error] += "File #{id} doesn't exist or is not yours.\n"
             next
@@ -461,8 +425,9 @@ class UserfilesController < ApplicationController
   #in the database.
   def extract_from_collection
     success = failure = 0
+    
     collection_id = params[:collection_id]
-    collection = FileCollection.find(collection_id)
+    collection = FileCollection.find_accessible_by_user(params[:id], current_user, :conditions  => conditions)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:filelist].each do |file|

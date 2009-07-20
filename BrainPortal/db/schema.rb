@@ -39,12 +39,10 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
-
-  add_index "data_providers", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -108,6 +106,8 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false

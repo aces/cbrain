@@ -159,6 +159,51 @@ class Userfile < ActiveRecord::Base
 
   end
   
+  #Find userfile identified by +id+ accessible by +user+.
+  #
+  #*Accessible* files are:
+  #[For *admin* users:] any file on the system.
+  #[For regular users:] all files that belong to the user all 
+  #                     files assigned to a group to which the user belongs.
+  def self.find_accessible_by_user(id, user, options = {})
+    new_options = options
+    unless user.has_role? :admin
+      conditions = options[:conditions] || []
+      conditions = [conditions] if conditions.is_a? String
+      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions)
+    end
+    
+    find(id, new_options)
+  end
+  
+  #Find all userfiles accessible by +user+.
+  #
+  #*Accessible* files are:
+  #[For *admin* users:] any file on the system.
+  #[For regular users:] all files that belong to the user all 
+  #                     files assigned to a group to which the user belongs.
+  def self.find_all_accessible_by_user(user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      conditions = options[:conditions] || []
+      conditions = [conditions] if conditions.is_a? String
+      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions)
+    end
+    
+    find(:all, new_options)
+  end
+  
+  #This method takes in an array to be used as the :+conditions+
+  #parameter for Userfile.find and modifies it to restrict based
+  #on file ownership or group access.
+  def self.restrict_access_on_query(user, query)
+    query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?)))", query.shift].compact.join(" AND ")
+    variables = [user.id, user.group_ids.join(",")] + query
+    query = [query_string] + variables
+    query
+  end
+  
   #Set the attribute by which to sort the file list
   #in the Userfile index view.
   def self.set_order(new_order, current_order)

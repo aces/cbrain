@@ -17,10 +17,7 @@ class DataProvidersController < ApplicationController
   before_filter :login_required
    
   def index #:nodoc:
-    @providers = DataProvider.all
-    unless check_role(:admin)
-        @providers = @providers.select { |p| p.can_be_accessed_by(current_user) }
-    end
+    @providers = DataProvider.find_all_accessible_by_user(current_user)
   end
 
   # GET /data_providers/1
