@@ -23,7 +23,7 @@
    <% else %>
      <td></td>
    <% end %>
-   <td class = "centered"><center><%= userfile.tags.collect{|u| h(u.name)}.join("<br>") -%></center></td>
+   <td class = "centered"><center><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></center></td>
        <% if userfile.group != nil %>
          <td class = "centered"><%= h userfile.group.name -%></td>
          <td class = "centered"><%= userfile.group_writable ? 'Read/Write' : 'Read Only' -%></td>

@@ -39,7 +39,7 @@ class UserfilesController < ApplicationController
     @userfile_count     = @userfiles.size
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     
-    @userfiles = Userfile.apply_tag_filters(@userfiles, tag_filters)
+   @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
     
     if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
@@ -241,13 +241,13 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     flash[:notice] ||= ""
     flash[:error] ||= ""
     
     attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})    
-    attributes['tag_ids'] ||= []
+    @userfile.set_tags_for_user(current_user, params[:tag_ids])
     
     old_name = @userfile.name
     new_name = attributes[:name] || old_name
@@ -258,6 +258,7 @@ class UserfilesController < ApplicationController
 
     attributes[:name] = old_name # we must NOT rename the file yet
     
+    @userfile.set_tags_for_user(current_user, params[:tag_ids])
     respond_to do |format|
       if @userfile.update_attributes(attributes)
         flash[:notice] += "#{@userfile.name} successfully updated."
@@ -368,8 +369,9 @@ class UserfilesController < ApplicationController
         return
 
       when 'tag_update'
-        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-          if userfile.update_attributes(:tag_ids => params[:tags])
+        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read).each do |userfile|
+          userfile.set_tags_for_user(current_user, params[:tags])
+          if userfile.save
             flash[:notice] += "Tags for #{userfile.name} successfully updated."
           else
             flash[:error] += "Tags for #{userfile.name} could not be updated."

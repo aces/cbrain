@@ -24,6 +24,8 @@ class Tag < ActiveRecord::Base
   
   validates_presence_of   :name, :user_id
   validates_uniqueness_of :name, :scope => :user_id
+  validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
+                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
   
   Revision_info="$Id$"
 end

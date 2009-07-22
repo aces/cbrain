@@ -9,6 +9,8 @@
 # $Id$
 #
 
+require 'set'
+
 #Abstract model representing files actually registered to the system.
 #
 #<b>Userfile should not be instantiated directly.</b> Instead, all files
@@ -46,6 +48,22 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :name
   validates_presence_of   :group_id
     
+  def get_tags_for_user(user)
+    u = user
+    unless u.is_a? User
+      u = User.find(u)
+    end
+    
+    self.tags.find(self.tag_ids & u.tag_ids)
+  end
+  
+  def set_tags_for_user(user, tag_ids)
+    all_tags = self.tag_ids
+    current_user_tags = self.tag_ids & user.tag_ids
+    
+    self.tag_ids = (all_tags - current_user_tags) + (tag_ids || [])
+  end
+    
   #Produces the list of files to display for a paginated Userfile index
   #view.
   def self.paginate(files, page, prefered_per_page)
@@ -72,16 +90,13 @@ class Userfile < ActiveRecord::Base
   end
   
   #Filters the +files+ array of userfiles, based on the 
-  #tag filters in the +filters+ array.
-  def self.apply_tag_filters(files, filters)
-    current_files = files 
+  #tag filters in the +tag_filters+ array and +user+, the current user.
+  def self.apply_tag_filters_for_user(files, tag_filters, user)
+    current_files = files
+    tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf.split(":")[1] )}
     
-    filters.each do |filter|
-      type, term = filter.split(':')
-      if type == 'tag'
-        current_files = current_files.select{ |f| f.tags.any?{|t| t.name == term}  }
-      end
-    end
+    current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
+    
     
     current_files
   end

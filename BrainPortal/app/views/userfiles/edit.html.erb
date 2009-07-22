@@ -71,20 +71,18 @@
       <tr class="list-even">
          <th rowspan="<%= @tags.size %>">Tags:</th>
          <td><%= @tags[0].name %></td>
-         <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0]), :disabled => @userfile.user_id != current_user.id) %></td>
+         <td><%= check_box_tag("tag_ids[]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
          <% for tag in @tags[1..-1] %>
             <tr class="list-even">
                <td><%= tag.name %></td>
-               <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag), :disabled => @userfile.user_id != current_user.id) %></td>
+               <td><%= check_box_tag("tag_ids[]", tag.id, @userfile.tags.include?(tag)) %></td>
             </tr>
          <% end %>
       </tr>
    <% end %>
  
 </table>
-<% if @userfile.can_be_accessed_by?(current_user) %>
    <%= submit_tag "Update Fields" %>
-<% end %>   
 <% end %>
 <br>
    <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
