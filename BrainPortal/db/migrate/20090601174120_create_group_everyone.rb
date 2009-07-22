@@ -1,7 +1,7 @@
 class CreateGroupEveryone < ActiveRecord::Migration
 
   def self.up
-    everyone = Group.new
+    everyone = SystemGroup.new
     everyone.name = "everyone"
     everyone.save!
   end

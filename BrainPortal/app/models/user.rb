@@ -135,7 +135,7 @@ class User < ActiveRecord::Base
   private
    
   def prevent_group_collision #:nodoc:
-    if self.login && WorkGroup.find_by_name(self.login)
+    if self.login && (WorkGroup.find_by_name(self.login) || self.login == 'everyone') 
       errors.add(:login, "already in use by a group.")
     end
   end
