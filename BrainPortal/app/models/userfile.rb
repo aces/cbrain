@@ -48,6 +48,8 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :name
   validates_presence_of   :group_id
     
+  #Return an array of the tags associated with this file
+  #by +user+.
   def get_tags_for_user(user)
     u = user
     unless u.is_a? User
@@ -57,11 +59,14 @@ class Userfile < ActiveRecord::Base
     self.tags.find(self.tag_ids & u.tag_ids)
   end
   
-  def set_tags_for_user(user, tag_ids)
+  #Set the tags associated with this file to those
+  #in the +tags+ array (represented by Tag objects
+  #or ids).
+  def set_tags_for_user(user, tags)
     all_tags = self.tag_ids
     current_user_tags = self.tag_ids & user.tag_ids
     
-    self.tag_ids = (all_tags - current_user_tags) + (tag_ids || [])
+    self.tag_ids = (all_tags - current_user_tags) + (tags || [])
   end
     
   #Produces the list of files to display for a paginated Userfile index
