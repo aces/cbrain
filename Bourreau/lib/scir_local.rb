@@ -75,11 +75,17 @@ class ScirLocalJobTemplate < Scir::JobTemplate
       self.command == "/bin/bash" && self.arg.size == 1
     raise "Error: stdin not supported" if self.stdin
 
+    stdout = self.stdout
+    stderr = self.stderr
+
+    stdout.sub!(/^:/,"") if stdout
+    stderr.sub!(/^:/,"") if stderr
+
     command = ""
     command += "cd #{shell_escape(self.wd)} || exit 20; " if self.wd
     command += "/bin/bash #{shell_escape(self.arg[0])}"
-    command += "  > #{shell_escape(self.stdout)} "        if self.stdout
-    command += " 2> #{shell_escape(self.stderr)} "        if self.stderr
+    command += "  > #{shell_escape(stdout)} "             if stdout
+    command += " 2> #{shell_escape(stderr)} "             if stderr
     command += " 2>&1 "                                   if self.join
 
     command = "bash -c \"echo PID=\\$\\$ ; #{command}\" & "
