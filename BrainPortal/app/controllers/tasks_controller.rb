@@ -57,7 +57,7 @@ class TasksController < ApplicationController
   
   def new #:nodoc:
     @task_class = Class.const_get(params[:task].to_s)
-    @files = Userfile.find_accessible_user(params[:file_ids], current_user, :access_requested  => :read)
+    @files = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested  => :read)
     @data_providers = available_data_providers(current_user)
         
     if @task_class.has_args?
