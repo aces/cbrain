@@ -306,7 +306,7 @@ a, a:visited{
     }
 
 /*##############################################################################################################*/
-/* General formatting for the content of the page - should be applied to all new pages							*/																	*/
+/* General formatting for the content of the page - should be applied to all new pages							*/																	
 /*##############################################################################################################*/
 .generalbox{
     float: left;
@@ -315,10 +315,10 @@ a, a:visited{
     margin-right: 4em;
     margin-bottom: 1em;
     padding: 2em;
-    background-color: #f6f6f6;
+    background-color: #F6F6F6;
     color: #505050;
     line-height: 1.5em;
-    border: 1px solid #e4e4e4;  
+    border: 1px solid #E4E4E4;  
     }
 
 .generalcontent{
