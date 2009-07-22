@@ -29,7 +29,7 @@ class UserfilesController < ApplicationController
     conditions = Userfile.convert_filters_to_sql_query(name_filters)
 
     unless current_session.view_all? 
-      conditions = Userfile.restrict_access_on_query(current_user, conditions)
+      conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
     end  
       
     @userfiles = Userfile.find(:all, :include  => [:tags, :user, :data_provider], 
@@ -48,6 +48,7 @@ class UserfilesController < ApplicationController
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
     @user_groups = current_user.groups.find(:all)
+    @default_group = SystemGroup.find_by_name(current_user.login).id
     
     respond_to do |format|
       format.html # index.html.erb
@@ -58,13 +59,14 @@ class UserfilesController < ApplicationController
   #The content action handles requests for file content
   #by URL. Used mainly by JIV at this point.
   def content
-    userfile = Userfile.find_accessible_by_user(params[:id], current_user)
+    userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     userfile.sync_to_cache
     send_file userfile.cache_full_path
   end
 
   #The new action displays a view for uploading files.
   def new 
+    @userfile = Userfile.new(:group_id  => SystemGroup.find_by_name(current_user.login).id)
     @user_groups = current_user.groups.find(:all)
     @user_tags = current_user.tags.find(:all)
     @data_providers = available_data_providers(current_user)
@@ -84,7 +86,7 @@ class UserfilesController < ApplicationController
       session[:full_civet_display] = params[:full_civet_display]
     end
   
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
     
@@ -111,7 +113,7 @@ class UserfilesController < ApplicationController
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
-  
+    
     # Get the upload stream object
     upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
@@ -136,14 +138,13 @@ class UserfilesController < ApplicationController
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
       userfile = SingleFile.new(
-                 :name             => basename,
-                 :user_id          => current_user.id,
-                 :data_provider_id => data_provider_id,
-                 :tag_ids          => params[:tags]
+                   params[:userfile].merge(
+                     :name             => basename,
+                     :user_id          => current_user.id,
+                     :data_provider_id => data_provider_id,
+                     :tag_ids          => params[:tags]
+                   )
                  )
-      if params[:userfile] && params[:userfile][:group_id]
-        userfile.group_id = params[:userfile][:group_id]
-      end
       userfile.cache_copy_from_local_file(tmpcontentfile)
       if userfile.save
         flash[:notice] += "File '#{basename}' added."
@@ -173,14 +174,13 @@ class UserfilesController < ApplicationController
       end
       collectionType = params[:archive] =~/civet/i ? CivetCollection : FileCollection
       collection = collectionType.new(
-        :name              => collection_name,
-        :user_id           => current_user.id,
-        :data_provider_id  => data_provider_id,
-        :tag_ids           => params[:tags]
+        params[:userfile].merge(
+          :name              => collection_name,
+          :user_id           => current_user.id,
+          :data_provider_id  => data_provider_id,
+          :tag_ids           => params[:tags]
+        )
       )
-      if params[:userfile] && params[:userfile][:group_id]
-        collection.group_id = params[:userfile][:group_id]
-      end
       collection.extract_collection_from_archive_file(tmpcontentfile)
       if collection.save
         flash[:notice] = "Collection '#{collection_name}' created."
@@ -204,10 +204,7 @@ class UserfilesController < ApplicationController
         :user_id           => current_user.id,
         :data_provider_id  => data_provider_id,
         :tag_ids           => params[:tags],
-      }
-      if params[:userfile] && params[:userfile][:group_id]
-        attributes["group_id"] = params[:userfile][:group_id]
-      end
+      }.merge(params[:userfile])
       status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
     end
 
@@ -244,7 +241,7 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
     flash[:notice] ||= ""
     flash[:error] ||= ""
@@ -297,26 +294,26 @@ class UserfilesController < ApplicationController
   #                                     (see FileCollection).
   #[<b>Delete files</b>] Delete the selected files (delete the file on disk
   #                      and purge the record from the database).                           
-  def operation
-    
+  def operation 
     if params[:commit] == 'Download Files'
       operation = 'download'
     elsif params[:commit] == 'Delete Files'
-      operation = 'delete_files'
+      operation = 'delete'
     elsif params[:commit] == 'Update Tags'
       operation = 'tag_update'
     elsif params[:commit] == 'Merge Files into Collection'
       operation = 'merge_collections'
     elsif params[:commit] == 'Update Groups'
       operation = 'group_update'
+    elsif params[:commit] == 'Update Permissions'
+      operation = 'permission_update'
     else
       operation   = 'cluster_task'
       task = params[:operation]
     end
     
     filelist    = params[:filelist] || []
-    conditions = current_user.has_role?(:admin) ? nil : Userfile.restrict_access_on_query(current_user, [])
-
+    
     flash[:error]  ||= ""
     flash[:notice] ||= ""
 
@@ -338,29 +335,23 @@ class UserfilesController < ApplicationController
         redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task
         return
 
-      when "delete_files"
-        
-        filelist.each do |id|
-          userfile = Userfile.find(id, :conditions => conditions)
-          if userfile.nil?
-            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
-            next
-          end
+      when "delete"
+        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           basename = userfile.name
           userfile.destroy
           flash[:notice] += "File #{basename} deleted.\n"
         end
 
       when "download"
-        if filelist.size == 1 && Userfile.find(filelist[0], :conditions => conditions).is_a?(SingleFile)
-          userfile = Userfile.find(filelist[0], :conditions => conditions)
+        if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
+          userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
           userfile.sync_to_cache
           send_file userfile.cache_full_path
         else
           cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
           #cacherootdirlen = cacherootdir.to_s.size
           filenames = filelist.collect do |id| 
-            u = Userfile.find(id, :conditions => conditions)
+            u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
             u.sync_to_cache
             full = u.cache_full_path.to_s        # /a/b/c/prov/x/y/basename
             #full = full[cacherootdirlen+1,9999]  # prov/x/y/basename
@@ -377,12 +368,7 @@ class UserfilesController < ApplicationController
         return
 
       when 'tag_update'
-        filelist.each do |id|
-          userfile = Userfile.find(id, :conditions => conditions)
-          if userfile.nil?
-            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
-            next
-          end
+        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           if userfile.update_attributes(:tag_ids => params[:tags])
             flash[:notice] += "Tags for #{userfile.name} successfully updated."
           else
@@ -390,23 +376,26 @@ class UserfilesController < ApplicationController
           end
         end
 
-    when "group_update"
-      filelist.each do |id|
-          userfile = Userfile.find(id, :conditions => conditions)
-          if userfile.nil?
-            flash[:error] += "File #{id} doesn't exist or is not yours.\n"
-            next
-          end
-          if userfile.update_attributes(:group_id => params[:userfile][:group_id])
-            flash[:notice] += "Group for #{userfile.name} successfully updated."
-          else
-            flash[:error] += "Group for #{userfile.name} could not be updated."
-          end
-    end
+    when 'group_update'
+      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+        if userfile.update_attributes(:group_id => params[:userfile][:group_id])
+           flash[:notice] += "Group for #{userfile.name} successfully updated."
+         else
+           flash[:error] += "Group for #{userfile.name} could not be updated."
+         end
+      end
+    when 'permission_update'
+      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+        if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
+           flash[:notice] += "Permissions for #{userfile.name} successfully updated."
+         else
+           flash[:error] += "Permissions for #{userfile.name} could not be updated."
+         end
+      end
 
-      when 'merge_collections'
+    when 'merge_collections'
         collection = FileCollection.new(:user_id  => current_user.id, :data_provider_id => (params[:data_provider_id] || DataProvider.find_first_online_rw(current_user).id) )
-        status = collection.merge_collections(filelist)
+        status = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
         if status == :success
           flash[:notice] = "Collection #{collection.name} was created."
         elsif status == :collision
@@ -419,6 +408,13 @@ class UserfilesController < ApplicationController
     end
 
     redirect_to :action => :index
+    
+  rescue ActiveRecord::RecordNotFound => e
+    flash[:error] += "\n" unless flash[:error].blank?
+    flash[:error] ||= ""
+    flash[:error] += "You don't have appropriate permissions to #{operation} the selected files.".humanize
+    
+    redirect_to :action => :index
   end
   
   #Extract a file from a collection and register it separately
@@ -426,12 +422,11 @@ class UserfilesController < ApplicationController
   def extract_from_collection
     success = failure = 0
     
-    collection_id = params[:collection_id]
-    collection = FileCollection.find_accessible_by_user(params[:id], current_user, :conditions  => conditions)
+    collection = FileCollection.find_accessible_by_user(params[:collection_id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:filelist].each do |file|
-      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :data_provider_id => data_provider_id)
+      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :group_id => collection.group_id, :data_provider_id => data_provider_id)
       Dir.chdir(collection_path.parent) do
         userfile.cache_copy_from_local_file(file)
         if userfile.save

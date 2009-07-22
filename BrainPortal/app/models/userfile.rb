@@ -44,6 +44,7 @@ class Userfile < ActiveRecord::Base
      		   
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
+  validates_presence_of   :group_id
     
   #Produces the list of files to display for a paginated Userfile index
   #view.
@@ -159,6 +160,22 @@ class Userfile < ActiveRecord::Base
 
   end
   
+  #Returns whether or not +user+ has access to this
+  #userfile.
+  def can_be_accessed_by?(user)
+    if user.has_role? :admin
+      return true
+    end
+    if user.id == self.user_id
+      return true
+    end
+    if user.group_ids.include?(self.group_id) && self.group_writable
+      return true
+    end
+    
+    false
+  end
+  
   #Find userfile identified by +id+ accessible by +user+.
   #
   #*Accessible* files are:
@@ -170,8 +187,9 @@ class Userfile < ActiveRecord::Base
     unless user.has_role? :admin
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
-      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions)
+      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
     end
+    new_options.delete :access_requested
     
     find(id, new_options)
   end
@@ -188,8 +206,9 @@ class Userfile < ActiveRecord::Base
     unless user.has_role? :admin
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
-      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions)
+      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
     end
+    new_options.delete :access_requested
     
     find(:all, new_options)
   end
@@ -197,10 +216,18 @@ class Userfile < ActiveRecord::Base
   #This method takes in an array to be used as the :+conditions+
   #parameter for Userfile.find and modifies it to restrict based
   #on file ownership or group access.
-  def self.restrict_access_on_query(user, query)
-    query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?)))", query.shift].compact.join(" AND ")
+  def self.restrict_access_on_query(user, query, options = {})
+    access_requested = options[:access_requested] || :write
+    if access_requested.to_sym == :read
+      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?)))", query.shift].compact.join(" AND ")
+    else
+      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.group_writable = true))", query.shift].compact.join(" AND ")
+    end
+
     variables = [user.id, user.group_ids.join(",")] + query
+    
     query = [query_string] + variables
+    
     query
   end
   

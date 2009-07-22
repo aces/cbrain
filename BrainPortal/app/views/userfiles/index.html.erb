@@ -95,7 +95,7 @@
     <div class="filesheader">
       
       <div class="filters">
-          <br>Tag Management:<br><br>
+          <br>Tag Management:<br>
         <% form_tag tags_path do %> 
           <%= text_field_tag 'tag[name]' %> 
           <%= submit_tag "New Tag" %> 
@@ -108,17 +108,20 @@
       
       <div class="tags">
         <% if @user_tags %><br>
-        Tag update: <br>
+        Tag update:
         <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %> 
         <%= submit_tag("Update Tags") %> 
         <% end %>
       </div>
             
       <div class="groups">
-        <% if @user_groups %><br>
-        Group Update: <br><br><%= render :partial => 'group_table', :locals => {:groups => @user_groups} %>
-          <%= submit_tag("Update Groups") %> 
-        <% end %>
+         <br><br>
+          Group Update: <br>
+          <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+          <%= submit_tag("Update Groups") %> <br><br>
+          Group permission update:<br>
+          <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %></td>
+          <%= submit_tag("Update Permissions") %> 
       </div>
     </div>
     
@@ -188,16 +191,14 @@
           <th>
             Tags
           </th>
-          <% if session[:view_all] == 'on' && current_user.has_role?(:admin)%>
-             <th>
-               <%= link_to "Groups", userfiles_path(:order  => 'group_id') %>
-               <%= set_order_icon('group_id', session[:order]) %>
-             </th>
-          <% else %>
-             <th>
-               Groups
-             </th>
-          <% end %>
+          <th>
+            <%= link_to "Groups", userfiles_path(:order  => 'group_id') %>
+            <%= set_order_icon('group_id', session[:order]) %>
+          </th>
+          <th>
+             <%= link_to "Group Permissions", userfiles_path(:order  => 'group_writable') %>
+             <%= set_order_icon('group_writable', session[:order]) %>
+          </th>
           <th>
             Provider
           </th>

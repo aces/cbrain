@@ -5,10 +5,16 @@
 #
 # $Id$
 
+#Patch: Load all models so single-table inheritance works properly.
+Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+  Dir.glob("*.rb").each do |model|
+    require_dependency model unless Object.const_defined? model.split(".")[0].classify
+  end
+end
+
 # Superclass to all *BrainPortal* controllers. Contains
 # helper methods for checking various aspects of the current
 # session.
-
 class ApplicationController < ActionController::Base
 
   Revision_info="$Id$"

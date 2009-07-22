@@ -53,14 +53,12 @@ class FileCollection < Userfile
     true
   end
   
-  #Merge the collections and files represented by the ids in +file_ids+.
+  #Merge the collections and files in the array +userfiles+
   #Returns the status of the merge as a *symbol*:
   #[*success*] if the merge is successful.
   #[*collision*] if the collections share common file names (the merge is aborted in this case).
   #[*failure*] if the merge failed for some other reason.
-  def merge_collections(file_ids)
-    userfiles = Userfile.find(file_ids)
-    
+  def merge_collections(userfiles)    
     full_names = userfiles.inject([]){|list, file| list += file.list_files}    
     raw_names = full_names.map{ |file| file.sub(/^.+\//, "") }
     

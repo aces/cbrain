@@ -38,11 +38,13 @@ Select tags for file:<br>
 
 
 <div class= "uploadgroups">
-Groups for uploaded file:<br>
+Group for uploaded file:<br>
 </div>
-  <% if @user_groups then %>
-       <%= render :partial  => 'group_table', :locals  => {:groups => @user_groups} %>
-  <% end %>
+      <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>  <br>
+<div class= "uploadgroups">
+Group permission on file:<br>
+</div>
+      <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
 <br><br>
 
 <div class= "fileoptions">

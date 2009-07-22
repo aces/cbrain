@@ -10,7 +10,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :tags, :groups, :users, :data_providers, :bourreaux
   map.resources :data_providers, :member => { :browse => :get, :register => :post }
   map.resource :session
-  map.resources :userfiles, :collection => {:operation => :post, :extract  => :post}, :member  => {:content  => :get}
+  map.resources :userfiles, :collection => {:operation => :post, :extract_from_collection  => :post}, :member  => {:content  => :get}
   map.resources :single_files, :controller  => :userfiles
   map.resources :file_collection, :controller  => :userfiles
   map.resources :civet_collection, :controller  => :userfiles

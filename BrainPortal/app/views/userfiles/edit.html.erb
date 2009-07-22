@@ -23,7 +23,7 @@
 <table>
    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Name:</th>
-      <td colspan="2"><%= f.text_field :name %></td>
+      <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
    </tr class="list-odd">
    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Owner:</th>
@@ -50,13 +50,15 @@
          <th>Children:</th>
          <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
-
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <th>Group:</th>
-         <td colspan="2"><%= @userfile.group.name rescue ""%></td>
-      </tr>
-   
    <% end %>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th>Group:</th>
+      <td colspan="2"><%= f.collection_select (:group_id,  current_user.groups, :id, :name, {}, {:disabled => @userfile.user_id != current_user.id})%></td>
+   </tr>
+   <tr>
+      <th>Group permission on file:</th>
+      <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, {:disabled => @userfile.user_id != current_user.id}) %></td>
+   </tr>
    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Created at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
@@ -69,18 +71,20 @@
       <tr class="list-even">
          <th rowspan="<%= @tags.size %>">Tags:</th>
          <td><%= @tags[0].name %></td>
-         <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
+         <td><%= check_box_tag("userfile[tag_ids][]", @tags[0].id, @userfile.tags.include?(@tags[0]), :disabled => @userfile.user_id != current_user.id) %></td>
          <% for tag in @tags[1..-1] %>
             <tr class="list-even">
                <td><%= tag.name %></td>
-               <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag)) %></td>
+               <td><%= check_box_tag("userfile[tag_ids][]", tag.id, @userfile.tags.include?(tag), :disabled => @userfile.user_id != current_user.id) %></td>
             </tr>
          <% end %>
       </tr>
    <% end %>
  
 </table>
-<%= submit_tag "Update Fields" %>
+<% if @userfile.can_be_accessed_by?(current_user) %>
+   <%= submit_tag "Update Fields" %>
+<% end %>   
 <% end %>
 <br>
    <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
@@ -161,6 +165,6 @@
    <% end %>
 <br>
 
-<%= link_to 'Index', userfiles_path %>
+<%= button_to 'Back to Userfiles Index', userfiles_path %>
 </div>
 </div>

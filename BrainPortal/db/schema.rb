@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090715165727) do
+ActiveRecord::Schema.define(:version => 20090721210700) do
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -157,6 +157,7 @@ ActiveRecord::Schema.define(:version => 20090715165727) do
     t.string   "task"
     t.integer  "group_id"
     t.integer  "data_provider_id"
+    t.boolean  "group_writable",   :default => false
   end
 
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
