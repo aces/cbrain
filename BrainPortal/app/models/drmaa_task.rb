@@ -164,7 +164,7 @@ class DrmaaTask < ActiveResource::Base
       DrmaaTask.prefered_bourreau_id
     else
       everyone_group_id = Group.find_by_name('everyone').id
-      bourreau_list = Bourreau.find(:all, :conditions => { :group_id => everyone_group_id, online => true })
+      bourreau_list = Bourreau.find(:all, :conditions => { :group_id => everyone_group_id, :online => true })
       bourreau_list.slice(rand(bourreau_list.size))  # a random one
     end
   end
