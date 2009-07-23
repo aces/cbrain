@@ -8,7 +8,7 @@ class CreateSelfGroupForEachUser < ActiveRecord::Migration
     users.each do |u|
       login = u.login
       next if groupnames.has_key?(login)
-      newgroup = Group.new(:name => login)
+      newgroup = SystemGroup.new(:name => login)
       newgroup.save!
       group_ids = u.group_ids
       group_ids << newgroup.id unless group_ids.include?(newgroup.id)
