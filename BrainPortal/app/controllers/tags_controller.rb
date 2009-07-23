@@ -95,6 +95,7 @@ class TagsController < ApplicationController
   # DELETE /tags/1.xml
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
+    current_session.tag_filters.delete @tag.name
     @tag.destroy
 
     respond_to do |format|

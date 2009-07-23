@@ -20,26 +20,30 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   def index #:nodoc:
     current_session.update(params)
-        
-    tag_filters, name_filters  = current_session.current_filters.partition{|filter| filter.split(':')[0] == 'tag'}
+    
+    custom_filters = current_session.custom_filters
     custom_filter_tags = []
-    name_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter.split(':')[1]).tags if filter =~ /^custom:/ }
-    tag_filters |= custom_filter_tags
-
+    custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
+    
+    name_filters = current_session.basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
+    tag_filters = current_session.tag_filters + custom_filter_tags
+          
     conditions = Userfile.convert_filters_to_sql_query(name_filters)
 
     unless current_session.view_all? 
       conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
     end  
-      
-    @userfiles = Userfile.find(:all, :include  => [:tags, :user, :data_provider], 
+            
+    @userfiles = Userfile.find(:all, 
+      :include  => [:tags, :user, :data_provider, :group], 
       :conditions => conditions,
-      :order => "userfiles.#{current_session.order}")
-
+      :order => "userfiles.#{current_session.order}"
+    )
+    
     @userfile_count     = @userfiles.size
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     
-   @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
+    @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
     
     if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)

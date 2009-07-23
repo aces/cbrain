@@ -32,7 +32,9 @@ class Session
 
   def initialize(session) #:nodoc:
     @session = session
-    @session[:current_filters] ||= []
+    @session[:basic_filters] ||= []
+    @session[:tag_filters] ||= []
+    @session[:custom_filters] ||= []
     @session[:pagination] ||= 'on'
     @session[:order] ||= 'lft'
   end
@@ -41,10 +43,19 @@ class Session
   #contained in the +params+ hash.
   def update(params)
     filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
-    @session[:current_filters] = [] if params[:search_type] == 'none'
-    @session[:current_filters] |= [filter] unless filter.blank?
-    @session[:current_filters].delete params[:remove_filter] if params[:remove_filter]
-    
+    if params[:search_type] == 'unfilter'
+      @session[:basic_filters] = []
+      @session[:tag_filters] = []
+      @session[:custom_filters] = []
+    else
+      @session[:basic_filters] |= [filter] unless filter.blank?
+      @session[:tag_filters] |= [params[:tag_filter]] unless params[:tag_filter].blank?
+      @session[:custom_filters] |= [CustomFilter.find(params[:custom_filter]).name] unless params[:custom_filter].blank?
+      @session[:basic_filters].delete params[:remove_basic_filter] if params[:remove_basic_filter]
+      @session[:custom_filters].delete params[:remove_custom_filter] if params[:remove_custom_filter]
+      @session[:tag_filters].delete params[:remove_tag_filter] if params[:remove_tag_filter]
+    end
+        
     if params[:view_all] && User.find(@session[:user_id]).has_role?(:admin)
       @session[:view_all] = params[:view_all]
     end

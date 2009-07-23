@@ -56,7 +56,7 @@ class Userfile < ActiveRecord::Base
       u = User.find(u)
     end
     
-    self.tags.find(self.tag_ids & u.tag_ids)
+    self.tags.select{|t| (self.tag_ids & u.tag_ids).include? t.id}
   end
   
   #Set the tags associated with this file to those
@@ -98,10 +98,11 @@ class Userfile < ActiveRecord::Base
   #tag filters in the +tag_filters+ array and +user+, the current user.
   def self.apply_tag_filters_for_user(files, tag_filters, user)
     current_files = files
-    tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf.split(":")[1] )}
     
-    current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
-    
+    unless tag_filters.blank?
+      tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf )}
+      current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
+    end
     
     current_files
   end
@@ -124,10 +125,7 @@ class Userfile < ActiveRecord::Base
     when 'flt'
       'file:flt'
     when 'mls'
-      'file:mls'
-    when 'custom'
-      custom_filter = CustomFilter.find(term)
-      "custom:#{custom_filter.name}"             
+      'file:mls'            
     end
   end
   
@@ -244,7 +242,7 @@ class Userfile < ActiveRecord::Base
       query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.group_writable = true))", query.shift].compact.join(" AND ")
     end
 
-    variables = [user.id, user.group_ids.join(",")] + query
+    variables = [user.id, user.group_ids] + query
     
     query = [query_string] + variables
     

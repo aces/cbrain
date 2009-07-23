@@ -81,7 +81,7 @@ class CustomFiltersController < ApplicationController
   # DELETE /custom_filters/1.xml
   def destroy #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])    
-    current_session.current_filters.delete "custom:#{@custom_filter.name}"
+    current_session.custom_filters.delete @custom_filter.name
     @custom_filter.destroy
 
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."

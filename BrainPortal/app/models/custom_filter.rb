@@ -28,10 +28,10 @@
 #*Belongs* *to*:
 #* User
 class CustomFilter < ActiveRecord::Base
-  serialize     :tags
-  before_save   :parse_tags
-  
+      
   belongs_to    :user
+  
+  serialize     :tags
   
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => :user_id
@@ -39,9 +39,10 @@ class CustomFilter < ActiveRecord::Base
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
   validates_numericality_of :size_term, :allow_nil  => true
   
-  
-  attr_accessor :tag_ids
+  attr_accessor   :tag_ids
   attr_writer   :query, :variables
+  
+  before_save   :prepare_tags
   
   Revision_info="$Id$"
   
@@ -87,9 +88,9 @@ class CustomFilter < ActiveRecord::Base
   end
   
   #Convert tag_ids attribute into an array of tag filters (format: "tag:<tag_name>").
-  def parse_tags
+  def prepare_tags
     if self.tag_ids
-      self.tags = Tag.find(self.tag_ids).collect{ |t| "tag:#{t.name}" }
+      self.tags = Tag.find(self.tag_ids).collect{ |tag| "#{tag.name}"}
     else
       self.tags = []
     end

@@ -35,10 +35,21 @@
             Current filters
           </h3>
         <ul>
-          <% session[:current_filters].each do |filter|%>
-          <li>
-            <%= filter %><%= link_to "    x", userfiles_path(:remove_filter  => filter) %>
-          </li><% end %>
+          <% session[:basic_filters].each do |filter|%>
+             <li>
+               <%= filter %><%= link_to "    x", userfiles_path(:remove_basic_filter  => filter) %>
+             </li>
+          <% end %>
+          <% session[:custom_filters].each do |filter|%>
+             <li>
+               <%= "custom:#{filter}" %><%= link_to "    x", userfiles_path(:remove_custom_filter  => filter) %>
+             </li>
+          <% end %>
+          <% session[:tag_filters].each do |filter|%>
+              <li>
+                <%= "tag:#{filter}" %><%= link_to "    x", userfiles_path(:remove_tag_filter  => filter) %>
+              </li>
+          <% end %>
         </ul><% if current_user.has_role?(:admin) %>
         
         <% end %>
@@ -47,12 +58,12 @@
         
         <h3>Filters <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br></h3>
         <ul>
-          <li><%= link_to 'All Files', userfiles_path(:search_type  => :none) %> </li> 
+          <li><%= link_to 'All Files', userfiles_path(:search_type  => :unfilter) %> </li> 
         <li><%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %> </li>
         <li><%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %></li>
         <% current_user.custom_filters.each do |filter| %>
           <li>
-              <%= link_to filter.name, userfiles_path(:search_type => :custom, :search_term  => filter.id) %>
+              <%= link_to filter.name, userfiles_path(:custom_filter  => filter.id) %>
               <small><small>
                  <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
                      <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
@@ -66,7 +77,7 @@
         <h3>Filter Tags</h3>
         <ul>
         <% current_user.tags.collect(&:name).each do |tag| %> 
-          <li><%= link_to tag, userfiles_path(:search_type  => :tag_search, :search_term => tag) %></li>
+          <li><%= link_to tag, userfiles_path(:tag_filter => tag) %></li>
         <% end %> 
         </ul>
       
