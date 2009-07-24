@@ -1,0 +1,1 @@
+../../../BrainPortal/app/models/work_group.rb
