@@ -74,18 +74,6 @@ class Userfile < ActiveRecord::Base
   def self.paginate(files, page, prefered_per_page)
     per_page = (prefered_per_page || Default_num_pages).to_i
     offset = (page.to_i - 1) * per_page    
-        
-    ##The following was an attempt to make it so children files appear on the 
-    ## same page as their parents.
-    ## So far it was causing way too many problems, and I'm not sure it's worth it.
-    # if files.size > 50
-    #    while files[offset] && files[offset].level > 0
-    #       offset += 1
-    #     end
-    #     while files[offset + per_page] && files[offset + per_page].level > 0
-    #       per_page += 1
-    #     end
-    # end
     
     WillPaginate::Collection.create(page, per_page) do |pager|
       pager.replace(files[offset, per_page])
