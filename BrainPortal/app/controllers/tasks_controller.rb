@@ -23,11 +23,11 @@ class TasksController < ApplicationController
       bourreau_id = bourreau.id
       DrmaaTask.adjust_site(bourreau_id)
       begin
-        if current_user.role == 'admin'
+        if current_user.has_role? :admin
           #tasks = DrmaaTask.find(:all) || []
-          tasks = DrmaaTask.find(:all, :include => :users) || []
+          tasks = DrmaaTask.find(:all, :include => [:user, :bourreau]) || []
         else
-          tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
+          tasks = DrmaaTask.find(:all, :include => [:user, :bourreau], :params => { :user_id => current_user.id } ) || []
         end
         tasks = [ tasks ] unless tasks.is_a?(Array)
         @tasks.concat(tasks)

@@ -263,7 +263,7 @@ class DrmaaTask < ActiveResource::Base
 
   #Return the Bourreau object associated with this task.
   def bourreau
-    Bourreau.find(self.bourreau_id)
+    @bourreau ||= Bourreau.find(self.bourreau_id)
   end
 
 end

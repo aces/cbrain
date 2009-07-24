@@ -21,7 +21,7 @@
 -->
 
 Save results to:
-<%= select_tag "data_provider_id", options_for_select([["Data provider of input files", nil]] + data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %><br><br>
+<%%= select_tag "data_provider_id", options_for_select([["Data provider of input files", nil]] + data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %><br><br>
 
 Save selections as defaults: <%%= check_box_tag( :save_as_defaults, '1') %><br><br>
 
