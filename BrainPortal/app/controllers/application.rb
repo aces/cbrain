@@ -28,27 +28,6 @@ class ApplicationController < ActionController::Base
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
-
-  def set_cache_killer
-    # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
-    # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
-    # resource will not be written
-    # (must-revalidate) the cache may use the response in replying to a subsequent reques but if the resonse is stale
-    # all caches must first revalidate with the origin server using the request headers from the new request to allow
-    # the origin server to authenticate the new reques
-    # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
-    # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-    response.headers["Cache-Control"] = "no-cache, no-store,
-    max-age=0, must-revalidate"
-    response.headers["Last-Modified"] = Time.now.httpdate
-    response.headers["Expires"] = "#{1.year.ago}"
-    # HTTP 1.0
-    # When the no-cache directive is present in a request message, an application SHOULD forward the request 
-    # toward the origin server even if it has a cached copy of what is being requested
-    response.headers["Pragma"] = "no-cache"
-    # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
-    response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
-  end
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
@@ -86,6 +65,31 @@ class ApplicationController < ActionController::Base
   def available_bourreaux(user)
     Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by(user) }
   end
+  
+  #Prevents pages from being cached in the browser. 
+  #This prevents users from being able to access pages after logout by hitting
+  #the 'back' button on the browser.
+  #
+  #NOTE: Does not seem to be effective for all browsers.
+  def set_cache_killer
+     # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
+     # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
+     # resource will not be written
+     # (must-revalidate) the cache may use the response in replying to a subsequent reques but if the resonse is stale
+     # all caches must first revalidate with the origin server using the request headers from the new request to allow
+     # the origin server to authenticate the new reques
+     # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
+     # Unless max- stale directive is also included, the client is not willing to accept a stale response.
+     #response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+     response.headers["Last-Modified"] = Time.now.httpdate
+     response.headers["Expires"] = "#{1.year.ago}"
+     # HTTP 1.0
+     # When the no-cache directive is present in a request message, an application SHOULD forward the request 
+     # toward the origin server even if it has a cached copy of what is being requested
+     response.headers["Pragma"] = "no-cache"
+     # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
+     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
+   end
 
 end
 
