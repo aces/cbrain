@@ -39,16 +39,19 @@
 #      (for both SingleFile and FileCollections) and the syncronization
 #      steps will be performed for you.
 
+#A subclass of DrmaaTask to run <%= file_name %>.
 class <%= "Drmaa#{class_name}" %> < DrmaaTask
 
   Revision_info="$Id$"
 
+  #See DrmaaTask.
   def setup
     params       = self.params
     user_id      = self.user_id
     true
   end
 
+  #See DrmaaTask.
   def drmaa_commands
     params       = self.params
     user_id      = self.user_id
@@ -57,7 +60,8 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
       "true"
     ]
   end
-
+  
+  #See DrmaaTask.
   def save_results
     params       = self.params
     user_id      = self.user_id

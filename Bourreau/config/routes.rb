@@ -1,7 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
 
   #map.resources :tasks
-  map.connect  ':drmaa_tasks/ping.:format', :controller => 'tasks', :action => 'ping'
   map.resources :drmaa_tasks,     :controller => :tasks
   map.resources :drmaa_sleepers,  :controller => :tasks
   map.resources :drmaa_snoozers,  :controller => :tasks

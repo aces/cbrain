@@ -13,6 +13,7 @@
 # $Id$
 #
 
+#RESTful controller for the DrmaaTask resource.
 class TasksController < ApplicationController
 
   Revision_info="$Id$"
@@ -21,7 +22,7 @@ class TasksController < ApplicationController
 
   # GET /tasks
   # Formats: xml
-  def index
+  def index #:nodoc:
     if params[:user_id]
       @tasks = DrmaaTask.find(:all, :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID, :user_id => params[:user_id]} ) || []
     else
@@ -39,7 +40,7 @@ class TasksController < ApplicationController
 
   # POST /tasks
   # Formats: xml
-  def create
+  def create #:nodoc:
     respond_to do |format|
       format.html { head :method_not_allowed }
       
@@ -56,7 +57,7 @@ class TasksController < ApplicationController
   
   # GET /tasks/<id>
   # Formats: xml
-  def show
+  def show #:nodoc:
     @task.capture_job_out_err
     respond_to do |format|
       format.html { head :method_not_allowed }
@@ -66,9 +67,11 @@ class TasksController < ApplicationController
   
   # PUT /tasks/<id>
   # Formats: xml
+  
   # The only update operation we allow is to the 'status'
-  # attribute; based on the previous value of status,
-  # this will trigger some method calls to control the task
+  # attribute. The status will be updated to the requested
+  # status iff it is an allowable move from the 
+  # previous state.
   def update
     respond_to do |format|
       format.html { head :method_not_allowed }
@@ -102,7 +105,7 @@ class TasksController < ApplicationController
   
   # DELETE /tasks/<id>
   # Formats: xml
-  def destroy
+  def destroy #:nodoc:
     respond_to do |format|
       format.html { head :method_not_allowed }
       
@@ -111,38 +114,6 @@ class TasksController < ApplicationController
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }
       end
-    end
-  end
-  
-  def find_or_initialize_task
-    if params[:id]
-      if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID } )
-        @task.update_status
-      else
-        render_optional_error_file :not_found
-      end
-    else
-      # This is all fuzzy logic trying to figure out the
-      # expected real class for the new object, based on
-      # the content of the keys and values of params
-      subtypes = params.keys.select { |x| x =~ /^drmaa_/i }
-      subtypekey  = subtypes[0] # hopefully just one
-      if subtypekey && subtypehash = params[subtypes[0]]
-        subtype  = subtypehash[:type]
-      end
-      if !subtype && subtypekey # try another way
-        subtype = subtypekey.camelize.sub(/^drmaa_/i,"Drmaa")
-      end
-      @task = Class.const_get(subtype).new(subtypehash)
-    end
-  end
-
-  # GET /ping
-  def ping
-    @message = DrmaaTask.ping
-    respond_to do |format|
-      format.html { render :action => 'ping' }
-      format.xml  { render :xml => { :message => @message } }
     end
   end
   
