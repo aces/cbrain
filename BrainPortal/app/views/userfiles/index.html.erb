@@ -141,23 +141,24 @@
       <br>
       <div class="filemanipulation">
         <%= select_tag(
-                  "operation", 
-                  '
-                      <option value="">Select an operation</option>
-                      <optgroup label="Scientific operations">
-                      <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-                      <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-                      <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
-                      <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-                      <option value="DrmaaMincmath">Mincmath</option>
-                      <option value="DrmaaMincresample">Launch Mincresample</option>
-                                            <optgroup label="UNF task operations">
-                      <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
-                      <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>
-                      <option value="DrmaaMnc2nii">Convert selected MINC files to Nifty</option>
-                  '
-                  ) %>
-                  <%= submit_tag("Apply Operation") %><br>
+        "operation", 
+        '
+        <option value="">Select an operation</option>
+        <optgroup label="Scientific operations">
+          <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
+          <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
+          <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
+          <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
+          <option value="DrmaaMincmath">Mincmath</option>
+          <option value="DrmaaMincresample">Launch Mincresample</option>
+        <optgroup label="UNF task operations">
+          <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
+          <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>
+          <option value="DrmaaMnc2nii">Convert selected MINC files to Nifty</option> 
+        <optgroup label="Move files to other data providers...">
+        ' + options_for_select(@data_providers.map { |dp| [ "... to '#{dp.name}'", "moveto_#{dp.id}" ] })
+        ) %>
+        <%= submit_tag("Apply Operation") %><br>
         <br>
       </div><%= submit_tag("Download Files") %>
       <%= submit_tag("Merge Files into Collection") %>

@@ -396,7 +396,9 @@ class DataProvider < ActiveRecord::Base
 
 
   # Move a +userfile+ from the current provider to
-  # +otherprovider+
+  # +otherprovider+ ; note that this method will
+  # update the +userfile+'s data_provider_id but it
+  # will NOT save it back to the DB!
   def provider_move_to_otherprovider(userfile,otherprovider)
     raise "Error: provider #{self.name} is offline."   unless self.online
     raise "Error: provider #{self.name} is read_only." if self.read_only
@@ -411,14 +413,14 @@ class DataProvider < ActiveRecord::Base
     currentcache = userfile.cache_full_path
 
     # Copy to other provider
-    userfile.provider_id = otherprovider.id
-    otherprovider.cache_copy_from_local_file(currentcache)
+    userfile.data_provider_id = otherprovider.id
+    otherprovider.cache_copy_from_local_file(userfile,currentcache)
 
     # Erase on current provider
-    userfile.provider_id = self.id  # temporarily set it back
+    userfile.data_provider_id = self.id  # temporarily set it back
     cache_erase(userfile)
     impl_provider_erase(userfile)
-    userfile.provider_id = otherprovider.id  # must return it to true value
+    userfile.data_provider_id = otherprovider.id  # must return it to true value
 
     true
   end

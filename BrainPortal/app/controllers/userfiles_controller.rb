@@ -13,38 +13,38 @@
 class UserfilesController < ApplicationController
 
   Revision_info="$Id$"
-  
+
   before_filter :login_required
-  
+
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
     current_session.update(params)
-    
+
     custom_filters = current_session.custom_filters
     custom_filter_tags = []
     custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
-    
+
     name_filters = current_session.basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
     tag_filters = current_session.tag_filters + custom_filter_tags
-          
+
     conditions = Userfile.convert_filters_to_sql_query(name_filters)
 
-    unless current_session.view_all? 
+    unless current_session.view_all?
       conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
-    end  
-            
-    @userfiles = Userfile.find(:all, 
-      :include  => [:tags, :user, :data_provider, :group], 
+    end
+
+    @userfiles = Userfile.find(:all,
+      :include  => [:tags, :user, :data_provider, :group],
       :conditions => conditions,
       :order => "userfiles.#{current_session.order}"
     )
-    
+
     @userfile_count     = @userfiles.size
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
-    
+
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
-    
+
     if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
     end
@@ -53,13 +53,14 @@ class UserfilesController < ApplicationController
     @user_tags = current_user.tags.find(:all)
     @user_groups = current_user.groups.find(:all)
     @default_group = SystemGroup.find_by_name(current_user.login).id
-    
+    @data_providers = available_data_providers(current_user)
+
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @userfiles }
     end
   end
-  
+
   #The content action handles requests for file content
   #by URL. Used mainly by JIV at this point.
   def content
@@ -69,12 +70,12 @@ class UserfilesController < ApplicationController
   end
 
   #The new action displays a view for uploading files.
-  def new 
+  def new
     @userfile = Userfile.new(:group_id  => SystemGroup.find_by_name(current_user.login).id)
     @user_groups = current_user.groups.find(:all)
     @user_tags = current_user.tags.find(:all)
     @data_providers = available_data_providers(current_user)
-    
+
     #upload_stream = params[:upload_file]   # an object encoding the file data stream
     respond_to do |format|
       format.html # new.html.erb
@@ -85,21 +86,21 @@ class UserfilesController < ApplicationController
   # GET /userfiles/1/edit
   def edit  #:nodoc:
     session[:full_civet_display] ||= 'on'
-    
+
     if params[:full_civet_display]
       session[:full_civet_display] = params[:full_civet_display]
     end
-  
+
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
-    
+
     @tags = current_user.tags.find(:all)
   end
 
   # POST /userfiles
   # POST /userfiles.xml
-  
+
   #The create action is used to save uploaded files to a DataProvider.
   #
   #Generally, the file is simply saved to the DataProvider as is.
@@ -117,14 +118,14 @@ class UserfilesController < ApplicationController
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
-    
+
     # Get the upload stream object
     upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
       redirect_to :action => :index
       return
     end
-    
+
     # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
     if data_provider_id.empty?
@@ -167,7 +168,7 @@ class UserfilesController < ApplicationController
       redirect_to :action => :new
       return
     end
-       
+
     # Create a collection
     if params[:archive] =~ /collection/
       collection_name = basename.split('.')[0]  # "abc"
@@ -214,13 +215,13 @@ class UserfilesController < ApplicationController
 
     # Report about successes and failures
     if successful_files.size > 0
-      flash[:notice] += "#{successful_files.size} files successfully added."          
+      flash[:notice] += "#{successful_files.size} files successfully added."
     end
     if failed_files.size > 0
-      flash[:error]  += "#{failed_files.size} files could not be added.\n"          
+      flash[:error]  += "#{failed_files.size} files could not be added.\n"
     end
     if nested_files.size > 0
-      flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."          
+      flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."
     end
 
     if status == :overflow
@@ -249,10 +250,10 @@ class UserfilesController < ApplicationController
 
     flash[:notice] ||= ""
     flash[:error] ||= ""
-    
-    attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})    
+
+    attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
-    
+
     old_name = @userfile.name
     new_name = attributes[:name] || old_name
     if ! Userfile.is_legal_filename?(new_name)
@@ -261,7 +262,7 @@ class UserfilesController < ApplicationController
     end
 
     attributes[:name] = old_name # we must NOT rename the file yet
-    
+
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
     respond_to do |format|
       if @userfile.update_attributes(attributes)
@@ -294,12 +295,12 @@ class UserfilesController < ApplicationController
   #[<b>Update tags</b>] Update the tagging of selected files which a set
   #                     of specified tags.
   #[<b>Update groups</b>] Update the group label of selected files.
-  #[<b>Merge files into collection</b>] Merge the selected files and file 
+  #[<b>Merge files into collection</b>] Merge the selected files and file
   #                                     collections into a new file collection.
   #                                     (see FileCollection).
   #[<b>Delete files</b>] Delete the selected files (delete the file on disk
-  #                      and purge the record from the database).                           
-  def operation 
+  #                      and purge the record from the database).
+  def operation
     if params[:commit] == 'Download Files'
       operation = 'download'
     elsif params[:commit] == 'Delete Files'
@@ -312,13 +313,15 @@ class UserfilesController < ApplicationController
       operation = 'group_update'
     elsif params[:commit] == 'Update Permissions'
       operation = 'permission_update'
+    elsif params[:commit] == 'Apply Operation' && params[:operation].match(/^moveto_\d+$/)
+      operation = 'move_to_other_provider'
     else
       operation   = 'cluster_task'
       task = params[:operation]
     end
-    
+
     filelist    = params[:filelist] || []
-    
+
     flash[:error]  ||= ""
     flash[:notice] ||= ""
 
@@ -336,6 +339,7 @@ class UserfilesController < ApplicationController
 
     # TODO: replace "case" and make each operation a private method ?
     case operation
+
       when "cluster_task"
         redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task
         return
@@ -355,7 +359,7 @@ class UserfilesController < ApplicationController
         else
           cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
           #cacherootdirlen = cacherootdir.to_s.size
-          filenames = filelist.collect do |id| 
+          filenames = filelist.collect do |id|
             u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
             u.sync_to_cache
             full = u.cache_full_path.to_s        # /a/b/c/prov/x/y/basename
@@ -382,24 +386,25 @@ class UserfilesController < ApplicationController
           end
         end
 
-    when 'group_update'
-      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-        if userfile.update_attributes(:group_id => params[:userfile][:group_id])
-           flash[:notice] += "Group for #{userfile.name} successfully updated."
-         else
-           flash[:error] += "Group for #{userfile.name} could not be updated."
-         end
-      end
-    when 'permission_update'
-      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-        if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
-           flash[:notice] += "Permissions for #{userfile.name} successfully updated."
-         else
-           flash[:error] += "Permissions for #{userfile.name} could not be updated."
-         end
-      end
+      when 'group_update'
+        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+          if userfile.update_attributes(:group_id => params[:userfile][:group_id])
+             flash[:notice] += "Group for #{userfile.name} successfully updated."
+           else
+             flash[:error] += "Group for #{userfile.name} could not be updated."
+           end
+        end
 
-    when 'merge_collections'
+      when 'permission_update'
+        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+          if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
+             flash[:notice] += "Permissions for #{userfile.name} successfully updated."
+           else
+             flash[:error] += "Permissions for #{userfile.name} could not be updated."
+           end
+        end
+
+      when 'merge_collections'
         collection = FileCollection.new(:user_id  => current_user.id, :data_provider_id => (params[:data_provider_id] || DataProvider.find_first_online_rw(current_user).id) )
         status = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
         if status == :success
@@ -408,26 +413,61 @@ class UserfilesController < ApplicationController
           flash[:error] = "There was a collision in file names. Collection merge aborted."
         else
           flash[:error] = "Collection merge fails (internal error?)."
-        end 
+        end
+
+      when "move_to_other_provider"
+
+        unless params[:operation] =~ /^moveto_(\d+)$/
+          flash[:error] += "No data provider provided.\n"
+          redirect_to :action => :index
+          return
+        end
+
+        data_provider_id = Regexp.last_match[1].to_i
+        new_provider = available_data_providers(current_user).detect { |dp| dp.id == data_provider_id }
+
+        unless new_provider
+          flash[:error] += "Data provider #{data_provider_id} not accessible.\n"
+          redirect_to :action => :index
+          return
+        end
+
+        nummoved = 0
+        filelist.each do |id|
+          u = Userfile.find(id)
+          next unless u
+          orig_provider = u.data_provider
+          next if orig_provider.id == data_provider_id
+          if orig_provider.provider_move_to_otherprovider(u,new_provider)
+            nummoved += 1
+            u.save
+          end
+        end
+
+        flash[:notice] += "Succesfully moved #{nummoved} file out of #{filelist.size} files."
+        redirect_to :action => :index
+        return
+
       else
         flash[:error] = "Unknown operation #{operation}"
-    end
+
+    end # case
 
     redirect_to :action => :index
-    
+
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
     flash[:error] += "You don't have appropriate permissions to #{operation} the selected files.".humanize
-    
+
     redirect_to :action => :index
   end
-  
+
   #Extract a file from a collection and register it separately
   #in the database.
   def extract_from_collection
     success = failure = 0
-    
+
     collection = FileCollection.find_accessible_by_user(params[:collection_id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
@@ -441,14 +481,14 @@ class UserfilesController < ApplicationController
           failure += 1
         end
       end
-      if success > 0        
+      if success > 0
         flash[:notice] = "#{success} files were successfuly extracted."
       end
       if failure > 0
         flash[:error] =  "#{failure} files could not be extracted."
-      end  
+      end
     end
-    
+
     redirect_to :action  => :index
   end
 
@@ -481,9 +521,9 @@ class UserfilesController < ApplicationController
     else
       raise "Cannot process file with unknown extension: #{archive_file_name}"
     end
-    
+
     count = all_files.select{ |f| f !~ /\// }.size
-    
+
     #max of 50 files can be added to the file list at a time.
     return [:overflow, -1, -1, -1] if count > 50
 
@@ -507,7 +547,7 @@ class UserfilesController < ApplicationController
     successful_files = []
     failed_files     = []
     nested_files     = []
-    
+
     all_files.each do |file_name|
       if file_name =~ /\//
         nested_files << file_name
@@ -522,7 +562,7 @@ class UserfilesController < ApplicationController
         successful_files << file_name
       end
     end
-           
+
     Dir.chdir(workdir) do
       successful_files.each do |file|
         u = SingleFile.new(attributes)
@@ -530,12 +570,12 @@ class UserfilesController < ApplicationController
         u.cache_copy_from_local_file(file)
         unless u.save(false)
           status = :failed
-        end      
+        end
       end
     end
 
     FileUtils.remove_dir(workdir, true)
-    
+
     [status, successful_files, failed_files, nested_files]
   end
 
