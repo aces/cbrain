@@ -325,7 +325,7 @@ class UserfilesController < ApplicationController
     flash[:error]  ||= ""
     flash[:notice] ||= ""
 
-    if operation.nil? || operation.empty?
+    if operation.blank? || (operation == "cluster_task" && task.blank?)
       flash[:error] += "No operation selected? Selection cleared.\n"
       redirect_to :action => :index
       return
