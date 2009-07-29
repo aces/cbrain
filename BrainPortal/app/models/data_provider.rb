@@ -175,12 +175,15 @@ class DataProvider < ActiveRecord::Base
   belongs_to  :user
   belongs_to  :group
   has_many    :user_preferences
+  has_many    :userfiles
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
                                  :allow_blank => true
+                                 
+  before_destroy          :validate_destroy
 
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
@@ -601,6 +604,15 @@ class DataProvider < ActiveRecord::Base
   # "/CbrainCacheDir/ProviderName/34/45/basename"
   def cache_full_pathname(basename) #:nodoc:
     cache_full_dirname(basename) + basename
+  end
+  
+  private
+  
+  #Ensure that system will be in a valid state if this data provider is destroyed.
+  def validate_destroy
+    unless self.userfiles.empty?
+      raise "You cannot remove a provider that has still files registered on it."
+    end
   end
 
 end

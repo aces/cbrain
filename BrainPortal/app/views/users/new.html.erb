@@ -28,7 +28,7 @@
 <%= f.text_field :email %></p>
 
 <p><label for="role">Role</label><br/>
-<%= f.select :role, %w{admin user}, :prompt => 'Select a Role' %></p>
+<%= f.select :role, [["User", "user"],["Site Magager","site_manager"],["Admin","admin"]], :prompt => 'Select a Role' %></p>
 
 <br/>
 <label for="groups">Groups:</label>

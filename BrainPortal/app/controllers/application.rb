@@ -5,23 +5,6 @@
 #
 # $Id$
 
-#Patch: Load all models so single-table inheritance works properly.
-begin
-  Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
-    Dir.glob("*.rb").each do |model|
-      require_dependency model unless Object.const_defined? model.split(".")[0].classify
-    end
-  end
-rescue => error
-  if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
-    puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  elsif error.to_s.match(/Unknown database/i)
-    puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  else
-    raise
-  end
-end
-
 # Superclass to all *BrainPortal* controllers. Contains
 # helper methods for checking various aspects of the current
 # session.
@@ -76,6 +59,16 @@ class ApplicationController < ActionController::Base
     Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by(user) }
   end
   
+  #Before filter to ensure that logged in User is an admin user.
+  def admin_role_required
+    current_user.role == 'admin' || access_error(401)
+  end
+  
+  #Helper method to render and error page. Will render public/<+status+>.html
+  def access_error(status)
+      render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
+  end
+  
   #Prevents pages from being cached in the browser. 
   #This prevents users from being able to access pages after logout by hitting
   #the 'back' button on the browser.
@@ -101,6 +94,23 @@ class ApplicationController < ActionController::Base
      response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
    end
 
+end
+
+#Patch: Load all models so single-table inheritance works properly.
+begin
+  Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+    Dir.glob("*.rb").each do |model|
+      require_dependency model unless Object.const_defined? model.split(".")[0].classify
+    end
+  end
+rescue => error
+  if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+    puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  elsif error.to_s.match(/Unknown database/i)
+    puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  else
+    raise
+  end
 end
 
 LoggedExceptionsController.class_eval do

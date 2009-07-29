@@ -38,7 +38,7 @@ class Userfile < ActiveRecord::Base
   Revision_info="$Id$"
   Default_num_pages = "50"
 
-  acts_as_nested_set :dependent => :destroy, :before_destroy => :move_children_to_root
+  acts_as_nested_set      :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group

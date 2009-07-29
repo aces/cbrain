@@ -43,6 +43,7 @@ class GroupsController < ApplicationController
   # GET /groups/new.xml
   def new  #:nodoc:
     @group = WorkGroup.new
+    @users = User.all.reject{|u| u.login == 'admin'}
 
     _add_admin_to_group(@group)
 
@@ -55,9 +56,7 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit  #:nodoc:
     @group = WorkGroup.find(params[:id])
-
-    _add_admin_to_group(@group)
-
+    @users = User.all.reject{|u| u.login == 'admin'}
   end
 
   # POST /groups
@@ -73,6 +72,7 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
+        @users = User.all.reject{|u| u.login == 'admin'}
         format.html { render :action => "new" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -84,15 +84,15 @@ class GroupsController < ApplicationController
   def update #:nodoc:
     @group = WorkGroup.find(params[:id])
     params[:work_group][:user_ids] ||= []
-    
-    _add_admin_to_group(@group)
+    params[:work_group][:user_ids] << User.find_by_login("admin").id
 
     respond_to do |format|
-      if @group.update_attributes(params[:group])
+      if @group.update_attributes(params[:work_group])
         flash[:notice] = 'Group was successfully updated.'
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
+        @users = User.all.reject{|u| u.login == 'admin'}
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end

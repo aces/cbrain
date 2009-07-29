@@ -31,9 +31,6 @@ class DataProvidersController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @provider }
     end
-
-  rescue
-    access_error(404)
   end
   
   def edit #:nodoc:
@@ -108,9 +105,6 @@ class DataProvidersController < ApplicationController
       render :action => :new
       return
     end
-
-  #rescue
-   # access_error(404)
   end
 
   def update #:nodoc:
@@ -148,8 +142,7 @@ class DataProvidersController < ApplicationController
     @user     = current_user
     @provider = DataProvider.find(id)
 
-    userfiles = Userfile.find(:all, :conditions => { :data_provider_id => id })
-    if ! userfiles.empty?
+    unless @provider.userfiles.empty?
       flash[:error] = "You cannot remove a provider that has still files registered on it."
       redirect_to :action => :show, :id => id
       return
@@ -163,9 +156,6 @@ class DataProvidersController < ApplicationController
     end
 
     redirect_to :action => :index
-
-  rescue
-    access_error(404)
   end
 
   #Browse the files of a data provider.
@@ -212,8 +202,6 @@ class DataProvidersController < ApplicationController
       end
     end
 
-  #rescue
-  #  access_error(404)
   end
 
   #Register a given file into the system.

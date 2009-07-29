@@ -73,15 +73,6 @@ class UsersController < ApplicationController
     @user.save
     
     if @user.errors.empty?
-      begin 
-        UserPreference.create!(:user_id => @user.id)
-      rescue => e
-        @user.destroy
-        flash.now[:error] = "Could not create user preferences record (#{e.message}) please try again."
-        @groups = Group.find(:all)
-        render :action => 'new'
-        return
-      end
       redirect_to(users_url)
       flash[:notice] = "User successfully created."
     else
@@ -110,18 +101,15 @@ class UsersController < ApplicationController
 
   def destroy #:nodoc:
     @user = User.find(params[:id])
-    @user_group = @user.groups.find_by_name(@user.login)
     
-    if @user.userfiles.empty?   
+    begin      
       @user.destroy
-      @user_group.destroy if @user_group
-
       respond_to do |format|
         format.html { redirect_to(users_url) }
         format.xml  { head :ok }
       end
-    else
-      flash[:error] = "User #{@user.login} cannot be deleted while there are still files on the account."
+    rescue => e
+      flash[:error] = e.message
       respond_to do |format|
         format.html { redirect_to(users_url) }
         format.xml  { render :xml => @user, :status => :unprocessable_entity }

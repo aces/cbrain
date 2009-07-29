@@ -113,14 +113,4 @@ module AuthenticatedSystem
         self.current_user = user
       end
     end
-    
-    ####STUFF TAREK ADDED############
-    def admin_role_required
-      current_user.role == 'admin' || access_error(401)
-    end
-    
-    def access_error(status)
-        render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
-    end 
-    
 end

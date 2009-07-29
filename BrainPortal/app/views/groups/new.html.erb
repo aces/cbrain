@@ -28,9 +28,9 @@
   <br/>
   <label for="users">Users in group:</label>
   <table>
-     <% for user in User.find(:all) %>
+     <% for user in @users %>
          <tr>
-           <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+           <td class="info"><%= check_box_tag("work_group[user_ids][]", user.id.to_s) %></td>
            <td class="info"><%= h(user.full_name) -%></td>
          </tr>
      <% end %>

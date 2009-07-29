@@ -34,7 +34,7 @@
     <td><%=h user.login %></td>
     <td><%=h user.email %></td>
     <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
-    <td><%=h user.role %></td>
+    <td><%=h user.role.humanize %></td>
     <td><%=h user.userfiles.size %></td>
     <% unless user.login == 'admin' %>
       <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>

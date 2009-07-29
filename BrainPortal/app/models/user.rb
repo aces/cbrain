@@ -31,17 +31,28 @@ require 'digest/sha1'
 #* UserPreference
 #*Has* *and* *belongs* *to* *many*:
 #* Group
+#
+#=Dependencies
+#[<b>On Create<b>] Creating a user will create an associated UserPreference
+#                  resource.
+#[<b>On Destroy<b>] A user cannot be destroyed if it is still associated with any
+#                   Userfile, RemoteResource or DataProvider resources.
+#                   Destroying a user will destroy the associated UserPreference,
+#                   Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
 
   has_many                :userfiles
-
+  has_many                :data_providers
+  has_many                :remote_resources
   has_and_belongs_to_many :groups
-  has_many                :tags
-  has_many                :feedbacks
-  has_one                 :user_preference
-  has_many                :custom_filters
+
+  #The following resources should be destroyed when a given user is destroyed.
+  has_many                :tags,            :dependent => :destroy
+  has_many                :feedbacks,       :dependent => :destroy
+  has_one                 :user_preference, :dependent => :destroy
+  has_many                :custom_filters,  :dependent => :destroy
 
   
   
@@ -58,8 +69,9 @@ class User < ActiveRecord::Base
   validates_uniqueness_of   :login, :email, :case_sensitive => false
   validate_on_create        :prevent_group_collision
   
+  before_create             :create_user_preference
   before_save               :encrypt_password
-  before_destroy            :destroy_system_group
+  before_destroy            :validate_destroy
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
@@ -141,7 +153,28 @@ class User < ActiveRecord::Base
     end
   end
   
-  def destroy_system_group
+  def create_user_preference #:nodoc:
+    self.build_user_preference
+  end
+  
+  #Ensure that the system will be in a valid state if this user is destroyed.
+  def validate_destroy
+    if self.login == 'admin'
+      raise "Default admin user cannot be destroyed."
+    end
+    unless self.userfiles.empty?
+      raise "User #{self.login} cannot be destroyed while there are still files on the account."
+    end
+    unless self.data_providers.empty?
+      raise "User #{self.login} cannot be destroyed while there are still data providers on the account."
+    end
+    unless self.remote_resources.empty?
+      raise "User #{self.login} cannot be destroyed while there are still remote resources on the account."
+    end
+    destroy_system_group
+  end
+  
+  def destroy_system_group #:nodoc:
     system_group = SystemGroup.find(:first, :conditions => {:name => self.login})
     system_group.destroy if system_group
   end
