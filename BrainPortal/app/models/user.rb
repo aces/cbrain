@@ -59,6 +59,7 @@ class User < ActiveRecord::Base
   validate_on_create        :prevent_group_collision
   
   before_save               :encrypt_password
+  before_destroy            :destroy_system_group
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
@@ -138,5 +139,10 @@ class User < ActiveRecord::Base
     if self.login && (WorkGroup.find_by_name(self.login) || self.login == 'everyone') 
       errors.add(:login, "already in use by a group.")
     end
+  end
+  
+  def destroy_system_group
+    system_group = SystemGroup.find(:first, :conditions => {:name => self.login})
+    system_group.destroy if system_group
   end
 end

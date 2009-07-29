@@ -24,7 +24,7 @@ class Group < ActiveRecord::Base
   Revision_info="$Id$"
 
   has_and_belongs_to_many :users 
-  has_many                :userfiles    
+  has_many                :userfiles   
 
   validates_presence_of   :name
   validates_uniqueness_of :name

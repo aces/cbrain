@@ -6,9 +6,19 @@
 # $Id$
 
 #Patch: Load all models so single-table inheritance works properly.
-Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
-  Dir.glob("*.rb").each do |model|
-    require_dependency model unless Object.const_defined? model.split(".")[0].classify
+begin
+  Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+    Dir.glob("*.rb").each do |model|
+      require_dependency model unless Object.const_defined? model.split(".")[0].classify
+    end
+  end
+rescue => error
+  if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+    puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  elsif error.to_s.match(/Unknown database/i)
+    puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  else
+    raise
   end
 end
 

@@ -1,14 +1,11 @@
+#This migration is no longer valid. Kept as a placeholder for existing systems.
+
 class CreateGroupEveryone < ActiveRecord::Migration
 
   def self.up
-    everyone = SystemGroup.new
-    everyone.name = "everyone"
-    everyone.save!
   end
 
   def self.down
-    everyone = Group.find_by_name("everyone")
-    everyone.destroy
   end
 
 end
