@@ -68,6 +68,19 @@ class ScirPbsSession < Scir::Session
     end
   end
 
+  def queue_tasks_tot_max
+    queue = CBRAIN::DEFAULT_QUEUE
+    queue = "default" if queue.blank?
+    queueinfo = `qstat -Q #{shell_escape(queue)} | tail -1`
+    # Queue              Max   Tot   Ena   Str   Que   Run   Hld   Wat   Trn   Ext T
+    # ----------------   ---   ---   ---   ---   ---   ---   ---   ---   ---   --- -
+    # brain               90    33   yes   yes     0    33     0     0     0     0 E
+    fields = queueinfo.split(/\s+/)
+    [ fields[2], fields[1] ]
+  rescue
+    [ "exception", "exception" ]
+  end
+
   private
 
   def qsubout_to_jid(i)

@@ -14,7 +14,9 @@ class CBRAIN
   public
 
   Revision_info="$Id$"
-  Redmine_Version="1.1.2"
+  Redmine_Version="1.1.4"
+
+  Startup_LocalTime = Time.now.localtime
 
 end
 

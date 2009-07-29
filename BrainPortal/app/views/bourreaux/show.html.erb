@@ -17,6 +17,9 @@
 <% content_for(:sidebar) do %>
   <% if @bourreau.is_alive? %>
       <p class="notice">This bourreau is alive.</p>
+      <% if @info.name != @bourreau.name %>
+        <p class="error">Error! The remote Bourreau's name is '<%= h(@info.name) %>' while locally it is called '<%= h(@bourreau.name) %>' !</p>
+      <% end %>
   <% else %>
       <p class="error">This bourreau is NOT RESPONDING!</p>
   <% end %>
@@ -48,11 +51,6 @@
    <tr>
        <th>Revision Info (Bourreau Client)</th>
        <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
-   </tr>
-
-   <tr>
-       <th>Revision Info (Bourreau Server)</th>
-       <td class="info"><%= h("Not Yet Implemented") %></td>
    </tr>
 
    <tr>
@@ -103,6 +101,39 @@
        <td class="info"><%= h(@bourreau.remote_port) %></td>
    </tr>
 
+   <tr>
+     <th colspan="2">Runtime Information</th>
+   </tr>
+
+   <tr>
+       <th>Revision Info (Bourreau Server)</th>
+       <td class="info">
+           <strong>Subversion Revision: </strong><%= @info.revision %><br>
+           <strong>Last Change Author: </strong><%= @info.lc_author %><br>
+           <strong>Last Change Revision: </strong><%= @info.lc_rev %><br>
+           <strong>Last Change Date: </strong><%= @info.lc_date %>
+       </td>
+   </tr>
+
+   <tr>
+       <th>Number of tasks (running/max)</th>
+       <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+   </tr>
+
+   <tr>
+       <th>Host uptime</th>
+       <td class="info"><%= h(@info.host_uptime) %></td>
+   </tr>
+
+   <tr>
+       <th>Bourreau Server uptime (in seconds)</th>
+       <td class="info"><%= h(@info.bourreau_uptime) %></td>
+   </tr>
+
+   <tr>
+       <th>Bourreau SSH Public Key</th>
+       <td class="info"><PRE><%= @info.ssh_public_key.strip %><PRE></td>
+   </tr>
 
 <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
@@ -130,8 +161,12 @@
     <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
   </tr>
   <%
-   DrmaaTask.adjust_site(@bourreau.id)
-   tasks = DrmaaTask.find(:all);
+   begin
+     DrmaaTask.adjust_site(@bourreau.id)
+     tasks = DrmaaTask.find(:all);
+   rescue
+     tasks = []
+   end
    User.all.each do |user|
    id    = user.id
    login = user.login

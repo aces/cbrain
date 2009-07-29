@@ -14,24 +14,6 @@ require 'logger'
 require 'stringio'
 require 'base64'
 
-# This new class method caches the DRMAA::Session object;
-# it's needed for initializing the DRMAA session because
-# only one Session object can be created
-# during an active ruby execution, and mongrel reloads
-# and reninitalizes all the rails classes at every request.
-module Scir  #:nodoc:
-  class Session #:nodoc:
-
-    # Opens a session once, then cache it
-    def Session.session_cache #:nodoc
-      @@session_cache = Scir::Session.new_session unless self.class_variable_defined?('@@session_cache')
-      @@session_cache
-    end
-
-  end
-end
-
-
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS jobs using Scir.
 #

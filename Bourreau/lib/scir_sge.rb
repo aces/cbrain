@@ -76,6 +76,21 @@ class ScirSgeSession < Scir::Session
     end
   end
 
+  def queue_tasks_tot_max
+    queue = CBRAIN::DEFAULT_QUEUE
+    queue = "all.q" if queue.blank?
+    queueinfo = `qstat -q #{shell_escape(queue)} -f | tail -1`
+    # queuename                      qtype resv/used/tot. load_avg arch          states
+    # ---------------------------------------------------------------------------------
+    # all.q@montague.bic.mni.mcgill. BIP   0/0/2          0.12     lx24-x86
+    if queueinfo.match(/(\d+)\/(\d+)\/(\d+)/)
+      return [ Regexp.last_match[2], Regexp.last_match[3] ]
+    end
+    [ "unparsable", "unparsable" ]
+  rescue
+    [ "exception", "exception" ]
+  end
+
   private
 
   def qsubout_to_jid(i)

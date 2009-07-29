@@ -28,6 +28,8 @@ class BourreauxController < ApplicationController
 
     raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
 
+    @info = @bourreau.info
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }

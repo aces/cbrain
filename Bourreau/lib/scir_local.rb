@@ -54,6 +54,14 @@ class ScirLocalSession < Scir::Session
     system("( kill -TERM #{shell_escape(jid)};sleep 5;kill -KILL #{shell_escape(jid)} ) &");
   end
 
+  def queue_tasks_tot_max
+    cpuinfo = `cat /proc/cpuinfo`.split("\n")
+    proclines = cpuinfo.select { |i| i.match(/^processor\s*:\s*/i) }
+    [ "unknown", proclines.size.to_s ]
+  rescue
+    [ "exception", "exception" ]
+  end
+
   private
 
   def qsubout_to_jid(i)
@@ -61,7 +69,7 @@ class ScirLocalSession < Scir::Session
     if id && id =~ /PID=(\d+)/
       return Regexp.last_match[1]
     end
-    raise "Cannot find job ID from qsub output"
+    raise "Cannot find job ID from bash subshell output"
   end
 
 end

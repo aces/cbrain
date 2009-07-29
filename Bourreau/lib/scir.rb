@@ -66,6 +66,12 @@ class Session
 
 public
 
+  # Opens a session once, then cache it
+  def Session.session_cache #:nodoc
+    @@session_cache = Scir::Session.new_session unless self.class_variable_defined?('@@session_cache')
+    @@session_cache
+  end
+
   def self.new_session(check_delay = 5)
     subclassname = Scir.session_subclass
     subclass     = Class.const_get(subclassname)
@@ -106,6 +112,10 @@ public
 
   def terminate(jid)
     raise "This method must be provided in a subclass"
+  end
+
+  def queue_tasks_tot_max
+    [ "nyi", "nyi" ]
   end
 
   protected
