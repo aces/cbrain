@@ -11,7 +11,7 @@
 
 puts "C> Verifying configuration variables..."
 
-Needed_Constants = %w( Filevault_dir DataProviderCache_dir )
+Needed_Constants = %w( DataProviderCache_dir )
 
 # Constants
 Needed_Constants.each do |c|
@@ -21,9 +21,6 @@ Needed_Constants.each do |c|
 end
   
 # Run-time checks
-unless File.directory?(CBRAIN::Filevault_dir)
-  raise "CBRAIN configuration error: file vault '#{CBRAIN::Filevault_dir}' does not exist!"
-end
 unless File.directory?(CBRAIN::DataProviderCache_dir)
   raise "CBRAIN configuration error: data provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
 end

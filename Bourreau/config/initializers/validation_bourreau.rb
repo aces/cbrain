@@ -12,7 +12,7 @@
 puts "C> Verifying configuration variables..."
 
 Needed_Constants = %w(
-                       Filevault_dir DataProviderCache_dir
+                       DataProviderCache_dir
                        DRMAA_sharedir Quarantine_dir CIVET_dir
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS
@@ -26,9 +26,6 @@ Needed_Constants.each do |c|
 end
   
 # Run-time checks
-unless File.directory?(CBRAIN::Filevault_dir)
-  raise "CBRAIN configuration error: file vault '#{CBRAIN::Filevault_dir}' does not exist!"
-end
 unless File.directory?(CBRAIN::DataProviderCache_dir)
   raise "CBRAIN configuration error: data provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
 end
