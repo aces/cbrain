@@ -27,6 +27,8 @@ class DataProvidersController < ApplicationController
 
     raise "Provider not accessible by current user." unless @provider.can_be_accessed_by(current_user)
 
+    @ssh_keys = get_ssh_public_keys
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @provider }
@@ -44,6 +46,8 @@ class DataProvidersController < ApplicationController
        return
     end
 
+    @ssh_keys = get_ssh_public_keys
+
     respond_to do |format|
       format.html { render :action => :edit }
       format.xml  { render :xml => @provider }
@@ -60,7 +64,8 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
-     @typelist = get_type_list
+    @typelist = get_type_list
+    @ssh_keys = get_ssh_public_keys
 
     respond_to do |format|
       format.html { render :action => :new }
@@ -123,6 +128,7 @@ class DataProvidersController < ApplicationController
     subtype   = fields.delete(:type)
 
     @provider.update_attributes(fields)
+    @ssh_keys = get_ssh_public_keys
 
     if @provider.errors.empty?
       redirect_to(data_providers_url)
@@ -302,6 +308,28 @@ class DataProvidersController < ApplicationController
                     VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
     end
     typelist
+  end
+
+  def get_ssh_public_keys #:nodoc
+
+    # Get SSH key for this BrainPortal
+    portal_ssh_key = `cat $HOME/.ssh/id_rsa.pub`.strip
+    portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
+    keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
+
+    # Get SSH keys for each Bourreau
+    Bourreau.all.each do |b|
+      next unless b.can_be_accessed_by(current_user)
+      name = b.name
+      ssh_key = "This Bourreau is DOWN!"
+      if b.is_alive?
+        info = b.info
+        ssh_key = info.ssh_public_key
+      end
+      keys << [ "Bourreau '#{name}'", ssh_key ]
+    end
+
+    keys
   end
 
 end
