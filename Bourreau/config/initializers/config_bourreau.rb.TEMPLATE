@@ -24,7 +24,6 @@
 class CBRAIN
 
   # Data Providers constants
-  Filevault_dir            = "/your/filevault/dir"   # Soon to be obsolete
   DataProviderCache_dir    = "/your/local/bourreau/cache/here" # Must differ from Portal's, if you're running both
 
   # Local bourreau constants 

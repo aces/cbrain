@@ -24,7 +24,6 @@
 class CBRAIN
 
   # Data Providers constants
-  Filevault_dir            = "/your/filevault/dir"   # Soon to be obsolete
   DataProviderCache_dir    = "/your/local/portal/cache/here"
   
   # This is used by BrainPortal as the list of available clusters.

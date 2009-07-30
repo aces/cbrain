@@ -31,7 +31,9 @@ class Bourreau < RemoteResource
   end
 
   # Connects to the Bourreau's information channel and
-  # get a record of run-time information.
+  # get a record of run-time information. It is usually
+  # better to call the info method instead, which will
+  # cache the result if necessary.
   def update_info
     BourreauInfo.site = self.site
     infos = BourreauInfo.find(:all)
@@ -57,6 +59,8 @@ class Bourreau < RemoteResource
   end
 
   # Returns and cache a record of run-time information about the bourreau.
+  # This method automatically calls update_info if the information has
+  # not been cached yet.
   def info
     @info ||= self.update_info
     @info
