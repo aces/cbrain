@@ -19,10 +19,12 @@ class BourreauInfosController < ApplicationController
   def index #:nodoc:
 
     me = Bourreau.find_by_name(CBRAIN::BOURREAU_CLUSTER_NAME)
+
+    home = Etc.getpwnam(Etc.getlogin).dir
     
     host_uptime    = `uptime`.strip   # TODO make more robust
     elapsed        = Time.now.localtime - CBRAIN::Startup_LocalTime
-    ssh_public_key = `cat $HOME/.ssh/id_rsa.pub`   # TODO make more robust
+    ssh_public_key = `cat #{home}/.ssh/id_rsa.pub`   # TODO make more robust
 
     queue_tasks_tot_max = Scir::Session.session_cache.queue_tasks_tot_max
     queue_tasks_tot     = queue_tasks_tot_max[0]
