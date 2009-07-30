@@ -86,6 +86,8 @@ class UsersController < ApplicationController
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     params[:user][:group_ids] ||= []
+    params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => "SystemGroup"} )
+      
     respond_to do |format|
       if @user.update_attributes(params[:user])
         flash[:notice] = "User #{@user.login} was successfully updated."

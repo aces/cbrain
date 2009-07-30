@@ -25,13 +25,12 @@
 <p><label for="email">Email</label><br/>
 <%= f.text_field :email %></p>
 
-<% if check_role(:admin) && not_admin_user(@user) %>
-   <p><label for="login">Login</label><br/>
-   <%= f.text_field :login %></p>
-
-   <p><label for="role">Role</label><br/>
-   <%= f.select :role, [["User", "user"],["Site Magager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
-   <br/>
+<% if check_role(:admin) %>
+	<%  if not_admin_user(@user) %>
+   	<p><label for="role">Role</label><br/>
+	   <%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
+	   <br/>
+	<% end %>
    <label for="groups">Groups:</label>
    <table>
       <% for group in @groups %>
