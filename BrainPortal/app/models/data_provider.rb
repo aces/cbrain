@@ -208,7 +208,7 @@ class DataProvider < ActiveRecord::Base
 
   # Returns true if +user+ can access this provider.
   def can_be_accessed_by(user)
-    return true if self.user_id == user.user_id
+    return true if self.user_id == user.id
     user.group_ids.include?(group_id)
   end
   
