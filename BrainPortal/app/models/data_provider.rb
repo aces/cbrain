@@ -208,6 +208,7 @@ class DataProvider < ActiveRecord::Base
 
   # Returns true if +user+ can access this provider.
   def can_be_accessed_by(user)
+    return true if self.user_id == user.user_id
     user.group_ids.include?(group_id)
   end
   
@@ -465,7 +466,7 @@ class DataProvider < ActiveRecord::Base
   def self.find_first_online_rw(user)
     providers = self.find(:all, :conditions => { :online => true, :read_only => false })
     providers = providers.select { |p| p.can_be_accessed_by(user) }
-    raise "No online rw provider found for user '#{user.login}" if providers.size == 0
+    raise "No online rw provider found for user '#{user.login}'" if providers.size == 0
     providers.sort! { |a,b| a.id <=> b.id }
     providers[0]
   end
