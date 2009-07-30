@@ -128,7 +128,7 @@ class UserfilesController < ApplicationController
 
     # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
-    if data_provider_id.empty?
+    if data_provider_id.blank?
       data_provider_id = DataProvider.find_first_online_rw(current_user).id
     end
 
