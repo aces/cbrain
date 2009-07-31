@@ -101,6 +101,13 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
   end
 end
 
+Group.all.each do |g|
+   next if g.type
+   puts "C> \t- '#{g.name}' group migrated to WorkGroup."
+   g.type = 'WorkGroup'
+   g.save!
+end
+
 rescue => error
   if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
     puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
