@@ -74,6 +74,8 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
   puts("****************************************************")
 end
 
+puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
+
 User.find(:all, :include => [:groups, :user_preference]).each do |u|
   unless u.group_ids.include? everyone_group.id
     puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
@@ -101,11 +103,24 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
   end
 end
 
+puts "C> Ensuring that all groups have a type..."
 Group.all.each do |g|
-   next if g.type
-   puts "C> \t- '#{g.name}' group migrated to WorkGroup."
-   g.type = 'WorkGroup'
-   g.save!
+  next if g.type
+  puts "C> \t- '#{g.name}' group migrated to WorkGroup."
+  g.type = 'WorkGroup'
+  g.save!
+end
+
+puts "C> Ensuring that userfiles all have a group..."
+missing_gid = Userfile.find(:all, :conditions => { :group_id => nil })
+missing_gid.each do |file|
+  user   = file.user
+  raise "Error: cannot find a user for file '#{file.id}' ?!?" unless user
+  ugroup = SystemGroup.find_by_name(user.login)
+  raise "Error: cannot find a SystemGroup for user '#{user.login}' ?!?" unless ugroup
+  puts "C> \t- Adjusted file '#{file.name}' to group '#{ugroup.name}'."
+  file.group = ugroup
+  file.save!
 end
 
 rescue => error
