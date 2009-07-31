@@ -16,7 +16,8 @@ Needed_Constants = %w( DataProviderCache_dir )
 # Constants
 Needed_Constants.each do |c|
   unless CBRAIN.const_defined?(c)
-    raise "Configuration error: the CBRAIN constant '#{c}' is not defined! Check 'config_portal.rb'."
+    raise "Configuration error: the CBRAIN constant '#{c}' is not defined!\n" +
+          "Check 'config_portal.rb' (and compare it to 'config_portal.rb.TEMPLATE')."
   end
 end
   

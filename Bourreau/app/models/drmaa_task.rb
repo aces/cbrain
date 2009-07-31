@@ -431,6 +431,9 @@ protected
       "# Script created automatically by #{self.class.to_s}\n" +
       "# #{Revision_info}\n" +
       "\n" +
+      "# Global Bourreau initialization section\n" +
+      CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n") + "\n" +
+      "\n" +
       "# User commands section\n" +
       commands.join("\n") +
       "\n" )

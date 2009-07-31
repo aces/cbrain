@@ -15,13 +15,14 @@ Needed_Constants = %w(
                        DataProviderCache_dir
                        DRMAA_sharedir Quarantine_dir CIVET_dir
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
-                       EXTRA_QSUB_ARGS
+                       EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
                      )
 
 # Constants
 Needed_Constants.each do |c|
   unless CBRAIN.const_defined?(c)
-    raise "Configuration error: the CBRAIN constant '#{c}' is not defined! Check 'config_bourreau.rb'."
+    raise "Configuration error: the CBRAIN constant '#{c}' is not defined!\n" +
+          "Check 'config_bourreau.rb' (and compare it to 'config_bourreau.rb.TEMPLATE')."
   end
 end
   
@@ -48,6 +49,11 @@ else
   else
     raise "CBRAIN configuration error: can't find ActiveRecord for a Bourreau with name '#{CBRAIN::BOURREAU_CLUSTER_NAME}'."
   end
+end
+
+if ! CBRAIN::EXTRA_BASH_INIT_CMDS.is_a?(Array) ||
+     CBRAIN::EXTRA_BASH_INIT_CMDS.find { |s| ! s.is_a?(String) }
+  raise "CBRAIN configuration error: the EXTRA_BASH_INIT_CMDS is not an array of strings!"
 end
 
 
