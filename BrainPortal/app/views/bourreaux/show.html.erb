@@ -132,7 +132,7 @@
 
    <tr>
        <th>Bourreau SSH Public Key</th>
-       <td class="info"><SMALL><SMALL><PRE><%= @info.ssh_public_key.strip %><PRE></SMALL></SMALL></td>
+       <td class="info"><SMALL><SMALL><PRE><%= pretty_ssh_key(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
    </tr>
 
 <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
