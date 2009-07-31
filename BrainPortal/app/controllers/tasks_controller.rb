@@ -89,6 +89,7 @@ class TasksController < ApplicationController
     end
         
     begin
+      params[:user_id] = current_user.id
       flash[:notice] ||= ""
       flash[:notice] += @task_class.launch(params)
     rescue  => e
