@@ -45,12 +45,15 @@ end
 
 puts "C> Ensuring that required groups and users have been created..."
 
-unless SystemGroup.find(:first, :conditions  => {:name  => "everyone"})
+everyone_group = Group.find_by_name("everyone")
+if ! everyone_group
   puts "C> \t- 'everyone' system group does not exist. Creating it."
-  SystemGroup.create!(:name  => "everyone")
+  everyone_group = SystemGroup.create!(:name  => "everyone")
+elsif ! everyone_group.is_a?(SystemGroup)
+  puts "C> \t- 'everyone' group migrated to SystemGroup."
+  everyone_group.type = 'SystemGroup'
+  everyone_group.save!
 end
-
-everyone_group = SystemGroup.find_by_name("everyone")
 
 unless User.find(:first, :conditions => {:login  => 'admin'})
   puts "C> \t- Admin user does not exist yet. Creating one."
@@ -71,8 +74,6 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
   puts("****************************************************")
 end
 
-system_group_name = SystemGroup.all.collect(&:name)
-
 User.find(:all, :include => [:groups, :user_preference]).each do |u|
   unless u.group_ids.include? everyone_group.id
     puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
@@ -82,10 +83,16 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
     u.save!
   end
   
-  unless system_group_name.include? u.login
+  user_group = Group.find_by_name(u.login)
+  if ! user_group
     puts "C> \t- User #{u.login} doesn't have their own system group. Creating one."
     user_group = SystemGroup.create!(:name  => u.login)
     u.groups  << user_group
+    u.save!
+  elsif ! user_group.is_a?(SystemGroup)
+    puts "C> \t- '#{user_group.name}' group migrated to SystemGroup."
+    user_group.type = 'SystemGroup'
+    user_group.save!
   end
   
   unless u.user_preference
