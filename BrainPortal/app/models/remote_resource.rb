@@ -38,7 +38,7 @@ class RemoteResource < ActiveRecord::Base
 
   #Returns whether or not this resource can be accessed by +user+.
   def can_be_accessed_by(user)
-    return true if self.user_id == user.id
+    return true if self.user_id == user.id || user.has_role?(:admin)
     user.group_ids.include?(group_id)
   end
   
