@@ -28,10 +28,10 @@ form_tag( "/userfiles", :multipart => true, :method => :post ) do
 </div>
 
 <div class = "uploadtags">
-Select tags for file:<br>
+Select tags for file:
 </div>
 <% if @user_tags.empty? then %>
-  There are no tags <br>
+  <br><br>There are no tags
 <% else %>
      <br><br><%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
 <% end %>

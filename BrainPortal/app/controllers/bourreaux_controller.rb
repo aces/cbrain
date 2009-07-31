@@ -30,6 +30,25 @@ class BourreauxController < ApplicationController
 
     @info = @bourreau.info
 
+    @user_id_name = {}
+    User.all.each { |user| @user_id_name[user.id] = user.login }
+    
+    @user_tasks_info = {}    #  user -> [ completed_tasks, total_tasks ]
+    begin
+       DrmaaTask.adjust_site(@bourreau.id)
+       tasks = DrmaaTask.find(:all);
+    rescue
+       tasks = []
+    end
+
+    tasks.each do |t|
+      user_id = t.user_id
+      name    = @user_id_name[user_id] || "User-#{user_id}"
+      @user_tasks_info[name] ||= [0,0]
+      @user_tasks_info[name][0] += 1 if t.status == "Completed"
+      @user_tasks_info[name][1] += 1
+    end
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }

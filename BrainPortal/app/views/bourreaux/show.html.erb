@@ -161,22 +161,12 @@
     <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
   </tr>
   <%
-   begin
-     DrmaaTask.adjust_site(@bourreau.id)
-     tasks = DrmaaTask.find(:all);
-   rescue
-     tasks = []
-   end
-   User.all.each do |user|
-   id    = user.id
-   login = user.login
-   ct = tt = 0
-   tasks.each { |t| next if t.user_id != id; tt += 1; ct += 1 if t.status == "Completed" }
+   @user_tasks_info.each do |user, comp_tot|
   %>
     <tr>
-      <td class="info"><%= h(login) %></td>
-      <td class="info"><%= h(ct.to_s) %></td>
-      <td class="info"><%= h(tt.to_s) %></td>
+      <td class="info"><%= h(user) %></td>
+      <td class="info"><%= h(comp_tot[0].to_s) %></td>
+      <td class="info"><%= h(comp_tot[1].to_s) %></td>
     </tr>
   <% end %>
 </table>
