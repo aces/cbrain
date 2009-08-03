@@ -30,6 +30,7 @@
        <th>Owner</th>
        <th>Group</th>
        <th>Online?</th>
+       <th>Alive?</th>
        <th>Description</th>
        <th colspan="2">Operations</th>
    </tr>
@@ -40,6 +41,7 @@
          <td><%= h(bour.user.login) %></td>
          <td><%= h(bour.group.name) %></td>
          <td><%= h(bour.online ? "Yes" : "No") %></td>
+         <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
          <td><%= h(bour.description) %></td>
          <td>
             <% if check_role(:admin) || bour.user_id == current_user.id %>
