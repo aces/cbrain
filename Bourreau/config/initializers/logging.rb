@@ -1,0 +1,1 @@
+../../../BrainPortal/config/initializers/logging.rb
