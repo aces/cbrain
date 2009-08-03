@@ -266,5 +266,17 @@ class DrmaaTask < ActiveResource::Base
     @bourreau ||= Bourreau.find(self.bourreau_id)
   end
 
+  # Returns an ID string containing both the bourreau_id +b+
+  # and the task ID +t+ in format "b/t"
+  def bid_tid
+    "#{self.bourreau_id || '?'}/#{self.id || '?'}"
+  end
+
+  # Returns an ID string containing both the bourreau_name +b+
+  # and the task ID +t+ in format "b/t"
+  def bname_tid
+    "#{self.bourreau.name || '?'}/#{self.id || '?'}"
+  end
+
 end
 

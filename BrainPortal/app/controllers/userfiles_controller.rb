@@ -96,6 +96,8 @@ class UserfilesController < ApplicationController
     @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
 
     @tags = current_user.tags.find(:all)
+
+    @log  = @userfile.getlog rescue nil
   end
 
   # POST /userfiles
@@ -441,6 +443,7 @@ class UserfilesController < ApplicationController
           if orig_provider.provider_move_to_otherprovider(u,new_provider)
             nummoved += 1
             u.save
+            u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
           end
         end
 

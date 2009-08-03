@@ -10,7 +10,6 @@
 #
 
 require 'scir'
-require 'logger'
 require 'stringio'
 require 'base64'
 
@@ -502,6 +501,13 @@ protected
 
   def capt_stderr_b64 #:nodoc:
     @capt_stderr_b64
+  end
+
+  # Compatibility method to let this class
+  # acts a bit like the other classes extended
+  # by the ActRecLog module (see logging.rb).
+  def getlog
+    self.log
   end
 
 end
