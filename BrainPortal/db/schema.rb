@@ -9,7 +9,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090721210700) do
+ActiveRecord::Schema.define(:version => 20090803170325) do
+
+  create_table "active_record_logs", :force => true do |t|
+    t.integer  "ar_id"
+    t.string   "ar_class"
+    t.text     "log"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "active_record_logs", ["ar_id", "ar_class"], :name => "index_active_record_logs_on_ar_id_and_ar_class"
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -160,10 +170,10 @@ ActiveRecord::Schema.define(:version => 20090721210700) do
     t.boolean  "group_writable",   :default => false
   end
 
-  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
-  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
-  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
+  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
+  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
+  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
 
   create_table "users", :force => true do |t|
     t.string   "full_name"
