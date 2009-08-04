@@ -3,6 +3,7 @@
 # CBRAIN Project
 #
 # General Active Record Logging Mechanism
+# See the module ActRecLog for more information.
 #
 # Original author: Pierre Rioux
 #
