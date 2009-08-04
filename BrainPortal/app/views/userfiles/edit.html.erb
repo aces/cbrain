@@ -10,15 +10,15 @@
 #
 
 -%>
-<div class = "generalcontent">
 
 <% title "File Info: #{@userfile.name}" %>
 
 <h2>File details for <%= h @userfile.name %></h2>
 
-<div class = "generalbox">
 <% form_for(@userfile) do |f| %>
 <%= f.error_messages %>
+
+<div class = "splitleft_editfiles">
 
 <table>
    <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -32,8 +32,7 @@
    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Size:</th>
       <td colspan="2"><%=h @userfile.size %></td>
-   </tr>
-  
+   </tr>  
   
    <%if @userfile.is_a? SingleFile %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -51,7 +50,20 @@
          <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
    <% end %>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
+   
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+       <th>Created at:</th>
+       <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
+    </tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+       <th>Modified at:</th>
+       <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s)) %></td>
+    </tr>
+   
+</table>
+
+<table>
+  <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Group:</th>
       <td colspan="2"><%= f.collection_select (:group_id,  current_user.groups, :id, :name, {}, {:disabled => @userfile.user_id != current_user.id})%></td>
    </tr>
@@ -59,29 +71,20 @@
       <th>Group permission on file:</th>
       <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, {:disabled => @userfile.user_id != current_user.id}) %></td>
    </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Created at:</th>
-      <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s)) %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Modified at:</th>
-      <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s)) %></td>
-   </tr>
+</table>
 
-   <% unless @tags.empty? %>
-      <tr class="list-even">
-         <th rowspan="<%= @tags.size %>">Tags:</th>
-         <td><%= @tags[0].name %></td>
-         <td><%= check_box_tag("tag_ids[]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
-         <% for tag in @tags[1..-1] %>
-            <tr class="list-even">
-               <td><%= tag.name %></td>
-               <td><%= check_box_tag("tag_ids[]", tag.id, @userfile.tags.include?(tag)) %></td>
-            </tr>
-         <% end %>
-      </tr>
-   <% end %>
- 
+<%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
+<br>
+<%= submit_tag "Update Fields" %>
+<br> 
+<%= button_to 'Back to Userfiles Index', userfiles_path %>
+</div>
+
+<div class = "splitright_editfiles">
+
+<%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
+
+<table>
    <% if @log %>
    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th colspan="3">File log</th>
@@ -90,89 +93,7 @@
       <td colspan="3"><pre><%= @log %></pre></td>
    </tr>
    <% end %>
-
-</table>
-   <%= submit_tag "Update Fields" %>
-<% end %>
-<br>
-   <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
-      <% form_tag(extract_from_collection_userfiles_path) do %>
-      <%= hidden_field_tag :collection_id, @userfile.id %>
-      <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
-         <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>
-         <table class="userfiles">
-            <tr>
-               <th>Final</th>
-               <th>Native</th>
-               <th>Surfaces</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_final.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/final/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_native.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/native/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_surfaces.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/surfaces/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-            <tr>
-               <th>Classify</th>
-               <th>Thickness</th>
-               <th>Verify</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_classify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/classify/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_thickness.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/thickness/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_verify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/verify/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-            <tr>
-               <th>Linear Transformations</th>
-               <th>Non-linear Transformations</th>
-               <th>Surface Transformations</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/linear/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_non_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/nonlinear/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_surfreg_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/surfreg/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-         </table>
-      <% else %>
-      <% if @userfile.is_a?(CivetCollection) %>
-         <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
-      <% end %>
-      <table>
-         <tr class="list-odd">
-            <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
-            <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
-            <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
-            <% for file in @userfile.list_files[1..-1] %>
-               <tr class="list-odd">
-                  <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
-                  <td><%= check_box_tag("filelist[]", file) %></td>
-               </tr>
-            <% end %>
-         </tr>
-      <% end %>
-      </table>
-      <%= submit_tag "Extract Files from Collection" %>
-      <% end %>
    <% end %>
-<br>
-
-<%= button_to 'Back to Userfiles Index', userfiles_path %>
-</div>
+</table>
+   
 </div>
