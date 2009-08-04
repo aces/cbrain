@@ -310,7 +310,7 @@ class DataProvidersController < ApplicationController
     typelist
   end
 
-  def get_ssh_public_keys #:nodoc
+  def get_ssh_public_keys #:nodoc:
 
     # Get SSH key for this BrainPortal
     home = Etc.getpwnam(Etc.getlogin).dir

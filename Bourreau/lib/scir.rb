@@ -67,7 +67,7 @@ class Session
 public
 
   # Opens a session once, then cache it
-  def Session.session_cache #:nodoc
+  def Session.session_cache #:nodoc:
     @@session_cache = Scir::Session.new_session unless self.class_variable_defined?('@@session_cache')
     @@session_cache
   end
