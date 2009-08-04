@@ -409,7 +409,10 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
     raise "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
     return true if self.id == otherprovider.id
-    target_exists = Userfile.find_by_name_and_data_provider_id(userfile.name,otherprovider.id)
+    target_exists = Userfile.find(:first,
+        :conditions => { :name             => userfile.name,
+                         :data_provider_id => otherprovider.id,
+                         :user_id          => userfile.user_id } )
     return false if target_exists
 
     # Get path to cached copy on current provider
