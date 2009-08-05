@@ -185,6 +185,12 @@ class DataProvider < ActiveRecord::Base
                                  
   before_destroy          :validate_destroy
 
+
+
+  #################################################################
+  # Provider query/access methods
+  #################################################################
+  
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?
@@ -211,43 +217,13 @@ class DataProvider < ActiveRecord::Base
     return true if self.user_id == user.id || user.has_role?(:admin)
     user.group_ids.include?(group_id)
   end
-  
-  #Find data provider identified by +id+ accessible by +user+.
-  #
-  #*Accessible* data providers  are:
-  #[For *admin* users:] any data provider on the system.
-  #[For regular users:] all data providers that belong to a group to which the user belongs.
-  #
-  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
-  #except for :conditions which is set internally.
-  def self.find_accessible_by_user(id, user, options = {})
-    new_options = options
-    
-    unless user.has_role? :admin
-      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
-    end
-    
-    find(id, new_options)
-  end
-  
-  #Find all data providers accessible by +user+.
-  #
-  #*Accessible* data providers  are:
-  #[For *admin* users:] any data provider on the system.
-  #[For regular users:] all data providers that belong to a group to which the user belongs.
-  #
-  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
-  #except for :conditions which is set internally.
-  def self.find_all_accessible_by_user(user, options = {})
-    new_options = options
-    
-    unless user.has_role? :admin
-      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
-    end
-    
-    find(:all, new_options)
-  end
 
+
+
+  #################################################################
+  # Data API methods (work on userfiles)
+  #################################################################
+  
   # Synchronizes the content of +userfile+ as stored
   # on the provider into the local cache.
   def sync_to_cache(userfile)
@@ -431,7 +407,6 @@ class DataProvider < ActiveRecord::Base
     true
   end
 
-
   # This method provides a way for a client of the provider
   # to get a list of files on the provider's side, files
   # that are not necessarily yet registered as +userfiles+.
@@ -455,10 +430,46 @@ class DataProvider < ActiveRecord::Base
   end
 
 
+
   #################################################################
   # Utility Non-API
   #################################################################
-
+  
+  #Find data provider identified by +id+ accessible by +user+.
+  #
+  #*Accessible* data providers  are:
+  #[For *admin* users:] any data provider on the system.
+  #[For regular users:] all data providers that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_accessible_by_user(id, user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+    end
+    
+    find(id, new_options)
+  end
+  
+  #Find all data providers accessible by +user+.
+  #
+  #*Accessible* data providers  are:
+  #[For *admin* users:] any data provider on the system.
+  #[For regular users:] all data providers that belong to a group to which the user belongs.
+  #
+  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
+  #except for :conditions which is set internally.
+  def self.find_all_accessible_by_user(user, options = {})
+    new_options = options
+    
+    unless user.has_role? :admin
+      new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+    end
+    
+    find(:all, new_options)
+  end
 
   # This method is a TRANSITION utility method; it returns
   # any provider that's read/write for the user. The method
@@ -484,6 +495,7 @@ class DataProvider < ActiveRecord::Base
   end
 
 
+
   #################################################################
   # ActiveRecord callbacks
   #################################################################
@@ -499,9 +511,13 @@ class DataProvider < ActiveRecord::Base
   end
 
 
+
   #################################################################
+  # Implementation-dependant method placeholders
+  # All of these methods MUST be implemented in subclasses.
+  #################################################################
+
   protected
-  #################################################################
 
   def impl_is_alive? #:nodoc:
     raise "Error: method not yet implemented in subclass."
@@ -529,6 +545,10 @@ class DataProvider < ActiveRecord::Base
 
 
 
+  #################################################################
+  # Shell utility methods
+  #################################################################
+
   # This utility method escapes properly any string such that
   # it becomes a literal in a bash command; the string returned
   # will include the surrounding single quotes.
@@ -551,6 +571,12 @@ class DataProvider < ActiveRecord::Base
     fh.close
     output
   end
+
+
+
+  #################################################################
+  # Internal cache-handling methods
+  #################################################################
 
   # Root directory for ALL DataProviders caches:
   #    "/CbrainCacheDir"
