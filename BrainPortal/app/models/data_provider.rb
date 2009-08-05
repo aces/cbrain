@@ -425,8 +425,7 @@ class DataProvider < ActiveRecord::Base
 
     # Erase on current provider
     userfile.data_provider_id = self.id  # temporarily set it back
-    cache_erase(userfile)
-    impl_provider_erase(userfile)
+    provider_erase(userfile)
     userfile.data_provider_id = otherprovider.id  # must return it to true value
 
     true
