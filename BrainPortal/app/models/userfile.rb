@@ -268,6 +268,12 @@ class Userfile < ActiveRecord::Base
     [self.name]
   end
 
+  # Returns a simple keyword identifying the type of
+  # the userfile; used mostly by the index view.
+  def pretty_type
+    "(???)"
+  end
+
   ##############################################
   # Data Provider easy access methods
   ##############################################

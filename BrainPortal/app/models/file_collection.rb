@@ -130,6 +130,12 @@ class FileCollection < Userfile
     "#{self.size || "?"} files" 
   end
   
+  # Returns a simple keyword identifying the type of
+  # the userfile; used mostly by the index view.
+  def pretty_type
+    "(Collection)"
+  end
+
   #Remove the common root (if there is one) from the directory structure of this collection.
   def flatten
     dir_name = self.cache_full_path
