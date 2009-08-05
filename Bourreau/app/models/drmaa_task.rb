@@ -370,6 +370,27 @@ public
      end
   end
 
+  # Compatibility method to let this class
+  # acts a bit like the other classes extended
+  # by the ActRecLog module (see logging.rb).
+  # This is necessary because DrmaaTask objects
+  # have their very own internal embedded log
+  # and do NOT use the methods defined by the
+  # ActRecLog module.
+  def getlog
+    self.log
+  end
+
+  # TODO reimplement like in module ActRecLog ?
+  def addlog_context(ctx,message="") #:nodoc:
+    raise "Log method not supported for DrmaaTask!"
+  end
+
+  # TODO reimplement like in module ActRecLog ?
+  def addlog_revinfo(obj,message="") #:nodoc:
+    raise "Log method not supported for DrmaaTask!"
+  end
+
 protected
 
   # The list of possible DRMAA states is larger than
@@ -501,13 +522,6 @@ protected
 
   def capt_stderr_b64 #:nodoc:
     @capt_stderr_b64
-  end
-
-  # Compatibility method to let this class
-  # acts a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  def getlog
-    self.log
   end
 
 end

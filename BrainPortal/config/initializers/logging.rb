@@ -294,9 +294,10 @@ class ActiveRecord::Base
 
   after_destroy :destroy_log
 
-  # Destroy the log associated with an ActiveRecord
-  # This is usually called as a callback when the
-  # record is destroyed.
+  # Destroy the log associated with an ActiveRecord.
+  # This is usually called automatically as a +after_destroy+
+  # callback when the record is destroyed, but it can be
+  # called manually too.
   def destroy_log
     return true if self.is_a?(ActiveRecordLog)
     arl = self.active_record_log

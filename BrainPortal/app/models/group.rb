@@ -22,9 +22,9 @@
 #* DataProvider
 #* RemoteResource
 #=Dependencies
-#[<b>On Destroy<b>] All Userfile, RemoteResource and DataProvider
-#                   associated with the group being destroyed will
-#                   have their group set to their owner's SystemGroup.
+#[<b>On Destroy</b>] All Userfile, RemoteResource and DataProvider
+#                    associated with the group being destroyed will
+#                    have their group set to their owner's SystemGroup.
 class Group < ActiveRecord::Base
 
   Revision_info="$Id$"

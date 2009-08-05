@@ -235,7 +235,7 @@ class DrmaaTask < ActiveResource::Base
     {}      #create the hash of options to be saved
   end
   
-  #Retreive the id of the preferred Bourreau for this task.
+  #Retrieve the id of the preferred Bourreau for this task.
   def self.prefered_bourreau_id
     @@prefered_bourreau_id ||= nil
   end
@@ -245,7 +245,7 @@ class DrmaaTask < ActiveResource::Base
     @@prefered_bourreau_id = id
   end
   
-  #Retreive the id of the provider to save output to 
+  #Retrieve the id of the provider to save output to 
   #when the task is complete.
   def self.data_provider_id
     @@data_provider_id ||= nil

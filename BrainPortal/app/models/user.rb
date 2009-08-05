@@ -33,12 +33,12 @@ require 'digest/sha1'
 #* Group
 #
 #=Dependencies
-#[<b>On Create<b>] Creating a user will create an associated UserPreference
-#                  resource.
-#[<b>On Destroy<b>] A user cannot be destroyed if it is still associated with any
-#                   Userfile, RemoteResource or DataProvider resources.
-#                   Destroying a user will destroy the associated UserPreference,
-#                   Tag, Feedback and CustomFilter resources.
+#[<b>On Create</b>] Creating a user will create an associated UserPreference
+#                   resource.
+#[<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
+#                    Userfile, RemoteResource or DataProvider resources.
+#                    Destroying a user will destroy the associated UserPreference,
+#                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
