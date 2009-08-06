@@ -248,6 +248,7 @@ class DataProvider < ActiveRecord::Base
   def cache_prepare(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
+    mkdir_cache_providerdir
     mkdir_cache_subdirs(userfile.name)
     true
   end
