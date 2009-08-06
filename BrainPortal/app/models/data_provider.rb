@@ -248,7 +248,6 @@ class DataProvider < ActiveRecord::Base
   def cache_prepare(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
-    mkdir_cache_providerdir
     mkdir_cache_subdirs(userfile.name)
     true
   end
@@ -612,6 +611,7 @@ class DataProvider < ActiveRecord::Base
     twolevels = cache_subdirs(basename)
     level1 = Pathname.new(cache_providerdir) + twolevels[0]
     level2 = level1                          + twolevels[1]
+    mkdir_cache_providerdir
     Dir.mkdir(level1) unless File.directory?(level1)
     Dir.mkdir(level2) unless File.directory?(level2)
     true
