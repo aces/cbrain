@@ -18,9 +18,9 @@ module ApplicationHelper
   # Returns a string that represents the amount of elapsed time
   # encoded in +numseconds+ seconds.
   #
-  #   0:: "0 seconds"
-  #   1:: "1 second"
-  #   7272:: "2 hours, 1 minute and 12 seconds"
+  # 0:: "0 seconds"
+  # 1:: "1 second"
+  # 7272:: "2 hours, 1 minute and 12 seconds"
   def pretty_elapsed(numseconds)
     remain = numseconds.to_i
 

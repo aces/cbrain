@@ -141,6 +141,10 @@ class BourreauxController < ApplicationController
     
     raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
+    DrmaaTask.adjust_site(@bourreau.id)
+    tasks_left = DrmaaTask.find(:all).size
+    raise "This Bourreau cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
+
     if @bourreau.destroy
       flash[:notice] = "Bourreau successfully deleted."
     else

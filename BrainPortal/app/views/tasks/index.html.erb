@@ -60,6 +60,7 @@ Other operations: <%= select_tag(
    <tr>
        <th>Select</th>
        <th>Task Name</th>
+       <th>Owner</th>
        <th>Bourreau Name</th>
        <th>Current Status</th>
        <th>Time Submitted</th>
@@ -69,6 +70,7 @@ Other operations: <%= select_tag(
        <tr class ="<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFE5FF')">
          <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready') %></td>
          <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
+         <td><%= h(task.user.login) %></td>
          <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
          <td><%= h(task.status) %></td>
          <td><%= h(to_localtime(task.created_at.to_s)) -%></td>

@@ -28,6 +28,7 @@ class SessionsController < ApplicationController
       flash[:notice] = "Logged in successfully"
     else
       flash[:error] = 'Invalid user name or password.'
+      Kernel.sleep 5 # Annoying, as it blocks the instance for other users too. Sigh.
       render :action => 'new'
     end
   end
