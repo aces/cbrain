@@ -180,17 +180,15 @@
       <thead>
         <tr>
           <th>
-            <%= link_to 'Select All', userfiles_path(:select_all => true) %>
+            <%= link_to 'Select All', userfiles_path(:select_all => true, :page  => params[:page]) %>
           </th>
-          <% if ((session[:view_all] == 'on' && current_user.has_role?(:admin))|| current_user) %>
-             <th>
-               <%= link_to "Owner", userfiles_path(:order  => 'user_id') %>
-               <%= set_order_icon('user_id', session[:order]) %>
-             </th>
-          <% end %>
           <th>
             <%= link_to "Filename", userfiles_path(:order  => 'name') %>
             <%= set_order_icon('name', session[:order]) %>
+          </th>
+          <th>
+            <%= link_to "Owner", userfiles_path(:order  => 'user_id') %>
+            <%= set_order_icon('user_id', session[:order]) %>
           </th>
           <th>
             <%= link_to "Creation Date", userfiles_path(:order  => 'created_at') %>
