@@ -65,6 +65,9 @@
                   <li><%= link_to 'Bourreaux', bourreaux_path %></li>
                   <li><%= link_to 'Jiv Viewer', jiv_path %></li>                
                   <li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
+                  <% if current_user.site %>
+							<li><%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %></li> 	
+						<% end %>
                </ul>
             <% end %>               
          </div>
@@ -80,14 +83,17 @@
          <%= h(flash[:notice]).gsub(/\n/,"<BR>") -%>
         </div>
       <% end %>
-      <% if current_user && current_user.has_role?(:admin) %>
+      <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
         <BR>
         <h3>Admin Menu</h3>
                     <ul>
                        <li><%= link_to 'Users', users_path %></li>
-                       <li><%= link_to 'Groups', groups_path %></li> 
-                       <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
-                    </ul>
+                       <li><%= link_to 'Groups', groups_path %></li>
+ 							  <% if current_user.has_role?(:admin) %>
+								  <li><%= link_to 'Sites', sites_path %></li> 	
+	                       <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+							  <% end %>
+	                 </ul>
       <% end %>
       <div class = "page-specific-sidebar">
          <%= yield :sidebar %>

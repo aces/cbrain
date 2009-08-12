@@ -19,7 +19,7 @@
 -%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
-      <% if current_user && current_user.role == 'admin' %>
+      <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
       <h3>
         Admin Options
       </h3>
@@ -212,7 +212,11 @@
              <%= set_order_icon('group_writable', session[:order]) %>
           </th>
           <th>
-            Provider
+             <%= link_to "Provider", userfiles_path(:order  => 'provider_id') %>
+              <%= set_order_icon('provider_id', session[:order]) %>
+          </th>
+          <th>
+            Site
           </th>
         </tr>
       </thead>

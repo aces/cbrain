@@ -1,0 +1,26 @@
+<h1>Listing sites</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Managers</th>
+    <th>Number of Users</th>
+    <th>Number of Groups</th>
+    <th colspan="3"/>
+  </tr>
+
+<% for site in @sites %>
+  <tr>
+    <td><%=link_to h(site.name), site_path(site) %></td>
+    <td><%= site.managers.collect{ |m| h(m.login) }.join('<BR>') %></td>
+    <td><%= site.users.count %></td>
+    <td><%= site.groups.count %></td>   
+    <td><%= link_to 'Edit', edit_site_path(site) %></td>
+    <td><%= link_to 'Destroy', site, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= button_to 'Create new site', new_site_path, :method  => :get %>

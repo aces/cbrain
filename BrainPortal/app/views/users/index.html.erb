@@ -24,6 +24,7 @@
     <th>Email</th>
     <th>Groups</th>
     <th>Role</th>
+    <th>Site</th>
     <th>Number of Files</th>
     <th colspan="2">Operations</th>
   </tr>
@@ -35,6 +36,7 @@
     <td><%=h user.email %></td>
     <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
     <td><%=h user.role.humanize %></td>
+    <td><%=h user.site.name rescue "(Unassigned)" %></td>
     <td><%=h user.userfiles.size %></td>
     <% unless user.login == 'admin' %>
       <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>

@@ -36,10 +36,31 @@ class RemoteResource < ActiveRecord::Base
   belongs_to  :user
   belongs_to  :group
 
+  def site_affiliation
+    @site_affiliation ||= self.user.site
+  end
+
   #Returns whether or not this resource can be accessed by +user+.
-  def can_be_accessed_by(user)
-    return true if self.user_id == user.id || user.has_role?(:admin)
-    user.group_ids.include?(group_id)
+  def can_be_accessed_by?(user)
+      return true if self.user_id == user.id || user.has_role?(:admin)
+      return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
+      user.group_ids.include?(group_id)
+  end
+  
+  #Returns whether or not +user+ has owner access to this
+  #remote resource.
+  def has_owner_access?(user)
+    if user.has_role? :admin
+      return true
+    end
+    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+      return true
+    end
+    if user.id == self.user_id
+      return true
+    end
+    
+    false
   end
   
   #Find remote resource identified by +id+ accessible by +user+.
@@ -55,6 +76,12 @@ class RemoteResource < ActiveRecord::Base
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+      
+      if user.has_role? :site_manager
+        new_options[:joins] = :user
+        new_options[:conditions][0] += "OR (users.site_id = ?)"
+        new_options[:conditions] << user.site_id
+      end
     end
     
     find(id, new_options)
@@ -73,6 +100,12 @@ class RemoteResource < ActiveRecord::Base
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+      
+      if user.has_role? :site_manager
+        new_options[:joins] = :user
+        new_options[:conditions][0] += "OR (users.site_id = ?)"
+        new_options[:conditions] << user.site_id
+      end
     end
     
     find(:all, new_options)

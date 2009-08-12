@@ -51,6 +51,23 @@ module AuthenticatedSystem
     def login_required
       authorized? || access_denied
     end
+    
+    ##########################################################
+    #NEXT TWO ADDED BY TAREK
+    ##########################################################
+
+    #Before filter to ensure that logged in User is an admin user.
+    def admin_role_required
+      current_user.has_role?(:admin) || access_error(401)
+    end
+
+    #Before filter to ensure that logged in User is a site manager (or admin).
+    def manager_role_required
+      current_user.has_role?(:admin) || current_user.has_role?(:site_manager) || access_error(401)
+    end
+    
+    ##########################################################
+    ##########################################################
 
     # Redirect as appropriate when an access request fails.
     #

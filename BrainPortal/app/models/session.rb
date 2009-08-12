@@ -56,7 +56,7 @@ class Session
       @session[:tag_filters].delete params[:remove_tag_filter] if params[:remove_tag_filter]
     end
         
-    if params[:view_all] && User.find(@session[:user_id]).has_role?(:admin)
+    if params[:view_all] && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
       @session[:view_all] = params[:view_all]
     end
     
@@ -76,7 +76,7 @@ class Session
   
   #Is the current *admin* user viewing all files on the system (or only his/her own)?
   def view_all?
-    @session[:view_all] == 'on' && User.find(@session[:user_id]).has_role?(:admin)
+    @session[:view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
   end
   
   #The method_missing method has been redefined to allow for simplified access to session parameters.

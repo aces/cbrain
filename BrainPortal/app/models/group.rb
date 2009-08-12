@@ -32,7 +32,8 @@ class Group < ActiveRecord::Base
   has_and_belongs_to_many :users 
   has_many                :userfiles
   has_many                :data_providers 
-  has_many                :remote_resources  
+  has_many                :remote_resources
+  belongs_to              :site 
 
   validates_presence_of   :name
   validates_uniqueness_of :name

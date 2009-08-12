@@ -98,7 +98,8 @@ require 'pathname'
 #
 # == Access restriction methods:
 #
-# * can_be_accessed_by(user)    # user is a User object
+# * can_be_accessed_by?(user)    # user is a User object
+# * has_owner_access?(user)    # user is a User object
 #
 # == Synchronization methods:
 #
@@ -186,7 +187,6 @@ class DataProvider < ActiveRecord::Base
   before_destroy          :validate_destroy
 
 
-
   #################################################################
   # Provider query/access methods
   #################################################################
@@ -213,11 +213,27 @@ class DataProvider < ActiveRecord::Base
   end
 
   # Returns true if +user+ can access this provider.
-  def can_be_accessed_by(user)
+  def can_be_accessed_by?(user)
     return true if self.user_id == user.id || user.has_role?(:admin)
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
     user.group_ids.include?(group_id)
   end
 
+  #Returns whether or not +user+ has owner access to this
+  #data provider.
+  def has_owner_access?(user)
+    if user.has_role? :admin
+      return true
+    end
+    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+      return true
+    end
+    if user.id == self.user_id
+      return true
+    end
+  
+    false
+  end
 
 
   #################################################################
@@ -374,7 +390,6 @@ class DataProvider < ActiveRecord::Base
     impl_provider_rename(userfile,newname.to_s)
   end
 
-
   # Move a +userfile+ from the current provider to
   # +otherprovider+ ; note that this method will
   # update the +userfile+'s data_provider_id but it
@@ -430,7 +445,6 @@ class DataProvider < ActiveRecord::Base
   end
 
 
-
   #################################################################
   # Utility Non-API
   #################################################################
@@ -448,6 +462,12 @@ class DataProvider < ActiveRecord::Base
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+      
+      if user.has_role? :site_manager
+        new_options[:joins] = :user
+        new_options[:conditions][0] += "OR (users.site_id = ?)"
+        new_options[:conditions] << user.site_id
+      end
     end
     
     find(id, new_options)
@@ -466,6 +486,12 @@ class DataProvider < ActiveRecord::Base
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
+      
+      if user.has_role? :site_manager
+        new_options[:joins] = :user
+        new_options[:conditions][0] += " OR (users.site_id = ?)"
+        new_options[:conditions] << user.site_id
+      end
     end
     
     find(:all, new_options)
@@ -478,7 +504,7 @@ class DataProvider < ActiveRecord::Base
   # it will return the main Vault provider by default.
   def self.find_first_online_rw(user)
     providers = self.find(:all, :conditions => { :online => true, :read_only => false })
-    providers = providers.select { |p| p.can_be_accessed_by(user) }
+    providers = providers.select { |p| p.can_be_accessed_by?(user) }
     raise "No online rw provider found for user '#{user.login}'" if providers.size == 0
     providers.sort! { |a,b| a.id <=> b.id }
     providers[0]
@@ -494,6 +520,9 @@ class DataProvider < ActiveRecord::Base
     Dir.mkdir(providerdir) unless File.directory?(providerdir)
   end
 
+  def site
+    @site ||= self.user.site
+  end
 
 
   #################################################################

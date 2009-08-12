@@ -25,13 +25,14 @@
 <p><label for="email">Email</label><br/>
 <%= f.text_field :email %></p>
 
-<% if check_role(:admin) %>
-	<%  if not_admin_user(@user) %>
+<% if check_role(:admin) || check_role(:site_manager) %>
+	<%  if not_admin_user(@user) && check_role(:admin)%>
    	<p><label for="role">Role</label><br/>
 	   <%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
-	   <br/>
+	   <p><label for="role">Site</label><br/>
+      <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
 	<% end %>
-   <label for="groups">Groups:</label>
+   <label for="groups">Groups</label>
    <table>
       <% for group in @groups %>
        <tr>

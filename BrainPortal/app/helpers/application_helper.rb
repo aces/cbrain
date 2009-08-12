@@ -80,6 +80,17 @@ module ApplicationHelper
       name
     end
   end
+  
+  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
+   #the current user has a role of *admin*. Otherwise, +name+ will be 
+   #displayed as static text.
+   def link_if_has_access(resource, name, path)
+     if resource.can_be_accessed_by?(current_user)
+       link_to(name, path)
+     else
+       name
+     end
+   end
 
   # This method reformats a long SSH key text so that it
   # is folded on several lines.

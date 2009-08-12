@@ -14,12 +14,17 @@ class GroupsController < ApplicationController
 
   Revision_info="$Id$"
 
-  before_filter :login_required, :admin_role_required
+  before_filter :login_required, :manager_role_required
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
-    @system_groups = SystemGroup.find(:all, :include => [:users])
-    @work_groups = WorkGroup.find(:all, :include => [:users])
+    if current_user.has_role? :admin
+      @system_groups = SystemGroup.find(:all, :include => [:users, :site])
+      @work_groups = WorkGroup.find(:all, :include => [:users, :site])
+    else
+      @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "SystemGroup"}, :include => [:users])
+      @work_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"}, :include => [:users])
+    end
 
      respond_to do |format|
       format.html # index.html.erb
@@ -30,8 +35,11 @@ class GroupsController < ApplicationController
   # GET /groups/1
   # GET /groups/1.xml
   def show  #:nodoc:
-    @group = Group.find(params[:id], :include => [:users])
-    
+    if current_user.has_role? :admin
+      @group = Group.find(params[:id], :include => [:users])
+    else
+      @group = current_user.site.groups.find(params[:id], :include => [:users])
+    end
 
     respond_to do |format|
       format.html # show.html.erb
@@ -43,9 +51,11 @@ class GroupsController < ApplicationController
   # GET /groups/new.xml
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = User.all.reject{|u| u.login == 'admin'}
-
-    _add_admin_to_group(@group)
+    if current_user.has_role? :admin
+      @users = User.all.reject{|u| u.login == 'admin'}
+    else
+      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+    end
 
     respond_to do |format|
       format.html # new.html.erb
@@ -55,16 +65,23 @@ class GroupsController < ApplicationController
 
   # GET /groups/1/edit
   def edit  #:nodoc:
-    @group = WorkGroup.find(params[:id])
-    @users = User.all.reject{|u| u.login == 'admin'}
+    if current_user.has_role? :admin
+      @group = WorkGroup.find(params[:id])
+      @users = User.all.reject{|u| u.login == 'admin'}
+    else
+      @group = current_user.site.groups.find(params[:id], :conditions  => {:type  => "WorkGroup"})
+      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+    end
   end
 
   # POST /groups
   # POST /groups.xml
   def create  #:nodoc:
     @group = WorkGroup.new(params[:work_group])
-
-    _add_admin_to_group(@group)
+    
+    if current_user.has_role? :site_manager
+      @group.site = current_user.site
+    end
 
     respond_to do |format|
       if @group.save
@@ -84,7 +101,6 @@ class GroupsController < ApplicationController
   def update #:nodoc:
     @group = WorkGroup.find(params[:id])
     params[:work_group][:user_ids] ||= []
-    params[:work_group][:user_ids] << User.find_by_login("admin").id
 
     respond_to do |format|
       if @group.update_attributes(params[:work_group])
@@ -103,7 +119,11 @@ class GroupsController < ApplicationController
   # DELETE /groups/1
   # DELETE /groups/1.xml
   def destroy  #:nodoc:
-    @group = WorkGroup.find(params[:id])
+    if current_user.has_role? :admin
+      @group = WorkGroup.find(params[:id])
+    else
+      @group = current_user.site.groups.find(params[:id], :conditions  => {:type  => "WorkGroup"})
+    end
     @group.destroy
 
     respond_to do |format|
@@ -111,15 +131,5 @@ class GroupsController < ApplicationController
       format.xml  { head :ok }
     end
   end
-
-  private
   
-  # Makes sure all groups contain the 'admin' user
-  def _add_admin_to_group(group) #:nodoc:
-    user_ids = group.user_ids
-    admin_id = User.find_by_login("admin").id
-    user_ids << admin_id unless user_ids.include?(admin_id)
-    group.user_ids = user_ids
-  end
-
 end

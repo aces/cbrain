@@ -28,12 +28,16 @@
   </td>
   <tr class="list-even">
       <td class = "title"><b>Role:</b></td>
-      <td class = "tabletext"><%=h @user.role %></td>
+      <td class = "tabletext"><%=h @user.role.humanize %></td>
   </tr>
   <tr class="list-even">
      <td class = "title"><b>Email:</b></td>
      <td class = "tabletext"><%=h @user.email %></td>
   </tr>
+  <tr class="list-even">
+       <td class = "title"><b>Site:</b></td>
+       <td class = "tabletext"><%=h @user.site.name rescue "(None)" %></td>
+    </tr>
   <tr class="list-even">
      <td class = "title"><b>Default Execution Server: </b></td>
      <td class = "tabletext"><%= h @default_bourreau %>  </td>

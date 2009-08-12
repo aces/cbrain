@@ -25,7 +25,7 @@ class DataProvidersController < ApplicationController
   def show  #:nodoc:
     @provider = DataProvider.find(params[:id])
 
-    raise "Provider not accessible by current user." unless @provider.can_be_accessed_by(current_user)
+    raise "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
     @ssh_keys = get_ssh_public_keys
 
@@ -40,7 +40,7 @@ class DataProvidersController < ApplicationController
     @user     = current_user
     #@mode     = "update"
 
-    if !check_role(:admin) && @provider.user_id != @user.id
+    unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        redirect_to :action => :index
        return
@@ -53,8 +53,6 @@ class DataProvidersController < ApplicationController
       format.xml  { render :xml => @provider }
     end
 
-  rescue
-    access_error(404)
   end
 
   def new #:nodoc:
@@ -72,8 +70,6 @@ class DataProvidersController < ApplicationController
       format.xml  { render :xml => @provider }
     end
 
-  rescue
-    access_error(404)
   end
 
   def create #:nodoc:
@@ -95,10 +91,13 @@ class DataProvidersController < ApplicationController
     end
     
     @provider = subclass.new(fields)
-    @provider.save
     
-    errors.each do |attr, msg|
-      @provider.errors.add(attr, msg)
+    if errors.empty?
+      @provider.save
+    else
+      errors.each do |attr, msg|
+        @provider.errors.add(attr, msg)
+      end
     end
 
     if @provider.errors.empty?
@@ -106,6 +105,7 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
     else
       @typelist = get_type_list
+      @ssh_keys = get_ssh_public_keys
        
       render :action => :new
       return
@@ -118,7 +118,7 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find(id)
 
-    if !check_role(:admin) && @provider.user_id != @user.id
+    unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        redirect_to :action => :index
        return
@@ -135,6 +135,7 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
     else
       #@mode = "update"
+      @ssh_keys = get_ssh_public_keys
       render :action => 'edit'
       return
     end
@@ -154,7 +155,7 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    if check_role(:admin) || @provider.user_id == @user.id
+    if @provider.has_owner_access?(current_user)
       @provider.destroy
       flash[:notice] = "Provider successfully deleted."
     else
@@ -173,7 +174,7 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find(id)
 
-    if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
+    unless @provider.can_be_accessed_by?(@user) && @provider.is_browsable?
       flash[:error] = "You cannot browse this provider."
       redirect_to :action => :index
       return
@@ -218,7 +219,7 @@ class DataProvidersController < ApplicationController
     provider_id  = params[:id]
     @provider    = DataProvider.find(provider_id)
 
-    if (!check_role(:admin) && ! @provider.can_be_accessed_by(@user)) || ! @provider.is_browsable?
+    unless @provider.can_be_accessed_by?(@user) && @provider.is_browsable?
       flash[:error] = "You cannot register files from this provider."
       redirect_to :action => :index
       return
@@ -320,7 +321,7 @@ class DataProvidersController < ApplicationController
 
     # Get SSH keys for each Bourreau
     Bourreau.all.each do |b|
-      next unless b.can_be_accessed_by(current_user)
+      next unless b.can_be_accessed_by?(current_user)
       name = b.name
       ssh_key = "This Bourreau is DOWN!"
       if b.is_alive?

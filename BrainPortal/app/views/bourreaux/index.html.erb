@@ -29,6 +29,7 @@
        <th>Bourreau Name</th>
        <th>Owner</th>
        <th>Group</th>
+       <th>Site</th>
        <th>Online?</th>
        <th>Alive?</th>
        <th>Description</th>
@@ -37,19 +38,20 @@
 
    <% for bour in @bourreaux %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= link_if_admin(bour.name, bourreau_path(bour)) %></td>
+         <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
          <td><%= h(bour.user.login) %></td>
          <td><%= h(bour.group.name) %></td>
+         <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
          <td><%= h(bour.online ? "Yes" : "No") %></td>
          <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
          <td><%= h(bour.description) %></td>
          <td>
-            <% if check_role(:admin) || bour.user_id == current_user.id %>
+            <% if bour.has_owner_access?(current_user) %>
             <%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %>
             <% end %>
          </td>
          <td>
-            <% if check_role(:admin) || bour.user_id == current_user.id %>
+            <% if bour.has_owner_access?(current_user) %>
             <%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %>
             <% end %>
          </td>

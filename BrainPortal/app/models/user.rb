@@ -47,6 +47,7 @@ class User < ActiveRecord::Base
   has_many                :data_providers
   has_many                :remote_resources
   has_and_belongs_to_many :groups
+  belongs_to              :site
 
   #The following resources should be destroyed when a given user is destroyed.
   has_many                :tags,            :dependent => :destroy
@@ -68,14 +69,17 @@ class User < ActiveRecord::Base
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :email, :case_sensitive => false
   validate_on_create        :prevent_group_collision
+  validate_on_update        :immutable_login
+  validate                  :site_manager_check
   
   before_create             :create_user_preference
   before_save               :encrypt_password
+  after_update              :system_group_site_update
   before_destroy            :validate_destroy
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids
+  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
@@ -157,6 +161,12 @@ class User < ActiveRecord::Base
     self.build_user_preference
   end
   
+  def immutable_login
+    if self.changed.include? "login"
+      errors.add(:login, "is immutable.")
+    end
+  end
+  
   #Ensure that the system will be in a valid state if this user is destroyed.
   def validate_destroy
     if self.login == 'admin'
@@ -172,6 +182,16 @@ class User < ActiveRecord::Base
       raise "User #{self.login} cannot be destroyed while there are still remote resources on the account."
     end
     destroy_system_group
+  end
+  
+  def system_group_site_update
+    SystemGroup.find_by_name(self.login).update_attributes(:site_id => self.site_id)
+  end
+  
+  def site_manager_check
+    if self.role == "site_manager" && self.site_id.blank?
+      errors.add(:site_id, "manager role must be associated with a site.")
+    end
   end
   
   def destroy_system_group #:nodoc:

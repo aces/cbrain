@@ -16,7 +16,7 @@ class BourreauxController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :admin_role_required, :except => [:index]  
+  before_filter :manager_role_required, :except => [:index]  
    
   def index #:nodoc:
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
@@ -26,7 +26,7 @@ class BourreauxController < ApplicationController
   def show #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     @info = @bourreau.info
 
@@ -62,7 +62,7 @@ class BourreauxController < ApplicationController
     @user     = current_user
     @bourreau = Bourreau.find(params[:id])
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     respond_to do |format|
       format.html { render :action => :edit }
@@ -113,7 +113,7 @@ class BourreauxController < ApplicationController
     id        = params[:id]
     @bourreau = Bourreau.find(id)
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     fields    = params[:bourreau]
     subtype   = fields.delete(:type)
@@ -139,7 +139,7 @@ class BourreauxController < ApplicationController
     @user     = current_user
     @bourreau = Bourreau.find(id)
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     if @bourreau.destroy
       flash[:notice] = "Bourreau successfully deleted."

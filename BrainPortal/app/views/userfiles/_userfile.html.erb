@@ -31,4 +31,5 @@
          <td/><td/>
        <% end %>
    <td class = "centered"><%= link_to h(userfile.data_provider.name), data_provider_path(userfile.data_provider) %></td>
+   <td class = "centered"><%= (link_to h(userfile.site.name), site_path(userfile.site)) rescue "(Unassigned)" %></td>
 </tr>

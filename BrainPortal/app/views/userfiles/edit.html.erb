@@ -65,18 +65,22 @@
 <table>
   <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Group:</th>
-      <td colspan="2"><%= f.collection_select (:group_id,  current_user.groups, :id, :name, {}, :disabled => !@userfile.can_be_accessed_by?(current_user)) %></td>
+      <td colspan="2"><%= f.collection_select (:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
    </tr>
    <tr>
       <th>Group permission on file:</th>
-      <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.can_be_accessed_by?(current_user)) %></td>
+      <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
    </tr>
 </table>
 
 <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
 <br>
+
+<% if @userfile.can_be_accessed_by?(current_user)  %>
 <%= submit_tag "Update Fields" %>
 <br> 
+<% end %>
+
 <%= button_to 'Back to Userfiles Index', userfiles_path %>
 </div>
 

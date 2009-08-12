@@ -46,8 +46,16 @@ class Userfile < ActiveRecord::Base
      		   
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
+  validates_presence_of   :user_id
+  validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
-    
+  
+  before_destroy          :provider_erase
+      
+  def site
+    @site ||= self.user.site
+  end    
+      
   #Return an array of the tags associated with this file
   #by +user+.
   def get_tags_for_user(user)
@@ -168,55 +176,92 @@ class Userfile < ActiveRecord::Base
   
   #Returns whether or not +user+ has access to this
   #userfile.
-  def can_be_accessed_by?(user)
+  def can_be_accessed_by?(user, requested_access = :write)
     if user.has_role? :admin
+      return true
+    end
+    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
       return true
     end
     if user.id == self.user_id
       return true
     end
-    if user.group_ids.include?(self.group_id) && self.group_writable
+    if user.group_ids.include?(self.group_id) && (self.group_writable || requested_access == :read)
       return true
     end
     
     false
   end
   
+  #Returns whether or not +user+ has owner access to this
+  #userfile.
+  def has_owner_access?(user)
+    if user.has_role? :admin
+      return true
+    end
+    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+      return true
+    end
+    if user.id == self.user_id
+      return true
+    end
+    
+    false
+  end
+  
+  
   #Find userfile identified by +id+ accessible by +user+.
   #
   #*Accessible* files are:
   #[For *admin* users:] any file on the system.
+  #[For <b>site managers </b>] any file that belongs to a user of their site,
+  #                            or assigned to a group to which the user belongs.
   #[For regular users:] all files that belong to the user all 
   #                     files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    new_options = options
-    unless user.has_role? :admin
+    old_options = options.dup
+    new_options = options.dup
+    
+    unless user.has_role?(:admin)
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
       new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
     end
+    old_options.delete :access_requested
     new_options.delete :access_requested
     
-    find(id, new_options)
+    
+    if user.has_role? :site_manager
+      find(id, new_options) rescue user.site.userfiles_find_id(id, old_options)
+    else
+      find(id, new_options)
+    end
   end
   
   #Find all userfiles accessible by +user+.
   #
   #*Accessible* files are:
   #[For *admin* users:] any file on the system.
+  #[For <b>site managers </b>] any file that belongs to a user of their site,
+  #                            or assigned to a group to which the user belongs.
   #[For regular users:] all files that belong to the user all 
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    new_options = options
+    old_options = new_options = options
     
-    unless user.has_role? :admin
+    unless user.has_role?(:admin)
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
       new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
     end
+    old_options.delete :access_requested
     new_options.delete :access_requested
     
-    find(:all, new_options)
+    if user.has_role? :site_manager
+      user.site.userfiles_find_all(old_options) | find(:all, new_options)
+    else
+      find(:all, new_options)
+    end
   end
   
   #This method takes in an array to be used as the :+conditions+
@@ -232,9 +277,24 @@ class Userfile < ActiveRecord::Base
 
     variables = [user.id, user.group_ids] + query
     
-    query = [query_string] + variables
+    result_query = [query_string] + variables
     
-    query
+    result_query
+  end
+  
+  #This method takes in an array to be used as the :+conditions+
+  #parameter for Userfile.find and modifies it to restrict based
+  #on the site.
+  #
+  #Note: Requires that the +users+ table be joined, either
+  #of the <tt>:join</tt> or <tt>:include</tt> options.
+  def self.restrict_site_on_query(user, query, options = {})
+    query_string = ["(users.site_id = ?)", query.shift].compact.join(" AND ")
+    variables = [user.site_id] + query
+    
+    result_query = [query_string] + variables
+    
+    result_query
   end
   
   #Set the attribute by which to sort the file list
@@ -328,13 +388,15 @@ class Userfile < ActiveRecord::Base
     self.data_provider.cache_copy_to_local_file(self,filename)
   end
 
+  private
+
   ##################################
   # Active Record Callbacks
   ##################################
 
   # This will work will all subclasses.
-  def before_destroy #:nodoc:
-    self.provider_erase
-  end
+  # def before_destroy #:nodoc:
+  #     self.provider_erase
+  #   end
 
 end

@@ -30,12 +30,16 @@ class UserfilesController < ApplicationController
 
     conditions = Userfile.convert_filters_to_sql_query(name_filters)
 
-    unless current_session.view_all?
+    if current_session.view_all?
+      if current_user.has_role? :site_manager
+        conditions = Userfile.restrict_site_on_query(current_user, conditions)
+      end
+    else
       conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
     end
 
     @userfiles = Userfile.find(:all,
-      :include  => [:tags, :user, :data_provider, :group],
+      :include  => [:tags, {:user => :site}, :data_provider, :group],
       :conditions => conditions,
       :order => "userfiles.#{current_session.order}"
     )
@@ -72,7 +76,18 @@ class UserfilesController < ApplicationController
   #The new action displays a view for uploading files.
   def new
     @userfile = Userfile.new(:group_id  => SystemGroup.find_by_name(current_user.login).id)
-    @user_groups = current_user.groups.find(:all)
+    
+    if current_user.has_role? :admin
+      @user_groups = Group.find(:all, :order => "type")
+    elsif current_user.has_role? :site_manager
+      @user_groups = Group.find(:all, 
+                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
+                                  current_user.site_id, current_user.group_ids],
+                                :order  => "type")
+    else
+      @user_groups = current_user.groups.find(:all, :order => "type")
+    end
+    
     @user_tags = current_user.tags.find(:all)
     @data_providers = available_data_providers(current_user)
 
@@ -94,6 +109,17 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
+    
+    if current_user.has_role? :admin
+      @user_groups = Group.find(:all, :order => "type")
+    elsif current_user.has_role? :site_manager
+      @user_groups = Group.find(:all, 
+                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?)) OR (groups.id = ?)", 
+                                  current_user.site_id, current_user.group_ids, @userfile.group_id],
+                                :order  => "type")
+    else
+      @user_groups = current_user.groups.find(:all, :order => "type")
+    end
 
     @tags = current_user.tags.find(:all)
 

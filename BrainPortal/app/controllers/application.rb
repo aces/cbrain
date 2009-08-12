@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
   #Checks that the current user is the same as +user+. Used to ensure permission
   #for changing account information.
   def edit_permission?(user)
-    current_user && user && (current_user == user || current_user.role == 'admin')
+    result = current_user && user && (current_user == user || current_user.role == 'admin' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
   end
   
   #Returns the current session as a Session object.
@@ -51,17 +51,12 @@ class ApplicationController < ActionController::Base
 
   #Returns an array of the DataProvider objects representing the data providers that can be accessed by +user+.
   def available_data_providers(user)
-    DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by(user) }
+    DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by?(user) }
   end
 
   #Returns an array of the Bourreau objects representing the bourreaux that can be accessed by +user+.
   def available_bourreaux(user)
-    Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by(user) }
-  end
-  
-  #Before filter to ensure that logged in User is an admin user.
-  def admin_role_required
-    current_user.role == 'admin' || access_error(401)
+    Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by?(user) }
   end
   
   #Helper method to render and error page. Will render public/<+status+>.html

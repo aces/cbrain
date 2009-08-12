@@ -49,12 +49,10 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
-
-  add_index "data_providers", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -82,6 +80,7 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "type"
+    t.integer  "site_id"
   end
 
   add_index "groups", ["name"], :name => "index_groups_on_name"
@@ -119,6 +118,8 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.datetime "updated_at"
   end
 
+  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
+
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false
     t.text     "data"
@@ -128,6 +129,12 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "sites", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "tags", :force => true do |t|
     t.string   "name"
@@ -170,10 +177,10 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.boolean  "group_writable",   :default => false
   end
 
-  add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
-  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
   add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
+  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
+  add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
 
   create_table "users", :force => true do |t|
     t.string   "full_name"
@@ -186,6 +193,7 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "role"
+    t.integer  "site_id"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
