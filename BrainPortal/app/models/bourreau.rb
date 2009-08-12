@@ -43,6 +43,8 @@ class Bourreau < RemoteResource
       :name               => "???",
       :id                 => 0,
       :host_uptime        => "???",
+      :bourreau_cms       => "???",
+      :bourreau_cms_rev   => Object.revision_info,
       :bourreau_uptime    => "???",
       :tasks_max          => "???",
       :tasks_tot          => "???",

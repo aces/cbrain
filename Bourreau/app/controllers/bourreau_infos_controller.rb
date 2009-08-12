@@ -50,6 +50,8 @@ class BourreauInfosController < ApplicationController
     @info = BourreauInfo.new.merge(   # not an active record
       :name               => CBRAIN::BOURREAU_CLUSTER_NAME,
       :id                 => me.id,
+      :bourreau_cms       => CBRAIN::CLUSTER_TYPE,
+      :bourreau_cms_rev   => Scir::Session.session_cache.revision_info,
       :host_uptime        => host_uptime,
       :bourreau_uptime    => elapsed,
       :tasks_max          => queue_tasks_max,

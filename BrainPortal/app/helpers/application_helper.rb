@@ -14,6 +14,61 @@ module ApplicationHelper
   def to_localtime(stringtime)
      Time.parse(stringtime).localtime.strftime("%Y-%m-%d %H:%M:%S")
   end
+
+  # Returns a string that represents the amount of elapsed time
+  # encoded in +numseconds+ seconds.
+  #
+  #   0:: "0 seconds"
+  #   1:: "1 second"
+  #   7272:: "2 hours, 1 minute and 12 seconds"
+  def pretty_elapsed(numseconds)
+    remain = numseconds.to_i
+
+    return "0 seconds" if remain <= 0
+
+    numweeks = remain / 1.week
+    remain   = remain - ( numweeks * 1.week   )
+
+    numdays  = remain / 1.day
+    remain   = remain - ( numdays  * 1.day    )
+
+    numhours = remain / 1.hour
+    remain   = remain - ( numhours * 1.hour   )
+
+    nummins  = remain / 1.minute
+    remain   = remain - ( nummins  * 1.minute )
+
+    numsecs  = remain
+
+    components = [
+      [numweeks, "week"],
+      [numdays,  "day"],
+      [numhours, "hour"],
+      [nummins,  "minute"],
+      [numsecs,  "second"]
+    ]
+
+    components = components.select { |c| c[0] > 0 }
+
+    final = ""
+
+    while components.size > 0
+      comp = components.shift
+      num  = comp[0]
+      unit = comp[1]
+      unit += "s" if num > 1
+      unless final.blank?
+        if components.size > 0
+          final += ", "
+        else
+          final += " and "
+        end
+      end
+      final += "#{num} #{unit}"
+    end
+
+    final
+  end
   
   #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
   #the current user has a role of *admin*. Otherwise, +name+ will be 
