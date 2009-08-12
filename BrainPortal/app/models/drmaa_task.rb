@@ -278,5 +278,10 @@ class DrmaaTask < ActiveResource::Base
     "#{self.bourreau.name || '?'}/#{self.id || '?'}"
   end
 
+  # Returns the user for this task
+  def user
+    User.find(self.user_id)
+  end
+
 end
 
