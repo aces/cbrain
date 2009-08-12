@@ -313,7 +313,7 @@ class DataProvidersController < ApplicationController
   def get_ssh_public_keys #:nodoc:
 
     # Get SSH key for this BrainPortal
-    home = Etc.getpwnam(Etc.getlogin).dir
+    home = Etc.getpwuid(Process.uid).dir
     portal_ssh_key = `cat #{home}/.ssh/id_rsa.pub`.strip
     portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
     keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
