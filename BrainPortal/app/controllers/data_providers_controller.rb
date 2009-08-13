@@ -37,7 +37,6 @@ class DataProvidersController < ApplicationController
   
   def edit #:nodoc:
     @provider = DataProvider.find(params[:id])
-    @user     = current_user
     #@mode     = "update"
 
     unless @provider.has_owner_access?(current_user)
@@ -45,6 +44,9 @@ class DataProvidersController < ApplicationController
        redirect_to :action => :index
        return
     end
+
+    @users = current_user.available_users
+    @groups = current_user.available_groups
 
     @ssh_keys = get_ssh_public_keys
 
@@ -62,6 +64,9 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
+    @users = current_user.available_users
+    @groups = current_user.available_groups
+      
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
 
@@ -73,7 +78,6 @@ class DataProvidersController < ApplicationController
   end
 
   def create #:nodoc:
-    @user     = current_user
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
 
@@ -104,6 +108,8 @@ class DataProvidersController < ApplicationController
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully created."
     else
+      @users = current_user.available_users
+      @groups = current_user.available_groups
       @typelist = get_type_list
       @ssh_keys = get_ssh_public_keys
        
@@ -128,20 +134,18 @@ class DataProvidersController < ApplicationController
     subtype   = fields.delete(:type)
 
     @provider.update_attributes(fields)
-    @ssh_keys = get_ssh_public_keys
 
     if @provider.errors.empty?
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."
     else
       #@mode = "update"
+      @users = current_user.available_users
+      @groups = current_user.available_groups
       @ssh_keys = get_ssh_public_keys
       render :action => 'edit'
       return
     end
-
-  rescue
-    access_error(404)
   end
 
   def destroy #:nodoc:

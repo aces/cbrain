@@ -43,18 +43,18 @@ Group permission on file:<br>
 <br><br>
 
 <div class= "fileoptions">
-File Options: <br>
+Archive options (for zip or tar files): <br>
 </div>
-   <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Civet collection', 'civet collection' ], ['Auto-extract', 'extract']])) %>
+   <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
 <br><br>
 
 <div class = "dataprovider">
-Data Provider for uploaded file:<br>
+Data provider for uploaded file:<br>
 </div>
   <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
-<br><br>
+<br><br><br>
   <div class = "fileuploadbutton">
-  Upload file:
+    &nbsp;
   </div>
   <%= submit_tag("Upload file")     %>
 

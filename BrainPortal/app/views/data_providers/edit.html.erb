@@ -36,12 +36,10 @@
 <%= f.select :type, typelist, { :prompt => "Select Provider Type" }, { :readonly => true } %></p>
 
 <p><label for="user_id">Owner</label><br/>
-<% userlist = check_role(:admin) ? User.all : [ @provider.user ] %>
-<%= f.select :user_id, userlist.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+<%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
 
 <p><label for="group_id">Group</label><br/>
-<% grouplist = check_role(:admin) ? Group.all : @user.groups %>
-<%= f.select :group_id, grouplist.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
+<%= f.select :group_id, @groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
 
 <p><label for="online">Status</label><br/>
 <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>

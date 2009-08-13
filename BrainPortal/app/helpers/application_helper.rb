@@ -12,7 +12,7 @@ module ApplicationHelper
 
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime)
-     Time.parse(stringtime).localtime.strftime("%Y-%m-%d %H:%M:%S")
+     Time.parse(stringtime).localtime.strftime("%Y-%m-%d")
   end
 
   # Returns a string that represents the amount of elapsed time

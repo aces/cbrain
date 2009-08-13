@@ -54,43 +54,39 @@ class BourreauxController < ApplicationController
       format.xml  { render :xml => @bourreau }
     end
 
-  #rescue
-  #  access_error(404)
   end
   
   def edit #:nodoc:
-    @user     = current_user
     @bourreau = Bourreau.find(params[:id])
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    
+    @users = current_user.available_users
+    @groups = current_user.available_groups
 
     respond_to do |format|
       format.html { render :action => :edit }
       format.xml  { render :xml => @bourreau }
     end
 
-  rescue
-    access_error(404)
   end
 
   def new  #:nodoc:
-    @user     = current_user
-    @bourreau = Bourreau.new( :user_id   => @user.id,
-                              :group_id  => Group.find_by_name(@user.login).id,
+    @bourreau = Bourreau.new( :user_id   => current_user.id,
+                              :group_id  => Group.find_by_name(current_user.login).id,
                               :online    => true
                             )
+    @users = current_user.available_users
+    @groups = current_user.available_groups
 
     respond_to do |format|
       format.html { render :action => :new }
       format.xml  { render :xml => @bourreau }
     end
 
-  #rescue
-  #  access_error(404)
   end
 
   def create #:nodoc:
-    @user     = current_user
     fields    = params[:bourreau]
 
     @bourreau = Bourreau.new( fields )
@@ -100,20 +96,19 @@ class BourreauxController < ApplicationController
       redirect_to(bourreaux_url)
       flash[:notice] = "Bourreau successfully created."
     else
+      @users = current_user.available_users
+      @groups = current_user.available_groups
       render :action => :new
       return
     end
-
-  rescue
-    access_error(404)
+    
   end
 
   def update #:nodoc:
-    @user     = current_user
     id        = params[:id]
     @bourreau = Bourreau.find(id)
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     fields    = params[:bourreau]
     subtype   = fields.delete(:type)
@@ -126,20 +121,19 @@ class BourreauxController < ApplicationController
       redirect_to(bourreaux_url)
       flash[:notice] = "Bourreau successfully updated."
     else
+      @users = current_user.available_users
+      @groups = current_user.available_groups
       render :action => 'edit'
       return
     end
 
-  rescue
-    access_error(404)
   end
 
   def destroy #:nodoc:
     id        = params[:id]
-    @user     = current_user
     @bourreau = Bourreau.find(id)
     
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     DrmaaTask.adjust_site(@bourreau.id)
     tasks_left = DrmaaTask.find(:all).size
@@ -153,8 +147,6 @@ class BourreauxController < ApplicationController
 
     redirect_to :action => :index
 
-  rescue
-    access_error(404)
   end
 
 end

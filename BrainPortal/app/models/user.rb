@@ -131,9 +131,31 @@ class User < ActiveRecord::Base
     @activated
   end
   
-  #Does this user's role match +role+.
+  #Does this user's role match +role+?
   def has_role?(role)
     return self.role == role.to_s
+  end
+  
+  #Return the list of groups available to this user based on role.
+  def available_groups
+    if self.has_role? :admin
+      Group.all
+    elsif self.has_role? :site_manager
+      [Group.find_by_name("everyone")] | self.site.groups.all
+    else
+      [Group.find_by_name("everyone")] | self.groups.all
+    end
+  end
+  
+  #Return the list of users under this user's control based on role.
+  def available_users
+    if self.has_role? :admin
+      User.all
+    elsif self.has_role? :site_manager
+      self.site.users.all
+    else
+      [self]
+    end
   end
   
   protected

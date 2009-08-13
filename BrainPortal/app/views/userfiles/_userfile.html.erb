@@ -16,7 +16,7 @@
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
       <%= userfile.pretty_type %>      
    </td>
-   <td class = "centered"><%= h userfile.user.full_name  %></td>
+   <td class = "centered"><%= h userfile.user.login  %></td>
    <td><%= h(to_localtime(userfile.created_at.to_s)) -%></td>
    <% if userfile.size != nil %>
      <td><%= h(userfile.format_size)-%></td>
