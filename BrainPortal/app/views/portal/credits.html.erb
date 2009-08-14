@@ -54,7 +54,8 @@ consequences for Canadian medical research.</p>
   <p><strong>CBRAIN Revision:</strong> <%= @revinfo['Revision'] %></p>
   <p><strong>Portal Last Changed Author:</strong> <%= @revinfo['Last Changed Author'] %></p>
   <p><strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %></p>
-  <p><strong>Portal Last Changed Date:</strong> <%= @revinfo['Last Changed Date'] %></p>
+  <p><strong>Portal Last Changed Date:</strong> <%= h(to_localtime(@revinfo['Last Changed Date'],:datetime)) %></p>
+  <p><strong>Portal Up Since:</strong> <%= h(to_localtime(CBRAIN::Startup_LocalTime,:datetime)) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)</p>
 </div>
 
 </div>
