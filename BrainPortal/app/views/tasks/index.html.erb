@@ -73,8 +73,8 @@ Other operations: <%= select_tag(
          <td><%= h(task.user.login) %></td>
          <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
          <td><%= h(task.status) %></td>
-         <td><%= h(to_localtime(task.created_at.to_s)) -%></td>
-         <td><%= h(to_localtime(task.updated_at.to_s)) -%></td>
+         <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
+         <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
        </tr>
    <% end %>
    <% if @tasks.blank? %>

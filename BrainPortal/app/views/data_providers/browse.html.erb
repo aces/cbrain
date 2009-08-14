@@ -58,7 +58,7 @@
                                         ])) %></td>
             <% end %>
          <% end %>
-         <td><%= h(to_localtime(Time.at(tupmtime).to_s)) %></td>
+         <td><%= h(to_localtime(Time.at(tupmtime).to_s,:datetime)) %></td>
          <% if tupUF %>
            <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => tupUF.id } %></td>
          <% else %>

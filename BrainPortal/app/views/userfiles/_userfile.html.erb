@@ -19,7 +19,7 @@
    <td class = "centered"><%= h userfile.user.login  %></td>
    <td>
       <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
-         <%= h(to_localtime(userfile.created_at.to_s)) -%>
+         <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
       </span>
    </td>
    <% if userfile.size != nil %>

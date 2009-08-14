@@ -30,7 +30,7 @@
   <tr class="<%= cycle('list-odd', 'list-even') %>">
     <td><%=link_to h(feedback.summary), feedback %></td>
     <td><%= h feedback.user.login %></td>
-    <td><%= h(to_localtime(feedback.created_at.to_s)) %></td>
+    <td><%= h(to_localtime(feedback.created_at.to_s,:datetime)) %></td>
     <% if current_user.has_role? :admin %>
        <td><%= button_to 'Edit', edit_feedback_path(feedback), :method  => :get %></td>
        <td><%= button_to 'Destroy', feedback, :confirm => 'Are you sure?', :method => :delete %></td>

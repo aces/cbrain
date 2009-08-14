@@ -11,8 +11,24 @@ module ApplicationHelper
   end
 
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
-  def to_localtime(stringtime)
-     Time.parse(stringtime).localtime.strftime("%Y-%m-%d")
+  def to_localtime(stringtime, what = :date)
+     loctime = Time.parse(stringtime.to_s).localtime
+     if what == :date || what == :datetime
+       date = loctime.strftime("%Y-%m-%d")
+     end
+     if what == :time || what == :datetime
+       time = loctime.strftime("%H:%M:%S")
+     end
+     case what
+       when :date
+         return date
+       when :time
+         return time
+       when :datetime
+         return "#{date} #{time}"
+       else
+         raise "Unknown option #{what.to_s}"
+     end
   end
 
   # Returns a string that represents the amount of elapsed time

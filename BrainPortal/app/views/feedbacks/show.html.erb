@@ -21,8 +21,8 @@
 </tr>
 
 <tr class="list-even">
-   <td><%= h @feedback.user.login %></td>
-   <td><%= h to_localtime(@feedback.created_at.to_s) %></td>
+   <td><%= h(@feedback.user.login) %></td>
+   <td><%= h(to_localtime(@feedback.created_at.to_s,:datetime)) %></td>
 </tr>
 
 <tr class="list-odd">
