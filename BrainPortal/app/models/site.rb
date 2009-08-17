@@ -1,4 +1,17 @@
-class Site < ActiveRecord::Base                                                             
+#
+# CBRAIN Project
+#
+# Model for CBRAIN sites.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
+class Site < ActiveRecord::Base
+  
+  Revision_info = "$Id$"
+                                                               
   validates_presence_of     :name
   validates_uniqueness_of   :name
   validate_on_create        :prevent_group_collision

@@ -1,4 +1,17 @@
+#
+# CBRAIN Project
+#
+# Controller for site resource.
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
+#RESTful controller for the Site resource.
 class SitesController < ApplicationController
+  
+  Revision_info = "$Id$"
   
   before_filter :login_required 
   before_filter :admin_role_required, :except  => :show
