@@ -103,6 +103,24 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
   end
 end
 
+puts "C> Ensuring that all sites have a group and that all their users belong to it."
+Site.all.each do |s|
+  site_group = Group.find_by_name(s.name)
+  if ! site_group
+     puts "C> \t- Site #{s.name} doesn't have their own system group. Creating one."
+     site_group = SystemGroup.create!(:name  => s.name, :site_id => s.id)
+   elsif ! site_group.is_a?(SystemGroup)
+     puts "C> \t- '#{site_group.name}' group migrated to SystemGroup."
+     site_group.type = 'SystemGroup'
+     site_group.save!
+   end
+  
+   unless s.user_ids == site_group.user_ids
+     puts "C> \t- '#{site_group.name}' group user list does not match site user list. Resetting users."
+     site_group.user_ids = s.user_ids
+   end
+end
+
 puts "C> Ensuring that all groups have a type..."
 Group.all.each do |g|
   next if g.type

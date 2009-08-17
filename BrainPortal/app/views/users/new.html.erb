@@ -28,7 +28,7 @@
 <%= f.text_field :email %></p>
 
 <p><label for="role">Role</label><br/>
-<%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], {}, :disabled  => current_user.has_role?(:site_manager)%> </p>
+<%= f.select :role, roles_for_user(current_user), {} %> </p>
 
 <p><label for="role">Site</label><br/>
 <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>

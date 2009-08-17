@@ -208,6 +208,17 @@ class User < ActiveRecord::Base
   
   def system_group_site_update
     SystemGroup.find_by_name(self.login).update_attributes(:site_id => self.site_id)
+    
+    if self.changed.include?("site_id")
+      unless self.changes["site_id"].first.blank?
+        old_site = Site.find(self.changes["site_id"].first)
+        old_site_group = SystemGroup.find_by_name(old_site.name)
+        old_site_group.users.delete(self)
+      end
+      new_site = Site.find(self.changes["site_id"].last)
+      new_site_group = SystemGroup.find_by_name(new_site.name)
+      new_site_group.users << self
+    end
   end
   
   def site_manager_check

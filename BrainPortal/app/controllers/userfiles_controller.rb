@@ -164,7 +164,6 @@ class UserfilesController < ApplicationController
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
     tmpcontentfile         = "/tmp/#{$$}-#{basename}"
-    File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
 
     begin # large block to ensure we remove the tmpcontentfile
 
@@ -178,7 +177,12 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
-      userfile.cache_copy_from_local_file(tmpcontentfile)
+      spawn do
+        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+        userfile.cache_copy_from_local_file(tmpcontentfile)
+        File.delete(tmpcontentfile)
+      end 
+      
       if userfile.save
         flash[:notice] += "File '#{basename}' added."
         redirect_to :action => :index
@@ -214,7 +218,13 @@ class UserfilesController < ApplicationController
           :tag_ids           => params[:tags]
         )
       )
-      collection.extract_collection_from_archive_file(tmpcontentfile)
+      
+      spawn do
+        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+        collection.extract_collection_from_archive_file(tmpcontentfile)
+        File.delete(tmpcontentfile)
+      end
+      
       if collection.save
         flash[:notice] = "Collection '#{collection_name}' created."
         redirect_to :action => :index
@@ -238,7 +248,11 @@ class UserfilesController < ApplicationController
         :data_provider_id  => data_provider_id,
         :tag_ids           => params[:tags],
       }.merge(params[:userfile])
-      status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
+      spawn do
+        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+        status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
+        File.delete(tmpcontentfile)
+      end
     end
 
     # Report about successes and failures
@@ -264,7 +278,7 @@ class UserfilesController < ApplicationController
       return
     end
 
-    ensure
+    rescue
       File.delete(tmpcontentfile)
     end
 
@@ -522,6 +536,29 @@ class UserfilesController < ApplicationController
   end
 
   private
+  
+  # Run the associated block as a background process to avoid
+  # blocking.
+  #
+  # Most of the code in this method comes from a blog entry
+  # by {Scott Persinger}[http://geekblog.vodpod.com/?p=26].
+  def spawn
+    dbconfig = ActiveRecord::Base.remove_connection
+    pid = Kernel.fork do
+      begin
+        # Monkey-patch Mongrel to not remove its pid file in the child
+        require 'mongrel'
+        Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
+        ActiveRecord::Base.establish_connection(dbconfig)
+        yield
+      ensure
+        ActiveRecord::Base.remove_connection
+      end
+      Kernel.exit!
+    end
+    Process.detach(pid)
+    ActiveRecord::Base.establish_connection(dbconfig)
+  end
 
   #Extract files from an archive and register them in the database.
   #The first argument is a path to an archive file (tar or zip).

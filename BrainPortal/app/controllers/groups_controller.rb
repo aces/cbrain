@@ -89,7 +89,11 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        @users = User.all.reject{|u| u.login == 'admin'}
+        if current_user.has_role? :admin
+          @users = User.all.reject{|u| u.login == 'admin'}
+        else
+          @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+        end
         format.html { render :action => "new" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -108,7 +112,11 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
-        @users = User.all.reject{|u| u.login == 'admin'}
+        if current_user.has_role? :admin
+          @users = User.all.reject{|u| u.login == 'admin'}
+        else
+          @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+        end
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end

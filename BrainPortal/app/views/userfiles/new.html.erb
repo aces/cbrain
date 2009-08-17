@@ -14,7 +14,7 @@
 <h2>File Upload Options:</h2>
 
 <%
-form_tag( "/userfiles", :multipart => true, :method => :post ) do
+form_tag( "/userfiles", :multipart => true, :method => :post) do
 %>
 <div class = "uploadbox">
 
@@ -35,10 +35,8 @@ Select tags for file:
 <div class= "uploadgroups">
 Group for uploaded file:<br>
 </div>
-      <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>  <br>
-<div class= "uploadgroups">
-Group permission on file:<br>
-</div>
+      <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
+
       <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
 <br><br>
 

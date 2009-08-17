@@ -85,10 +85,15 @@ class UsersController < ApplicationController
         
     newGroup = SystemGroup.new(:name => @user.login, :site  => @user.site)
     newGroup.save!
+    
     everyoneGroup = SystemGroup.find_by_name("everyone")
     group_ids = @user.group_ids
     group_ids << newGroup.id
     group_ids << everyoneGroup.id
+    if @user.site
+      site_group = SystemGroup.find_by_name(@user.site.name)
+      group_ids << site_group.id
+    end
     @user.group_ids = group_ids
 
     @user.save
