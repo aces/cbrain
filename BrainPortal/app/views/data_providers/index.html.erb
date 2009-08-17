@@ -29,6 +29,7 @@
        <th>Group</th>
        <th>Site</th>
        <th>Online?</th>
+       <th>Alive?</th>
        <th>Mode</th>
        <th>Description</th>
        <th colspan="3">Operations</th>
@@ -41,6 +42,7 @@
          <td><%= h(prov.group.name) %></td>
          <td><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
          <td><%= h(prov.online ? "Yes" : "No") %></td>
+         <td><%= prov.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
          <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
          <td><%= h(prov.description) %></td>
          <td>
