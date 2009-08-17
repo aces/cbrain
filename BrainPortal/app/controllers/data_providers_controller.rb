@@ -23,11 +23,25 @@ class DataProvidersController < ApplicationController
   # GET /data_providers/1
   # GET /data_providers/1.xml
   def show  #:nodoc:
-    @provider = DataProvider.find(params[:id])
+    data_provider_id = params[:id]
+    @provider        = DataProvider.find(data_provider_id)
 
     raise "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
     @ssh_keys = get_ssh_public_keys
+
+    # Gather statistics
+    @user_sf_fc = {}
+    users = check_role(:admin) ? User.all : [ current_user ]
+    users.each do |user|
+      user_id = user.id
+      login   = user.login
+      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => data_provider_id, :user_id => user_id })
+      sf = fc = 0
+      userfiles.each { |u| sf += 1 if u.is_a?(SingleFile) }
+      userfiles.each { |u| fc += 1 if u.is_a?(FileCollection) }
+      @user_sf_fc[login] = [ sf, fc ]
+    end
 
     respond_to do |format|
       format.html # show.html.erb

@@ -142,13 +142,9 @@
     <th>User</th><th>Number of SingleFiles</th><th>Number Of FileCollections</th>
   </tr>
   <%
-      User.all.each do |user|
-        id    = user.id
-        login = user.login
-        userfiles = user.userfiles.select { |u| u.data_provider_id == @provider.id }
-        sf = fc = 0
-        userfiles.each { |u| sf += 1 if u.is_a?(SingleFile) }
-        userfiles.each { |u| fc += 1 if u.is_a?(FileCollection) }
+      @user_sf_fc.each do |login,sf_fc|
+        sf = sf_fc[0]
+        fc = sf_fc[1]
   %>
     <tr>
       <td class="info"><%= h(login) %></td>
