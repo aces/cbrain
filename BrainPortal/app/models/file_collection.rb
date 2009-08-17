@@ -115,6 +115,7 @@ class FileCollection < Userfile
   def list_files    
     Dir.chdir(self.cache_full_path.parent) do
       @file_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type f").readlines.map(&:chomp)
+      @file_list.sort! { |a,b| a <=> b }
     end
   end
   
@@ -122,6 +123,7 @@ class FileCollection < Userfile
   def list_dirs
     Dir.chdir(self.cache_full_path.parent) do
       @dir_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type d").readlines.map(&:chomp).reverse
+      @dir_list.sort! { |a,b| a <=> b }
     end
   end
   

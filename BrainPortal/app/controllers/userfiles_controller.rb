@@ -191,7 +191,7 @@ class UserfilesController < ApplicationController
 
     # We will be processing some archive file.
     # First, check for supported extensions
-    if basename !~ /(\.tgz|\.tar.gz|\.zip)$/i
+    if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip."
       redirect_to :action => :new
       return
