@@ -61,8 +61,10 @@
                   <li><%= link_to 'Files', userfiles_path %></li>
                   <li><%= link_to 'Upload File', new_userfile_path %></li>
                   <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
-                  <li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
-                  <li><%= link_to 'Bourreaux', bourreaux_path %></li>
+                  <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
+                     <li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
+                     <li><%= link_to 'Bourreaux', bourreaux_path %></li>
+                  <% end %>
                   <li><%= link_to 'Jiv Viewer', jiv_path %></li>                
                   <li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
                   <% if current_user.site %>
