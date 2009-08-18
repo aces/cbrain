@@ -16,7 +16,7 @@ class BourreauxController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :manager_role_required, :except => [:index]  
+  before_filter :manager_role_required
    
   def index #:nodoc:
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
