@@ -1,0 +1,19 @@
+ <%
+
+ #
+ # CBRAIN Project
+ #
+ # $Id$
+ #
+
+ -%>
+ 
+<div class = "filters">
+  <br>Tag Management:<br>
+  <% form_tag tags_path do %> 
+    <%= text_field_tag 'tag[name]' %> 
+    <%= submit_tag "New Tag" %> 
+  <% end %>
+  <br>
+  <br><%= button_to "Manage Tags", tags_path, :method => :get %>    
+</div>

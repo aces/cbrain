@@ -1,0 +1,24 @@
+<%
+
+#
+# CBRAIN Project
+#
+# $Id$
+#
+
+-%>
+
+
+
+ <%= select_tag(
+ "operation", 
+ ' <option value="">Select a Conversion Operation</option>
+  <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
+  <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
+   <option value="DrmaaMnc2nii">Convert selected MINC files to Nifty</option>' 
+) 
+%>
+
+
+<%= submit_tag("Apply Operation") %><br>
+

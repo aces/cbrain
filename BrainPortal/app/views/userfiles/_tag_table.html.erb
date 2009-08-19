@@ -9,8 +9,14 @@
 
 -%>
 
-<table class = "tagtable">
-    <br><select name="tags[]" multiple="multiple" style="width:200px">
-    <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
-    </select>
-</table>
+<div class = "tags">
+ <% if @user_tags %><br>
+     Tag update:
+     <table class = "tagtable">
+         <select name="tags[]" multiple="multiple" style="width:200px">
+         <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
+         </select>
+     </table>    
+     <%= submit_tag("Update Tags") %> 
+  <% end %>
+</div>

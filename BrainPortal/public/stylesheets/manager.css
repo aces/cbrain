@@ -277,6 +277,8 @@ a, a:visited{
 /*##############################################################################################################*/
 .searchtable {
     float: right;
+		width: 100%;
+		height: 0.5em;
     border: 0px;
     margin-bottom: 0px;
     }
@@ -289,8 +291,9 @@ a, a:visited{
 .search{
     float: right;
     border: 0px;
-    width: 100%;
-    margin-left: 1em;
+    width: auto;
+		height: auto;
+    margin-left: 100%;
     margin-bottom: 0px; 
     }
 
@@ -302,7 +305,8 @@ a, a:visited{
     }
 
 .tagtable{
-    border-bottom: 1px solid #9CF;
+		border: 0px;
+    /*border-bottom: 1px solid #9CF;*/
     }
 
 /*##############################################################################################################*/
@@ -336,12 +340,56 @@ a, a:visited{
     margin-left: 1em;
     margin-right: 4em;
     margin-bottom: 1em;
+		margin-top: 1em;
+		
+		padding-top: 1em;
     padding-bottom: 1em;
+		padding-left: 0em;
+
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
     border: 1px solid #e4e4e4;
     }
+
+		/*##############################################################################################################*/
+		/* Userfiles header index view encompasses tag management														*/
+		/*##############################################################################################################*/
+		 #filesheadermenu{
+		 	float:left; 
+	    width: 95%;
+	
+	    margin-left: 1em;
+	    margin-right: 0em;
+	    margin-bottom: 1em;
+			margin-top: 1em;
+			
+			padding-top: 1em;
+	    padding-bottom: 0.5em;
+			padding-left: 2em;
+			padding-right: 0em;
+
+	    background-color: #f6f6f6;
+	    color: #505050;
+	    line-height: 1.5em;
+	    border: 0px;
+		    }
+
+		/*##############################################################################################################*/
+		/* Userfiles header index view encompasses tag management														*/
+		/*##############################################################################################################*/
+		 .mainfilesmenu{
+		    float:left; 
+		    width: 100%;
+		    margin-left: 1em;
+		    margin-right: 4em;
+		    margin-bottom: 1em;
+		    padding-bottom: 1em;
+		    background-color: #f6f6f6;
+		    color: #505050;
+		    line-height: 1em;
+		    border: 1px solid #e4e4e4;
+		    }
 
 /*##############################################################################################################*/
 /* Content for userfiles																						*/
@@ -362,6 +410,47 @@ a, a:visited{
 tr.list-even{
     border-bottom: 1px solid #6699CC;
     }
+
+		/*##############################################################################################################*/
+		/* Formatting for the tags edit table.								*/
+		/*##############################################################################################################*/
+		tags_edit	 {
+				margin: 1em 1em 1em 0;
+				padding: 2px;
+				border-spacing: 2px 2px;
+				/*border: 2px solid #6699CC;*/
+				 }
+
+		tags_edit th{ 
+			  width: auto;
+				/*border: 1px solid #9CF;
+				color: #ffffff;
+				background: #0471B4;
+				*/
+				padding-left: 10px;
+				padding-right: 10px;
+				text-align: center;
+				text-indent: 0px;
+				font-family: Verdana;
+				font-weight: bold;
+				font-size: 11px;
+				}
+
+		tags_edit td
+				{ 
+				width: auto;
+				/*border: 1px solid #9CF;*/
+				padding-top: 1px;
+				padding-bottom: 1px;
+				padding-left: 6px;
+				padding-right: 6px;
+				text-align: center;
+				font-family: Verdana, sans-serif, Arial;
+				font-weight: normal;
+				font-size: 11px;
+				/*color: #404040;
+				background-color: #ffffff;*/ 
+				 }
 
 /*##############################################################################################################*/
 /* General formatting for a table																				*/
@@ -434,6 +523,9 @@ td.tabletext{
     text-indent: 10px;
     }
 
+
+
+
 /*##############################################################################################################*/
 /* Show tasks table formatting																					*/
 /*##############################################################################################################*/
@@ -477,6 +569,49 @@ td.tabletext{
     border: 1px solid #e4e4e4;
     }
 
+
+		/*##############################################################################################################*/
+		/* Tasks table formatting																						*/
+		/*##############################################################################################################*/
+		.edittagstable{
+		    float: left;
+		
+		    width: 10%;
+		    padding: 6px;
+		    margin-top: 0em; 
+		    margin-left: 0em;
+		    margin-right: 0em;
+		    margin-bottom: 0em;
+		    padding: 0px;
+		}
+
+		.edittagstable th
+		    { 
+		    border: 0px;
+		    background: #0471B4;
+		    text-align: left;
+		    text-indent: 0px;
+		    font-family: Verdana;
+		    font-weight: bold;
+		    font-size: 11px;
+		    color: #ffffff;
+		    padding: 2px;
+		    }
+
+		.edittagstable td
+		    { 
+		    border: 0px;
+		    text-align: left;
+		    text-indent: 5px;
+		    font-family: Verdana, sans-serif, Arial;
+		    font-weight: normal;
+		    font-size: 11px;
+		    color: #404040;
+		    background-color: #fafafa; 
+		    padding: 2px;
+		    }
+
+	
 /*##############################################################################################################*/
 /* Tasks table formatting																						*/
 /*##############################################################################################################*/
@@ -716,9 +851,16 @@ table.userfilesdisplay td.checkbox
     margin-left: 1em;
     }
 
+.container{
+		float:left; 
+    width: auto;
+    margin-left: 0.5em;
+		padding-left: 0.5em;
+		}
+
 .tags{
     float:left;
-    padding-left: 2em;
+    padding-left: 0em;
     }
 
 .groups{
@@ -735,9 +877,10 @@ table.userfilesdisplay td.checkbox
     margin-right: 4em;
     margin-bottom: 0em;
     padding: 0.25em;
-    background-color: #f6f6f6;
+    background-color: #ffffff;
     color: #505050;
-    border: 1px solid #e4e4e4;
+		border: none;
+    /*border: 1px solid #e4e4e4;*/
     }
 
 .uploadbox{
@@ -1036,11 +1179,41 @@ table.userfilesdisplay td.checkbox
 .splitleft{
     float: left;
     width: 50%;
+    
     }
 
 .splitright{
     float: right;
     width: 50%;
+   
+    }
+
+
+/*##############################################################################################################*/
+/* Splits the screen for edit files 																				*/
+/*##############################################################################################################*/
+.splitleft_editfiles{
+    float: left;
+    width: auto;
+		 margin-left: 1em;
+	    margin-right: 4em;
+	    margin-bottom: 1em;
+	    padding: 2em;
+	    background-color: #F6F6F6;
+	    color: #505050;
+	    line-height: 1.5em;
+	    border: 1px solid #E4E4E4;
+			}
+
+.splitright_editfiles{
+    float: left;
+    width: auto;
+    margin-left: 1em;
+    padding: 1em;
+    background-color: #F6F6F6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #E4E4E4;
     }
 
 /*##############################################################################################################*/

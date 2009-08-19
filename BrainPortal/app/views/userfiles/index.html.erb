@@ -12,6 +12,7 @@
 
 -%><% title 'Files' %><% #Side bar stuff goes here -%>
 <%= javascript_include_tag "tableH" %>
+<%= javascript_include_tag 'prototype' %>
 <% content_for(:sidebar) do %>
   
   <% 
@@ -58,126 +59,123 @@
         
         <h3>Filters <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br></h3>
         <ul>
-          <li><%= link_to 'All Files', userfiles_path(:search_type  => :unfilter) %> </li> 
+        <li><%= link_to 'All Files', userfiles_path(:search_type  => :unfilter) %> </li> 
         <li><%= link_to 'MINC Files', userfiles_path(:search_type => :minc) %> </li>
         <li><%= link_to 'JIV Files', userfiles_path(:search_type => :jiv) %></li>
         <% current_user.custom_filters.each do |filter| %>
-          <li>
-              <%= link_to filter.name, userfiles_path(:custom_filter  => filter.id) %>
-              <small><small>
-                 <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
-                     <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
-              </small></small>
-              
-              </li>
+        <li>
+        <%= link_to filter.name, userfiles_path(:custom_filter  => filter.id) %>
+        <small><small>
+        <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
+        <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
+        </small></small>
+        </li>
         <% end %>
         </ul>
         <br>
-        
         <h3>Filter Tags</h3>
         <ul>
         <% current_user.tags.collect(&:name).each do |tag| %> 
           <li><%= link_to tag, userfiles_path(:tag_filter => tag) %></li>
         <% end %> 
         </ul>
-      
-      
-      
       <% end %> 
-
+      
 <div class = "userfilescontent">
-<div class = "search">
-    <table class="searchtable">
-        <% form_tag userfiles_path, {:method => :get} do %>
-        <%= hidden_field_tag :search_type, 'name_search' %>
-        <tr>
-          <td colspan="2">
-            <%= text_field_tag :search_term, @search_term %>
-          </td>
-          <td>
-            <%= submit_tag "Search Names" %>
-          </td>
-        </tr><% end %>
-      </table>
-</div>
-  
-      <div class= "userfilescontent">
-  
-    <div class="filesheader">
-      
-      <div class="filters">
-          <br>Tag Management:<br>
-        <% form_tag tags_path do %> 
-          <%= text_field_tag 'tag[name]' %> 
-          <%= submit_tag "New Tag" %> 
-        <% end %><br>
-        <br><br><br><%= button_to "Manage Tags", tags_path, :method => :get %>
-      </div>
-        
-        
-  <% form_tag(operation_userfiles_path(:method => :post)) do %>
-      
-      <div class="tags">
-        <% if @user_tags %><br>
-        Tag update:
-        <%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %> 
-        <%= submit_tag("Update Tags") %> 
-        <% end %>
-      </div>
-            
-      <div class="groups">
-         <br><br>
-          Group Update: <br>
-          <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
-          <%= submit_tag("Update Groups") %> <br><br>
-          Group permission update:<br>
-          <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %></td>
-          <%= submit_tag("Update Permissions") %> 
-      </div>
+
+<div class = "filesheader">
+    
+    
+    
+    <div class = "container">
+      <%= button_to_function "Tag Management" do |page|
+        page.replace_html "filesheadermenu2", :partial => 'tag_management'
+      end %>
+    </div>    
+
+
+    <div class = "container">
+      <%= button_to_function "Tags" do |page|
+        page.replace_html "filesheadermenu", :partial => 'tag_table', :locals => {:tags => @user_tags} 
+      end %>
+    </div>
+
+    <div class = "container"> 
+      <%= button_to_function "Groups" do |page|
+        page.replace_html "filesheadermenu", :partial => 'groups_table', :locals => {:groups => @user_groups }
+      end %>    
+    </div>
+   
+    <div class = "container">
+    <%= button_to_function "Management" do |page|
+        page.replace_html "filesheadermenu", :partial => 'file_management' 
+     end %>    
+   </div>
+    
+   <div class = "container">
+        <%= button_to_function "Conversion Tools" do |page|
+          page.replace_html "filesheadermenu", :partial => 'tool_management_conversion'
+        end %>
     </div>
     
-    <div class="fileoperations">
-      <b>File Operations:</b><br>
-      <br>
-      <div class="filemanipulation">
-        <%= select_tag(
-        "operation", 
-        '
-        <option value="">Select an operation</option>
-        <optgroup label="Scientific operations">
-          <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-          <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-          <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
-          <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-          <option value="DrmaaMincmath">Mincmath</option>
-          <option value="DrmaaMincresample">Launch Mincresample</option>
-        <optgroup label="UNF task operations">
-          <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
-          <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>
-          <option value="DrmaaMnc2nii">Convert selected MINC files to Nifty</option> 
-        <optgroup label="Move files to other data providers...">
-        ' + options_for_select(@data_providers.map { |dp| [ "... to '#{dp.name}'", "moveto_#{dp.id}" ] })
-        ) %>
-        <%= submit_tag("Apply Operation") %><br>
-        <br>
-      </div><%= submit_tag("Download Files") %>
-      <%= submit_tag("Merge Files into Collection") %>
-      <%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br>
-      <br>
+    <div class = "container">
+          <%= button_to_function "Scientific Tools" do |page|
+            page.replace_html "filesheadermenu", :partial => 'tool_management_scientific' 
+          end %>
+      </div>
+    
+    <div class = "container">
+      <%= button_to_function "Upload File" do |page| 
+       page.redirect_to(:controller => :userfiles, :action => :new ) 
+      end %>
     </div>
+      
+    <div class = "container">
+      <%= button_to_function "Jiv Viewer" do |page| 
+       page.redirect_to(jiv_path) 
+      end %>
+    </div>
+</div>
+    
+<div class = "filesheader">
+      <div class = "search">
+      <table class="searchtable">
+          <% form_tag userfiles_path, {:method => :get} do %>
+          <%= hidden_field_tag :search_type, 'name_search' %>
+          <tr>
+          <td colspan="2">
+              <%= text_field_tag :search_term, @search_term %>
+          </td>
+          <td>
+              <%= submit_tag "Search Names" %>
+          </td>
+          </tr>
+        <% end %>
+      </table>
+      </div>
+     
+     <div id = "filesheadermenu2">
+     </div>
+     
+     <% form_tag(operation_userfiles_path(:method => :post)) do %>
+     
+      <div id ="filesheadermenu">
+      </div>
+      
+   </div>
+</div>
 
-  
-    <div class="pages">
-      <% if session[:pagination] == 'on' %>
+<div class = "pages">
+     <% if session[:pagination] == 'on' %>
         <%= will_paginate %>
       <% end %>
       <% if @userfile_count > @userfiles_per_page %>
           <%= link_to "Toggle Pagination", userfiles_path(:pagination => set_toggle(session[:pagination])) %>
       <% end %>
-    </div>
+</div>
   
-    <table class="userfilesdisplay" onMouseOut="javascript:highlightTableRowVersionA(0);">
-      <thead>
+<table class="userfilesdisplay" onMouseOut="javascript:highlightTableRowVersionA(0);">
+    <thead>
         <tr>
           <th>
             <%= link_to 'Select All', userfiles_path(:select_all => true, :page  => params[:page]) %>
@@ -219,9 +217,10 @@
         </tr>
       </thead>
       <tbody>
-        <%= render :partial => 'userfile', :collection  => @userfiles %>
+      <%= render :partial => 'userfile', :collection  => @userfiles %>
       </tbody>
-        <% end %>
     </table>
+    <% end %>
+</div>
 </div>
 </div>
