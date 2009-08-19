@@ -22,7 +22,7 @@ require 'set'
 #[*size*] The size of the file.
 #[*task*] The DrmaaTask (if any) that produced this file.
 #=Acts as:
-#[*nested_set*] The nested set module allows for the creation of 
+#[*nested_set*] The nested set module allows for the creation of
 #               a tree structure of userfiles. Userfiles created
 #               as the output of some processing on a given userfile
 #               will be considered children of that userfile.
@@ -43,19 +43,19 @@ class Userfile < ActiveRecord::Base
   belongs_to              :data_provider
   belongs_to              :group
   has_and_belongs_to_many :tags
-     		   
+
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
-  
+
   before_destroy          :provider_erase
-      
+
   def site
     @site ||= self.user.site
-  end    
-      
+  end
+
   #Return an array of the tags associated with this file
   #by +user+.
   def get_tags_for_user(user)
@@ -63,46 +63,46 @@ class Userfile < ActiveRecord::Base
     unless u.is_a? User
       u = User.find(u)
     end
-    
+
     self.tags.select{|t| (self.tag_ids & u.tag_ids).include? t.id}
   end
-  
+
   #Set the tags associated with this file to those
   #in the +tags+ array (represented by Tag objects
   #or ids).
   def set_tags_for_user(user, tags)
     all_tags = self.tag_ids
     current_user_tags = self.tag_ids & user.tag_ids
-    
+
     self.tag_ids = (all_tags - current_user_tags) + (tags || [])
   end
-    
+
   #Produces the list of files to display for a paginated Userfile index
   #view.
   def self.paginate(files, page, prefered_per_page)
     per_page = (prefered_per_page || Default_num_pages).to_i
-    offset = (page.to_i - 1) * per_page    
-    
+    offset = (page.to_i - 1) * per_page
+
     WillPaginate::Collection.create(page, per_page) do |pager|
       pager.replace(files[offset, per_page])
       pager.total_entries = files.size
       pager
     end
   end
-  
-  #Filters the +files+ array of userfiles, based on the 
+
+  #Filters the +files+ array of userfiles, based on the
   #tag filters in the +tag_filters+ array and +user+, the current user.
   def self.apply_tag_filters_for_user(files, tag_filters, user)
     current_files = files
-    
+
     unless tag_filters.blank?
       tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf )}
       current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
     end
-    
+
     current_files
   end
-    
+
   #Converts a filter request sent as a POST parameter from the
   #Userfile index page into the format used by the Session model
   #to store currently active filters.
@@ -121,10 +121,10 @@ class Userfile < ActiveRecord::Base
     when 'flt'
       'file:flt'
     when 'mls'
-      'file:mls'            
+      'file:mls'
     end
   end
-  
+
   #Convert the array of +filters+ into an sql query string
   #to be used in pulling userfiles from the database.
   #Note that tag filters will not be converted, as they are
@@ -132,9 +132,9 @@ class Userfile < ActiveRecord::Base
   def self.convert_filters_to_sql_query(filters)
     query = []
     arguments = []
-    
+
     filters.each do |filter|
-      type, term = filter.split(':')      
+      type, term = filter.split(':')
       case type
       when 'name'
         query << "(userfiles.name LIKE ?)"
@@ -165,15 +165,15 @@ class Userfile < ActiveRecord::Base
         end
       end
     end
-    
+
     unless query.empty?
-      [query.join(" AND ")] + arguments 
+      [query.join(" AND ")] + arguments
     else
       []
     end
 
   end
-  
+
   #Returns whether or not +user+ has access to this
   #userfile.
   def can_be_accessed_by?(user, requested_access = :write)
@@ -189,10 +189,10 @@ class Userfile < ActiveRecord::Base
     if user.group_ids.include?(self.group_id) && (self.group_writable || requested_access == :read)
       return true
     end
-    
+
     false
   end
-  
+
   #Returns whether or not +user+ has owner access to this
   #userfile.
   def has_owner_access?(user)
@@ -205,23 +205,23 @@ class Userfile < ActiveRecord::Base
     if user.id == self.user_id
       return true
     end
-    
+
     false
   end
-  
-  
+
+
   #Find userfile identified by +id+ accessible by +user+.
   #
   #*Accessible* files are:
   #[For *admin* users:] any file on the system.
   #[For <b>site managers </b>] any file that belongs to a user of their site,
   #                            or assigned to a group to which the user belongs.
-  #[For regular users:] all files that belong to the user all 
+  #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
     old_options = options.dup
     new_options = options.dup
-    
+
     unless user.has_role?(:admin)
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
@@ -229,26 +229,26 @@ class Userfile < ActiveRecord::Base
     end
     old_options.delete :access_requested
     new_options.delete :access_requested
-    
-    
+
+
     if user.has_role? :site_manager
       find(id, new_options) rescue user.site.userfiles_find_id(id, old_options)
     else
       find(id, new_options)
     end
   end
-  
+
   #Find all userfiles accessible by +user+.
   #
   #*Accessible* files are:
   #[For *admin* users:] any file on the system.
   #[For <b>site managers </b>] any file that belongs to a user of their site,
   #                            or assigned to a group to which the user belongs.
-  #[For regular users:] all files that belong to the user all 
+  #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
     old_options = new_options = options
-    
+
     unless user.has_role?(:admin)
       conditions = options[:conditions] || []
       conditions = [conditions] if conditions.is_a? String
@@ -256,14 +256,14 @@ class Userfile < ActiveRecord::Base
     end
     old_options.delete :access_requested
     new_options.delete :access_requested
-    
+
     if user.has_role? :site_manager
       user.site.userfiles_find_all(old_options) | find(:all, new_options)
     else
       find(:all, new_options)
     end
   end
-  
+
   #This method takes in an array to be used as the :+conditions+
   #parameter for Userfile.find and modifies it to restrict based
   #on file ownership or group access.
@@ -276,12 +276,12 @@ class Userfile < ActiveRecord::Base
     end
 
     variables = [user.id, user.group_ids] + query
-    
+
     result_query = [query_string] + variables
-    
+
     result_query
   end
-  
+
   #This method takes in an array to be used as the :+conditions+
   #parameter for Userfile.find and modifies it to restrict based
   #on the site.
@@ -291,23 +291,23 @@ class Userfile < ActiveRecord::Base
   def self.restrict_site_on_query(user, query, options = {})
     query_string = ["(users.site_id = ?)", query.shift].compact.join(" AND ")
     variables = [user.site_id] + query
-    
+
     result_query = [query_string] + variables
-    
+
     result_query
   end
-  
+
   #Set the attribute by which to sort the file list
   #in the Userfile index view.
   def self.set_order(new_order, current_order)
     if new_order == 'size'
       new_order = 'type, ' + new_order
     end
-    
+
     if new_order == current_order && new_order != 'lft'
       new_order += ' DESC'
     end
-      
+
     new_order
   end
 
@@ -317,11 +317,11 @@ class Userfile < ActiveRecord::Base
   #or ASCII nulls, and they must start with a letter or digit.
   def self.is_legal_filename?(basename)
     return true if basename.match(/^[a-zA-Z0-9][\w\~\!\@\#\$\%\^\&\*\(\)\-\+\=\:\;\[\]\{\}\|\<\>\,\.\?]*$/)
-    
+
     false
   end
-  
-  #Returns the name of the Userfile in an array (only here to 
+
+  #Returns the name of the Userfile in an array (only here to
   #maintain compatibility with the overridden method in
   #FileCollection).
   def list_files
@@ -352,7 +352,7 @@ class Userfile < ActiveRecord::Base
   def cache_prepare
     self.data_provider.cache_prepare(self)
   end
-  
+
   # See the description in class DataProvider
   def cache_full_path
     self.data_provider.cache_full_path(self)
@@ -362,12 +362,12 @@ class Userfile < ActiveRecord::Base
   def provider_erase
     self.data_provider.provider_erase(self)
   end
-  
+
   # See the description in class DataProvider
   def provider_rename(newname)
     self.data_provider.provider_rename(self,newname)
   end
-  
+
   # See the description in class DataProvider
   def cache_readhandle(&block)
     self.data_provider.cache_readhandle(self,&block)
