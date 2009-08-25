@@ -19,12 +19,13 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :work_groups,     :controller => :groups
   map.resources :system_groups,     :controller => :groups 
 
-  map.home    '/home', :controller => 'portal', :action => 'welcome'
+  map.home      '/home', :controller => 'portal', :action => 'welcome'
   map.information '', :controller => 'portal', :action => 'credits'
-  map.signup  '/signup', :controller => 'users', :action => 'new'
-  map.login   '/login', :controller => 'sessions', :action => 'new'
-  map.logout  '/logout', :controller => 'sessions', :action => 'destroy'
-  map.jiv     '/jiv', :controller  => 'jiv', :action  => 'index'
+  map.about_us  '/about_us', :controller  => 'portal', :action  => 'about_us'
+  map.signup    '/signup', :controller => 'users', :action => 'new'
+  map.login     '/login', :controller => 'sessions', :action => 'new'
+  map.logout    '/logout', :controller => 'sessions', :action => 'destroy'
+  map.jiv       '/jiv', :controller  => 'jiv', :action  => 'index'
   map.jiv_display '/jiv/show', :controller  => 'jiv', :action  => 'show'
 
   

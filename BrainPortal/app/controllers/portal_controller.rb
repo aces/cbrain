@@ -29,7 +29,9 @@ class PortalController < ApplicationController
   
   #Display general information about the CBRAIN project.
   def credits
-
+  end
+  
+  def about_us
     @revinfo = { 'Revision'            => 'unknown',
                  'Last Changed Author' => 'unknown',
                  'Last Changed Rev'    => 'unknown',
@@ -46,7 +48,6 @@ class PortalController < ApplicationController
         end
       end
     end
-
   end
   
 end

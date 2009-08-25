@@ -19,43 +19,57 @@
 
 <div class = "splitleft"> 
 <div class = "box">
-<h3>Project Summary</h3>
+<h3><big>Canadian Brain Imaging Research Network (CBRAIN)</big></h3>
 
-<p>The CBRAIN Project is an initiative to develop a pan-Canadian network of the 
-five leading brain imaging research centres in Canada. In May 2008, Dr. Alan Evans
-and colleagues received a CANARIE Network-Enabled Platform award of $2.4M for
-this project.</p>
+<h3>Funded by Canada's Advanced Network (CANARIE)</h3>
 
-<p>The goal of this project is to develop a platform for distributed processing 
-and exchange of 3D/4D brain imaging data. The expected result is a middleware 
-platform that will render the processing environment (hardware, operating 
-system etc.) transparent to a remote user such that it will be possible to 
-apply complex algorithm "pipelines" to large databases stored at remote 
-locations and visualize the results as 3D maps in real time. The project will 
-provide standard methodology for Canadian brain imaging researchers to 
-collaborate productively and fully use available computing and networking 
-resources. The platform will be generalizable to different imaging domains 
-(radiology, surgical planning) and organs (brain, heart) with profound 
-consequences for Canadian medical research.</p>
+<p>The goal of CBRAIN is to develop a platform for distributed processing and exchange of 3D/4D brain imaging data. The expected result is a middleware platform that will render the processing environment (hardware, operating system, etc.) transparent to a remote user allowing them to apply complex algorithmic pipelines to large datasets stored at remote locations and to visualize the results as 3D maps in real time. This platform will provide a standard methodology for Canadian brain imaging researchers to collaborate productively and fully use available computing and networking resources.  This will increase the productivity and ease of collaboration among Canadian researchers leading to greater competitiveness with foreign researchers and improved medical research efficiency, ultimately leading to an improved quality of life across Canada. Though the focus of CBRAIN is providing tools for use by brain imaging researchers, the platform will be generalizable to other imaging domains, such as radiology, surgical planning and heart imaging, with profound consequences for Canadian medical research. (<%= link_to "More Information", about_us_path %>)</p>
+
+
 </div>
 </div>
 
 <div class = "splitright">
 <div class = "box">
-  <h3>Development Team</h3>
-
-  <p><b>Manager:</b> Marc Rousseau</p>
-  <p><b>Developers:</b> Pierre Rioux, Tarek Sherif, Angela McCloskey, Mathieu Desrosiers, Martyn Klassen, Anita Oder, Anda Pacurar, Ryan Thomson, Ronghai Tu, Nasim Vafai, Robert Vincent, Jacques Waller </p>
-
-</div>
-
-<div class = "box">
-  <h3>Subversion Revision information</h3>
-  <p><strong>CBRAIN Revision:</strong> <%= @revinfo['Revision'] %></p>
-  <p><strong>Portal Last Changed Author:</strong> <%= @revinfo['Last Changed Author'] %></p>
-  <p><strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %></p>
-  <p><strong>Portal Last Changed Date:</strong> <%= h(to_localtime(@revinfo['Last Changed Date'],:datetime)) %></p>
-  <p><strong>Portal Up Since:</strong> <%= h(to_localtime(CBRAIN::Startup_LocalTime,:datetime)) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)</p>
+  <h3>Participating Research Centers</h3>
+  <ul type="none">
+	<li><b>Montreal Neurological Institute, McGill University (Lead)</b><br>
+	   <ul type="none">
+	      <li><b>Principal Investigator: </b>Alan Evans</li>
+	      <li><b>Program Manager:</b> Reza Adalat</li>
+	      <li><b>System Architect: </b>Marc Rousseau </li>
+	      <li><b>Developers:</b> Pierre Rioux, Tarek Sherif, Angela McCloskey, Samir Das, David Brownlee</li>
+	      <li><b>McGill Office of Technology Transfer (OTT): </b>Francoys Labonte </li>
+	      <li><b>Canada National Research Council: </b>Louis Borgeat</li>
+	      <li><b>Consultants: </b>Rosanne Aleong, Claude Lepage, Pierre Bellec, Andrew Janki, Robert Vincent</li>
+	   </ul>
+	</li><br>
+	<li><b>Rotmans Research Institute, University of Toronto</b>
+	   <ul type="none">
+	      <li><b>Principal Investigators: </b>Stephen Strother and Randy MacIntosh </li>
+	      <li><b>Developer: </b>Anda Pacurar, Anita Oder, Jacques Waller</li>
+	   </ul>
+	</li><br>
+	<li><b>Robarts Research Institute, University of Western Ontario</b>
+	   <ul type="none">
+	     <li><b>Principal Investigators: </b>Ravi Menon and Mel Goodale</li>
+	     <li><b>Developers: </b>Martyn Klassen, Ronghai Tu</li>
+	   </ul>
+	</li><br>
+	<li><b>Unit&eacute; de Neuroimagerie Fonctionnelle, Universit&eacute; de Montr&eacute;al</b>
+	    <ul type="none">
+	       <li><b>Principal Investigators: </b>Julien Doyon and Rick Hoge</li> 
+	       <li><b>Developer: </b>Mathieu Desrosiers</li>
+	    </ul>
+	</li><br>
+	<li><b>Division of Neurology, University of British Colombia</b>
+	    <ul type="none">
+	       <li><b>Principal Investigators: </b>Jon Stoessl and Max Cynader</li> 
+	       <li><b>Developer: </b>Ryan Thomson, Nasim Vafai</li>
+	    </ul>
+	</li><br>
+	<li><strong>CBRAIN</strong> acknowledges the contributions of IBM Canada, Jonathan Harlap and Sebastian Muehlboeck.</li>
+  </ul>
 </div>
 
 </div>
