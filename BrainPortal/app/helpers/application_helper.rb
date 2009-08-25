@@ -98,7 +98,18 @@ module ApplicationHelper
   end
   
   #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-   #the current user has a role of *admin*. Otherwise, +name+ will be 
+  #the current user has a role of *admin* or <b>site manager</b>. Otherwise, +name+ will be 
+  #displayed as static text.
+  def link_if_manager(name, path)
+    if check_role(:admin) || check_role(:site_manager)
+      link_to(name, path)
+    else
+      name
+    end
+  end
+  
+  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
+   #the current user has access to +resource+. Otherwise, +name+ will be 
    #displayed as static text.
    def link_if_has_access(resource, name, path)
      if resource.can_be_accessed_by?(current_user)

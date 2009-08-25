@@ -15,7 +15,7 @@ class DataProvidersController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :manager_role_required
+  before_filter :manager_role_required, :except  => :index
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user)

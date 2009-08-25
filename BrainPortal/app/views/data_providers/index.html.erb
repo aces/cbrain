@@ -37,7 +37,7 @@
 
    <% for prov in @providers %>
        <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= link_to prov.name, :controller => :data_providers, :action => :show, :id => prov.id %></td>
+         <td><%= link_if_manager(prov.name, data_provider_path(prov)) %></td>
          <td><%= h(prov.user.login) %></td>
          <td><%= h(prov.group.name) %></td>
          <td><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
