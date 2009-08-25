@@ -20,7 +20,7 @@ class BourreauInfosController < ApplicationController
 
     me = Bourreau.find_by_name(CBRAIN::BOURREAU_CLUSTER_NAME)
 
-    home = Etc.getpwnam(Etc.getlogin).dir
+    home = CBRAIN::Rails_UserHome
     
     host_uptime    = `uptime`.strip   # TODO make more robust
     elapsed        = Time.now.localtime - CBRAIN::Startup_LocalTime

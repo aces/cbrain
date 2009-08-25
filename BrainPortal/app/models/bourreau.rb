@@ -35,7 +35,8 @@ class Bourreau < RemoteResource
   # better to call the info method instead, which will
   # cache the result if necessary.
   def update_info
-    BourreauInfo.site = self.site
+    BourreauInfo.site    = self.site
+    BourreauInfo.timeout = 10
     infos = BourreauInfo.find(:all)
     @info = infos[0]
     rescue

@@ -59,6 +59,8 @@ class TasksController < ApplicationController
     @files = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested  => :read)
     @data_providers = available_data_providers(current_user)
         
+    params[:user_id] = current_user.id
+
     if @task_class.has_args?
       begin
         @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
