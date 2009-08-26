@@ -20,6 +20,9 @@
 ) 
 %>
 
+<%= select_tag "bourreau_id",
+   '<option value="">Select Execution Server</option>' +
+   options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, @prefered_bourreau_id)  %>
 
 <%= submit_tag("Apply Operation") %><br>
 

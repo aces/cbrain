@@ -23,6 +23,7 @@ class TasksController < ApplicationController
       bourreau_id = bourreau.id
       DrmaaTask.adjust_site(bourreau_id)
       begin
+        raise "Failed to respond to 'alive' check" unless bourreau.is_alive?
         if current_user.has_role? :admin
           tasks = DrmaaTask.find(:all) || []
         else

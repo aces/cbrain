@@ -10,7 +10,7 @@
 
 
 
- <%= select_tag(
+<%= select_tag(
  "operation", 
  ' <option value="">Select a Conversion Operation</option>
   <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
@@ -19,6 +19,9 @@
 ) 
 %>
 
+<%= select_tag "bourreau_id", 
+   '<option value="">Select Execution Server</option>' +
+   options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, @prefered_bourreau_id)  %>
 
 <%= submit_tag("Apply Operation") %><br>
 

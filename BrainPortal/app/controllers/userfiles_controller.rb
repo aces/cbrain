@@ -58,6 +58,8 @@ class UserfilesController < ApplicationController
     @user_groups = current_user.groups.find(:all)
     @default_group = SystemGroup.find_by_name(current_user.login).id
     @data_providers = available_data_providers(current_user)
+    @bourreaux = available_bourreaux(current_user)
+    @prefered_bourreau_id = current_user.user_preference.bourreau_id
 
     respond_to do |format|
       format.html # index.html.erb
