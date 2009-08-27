@@ -221,13 +221,14 @@ class UserfilesController < ApplicationController
         )
       )
       
-      spawn do
-        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
-        collection.extract_collection_from_archive_file(tmpcontentfile)
-        File.delete(tmpcontentfile)
-      end
-      
       if collection.save
+
+        spawn do
+          File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+          collection.extract_collection_from_archive_file(tmpcontentfile)
+          File.delete(tmpcontentfile)
+        end
+      
         flash[:notice] = "Collection '#{collection_name}' created."
         redirect_to :action => :index
       else
@@ -250,11 +251,11 @@ class UserfilesController < ApplicationController
         :data_provider_id  => data_provider_id,
         :tag_ids           => params[:tags],
       }.merge(params[:userfile])
-      spawn do
+      #spawn do
         File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
         status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
         File.delete(tmpcontentfile)
-      end
+      #end
     end
 
     # Report about successes and failures
@@ -385,7 +386,7 @@ class UserfilesController < ApplicationController
     case operation
 
       when "cluster_task"
-        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task
+        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task, :bourreau_id => params[:bourreau_id]
         return
 
       when "delete"
