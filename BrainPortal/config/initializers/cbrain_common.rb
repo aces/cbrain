@@ -22,7 +22,7 @@ class CBRAIN
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
   # of 'monit' which clears the environment of almost everything!
-  ENV['HOME'] ||= Rails_UserHome        # Most notably, Net::SFTP needs this
+  ENV['HOME'] = Rails_UserHome        # Most notably, Net::SFTP needs this
 
 end
 
