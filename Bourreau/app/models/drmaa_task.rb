@@ -374,7 +374,7 @@ public
   # have their very own internal embedded log
   # and do NOT use the methods defined by the
   # ActRecLog module.
-  def addlog_context(ctx,message="") #:nodoc:
+  def addlog_context(context,message="") #:nodoc:
     prev_level     = caller[0]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
 
@@ -395,7 +395,7 @@ public
   # have their very own internal embedded log
   # and do NOT use the methods defined by the
   # ActRecLog module.
-  def addlog_revinfo(obj,message="") #:nodoc:
+  def addlog_revinfo(anobject,message="") #:nodoc:
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
     rev_info       = anobject.revision_info
