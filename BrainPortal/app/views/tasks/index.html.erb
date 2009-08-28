@@ -17,71 +17,72 @@
 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
-<div class = "generalcontent">
-
-<h2>Tasks</h2>
-  
-<div class = "tasksbox">
-<div class = "tasksmenuoptions">
-  
-<div class = "taskstrigger">
-<%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
-</div>
-
-<div class = "tasksoperation">
-Other operations: <%= select_tag(
-   "operation",
-    '
-    <option value="">Select an operation</option>
-
-    <optgroup label="Operations for queued tasks">
-    <option value="hold">Hold queued tasks</option>
-    <option value="release">Release held tasks</option>
-
-    <optgroup label="Operations for running tasks">
-    <option value="suspend">Suspend running tasks</option>
-    <option value="resume">Resume suspended tasks</option>
-
-    <optgroup label="Operations for all tasks">
-    <option value="terminate">Terminate selected tasks</option>
-    <option value="delete">Remove selected tasks</option>
-    '
-   ) %>
-
-<%= submit_tag("Apply Operation") %>
-
+   <div class = "generalcontent">
+   
+      <h2>Tasks</h2>
+        
+      <div class = "tasksbox">
+         <div class = "tasksmenuoptions">
+        
+            <div class = "taskstrigger">
+            <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
+            </div>
+      
+            <div class = "tasksoperation">
+               Other operations: <%= select_tag(
+                  "operation",
+                  '
+                  <option value="">Select an operation</option>
+                  
+                  <optgroup label="Operations for queued tasks">
+                  <option value="hold">Hold queued tasks</option>
+                  <option value="release">Release held tasks</option>
+                  
+                  <optgroup label="Operations for running tasks">
+                  <option value="suspend">Suspend running tasks</option>
+                  <option value="resume">Resume suspended tasks</option>
+                  
+                  <optgroup label="Operations for all tasks">
+                  <option value="terminate">Terminate selected tasks</option>
+                  <option value="delete">Remove selected tasks</option>
+                  '
+                  ) %>
+            
+                  <%= submit_tag("Apply Operation") %>
+            
+            
+            </div>
+         </div>
+      </div>
+      
+      
+      <table class = "taskstable">
+         <tr>
+             <th>Select</th>
+             <th>Task Name</th>
+             <th>Owner</th>
+             <th>Bourreau Name</th>
+             <th>Current Status</th>
+             <th>Time Submitted</th>
+             <th>Last Updated</th>
+         </tr>
+         <% for task in @tasks %>
+             <tr class ="<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFE5FF')">
+               <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready') %></td>
+               <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
+               <td><%= h(task.user.login) %></td>
+               <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
+               <td><%= h(task.status) %></td>
+               <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
+               <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
+             </tr>
+         <% end %>
+         <% if @tasks.blank? %>
+           <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
+         <% end %>
+      </table>
+   </div>
 <% end %>
-</div>
-</div>
-</div>
-
-
-<table class = "taskstable">
-   <tr>
-       <th>Select</th>
-       <th>Task Name</th>
-       <th>Owner</th>
-       <th>Bourreau Name</th>
-       <th>Current Status</th>
-       <th>Time Submitted</th>
-       <th>Last Updated</th>
-   </tr>
-   <% for task in @tasks %>
-       <tr class ="<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFE5FF')">
-         <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready') %></td>
-         <td><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
-         <td><%= h(task.user.login) %></td>
-         <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
-         <td><%= h(task.status) %></td>
-         <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
-         <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
-       </tr>
-   <% end %>
-   <% if @tasks.blank? %>
-     <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
-   <% end %>
-</table>
-</div>
 
 
 
