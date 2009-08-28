@@ -65,6 +65,13 @@ public
     self.addlog("#{subrev.svn_id_file} revision #{subrev.svn_id_rev}")
   end
 
+
+
+  ##################################################################
+  # Main User API Methods
+  # setup(), drmaa_commands() and save_results()
+  ##################################################################
+
   # This needs to be redefined in a subclass.
   # Returning true means that everything went fine
   # during setup. Returning false will mark the
@@ -101,6 +108,13 @@ public
   def save_results
     true
   end
+
+
+
+  ##################################################################
+  # Main Controller Methods (mainly called by the tasks controller)
+  # start_all(), post_process(), update_status()
+  ##################################################################
 
   # This should be called only once when the object is new.
   # The object will be saved once in the main thread
@@ -259,6 +273,13 @@ public
     raise "DRMAA job finished with unknown Active Record status #{ar_status} and DRMAA status #{drmaastatus}"
   end
 
+
+
+  ##################################################################
+  # Task Control Methods
+  # (hold, suspend, terminate, etc etc)
+  ##################################################################
+
   #Terminate the task (if it's currently in an appropriate state.)
   def terminate
     return unless self.status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
@@ -314,6 +335,12 @@ public
     end
   end
 
+
+
+  ##################################################################
+  # Internal Logging Methods
+  ##################################################################
+
   #Record a +message+ in this task's log.
   def addlog(message, options = {})
     log = self.log
@@ -328,6 +355,74 @@ public
       calling_method + " " + message
     self.log = log
   end
+
+  # Compatibility method to let this class
+  # act a bit like the other classes extended
+  # by the ActRecLog module (see logging.rb).
+  # This is necessary because DrmaaTask objects
+  # have their very own internal embedded log
+  # and do NOT use the methods defined by the
+  # ActRecLog module.
+  def getlog
+    self.log
+  end
+
+  # Compatibility method to let this class
+  # act a bit like the other classes extended
+  # by the ActRecLog module (see logging.rb).
+  # This is necessary because DrmaaTask objects
+  # have their very own internal embedded log
+  # and do NOT use the methods defined by the
+  # ActRecLog module.
+  def addlog_context(ctx,message="") #:nodoc:
+    prev_level     = caller[0]
+    calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
+
+    class_name     = context.class.to_s
+    class_name     = context.to_s if class_name == "Class"
+    rev_info       = context.revision_info
+    pretty_info    = rev_info.svn_id_pretty_rev_author_date
+
+    full_message   = "#{class_name} #{calling_method} revision #{pretty_info}"
+    full_message   += " #{message}" unless message.blank?
+    self.addlog(full_message)
+  end
+
+  # Compatibility method to let this class
+  # act a bit like the other classes extended
+  # by the ActRecLog module (see logging.rb).
+  # This is necessary because DrmaaTask objects
+  # have their very own internal embedded log
+  # and do NOT use the methods defined by the
+  # ActRecLog module.
+  def addlog_revinfo(obj,message="") #:nodoc:
+    class_name     = anobject.class.to_s
+    class_name     = anobject.to_s if class_name == "Class"
+    rev_info       = anobject.revision_info
+    pretty_info    = rev_info.svn_id_pretty_rev_author_date
+
+    full_message   = "#{class_name} revision #{pretty_info}"
+    full_message   += " #{message}" unless message.blank?
+    self.addlog(full_message)
+  end
+
+
+
+  ##################################################################
+  # ActiveRecord Lifecycle methods
+  ##################################################################
+
+  # All object destruction also implies termination!
+  def before_destroy #:nodoc:
+    self.terminate
+    self.removeDRMAAworkdir
+  end
+
+
+
+  ##################################################################
+  # XML Serialization Methods
+  ##################################################################
 
   # It is VERY important to add a pseudo-attribute 'type'
   # to the XML records created for the Drmaa* objects, as
@@ -352,12 +447,6 @@ public
     self.class.to_s.downcase.sub(/^drmaa_?/i,"drmaa_")
   end
 
-  # All object destruction also implies termination!
-  def before_destroy #:nodoc:
-    self.terminate
-    self.removeDRMAAworkdir
-  end
-
   #Capture any error output for the running job.
   def capture_job_out_err
      return if self.new_record?
@@ -368,37 +457,22 @@ public
      #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
      #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
      if File.exist?(stdoutfile)
-        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 80 | tail -30","r")
+        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 200 | tail -100","r")
         @capt_stdout_b64 = Base64.encode64(io.read)
         io.close
      end
      if File.exist?(stderrfile)
-        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 80 | tail -30","r")
+        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 200 | tail -100","r")
         @capt_stderr_b64 = Base64.encode64(io.read)
         io.close
      end
   end
 
-  # Compatibility method to let this class
-  # acts a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because DrmaaTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def getlog
-    self.log
-  end
 
-  # TODO reimplement like in module ActRecLog ?
-  def addlog_context(ctx,message="") #:nodoc:
-    raise "Log method not supported for DrmaaTask!"
-  end
 
-  # TODO reimplement like in module ActRecLog ?
-  def addlog_revinfo(obj,message="") #:nodoc:
-    raise "Log method not supported for DrmaaTask!"
-  end
+  ##################################################################
+  # Utility Pseudo-Attributes Methods
+  ##################################################################
 
   # Returns the login name of the task's User
   def user
@@ -410,7 +484,17 @@ public
     @name ||= self.class.to_s.gsub(/^Drmaa/,"")
   end
 
-protected
+
+
+  ##################################################################
+  # Protected Methods Start Here
+  ##################################################################
+
+  protected
+
+  ##################################################################
+  # Cluster Task Status Update Methods
+  ##################################################################
 
   # The list of possible DRMAA states is larger than
   # the ones we need for CBRAIN, so here is a mapping
@@ -449,6 +533,11 @@ protected
   end
   
   
+
+  ##################################################################
+  # Cluster Task Creation Methods
+  ##################################################################
+
   # Submit the actual job request to the cluster management software.
   #---
   # Expects that the WD has already been changed.
