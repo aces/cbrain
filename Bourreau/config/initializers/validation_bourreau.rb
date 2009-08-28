@@ -9,6 +9,8 @@
 # $Id$
 #
 
+
+
 puts "C> Verifying configuration variables..."
 
 Needed_Constants = %w(
@@ -51,9 +53,27 @@ else
   end
 end
 
-if ! CBRAIN::EXTRA_BASH_INIT_CMDS.is_a?(Array) ||
-     CBRAIN::EXTRA_BASH_INIT_CMDS.find { |s| ! s.is_a?(String) }
+if ! CBRAIN::EXTRA_BASH_INIT_CMDS.is_a?(Array) || CBRAIN::EXTRA_BASH_INIT_CMDS.find { |s| ! s.is_a?(String) }
   raise "CBRAIN configuration error: the EXTRA_BASH_INIT_CMDS is not an array of strings!"
+end
+
+
+
+puts "C> Setting up subprocess locks directory..."
+CBRAIN::DRMAA_SubprocessLocksDir = (Pathname.new(CBRAIN::DRMAA_sharedir) + ".SubprocessLocks").to_s
+unless File.directory?(CBRAIN::DRMAA_SubprocessLocksDir)
+  Dir.mkdir(CBRAIN::DRMAA_SubprocessLocksDir)
+  puts " -> Created as '#{CBRAIN::DRMAA_SubprocessLocksDir}'"
+end
+Dir.chdir(CBRAIN::DRMAA_SubprocessLocksDir) do
+   Dir.new(".").each do |entry|
+      stat = File::Stat.new(entry)
+      next unless stat.file?
+      mtime = stat.mtime
+      next if mtime > 1.day.ago # ignore recent files; they may still be active
+      puts " -> Warning: cleaning up old subprocess lock file '#{entry}'."
+      File.unlink(entry)
+   end
 end
 
 

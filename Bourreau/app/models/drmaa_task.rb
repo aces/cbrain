@@ -12,6 +12,7 @@
 require 'scir'
 require 'stringio'
 require 'base64'
+require 'fileutils'
 
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS jobs using Scir.
@@ -112,6 +113,8 @@ public
     save_status = self.save
     save_status && self.spawn do
       begin
+        self.delay_subprocess
+        self.lock_subprocess
         self.makeDRMAAworkdir
         Dir.chdir(self.drmaa_workdir) do
           if ! self.setup
@@ -125,13 +128,15 @@ public
             end
           end
         end
+        self.unlock_subprocess
       rescue => e
+        self.unlock_subprocess
         self.addlog("Exception raised when setting up: #{e.inspect}")
         e.backtrace.slice(0,10).each { |m| self.addlog(m) }
         self.status = "Failed To Setup"
       end
       self.save
-    end
+    end # end of spawned subprocess
     save_status
   end
 
@@ -157,6 +162,8 @@ public
     # Asynchronous processing
     self.spawn do
       begin
+        self.delay_subprocess
+        self.lock_subprocess
         saveok = false
         Dir.chdir(self.drmaa_workdir) do
           # Call the subclass-provided save_results()
@@ -168,13 +175,15 @@ public
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
         end
+        self.unlock_subprocess
       rescue => e
+        self.unlock_subprocess
         self.addlog("Exception raised when post processing results: #{e.inspect}")
         self.status = "Failed To PostProcess"
       end
       self.save
       #self.removeDRMAAworkdir
-    end
+    end # end of spawned subprocess
 
     return true
   end
@@ -391,6 +400,16 @@ public
     raise "Log method not supported for DrmaaTask!"
   end
 
+  # Returns the login name of the task's User
+  def user
+    @user ||= User.find(self.user_id).login
+  end
+
+  # Returns a simple name for the task (without the Drmaa prefix).
+  def name
+    @name ||= self.class.to_s.gsub(/^Drmaa/,"")
+  end
+
 protected
 
   # The list of possible DRMAA states is larger than
@@ -436,7 +455,7 @@ protected
   def run
     self.addlog("Launching DRMAA job.")
 
-    name     = self.class.to_s.gsub(/^Drmaa/i,"")
+    name     = self.name
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
     workdir  = self.drmaa_workdir
     
@@ -498,20 +517,21 @@ protected
 
   # Create the directory in which to run the job.
   def makeDRMAAworkdir
-    name = self.class.to_s.gsub(/^Drmaa/,"")
-    user = User.find_by_id(self.user_id).login
-    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-" + $$.to_s + self.object_id.to_s)
+    name = self.name
+    user = self.user
+    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + $$.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
     unless Dir.mkdir(self.drmaa_workdir,0700)
-      raise "Cannot create directory #{self.drmaa_workdir}: $!"
+      raise "Cannot create directory '#{self.drmaa_workdir}': $!"
     end
   end
 
   # Remove the directory created to run the job.
   def removeDRMAAworkdir
-    if self.drmaa_workdir
+    unless self.drmaa_workdir.blank?
       self.addlog("Removing workdir '#{self.drmaa_workdir}'.")
-      system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
+      FileUtils.remove_dir(self.drmaa_workdir, true)
+      #system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
       self.drmaa_workdir = nil
     end
   end
@@ -522,6 +542,57 @@ protected
 
   def capt_stderr_b64 #:nodoc:
     @capt_stderr_b64
+  end
+
+
+
+  ##################################################################
+  # Subprocess Locking Mechanism
+  ##################################################################
+
+  # Returns the full path to a lockfile for this subprocess
+  def lockfile
+    @lockfile ||= CBRAIN::DRMAA_SubprocessLocksDir + "/" + "#{self.user}-#{self.name}-" + $$.to_s + "-" + self.status.gsub(/\s+/,"")
+  end
+
+  # Creates the lockfile on the file system
+  def lock_subprocess
+    File.open(self.lockfile,"w") { |fh| true } # touch file
+  end
+
+  # Delete the lockfile on the file system
+  def unlock_subprocess
+    (File.unlink(self.lockfile) > 0 ? true : false) rescue false
+  end
+
+  # Delay this subprocess S seconds until there are N or less lockfiles
+  # present, where S and N are hardcoded (see source)
+  def delay_subprocess
+    random_max_wait = Time.now + 1000 + rand(1000)
+    sleep 1+rand(2)
+    while Time.now < random_max_wait
+      numlocks = get_num_subprocess_locks
+      break if numlocks < 3  # N
+      sleep 3+rand(3)        # S
+    end
+  end
+
+  # Get the number of subprocess locks currently active;
+  # at the same time, will remove old locks.
+  def get_num_subprocess_locks
+    numlocks = 0
+    Dir.chdir(CBRAIN::DRMAA_SubprocessLocksDir) do
+      Dir.new(".").each do |entry|
+        stat = File.stat(entry) rescue File.stat(".")
+        next unless stat.file?
+        if stat.mtime > 1.day.ago # means it's RECENT, less than one day old!
+          numlocks += 1
+        else # an old lockfile ? clean it
+          File.unlink(entry) rescue true
+        end
+      end
+    end
+    numlocks
   end
 
 end
