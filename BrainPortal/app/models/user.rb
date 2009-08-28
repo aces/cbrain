@@ -73,7 +73,8 @@ class User < ActiveRecord::Base
   validate                  :site_manager_check
   
   before_create             :create_user_preference
-  before_save               :encrypt_password
+  before_save               :encrypt_password,
+                            :add_system_groups
   after_update              :system_group_site_update
   before_destroy            :validate_destroy
     
@@ -230,5 +231,20 @@ class User < ActiveRecord::Base
   def destroy_system_group #:nodoc:
     system_group = SystemGroup.find(:first, :conditions => {:name => self.login})
     system_group.destroy if system_group
+  end
+  
+  def add_system_groups
+    newGroup = SystemGroup.new(:name => self.login, :site  => self.site)
+    newGroup.save!
+    
+    everyoneGroup = SystemGroup.find_by_name("everyone")
+    group_ids = self.group_ids
+    group_ids << newGroup.id
+    group_ids << everyoneGroup.id
+    if self.site
+      site_group = SystemGroup.find_by_name(self.site.name)
+      group_ids << site_group.id
+    end
+    self.group_ids = group_ids
   end
 end
