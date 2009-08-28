@@ -345,14 +345,15 @@ public
   def addlog(message, options = {})
     log = self.log
     log = "" if log.nil? || log.empty?
-    calling_info   = caller[0]
-    calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "()") : "unknown()" )
+    callerlevel    = options[:caller_level] || 0
+    calling_info   = caller[callerlevel]
+    calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
+    calling_method = "" if options[:no_caller]
     lines = message.split(/\s*\n/)
     lines.pop while lines.size > 0 && lines[-1] == ""
     message = lines.join("\n") + "\n"
-    log += 
-      Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") +
-      calling_method + " " + message
+    log +=
+      Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + calling_method + message
     self.log = log
   end
 
@@ -385,7 +386,7 @@ public
 
     full_message   = "#{class_name} #{calling_method} revision #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message)
+    self.addlog(full_message, :no_caller => true )
   end
 
   # Compatibility method to let this class
@@ -403,7 +404,7 @@ public
 
     full_message   = "#{class_name} revision #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message)
+    self.addlog(full_message, :no_caller => true )
   end
 
 
@@ -600,6 +601,7 @@ public
     jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
     self.drmaa_jobid = jobid
     self.status      = "Queued"
+    self.addlog("Queued as job ID '#{jobid}'")
     return true
 
   end
