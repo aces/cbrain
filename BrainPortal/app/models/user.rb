@@ -72,9 +72,9 @@ class User < ActiveRecord::Base
   validate_on_update        :immutable_login
   validate                  :site_manager_check
   
-  before_create             :create_user_preference
-  before_save               :encrypt_password,
+  before_create             :create_user_preference,
                             :add_system_groups
+  before_save               :encrypt_password
   after_update              :system_group_site_update
   before_destroy            :validate_destroy
     
