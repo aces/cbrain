@@ -30,7 +30,7 @@
 # is not visible from here.
 #
 #    master = SshTunnel.new('john','my.example.com',22)
-#    master.add_tunnel(1234,'localhost',8080)
+#    master.add_tunnel(:forward,1234,'localhost',8080)
 #    master.start
 #    # Now we can connect to port 1234 locally and see the web server.
 #    # Later on, even if we have lost the variable 'master'
@@ -38,6 +38,11 @@
 #    master = SshTunnel.find('john','my.example.com',22)
 #    master.stop
 #
+# The master SSH process uses connection sharing to improve
+# connection latency; this is accomplished by allocating UNIX
+# domain sockets in /tmp; see also the ControlMaster and
+# ControlPath options in SSH's manual (in particular, for
+# the man page ssh_config, and for the '-o' option of 'ssh').
 class SshTunnel
 
   Revision_info="$Id$"
