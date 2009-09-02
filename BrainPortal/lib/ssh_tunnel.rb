@@ -46,6 +46,7 @@
 class SshTunnel
 
   Revision_info="$Id$"
+  Kernel.at_exit { SshTunnel.destroy_all }
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master tunnel to a
@@ -73,6 +74,10 @@ class SshTunnel
     @@ssh_tunnels.keys
   end
 
+  def self.destroy_all #:nodoc:
+    @@ssh_tunnels.values.each { |tun| tun.destroy }
+  end
+
   # Create a control object for a potential tunnel to
   # host +host+, as user +user+ with SSH port +port+.
   # The tunnel is not started. The object is registered
@@ -94,8 +99,8 @@ class SshTunnel
     @port = remote_port
 
     @pid  = nil
-    @forward_tunnels = []   # "1234:some.host:4566"
-    @reverse_tunnels = []   # "1234:some.host:4566"
+    @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
+    @reverse_tunnels = []   # [ 1234, "some.host", 4566 ]
 
     raise "This tunnel spec is already registered with the class." if
       self.class.find(@user,@host,@port)
@@ -133,10 +138,16 @@ class SshTunnel
     raise "'dest_host' is not a simple host name." unless
       dest_host =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
 
-    tunnel_spec = "#{accept_port}:#{dest_host}:#{dest_port}"
+    tunnel_spec = [ accept_port, dest_host, dest_port ]
     if direction == :forward
+      if @forward_tunnels.find { |spec| spec[0] == accept_port }
+        raise "Error: there's already a forward tunnel configured for port #{accept_port}."
+      end
       @forward_tunnels << tunnel_spec
     else
+      if @reverse_tunnels.find { |spec| spec[0] == accept_port }
+        raise "Error: there's already a reverse tunnel configured for port #{accept_port}."
+      end
       @reverse_tunnels << tunnel_spec
     end
     true
@@ -145,9 +156,8 @@ class SshTunnel
   # Get the list of currently configured tunnels (note that they
   # may not be active; only tunnels present at the moment that
   # start() was called will be active). The returned value is
-  # an array of strings with the three components joined with
-  # colons, such as "1234:myhost:5678", where 1234 is always
-  # the +accept_port+ specified during add_tunnel().
+  # an array of triplets like this:
+  #    [ accept_port, dest_host, dest_port ]
   def get_tunnels(direction)
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
@@ -155,11 +165,12 @@ class SshTunnel
   end
 
   # This is like get_tunnels, except the returned array
-  # contains triplets in array form:
-  #    [ accept_port, dest_host, dest_port ]
-  def get_tunnels_parsed(direction)
+  # contains strings where the tree components are separated by
+  # colons, such as "1234:myhost:5678", where 1234 is always
+  # the +accept_port+ specified during add_tunnel().
+  def get_tunnels_strings(direction)
     tunnels = self.get_tunnels(direction)
-    tunnels.map { |s| s.split(/:/) }
+    tunnels.map { |s| s.join(":") }
   end
 
   # Delete the list of tunnels specifications from the object.
@@ -181,8 +192,8 @@ class SshTunnel
   def start
 
     self.properly_registered?
+    return @pid if self.readpid
 
-    self.stop if @pid
     socket = self.controlpath
     sshcmd = "ssh -n -N -x -p #{@port}"            +
              " -o ConnectTimeout=10"               +
@@ -196,18 +207,23 @@ class SshTunnel
              " -o ControlMaster=yes"               +
              " -o ControlPath=#{socket}"
 
-    @forward_tunnels.each { |spec| sshcmd += " -L #{spec}" }
-    @reverse_tunnels.each { |spec| sshcmd += " -R #{spec}" }
+    @forward_tunnels.each { |spec| tun = spec.join(":"); sshcmd += " -L #{tun}" }
+    @reverse_tunnels.each { |spec| tun = spec.join(":"); sshcmd += " -R #{tun}" }
 
     sshcmd += " #{@user}@#{@host}"
 
+    unless self.writepid("0",:check) # 0 means in the process of starting up subprocess
+      return self.readpid  # so it's already running, eh.
+    end
+
     @pid = Process.fork do
+      self.writepid($$,:force)  # Overwrite
       File.unlink(socket) rescue true
       Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
       Kernel.exit!  # should never reach here
     end
 
-    #Process.detach(@pid) # NOT detach, that way tunnel is killed if ruby is killed
+    #Process.detach(@pid) # Do NOT detach, that way tunnel is killed if ruby is killed
     @pid
   end
 
@@ -215,17 +231,12 @@ class SshTunnel
   # necessary. This will kill the subprocess used to maintain
   # the master SSH.
   def stop
-    return false unless @pid
-
     self.properly_registered?
+    return false unless self.readpid
 
-    socket = self.controlpath
     Process.kill("TERM",@pid) rescue true
-    #sleep 1
-    #if File.exist?(socket)
-    #  Process.kill("KILL",@pid)
-    #end
     @pid = nil
+    self.deletepid
     true
   end
 
@@ -234,11 +245,10 @@ class SshTunnel
 
     self.properly_registered?
 
-    return false unless @pid
-    
     socket = self.controlpath
     return false unless File.exist?(socket)
-
+    return false unless self.readpid
+    
     sshcmd = "ssh -n -x -p #{@port}"     +
              " -o ConnectTimeout=10"     +
              " -o ControlMaster=no"      +
@@ -246,8 +256,8 @@ class SshTunnel
              " #{@user}@#{@host} "       +
              "echo OK-#{$$}"
 
-    okout = ""
     begin
+      okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
       return true if okout =~ /OK-#{$$}/
       return false
@@ -270,7 +280,51 @@ class SshTunnel
 
   # Returns the path to the SSH ControlPath socket.
   def controlpath #:nodoc:
-    "/tmp/ssh_master.#{@user}@#{@host}:#{@port}.socket"
+    "/tmp/ssh_master.#{@user}@#{@host}:#{@port}"
+  end
+
+  def pidpath #:nodoc:
+    self.controlpath + ".pid"
+  end
+
+  def writepid(pid,action) #:nodoc:
+    if action == :force
+      File.open(self.pidpath,"w") { |fh| fh.write(pid.to_s) }
+      return true
+    end
+    # Action is :check, it means we must fail if the file exists
+    begin
+      fd = IO::sysopen(self.pidpath, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      f = IO.open(fd)
+      f.syswrite(pid.to_s)
+      f.close
+      return true
+    rescue
+      return false
+    end
+  end
+
+  def readpid #:nodoc:
+    return @pid if @pid
+    socket = self.controlpath
+    unless File.exist?(socket)
+      File.unlink(self.pidpath) rescue true
+      return nil
+    end
+    begin
+      line = nil
+      File.open(self.pidpath,"r") { |fh| line = fh.read }
+      return nil unless line && line.match(/^\d+/)
+      @pid = line.to_i
+      @pid = nil if @pid == 0 # leftover from :check mode of writepid() ? Crash?
+      return @pid
+    rescue
+      return nil
+    end
+  end
+
+  def deletepid
+    File.unlink(self.pidpath) rescue true
   end
 
   # Checks that the current instance is the one registered
