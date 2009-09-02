@@ -358,7 +358,7 @@ class UserfilesController < ApplicationController
       operation = 'group_update'
     elsif params[:commit] == 'Update Permissions'
       operation = 'permission_update'
-    elsif params[:commit] == 'Apply Operation' && params[:operation].match(/^moveto_\d+$/)
+    elsif params[:commit] == 'Move Files'
       operation = 'move_to_other_provider'
     else
       operation   = 'cluster_task'

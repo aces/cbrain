@@ -137,6 +137,19 @@
                   </div>
                   <br>
                   <div id ="filesheadermenu" class="fileoptionpanel">
+                     Move files to: 
+                     <%= select_tag(
+                        "operation", 
+                        options_for_select(@data_providers.map { |dp| [ dp.name, "moveto_#{dp.id}" ] })
+                        ) 
+                      %>
+                     <%= submit_tag("Move Files") %>
+                     <br>
+                     <br>
+                     <%= submit_tag("Download Files") %>
+                     <%= submit_tag("Merge Files into Collection") %>
+                     <%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br>
+                     <br>
                   </div>  <!-- End id="filesheadermenu" -->
              </td>
           </tr>

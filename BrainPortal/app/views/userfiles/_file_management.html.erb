@@ -7,16 +7,16 @@
  #
 
  -%>
-<%= select_tag(
-   "operation", 
-   '<optgroup label="Move files to other data providers...">
-   ' + options_for_select(@data_providers.map { |dp| [ "... to '#{dp.name}'", "moveto_#{dp.id}" ] })
-   ) 
- %>
-<%= submit_tag("Apply Operation") %>
-<br>
-<br>
-<%= submit_tag("Download Files") %>
-<%= submit_tag("Merge Files into Collection") %>
-<%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br>
-<br>
+ Move files to: 
+ <%= select_tag(
+    "operation", 
+    options_for_select(@data_providers.map { |dp| [ dp.name, "moveto_#{dp.id}" ] })
+    ) 
+  %>
+ <%= submit_tag("Move Files") %>
+ <br>
+ <br>
+ <%= submit_tag("Download Files") %>
+ <%= submit_tag("Merge Files into Collection") %>
+ <%= submit_tag("Delete Files", :confirm  => 'Are you sure you want to delete the selected files?') %><br>
+ <br>
