@@ -11,28 +11,28 @@
 
 <div class = "generalcontent">
 
-<h2>Listing tags</h2>
-<div class = "generalbox">
+   <h2>Listing tags</h2>
+   <div class = "generalbox">
 
 
-<table>
-  <tr>
-    <th>Tag Name</th>
-    <th colspan="3">Operations</th>
-  </tr>
+      <table>
+        <tr>
+          <th>Tag Name</th>
+          <th colspan="3">Operations</th>
+        </tr>
 
-<% for tag in @tags %>
-  <tr class="<%= cycle( 'list-odd', 'list-even') -%>">
-    <td><%=h tag.name %></td>
-    <td><%= link_to 'Show', tag %></td>
-    <td><%= link_to 'Edit', edit_tag_path(tag) %></td>
-    <td><%= link_to 'Destroy', tag, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
-<% end %>
-</table>
-<br/>
+         <% for tag in @tags %>
+           <tr class="<%= cycle( 'list-odd', 'list-even') -%>">
+             <td><%=h tag.name %></td>
+             <td><%= link_to 'Show', tag %></td>
+             <td><%= link_to 'Edit', edit_tag_path(tag) %></td>
+             <td><%= link_to 'Destroy', tag, :confirm => 'Are you sure?', :method => :delete %></td>
+           </tr>
+         <% end %>
+      </table>
+      <br/>
 
-<%= button_to 'Create New Tag', new_tag_path, :method => :get %>
-<%= button_to 'Back to Files', userfiles_path, :method => :get  %>
-</div>
-</div>
+      <%= button_to 'Create New Tag', new_tag_path, :method => :get %>
+      <%= button_to 'Back to Files', userfiles_path, :method => :get  %>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

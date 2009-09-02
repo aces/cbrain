@@ -13,32 +13,32 @@
 -%>
 
 <div class = "generalcontent">
-<br><br>
-<h2>Welcome to CBRAIN, <%= current_user.full_name %></h2>
-<br>
-<div class = "generalbox">
+   <br><br>
+   <h2>Welcome to CBRAIN, <%= current_user.full_name %></h2>
+   <br>
+   <div class = "generalbox">
 
-<table class = "welcometable">
-  <tbody>
-  <tr>
-    <th><b>Number of files in your account:</b></td>
-    <td class = "welcomeresult"><%= h @num_files  %><br><br></td>
-  </tr>
-  <tr>
-    <th><b>Groups you belong to:</b></td>
-    <td class = "welcomeresult"><%= h @groups %><br><br></td>
-  </tr>
-  <tr>
-    <th><b>Default Data Provider:</b></td>
-    <td class = "welcomeresult"><%= h @default_data_provider %><br><br></td>
-  </tr>
-  <tr>
-    <th><b>Default Execution Server:</b></td>
-    <td class = "welcomeresult"><%= h @default_bourreau %><br><br></td>
-  </tr>
-  </tbody>
-</table>  
+      <table class = "welcometable">
+        <tbody>
+        <tr>
+          <th><b>Number of files in your account:</b></td>
+          <td class = "welcomeresult"><%= h @num_files  %><br><br></td>
+        </tr>
+        <tr>
+          <th><b>Groups you belong to:</b></td>
+          <td class = "welcomeresult"><%= h @groups %><br><br></td>
+        </tr>
+        <tr>
+          <th><b>Default Data Provider:</b></td>
+          <td class = "welcomeresult"><%= h @default_data_provider %><br><br></td>
+        </tr>
+        <tr>
+          <th><b>Default Execution Server:</b></td>
+          <td class = "welcomeresult"><%= h @default_bourreau %><br><br></td>
+        </tr>
+        </tbody>
+      </table>  
 
-</div>
-</div>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->
 

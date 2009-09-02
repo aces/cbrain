@@ -16,7 +16,7 @@ body {
     color:#484848; 
     margin: 0; 
     padding: 0;
-    /*min-width: 900px*/ 
+    min-width: 1200px;
     max-height:100%; }
 
 /*#######################################################################################################*/
@@ -203,15 +203,16 @@ pre {
 	}
 
 #sidebar{ 
-    float: right; 
-    width: 17%;
+    float: left; 
+    width: 12%;
     height: 100%; 
     color: #666;
     min-height: 600px;  
-    background-color: #EEEEEE;
+    background-color: #FFFFFF;
     border-left: 1px solid #e4e4e4; 
     border-bottom: 1px solid #e4e4e4;
     padding: 10px;
+    padding-left: 0px;
     padding-bottom: 4px;
     }
 
@@ -263,7 +264,7 @@ a, a:visited{
 /* Content Formatting																							*/
 /*##############################################################################################################*/
 #content { 
-    width: 80%; 
+    width: 100%; 
     float: left;
     background-color: #ffffff; 
     height:100%; 
@@ -336,7 +337,7 @@ a, a:visited{
 /*##############################################################################################################*/
  .filesheader{
     float:left; 
-    width: 100%;
+    width: 90%;
     margin-left: 1em;
     margin-right: 4em;
     margin-bottom: 1em;
@@ -352,12 +353,49 @@ a, a:visited{
     border: 1px solid #e4e4e4;
     }
 
+.filesheaderleft{
+   float:left; 
+   width: 43%;
+   margin-left: 1em;
+   margin-right: 4em;
+   margin-bottom: 1em;
+   margin-top: 1em;
+   min-width: 300px;
+
+	padding-top: 1em;
+   padding-bottom: 1em;
+	padding-left: 0em;
+
+   background-color: #f6f6f6;
+   color: #505050;
+   line-height: 1.5em;
+   border: 1px solid #e4e4e4;
+   }
+.filesheaderright{
+   float:right; 
+   width: 43%;
+   margin-left: 1em;
+   margin-right: 4em;
+   margin-bottom: 1em;
+   margin-top: 1em;
+   min-width: 300px;	
+
+ 	padding-top: 1em;
+   padding-bottom: 1em;
+ 	padding-left: 0em;
+
+   background-color: #f6f6f6;
+   color: #505050;
+   line-height: 1.5em;
+   border: 1px solid #e4e4e4;
+   }
+
 		/*##############################################################################################################*/
 		/* Userfiles header index view encompasses tag management														*/
 		/*##############################################################################################################*/
 		 #filesheadermenu{
 		 	float:left; 
-	    width: 95%;
+	    width: 90%;
 	
 	    margin-left: 1em;
 	    margin-right: 0em;
@@ -369,7 +407,6 @@ a, a:visited{
 			padding-left: 2em;
 			padding-right: 0em;
 
-	    background-color: #f6f6f6;
 	    color: #505050;
 	    line-height: 1.5em;
 	    border: 0px;
@@ -385,7 +422,6 @@ a, a:visited{
 		    margin-right: 4em;
 		    margin-bottom: 1em;
 		    padding-bottom: 1em;
-		    background-color: #f6f6f6;
 		    color: #505050;
 		    line-height: 1em;
 		    border: 1px solid #e4e4e4;
@@ -395,9 +431,9 @@ a, a:visited{
 /* Content for userfiles																						*/
 /*##############################################################################################################*/
 .userfilescontent{
-    float: left;
-    width: 99%;
-    margin-right: 4em;
+    float: right;
+    width: 83%;
+    margin-right: 3em;
     }
 
 /*##############################################################################################################*/
@@ -740,6 +776,13 @@ td.taskinfo{
 /*##############################################################################################################*/
 /* Userfiles Index formatting																					*/
 /*##############################################################################################################*/
+.filtertable{
+    margin: none;
+    padding: 2px;
+    border-spacing: 2px 2px;
+    border: 2px solid #6699CC;
+}
+
 .userfilesdisplay{
     float: left;
     width: 100%;
@@ -781,27 +824,12 @@ td.taskinfo{
 .userfilesdisplay td.centered {
     border: 0px;    
     text-align: center;
-    text-indent: 0em;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;  
-    width: auto;
-    padding: 1px;
+   
     }
 
 .userfilesdisplay td {
     border: 0px;
     text-align: left;
-    text-indent: 2em;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;  
-    width: auto;
-    padding: 1px;
     }
     
 table.userfilesdisplay td.checkbox 
@@ -813,6 +841,12 @@ table.userfilesdisplay td.checkbox
     {
     border: 0px;
     }
+
+.fileoptionpanel{
+    float:left; 
+    text-align: left;
+    min-height: 75px;
+}
 
 .userfiles tr {
     border: 1px;
@@ -871,7 +905,7 @@ table.userfilesdisplay td.checkbox
     }
 
 .pages{
-    float: left;
+    float: right;
     width: auto;
     margin-left: 1em;
     margin-right: 4em;
@@ -879,7 +913,8 @@ table.userfilesdisplay td.checkbox
     padding: 0.25em;
     background-color: #ffffff;
     color: #505050;
-		border: none;
+	border: none;
+	text-align: right;
     /*border: 1px solid #e4e4e4;*/
     }
 
@@ -1316,16 +1351,18 @@ table.userfilesdisplay td.checkbox
 /* Format for notices 																							*/
 /*##############################################################################################################*/
 .notice {
-    float: left;
-    width: 100%;
+    z-index: 0;
+    width: 97%;
     border: 1px;
-    margin-top: 1em;
-    margin-right: 1em;
     padding-top: 1em;
+    padding-bottom: 1em;
     padding-left: 1em;
-    padding-bottom: 1em;
-    padding-bottom: 1em;
+    padding-right: 1em;
     margin-bottom: 2em;
+    margin-top: 2em;
+    margin-right: 1em;
+    margin-left: 1em;
+    float: left;
     background-color: #ffffdd;
     }
 

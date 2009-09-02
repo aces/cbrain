@@ -64,25 +64,25 @@
             </tr>
          </table>
       <% else %>
-      <% if @userfile.is_a?(CivetCollection) %>
-         <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
+         <% if @userfile.is_a?(CivetCollection) %>
+            <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
+         <% end %>
+         <table>
+            <tr class="list-odd">
+               <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
+               <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
+               <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
+               <% for file in @userfile.list_files[1..-1] %>
+                  <tr class="list-odd">
+                     <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
+                     <td><%= check_box_tag("filelist[]", file) %></td>
+                  </tr>
+               <% end %> <!-- End for -->
+            </tr>
+         </table>
       <% end %>
-      <table>
-         <tr class="list-odd">
-            <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
-            <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
-            <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
-            <% for file in @userfile.list_files[1..-1] %>
-               <tr class="list-odd">
-                  <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
-                  <td><%= check_box_tag("filelist[]", file) %></td>
-               </tr>
-            <% end %>
-         </tr>
-      <% end %>
-      </table>
+         
       <%= submit_tag "Extract Files from Collection" %>
       <br>
-      <% end %>
-   <% end %>
-<br>
+  <% end %> <!-- End if   -->
+<% end %>  <!-- End if   -->

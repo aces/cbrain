@@ -13,25 +13,25 @@
 
 <div class = "generalcontent">
 
-<div class = "generalbox">
+   <div class = "generalbox">
   
-<% form_for(@feedback) do |f| %>
-  <%= f.error_messages %>
-  <p>
-    <%= f.label :summary %><br />
-    <%= f.text_field :summary %>
-  </p>
-  <p>
-    <%= f.label :details %><br />
-    <%= f.text_area :details %>
-  </p>
-  <p>
-    <%= f.submit "Update" %>
-  </p>
-<% end %>
+      <% form_for(@feedback) do |f| %>
+        <%= f.error_messages %>
+        <p>
+          <%= f.label :summary %><br />
+          <%= f.text_field :summary %>
+        </p>
+        <p>
+          <%= f.label :details %><br />
+          <%= f.text_area :details %>
+        </p>
+        <p>
+          <%= f.submit "Update" %>
+        </p>
+      <% end %>
 
-<%= link_to 'Show', @feedback %> |
-<%= link_to 'Back', feedbacks_path %>
+      <%= link_to 'Show', @feedback %> |
+      <%= link_to 'Back', feedbacks_path %>
 
-</div>
-</div>
+   </div> <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

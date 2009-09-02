@@ -26,7 +26,7 @@
         
             <div class = "taskstrigger">
             <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
-            </div>
+            </div>  <!-- End class="taskstrigger" -->
       
             <div class = "tasksoperation">
                Other operations: <%= select_tag(
@@ -51,9 +51,9 @@
                   <%= submit_tag("Apply Operation") %>
             
             
-            </div>
-         </div>
-      </div>
+            </div>  <!-- End class="tasksoperation" -->
+         </div>  <!-- End class="tasksmenuoptions" -->
+      </div>  <!-- End class="tasksbox" -->
       
       
       <table class = "taskstable">
@@ -81,8 +81,8 @@
            <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
          <% end %>
       </table>
-   </div>
-<% end %>
+   </div>  <!-- End class="generalcontent" -->
+<% end %>  <!-- End form -->
 
 
 

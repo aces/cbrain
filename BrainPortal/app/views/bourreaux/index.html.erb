@@ -16,52 +16,49 @@
 
   <h2>Bourreaux</h2>
 
-<div class = "bourreauxbox">
-
-<div class = "bourreauxmenuoptions">
-  <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
-</div>
-
-</div>
-
-<table class = "bourreauxtable">
-   <tr>
-       <th>Bourreau Name</th>
-       <th>Owner</th>
-       <th>Group</th>
-       <th>Site</th>
-       <th>Online?</th>
-       <th>Alive?</th>
-       <th>Description</th>
-       <th colspan="2">Operations</th>
-   </tr>
-
-   <% for bour in @bourreaux %>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
-         <td><%= h(bour.user.login) %></td>
-         <td><%= h(bour.group.name) %></td>
-         <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
-         <td><%= h(bour.online ? "Yes" : "No") %></td>
-         <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
-         <td><%= h(bour.description) %></td>
-         <td>
-            <% if bour.has_owner_access?(current_user) %>
-            <%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %>
-            <% end %>
-         </td>
-         <td>
-            <% if bour.has_owner_access?(current_user) %>
-            <%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %>
-            <% end %>
-         </td>
-       </tr>
-   <% end %>
-
-   <% if @bourreaux.nil? || @bourreaux.empty? %>
-     <tr class="list-odd"><td colspan="9">There are no Bourreaux in this list.</td></tr>
-   <% end %>
-
-</table>
-</div>
-</div>
+  <div class = "bourreauxbox">
+     <div class = "bourreauxmenuoptions">
+       <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
+     </div>  <!-- End class="bourreauxmenuoptions" -->
+  </div>  <!-- End class="bourreauxbox" -->
+  
+  <table class = "bourreauxtable">
+     <tr>
+         <th>Bourreau Name</th>
+         <th>Owner</th>
+         <th>Group</th>
+         <th>Site</th>
+         <th>Online?</th>
+         <th>Alive?</th>
+         <th>Description</th>
+         <th colspan="2">Operations</th>
+     </tr>
+  
+     <% for bour in @bourreaux %>
+         <tr class="<%= cycle('list-odd', 'list-even') %>">
+           <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
+           <td><%= h(bour.user.login) %></td>
+           <td><%= h(bour.group.name) %></td>
+           <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
+           <td><%= h(bour.online ? "Yes" : "No") %></td>
+           <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
+           <td><%= h(bour.description) %></td>
+           <td>
+              <% if bour.has_owner_access?(current_user) %>
+                 <%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %>
+              <% end %>
+           </td>
+           <td>
+              <% if bour.has_owner_access?(current_user) %>
+                 <%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %>
+              <% end %>
+           </td>
+         </tr>
+     <% end %>
+  
+     <% if @bourreaux.nil? || @bourreaux.empty? %>
+       <tr class="list-odd"><td colspan="9">There are no Bourreaux in this list.</td></tr>
+     <% end %>
+  
+  </table>
+</div>  <!-- End class="generalcontent" -->

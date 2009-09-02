@@ -11,53 +11,42 @@
 -%>
 
 <div class = "generalcontent">
-<h2>File Upload Options:</h2>
+   <h2>File Upload Options:</h2>
 
-<%
-form_tag( "/userfiles", :multipart => true, :method => :post) do
-%>
-<div class = "uploadbox">
+   <%
+   form_tag( "/userfiles", :multipart => true, :method => :post) do
+   %>
+      <div class = "uploadbox">
 
-<div class = "uploadwrapper">
+         <div class = "uploadwrapper">
 
-<div class = "fileupload">
-  Select file to upload:
+              Select file to upload:
   
-  <%= file_field_tag("upload_file") %>
-  <br><br>
-</div>
+              <%= file_field_tag("upload_file") %>
+              <br><br>
 
-<div class = "uploadtags">
-Select tags for file:
-</div>
-<br><br><%= render :partial  => 'tag_table', :locals  => {:tags => @user_tags} %>
+            Select tags for file:
+            <select name="tags[]" multiple="multiple" style="width:200px">
+               <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
+            </select>
+            <br><br>
 
-<div class= "uploadgroups">
-Group for uploaded file:<br>
-</div>
-      <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
+            Group for uploaded file:
+                  <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
 
-      <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-<br><br>
+                  <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+            <br><br>
 
-<div class= "fileoptions">
-Archive options (for zip or tar files): <br>
-</div>
-   <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
-<br><br>
+            Archive options (for zip or tar files): 
+               <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
+            <br><br>
 
-<div class = "dataprovider">
-Data provider for uploaded file:<br>
-</div>
-  <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
-<br><br><br>
-  <div class = "fileuploadbutton">
-    &nbsp;
-  </div>
-  <%= submit_tag("Upload file")     %>
+            Data provider for uploaded file:
+              <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
+            <br><br><br>
+              <%= submit_tag("Upload file") %>
 
-</div>
-</div>
-</div>
-<%end%>
+         </div>
+      </div>
+   <%end%>
 </div>

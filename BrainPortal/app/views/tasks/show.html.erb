@@ -15,74 +15,74 @@
 <% title 'Task Info' %>
 
 
-  <div class = "generalcontent">
+<div class = "generalcontent">
 
 
-<h2>Task Information</h2>
+   <h2>Task Information</h2>
 
-<table class ="showtasksdisplay">
+   <table class ="showtasksdisplay">
 
-   <tr>
-       <th>Task Name</th>
-       <td class="info"><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
-   </tr>
+      <tr>
+          <th>Task Name</th>
+          <td class="info"><%= h(@task.class.to_s.sub(/^Drmaa/,"")) %></td>
+      </tr>
 
-   <tr>
-       <th>Bourreau Name</th>
-       <td><%= h(@task.bourreau.name) %></td>
-   </tr>
-
-     <tr>
+      <tr>
           <th>Bourreau Name</th>
           <td><%= h(@task.bourreau.name) %></td>
       </tr>
 
       <tr>
+           <th>Bourreau Name</th>
+           <td><%= h(@task.bourreau.name) %></td>
+      </tr>
+   
+      <tr>
           <th>Current Status</th>
           <td><%= h(@task.status) %></td>
       </tr>
-
+   
       <tr>
           <th>Time Submitted</th>
           <td><%= h(to_localtime(@task.created_at.to_s,:datetime)) -%></td>
       </tr>
-
+   
       <tr>
           <th>Last Updated</th>
           <td><%= h(to_localtime(@task.updated_at.to_s,:datetime)) -%></td>
       </tr>
-
+   
       <tr>
           <th>Owner</th>
           <td><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
       </tr>
-     
+   
       <tr>
           <th>DRMAA Job ID</th>
           <td><%= h(@task.drmaa_jobid) -%></td>
       </tr>
-
+   
       <tr>
           <th>DRMAA Work Directory</th>
           <td><%= h(@task.drmaa_workdir || "(Erased)") -%></td>
       </tr>
-
+   
       <tr>
         <th colspan="2">Parameters</td>
-    </tr>
+      </tr>
     
-       <tr>
+      <tr>
          <td colspan="2"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
-     </tr>
+      </tr>
 
-     <tr>
-         <th colspan="2">Processing Log</td>
-     </tr>
-
-     <tr>
-         <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
-     </tr>    
-    
+      <tr>
+          <th colspan="2">Processing Log</td>
+      </tr>
+   
+      <tr>
+          <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
+      </tr>    
+   
    </table>
 
    <table class = "showtaskstable">
@@ -101,6 +101,4 @@
       </tr>
 
    </table>
-
-   </div>
-   </div>
+</div>

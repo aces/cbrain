@@ -15,7 +15,7 @@
  ' <option value="">Select a Conversion Operation</option>
   <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
   <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-   <option value="DrmaaMnc2nii">Convert selected MINC files to Nifty</option>' 
+   <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>' 
 ) 
 %>
 
@@ -23,5 +23,5 @@
    '<option value="">Select Execution Server</option>' +
    options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, @prefered_bourreau_id)  %>
 
-<%= submit_tag("Apply Operation") %><br>
+ <%= submit_tag("Apply Operation") %>
 

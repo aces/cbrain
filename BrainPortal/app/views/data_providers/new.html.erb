@@ -12,67 +12,65 @@
 -%>
 <div class = "generalcontent">
 
-<% title "Create Data Provider" %>
+   <% title "Create Data Provider" %>
 
-<h2>Create Data Provider</h2>
+   <h2>Create Data Provider</h2>
 
+   <%= error_messages_for :provider %>
 
-<%= error_messages_for :provider %>
+   <div class = "generalbox">
 
-<div class = "generalbox">
+      <% form_for :data_provider, @provider, :url => { :action => "create" } do |f| -%>
 
+         <p><label for="name">Name</label><br/>
+         <%= f.text_field :name %></p>
 
-<% form_for :data_provider, @provider, :url => { :action => "create" } do |f| -%>
+         <p><label for="description">Description</label><br/>
+         <%= f.text_field :description %></p>
 
-<p><label for="name">Name</label><br/>
-<%= f.text_field :name %></p>
+         <p><label for="type">Type</label><br/>
+         <%= f.select :type, @typelist, :prompt => "Select Provider Type" %></p>
 
-<p><label for="description">Description</label><br/>
-<%= f.text_field :description %></p>
+         <p><label for="user_id">Owner</label><br/>
+         <%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
 
-<p><label for="type">Type</label><br/>
-<%= f.select :type, @typelist, :prompt => "Select Provider Type" %></p>
+         <p><label for="group_id">Group</label><br/>
+         <%= f.select :group_id, @groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
 
-<p><label for="user_id">Owner</label><br/>
-<%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+         <p><label for="online">Status</label><br/>
+         <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
-<p><label for="group_id">Group</label><br/>
-<%= f.select :group_id, @groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
-
-<p><label for="online">Status</label><br/>
-<%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
-
-<p><label for="read_only">Mode</label><br/>
-<%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, :prompt => "Select mode" %></p>
+         <p><label for="read_only">Mode</label><br/>
+         <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, :prompt => "Select mode" %></p>
 
 
-<p><label for="remote_host">Remote Hostname</label><br/>
-<%= f.text_field :remote_host %></p>
+         <p><label for="remote_host">Remote Hostname</label><br/>
+         <%= f.text_field :remote_host %></p>
 
-<p><label for="remote_user">Remote Username</label><br/>
-<%= f.text_field :remote_user %></p>
+         <p><label for="remote_user">Remote Username</label><br/>
+         <%= f.text_field :remote_user %></p>
 
-<p><label for="remote_dir">Remote Directory</label><br/>
-<%= f.text_field :remote_dir %></p>
+         <p><label for="remote_dir">Remote Directory</label><br/>
+         <%= f.text_field :remote_dir %></p>
 
-<p><label for="remote_port">Remote Port Number</label><br/>
-<%= f.text_field :remote_port %></p>
+         <p><label for="remote_port">Remote Port Number</label><br/>
+         <%= f.text_field :remote_port %></p>
 
-<p><%= submit_tag 'Create' %></p>
+         <p><%= submit_tag 'Create' %></p>
 
-<% end -%>
+      <% end -%>
 
-<%= button_to 'Cancel', data_providers_path, :method => :get %>
-</div>
+      <%= button_to 'Cancel', data_providers_path, :method => :get %>
+   </div> <!-- End class="generalbox" -->
 
-<div class="ssh_keys">
-Public SSH Keys for this CBRAIN Portal and all accessible Bourreaux.
-<table>
-  <% @ssh_keys.each do |pair| %>
-    <tr><th><%= h(pair[0]) %></th></tr>
-    <tr><td><SMALL><SMALL><PRE><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></th></tr>
-  <% end %>
-</table>
-</div>
+   <div class="ssh_keys">
+      Public SSH Keys for this CBRAIN Portal and all accessible Bourreaux.
+      <table>
+        <% @ssh_keys.each do |pair| %>
+          <tr><th><%= h(pair[0]) %></th></tr>
+          <tr><td><SMALL><SMALL><PRE><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></th></tr>
+        <% end %>
+      </table>
+   </div> <!-- End class="ssh_keys" -->
 
-</div>
+</div> <!-- End class="generalcontent" -->

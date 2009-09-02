@@ -14,29 +14,28 @@
 <div class = "generalcontent">
 
 
-<% title "#{@group.name}"%>
+   <% title "#{@group.name}"%>
 
-<h2>Details for group: <%= h @group.name %></h2>
+   <h2>Details for group: <%= h @group.name %></h2>
 
-<div class = "generalbox">
+   <div class = "generalbox">
+      <table>
+        <tr><th colspan="3"><b>Members</b></th></tr>
+        <tr>
+          <th>Name</th>
+          <th>Login</th>
+          <th>Email</th>
+        </tr>
 
-<table>
-  <tr><th colspan="3"><b>Members</b></th></tr>
-  <tr>
-    <th>Name</th>
-    <th>Login</th>
-    <th>Email</th>
-  </tr>
+      <% @group.users.each do |user| %>
+        <tr class=<%= cycle("list-even", "list-odd")%> >
+          <td><%=h user.full_name %></td>
+          <td><%=h user.login %></td>
+          <td><%=h user.email %></td>
+      <% end %>
+      </table>
 
-<% @group.users.each do |user| %>
-  <tr class=<%= cycle("list-even", "list-odd")%> >
-    <td><%=h user.full_name %></td>
-    <td><%=h user.login %></td>
-    <td><%=h user.email %></td>
-<% end %>
-</table>
-
-<%= button_to 'Edit', edit_group_path(@group), :method => :get %><br/>
-<%= link_to 'Index', groups_path %>
-</div>
+      <%= button_to 'Edit', edit_group_path(@group), :method => :get %><br/>
+      <%= link_to 'Index', groups_path %>
+   </div>
 </div>

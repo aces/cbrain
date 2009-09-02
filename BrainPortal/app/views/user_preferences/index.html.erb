@@ -11,37 +11,37 @@
 
 <div class = "generalcontent">
 
-<h2>Account preferences for <%= @user_preference.user.login %></h2>
-<div class = "generalbox">
+   <h2>Account preferences for <%= @user_preference.user.login %></h2>
+   <div class = "generalbox">
 
-<% form_for(@user_preference) do |f| %>
-  <%= f.error_messages %>
+      <% form_for(@user_preference) do |f| %>
+        <%= f.error_messages %>
 
-  <p>
-   Userfiles per page: 
-   <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
-  </p>
-  <p>
-    Default execution server: <%= f.select :bourreau_id, @bourreaux.collect{|b| [b.name, b.id]}, :include_blank => true  %>
-  </p>
-  <p>
-    Default data provider: <%= f.collection_select :data_provider_id, DataProvider.find(:all), :id, :name, :include_blank => true %>
-  </p>
-  <p>
-   Options saved for tasks:
-   <ul>
-      <% @user_preference.other_options.keys.select{ |item| item =~ /^Drmaa/ }.each do |task| %>
-      <li><%= task %></li>
-      <% end %>
-   </ul>
-  </p>
-  <p>
-    <%= f.submit "Save" %>
-  </p>
-<% end %>
+        <p>
+         Userfiles per page: 
+         <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
+        </p>
+        <p>
+          Default execution server: <%= f.select :bourreau_id, @bourreaux.collect{|b| [b.name, b.id]}, :include_blank => true  %>
+        </p>
+        <p>
+          Default data provider: <%= f.collection_select :data_provider_id, DataProvider.find(:all), :id, :name, :include_blank => true %>
+        </p>
+        <p>
+         Options saved for tasks:
+         <ul>
+            <% @user_preference.other_options.keys.select{ |item| item =~ /^Drmaa/ }.each do |task| %>
+            <li><%= task %></li>
+            <% end %>
+         </ul>
+        </p>
+        <p>
+          <%= f.submit "Save" %>
+        </p>
+      <% end %>  <!-- End form -->
 
-<%= button_to 'Reset to Defaults', @user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
+      <%= button_to 'Reset to Defaults', @user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
 
-<%= link_to 'Back to Account Page', current_user %>
-</div>
-</div>
+      <%= link_to 'Back to Account Page', current_user %>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

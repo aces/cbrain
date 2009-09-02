@@ -12,67 +12,66 @@
 -%>
 <div class = "generalcontent">
 
-<% title 'Browse Data Provider' %>
+   <% title 'Browse Data Provider' %>
 
-<h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
+   <h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
 
-<div class = "generalbox">
+   <div class = "generalbox">
 
-<% #form_tag("/data_providers/#{@provider.id.to_s}/register") do
- %>
-<% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
+      <% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
 
-<table>
-   <tr>
-       <th>Select</th>
-       <th>Name</th>
-       <th>Size</th>
-       <th>Type</th>
-       <th>Last modified</th>
-       <th>Registered?</th>
-       <th>Note</th>
-   </tr>
+      <table>
+         <tr>
+             <th>Select</th>
+             <th>Name</th>
+             <th>Size</th>
+             <th>Type</th>
+             <th>Last modified</th>
+             <th>Registered?</th>
+             <th>Note</th>
+         </tr>
 
-   <% for tuplet in @rawlist
-      tupname  = tuplet[0]
-      tupsize  = tuplet[1]
-      tuptype  = tuplet[2]
-      tupmtime = tuplet[3]
-      tupUF    = tuplet[4]
-      tupMESS  = tuplet[5]
-    %>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td><%= check_box_tag("basenames[]",tupname,false) %></td>
-         <td><%= h(tupname) %></td>
-         <td><%= h(tupsize) %></td>
-         <% if tupUF %>
-           <td><%= h(tupUF.class.to_s) %></td>
-         <% else %>
-            <% if tuptype.to_s == "regular" %>
-              <td>SingleFile</td>
-            <% else %>
-              <td><%= select_tag("directorytypes[]",
-                     options_for_select([ [ "Directory as...", "Unset-#{tupname}" ],
-                                          [ "FileCollection", "FileCollection-#{tupname}" ],
-                                          [ "CivetCollection", "CivetCollection-#{tupname}" ]
-                                        ])) %></td>
-            <% end %>
+         <% for tuplet in @rawlist
+               tupname  = tuplet[0]
+               tupsize  = tuplet[1]
+               tuptype  = tuplet[2]
+               tupmtime = tuplet[3]
+               tupUF    = tuplet[4]
+               tupMESS  = tuplet[5]
+          %>
+             <tr class="<%= cycle('list-odd', 'list-even') %>">
+               <td><%= check_box_tag("basenames[]",tupname,false) %></td>
+               <td><%= h(tupname) %></td>
+               <td><%= h(tupsize) %></td>
+               <% if tupUF %>
+                 <td><%= h(tupUF.class.to_s) %></td>
+               <% else %>
+                  <% if tuptype.to_s == "regular" %>
+                    <td>SingleFile</td>
+                  <% else %>
+                    <td><%= select_tag("directorytypes[]",
+                           options_for_select([ [ "Directory as...", "Unset-#{tupname}" ],
+                                                [ "FileCollection", "FileCollection-#{tupname}" ],
+                                                [ "CivetCollection", "CivetCollection-#{tupname}" ]
+                                              ])) %>
+                    </td>
+                  <% end %>
+               <% end %>
+               <td><%= h(to_localtime(Time.at(tupmtime).to_s,:datetime)) %></td>
+               <% if tupUF %>
+                 <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => tupUF.id } %></td>
+               <% else %>
+                 <td>New</td>
+               <% end %>
+               <td><%= h(tupMESS) %></td>
+             </tr>
          <% end %>
-         <td><%= h(to_localtime(Time.at(tupmtime).to_s,:datetime)) %></td>
-         <% if tupUF %>
-           <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => tupUF.id } %></td>
-         <% else %>
-           <td>New</td>
-         <% end %>
-         <td><%= h(tupMESS) %></td>
-       </tr>
-   <% end %>
 
-</table>
+      </table>
 
-<%= submit_tag 'Register files' %>
-<%= submit_tag 'UnRegister files' %>
+      <%= submit_tag 'Register files' %>
+      <%= submit_tag 'UnRegister files' %>
 
-<% end %>
-</div>
-</div>
+      <% end %>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

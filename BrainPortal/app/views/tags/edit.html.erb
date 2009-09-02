@@ -11,23 +11,23 @@
 
 <div class = "generalcontent">
 
-<h2>Edit Tag</h2>
+   <h2>Edit Tag</h2>
 
-<div class = "generalbox">
+   <div class = "generalbox">
 
-<% form_for(@tag) do |f| %>
-  <%= f.error_messages %>
+      <% form_for(@tag) do |f| %>
+        <%= f.error_messages %>
 
-  <p>
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </p>
-  <p>
-    <%= f.submit "Update" %>
-  </p>
-<% end %>
+        <p>
+          <%= f.label :name %><br />
+          <%= f.text_field :name %>
+        </p>
+        <p>
+          <%= f.submit "Update" %>
+        </p>
+      <% end %>
 
-<%= link_to 'Show', @tag %> |
-<%= link_to 'Back', tags_path %>
-</div>
-</div>
+      <%= link_to 'Show', @tag %> |
+      <%= link_to 'Back', tags_path %>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

@@ -30,156 +30,155 @@
 
 <div class = "generalcontent">
 
-<div class = "generalbox">
+   <div class = "generalbox">
 
-<table>
+      <table>
 
-   <tr>
-     <th colspan="2">Implementation information</th>
-   </tr>
+         <tr>
+           <th colspan="2">Implementation information</th>
+         </tr>
 
-   <tr>
-       <th>Name</th>
-       <td class="info"><%= h(@bourreau.name) %></h1>
-   </tr>
+         <tr>
+             <th>Name</th>
+             <td class="info"><%= h(@bourreau.name) %></h1>
+         </tr>
 
-   <tr>
-       <th>Class</th>
-       <td class="info"><%= h(@bourreau.class.to_s) %></td>
-   </tr>
+         <tr>
+             <th>Class</th>
+             <td class="info"><%= h(@bourreau.class.to_s) %></td>
+         </tr>
 
-   <tr>
-       <th>Revision Info (Bourreau Client)</th>
-       <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
-   </tr>
+         <tr>
+             <th>Revision Info (Bourreau Client)</th>
+             <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
+         </tr>
 
-   <tr>
-       <th>Description</th>
-       <td class="info"><%= h(@bourreau.description) %></td>
-   </tr>
+         <tr>
+             <th>Description</th>
+             <td class="info"><%= h(@bourreau.description) %></td>
+         </tr>
 
-   <tr>
-     <th colspan="2">Access information</th>
-   </tr>
+         <tr>
+           <th colspan="2">Access information</th>
+         </tr>
 
-   <tr>
-       <th>Owner</th>
-       <td class="info"><%= h(@bourreau.user.login) %></td>
-   </tr>
+         <tr>
+             <th>Owner</th>
+             <td class="info"><%= h(@bourreau.user.login) %></td>
+         </tr>
 
-   <tr>
-       <th>Group</th>
-       <td class="info"><%= h(@bourreau.group.name) %></td>
-   </tr>
+         <tr>
+             <th>Group</th>
+             <td class="info"><%= h(@bourreau.group.name) %></td>
+         </tr>
 
-   <tr>
-       <th>Status</th>
-       <td class="info"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
-   </tr>
+         <tr>
+             <th>Status</th>
+             <td class="info"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
+         </tr>
 
-   <tr>
-     <th colspan="2">Network Parameters</th>
-   </tr>
+         <tr>
+           <th colspan="2">Network Parameters</th>
+         </tr>
 
-   <tr>
-       <th>Remote Host</th>
-       <td class="info"><%= h(@bourreau.remote_host) %></td>
-   </tr>
+         <tr>
+             <th>Remote Host</th>
+             <td class="info"><%= h(@bourreau.remote_host) %></td>
+         </tr>
 
-   <tr>
-       <th>Remote User</th>
-       <td class="info"><%= h(@bourreau.remote_user) %></td>
-   </tr>
+         <tr>
+             <th>Remote User</th>
+             <td class="info"><%= h(@bourreau.remote_user) %></td>
+         </tr>
 
-   <tr>
-       <th>Remote Directory</th>
-       <td class="info"><%= h(@bourreau.remote_dir) %></td>
-   </tr>
+         <tr>
+             <th>Remote Directory</th>
+             <td class="info"><%= h(@bourreau.remote_dir) %></td>
+         </tr>
 
-   <tr>
-       <th>Remote Port</th>
-       <td class="info"><%= h(@bourreau.remote_port) %></td>
-   </tr>
+         <tr>
+             <th>Remote Port</th>
+             <td class="info"><%= h(@bourreau.remote_port) %></td>
+         </tr>
 
-   <tr>
-     <th colspan="2">Runtime Information</th>
-   </tr>
+         <tr>
+           <th colspan="2">Runtime Information</th>
+         </tr>
 
-   <tr>
-       <th>Revision Info (Bourreau Server)</th>
-       <td class="info">
-           <strong>Subversion Revision: </strong><%= @info.revision %><br>
-           <strong>Last Change Author: </strong><%= @info.lc_author %><br>
-           <strong>Last Change Revision: </strong><%= @info.lc_rev %><br>
-           <strong>Last Change Date: </strong><%= @info.lc_date %>
-       </td>
-   </tr>
+         <tr>
+             <th>Revision Info (Bourreau Server)</th>
+             <td class="info">
+                 <strong>Subversion Revision: </strong><%= @info.revision %><br>
+                 <strong>Last Change Author: </strong><%= @info.lc_author %><br>
+                 <strong>Last Change Revision: </strong><%= @info.lc_rev %><br>
+                 <strong>Last Change Date: </strong><%= @info.lc_date %>
+             </td>
+         </tr>
 
-   <tr>
-       <th>Number of tasks (running/max)</th>
-       <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
-   </tr>
+         <tr>
+             <th>Number of tasks (running/max)</th>
+             <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+         </tr>
 
-   <tr>
-       <th>Host uptime</th>
-       <td class="info"><%= h(@info.host_uptime) %></td>
-   </tr>
+         <tr>
+             <th>Host uptime</th>
+             <td class="info"><%= h(@info.host_uptime) %></td>
+         </tr>
 
-   <tr>
-       <th>Bourreau Server uptime</th>
-       <td class="info">
-         Up since: <%= h(@info.bourreau_uptime.to_i.ago.to_s(:db)) %><br>
-         (for: <%= pretty_elapsed(@info.bourreau_uptime.to_i) %>)
-       </td>
-   </tr>
+         <tr>
+             <th>Bourreau Server uptime</th>
+             <td class="info">
+               Up since: <%= h(@info.bourreau_uptime.to_i.ago.to_s(:db)) %><br>
+               (for: <%= pretty_elapsed(@info.bourreau_uptime.to_i) %>)
+             </td>
+         </tr>
 
-   <tr>
-       <th>Bourreau Cluster Management System</th>
-       <td class="info">
-         Type: <%= h(@info.bourreau_cms) %><br>
-         Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
-       </td>
-   </tr>
+         <tr>
+             <th>Bourreau Cluster Management System</th>
+             <td class="info">
+               Type: <%= h(@info.bourreau_cms) %><br>
+               Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
+             </td>
+         </tr>
 
-   <tr>
-       <th>Bourreau SSH Public Key</th>
-       <td class="info"><SMALL><SMALL><PRE><%= pretty_ssh_key(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
-   </tr>
+         <tr>
+             <th>Bourreau SSH Public Key</th>
+             <td class="info"><SMALL><SMALL><PRE><%= pretty_ssh_key(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+         </tr>
 
-<% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+         <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
-<tr><td class="info" align="center" colspan="2">
-<table>
-  <tr>
-    <td class="info">
-      <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
-    </td>
-    <td class="info">
-      <%= button_to 'Delete', bourreau_path(@bourreau), :confirm => 'Are you sure?', :method => :delete %>
-    </td>
-  </tr>
-</table>
-</td>
-</tr>
-<% end %>
-</table>
+            <tr>
+               <td class="info" align="center" colspan="2">
+                  <table>
+                    <tr>
+                      <td class="info">
+                        <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
+                      </td>
+                      <td class="info">
+                        <%= button_to 'Delete', bourreau_path(@bourreau), :confirm => 'Are you sure?', :method => :delete %>
+                      </td>
+                    </tr>
+                  </table>
+               </td>
+            </tr>
+         <% end %>
+      </table>
 
-<table>
-  <tr>
-    <th colspan="3">Task Statistics</th>
-  </tr>
-  <tr>
-    <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
-  </tr>
-  <%
-   @user_tasks_info.each do |user, comp_tot|
-  %>
-    <tr>
-      <td class="info"><%= h(user) %></td>
-      <td class="info"><%= h(comp_tot[0].to_s) %></td>
-      <td class="info"><%= h(comp_tot[1].to_s) %></td>
-    </tr>
-  <% end %>
-</table>
-</div>
-</div>
+      <table>
+        <tr>
+          <th colspan="3">Task Statistics</th>
+        </tr>
+        <tr>
+          <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
+        </tr>
+        <% @user_tasks_info.each do |user, comp_tot| %>
+          <tr>
+            <td class="info"><%= h(user) %></td>
+            <td class="info"><%= h(comp_tot[0].to_s) %></td>
+            <td class="info"><%= h(comp_tot[1].to_s) %></td>
+          </tr>
+        <% end %>
+      </table>
+   </div>  <!-- End class="generalbox" -->
+</div>  <!-- End class="generalcontent" -->

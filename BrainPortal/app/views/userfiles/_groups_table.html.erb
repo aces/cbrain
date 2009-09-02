@@ -7,15 +7,10 @@
 #
 
 -%>
-
-
- <div class="groups">
-     <br><br>
-      Group Update: <br>
-      <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
-      <%= submit_tag("Update Groups") %> <br><br>
-      Group permission update:<br>
-      <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %></td>
-      <%= submit_tag("Update Permissions") %> 
-  </div>
-</div>
+Group Update: 
+<%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+<%= submit_tag("Update Groups") %> 
+<br>
+Group permission update: 
+<%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %></td>
+<%= submit_tag("Update Permissions") %> 

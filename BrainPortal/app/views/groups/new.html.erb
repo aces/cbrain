@@ -12,34 +12,34 @@
 -%>
 <div class = "generalcontent">
 
-<% title 'New Group' %>
+   <% title 'New Group' %>
 
-<h2>Create New Group</h2>
+   <h2>Create New Group</h2>
 
-<div class = "generalbox">
+   <div class = "generalbox">
 
-<% form_for(@group) do |f| %>
-  <%= f.error_messages %>
+      <% form_for(@group) do |f| %>
+        <%= f.error_messages %>
 
-  <p>
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </p>
-  <br/>
-  <label for="users">Users in group:</label>
-  <table>
-     <% for user in @users %>
-         <tr>
-           <td class="info"><%= check_box_tag("work_group[user_ids][]", user.id.to_s) %></td>
-           <td class="info"><%= h(user.full_name) -%></td>
-         </tr>
-     <% end %>
-  </table>
-  <p>
-    <%= f.submit "Create" %>
-  </p>
-<% end %>
+        <p>
+          <%= f.label :name %><br />
+          <%= f.text_field :name %>
+        </p>
+        <br/>
+        <label for="users">Users in group:</label>
+        <table>
+           <% for user in @users %>
+               <tr>
+                 <td class="info"><%= check_box_tag("work_group[user_ids][]", user.id.to_s) %></td>
+                 <td class="info"><%= h(user.full_name) -%></td>
+               </tr>
+           <% end %>
+        </table>
+        <p>
+          <%= f.submit "Create" %>
+        </p>
+      <% end %>
 
-<%= button_to 'Cancel', groups_path, :method => :get %>
-</div>
-</div>
+      <%= button_to 'Cancel', groups_path, :method => :get %>
+   </div>  <!-- End class="generalbox" -->
+</div>   <!-- End class="generalcontent" -->
