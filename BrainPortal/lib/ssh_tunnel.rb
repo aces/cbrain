@@ -75,6 +75,7 @@ class SshTunnel
   end
 
   def self.destroy_all #:nodoc:
+    @@ssh_tunnels ||= {}
     @@ssh_tunnels.values.each { |tun| tun.destroy }
   end
 
@@ -98,14 +99,20 @@ class SshTunnel
     @host = remote_host
     @port = remote_port
 
-    @pid  = nil
+    raise "This tunnel spec is already registered with the class." if
+      self.class.find(@user,@host,@port)
+
+    @pid             = nil
     @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
     @reverse_tunnels = []   # [ 1234, "some.host", 4566 ]
 
-    raise "This tunnel spec is already registered with the class." if
-      self.class.find(@user,@host,@port)
+    # Register it
     key = "#{@user}@#{@host}:#{@port}"
     @@ssh_tunnels[key] = self
+
+    # Check to see if a process already manage the master
+    self.read_pidfile
+
     self
   end
 
@@ -189,12 +196,14 @@ class SshTunnel
   
   # Start the master SSH connection, including all tunnels if
   # necessary. The connection is maintained in a subprocess.
+  # If a subprocess is already running, nothing will happen:
+  # you have to stop() if before you can restart it.
   def start
 
     self.properly_registered?
-    return @pid if self.readpid
+    return @pid if self.read_pidfile
 
-    socket = self.controlpath
+    socket = self.control_path
     sshcmd = "ssh -n -N -x -p #{@port}"            +
              " -o ConnectTimeout=10"               +
 
@@ -212,12 +221,12 @@ class SshTunnel
 
     sshcmd += " #{@user}@#{@host}"
 
-    unless self.writepid("0",:check) # 0 means in the process of starting up subprocess
-      return self.readpid  # so it's already running, eh.
+    unless self.write_pidfile("0",:check) # 0 means in the process of starting up subprocess
+      return self.read_pidfile  # so it's already running, eh.
     end
 
     @pid = Process.fork do
-      self.writepid($$,:force)  # Overwrite
+      self.write_pidfile($$,:force)  # Overwrite
       File.unlink(socket) rescue true
       Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
       Kernel.exit!  # should never reach here
@@ -232,11 +241,11 @@ class SshTunnel
   # the master SSH.
   def stop
     self.properly_registered?
-    return false unless self.readpid
+    return false unless self.read_pidfile
 
     Process.kill("TERM",@pid) rescue true
     @pid = nil
-    self.deletepid
+    self.delete_pidfile
     true
   end
 
@@ -245,9 +254,9 @@ class SshTunnel
 
     self.properly_registered?
 
-    socket = self.controlpath
+    socket = self.control_path
     return false unless File.exist?(socket)
-    return false unless self.readpid
+    return false unless self.read_pidfile
     
     sshcmd = "ssh -n -x -p #{@port}"     +
              " -o ConnectTimeout=10"     +
@@ -279,22 +288,22 @@ class SshTunnel
   protected
 
   # Returns the path to the SSH ControlPath socket.
-  def controlpath #:nodoc:
+  def control_path #:nodoc:
     "/tmp/ssh_master.#{@user}@#{@host}:#{@port}"
   end
 
-  def pidpath #:nodoc:
-    self.controlpath + ".pid"
+  def pidfile_path #:nodoc:
+    self.control_path + ".pid"
   end
 
-  def writepid(pid,action) #:nodoc:
+  def write_pidfile(pid,action) #:nodoc:
     if action == :force
-      File.open(self.pidpath,"w") { |fh| fh.write(pid.to_s) }
+      File.open(self.pidfile_path,"w") { |fh| fh.write(pid.to_s) }
       return true
     end
     # Action is :check, it means we must fail if the file exists
     begin
-      fd = IO::sysopen(self.pidpath, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fd = IO::sysopen(self.pidfile_path, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       f = IO.open(fd)
       f.syswrite(pid.to_s)
       f.close
@@ -304,27 +313,27 @@ class SshTunnel
     end
   end
 
-  def readpid #:nodoc:
+  def read_pidfile #:nodoc:
     return @pid if @pid
-    socket = self.controlpath
+    socket = self.control_path
     unless File.exist?(socket)
-      File.unlink(self.pidpath) rescue true
+      File.unlink(self.pidfile_path) rescue true
       return nil
     end
     begin
       line = nil
-      File.open(self.pidpath,"r") { |fh| line = fh.read }
+      File.open(self.pidfile_path,"r") { |fh| line = fh.read }
       return nil unless line && line.match(/^\d+/)
       @pid = line.to_i
-      @pid = nil if @pid == 0 # leftover from :check mode of writepid() ? Crash?
+      @pid = nil if @pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
       return @pid
     rescue
       return nil
     end
   end
 
-  def deletepid
-    File.unlink(self.pidpath) rescue true
+  def delete_pidfile #:nodoc:
+    File.unlink(self.pidfile_path) rescue true
   end
 
   # Checks that the current instance is the one registered
