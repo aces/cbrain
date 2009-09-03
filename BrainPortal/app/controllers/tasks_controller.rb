@@ -71,7 +71,7 @@ class TasksController < ApplicationController
         return
       end
     else
-      redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids]
+      redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids], :bourreau_id  => params[:bourreau_id]
       return
     end
     
