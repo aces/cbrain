@@ -1,0 +1,3 @@
+<%= select_tag "bourreau_id", 
+   "<option value=\"\">#{current_user.user_preference.bourreau_id ? "Preferred Bourreau (#{current_user.user_preference.bourreau.name})" : "Random Selection" }</option>" +
+   options_for_select(@bourreaux.collect{|b| [b.name, b.id]})  %>
