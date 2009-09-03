@@ -8,21 +8,23 @@
 
 -%>
 
-<%= select_tag(
- "operation", 
- ' <option value="">Select a Scientific Operation</option>
-   <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
-   <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-   <option value="DrmaaMincmath">Mincmath</option>
-   <option value="DrmaaMincresample">Launch Mincresample</option>
-   <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
-   <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>'
-) 
-%>
+<% unless @bourreaux.blank? %>
 
-<%= select_tag "bourreau_id",
-   '<option value="">Select Execution Server</option>' +
-   options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, @prefered_bourreau_id)  %>
+   <%= select_tag(
+    "operation", 
+    ' <option value="">Select a Scientific Operation</option>
+      <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
+      <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
+      <option value="DrmaaMincmath">Mincmath</option>
+      <option value="DrmaaMincresample">Launch Mincresample</option>
+      <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
+      <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>'
+   ) 
+   %>
 
- <%= submit_tag("Apply Operation") %>
+   <%= render :partial => 'bourreau_select' %>
 
+   <%= submit_tag("Apply Operation") %>
+<% else %>
+   <h1>No Bourreaux Available</h1>
+<% end %>

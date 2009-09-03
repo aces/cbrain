@@ -8,20 +8,20 @@
 
 -%>
 
+<% unless @bourreaux.blank? %>
 
+   <%= select_tag(
+    "operation", 
+    ' <option value="">Select a Conversion Operation</option>
+     <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
+     <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
+      <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>' 
+   ) 
+   %>
 
-<%= select_tag(
- "operation", 
- ' <option value="">Select a Conversion Operation</option>
-  <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-  <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-   <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>' 
-) 
-%>
+   <%= render :partial => 'bourreau_select' %>
 
-<%= select_tag "bourreau_id", 
-   '<option value="">Select Execution Server</option>' +
-   options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, @prefered_bourreau_id)  %>
-
- <%= submit_tag("Apply Operation") %>
-
+    <%= submit_tag("Apply Operation") %>
+<% else %>
+   <h1>No Bourreaux Available</h1>
+<% end %>
