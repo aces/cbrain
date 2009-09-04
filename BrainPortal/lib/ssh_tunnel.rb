@@ -46,7 +46,7 @@
 class SshTunnel
 
   Revision_info="$Id$"
-  Kernel.at_exit { SshTunnel.destroy_all }
+  # Kernel.at_exit { SshTunnel.destroy_all } # BAD when multiple instances!
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master tunnel to a
@@ -258,11 +258,8 @@ class SshTunnel
     return false unless File.exist?(socket)
     return false unless self.read_pidfile
     
-    sshcmd = "ssh -n -x -p #{@port}"     +
-             " -o ConnectTimeout=10"     +
-             " -o ControlMaster=no"      +
-             " -o ControlPath=#{socket}" +
-             " #{@user}@#{@host} "       +
+    shared_options = self.ssh_shared_options
+    sshcmd = "ssh -x -n #{shared_options} " +
              "echo OK-#{$$}"
 
     begin
@@ -273,6 +270,27 @@ class SshTunnel
     rescue
       return false
     end
+  end
+
+  # Returns the ssh command's options to connect to
+  # the tunnel using the master control path.
+  # By default, we do not return the 'ssh' command
+  # itself but we do include the user and hostname.
+  # A typical return value would be something like:
+  #
+  #  "-port 1234 -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=/tmp/something user@host"
+  #
+  # which allows you to add more options at the beginning
+  # and the end of any ssh command being built. Note that
+  # generally, if the master is active, the port, user
+  # and host are ignored completely.
+  def ssh_shared_options
+    socket = self.control_path
+    "-p #{@port} "              +
+    "-o ConnectTimeout=10 "     +
+    "-o ControlMaster=no "      +
+    "-o ControlPath=#{socket} " +
+    "#{@user}@#{@host}"
   end
 
   # This stops the master SSH connection if it is alive, and
