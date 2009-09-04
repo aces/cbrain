@@ -155,12 +155,18 @@ class BourreauxController < ApplicationController
     raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
     raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
-    @bourreau.stop
-    @bourreau.stop_tunnels
+    raise "This Bourreau is already alive." if @bourreau.is_alive?
+
     @bourreau.start_tunnels
     raise "Could not start master SSH connection and tunnels" unless @bourreau.ssh_master.is_alive?
     @bourreau.start
-    flash[:notice] = "Bourreau (re)started."
+
+    if @bourreau.is_alive?
+      flash[:notice] = "Bourreau (re)started."
+    else
+      flash[:error] = "Bourreau could not be started."
+    end
+
     redirect_to :action => :index
 
     rescue => e

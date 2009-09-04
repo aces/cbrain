@@ -153,6 +153,7 @@ class Bourreau < RemoteResource
     sshcmd = "ssh -x #{dash_n} #{ssh_options} #{startcmd} >#{captfile} 2>&1"
     IO.popen(sshcmd,"w") { |pipe| pipe.write(yml) }
     out = File.read(captfile) rescue ""
+    File.unlink(captfile) rescue true
     return true if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
     false
   end
