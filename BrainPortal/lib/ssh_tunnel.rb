@@ -232,7 +232,7 @@ class SshTunnel
       Kernel.exit!  # should never reach here
     end
 
-    #Process.detach(@pid) # Do NOT detach, that way tunnel is killed if ruby is killed
+    Process.detach(@pid)
     @pid
   end
 
@@ -288,6 +288,10 @@ class SshTunnel
     socket = self.control_path
     "-p #{@port} "              +
     "-o ConnectTimeout=10 "     +
+    "-o StrictHostKeyChecking=false "     +
+    "-o PasswordAuthentication=false "    +
+    "-o KbdInteractiveAuthentication=no " +
+    "-o KbdInteractiveDevices=false "     +
     "-o ControlMaster=no "      +
     "-o ControlPath=#{socket} " +
     "#{@user}@#{@host}"

@@ -181,7 +181,8 @@ class BourreauxController < ApplicationController
     raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     @bourreau.stop
-    flash[:notice] = "Bourreau stopped. Tunnels still operationals."
+    @bourreau.ssh_master.stop
+    flash[:notice] = "Bourreau stopped. Tunnels stopped."
     redirect_to :action => :index
 
     rescue => e
