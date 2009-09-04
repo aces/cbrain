@@ -146,7 +146,7 @@ end
 puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."
 Bourreau.all.each do |bourreau|
   name = bourreau.name
-  if bourreau.has_remote_control_info?
+  if (bourreau.has_remote_control_info? rescue false)
     tunnels_ok = bourreau.start_tunnels
     puts "C> \t- Bourreau '#{name}' channels " + (tunnels_ok ? 'started.' : 'NOT started.')
     #if tunnels_ok
