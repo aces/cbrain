@@ -17,11 +17,13 @@
    <h2>Edit Bourreau</h2>
 
    <div class = "generalbox">
+
       <%= error_messages_for :bourreau %>
 
       <% form_for :bourreau, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+
          <p><label for="name">Name</label><br/>
-         <%= f.text_field :name, { :readonly => false } %></p>
+         <%= f.text_field :name %></p>
 
          <p><label for="description">Description</label><br/>
          <%= f.text_field :description %></p>
@@ -35,21 +37,53 @@
          <p><label for="online">Status</label><br/>
          <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
-         <p><label for="remote_host">Remote Hostname</label><br/>
-         <%= f.text_field :remote_host %></p>
+         <p><label>ActiveResource Configuration</label><br/>
+         <div class="groupentry">
 
-         <p><label for="remote_user">Remote Username</label><br/>
-         <%= f.text_field :remote_user %></p>
+             <p><label for="actres_host">Hostname</label><br/>
+             <%= f.text_field :actres_host %></p>
 
-         <p><label for="remote_dir">Remote Directory</label><br/>
-         <%= f.text_field :remote_dir %></p>
+             <p><label for="actres_port">Port Number</label><br/>
+             <%= f.text_field :actres_port %></p>
 
-         <p><label for="remote_port">Remote Port Number</label><br/>
-         <%= f.text_field :remote_port %></p>
+         </div>
+
+         <p><label>SSH Remote Control Configuration</label><br/>
+         <div class="groupentry">
+
+             <p><label for="ssh_control_host">Hostname</label><br/>
+             <%= f.text_field :ssh_control_host %></p>
+
+             <p><label for="ssh_control_user">Username</label><br/>
+             <%= f.text_field :ssh_control_user %></p>
+
+             <p><label for="ssh_control_port">Port Number</label><br/>
+             <%= f.text_field :ssh_control_port %></p>
+
+             <p><label for="ssh_control_rails_dir">Remote Bourreau RAILS directory</label><br/>
+             <%= f.text_field :ssh_control_rails_dir %></p>
+
+         </div>
+
+         <p><label>Tunneling Configuration</label><br/>
+         <div class="groupentry">
+
+             <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
+             <%= f.text_field :tunnel_mysql_port %></p>
+
+             <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
+             <%= f.text_field :tunnel_actres_port %></p>
+
+         </div>
 
          <p><%= submit_tag 'Update' %></p>
+
       <% end -%>
 
       <%= button_to 'Cancel', bourreaux_path, :method => :get %>
+
    </div> <!-- End class="generalbox" -->
+
+   <%= render :partial => "notes" %>
+
 </div> <!-- End class="generalcontent" -->

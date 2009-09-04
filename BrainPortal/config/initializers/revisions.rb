@@ -146,4 +146,16 @@ class String
     self.svn_id_rev + " " + self.svn_id_author + " " + self.svn_id_date
   end
 
+  # Given a revision info string such as
+  #
+  #  "$Id$"
+  #
+  # it will return a string composed
+  # of four elements concatenated:
+  #
+  #   "file rev author date"
+  def svn_id_pretty_file_rev_author_date
+    self.svn_id_file + " " + self.svn_id_rev + " " + self.svn_id_author + " " + self.svn_id_date
+  end
+
 end

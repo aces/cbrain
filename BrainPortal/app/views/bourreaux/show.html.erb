@@ -77,29 +77,65 @@
              <td class="info"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
          </tr>
 
+
+
          <tr>
-           <th colspan="2">Network Parameters</th>
+             <th colspan="2">ActiveResource Configuration</th>
          </tr>
 
          <tr>
-             <th>Remote Host</th>
-             <td class="info"><%= h(@bourreau.remote_host) %></td>
+             <th>Host</th>
+             <td class="info"><%= h(@bourreau.actres_host) %></td>
          </tr>
 
          <tr>
-             <th>Remote User</th>
-             <td class="info"><%= h(@bourreau.remote_user) %></td>
+             <th>Port</th>
+             <td class="info"><%= h(@bourreau.actres_port) %></td>
+         </tr>
+
+
+
+         <tr>
+             <th colspan="2">SSH Remote Control Configuration</th>
          </tr>
 
          <tr>
-             <th>Remote Directory</th>
-             <td class="info"><%= h(@bourreau.remote_dir) %></td>
+             <th>Host</th>
+             <td class="info"><%= h(@bourreau.ssh_control_host) %></td>
          </tr>
 
          <tr>
-             <th>Remote Port</th>
-             <td class="info"><%= h(@bourreau.remote_port) %></td>
+             <th>User</th>
+             <td class="info"><%= h(@bourreau.ssh_control_user) %></td>
          </tr>
+
+         <tr>
+             <th>Port</th>
+             <td class="info"><%= h(@bourreau.ssh_control_port) %></td>
+         </tr>
+
+         <tr>
+             <th>Bourreau Rails HOME</th>
+             <td class="info"><%= h(@bourreau.ssh_control_rails_dir) %></td>
+         </tr>
+
+
+
+         <tr>
+             <th colspan="2">Tunneling Configuration</th>
+         </tr>
+
+         <tr>
+             <th>Database Server Remote Tunnel Port</th>
+             <td class="info"><%= h(@bourreau.tunnel_mysql_port) %></td>
+         </tr>
+
+         <tr>
+             <th>ActiveResource Remote Tunnel Port</th>
+             <td class="info"><%= h(@bourreau.tunnel_actres_port) %></td>
+         </tr>
+
+
 
          <tr>
            <th colspan="2">Runtime Information</th>
@@ -162,7 +198,9 @@
                   </table>
                </td>
             </tr>
+
          <% end %>
+
       </table>
 
       <table>
@@ -180,5 +218,7 @@
           </tr>
         <% end %>
       </table>
+
    </div>  <!-- End class="generalbox" -->
+
 </div>  <!-- End class="generalcontent" -->

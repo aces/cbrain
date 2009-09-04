@@ -31,7 +31,7 @@
          <th>Online?</th>
          <th>Alive?</th>
          <th>Description</th>
-         <th colspan="2">Operations</th>
+         <th colspan="4">Operations</th>
      </tr>
   
      <% for bour in @bourreaux %>
@@ -43,16 +43,18 @@
            <td><%= h(bour.online ? "Yes" : "No") %></td>
            <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
            <td><%= h(bour.description) %></td>
-           <td>
-              <% if bour.has_owner_access?(current_user) %>
-                 <%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %>
-              <% end %>
-           </td>
-           <td>
-              <% if bour.has_owner_access?(current_user) %>
-                 <%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %>
-              <% end %>
-           </td>
+           <% if bour.has_owner_access?(current_user) %>
+             <td><%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %></td>
+             <td><%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %> </td>
+             <% if bour.has_remote_control_info? %>
+               <td><%= button_to 'Start', start_bourreau_path(bour), :method => :get %></td>
+               <td><%= button_to 'Stop', stop_bourreau_path(bour), :method => :get %></td>
+             <% else %>
+               <td colspan="2"></td>
+             <% end %>
+           <% else %>
+             <td colspan="4"></td>
+           <% end %>
          </tr>
      <% end %>
   

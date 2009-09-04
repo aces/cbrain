@@ -23,23 +23,24 @@ end
   
 # Run-time checks
 unless File.directory?(CBRAIN::DataProviderCache_dir)
-  raise "CBRAIN configuration error: data provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
+  raise "CBRAIN configuration error: Data Provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
 end
 
 
 begin
 
-puts "C> Ensuring that all providers have proper cache subdirectories..."
+puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
 
 # Creating cache dir for Data Providers
 DataProvider.all.each do |p|
-  puts "\t- " + p.name
   begin
     p.mkdir_cache_providerdir
+    puts "C> \t- Data Provider '#{p.name}': OK."
   rescue => e
     unless e.to_s.match(/No caching in this provider/i)
       raise e
     end
+    puts "C> \t- Data Provider '#{p.name}': no need."
   end
 end
 
@@ -59,17 +60,18 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
   puts "C> \t- Admin user does not exist yet. Creating one."
   admin_group = SystemGroup.create!(:name  => "admin")
   
+  pwdduh = 'cbrainDuh' # use 9 chars for pretty message below.
   User.create!(
-    :full_name       => "Admin",
-    :login           => "admin",
-    :password  => 'admin',
-    :password_confirmation => 'admin',
-    :email => 'admin@here',
-    :group_ids  => [everyone_group.id, admin_group.id],
-    :role => 'admin'
+    :full_name             => "Admin",
+    :login                 => "admin",
+    :password              => pwdduh,
+    :password_confirmation => pwdduh,
+    :email                 => 'admin@here',
+    :group_ids             => [everyone_group.id, admin_group.id],
+    :role                  => 'admin'
   )
   puts("****************************************************")
-  puts("*    USER 'admin' CREATED WITH PASSWORD 'admin'    *")
+  puts("*  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'  *")
   puts("*CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN*")
   puts("****************************************************")
 end
@@ -139,6 +141,21 @@ missing_gid.each do |file|
   puts "C> \t- Adjusted file '#{file.name}' to group '#{ugroup.name}'."
   file.group = ugroup
   file.save!
+end
+
+puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."
+Bourreau.all.each do |bourreau|
+  name = bourreau.name
+  if bourreau.has_remote_control_info?
+    tunnels_ok = bourreau.start_tunnels
+    puts "C> \t- Bourreau '#{name}' channels " + (tunnels_ok ? 'started.' : 'NOT started.')
+    #if tunnels_ok
+    #  started = bourreau.start
+    #  puts "C> \t- Bourreau '#{name}' RAILS app " + (started ? 'started.' : 'NOT started.')
+    #end
+  else
+    puts "C> \t- Bourreau '#{name}' not configured for remote control."
+  end
 end
 
 rescue => error

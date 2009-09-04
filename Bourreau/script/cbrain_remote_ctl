@@ -1,0 +1,152 @@
+#!/usr/bin/ruby
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+# This script is a wrapper that launches the normal Rails script/server,
+# but with the added ability of receiving the content if the database.yml
+# file in standard output before it does so. Also, once the server is
+# started, the database.yml is deleted outright, closing a security hole.
+
+# The command-line args are to be provided strictly in the order shown
+# below, and all of them should be present (this is done simply so that
+# this bash script is kept simple, as anyway this script is not meant
+# to be started manually by users).
+
+
+# To start the Rails app:
+#
+#   $0 start <environment> <port>
+#
+# which will result in reading the database.yml from stdin, installing
+# it, executing this command
+#
+#   script/server -e <environment> -p <port> -d
+#
+# and finally removing the database.yml file. Any database.yml file
+# already present before doing all this will be backed up in
+#     database.yml.cbrain_remote_bak.
+#
+# Note that if stdin contains nothing (zero bytes) the current
+# database.yml file will be used, or the script will restore and use
+# the backup file
+#     database.yml.cbrain_remote_bak.
+
+
+# To stop the Rails app:
+#
+#   $0 stop
+#
+# which will result in killing the rails app.
+
+
+# This script is written in a way that depends
+# on as few ruby libraries as possible.
+
+require 'pathname'
+
+#########################
+# S U B R O U T I N E S #
+#########################
+
+# Usage
+def usage(basename)
+    puts "Usage: #{basename} start -e <environment> -p <port>\n" +
+         "       #{basename} stop"
+    Kernel.exit(10)
+end
+
+# Fatal error message
+def fatal(message)
+    puts message
+    Kernel.exit(20)
+end
+
+# Run-time paths
+cwd      = Dir.getwd
+basename = $PROGRAM_NAME
+fullprog = basename =~ /^\// ? basename : cwd + "/" + basename
+
+# Rails-specific paths
+rails_home = fullprog.sub(/\/script\/.+$/,"")
+pidfile    = "#{rails_home}/tmp/pids/mongrel.pid"
+
+# Check usage
+usage(basename) if ARGV.size !=1 && ARGV.size != 5    # 1 or 5 args!
+
+#############################################################
+# Stop
+#############################################################
+
+if ARGV.size == 1
+    usage(basename) if ARGV[0] != "stop"
+    fp = File.open(pidfile,"r") rescue nil
+    if fp
+        pid = fp.read.to_i
+        fp.close
+        Process.kill("TERM", pid)
+        puts "Bourreau Stopped"
+        Kernel.exit(0)
+    end
+    fatal "Could not find/open PID file '#{pidfile}'."
+end
+
+#############################################################
+# Start
+#############################################################
+
+usage(basename) if ARGV[0] != "start" || ARGV[1] != "-e" || ARGV[3] != "-p"
+fatal("The Rails app seems to be already running. Kill it first.") if File.exist?(pidfile)
+
+# Check arguments
+environment = ARGV[2]
+port        = ARGV[4].to_i
+fatal("Environment argument must be 'production', 'development' or 'test'") unless
+   environment =~ /^(production|development|test)$/
+fatal("Port argument must be a number greater than 1024 and less than 65530") unless
+   port > 1024 && port < 65535
+
+db_yml_text = STDIN.read || ""
+db_file     = rails_home + "/config/database.yml"
+db_file_bak = rails_home + "/config/database.yml.cbrain_remote_bak"
+
+# Install or restore database.yml if necessary
+db_exists  = File.exist?(db_file)
+bak_exists = File.exist?(db_file_bak)
+blank_yml  = db_yml_text !~ /\S/
+
+if blank_yml #  blank? use what db.yml is already here
+  if db_exists
+    # nothing to do
+  elsif bak_exists
+    File.rename(db_file_bak,db_file)
+  else
+    fatal("Could not find a database.yml file for the Rails application!")
+  end
+else # db text is provided to us
+  if db_exists
+    File.rename(db_file,db_file_bak) # will crush existing bak file
+  end
+  File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
+end
+
+# Start the server
+Dir.chdir(rails_home) do
+  cmd = "script/server -p #{port} -e #{environment} -d"
+  system(cmd) # the -d will start it in background
+end
+
+# If we were provided with a database.yml, we need
+# to wait a bit and delete it once the server has read
+# it.
+if ! blank_yml
+  sleep 5
+  File.unlink(db_file)
+end
+puts "Bourreau Started"
+Kernel.exit(0)

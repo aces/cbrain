@@ -149,4 +149,38 @@ class BourreauxController < ApplicationController
 
   end
 
+  def start
+    @bourreau = Bourreau.find(params[:id])
+
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+
+    @bourreau.stop
+    @bourreau.stop_tunnels
+    @bourreau.start_tunnels
+    raise "Could not start master SSH connection and tunnels" unless @bourreau.ssh_master.is_alive?
+    @bourreau.start
+    flash[:notice] = "Bourreau (re)started."
+    redirect_to :action => :index
+
+    rescue => e
+       flash[:error] = e.message
+       redirect_to :action => :index
+  end
+
+  def stop
+    @bourreau = Bourreau.find(params[:id])
+
+    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+
+    @bourreau.stop
+    flash[:notice] = "Bourreau stopped. Tunnels still operationals."
+    redirect_to :action => :index
+
+    rescue => e
+       flash[:error] = e.message
+       redirect_to :action => :index
+  end
+
 end

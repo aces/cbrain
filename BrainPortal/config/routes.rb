@@ -9,7 +9,8 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :feedbacks
 
-  map.resources :tags, :groups, :users, :data_providers, :bourreaux
+  map.resources :tags, :groups, :users, :data_providers
+  map.resources :bourreaux, :member => { :start => :get, :stop => :get }
   map.resources :data_providers, :member => { :browse => :get, :register => :post }
   map.resource :session
   map.resources :userfiles, :collection => {:operation => :post, :extract_from_collection  => :post}, :member  => {:content  => :get}
