@@ -15,8 +15,8 @@ class Bourreau < RemoteResource
 
   # Checks if this Bourreau is available or not.
   def is_alive?
-    self.update_info
-    return false if @info.name == "???"
+    info = self.info
+    return false if info.name == "???"
     true
   rescue
     false
