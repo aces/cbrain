@@ -226,12 +226,13 @@ class SshTunnel
     end
 
     pid = Process.fork do
-      Process.fork do
+      subpid = Process.fork do
         self.write_pidfile($$,:force)  # Overwrite
         File.unlink(socket) rescue true
         Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
         Kernel.exit!  # should never reach here
       end
+      Process.detach(subpid)
       Kernel.exit!
     end
 
