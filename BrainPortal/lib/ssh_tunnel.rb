@@ -225,15 +225,19 @@ class SshTunnel
       return self.read_pidfile  # so it's already running, eh.
     end
 
-    @pid = Process.fork do
-      self.write_pidfile($$,:force)  # Overwrite
-      File.unlink(socket) rescue true
-      Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
-      Kernel.exit!  # should never reach here
+    pid = Process.fork do
+      Process.fork do
+        self.write_pidfile($$,:force)  # Overwrite
+        File.unlink(socket) rescue true
+        Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
+        Kernel.exit!  # should never reach here
+      end
+      Kernel.exit!
     end
 
-    Process.detach(@pid)
-    @pid
+    Process.detach(pid)
+    @pid = nil
+    true
   end
 
   # Stop the master SSH connection, disabling all tunnels if
@@ -286,15 +290,15 @@ class SshTunnel
   # and host are ignored completely.
   def ssh_shared_options
     socket = self.control_path
-    "-p #{@port} "              +
-    "-o ConnectTimeout=10 "     +
-    "-o StrictHostKeyChecking=false "     +
-    "-o PasswordAuthentication=false "    +
-    "-o KbdInteractiveAuthentication=no " +
-    "-o KbdInteractiveDevices=false "     +
-    "-o ControlMaster=no "      +
-    "-o ControlPath=#{socket} " +
-    "#{@user}@#{@host}"
+    " -p #{@port}"                        +
+    " -o ConnectTimeout=10"               +
+    " -o StrictHostKeyChecking=false"     +
+    " -o PasswordAuthentication=false"    +
+    " -o KbdInteractiveAuthentication=no" +
+    " -o KbdInteractiveDevices=false"     +
+    " -o ControlMaster=no"                +
+    " -o ControlPath=#{socket}"           +
+    " #{@user}@#{@host} "
   end
 
   # This stops the master SSH connection if it is alive, and
