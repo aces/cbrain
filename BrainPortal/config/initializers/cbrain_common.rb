@@ -26,3 +26,24 @@ class CBRAIN
 
 end
 
+#
+# Mongrel and Rails code patches
+#
+
+require 'mongrel'
+
+module Mongrel
+  class HttpServer
+
+    alias original_configure_socket_options configure_socket_options
+
+    # This is a patch to Mongrel::HttpServer to make sure
+    # that Mongrel's internal listen socket is configured
+    # with the close-on-exec flag.
+    def configure_socket_options
+      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) rescue return false
+      original_configure_socket_options
+    end
+  
+  end
+end
