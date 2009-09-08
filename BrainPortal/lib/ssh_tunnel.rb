@@ -341,12 +341,13 @@ class SshTunnel
   end
 
   def read_pidfile #:nodoc:
-    return @pid if @pid
     socket = self.control_path
     unless File.exist?(socket)
       File.unlink(self.pidfile_path) rescue true
+      @pid = nil
       return nil
     end
+    return @pid if @pid
     begin
       line = nil
       File.open(self.pidfile_path,"r") { |fh| line = fh.read }
