@@ -15,7 +15,7 @@ class Bourreau < RemoteResource
 
   # Checks if this Bourreau is available or not.
   def is_alive?
-    info = self.info
+    info = self.update_info
     return false if info.name == "???"
     true
   rescue
@@ -95,8 +95,7 @@ class Bourreau < RemoteResource
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
     return false unless master.start
-    sleep rand(2)
-    master.is_alive?
+    true
   end
 
   # This stops the master SSH connection to the remote Bourreau,
@@ -127,9 +126,8 @@ class Bourreau < RemoteResource
   # of *tunnel_actres_port* instead of *actres_port*
   def start
 
-    return false unless self.has_ssh_control_info?
+    return false unless self.has_remote_control_info?
     bourreau_rails_home = self.ssh_control_rails_dir
-    return false unless bourreau_rails_home
 
     self.start_tunnels
 
@@ -145,12 +143,12 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    captfile    = "/tmp/start.out.$$"
+    captfile    = "/tmp/start.out.#{$$}"
     ssh_options = self.ssh_master.ssh_shared_options
     startcmd    = "ruby #{bourreau_rails_home}/script/cbrain_remote_ctl " +
                   "start -e #{myrailsenv} -p #{port}"
     dash_n      = yml.blank? ? "-n" : ""
-    sshcmd = "ssh -x #{dash_n} #{ssh_options} #{startcmd} >#{captfile} 2>&1"
+    sshcmd = "ssh -x #{dash_n} #{ssh_options} #{startcmd} >'#{captfile}' 2>&1"
     IO.popen(sshcmd,"w") { |pipe| pipe.write(yml) }
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
@@ -162,9 +160,8 @@ class Bourreau < RemoteResource
   # the same as with start().
   def stop
 
-    return false unless self.has_ssh_control_info?
+    return false unless self.has_remote_control_info?
     bourreau_rails_home = self.ssh_control_rails_dir
-    return false unless bourreau_rails_home
 
     self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
@@ -223,12 +220,14 @@ class Bourreau < RemoteResource
   # better to call the info method instead, which will
   # cache the result if necessary.
   def update_info
-    BourreauInfo.site    = self.site
-    BourreauInfo.timeout = 10
-    infos = BourreauInfo.find(:all)
-    @info = infos[0]
+    begin
+      BourreauInfo.site    = self.site
+      BourreauInfo.timeout = 10
+      infos = BourreauInfo.find(:all)
+      @info = infos[0] if infos[0]
     rescue
-    @info = BourreauInfo.new(
+    end
+    @info ||= BourreauInfo.new(
       :name               => "???",
       :id                 => 0,
       :host_uptime        => "???",
@@ -247,6 +246,7 @@ class Bourreau < RemoteResource
 
       :dummy              => "hello"
     )
+    @info
   end
 
   # Returns and cache a record of run-time information about the Bourreau.

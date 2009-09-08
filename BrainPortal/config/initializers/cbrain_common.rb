@@ -41,7 +41,7 @@ module Mongrel
     # that Mongrel's internal listen socket is configured
     # with the close-on-exec flag.
     def configure_socket_options
-      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) rescue return false
+      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) rescue true
       original_configure_socket_options
     end
   

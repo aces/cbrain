@@ -67,10 +67,22 @@ class SshTunnel
     tunnelobj
   end
 
-  # Returns an array containing all the currently
+  # Works like find, but expect a single key
+  # in a format like "user@host:port".
+  def self.find_by_key(key)
+    @@ssh_tunnels[key]
+  end
+
+  # Returns all the configured SSH connections (not all
+  # of them may be alive).
+  def self.all
+    @@ssh_tunnels.values
+  end
+
+  # Returns an array containing all the keys for the currently
   # configued master SSH connections (not all of them
-  # may be alive). Values are strings like "user@host:port".
-  def self.all_connection_keys
+  # may be alive). Keys are strings like "user@host:port".
+  def self.all_keys
     @@ssh_tunnels.keys
   end
 
@@ -107,8 +119,8 @@ class SshTunnel
     @reverse_tunnels = []   # [ 1234, "some.host", 4566 ]
 
     # Register it
-    key = "#{@user}@#{@host}:#{@port}"
-    @@ssh_tunnels[key] = self
+    @key = "#{@user}@#{@host}:#{@port}"
+    @@ssh_tunnels[@key] = self
 
     # Check to see if a process already manage the master
     self.read_pidfile
@@ -201,7 +213,7 @@ class SshTunnel
   def start
 
     self.properly_registered?
-    return @pid if self.read_pidfile
+    return true if self.read_pidfile
 
     socket = self.control_path
     sshcmd = "ssh -n -N -x -p #{@port}"            +
@@ -222,7 +234,8 @@ class SshTunnel
     sshcmd += " #{@user}@#{@host}"
 
     unless self.write_pidfile("0",:check) # 0 means in the process of starting up subprocess
-      return self.read_pidfile  # so it's already running, eh.
+      self.read_pidfile
+      return true  # so it's already running, eh.
     end
 
     pid = Process.fork do
@@ -236,8 +249,12 @@ class SshTunnel
       Kernel.exit!
     end
 
-    Process.detach(pid)
-    @pid = nil
+    Process.waitpid(pid) # not to PID we want in @pid!
+    10.times do
+      break if File.exist?(socket)
+      sleep 1
+    end
+    self.read_pidfile
     true
   end
 

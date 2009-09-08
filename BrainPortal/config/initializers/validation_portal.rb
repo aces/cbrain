@@ -147,8 +147,12 @@ puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessar
 Bourreau.all.each do |bourreau|
   name = bourreau.name
   if (bourreau.has_remote_control_info? rescue false)
-    tunnels_ok = bourreau.start_tunnels
-    puts "C> \t- Bourreau '#{name}' channels " + (tunnels_ok ? 'started.' : 'NOT started.')
+    if bourreau.online
+      tunnels_ok = bourreau.start_tunnels
+      puts "C> \t- Bourreau '#{name}' channels " + (tunnels_ok ? 'started.' : 'NOT started.')
+    else
+      puts "C> \t- Bourreau '#{name}' not marked as 'online'."
+    end
     #if tunnels_ok
     #  started = bourreau.start
     #  puts "C> \t- Bourreau '#{name}' RAILS app " + (started ? 'started.' : 'NOT started.')

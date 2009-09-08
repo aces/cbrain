@@ -158,7 +158,7 @@ class BourreauxController < ApplicationController
     raise "This Bourreau is already alive." if @bourreau.is_alive?
 
     @bourreau.start_tunnels
-    raise "Could not start master SSH connection and tunnels" unless @bourreau.ssh_master.is_alive?
+    raise "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
     @bourreau.start
 
     if @bourreau.is_alive?
