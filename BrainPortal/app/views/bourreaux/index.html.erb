@@ -31,9 +31,7 @@
          <th>Online?</th>
          <th>Alive?</th>
          <th>Description</th>
-         <% if bour.has_owner_access?(current_user) %>
-           <th colspan="4">Operations</th>
-         <% end %>
+         <th colspan="4">Operations</th>
      </tr>
   
      <% for bour in @bourreaux %>
@@ -54,6 +52,8 @@
              <% else %>
                <td colspan="2"></td>
              <% end %>
+           <% else %>
+             <td colspan="4"></td>
            <% end %>
          </tr>
      <% end %>
