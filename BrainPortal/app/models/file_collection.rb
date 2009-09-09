@@ -11,6 +11,7 @@
 #
 
 require 'ftools'
+require 'fileutils'
 
 #This model is meant to represent an arbitrary collection files (which
 #may or may not contain subdirectories) registered as a single entry in 
@@ -82,16 +83,13 @@ class FileCollection < Userfile
       file.sync_to_cache
       filename = file.cache_full_path.to_s
       
-      if file.is_a? FileCollection
-        system("cp -f -R '#{filename.gsub("'", "'\\\\''")}/' '#{destname.gsub("'", "'\\\\''")}'")
-      else
-        system("cp -f '#{filename.gsub("'", "'\\\\''")}' '#{destname.gsub("'", "'\\\\''")}'")
-      end
+      FileUtils.cp_r(filename,destname) # file or dir INTO dir
+
     end
     
     self.size = self.list_files.size
     
-    if self.save
+    if self.save!
       self.sync_to_provider
       :success
     else

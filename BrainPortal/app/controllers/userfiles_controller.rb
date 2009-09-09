@@ -77,8 +77,9 @@ class UserfilesController < ApplicationController
 
   #The new action displays a view for uploading files.
   def new
-    @userfile = Userfile.new(:group_id  => SystemGroup.find_by_name(current_user.login).id)
-    
+    @userfile = Userfile.new(
+        :group_id => SystemGroup.find_by_name(current_user.login).id
+    )
     if current_user.has_role? :admin
       @user_groups = Group.find(:all, :order => "type")
     elsif current_user.has_role? :site_manager
@@ -382,6 +383,8 @@ class UserfilesController < ApplicationController
       return
     end
 
+    user_systemgroup = Group.find_by_name(current_user.login)
+
     # TODO: replace "case" and make each operation a private method ?
     case operation
 
@@ -450,7 +453,14 @@ class UserfilesController < ApplicationController
         end
 
       when 'merge_collections'
-        collection = FileCollection.new(:user_id  => current_user.id, :data_provider_id => (params[:data_provider_id] || DataProvider.find_first_online_rw(current_user).id) )
+        collection = FileCollection.new(
+            :user_id          => current_user.id,
+            :group_id         => user_systemgroup.id,
+            :data_provider_id => (
+                 params[:data_provider_id] ||
+                 DataProvider.find_first_online_rw(current_user).id
+                 )
+            )
         status = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
         if status == :success
           flash[:notice] = "Collection #{collection.name} was created."
@@ -518,7 +528,12 @@ class UserfilesController < ApplicationController
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:filelist].each do |file|
-      userfile = SingleFile.new(:name  => File.basename(file), :user_id => current_user.id, :group_id => collection.group_id, :data_provider_id => data_provider_id)
+      userfile = SingleFile.new(
+          :name             => File.basename(file),
+          :user_id          => current_user.id,
+          :group_id         => collection.group_id,
+          :data_provider_id => data_provider_id
+      )
       Dir.chdir(collection_path.parent) do
         userfile.cache_copy_from_local_file(file)
         if userfile.save

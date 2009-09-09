@@ -16,11 +16,13 @@
 
   <h2>Bourreaux</h2>
 
-  <div class = "bourreauxbox">
-     <div class = "bourreauxmenuoptions">
-       <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
-     </div>  <!-- End class="bourreauxmenuoptions" -->
-  </div>  <!-- End class="bourreauxbox" -->
+  <% if check_role(:admin) %>
+    <div class = "bourreauxbox">
+       <div class = "bourreauxmenuoptions">
+         <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
+       </div>  <!-- End class="bourreauxmenuoptions" -->
+    </div>  <!-- End class="bourreauxbox" -->
+  <% end %>
   
   <table class = "bourreauxtable">
      <tr>
