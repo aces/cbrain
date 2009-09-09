@@ -215,32 +215,26 @@ class SshTunnel
     self.properly_registered?
     return true if self.read_pidfile
 
-    socket = self.control_path
-    sshcmd = "ssh -n -N -x -p #{@port}"            +
-             " -o ConnectTimeout=10"               +
+    sshcmd = "ssh -n -N -x -M "
 
-             " -o StrictHostKeyChecking=false"     +
-             " -o PasswordAuthentication=false"    +
-             " -o KbdInteractiveAuthentication=no" +
-             " -o KbdInteractiveDevices=false"     +
+    self.get_tunnels_strings(:forward).each { |spec| sshcmd += " -L #{spec}" }
+    self.get_tunnels_strings(:reverse).each { |spec| sshcmd += " -R #{spec}" }
 
-             " -M"                                 +
-             " -o ControlMaster=yes"               +
-             " -o ControlPath=#{socket}"
-
-    @forward_tunnels.each { |spec| tun = spec.join(":"); sshcmd += " -L #{tun}" }
-    @reverse_tunnels.each { |spec| tun = spec.join(":"); sshcmd += " -R #{tun}" }
-
-    sshcmd += " #{@user}@#{@host}"
+    shared_options = self.ssh_shared_options("yes") # ControlMaster=yes
+    sshcmd += " #{shared_options}"
 
     unless self.write_pidfile("0",:check) # 0 means in the process of starting up subprocess
       self.read_pidfile
       return true  # so it's already running, eh.
     end
 
+
+    # Start the SSH master in a sub-subprocess
     pid = Process.fork do
+      (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
       subpid = Process.fork do
         self.write_pidfile($$,:force)  # Overwrite
+        socket = self.control_path
         File.unlink(socket) rescue true
         Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
         Kernel.exit!  # should never reach here
@@ -249,12 +243,15 @@ class SshTunnel
       Kernel.exit!
     end
 
+    # Wait for it to be fully established (up to 10 seconds).
     Process.waitpid(pid) # not to PID we want in @pid!
+    socket = self.control_path
     10.times do
       break if File.exist?(socket)
       sleep 1
     end
     self.read_pidfile
+
     true
   end
 
@@ -306,7 +303,7 @@ class SshTunnel
   # and the end of any ssh command being built. Note that
   # generally, if the master is active, the port, user
   # and host are ignored completely.
-  def ssh_shared_options
+  def ssh_shared_options(control_master="no")
     socket = self.control_path
     " -p #{@port}"                        +
     " -o ConnectTimeout=10"               +
@@ -314,7 +311,7 @@ class SshTunnel
     " -o PasswordAuthentication=false"    +
     " -o KbdInteractiveAuthentication=no" +
     " -o KbdInteractiveDevices=false"     +
-    " -o ControlMaster=no"                +
+    " -o ControlMaster=#{control_master}" +
     " -o ControlPath=#{socket}"           +
     " #{@user}@#{@host} "
   end
@@ -357,6 +354,11 @@ class SshTunnel
     end
   end
 
+  # Returns @pid if the PID file contains
+  # a legal PID number for a currently running SSH
+  # master. If necessary, sets @pid with the PID
+  # before returning it. Otherwise, makes sure
+  # @pid is reset to nil.
   def read_pidfile #:nodoc:
     socket = self.control_path
     unless File.exist?(socket)
