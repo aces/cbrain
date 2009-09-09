@@ -1397,7 +1397,6 @@ table.userfilesdisplay td.checkbox {
     margin-top: 2em;
     margin-right: 1em;
     margin-left: 1em;
-    float: left;
     background-color: #ffffdd;
 }
 
@@ -1417,6 +1416,5 @@ table.userfilesdisplay td.checkbox {
     margin-top: 2em;
     margin-right: 1em;
     margin-left: 1em;
-    float: left;
     background-color: #ffeeee;
 }
