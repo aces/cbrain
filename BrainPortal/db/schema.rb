@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090803170325) do
+ActiveRecord::Schema.define(:version => 20090902162811) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -49,10 +49,12 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "description"
   end
+
+  add_index "data_providers", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -107,18 +109,22 @@ ActiveRecord::Schema.define(:version => 20090803170325) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.string   "remote_user"
-    t.string   "remote_host"
-    t.integer  "remote_port"
-    t.string   "remote_dir"
+    t.string   "actres_user"
+    t.string   "actres_host"
+    t.integer  "actres_port"
+    t.string   "actres_dir"
     t.boolean  "online"
     t.boolean  "read_only"
     t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "ssh_control_user"
+    t.string   "ssh_control_host"
+    t.integer  "ssh_control_port"
+    t.string   "ssh_control_rails_dir"
+    t.integer  "tunnel_mysql_port"
+    t.integer  "tunnel_actres_port"
   end
-
-  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false
