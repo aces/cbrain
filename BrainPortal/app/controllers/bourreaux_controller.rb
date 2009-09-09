@@ -161,8 +161,9 @@ class BourreauxController < ApplicationController
     raise "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
     @bourreau.start
 
+    sleep 5+rand(3)
     if @bourreau.is_alive?
-      flash[:notice] = "Bourreau (re)started."
+      flash[:notice] = "Bourreau started."
     else
       flash[:error] = "Bourreau could not be started."
     end
