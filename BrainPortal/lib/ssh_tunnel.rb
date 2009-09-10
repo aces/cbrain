@@ -54,6 +54,7 @@ class SshTunnel
   # each triplet [user,host,port] so we might as well remember
   # the objects in the class).
   def self.find(remote_user,remote_host,remote_port=22)
+    remote_port ||= 22
     @@ssh_tunnels ||= {}
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
     @@ssh_tunnels[key]
@@ -62,6 +63,7 @@ class SshTunnel
   # This method is like find() except that it will create
   # the necessary control object if necessary.
   def self.find_or_create(remote_user,remote_host,remote_port=22)
+    remote_port ||= 22
     tunnelobj = self.find(remote_user,remote_host,remote_port) ||
                 self.new( remote_user,remote_host,remote_port)
     tunnelobj
@@ -99,6 +101,15 @@ class SshTunnel
   # this library do not have to save the control object
   # anywhere.
   def initialize(remote_user,remote_host,remote_port=22)
+
+    remote_port ||= 22
+    if remote_port && remote_port.is_a?(String)
+      if remote_port =~ /^\s*$/
+        remote_port = 22 
+      else
+        remote_port = remote_port.to_i
+      end
+    end
 
     raise "SSH tunnel's \"user\" is not a simple identifier." unless
       remote_user =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/

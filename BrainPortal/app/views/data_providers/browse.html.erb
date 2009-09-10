@@ -20,6 +20,7 @@
 
       <% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
 
+      <%= link_to 'Select All', browse_data_provider_path(:select_all => params[:select_all] ? false : true) %>
       <table>
          <tr>
              <th>Select</th>
@@ -40,7 +41,7 @@
                tupMESS  = tuplet[5]
           %>
              <tr class="<%= cycle('list-odd', 'list-even') %>">
-               <td><%= check_box_tag("basenames[]",tupname,false) %></td>
+               <td><%= check_box_tag("basenames[]",tupname,(! params[:select_all] || params[:select_all] == 'false') ? false : true) %></td>
                <td><%= h(tupname) %></td>
                <td><%= h(tupsize) %></td>
                <% if tupUF %>

@@ -33,6 +33,10 @@
       <th>Size:</th>
       <td colspan="2"><%=h @userfile.size %></td>
    </tr>  
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th>Data Provider:</th>
+      <td colspan="2"><%=h @userfile.data_provider.name %></td>
+   </tr>  
   
    <%if @userfile.is_a? SingleFile %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">

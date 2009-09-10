@@ -135,8 +135,12 @@ class BourreauxController < ApplicationController
     
     raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    DrmaaTask.adjust_site(@bourreau.id)
-    tasks_left = DrmaaTask.find(:all).size
+    task_left = 0
+    begin
+      DrmaaTask.adjust_site(@bourreau.id)
+      tasks_left = DrmaaTask.find(:all).size
+    rescue
+    end
     raise "This Bourreau cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy

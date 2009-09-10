@@ -9,6 +9,8 @@
 # $Id$
 #
 
+puts "C> CBRAIN BrainPortal validation starting, " + Time.now.to_s
+
 puts "C> Verifying configuration variables..."
 
 Needed_Constants = %w( DataProviderCache_dir )

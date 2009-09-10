@@ -9,7 +9,7 @@
 # $Id$
 #
 
-
+puts "C> CBRAIN Bourreau validation starting, " + Time.now.to_s
 
 puts "C> Verifying configuration variables..."
 

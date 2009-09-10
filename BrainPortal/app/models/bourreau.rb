@@ -179,8 +179,8 @@ class Bourreau < RemoteResource
   # to establish as SSH master connection to it.
   def has_ssh_control_info?
     return true if
-      self.ssh_control_user &&
-      self.ssh_control_host
+      ( ! self.ssh_control_user.blank? ) &&
+      ( ! self.ssh_control_host.blank? )
     false
   end
 
@@ -189,22 +189,22 @@ class Bourreau < RemoteResource
   # control the remote Bourreau rails application.
   def has_remote_control_info?
      return true if
-       self.has_ssh_control_info? &&
-       self.ssh_control_rails_dir
+       (   self.has_ssh_control_info?        ) &&
+       ( ! self.ssh_control_rails_dir.blank? )
      false
   end
 
   # Returns true if this bourreau is configued
   # for DB tunneling
   def has_db_tunneling_info? #:nodoc:
-    return true if self.has_ssh_control_info? && self.tunnel_mysql_port 
+    return true if self.has_ssh_control_info? && ( ! self.tunnel_mysql_port.blank? )
     false
   end
 
   # Returns true if this bourreau is configued
   # for ActiveResource tunneling
   def has_actres_tunneling_info? #:nodoc:
-    return true if self.has_ssh_control_info? && self.tunnel_actres_port 
+    return true if self.has_ssh_control_info? && ( ! self.tunnel_actres_port.blank? )
     false
   end
 
