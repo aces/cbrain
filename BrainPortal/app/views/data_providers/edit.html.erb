@@ -28,13 +28,8 @@
          <p><label for="description">Description</label><br/>
          <%= f.text_field :description %></p>
 
-         <% 
-            typelist = %w{ SshDataProvider CbrainSshDataProvider CbrainLocalDataProvider
-                            VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
-            typelist = %w{ SshDataProvider } unless check_role(:admin)
-         %>
          <p><label for="type">Type</label><br/>
-         <%= f.select :type, typelist, { :prompt => "Select Provider Type" }, { :readonly => true } %></p>
+         <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :readonly => true } %></p>
 
          <p><label for="user_id">Owner</label><br/>
          <%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>

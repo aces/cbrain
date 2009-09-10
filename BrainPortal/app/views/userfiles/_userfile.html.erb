@@ -16,8 +16,8 @@
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
       <%= userfile.pretty_type %>      
    </td>
-   <td class = "centered"><%= h userfile.user.login  %></td>
-   <td>
+   <td class="centered"><%= h userfile.user.login  %></td>
+   <td class="centered">
       <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
          <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
       </span>

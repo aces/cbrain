@@ -15,11 +15,14 @@
    <% title 'Data Providers' %>
 
    <h2>Data Providers</h2>
-   <div class = "dataproviderbox">
-      <div class = "dataprovidermenuoptions">
-         <%= button_to 'Create New Data Provider', new_data_provider_path, :method => :get %>
-      </div>  <!-- End class="dataprovidermenuoptions" -->
-   </div> <!-- End class="dataproviderbox" -->
+   
+   <% if check_role(:admin) || check_role(:site_manager)%>
+      <div class = "dataproviderbox">
+         <div class = "dataprovidermenuoptions">
+            <%= button_to 'Create New Data Provider', new_data_provider_path, :method => :get %>
+         </div>  <!-- End class="dataprovidermenuoptions" -->
+      </div> <!-- End class="dataproviderbox" -->
+   <% end %>
 
    <table class = "dataprovidertable">
       <tr>

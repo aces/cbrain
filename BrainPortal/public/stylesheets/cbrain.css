@@ -397,46 +397,11 @@ a:hover {
     border: 1px solid #e4e4e4;
 }
 
-.filesheaderleft {
-    float:left; 
-    width: 43%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-    min-width: 300px;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 0em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-.filesheaderright {
-    float:right; 
-    width: 43%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-    min-width: 300px;    
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 0em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
 /* ######################################################### */
 /* Userfiles header index view encompasses tag management */
 /* ######################################################### */
 
 #filesheadermenu {
-    float:left; 
     width: 90%;
     margin-left: 1em;
     margin-right: 0em;
@@ -446,30 +411,17 @@ a:hover {
     padding-bottom: 0.5em;
     padding-left: 2em;
     padding-right: 0em;
-    color: #505050;
     line-height: 1.5em;
     border: 0px;
 }
 
 /* ######################################################### */
-/* Userfiles header index view encompasses tag management */
-/* ######################################################### */
-
-.mainfilesmenu {
-    float:left; 
-    width: 100%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    padding-bottom: 1em;
-    color: #505050;
-    line-height: 1em;
-    border: 1px solid #e4e4e4;
-}
-
-/* ######################################################### */
 /* Content for userfiles */
 /* ######################################################### */
+
+.userfilemenu {
+    
+}
 
 .userfilescontent {
     float: right;

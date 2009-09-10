@@ -15,7 +15,7 @@ class DataProvidersController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => :index
+  before_filter :manager_role_required, :except  => [:index, :browse, :register]
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user)
@@ -33,7 +33,8 @@ class DataProvidersController < ApplicationController
 
     # Gather statistics
     @user_sf_fc = {}
-    users = check_role(:admin) ? User.all : [ current_user ]
+    users = current_user.available_users
+    
     users.each do |user|
       user_id = user.id
       login   = user.login
@@ -62,6 +63,7 @@ class DataProvidersController < ApplicationController
 
     @users = current_user.available_users
     @groups = current_user.available_groups
+    @typelist = get_type_list
 
     @ssh_keys = get_ssh_public_keys
 
@@ -158,6 +160,7 @@ class DataProvidersController < ApplicationController
       @users = current_user.available_users
       @groups = current_user.available_groups
       @ssh_keys = get_ssh_public_keys
+      @typelist = get_type_list
       render :action => 'edit'
       return
     end
@@ -323,7 +326,7 @@ class DataProvidersController < ApplicationController
   
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
-    if check_role(:admin) 
+    if check_role(:admin) || check_role(:site_manager)
       typelist += %w{ CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
                     VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
     end

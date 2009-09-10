@@ -80,49 +80,45 @@
 
    <table class="userfilesdisplay" onMouseOut="javascript:highlightTableRowVersionA(0);">
       
-       <thead>
+       <thead class="userfilefile_menu">
           <tr>
              <td colspan="10">
                 <div class = "container">
-                    <%= button_to_function "Tags" do |page|
+                    <%= link_to_function "Tags" do |page|
                       page.replace_html "filesheadermenu", :partial => 'tag_table', :locals => {:tags => @user_tags} 
                     end %>
                   </div>
 
                   <div class = "container"> 
-                    <%= button_to_function "Groups" do |page|
+                    <%= link_to_function "Groups" do |page|
                       page.replace_html "filesheadermenu", :partial => 'groups_table', :locals => {:groups => @user_groups }
                     end %>    
                   </div>
 
                   <div class = "container">
-                  <%= button_to_function "Management" do |page|
+                  <%= link_to_function "Management" do |page|
                       page.replace_html "filesheadermenu", :partial => 'file_management'
                    end %>    
                  </div>
 
                  <div class = "container">
-                      <%= button_to_function "Conversion Tools" do |page|
+                      <%= link_to_function "Conversion Tools" do |page|
                         page.replace_html "filesheadermenu", :partial => 'tool_management_conversion'
                       end %>
                   </div>
 
                   <div class = "container">
-                        <%= button_to_function "Scientific Tools" do |page|
+                        <%= link_to_function "Scientific Tools" do |page|
                           page.replace_html "filesheadermenu", :partial => 'tool_management_scientific'
                         end %>
                   </div>
 
                   <div class = "container">
-                    <%= button_to_function "Upload File" do |page| 
-                     page.redirect_to(:controller => :userfiles, :action => :new ) 
-                    end %>
+                    <%= link_to "Upload File", new_userfile_path%>
                   </div>
 
                   <div class = "container">
-                    <%= button_to_function "Jiv Viewer" do |page| 
-                     page.redirect_to(jiv_path) 
-                    end %>
+                    <%= link_to "Jiv Viewer", jiv_path%>
                   </div>
                   
                   <div class = "pages">

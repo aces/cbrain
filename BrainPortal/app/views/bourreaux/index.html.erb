@@ -16,7 +16,7 @@
 
   <h2>Bourreaux</h2>
 
-  <% if check_role(:admin) %>
+  <% if check_role(:admin) || check_role(:site_manager)%>
     <div class = "bourreauxbox">
        <div class = "bourreauxmenuoptions">
          <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
