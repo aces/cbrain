@@ -16,6 +16,7 @@ body {
     padding: 0;
     min-width: 1000px;
     max-height:100%;
+    line-height: 18px;
 }
 
 /* ######################################################### */
@@ -89,7 +90,7 @@ pre {
     background: #0471B4; 
     color: #fff; 
     height:1.8em; 
-    font-size: 0.8em; 
+    font-size: 0.9em; 
     padding: 2px 2px 0px 6px;
 }
 
@@ -131,7 +132,7 @@ pre {
 }
 
 #header {
-    height:6.333em;
+    height:7em;
     margin:0;
     background-color:#05A3D6;
     color:#f8f8f8; 
@@ -266,9 +267,16 @@ pre {
     color:#555555;
 }
 
-a, a:visited {
-    color: #0471B4;
+a { 
+    color: #000; 
     text-decoration:none;
+}
+a:visited { 
+    color: #666; 
+}
+a:hover { 
+    color: #fff; 
+    background-color:#000; 
 }
 
 /* ######################################################### */
@@ -1417,4 +1425,40 @@ table.userfilesdisplay td.checkbox {
     margin-right: 1em;
     margin-left: 1em;
     background-color: #ffeeee;
+}
+
+.fieldWithErrors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+#errorExplanation {
+  width: 400px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+}
+
+#errorExplanation h2 {
+  text-align: left;
+  font-weight: bold;
+  padding: 5px 5px 5px 15px;
+  font-size: 12px;
+  margin: -7px;
+  background-color: #c00;
+  color: #fff;
+}
+
+#errorExplanation p {
+  color: #333;
+  margin-bottom: 0;
+  padding: 5px;
+}
+
+#errorExplanation ul li {
+  font-size: 12px;
+  list-style: square;
 }
