@@ -35,6 +35,11 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show #:nodoc:
     @user = User.find(params[:id], :include => [:groups, :user_preference])
+    if current_user.has_role? :admin
+      @groups = WorkGroup.find(:all)
+    else
+      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+    end
     
     @default_data_provider  = @user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = @user.user_preference.bourreau.name      rescue "(Unset)"

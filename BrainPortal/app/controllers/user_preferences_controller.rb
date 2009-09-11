@@ -27,10 +27,10 @@ class UserPreferencesController < ApplicationController
     respond_to do |format|
       if @user_preference.update_attributes(params[:user_preference])
         flash[:notice] = 'Preferences successfully updated.'
-        format.html { redirect_to(user_preferences_path) }
+        format.html { redirect_to(user_path(current_user)) }
         format.xml  { head :ok }
       else
-        format.html { render :action => "index" }
+        format.html { redirect_to(user_path(current_user))  }
         format.xml  { render :xml => @user_preference.errors, :status => :unprocessable_entity }
       end
     end
@@ -45,11 +45,11 @@ class UserPreferencesController < ApplicationController
     respond_to do |format|
       if @user_preference.save
         flash[:notice] = 'Preferences successfully reset.'
-        format.html { redirect_to(user_preferences_url) }
+        format.html {  redirect_to(user_path(current_user)) }
         format.xml  { head :ok }
       else
-        flash.now[:error] = 'Preferences could not be reset.'
-        format.html { render :action => "index" }
+        flash[:error] = 'Preferences could not be reset.'
+        format.html { redirect_to(user_path(current_user))  }
         format.xml  { render :xml => @user_preference.errors, :status => :unprocessable_entity }
       end 
     end

@@ -66,9 +66,43 @@
 </table>
 <br>
 <br>
-<%= button_to 'Edit Account Info', edit_user_path(@user), :method => :get %><br>
-<%= button_to 'Edit Preferences', user_preferences_path, :method => :get %><br/>
+<div id="account_info" style="display: none;">
+   <%= render :partial => "account_info" %>   
+</div>
 
+<div id="preferences" style="display: none;">
+   <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
+</div>
+
+<div id="change_password" style="display: none;">
+   <%= render :partial => "change_password" %>   
+</div>
+
+<%= 
+   link_to_function 'Edit Account Info' do |page|
+      page['preferences'].visual_effect(:blind_up)
+      page['change_password'].visual_effect(:blind_up)
+      page['account_info'].visual_effect(:blind_down)
+   end
+%>
+<br>
+<%= 
+   link_to_function 'Change Password' do |page|
+      page['preferences'].visual_effect(:blind_up)
+      page['account_info'].visual_effect(:blind_up)
+      page['change_password'].visual_effect(:blind_down)
+   end
+%>
+<br>
+<%= 
+   link_to_function 'Edit Preferences' do |page|
+      page['account_info'].visual_effect(:blind_up)
+      page['change_password'].visual_effect(:blind_up)
+      page['preferences'].visual_effect(:blind_down)
+   end
+%>
+<br>
+<br>
 
 <%= link_to 'Index', users_path %>
 </div>
