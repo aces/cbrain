@@ -135,7 +135,7 @@ class BourreauxController < ApplicationController
     
     raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    task_left = 0
+    tasks_left = 0
     begin
       DrmaaTask.adjust_site(@bourreau.id)
       tasks_left = DrmaaTask.find(:all).size

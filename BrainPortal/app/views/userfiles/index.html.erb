@@ -12,7 +12,8 @@
 
 -%><% title 'Files' %><% #Side bar stuff goes here -%>
 <%= javascript_include_tag "tableH" %>
-<%= javascript_include_tag 'prototype' %>
+<%= javascript_include_tag 'defaults' %>
+
 
 <div id = "sidebar">
    <div class = "page-specific-sidebar">
@@ -80,46 +81,57 @@
 
    <table class="userfilesdisplay" onMouseOut="javascript:highlightTableRowVersionA(0);">
       
-       <thead class="userfilefile_menu">
+       <thead>
           <tr>
              <td colspan="10">
-                <div class = "container">
-                    <%= link_to_function "Tags" do |page|
-                      page.replace_html "filesheadermenu", :partial => 'tag_table', :locals => {:tags => @user_tags} 
+                    <%= link_to_function "Tags", {:class => "userfile_menu", :id  => 'tag_option'} do |page|
+                      page['tag_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.2)
+                      page['group_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['management_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page.replace_html "filesheadermenu", :partial  => 'tag_table', :locals => {:tags => @user_tags}
                     end %>
-                  </div>
 
-                  <div class = "container"> 
-                    <%= link_to_function "Groups" do |page|
+                    <%= link_to_function "Groups", {:class => "userfile_menu", :id  => 'group_option'}  do |page|
+                      page['group_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.2)
+                      page['tag_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['management_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                      page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
                       page.replace_html "filesheadermenu", :partial => 'groups_table', :locals => {:groups => @user_groups }
                     end %>    
-                  </div>
 
-                  <div class = "container">
-                  <%= link_to_function "Management" do |page|
-                      page.replace_html "filesheadermenu", :partial => 'file_management'
-                   end %>    
-                 </div>
+                     <%= link_to_function "Management", {:class => "userfile_menu", :id  => 'management_option', :style  => 'background-color: #FFFFFF; color: #000000'}  do |page|
+                        page['management_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.2)
+                        page['group_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page['tag_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page.replace_html "filesheadermenu", :partial => 'file_management'
+                      end %>    
 
-                 <div class = "container">
-                      <%= link_to_function "Conversion Tools" do |page|
+                      <%= link_to_function "Conversion Tools", {:class => "userfile_menu", :id  => 'conversion_tool_option'}  do |page|
+                        page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.2)
+                        page['management_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8', :duration  => 0.2)
+                        page['group_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page['tag_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                        page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
                         page.replace_html "filesheadermenu", :partial => 'tool_management_conversion'
                       end %>
-                  </div>
 
-                  <div class = "container">
-                        <%= link_to_function "Scientific Tools" do |page|
+                        <%= link_to_function "Scientific Tools", {:class => "userfile_menu", :id  => 'scientific_tool_option'}  do |page|
+                          page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.2)
+                          page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                          page['management_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8', :duration  => 0.2)
+                          page['group_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
+                          page['tag_option'].visual_effect(:morph, :style  => 'background-color: #0471B4; color:#F8F8F8;', :duration  => 0.2)
                           page.replace_html "filesheadermenu", :partial => 'tool_management_scientific'
                         end %>
-                  </div>
 
-                  <div class = "container">
-                    <%= link_to "Upload File", new_userfile_path%>
-                  </div>
+                    <%= link_to "Upload File", new_userfile_path, {:class => "userfile_menu", :id  => 'upload_option'}  %>
 
-                  <div class = "container">
-                    <%= link_to "Jiv Viewer", jiv_path%>
-                  </div>
+                    <%= link_to "Jiv Viewer", jiv_path, {:class => "userfile_menu", :id  => 'jiv_option'} %>
                   
                   <div class = "pages">
                        <% if session[:pagination] == 'on' %>
