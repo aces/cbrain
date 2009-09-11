@@ -1,0 +1,40 @@
+<h3>
+   Account preferences for <%= @user.login %>
+   <small><small>
+      <%= 
+         link_to_function 'close' do |page|
+            page['preferences'].visual_effect(:blind_up)
+         end
+      %>
+   </small></small>
+</h3>
+
+<% form_for(user_preference) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+   Userfiles per page: 
+   <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
+  </p>
+  <p>
+    Default execution server: <%= f.select :bourreau_id, available_bourreaux(@user).collect{|b| [b.name, b.id]}, :include_blank => true  %>
+  </p>
+  <p>
+    Default data provider: <%= f.collection_select :data_provider_id, available_data_providers(@user), :id, :name, :include_blank => true %>
+  </p>
+  <p>
+   Options saved for tasks:
+   <ul>
+      <% user_preference.other_options.keys.select{ |item| item =~ /^Drmaa/ }.each do |task| %>
+      <li><%= task %></li>
+      <% end %>
+   </ul>
+  </p>
+  <p>
+    <%= f.submit "Save" %>
+  </p>
+<% end %>  <!-- End form -->
+
+<%= button_to 'Reset to Defaults', user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
+
+<hr>
