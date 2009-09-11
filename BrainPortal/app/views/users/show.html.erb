@@ -12,98 +12,98 @@
 -%>
 <div class = "generalcontent">
 
-<% title "Account Info"%>
+   <% title "Account Info"%>
 
-<h2>Account details for <%= h @user.full_name %></h2>
-<div class = "generalbox">
+   <h2>Account details for <%= h @user.full_name %></h2>
 
-<table>
-  <tr class="list-even">
-     <td class = "title"><b>Name:</b></td>
-     <td class = "tabletext"><%=h @user.full_name %></td>
-  </tr>
-  <tr class="list-even">
-     <td class = "title"><b>Login:</b></td>
-     <td class = "tabletext"><%=h @user.login %></td>
-  </td>
-  <tr class="list-even">
-      <td class = "title"><b>Role:</b></td>
-      <td class = "tabletext"><%=h @user.role.humanize %></td>
-  </tr>
-  <tr class="list-even">
-     <td class = "title"><b>Email:</b></td>
-     <td class = "tabletext"><%=h @user.email %></td>
-  </tr>
-  <tr class="list-even">
-       <td class = "title"><b>Site:</b></td>
-       <td class = "tabletext"><%=h @user.site.name rescue "(None)" %></td>
-    </tr>
-  <tr class="list-even">
-     <td class = "title"><b>Default Execution Server: </b></td>
-     <td class = "tabletext"><%= h @default_bourreau %>  </td>
-  </tr>
-  <tr class="list-even">
-     <td class = "title"><b> Default Data Provider:</b></td>
-     <td class = "tabletext"><%=h @default_data_provider %></td>
-  </td>
-</table>
+   <div class = "generalbox user_left">
 
-<table>
-   <tr>
-     <th colspan="3">Groups</th>
-   </tr>
+      <table>
+        <tr class="list-even">
+           <td class = "title"><b>Name:</b></td>
+           <td class = "tabletext"><%=h @user.full_name %></td>
+        </tr>
+        <tr class="list-even">
+           <td class = "title"><b>Login:</b></td>
+           <td class = "tabletext"><%=h @user.login %></td>
+        </td>
+        <tr class="list-even">
+            <td class = "title"><b>Role:</b></td>
+            <td class = "tabletext"><%=h @user.role.humanize %></td>
+        </tr>
+        <tr class="list-even">
+           <td class = "title"><b>Email:</b></td>
+           <td class = "tabletext"><%=h @user.email %></td>
+        </tr>
+        <tr class="list-even">
+             <td class = "title"><b>Site:</b></td>
+             <td class = "tabletext"><%=h @user.site.name rescue "(None)" %></td>
+          </tr>
+        <tr class="list-even">
+           <td class = "title"><b>Default Execution Server: </b></td>
+           <td class = "tabletext"><%= h @default_bourreau %>  </td>
+        </tr>
+        <tr class="list-even">
+           <td class = "title"><b> Default Data Provider:</b></td>
+           <td class = "tabletext"><%=h @default_data_provider %></td>
+        </td>
+      </table>
 
-   <tr>
-     <th class = "subtitle">Name</th>
-     <th class = "subtitle">Members</th>
-   </tr>
+      <table>
+         <tr>
+           <th colspan="3">Groups</th>
+         </tr>
+
+         <tr>
+           <th class = "subtitle">Name</th>
+           <th class = "subtitle">Members</th>
+         </tr>
   
-<% @user.groups.each do |group| %>
-  <tr class=<%= cycle("list-even", "list-odd")%> >
-    <td><%=h group.name %></td>
-    <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
-<% end %>
-</table>
-<br>
-<br>
-<div id="account_info" style="display: none;">
-   <%= render :partial => "account_info" %>   
-</div>
+      <% @user.groups.each do |group| %>
+        <tr class=<%= cycle("list-even", "list-odd")%> >
+          <td><%=h group.name %></td>
+          <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
+      <% end %>
+      </table>
+   </div>
 
-<div id="preferences" style="display: none;">
-   <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
-</div>
+   <div class = "generalbox user_right">
+      <div id="account_info" style="display: none;">
+         <%= render :partial => "account_info" %>   
+      </div>
 
-<div id="change_password" style="display: none;">
-   <%= render :partial => "change_password" %>   
-</div>
+      <div id="preferences" style="display: none;">
+         <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
+      </div>
 
-<%= 
-   link_to_function 'Edit Account Info' do |page|
-      page['preferences'].visual_effect(:blind_up)
-      page['change_password'].visual_effect(:blind_up)
-      page['account_info'].visual_effect(:blind_down)
-   end
-%>
-<br>
-<%= 
-   link_to_function 'Change Password' do |page|
-      page['preferences'].visual_effect(:blind_up)
-      page['account_info'].visual_effect(:blind_up)
-      page['change_password'].visual_effect(:blind_down)
-   end
-%>
-<br>
-<%= 
-   link_to_function 'Edit Preferences' do |page|
-      page['account_info'].visual_effect(:blind_up)
-      page['change_password'].visual_effect(:blind_up)
-      page['preferences'].visual_effect(:blind_down)
-   end
-%>
-<br>
-<br>
+      <div id="change_password" style="display: none;">
+         <%= render :partial => "change_password" %>   
+      </div>
 
-<%= link_to 'Index', users_path %>
-</div>
+      <%= 
+         link_to_function 'Edit Account Info' do |page|
+            page['preferences'].visual_effect(:blind_up)
+            page['change_password'].visual_effect(:blind_up)
+            page['account_info'].visual_effect(:blind_down)
+         end
+      %>
+      <br>
+      <%= 
+         link_to_function 'Change Password' do |page|
+            page['preferences'].visual_effect(:blind_up)
+            page['account_info'].visual_effect(:blind_up)
+            page['change_password'].visual_effect(:blind_down)
+         end
+      %>
+      <br>
+      <%= 
+         link_to_function 'Edit Preferences' do |page|
+            page['account_info'].visual_effect(:blind_up)
+            page['change_password'].visual_effect(:blind_up)
+            page['preferences'].visual_effect(:blind_down)
+         end
+      %>
+      <br>
+      <br>
+   </div>
 </div>

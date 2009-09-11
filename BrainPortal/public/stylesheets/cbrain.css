@@ -1415,3 +1415,19 @@ table.userfilesdisplay td.checkbox {
   font-size: 12px;
   list-style: square;
 }
+
+/* ######################################################### */
+/* For user show */
+/* ######################################################### */
+
+.user_left {
+    float: left;
+}
+
+.user_right {
+    width: 25em;
+}
+
+.user_right a{
+    color: blue;
+}
