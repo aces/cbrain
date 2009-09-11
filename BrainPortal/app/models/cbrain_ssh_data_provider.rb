@@ -34,7 +34,8 @@ class CbrainSshDataProvider < SshDataProvider
     userdir = Pathname.new(remote_dir) + username
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
-    bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c 'mkdir #{userdir} #{level1} #{level2} >/dev/null 2>&1'\"")
+    ssh_opts = self.ssh_shared_options
+    bash_this("ssh -x -n #{ssh_opts} \"bash -c 'mkdir #{userdir} #{level1} #{level2} >/dev/null 2>&1'\"")
     super(userfile)
   end
 
@@ -46,7 +47,8 @@ class CbrainSshDataProvider < SshDataProvider
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
     full    = level2                   + basename
-    bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c '( rm -rf #{full};rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
+    ssh_opts = self.ssh_shared_options
+    bash_this("ssh -x -n #{ssh_opts} \"bash -c '( rm -rf #{full};rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
     true
   end
 

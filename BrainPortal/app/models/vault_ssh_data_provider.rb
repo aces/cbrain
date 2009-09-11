@@ -29,7 +29,8 @@ class VaultSshDataProvider < SshDataProvider
     basename = userfile.name
     username = userfile.user.login
     userdir = Pathname.new(remote_dir) + username
-    bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c 'mkdir #{userdir} >/dev/null 2>&1'\"")
+    ssh_opts = self.ssh_shared_options
+    bash_this("ssh -x -n #{ssh_opts} \"bash -c 'mkdir #{userdir} >/dev/null 2>&1'\"")
     super(userfile)
   end
 

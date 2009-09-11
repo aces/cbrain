@@ -30,9 +30,9 @@
       manually by a CBRAIN administrator; this requires choosing the
       listen port (the <em>port</em> argument to its <em>script/server
       -p port</em> command when it's started) and creating its
-      <em>database.yml</em> file. For such a manual installation,
-      the only two required field in this form will be one in the box
-      <strong>ActiveResource Configuration</strong>.  Note that these
+      <em>database.yml</em> file. For such a manual installation, the
+      only two required field in this form will be those in the box
+      <strong>ActiveResource Configuration</strong>. Note that these
       two fields are completely ignored if the ActiveResource connection
       is being tunneled (see below).
 
@@ -89,7 +89,7 @@
       will be configured to tunnel back to the BrainPortal all the way
       to the DB server used by the BrainPortal itself. Note that this
       can only work if the BrainPortal is connecting to its DB via a IP
-      domain connection, not a file socket.  For MySQL for instance,
+      domain connection, not a file socket. For MySQL for instance,
       it means the BrainPortal's <em>database.yml</em> file must NOT
       have the value <em>localhost</em> for the <strong>Host</strong>
       field. Also, it's likely that you'll need to comment out the entry
@@ -100,8 +100,8 @@
       A side effect of tunneling the DB server is that any
       <em>database.yml</em> file already present on the Bourreau side will
       be backed up, and also that the newly created <em>database.yml</em>
-      file will be DELETED after the Bourreau is started. This provides
-      a high security context for the DB server's connection if there
+      file will be DELETED after the Bourreau is started. This provides a
+      high security context for the DB server's connection as if there
       were no <em>database.yml</em> file at all. And if there were,
       and tunneling is disabled by blanking out the port field, then
       the backup <em>database.yml</em> will be restored.

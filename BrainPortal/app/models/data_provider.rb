@@ -180,10 +180,23 @@ class DataProvider < ActiveRecord::Base
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
+
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
-                                 :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
-                                 :allow_blank => true
+    :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, and !',
+    :allow_blank => true
                                  
+  validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
+    :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
+    :allow_blank => true
+
+  validates_format_of     :remote_host, :with => /^\w[\w\-\.]*$/,
+    :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
+    :allow_blank => true
+
+  validates_format_of     :remote_dir, :with => /^[\w\-\.\=\+\/]*$/,
+    :message  => 'only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+    :allow_blank => true
+
   before_destroy          :validate_destroy
 
 
@@ -427,20 +440,34 @@ class DataProvider < ActiveRecord::Base
   # that are not necessarily yet registered as +userfiles+.
   #
   # When called, the method accesses the provider's side
-  # and returns an array of tuplets; each tuplet is
+  # and returns an array of objects. These objects should
+  # respond to the following accessor methods that describe
+  # a remote file:
   #
-  #   [ basename, size, type, mtime ]
+  # name:: the base filename
+  # symbolic_type:: one of :regular, :symlink, :directory
+  # size:: size of file in bytes
+  # permissions:: an int interpreted in octal, e.g. 0640
+  # uid::  numeric uid of owner
+  # gid::  numeric gid of the file
+  # owner:: string representation of uid, the owner's name
+  # group:: string representation of gid, the group's name
+  # mtime:: modification time (an int, since Epoch)
+  # atime:: access time (an int, since Epoch)
+  # ctime:: attribute change time (an int, since Epoch)
   #
-  # where
+  # These attributes match those of the class
+  #     Net::SFTP::Protocol::V01::Attributes
+  # except for name() which is new.
   #
-  # basename:: is a file basename
-  # size::     is in bytes
-  # type::     is "regular" or "directory"
-  # mtime::    is int seconds since unix epoch
+  # Not all these attributes need to be filled in; nil
+  # is often acceptable for some of them. The bare minimum
+  # is probably the set 'name', 'type' and 'size' and 'mtime'.
   #
   # Note that not all data providers are meant to be browsable.
   def provider_list_all
-    raise "Error: provider is offline."   unless self.online
+    raise "Error: provider is offline."       unless self.online
+    raise "Error: provider is not browsable." unless self.is_browsable?
     impl_provider_list_all
   end
 

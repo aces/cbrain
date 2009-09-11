@@ -204,31 +204,55 @@ class DataProvidersController < ApplicationController
 
     begin
       # [ base, size, type, mtime ]
-      @rawlist = @provider.provider_list_all
+      @fileinfolist = get_recent_provider_list_all(params[:refresh])
     rescue => e
       flash[:error] = "Cannot get list of files: #{e.to_s}"
       redirect_to :action => :index
       return
     end
 
-    @rawlist.each do |tuplet|
-      tupname  = tuplet[0]
-      tupsize  = tuplet[1]
-      tuptype  = tuplet[2]
-      tupmtime = tuplet[3]
-      registered = Userfile.find(:first, :conditions => { :name => tupname, :data_provider_id => @provider.id})
+    # Let's add three more custom attributes:
+    # - the userfile if the file is already registered
+    # - the state_ok flag that tell whether or not it's OK to register/deregister
+    # - a message.
+    if @fileinfolist.size > 0
+       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
+    end
+
+    @fileinfolist.each do |fi|
+      fi_name  = fi.name
+      fi_size  = fi.size
+      fi_type  = fi.symbolic_type
+      fi_mtime = fi.mtime
+
+      fi.userfile = nil
+      fi.message  = ""
+      fi.state_ok = false
+
+      registered = Userfile.find(:first, :conditions => { :name => fi_name, :data_provider_id => @provider.id})
       if registered
-        tuplet << registered  #userfile
-        if ((tuptype == :regular    && registered.is_a?(SingleFile)) ||
-            (tuptype == :directory  && registered.is_a?(FileCollection)))
-          tuplet << "" # message
+        fi.userfile = registered # the userfile object itself
+        if ((fi_type == :symlink)                                    ||
+            (fi_type == :regular    && registered.is_a?(SingleFile)) ||
+            (fi_type == :directory  && registered.is_a?(FileCollection)))
+          fi.message = ""
+          fi.state_ok = true
         else
-          tuplet << "Conflicting types!"
+          fi.message = "Conflicting types!"
+          fi.state_ok = false
         end
-      else
-        tuplet << nil   # userfile is nil
-        tuplet << nil   # message
+        next
       end
+
+      # Unregistered.
+      if Userfile.is_legal_filename?(fi_name)
+        fi.message = ""
+        fi.state_ok = true
+      else
+        fi.message = "Illegal characters in filename."
+        fi.state_ok = false
+      end
+
     end
 
   end
@@ -251,6 +275,11 @@ class DataProvidersController < ApplicationController
     dirtypes  = params[:directorytypes] || []
     do_unreg  = params[:commit] =~ /unregister/i
 
+    @fileinfolist = get_recent_provider_list_all(params[:refresh])
+
+    base2info = {}
+    @fileinfolist.each { |fi| base2info[fi.name] = fi }
+
     base2type = {}
     dirtypes.select { |typebase| ! typebase.empty? }.each do |typebase|
       next unless typebase.match(/^(\w+)-(\S+)$/)
@@ -271,7 +300,13 @@ class DataProvidersController < ApplicationController
       # Unregister old files
 
       if do_unreg
-        unless userfile = Userfile.find(:first, :conditions => { :name => basename, :data_provider_id => provider_id } )
+        userfile = Userfile.find(:first, :conditions => { :name => basename, :data_provider_id => provider_id } )
+        unless userfile
+          num_skipped += 1
+          next
+        end
+        unless userfile.has_owner_access?(current_user)
+          flash[:error] += "Error: file #{basename} does not belong to you. File not unregistered.\n"
           num_skipped += 1
           next
         end
@@ -282,18 +317,24 @@ class DataProvidersController < ApplicationController
       # Register new files
 
       subtype = "SingleFile"
+      fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
-        if subtype == "Unset" || (subtype != "FileCollection" && subtype != "CivetCollection")
-           flash[:error] += "Error: subdirectory #{basename} not provided with a proper type. File not registered.\n"
-           num_skipped += 1
-           next
+        if subtype == "Unset" || (subtype != "SingleFile" && subtype != "FileCollection" && subtype != "CivetCollection")
+          flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
+          num_skipped += 1
+          next
         end
+      end
+
+      size = 0
+      if subtype == "SingleFile" # TODO what if it's a directory?
+        size = fileinfo.size rescue 0
       end
 
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
-                               :size             => 0,
+                               :size             => size,
                                :user_id          => user_id,
                                :group_id         => @provider.group_id,
                                :data_provider_id => provider_id )
@@ -354,6 +395,31 @@ class DataProvidersController < ApplicationController
     end
 
     keys
+  end
+
+  def get_recent_provider_list_all(refresh = false)
+
+    refresh = false if refresh.blank? || refresh.to_s == 'false'
+
+    # Check to see if we can simply reload the cached copy
+    cache_file = "/tmp/dp_cache_list_all.#{@provider.id}"
+    if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
+       filelisttext = File.read(cache_file)
+       fileinfolist = YAML::load(filelisttext)
+       return fileinfolist
+    end
+
+    # Get info from provider
+    fileinfolist = @provider.provider_list_all
+
+    # Write a new cached copy
+    File.open(cache_file + ".tmp","w") do |fh|
+       fh.write(YAML::dump(fileinfolist))
+    end
+    File.rename(cache_file + ".tmp",cache_file)  # crush it
+
+    # Return it
+    fileinfolist
   end
 
 end

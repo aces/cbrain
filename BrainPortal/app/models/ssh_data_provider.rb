@@ -24,8 +24,19 @@ class SshDataProvider < DataProvider
 
   Revision_info="$Id$"
 
+  # A class to represent a remote file accessible through SFTP.
+  # Most of the attributes here are compatible with
+  #   Net::SFTP::Protocol::V01::Attributes
+  class FileInfo
+    attr_accessor :name, :symbolic_type, :size, :permissions,
+                  :uid, :gid, :owner, :group,
+                  :atime, :mtime, :ctime
+  end
+
   def impl_is_alive? #:nodoc:
-     text = bash_this("ssh -x -n -o ConnectTimeout=1 -o StrictHostKeyChecking=false -o PasswordAuthentication=false -o KbdInteractiveAuthentication=no -o KbdInteractiveDevices=false #{self.option_port} #{self.ssh_user_host} true </dev/null 2>&1")
+     ssh_opts = self.ssh_shared_options
+     ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
+     text = bash_this("ssh -x -n #{ssh_opts} true </dev/null 2>&1")
      return(text.blank? ? true : false);
   end
 
@@ -48,7 +59,7 @@ class SshDataProvider < DataProvider
     end
 
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a --delete #{ssh_user_host}:#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -L --delete :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     raise "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
     true
@@ -62,7 +73,7 @@ class SshDataProvider < DataProvider
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a --delete #{shell_escape(localfull)}#{sourceslash} #{ssh_user_host}:#{shell_escape(remotefull)} 2>&1")
+    text = bash_this("#{rsync} -a -L --delete #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     raise "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
     true
@@ -70,7 +81,8 @@ class SshDataProvider < DataProvider
 
   def impl_provider_erase(userfile) #:nodoc:
     full     = remote_full_path(userfile)
-    bash_this("ssh -x -n #{option_port} #{ssh_user_host} \"bash -c 'rm -rf #{full} >/dev/null 2>&1'\"")
+    ssh_opts = self.ssh_shared_options
+    bash_this("ssh -x -n #{ssh_opts} \"bash -c '/bin/rm -rf #{full} >/dev/null 2>&1'\"")
     true
   end
 
@@ -104,13 +116,28 @@ class SshDataProvider < DataProvider
       sftp.dir.foreach(remote_dir) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
-        next if type != :regular && type != :directory
+        next if type != :regular && type != :directory && type != :symlink
         next if entry.name == "." || entry.name == ".."
-        tuplet = [ entry.name, attributes.size, type, attributes.mtime ]
-        list << tuplet
+
+        fileinfo               = FileInfo.new
+        fileinfo.name          = entry.name
+
+        attlist = [ 'symbolic_type', 'size', 'permissions',
+                    'uid',  'gid',  'owner', 'group',
+                    'atime', 'ctime', 'mtime' ]
+        attlist.each do |meth|
+          begin
+            val = attributes.method(meth).call
+            fileinfo.method("#{meth}=").call(val)
+          rescue => e
+            puts "Method #{meth} not supported: #{e.message}"
+          end
+        end
+
+        list << fileinfo
       end
     end
-    list.sort! { |a,b| a[0] <=> b[0] }
+    list.sort! { |a,b| a.name <=> b.name }
     list
   end
 
@@ -125,47 +152,28 @@ class SshDataProvider < DataProvider
   
   protected
 
-  # Returns "remote_user@remote_host" properly escaped with single quotes to avoid code injection.
-  def ssh_user_host
-    shell_escape(self.remote_user) + "@" + shell_escape(self.remote_host)
-  end
-
-  # Returns "-o Port='1234'" properly escaped with single quotes to avoid code injection.
-  # Suitable for ssh, sftp and scp, but not rsync.
-  def option_port
-    return "" if self.remote_port.blank? || self.remote_port == 0
-    "-o Port=#{shell_escape(self.remote_port.to_s)}"
-  end
-
-  # Returns "--port '1234'" properly escaped with single quotes to avoid code injection.
-  # Suitable for +rsync+.
-  def dash_dash_port
-    return "" if self.remote_port.blank? || self.remote_port == 0
-    "--port #{shell_escape(self.remote_port.to_s)}"
-  end
-
-  # Returns ":'1234'" properly escaped with single quotes to avoid code injection.
-  # Suitable for URL-like syntax on a command line, but not a pure URL.
-  def colon_port
-    return "" if self.remote_port.blank? || self.remote_port == 0
-    ":#{shell_escape(self.remote_port.to_s)}"
-  end
-
   # Builds a prefix for a +rsync+ command, such as
   #
-  #   "rsync -e 'ssh -x'"
+  #   "rsync -e 'ssh -x -o a=b -o c=d -p port user@host'"
   #
-  # or
+  # Note that this means that remote file specifications for
+  # rsync MUST start with a bare ":" :
   #
-  #   "rsync -e 'ssh -x -p 1234'"
+  #   rsync -e 'ssh_options_here user_host'  :/remote/file  local/file
   def rsync_over_ssh_prefix
-    prefix = "rsync"
-    ssh    = "ssh -x -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o KbdInteractiveDevices=false"
-    unless self.remote_port.blank? || self.remote_port == 0
-      ssh += " -p #{self.remote_port.to_s}"
-    end
-    prefix += " -e #{shell_escape(ssh)}"
-    prefix
+    ssh_opts = self.ssh_shared_options
+    ssh      = "ssh -x #{ssh_opts}"
+    rsync    = "rsync -e #{shell_escape(ssh)}"
+    rsync
+  end
+
+  # Returns the necessary options to connect to a master SSH
+  # command running in the background (which wil be started if
+  # necessary).
+  def ssh_shared_options
+    master = SshTunnel.find_or_create(remote_user,remote_host,remote_port)
+    master.start # does nothing is it's already started
+    master.ssh_shared_options("auto") # ControlMaster=auto
   end
   
 end
