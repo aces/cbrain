@@ -22,10 +22,10 @@
          <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
         </p>
         <p>
-          Default execution server: <%= f.select :bourreau_id, @bourreaux.collect{|b| [b.name, b.id]}, :include_blank => true  %>
+          Default execution server: <%= f.select :bourreau_id, available_bourreaux(current_user).collect{|b| [b.name, b.id]}, :include_blank => true  %>
         </p>
         <p>
-          Default data provider: <%= f.collection_select :data_provider_id, DataProvider.find(:all), :id, :name, :include_blank => true %>
+          Default data provider: <%= f.collection_select :data_provider_id, available_data_providers(current_user), :id, :name, :include_blank => true %>
         </p>
         <p>
          Options saved for tasks:

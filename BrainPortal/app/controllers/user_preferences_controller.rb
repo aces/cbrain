@@ -10,7 +10,6 @@ class UserPreferencesController < ApplicationController
   # GET /user_preferences.xml
   def index #:nodoc:
     @user_preference = current_user.user_preference || UserPreference.create(:user_id => current_user.id)
-    @bourreaux       = available_bourreaux(current_user)
         
     respond_to do |format|
       format.html # index.html.erb
@@ -49,7 +48,7 @@ class UserPreferencesController < ApplicationController
         format.html { redirect_to(user_preferences_url) }
         format.xml  { head :ok }
       else
-        flash.now[:error] = 'Preferences successfully reset.'
+        flash.now[:error] = 'Preferences could not be reset.'
         format.html { render :action => "index" }
         format.xml  { render :xml => @user_preference.errors, :status => :unprocessable_entity }
       end 
