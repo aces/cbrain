@@ -487,20 +487,24 @@ class UserfilesController < ApplicationController
           return
         end
 
-        nummoved = 0
-        filelist.each do |id|
-          u = Userfile.find(id)
-          next unless u
-          orig_provider = u.data_provider
-          next if orig_provider.id == data_provider_id
-          if orig_provider.provider_move_to_otherprovider(u,new_provider)
-            nummoved += 1
-            u.save
-            u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+        spawn do
+          filelist.each do |id|
+            u = Userfile.find(id)
+            next unless u
+            orig_provider = u.data_provider
+            next if orig_provider.id == data_provider_id
+            if orig_provider.provider_move_to_otherprovider(u,new_provider)
+              u.save
+              u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+            end
           end
         end
 
-        flash[:notice] += "Succesfully moved #{nummoved} file out of #{filelist.size} files."
+        flash[:notice] +=
+           "Your files are being moved in the background.\n" +
+           "You will know when it's ready once their Data Provider has been reassigned.\n" +
+           "Check for this later. In the meantime do NOT move these files further or start tasks using them!"
+
         redirect_to :action => :index
         return
 

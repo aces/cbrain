@@ -259,7 +259,7 @@ class Bourreau < RemoteResource
 
   protected
 
-  def build_db_yml_for_tunnel
+  def build_db_yml_for_tunnel #:nodoc:
     myconfigs  = ActiveRecord::Base.configurations
     myrailsenv = ENV["RAILS_ENV"] || "production"
     myconfig   = myconfigs[myrailsenv].dup
