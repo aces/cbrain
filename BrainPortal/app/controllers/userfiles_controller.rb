@@ -180,19 +180,30 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
-      spawn do
-        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
-        userfile.cache_copy_from_local_file(tmpcontentfile)
-        File.delete(tmpcontentfile)
-      end 
-      
+
       if userfile.save
         flash[:notice] += "File '#{basename}' added."
+
+        spawn do
+          localpath = upload_stream.local_path rescue "" # optimize for large files
+          if localpath.blank?
+            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            userfile.cache_copy_from_local_file(tmpcontentfile)
+            userfile.size = File.size(tmpcontentfile) rescue 0
+            File.delete(tmpcontentfile)
+          else
+            userfile.cache_copy_from_local_file(localpath)
+            userfile.size = File.size(localpath) rescue 0
+          end
+          userfile.save
+        end 
+      
         redirect_to :action => :index
       else
         flash[:error]  += "File '#{basename}' could not be added (internal error?)."
         redirect_to :action => :new
       end
+
       return
     end
 
@@ -493,9 +504,13 @@ class UserfilesController < ApplicationController
             next unless u
             orig_provider = u.data_provider
             next if orig_provider.id == data_provider_id
-            if orig_provider.provider_move_to_otherprovider(u,new_provider)
-              u.save
-              u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+            begin
+              if orig_provider.provider_move_to_otherprovider(u,new_provider)
+                u.save
+                u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+              end
+            rescue => e
+              u.addlog "Could not move from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
             end
           end
         end
