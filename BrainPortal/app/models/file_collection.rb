@@ -111,16 +111,24 @@ class FileCollection < Userfile
   
   #Returns an array of the relative paths to all files contained in this collection.
   def list_files    
+    return @file_list if @file_list
     Dir.chdir(self.cache_full_path.parent) do
-      @file_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type f").readlines.map(&:chomp)
+      escaped_name = self.name.gsub("'", "'\\\\''")
+      IO.popen("find '#{escaped_name}' -type f -print") do |fh|
+        @file_list = fh.readlines.map(&:chomp)
+      end
       @file_list.sort! { |a,b| a <=> b }
     end
   end
   
   #Returns an array of the relative paths to all subdirectories contained in this collection.
   def list_dirs
+    return @dir_list if @dir_list
     Dir.chdir(self.cache_full_path.parent) do
-      @dir_list ||= IO.popen("find '#{self.name.gsub("'", "'\\\\''")}' -type d").readlines.map(&:chomp).reverse
+      escaped_name = self.name.gsub("'", "'\\\\''")
+      IO.popen("find '#{escaped_name}' -type d -print") do |fh|
+        @dir_list = fh.readlines.map(&:chomp)
+      end
       @dir_list.sort! { |a,b| a <=> b }
     end
   end
@@ -141,7 +149,10 @@ class FileCollection < Userfile
     dir_name = self.cache_full_path
 
     Dir.chdir(dir_name) do      
-      files = IO.popen("find . -type f").readlines.map(&:chomp)
+      files = []
+      IO.popen("find . -type f -print") do |fh|
+        files = fh.readlines.map(&:chomp)
+      end
       base = ""
       source = files[0].split('/')
       source.each do |dir|

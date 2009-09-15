@@ -322,6 +322,8 @@ class SshTunnel
     " -o PasswordAuthentication=false"    +
     " -o KbdInteractiveAuthentication=no" +
     " -o KbdInteractiveDevices=false"     +
+    " -o ServerAliveInterval=180"         +
+    " -o ServerAliveCountMax=5"           +
     " -o ControlMaster=#{control_master}" +
     " -o ControlPath=#{socket}"           +
     " #{@user}@#{@host} "

@@ -36,7 +36,8 @@ class SshDataProvider < DataProvider
   def impl_is_alive? #:nodoc:
      ssh_opts = self.ssh_shared_options
      ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
-     text = bash_this("ssh -x -n #{ssh_opts} true </dev/null 2>&1")
+     dir  = shell_escape(self.remote_dir)
+     text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
      return(text.blank? ? true : false);
   end
 
