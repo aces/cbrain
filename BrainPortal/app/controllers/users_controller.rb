@@ -55,7 +55,7 @@ class UsersController < ApplicationController
     @user = User.new(:site_id => current_user.site_id)
     if current_user.has_role? :admin
       @groups = WorkGroup.find(:all)
-    else
+    elsif current_user.has_role? :site_manager
       @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
     end
   end
