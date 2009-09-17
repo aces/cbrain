@@ -99,6 +99,8 @@ class TasksController < ApplicationController
       params[:user_id] = current_user.id
       flash[:notice] ||= ""
       flash[:notice] += @task_class.launch(params)
+      current_user.addlog_context(self,"Launched #{@task_class.to_s}")
+      current_user.addlog_revinfo(@task_class)
     rescue  => e
       flash[:error] = e.to_s
       if @task_class.has_args?
@@ -159,6 +161,9 @@ class TasksController < ApplicationController
 
       continue if task.user_id != current_user.id && current_user.role != 'admin'
 
+      current_user.addlog_context(self,"Sending '#{operation}' to task #{task.bname_tid}")
+      current_user.addlog_revinfo(task)
+
       case operation
         when "postprocess"
           task.status = "postprocess"  # keyword is significant
@@ -189,5 +194,4 @@ class TasksController < ApplicationController
 
   end
 
-  
 end

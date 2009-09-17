@@ -43,6 +43,7 @@ class UsersController < ApplicationController
     
     @default_data_provider  = @user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = @user.user_preference.bourreau.name      rescue "(Unset)"
+    @log                    = @user.getlog()
 
     respond_to do |format|
       format.html # show.html.erb
@@ -92,6 +93,8 @@ class UsersController < ApplicationController
     if @user.errors.empty?
       redirect_to(users_url)
       flash[:notice] = "User successfully created."
+      current_user.addlog_context(self,"Created account for user '#{@user.login}'")
+      @user.addlog_context(self,"Account created by '#{current_user.login}'")
     else
       if current_user.has_role? :admin
         @groups = WorkGroup.find(:all)

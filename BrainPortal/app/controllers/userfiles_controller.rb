@@ -196,6 +196,8 @@ class UserfilesController < ApplicationController
             userfile.size = File.size(localpath) rescue 0
           end
           userfile.save
+          userfile.addlog_context(self,"Uploaded by #{current_user.login}")
+          current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
         end 
       
         redirect_to :action => :index
@@ -242,6 +244,7 @@ class UserfilesController < ApplicationController
         end
       
         flash[:notice] = "Collection '#{collection_name}' created."
+        current_user.addlog_context(self,"Uploaded FileCollection '#{collection_name}'")
         redirect_to :action => :index
       else
         flash[:error] = "Collection '#{collection_name}' could not be created."
@@ -616,11 +619,11 @@ class UserfilesController < ApplicationController
     # Create content list
     all_files        = []
     if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-      all_files = IO.popen("tar -tzf #{escaped_archivefile}").readlines.map(&:chomp)
+      all_files = IO.popen("tar -tzf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.tar$/i
-      all_files = IO.popen("tar -tf #{escaped_archivefile}").readlines.map(&:chomp)
+      all_files = IO.popen("tar -tf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.zip/i
-      all_files = IO.popen("unzip -l #{escaped_archivefile}").readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]}
+      all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
       raise "Cannot process file with unknown extension: #{archive_file_name}"
     end

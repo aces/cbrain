@@ -16,92 +16,94 @@
 <h2>File details for <%= h @userfile.name %></h2>
 
 <% form_for(@userfile) do |f| %>
-<%= f.error_messages %>
 
-<div class = "splitleft_editfiles">
+  <%= f.error_messages %>
 
-<table>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
+  <div class = "splitleft_editfiles">
+
+  <table>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Name:</th>
       <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
-   </tr class="list-odd">
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
+    </tr class="list-odd">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Owner:</th>
       <td colspan="2"><%=h @userfile.user.full_name %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
+    </tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Size:</th>
       <td colspan="2"><%=h @userfile.size %></td>
-   </tr>  
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
+    </tr>  
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Data Provider:</th>
       <td colspan="2"><%=h @userfile.data_provider.name %></td>
-   </tr>  
+    </tr>  
   
-   <%if @userfile.is_a? SingleFile %>
+    <%if @userfile.is_a? SingleFile %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <th>Parent:</th>
-         <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
+        <th>Parent:</th>
+        <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
 
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <th>Task:</th>
-         <td colspan="2"><%= @userfile.task rescue ""%></td>
+        <th>Task:</th>
+        <td colspan="2"><%= @userfile.task rescue ""%></td>
       </tr>
      
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <th>Children:</th>
-         <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
+        <th>Children:</th>
+        <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
-   <% end %>
+    <% end %> <!-- singlefile -->
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-       <th>Created at:</th>
-       <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
+      <th>Created at:</th>
+      <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
     </tr>
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-       <th>Modified at:</th>
-       <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
-    </tr>
-   
-</table>
 
-<table>
-  <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th>Modified at:</th>
+      <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
+    </tr>
+   
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th>Group:</th>
       <td colspan="2"><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
-   </tr>
-   <tr>
+    </tr>
+    <tr>
       <th>Group permission on file:</th>
       <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
-   </tr>
-</table>
+    </tr>
 
-<%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
-<br>
+  </table>
 
-<% if @userfile.can_be_accessed_by?(current_user)  %>
-<%= submit_tag "Update Fields" %>
-<br> 
-<% end %>
+  <% if @userfile.is_a?(FileCollection) %>
+    <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
+  <% end %>
 
-<%= button_to 'Back to Userfiles Index', userfiles_path %>
+  <br>
+
+  <% if @userfile.can_be_accessed_by?(current_user)  %>
+    <%= submit_tag "Update Fields" %>
+    <br> 
+  <% end %>
+
+  <%= button_to 'Back to Userfiles Index', userfiles_path %>
 </div>
 
 <div class = "splitright_editfiles">
+  <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
 
-<%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
-
-<table>
-   <% if @log %>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th colspan="3">File log</th>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <td colspan="3"><pre><%= @log %></pre></td>
-   </tr>
-   <% end %>
-   <% end %>
-</table>
-   
+  <% if @log %>
+    <table>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th colspan="3">File log</th>
+      </tr>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <td colspan="3"><pre><%= @log %></pre></td>
+      </tr>
+    </table>
+  <% end %>
 </div>
+
+<% end %> <!-- form -->

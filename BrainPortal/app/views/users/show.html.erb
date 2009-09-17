@@ -65,6 +65,7 @@
           <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
       <% end %>
       </table>
+
    </div>
 
    <div class = "generalbox user_right">
@@ -103,7 +104,19 @@
             page['preferences'].visual_effect(:blind_down)
          end
       %>
-      <br>
-      <br>
+
    </div>
+
 </div>
+
+   <% if @log %>
+     <table>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <th colspan="3">User activity log</th>
+       </tr>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td colspan="3"><pre><%= @log %></pre></td>
+       </tr>
+     </table>
+   <% end %>
+
