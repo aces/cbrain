@@ -76,8 +76,8 @@
   page << "if(current_options != 'tag_option'){"
   page << "var local_var = current_options;"
   page['tag_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-  page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
- page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+  page << "if(local_var){Element.hide(local_var + '_div');"
+  page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
   page << "Element.update(local_var + '_div', '');"
   page << "}"
   page << 'current_options = "tag_option";'
@@ -90,7 +90,7 @@ end %>
   page << "if(current_options != 'group_option'){"
   page << "var local_var = current_options;"
   page['group_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-  page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+  page << "if(local_var){Element.hide(local_var + '_div');"
   page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
   page << "Element.update(local_var + '_div', '');"
   page << "}"
@@ -104,7 +104,7 @@ end %>
     page << "if(current_options != 'management_option'){"
     page << "var local_var = current_options;"
     page['management_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-    page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+    page << "if(local_var){Element.hide(local_var + '_div');"
     page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
     page << "Element.update(local_var + '_div', '');"
     page << "}"
@@ -118,7 +118,7 @@ end %>
     page << "if(current_options != 'conversion_tool_option'){"
     page << "var local_var = current_options;"
     page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-    page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+    page << "if(local_var){Element.hide(local_var + '_div');"
     page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
     page << "Element.update(local_var + '_div', '');"
     page << "}"
@@ -132,7 +132,7 @@ end %>
     page << "if(current_options != 'scientific_tool_option'){"
     page << "var local_var = current_options;"
     page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-    page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+    page << "if(local_var){Element.hide(local_var + '_div');"
     page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
     page << "Element.update(local_var + '_div', '');"
     page << "}"
@@ -146,7 +146,7 @@ end %>
      page << "if(current_options != 'upload_option'){"
      page << "var local_var = current_options;"
      page['upload_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-     page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+     page << "if(local_var){Element.hide(local_var + '_div');"
      page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
      page << "Element.update(local_var + '_div', '');"
      page << "}"
@@ -160,7 +160,7 @@ end %>
       page << "if(current_options != 'jiv_option'){"
       page << "var local_var = current_options;"
       page['jiv_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-      page << "if(local_var){Effect.BlindUp(local_var + '_div', {duration: 0});"
+      page << "if(local_var){Element.hide(local_var + '_div');"
       page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
       page << "Element.update(local_var + '_div', '');"
       page << "}"
