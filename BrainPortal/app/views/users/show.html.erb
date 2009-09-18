@@ -10,6 +10,9 @@
 #
 
 -%>
+
+<%= javascript_tag "var current_options = null;" %>
+
 <div class = "generalcontent">
 
    <% title "Account Info"%>
@@ -83,24 +86,24 @@
 
       <%= 
          link_to_function 'Edit Account Info' do |page|
-            page['preferences'].visual_effect(:blind_up)
-            page['change_password'].visual_effect(:blind_up)
+            page << "if(current_options) {Effect.BlindUp(current_options);}"
+            page << "current_options = 'account_info';"
             page['account_info'].visual_effect(:blind_down)
          end
       %>
       <br>
       <%= 
          link_to_function 'Change Password' do |page|
-            page['preferences'].visual_effect(:blind_up)
-            page['account_info'].visual_effect(:blind_up)
+            page << "if(current_options) {Effect.BlindUp(current_options);}"
+            page << "current_options = 'change_password';"
             page['change_password'].visual_effect(:blind_down)
          end
       %>
       <br>
       <%= 
          link_to_function 'Edit Preferences' do |page|
-            page['account_info'].visual_effect(:blind_up)
-            page['change_password'].visual_effect(:blind_up)
+            page << "if(current_options) {Effect.BlindUp(current_options);}"
+            page << "current_options = 'preferences';"
             page['preferences'].visual_effect(:blind_down)
          end
       %>

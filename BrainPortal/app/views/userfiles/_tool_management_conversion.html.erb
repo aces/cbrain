@@ -7,9 +7,9 @@
 #
 
 -%>
-
 <% unless @bourreaux.blank? %>
-
+  <br>
+  
    <%= select_tag(
     "operation", 
     ' <option value="">Select a Conversion Operation</option>
@@ -20,8 +20,10 @@
    %>
 
    <%= render :partial => 'bourreau_select' %>
-
+    <br><br>
     <%= submit_tag("Apply Operation") %>
+    <br><br>
+    
 <% else %>
    <h1>No Bourreaux Available</h1>
 <% end %>

@@ -129,5 +129,18 @@ module ApplicationHelper
      end
      pretty
   end
+  
+  def set_selected(param_controller, current_item)
+    if(current_item == :user_site_show && 
+      params[:controller].to_s == 'sites' &&
+      params[:action].to_s == 'show' &&
+      params[:id].to_s == current_user.site_id.to_s)
+      'id="selected"'
+    elsif(param_controller.to_s == current_item.to_s)
+      'id="selected"'
+    else
+      'id="unselected"'
+    end
+  end
 
 end

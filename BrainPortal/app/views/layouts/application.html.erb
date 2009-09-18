@@ -55,27 +55,26 @@
          
             <div id="header">
               <h1>CBrain <%= CBRAIN::Redmine_Version %></h1>
-           
               <div id="top_01"><div>
                  <div id="main-menu">
                     <% if current_user %>
                        <ul>      
-                          <li><a class="home" href="/home">Home</a></li>
-                          <li><%= link_to 'Files', userfiles_path %></li>
-                          <li><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
-                          <li class = "selected"><%= link_to 'Data Providers', data_providers_path %></li>
-                          <li><%= link_to 'Bourreaux', bourreaux_path %></li>               
-                          <li class = "selected"><%= link_to 'Feedback', feedbacks_path %></li>
+                          <li <%= set_selected(params[:controller], :portal) %>><a class="home" href="/home">Home</a></li>
+                          <li <%= set_selected(params[:controller], :userfiles) %>><%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %></li>
+                          <li <%= set_selected(params[:controller], :tasks) %>><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
+                          <li <%= set_selected(params[:controller], :data_providers) %>><%= link_to 'Data Providers', data_providers_path %></li>
+                          <li <%= set_selected(params[:controller], :bourreaux) %>><%= link_to 'Bourreaux', bourreaux_path %></li>               
+                          <li <%= set_selected(params[:controller], :feedbacks) %>><%= link_to 'Feedback', feedbacks_path %></li>
                           <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
-                            <li><%= link_to 'Users', users_path %></li>
-                            <li><%= link_to 'Groups', groups_path %></li>
+                            <li <%= set_selected(params[:controller], :users) %>><%= link_to 'Users', users_path %></li>
+                            <li <%= set_selected(params[:controller], :groups) %>><%= link_to 'Groups', groups_path %></li>
                      		 <% if current_user.has_role?(:admin) %>
-                    			    <li><%= link_to 'Sites', sites_path %></li> 	
-                    	          <li><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+                    			    <li <%= set_selected(params[:controller], :sites) %>><%= link_to 'Sites', sites_path %></li> 	
+                    	          <li <%= set_selected(params[:controller], :logged_exception) %>><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
                     			 <% end %>
                           <% end %>
                           <% if current_user.site %>
-         	  					<li><%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %></li> 	
+         	  					<li <%= set_selected(params[:controller], :user_site_show) %>><%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %></li> 	
          	  				  <% end %>
                        </ul>
                     <% end %>               
