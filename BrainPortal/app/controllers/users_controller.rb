@@ -68,6 +68,8 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
     end
+
+    @log = @user.getlog()
     
     if !edit_permission? @user
       access_error(401)

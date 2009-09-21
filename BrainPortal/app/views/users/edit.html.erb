@@ -57,3 +57,15 @@
 <%= button_to 'Cancel', check_role(:admin) ? users_path : home_path, :method => :get %>
 </div>
 </div>
+
+   <% if @log %>
+     <table>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <th colspan="3">User activity log</th>
+       </tr>
+       <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <td colspan="3"><pre><%= @log %></pre></td>
+       </tr>
+     </table>
+   <% end %>
+
