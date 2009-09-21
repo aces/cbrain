@@ -59,22 +59,26 @@ class TasksController < ApplicationController
     @task_class = Class.const_get(params[:task].to_s)
     @files = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested  => :read)
     @data_providers = available_data_providers(current_user)
-        
+
     params[:user_id] = current_user.id
 
-    if @task_class.has_args?
-      begin
-        @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
-      rescue  => e
-        flash[:error] = e.to_s
-        redirect_to userfiles_path
-        return
-      end
-    else
+    # Simple case: the task has no parameter page, so submit
+    # directly to 'create'
+    if ! @task_class.has_args?
       redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids], :bourreau_id  => params[:bourreau_id]
       return
     end
+
+    # The page has a parameter page, so get the default values....
+    begin
+      @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
+    rescue  => e
+      flash[:error] = e.to_s
+      redirect_to userfiles_path
+      return
+    end
     
+    # ... then generate the form.
     respond_to do |format|
       format.html # new.html.erb
     end
