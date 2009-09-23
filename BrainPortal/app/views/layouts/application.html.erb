@@ -92,10 +92,10 @@
         
             <div id="content">
                <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-                 <p class = "notice"><%= h(flash[:notice]).gsub(/\n/,"<BR>") -%></p>  
+                 <p class = "notice" id="flash_notice"><%= h(flash[:notice]).gsub(/\n/,"<BR>") -%></p>  
                <% end %>
                <% if ! flash[:error].nil? && ! flash[:error].empty? %>
-                  <p class="error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
+                  <p class="error" id="flash_error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
                <% end %>
                <%= yield :layout %>
             </div>   <!-- End id="content" -->

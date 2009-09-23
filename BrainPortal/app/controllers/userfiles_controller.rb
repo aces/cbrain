@@ -18,7 +18,7 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles
   # GET /userfiles.xml
-  def index #:nodoc:
+  def index #:nodoc:        
     current_session.update(params)
 
     custom_filters = current_session.custom_filters
@@ -60,20 +60,10 @@ class UserfilesController < ApplicationController
     @data_providers = available_data_providers(current_user)
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true && b.is_alive? }
     @prefered_bourreau_id = current_user.user_preference.bourreau_id
-    
-    #TODO: AJAXIFY THIS (should be done in the jiv controller)
-    jiv_files = current_user.userfiles.find(:all, :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"]).map(&:name)
-    @subjects = Jiv.filter_subjects(jiv_files)
-    @combos = []
-    
-    @subjects.each_with_index do |s1, i|
-      @subjects[(i+1)..-1].each do |s2|
-        @combos << s1 + " " + s2
-      end
-    end
 
     respond_to do |format|
       format.html # index.html.erb
+      format.js
       format.xml  { render :xml => @userfiles }
     end
   end
@@ -107,7 +97,7 @@ class UserfilesController < ApplicationController
 
     #upload_stream = params[:upload_file]   # an object encoding the file data stream
     respond_to do |format|
-      format.html # new.html.erb
+      format.js   { render :action  => 'new', :layout  => false }
       format.xml  { render :xml => @userfile }
     end
   end
@@ -311,7 +301,7 @@ class UserfilesController < ApplicationController
       File.delete(tmpcontentfile)
     end
 
-    redirect_to :action => :index
+    format.html { redirect_to :action => :index }
   end
 
   # PUT /userfiles/1

@@ -1,0 +1,2 @@
+page['current_filters'].replace_html(render :partial  => 'current_filters')
+page['userfilesdisplay'].replace_html(render :partial  => 'userfiles_table')

@@ -15,4 +15,17 @@ Group Update:
 Group permission update: 
 <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %></td>
 <%= submit_tag("Update Permissions") %> 
-<br><br>
+<br>
+<br>
+<div class="userfiles_option_close">
+    <%= 
+        link_to_function 'close', :class  => '' do |page|
+          page << "new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+          page << "Element.hide(current_options + '_div');"
+          page << "Element.update(current_options + '_div', '');"
+          page << "current_options = null;"
+        end
+     %>
+
+</div>
+<br>

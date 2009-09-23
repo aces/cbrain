@@ -212,7 +212,6 @@ pre {
 }
 
 #sidebar {
-    float: left; 
     width: 9%;
     height: 100%; 
     color: #666;
@@ -224,13 +223,25 @@ pre {
     min-width: 133px;
 }
 
+#sidebar_wrapper{
+     float:left;
+}
+
 #sidebar ul li {
     margin-left: -10px;
     color: #0471B4;
 }
 
-#page-specific-sidebar {
-    width: 100%;
+.filter_option{
+    color: blue;
+}
+
+.userfiles_option_close{
+    text-align:center;
+}
+
+.userfiles_option_close a{
+    color:blue;
 }
 
 /* ######################################################### */
@@ -779,15 +790,14 @@ td.taskinfo {
     border: 2px solid #6699CC;
 }
 
-.userfilesdisplay {
-    width: 83%;
+#userfilesdisplay {
     margin-right: 1em;
     /*float: left;
     width: 100%;
     padding: 6px; */
 }
 
-.userfilesdisplay th {
+#userfilesdisplay th {
     border: 0px;
     background-color: #0471B4;
     text-align: center;
@@ -800,33 +810,33 @@ td.taskinfo {
     padding-right: 0;
 }
 
-.userfilesdisplay th a {
+#userfilesdisplay th a {
     color: #ffffff;
 }
 
-.userfilesdisplay th a:link {
+#userfilesdisplay th a:link {
     color: #ffffff;
 }
 
-.userfilesdisplay th {
+#userfilesdisplay th {
     color: #ffffff;
 }
 
-.userfilesdisplay tr.list-odd td {
+#userfilesdisplay tr.list-odd td {
     background-color: #ffffff;  
 }
 
-.userfilesdisplay td.centered {
+#userfilesdisplay td.centered {
     border: 0px;    
     text-align: center;
 }
 
-.userfilesdisplay td {
+#userfilesdisplay td {
     border: 0px;
     text-align: left;
 }
 
-table.userfilesdisplay td.checkbox {
+table#userfilesdisplay td.checkbox {
     text-align: center;
 }
 
@@ -907,7 +917,7 @@ table.userfilesdisplay td.checkbox {
 }
 
 .userfiles_content {
-    width: 89%;
+    margin-left: 1em;
     margin-right: 1em;
 }
 
@@ -1419,6 +1429,10 @@ table.userfilesdisplay td.checkbox {
 #errorExplanation ul li {
   font-size: 12px;
   list-style: square;
+}
+
+.ajax_error{
+  width:90%;
 }
 
 /* ######################################################### */

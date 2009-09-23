@@ -1,0 +1,17 @@
+<ul>
+    <% session[:basic_filters].each do |filter|%>
+       <li>
+         <%= filter %><%= link_to_remote "    x", :url  => userfiles_path(:remove_basic_filter  => filter), :method  => 'get' %>
+       </li>
+    <% end %>
+    <% session[:custom_filters].each do |filter|%>
+       <li>
+         <%= "custom:#{filter}" %><%= link_to_remote "    x", :url  => userfiles_path(:remove_custom_filter  => filter), :method  => 'get'  %>
+       </li>
+    <% end %>
+    <% session[:tag_filters].each do |filter|%>
+        <li>
+          <%= "tag:#{filter}" %><%= link_to_remote "    x", :url  => userfiles_path(:remove_tag_filter  => filter), :method  => 'get'  %>
+        </li>
+    <% end %>
+  </ul>

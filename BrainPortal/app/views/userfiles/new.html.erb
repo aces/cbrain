@@ -9,17 +9,10 @@
 # $Id$
 #
 -%>
-
-<div class = "generalcontent">
-   <h2>File Upload Options:</h2>
-
+<br>
    <%
    form_tag( "/userfiles", :multipart => true, :method => :post) do
    %>
-      <div class = "generalbox">
-
-         <div class = "uploadwrapper">
-
               Select file to upload:
   
               <%= file_field_tag("upload_file") %>
@@ -45,8 +38,17 @@
               <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
             <br><br><br>
               <%= submit_tag("Upload file") %>
-
-         </div>
-      </div>
    <%end%>
 </div>
+ <div class="userfiles_option_close">
+  <br>
+   <%= 
+       link_to_function 'close', :class  => '' do |page|
+         page << "new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+         page << "Element.hide(current_options + '_div');"
+         page << "Element.update(current_options + '_div', '');"
+         page << "current_options = null;"
+       end
+    %>
+</div>
+<br>
