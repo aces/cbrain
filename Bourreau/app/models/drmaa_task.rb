@@ -659,11 +659,11 @@ public
   # Delay this subprocess S seconds until there are N or less lockfiles
   # present, where S and N are hardcoded (see source)
   def delay_subprocess
-    random_max_wait = Time.now + 1000 + rand(1000)
-    sleep 1+rand(2)
+    random_max_wait = Time.now + 4000 + rand(4000)
+    sleep 3+rand(3)
     while Time.now < random_max_wait
       numlocks = get_num_subprocess_locks
-      break if numlocks < 3  # N
+      break if numlocks < 1  # N
       sleep 3+rand(3)        # S
     end
   end

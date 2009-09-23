@@ -152,6 +152,8 @@ class TasksController < ApplicationController
       return
     end
 
+    affected_tasks = []
+
     tasklist.each do |task_bid_tid|
 
       (bourreau_id,task_id) = task_bid_tid.split(/,/)
@@ -164,9 +166,6 @@ class TasksController < ApplicationController
       end
 
       continue if task.user_id != current_user.id && current_user.role != 'admin'
-
-      current_user.addlog_context(self,"Sending '#{operation}' to task #{task.bname_tid}")
-      current_user.addlog_revinfo(task)
 
       case operation
         when "postprocess"
@@ -191,8 +190,13 @@ class TasksController < ApplicationController
           task.save
       end
 
-      flash[:notice] += "Sent '#{operation}' operation to task #{task.id}.\n"
+      affected_tasks << task.bname_tid
     end
+
+    message = "Sent '#{operation}' to tasks: #{affected_tasks.join(", ")}"
+
+    current_user.addlog_context(self,message)
+    flash[:notice] += message
 
     redirect_to :action => :index
 

@@ -185,6 +185,9 @@ module ActRecLog
   
       message = lines.join("\n") + "\n"
       log += Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + message
+      while log.size > 65500 && log =~ /\n/   # TODO: archive ?
+        log.sub!(/^[^\n]*\n/,"")
+      end
       arl.update_attributes( { :log => log } )
     rescue
       false
