@@ -10,7 +10,7 @@
 -%>
 
 <tr class= "<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFEBE5')">
-   <td class = "checkbox"><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all]) %></td>
+   <td class="checkbox" ><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all], :class => "userfile_checkbox") %></td>
    <td>
       <%= tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>

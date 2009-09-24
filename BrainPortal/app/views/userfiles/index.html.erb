@@ -62,95 +62,14 @@
 
 <div class="userfiles_content">
   <div id="userfiles_top_menu">
-  <%= link_to_function "Tags", {:class => "userfile_menu", :id  => 'tag_option'} do |page|
-    page << "if(current_options != 'tag_option'){"
-    page << "var local_var = current_options;"
-    page['tag_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-    page << "if(local_var){Element.hide(local_var + '_div');"
-    page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
-    page << "Element.update(local_var + '_div', '');"
-    page << "}"
-    page << 'current_options = "tag_option";'
-    page.replace_html('tag_option_div', :partial  => 'tag_table')
-    page['tag_option_div'].visual_effect(:blind_down, :duration  => 0.4)
-    page << "}"
-  end %>
-
-  <%= link_to_function "Groups", {:class => "userfile_menu", :id  => 'group_option'}  do |page|
-    page << "if(current_options != 'group_option'){"
-    page << "var local_var = current_options;"
-    page['group_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-    page << "if(local_var){Element.hide(local_var + '_div');"
-    page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
-    page << "Element.update(local_var + '_div', '');"
-    page << "}"
-    page << 'current_options = "group_option";'
-    page.replace_html('group_option_div', :partial  => 'groups_table')
-    page['group_option_div'].visual_effect(:blind_down, :duration  => 0.4)
-    page << "}"
-  end %>    
-
-   <%= link_to_function "Management", {:class => "userfile_menu", :id  => 'management_option'}  do |page|
-      page << "if(current_options != 'management_option'){"
-      page << "var local_var = current_options;"
-      page['management_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-      page << "if(local_var){Element.hide(local_var + '_div');"
-      page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
-      page << "Element.update(local_var + '_div', '');"
-      page << "}"
-      page << 'current_options = "management_option";'
-      page.replace_html('management_option_div', :partial  => 'file_management')
-      page['management_option_div'].visual_effect(:blind_down, :duration  => 0.4)
-      page << "}"
-    end %>    
-
-    <%= link_to_function "Conversion Tools", {:class => "userfile_menu", :id  => 'conversion_tool_option'}  do |page|
-      page << "if(current_options != 'conversion_tool_option'){"
-      page << "var local_var = current_options;"
-      page['conversion_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-      page << "if(local_var){Element.hide(local_var + '_div');"
-      page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
-      page << "Element.update(local_var + '_div', '');"
-      page << "}"
-      page << 'current_options = "conversion_tool_option";'
-      page.replace_html('conversion_tool_option_div', :partial  => 'tool_management_conversion')
-      page['conversion_tool_option_div'].visual_effect(:blind_down, :duration  => 0.4)
-      page << "}"
-    end %>
-
-    <%= link_to_function "Scientific Tools", {:class => "userfile_menu", :id  => 'scientific_tool_option'}  do |page|
-      page << "if(current_options != 'scientific_tool_option'){"
-      page << "var local_var = current_options;"
-      page['scientific_tool_option'].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
-      page << "if(local_var){Element.hide(local_var + '_div');"
-      page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
-      page << "Element.update(local_var + '_div', '');"
-      page << "}"
-      page << 'current_options = "scientific_tool_option";'
-      page.replace_html('scientific_tool_option_div', :partial  => 'tool_management_scientific')
-      page['scientific_tool_option_div'].visual_effect(:blind_down, :duration  => 0.4)
-      page << "}"
-    end %>
-
-    <%= link_to_remote  "Upload File",
-                          {:url  => new_userfile_path,
-                           :method  => 'get',
-                           :condition  => "current_options != 'upload_option'",
-                           :before  => "if(current_options){Element.hide(current_options + '_div');new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});Element.update(current_options + '_div', '');} $('upload_option').morph('background-color: #FFFFFF; color: #000000');",
-                           :after  => 'current_options = "upload_option";',
-                           :update  => 'upload_option_div',
-                           :complete  => 'Effect.BlindDown("upload_option_div", {duration: 0.4})'},
-                          {:class => "userfile_menu", :id  => 'upload_option'}  %>
-
-
-     <%= link_to_remote  "Jiv Viewer",
-                          {:url  => jiv_path,
-                           :condition  => "current_options != 'jiv_option'",
-                           :before  => "if(current_options){Element.hide(current_options + '_div');new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});Element.update(current_options + '_div', '');} $('jiv_option').morph('background-color: #FFFFFF; color: #000000');",
-                           :after  => 'current_options = "jiv_option";',
-                           :complete  => 'Effect.BlindDown("jiv_option_div", {duration: 0.4})'},
-                          {:class => "userfile_menu", :id  => 'jiv_option'}  %>
-
+    <%= userfiles_menu_option('Tags', 'tag_option', 'tag_table') %>
+    <%= userfiles_menu_option('Groups', 'group_option', 'groups_table') %>
+    <%= userfiles_menu_option('Management', 'management_option', 'file_management') %>
+    <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
+    <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
+    
+    <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%>
+    <%= userfiles_menu_option('Jiv Viewer', 'jiv_option', 'jiv/index') %>
   </div>
 
   <br>
@@ -179,7 +98,7 @@
 
   <br>
 
-  <%= link_to_function "&rArr; Filters",  {:class  => 'filter_option', :id => 'filter_option_show'} do |page|
+  <%= link_to_function "<< Show Filters",  {:class  => 'filter_option', :id => 'filter_option_show'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:84%", :duration  => 0.5)
         page['filter_option_show'].hide
@@ -187,7 +106,7 @@
       end
   %>
 
-  <%= link_to_function "&lArr; Filters",  {:class  => 'filter_option', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+  <%= link_to_function ">> Hide Filters",  {:class  => 'filter_option', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
         page['filter_option_hide'].hide

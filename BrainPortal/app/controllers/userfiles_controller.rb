@@ -60,6 +60,18 @@ class UserfilesController < ApplicationController
     @data_providers = available_data_providers(current_user)
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true && b.is_alive? }
     @prefered_bourreau_id = current_user.user_preference.bourreau_id
+    
+    
+    #jiv stuff
+    jiv_files = current_user.userfiles.find(:all, :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"]).map(&:name)
+    @subjects = Jiv.filter_subjects(jiv_files)
+    @combos = []
+    
+    @subjects.each_with_index do |s1, i|
+      @subjects[(i+1)..-1].each do |s2|
+        @combos << s1 + " " + s2
+      end
+    end
 
     respond_to do |format|
       format.html # index.html.erb

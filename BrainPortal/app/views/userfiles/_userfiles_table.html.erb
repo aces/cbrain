@@ -2,7 +2,6 @@
    <tr>
       <td colspan="10">
   
-  
            <div class = "pages">
                 <% if session[:pagination] == 'on' %>
                    <%= will_paginate %>
@@ -12,41 +11,63 @@
                  <% end %><br>
                  <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
                    <%= link_to_remote session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", :url  => userfiles_path(:view_all => set_toggle(session[:view_all])), :method  => 'get' %>
-                 <% end %>
+                 <% end %><br><br>
+                 <%= link_to_remote  "Tree view", :url  =>  userfiles_path(:order  => 'userfiles.lft'), :method  => 'get'  %>
+                 <%= set_order_icon('userfiles.lft', session[:order]) %>
            </div>
       </td>
    </tr>
   
     <tr>
       <th>
-        <%= link_to 'Select All', userfiles_path(:select_all => true, :page  => params[:page]) %>
+        <div id="select_all">
+          <%= link_to_function 'Select All' do |page|
+              page.select(".userfile_checkbox").each do |check_box|
+                check_box.checked=true
+              end
+              page['select_all'].hide
+              page['unselect_all'].show
+            end
+          %>
+        </div>
+        <div id="unselect_all" style="display:none">
+          <%= link_to_function 'Unselect All' do |page|
+              page.select(".userfile_checkbox").each do |check_box|
+                check_box.checked=false
+              end
+              page['unselect_all'].hide
+              page['select_all'].show
+            end
+          %>
+        </div>
       </th>
       <th>
-        <%= link_to "Filename", userfiles_path(:order  => 'userfiles.name') %>
-        <%= set_order_icon('name', session[:order]) %>
+        <%= link_to_remote  "Filename", :url  =>  userfiles_path(:order  => 'userfiles.name'), :method  => 'get'  %>
+        <%= set_order_icon('userfiles.name', session[:order]) %>
       </th>
       <th>
-        <%= link_to "Owner", userfiles_path(:order  => 'users.login') %>
-        <%= set_order_icon('user_id', session[:order]) %>
+        <%= link_to_remote  "Owner", :url  =>  userfiles_path(:order  => 'users.login'), :method  => 'get'  %>
+        <%= set_order_icon('users.login', session[:order]) %>
       </th>
       <th>
-        <%= link_to "Creation Date", userfiles_path(:order  => 'userfiles.created_at') %>
-        <%= set_order_icon('created_at', session[:order]) %>
+        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:order  => 'userfiles.created_at'), :method  => 'get'  %>
+        <%= set_order_icon('userfiles.created_at', session[:order]) %>
       </th>
       <th>
-        <%= link_to "Size", userfiles_path(:order  => 'userfiles.size') %>
-        <%= set_order_icon('size', session[:order]) %>
+        <%= link_to_remote  "Size", :url  =>  userfiles_path(:order  => 'userfiles.size'), :method  => 'get'  %>
+        <%= set_order_icon('userfiles.size', session[:order]) %>
       </th>
       <th>
-        Tags
+        <%= link_to_remote  "Tags", :url  =>  userfiles_path(:order  => 'tags.name'), :method  => 'get'  %>
+        <%= set_order_icon('tags.name', session[:order]) %>
       </th>
       <th>
-        <%= link_to "Groups", userfiles_path(:order  => 'groups.name') %>
-        <%= set_order_icon('group_id', session[:order]) %>
+        <%= link_to_remote  "Groups", :url  =>  userfiles_path(:order  => 'groups.name'), :method  => 'get'  %>
+        <%= set_order_icon('groups.name', session[:order]) %>
       </th>
       <th>
-         <%= link_to "Group Permissions", userfiles_path(:order  => 'userfiles.group_writable') %>
-         <%= set_order_icon('group_writable', session[:order]) %>
+         <%= link_to_remote  "Group Permissions", :url  =>  userfiles_path(:order  => 'userfiles.group_writable'), :method  => 'get'  %>
+         <%= set_order_icon('userfiles.group_writable', session[:order]) %>
       </th>
     </tr>
   </thead>

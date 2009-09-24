@@ -36,7 +36,7 @@ class Session
     @session[:tag_filters] ||= []
     @session[:custom_filters] ||= []
     @session[:pagination] ||= 'on'
-    @session[:order] ||= 'lft'
+    @session[:order] ||= 'userfiles.lft'
   end
   
   #Update attributes of the session object based on the incoming request parameters
