@@ -16,7 +16,11 @@
 <%= javascript_include_tag "tableH" %>
 <%= javascript_tag "var current_options;" %>
 
-
+<% javascript_tag do %>
+  Event.observe(window, 'load', function() {
+    
+  });
+<% end %>
 
 <div id="sidebar_wrapper" style="display:none;">
   <div id="sidebar">

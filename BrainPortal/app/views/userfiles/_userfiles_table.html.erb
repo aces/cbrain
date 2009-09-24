@@ -20,23 +20,20 @@
   
     <tr>
       <th>
-        <div id="select_all">
-          <%= link_to_function 'Select All' do |page|
+        <div class="userfiles_select_all">
+          <%= link_to_function '&radic;' do |page|
               page.select(".userfile_checkbox").each do |check_box|
                 check_box.checked=true
               end
-              page['select_all'].hide
-              page['unselect_all'].show
             end
           %>
         </div>
-        <div id="unselect_all" style="display:none">
-          <%= link_to_function 'Unselect All' do |page|
+        &nbsp;
+        <div class="userfiles_select_all">
+          <%= link_to_function '<big>&times;</big>' do |page|
               page.select(".userfile_checkbox").each do |check_box|
                 check_box.checked=false
               end
-              page['unselect_all'].hide
-              page['select_all'].show
             end
           %>
         </div>

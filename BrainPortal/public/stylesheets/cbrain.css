@@ -180,13 +180,16 @@ pre {
 
 #selected a {
     background-color:white;
-    color:#004194;
+    color:#05A3D6;
 }
 
 #unselected a {
     color: white;
 }
 
+.userfiles_select_all{
+    display: inline;
+}
 
 
 /* ######################################################### */
