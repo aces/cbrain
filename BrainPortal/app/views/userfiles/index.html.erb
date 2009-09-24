@@ -179,7 +179,7 @@
 
   <br>
 
-  <%= link_to_function "&rArr; Filters",  {:class  => 'filter_option', :id => 'filter_option_show'} do |page|
+  <%= link_to_function "&#8680; Filters",  {:class  => 'filter_option', :id => 'filter_option_show'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:84%", :duration  => 0.5)
         page['filter_option_show'].hide
@@ -187,7 +187,7 @@
       end
   %>
 
-  <%= link_to_function "&lArr; Filters",  {:class  => 'filter_option', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+  <%= link_to_function "&#8678; Filters",  {:class  => 'filter_option', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
         page['filter_option_hide'].hide
