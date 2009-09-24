@@ -410,8 +410,14 @@ class UserfilesController < ApplicationController
       when "delete"
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           basename = userfile.name
-          userfile.destroy
-          flash[:notice] += "File #{basename} deleted.\n"
+          if userfile.data_provider.is_browsable?
+            userfile.destroy_log rescue true
+            userfile.delete
+            flash[:notice] += "File '#{basename}' unregistered.\n"
+          else
+            userfile.destroy
+            flash[:notice] += "File '#{basename}' deleted.\n"
+          end
         end
 
       when "download"
