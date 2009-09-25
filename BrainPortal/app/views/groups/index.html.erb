@@ -14,12 +14,13 @@
 <div class = "generalcontent">
 
    <% title 'Groups' %>
+   
+   <div class="resource_list_box">
+     <%= button_to 'Create New Group', new_group_path, :method => :get %>
+   </div>
 
-   <h2>Groups <%= "for #{current_user.site.name}" if current_user.has_role? :site_manager %></h2>
 
-   <div class = "generalbox">
-
-      <table>
+      <table class="resource_list">
         <tr>
           <th>Name</th>
           <th>Type</th>
@@ -48,9 +49,4 @@
            </tr>
          <% end %>
       </table>
-
-      <br />
-
-      <%= button_to 'Create New Group', new_group_path, :method => :get %>
-   </div>
 </div>

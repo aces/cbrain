@@ -1,26 +1,28 @@
-<h1>Sites</h1>
+<div class="generalcontent">
 
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Managers</th>
-    <th>Number of Users</th>
-    <th>Number of Groups</th>
-    <th colspan="3"/>
-  </tr>
+  <div class="resource_list_box">
+    <%= button_to 'Create New Site', new_site_path, :method  => :get %>
+  </div>
 
-<% for site in @sites %>
-  <tr>
-    <td><%=link_to h(site.name), site_path(site) %></td>
-    <td><%= site.managers.collect{ |m| h(m.login) }.join('<BR>') %></td>
-    <td><%= site.users.count %></td>
-    <td><%= site.groups.count %></td>   
-    <td><%= button_to 'Edit', edit_site_path(site), :method  => :get %></td>
-    <td><%= button_to 'Destroy', site, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
-<% end %>
-</table>
+  <table class="resource_list">
+    <tr>
+      <th>Name</th>
+      <th>Managers</th>
+      <th>Number of Users</th>
+      <th>Number of Groups</th>
+      <th colspan="3"/>
+    </tr>
 
-<br />
-
-<%= button_to 'Create new site', new_site_path, :method  => :get %>
+  <% for site in @sites %>
+    <tr>
+      <td><%=link_to h(site.name), site_path(site) %></td>
+      <td><%= site.managers.collect{ |m| h(m.login) }.join('<BR>') %></td>
+      <td><%= site.users.count %></td>
+      <td><%= site.groups.count %></td>   
+      <td><%= button_to 'Edit', edit_site_path(site), :method  => :get %></td>
+      <td><%= button_to 'Destroy', site, :confirm => 'Are you sure?', :method => :delete %></td>
+    </tr>
+  <% end %>
+  </table>
+  
+</div>

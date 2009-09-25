@@ -14,10 +14,11 @@
 
 <% title "Users"%>
 
-<h2>Current Users</h2>
-<div class = "generalbox">
+<div class = "resource_list_box">
+  <%= button_to 'Create New User', new_user_path, :method => :get %>
+</div>
 
-<table>
+<table class="resource_list">
   <tr>
     <th>Name</th>
     <th>Login</th>
@@ -45,9 +46,4 @@
   </tr>
 <% end %>
 </table>
-
-<br />
-
-<%= button_to 'Create New User', new_user_path, :method => :get %>
-</div>
 </div>

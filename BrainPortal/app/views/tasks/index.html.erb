@@ -18,17 +18,10 @@
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
    <div class = "generalcontent">
-   
-      <h2>Tasks</h2>
-        
-      <div class = "tasksbox">
-         <div class = "tasksmenuoptions">
-        
-            <div class = "taskstrigger">
+           
+      <div class = "resource_list_box">        
             <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
-            </div>  <!-- End class="taskstrigger" -->
       
-            <div class = "tasksoperation">
                Other operations: <%= select_tag(
                   "operation",
                   '
@@ -50,13 +43,10 @@
             
                   <%= submit_tag("Apply Operation") %>
             
-            
-            </div>  <!-- End class="tasksoperation" -->
-         </div>  <!-- End class="tasksmenuoptions" -->
-      </div>  <!-- End class="tasksbox" -->
+      </div>  <!-- End class="resource_list_box" -->
       
       
-      <table class = "taskstable">
+      <table class = "resource_list">
          <tr>
              <th>Select</th>
              <th>Task Name</th>

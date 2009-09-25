@@ -335,18 +335,6 @@ a:hover {
     margin-bottom: 0px; 
 }
 
-/* ######################################################### */
-/* Formatting for the tag table for tag display */
-/* ######################################################### */
-
-.tagtable td {
-    border: 0px;
-}
-
-.tagtable {
-    border: 0px;
-    /*border-bottom: 1px solid #9CF;*/
-}
 
 /* ######################################################### */
 /* General formatting for the content of the page */
@@ -907,7 +895,7 @@ table#userfilesdisplay td.checkbox {
     padding-left: 2em;
 }
 
-.pages {
+#pages {
     width: auto;
     margin-left: 1em;
     margin-right: 4em;
@@ -940,74 +928,10 @@ table#userfilesdisplay td.checkbox {
 }
 
 /* ######################################################### */
-/* Tasks table view */
-/* ######################################################### */
-
-.taskstable {
-    float: left;
-    width: 100%;
-    padding: 6px;
-    margin-top: 0.5em; 
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 4em;
-}
-
-.taskstable th {
-    background-color: #0471B4;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-}
-
-
-.taskstable td {
-    border: 0px;
-    text-align: center;
-    text-indent: 0em;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;
-    padding: 2px;
-}
-
-.taskstable tr.list-even td {
-    background-color: #ffffff;  
-}
-
-.tasksbox {
-    float:left; 
-    width: 100%;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-    padding-left: 0em;
-    padding-right: 0em;
-    margin-right: 1em;
-    margin-left: 1em;
-    margin-bottom: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-.tasksmenuoptions {
-    float:left; 
-    padding-left: 1em;
-    margin-top: 1em;
-}
-
-/* ######################################################### */
 /* Formatting for the data provider view */
 /* ######################################################### */
 
-.dataprovidertable {
-    float: left;
+.resource_list {
     width: 100%;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -1018,7 +942,7 @@ table#userfilesdisplay td.checkbox {
     margin-bottom: 4em;
 }
 
-.dataprovidertable th {
+.resource_list th {
     border-bottom: 1px solid #9CF;
     border-top:1px solid #9CF;
     border-left: 1px solid #9CF;
@@ -1033,7 +957,7 @@ table#userfilesdisplay td.checkbox {
     color: #ffffff;
 }
 
-.dataprovidertable td {
+.resource_list td {
     border-bottom: 1px solid #9CF;
     border-top: 1px solid #9CF;
     border-left: 1px solid #9CF;
@@ -1048,56 +972,15 @@ table#userfilesdisplay td.checkbox {
     padding: 2px;
 }
 
-.dataproviderbox {
+.resource_list_box {
     float:left; 
-    width: 100%;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-    margin-left: 1em;
-    margin-bottom: 1em;
+    width: 98%;
+    margin: 1em;
+    padding: 1em;
     background-color: #f6f6f6;
     color: #505050;
     line-height: 1.5em;
     border: 1px solid #e4e4e4;
-}
-
-.dataprovidermenuoptions {
-    float:left; 
-    padding-left: 1em;
-}
-
-/* ######################################################### */
-/* Bourreaux view */
-/* ######################################################### */
-
-.bourreauxbox {
-    float:left; 
-    width: 100%;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-    margin-left: 1em;
-    margin-bottom: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-.bourreauxtable {
-    float: left;
-    width: 100%;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    padding-right: 1px;
-    margin-top: 1em; 
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 4em;
-}
-
-.bourreauxmenuoptions {
-    float:left; 
-    padding-left: 1em;
 }
 
 /* ######################################################### */
@@ -1434,9 +1317,6 @@ table#userfilesdisplay td.checkbox {
   list-style: square;
 }
 
-.ajax_error{
-  width:90%;
-}
 
 /* ######################################################### */
 /* For user show */

@@ -14,17 +14,13 @@
 
   <% title 'Bourreaux' %>
 
-  <h2>Bourreaux</h2>
-
   <% if check_role(:admin) || check_role(:site_manager)%>
-    <div class = "bourreauxbox">
-       <div class = "bourreauxmenuoptions">
+    <div class = "resource_list_box">
          <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
-       </div>  <!-- End class="bourreauxmenuoptions" -->
     </div>  <!-- End class="bourreauxbox" -->
   <% end %>
   
-  <table class = "bourreauxtable">
+  <table class="resource_list">
      <tr>
          <th>Bourreau Name</th>
          <th>Owner</th>

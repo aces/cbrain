@@ -1,29 +1,31 @@
-<h1>Information for: <%= h @site.name %></h1>
+<div class="generalcontent">
+    
+  <div class="resource_list_box">
+    <strong>Managers:</strong> <%= @site.managers.collect(&:login).join(", ") %><br>
+    <strong>Number of users:</strong> <%= @site.users.count %><br>
+    <strong>Number of groups:</strong> <%= @site.users.count %><br>
+    <strong>Number of files:</strong> <%= @site.userfiles_find_all.size %><br>
+    <strong>Number of data providers:</strong> <%= @site.data_providers_find_all.size %><br>
+    <strong>Number of remote resources:</strong> <%= @site.remote_resources_find_all.size %><br>
+  </div>
 
-<strong>Managers:</strong> <%= @site.managers.collect(&:login).join(", ") %><br>
-<strong>Number of users:</strong> <%= @site.users.count %><br>
-<strong>Number of groups:</strong> <%= @site.users.count %><br>
-<strong>Number of files:</strong> <%= @site.userfiles_find_all.size %><br>
-<strong>Number of data providers:</strong> <%= @site.data_providers_find_all.size %><br>
-<strong>Number of remote resources:</strong> <%= @site.remote_resources_find_all.size %><br>
+  <table class="resource_list">
+     <tr>
+        <th>Users</th>
+        <th>Groups</th>
+        <th>Data Providers</th>
+        <th>Remote Resources</th>
+     </tr>
+     <tr>
+        <td><%= @site.users.all.collect(&:login).join("<br>") %></td>
+        <td><%= @site.groups.all.collect(&:name).join("<br>") %></td>
+        <td><%= @site.data_providers_find_all.collect(&:name).join("<br>") %></td>
+        <td><%= @site.remote_resources_find_all.collect(&:name).join("<br>") %></td>
+     </tr>
+  </table>
 
-<table>
-   <tr>
-      <th>Users</th>
-      <th>Groups</th>
-      <th>Data Providers</th>
-      <th>Remote Resources</th>
-   </tr>
-   <tr>
-      <td><%= @site.users.all.collect(&:login).join("<br>") %></td>
-      <td><%= @site.groups.all.collect(&:name).join("<br>") %></td>
-      <td><%= @site.data_providers_find_all.collect(&:name).join("<br>") %></td>
-      <td><%= @site.remote_resources_find_all.collect(&:name).join("<br>") %></td>
-   </tr>
-</table>
-
-<% if check_role(:admin) %>
-   <%= button_to 'Edit', edit_site_path(@site), :method => :get %><br>
-   <%= link_to 'Site Index', sites_path %>   
-<% end %>
-
+  <% if check_role(:admin) %>
+     <%= button_to 'Edit', edit_site_path(@site), :method => :get %><br>
+     <%= link_to 'Site Index', sites_path %>   
+  <% end %>
+</div>

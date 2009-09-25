@@ -13,10 +13,11 @@
 
    <% title 'Files' %>
 
-   <h2>Feedback</h2>
+   <div class="resource_list_box">
+     <%= button_to 'Give Feedback', new_feedback_path, :method  => :get %>
+   </div>
 
-   <div class = "generalbox">
-      <table>
+      <table class="resource_list">
          <tr>
             <th>Summary</th>
             <th>Author</th>
@@ -40,6 +41,4 @@
       </table>
       <br/>
 
-      <%= link_to 'Give Feedback', new_feedback_path %>
-   </div>  <!-- End class="generalbox" -->
 </div>  <!-- End class="generalcontent" -->
