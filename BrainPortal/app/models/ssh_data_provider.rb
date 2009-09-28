@@ -34,11 +34,13 @@ class SshDataProvider < DataProvider
   end
 
   def impl_is_alive? #:nodoc:
-     ssh_opts = self.ssh_shared_options
-     ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
-     dir  = shell_escape(self.remote_dir)
-     text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
-     return(text.blank? ? true : false);
+    ssh_opts = self.ssh_shared_options
+    ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
+    dir  = shell_escape(self.remote_dir)
+    text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
+    return(text.blank? ? true : false);
+  rescue
+    false
   end
 
   # Please make sure that subclasses that are not
