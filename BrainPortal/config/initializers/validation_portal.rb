@@ -9,9 +9,16 @@
 # $Id$
 #
 
+#-----------------------------------------------------------------------------
 puts "C> CBRAIN BrainPortal validation starting, " + Time.now.to_s
+#-----------------------------------------------------------------------------
+require 'socket'
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Verifying configuration variables..."
+#-----------------------------------------------------------------------------
 
 Needed_Constants = %w( DataProviderCache_dir )
 
@@ -31,22 +38,11 @@ end
 
 begin
 
-puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
 
-# Creating cache dir for Data Providers
-DataProvider.all.each do |p|
-  begin
-    p.mkdir_cache_providerdir
-    puts "C> \t- Data Provider '#{p.name}': OK."
-  rescue => e
-    unless e.to_s.match(/No caching in this provider/i)
-      raise e
-    end
-    puts "C> \t- Data Provider '#{p.name}': no need."
-  end
-end
 
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that required groups and users have been created..."
+#-----------------------------------------------------------------------------
 
 everyone_group = Group.find_by_name("everyone")
 if ! everyone_group
@@ -62,7 +58,7 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
   puts "C> \t- Admin user does not exist yet. Creating one."
   admin_group = SystemGroup.create!(:name  => "admin")
   
-  pwdduh = 'cbrainDuh' # use 9 chars for pretty message below.
+  pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
   User.create!(
     :full_name             => "Admin",
     :login                 => "admin",
@@ -72,13 +68,17 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
     :group_ids             => [everyone_group.id, admin_group.id],
     :role                  => 'admin'
   )
-  puts("****************************************************")
-  puts("*  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'  *")
-  puts("*CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN*")
-  puts("****************************************************")
+  puts("******************************************************")
+  puts("*  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
+  puts("* CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")
+  puts("******************************************************")
 end
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
+#-----------------------------------------------------------------------------
 
 User.find(:all, :include => [:groups, :user_preference]).each do |u|
   unless u.group_ids.include? everyone_group.id
@@ -107,7 +107,12 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
   end
 end
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that all sites have a group and that all their users belong to it."
+#-----------------------------------------------------------------------------
+
 Site.all.each do |s|
   site_group = Group.find_by_name(s.name)
   if ! site_group
@@ -125,7 +130,12 @@ Site.all.each do |s|
    end
 end
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that all groups have a type..."
+#-----------------------------------------------------------------------------
+
 Group.all.each do |g|
   next if g.type
   puts "C> \t- '#{g.name}' group migrated to WorkGroup."
@@ -133,7 +143,12 @@ Group.all.each do |g|
   g.save!
 end
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that userfiles all have a group..."
+#-----------------------------------------------------------------------------
+
 missing_gid = Userfile.find(:all, :conditions => { :group_id => nil })
 missing_gid.each do |file|
   user   = file.user
@@ -145,7 +160,60 @@ missing_gid.each do |file|
   file.save!
 end
 
+
+
+#-----------------------------------------------------------------------------
+puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
+#-----------------------------------------------------------------------------
+dp_cache_md5 = DataProvider.cache_md5
+brainportal  = BrainPortal.find(:first,
+               :conditions => { :cache_md5 => dp_cache_md5 })
+unless brainportal
+  puts "C> \t- Creating a new BrainPortal record for this RAILS app."
+  admin  = User.find_by_login('admin')
+  gadmin = Group.find_by_name('admin')
+  brainportal = BrainPortal.create!(
+                  :name        => "Portal_" + rand(10000).to_s,
+                  :user_id     => admin.id,
+                  :group_id    => gadmin.id,
+                  :online      => true,
+                  :read_only   => false,
+                  :description => 'CBRAIN BrainPortal on host ' + Socket.gethostname,
+                  :cache_md5   => dp_cache_md5 )
+  puts "C> \t- NOTE: You might want to use the console and give it a better name than '#{brainportal.name}'."
+end
+
+# These two constants are helpful whenever we want to
+# access the info about this very RAILS app.
+# Note that SelfRemoteResourceId is used by SyncStatus methods.
+CBRAIN::SelfRemoteResource   = brainportal
+CBRAIN::SelfRemoteResourceId = brainportal.id
+
+
+
+#-----------------------------------------------------------------------------
+puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
+#-----------------------------------------------------------------------------
+
+# Creating cache dir for Data Providers
+DataProvider.all.each do |p|
+  begin
+    p.mkdir_cache_providerdir
+    puts "C> \t- Data Provider '#{p.name}': OK."
+  rescue => e
+    unless e.to_s.match(/No caching in this provider/i)
+      raise e
+    end
+    puts "C> \t- Data Provider '#{p.name}': no need."
+  end
+end
+
+
+
+#-----------------------------------------------------------------------------
 puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."
+#-----------------------------------------------------------------------------
+
 Bourreau.all.each do |bourreau|
   name = bourreau.name
   if (bourreau.has_remote_control_info? rescue false)
@@ -164,9 +232,14 @@ Bourreau.all.each do |bourreau|
   end
 end
 
+
+
+#-----------------------------------------------------------------------------
 rescue => error
   if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
     puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+  elsif error.to_s.match(/Mysql::Error: Unknown column/i)
+    puts "Skipping validation:\n\t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
   elsif error.to_s.match(/Unknown database/i)
     puts "Skipping validation:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
   else

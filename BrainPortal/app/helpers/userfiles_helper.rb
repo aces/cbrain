@@ -83,4 +83,23 @@ module UserfilesHelper
                    },
                   {:class => "userfile_menu", :id  => 'upload_option'}
   end  
+
+  def status_html_symbol(statkeyword)
+    case statkeyword
+      when "InSync"
+        '<font color="green">&#10003;</font>'
+      when "ProvNewer"
+        '<font color="green">&lowast;</font>'
+      when "CacheNewer"
+        '<font color="yellow">&there4;</font>'
+      when "ToCache"
+        '<font color="blue">&darr;</font>'
+      when "ToProvider"
+        '<font color="blue">&uarr;</font>'
+      when "Corrupted"
+        '<font color="red">&times;</font>'
+      else
+        '<font color="red">?</font>'
+    end
+  end
 end

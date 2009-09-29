@@ -9,9 +9,16 @@
 # $Id$
 #
 
+#-----------------------------------------------------------------------------
 puts "C> CBRAIN Bourreau validation starting, " + Time.now.to_s
+#-----------------------------------------------------------------------------
+require 'socket'
 
+
+
+#-----------------------------------------------------------------------------
 puts "C> Verifying configuration variables..."
+#-----------------------------------------------------------------------------
 
 Needed_Constants = %w(
                        DataProviderCache_dir
@@ -59,7 +66,10 @@ end
 
 
 
+#-----------------------------------------------------------------------------
 puts "C> Setting up subprocess locks directory..."
+#-----------------------------------------------------------------------------
+
 CBRAIN::DRMAA_SubprocessLocksDir = (Pathname.new(CBRAIN::DRMAA_sharedir) + ".SubprocessLocks").to_s
 unless File.directory?(CBRAIN::DRMAA_SubprocessLocksDir)
   Dir.mkdir(CBRAIN::DRMAA_SubprocessLocksDir)
@@ -78,7 +88,52 @@ end
 
 
 
+#-----------------------------------------------------------------------------
+puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
+#-----------------------------------------------------------------------------
+
+dp_cache_md5     = DataProvider.cache_md5
+bourreau_by_md5  = Bourreau.find(:first,
+                   :conditions => { :cache_md5 => dp_cache_md5 })
+bourreau_by_name = Bourreau.find(:first,
+                   :conditions => { :name => CBRAIN::BOURREAU_CLUSTER_NAME })
+
+if bourreau_by_md5 && bourreau_by_name
+  if bourreau_by_md5.id != bourreau_by_name.id
+    raise "Error! Found two Bourreau records for this rails APP, but they conflict!"
+  end
+elsif bourreau_by_md5 || bourreau_by_name
+  puts "C> \t- Adjusting Bourreau record for this RAILS app."
+  bourreau = bourreau_by_md5 || bourreau_by_name # which ever is defined
+  bourreau.cache_md5 = dp_cache_md5
+  bourreau.name      = CBRAIN::BOURREAU_CLUSTER_NAME
+  bourreau.save!
+else
+  puts "C> \t- Creating a new Bourreau record for this RAILS app."
+  admin  = User.find_by_login('admin')
+  gadmin = Group.find_by_name('admin')
+  bourreau = Bourreau.create!(
+                  :name        => CBRAIN::BOURREAU_CLUSTER_NAME,
+                  :user_id     => admin.id,
+                  :group_id    => gadmin.id,
+                  :online      => true,
+                  :read_only   => false,
+                  :description => 'Bourreau on host ' + Socket.gethostname,
+                  :cache_md5   => dp_cache_md5 )
+  puts "C> \t- NOTE: You might want to edit it using the Portal's interface."
+end
+
+# These two constants are helpful whenever we want to
+# access the info about this very RAILS app.
+# Note that SelfRemoteResourceId is used by SyncStatus methods.
+CBRAIN::SelfRemoteResource   = bourreau
+CBRAIN::SelfRemoteResourceId = bourreau.id
+
+
+
+#-----------------------------------------------------------------------------
 puts "C> Making sure all providers have proper cache subdirectories..."
+#-----------------------------------------------------------------------------
 
 # Creating cache dir for Data Providers
 DataProvider.all.each do |p|
@@ -93,7 +148,9 @@ end
 
 
 
+#-----------------------------------------------------------------------------
 puts "C> Loading cluster management SCIR layers..."
+#-----------------------------------------------------------------------------
 
 # Load the proper class for interacting with the cluster
 case CBRAIN::CLUSTER_TYPE

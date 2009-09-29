@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090902162811) do
+ActiveRecord::Schema.define(:version => 20090929203351) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -49,10 +49,12 @@ ActiveRecord::Schema.define(:version => 20090902162811) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "description"
   end
+
+  add_index "data_providers", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "drmaa_tasks", :force => true do |t|
     t.string   "type"
@@ -122,9 +124,8 @@ ActiveRecord::Schema.define(:version => 20090902162811) do
     t.string   "ssh_control_rails_dir"
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
+    t.string   "cache_md5"
   end
-
-  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
 
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false
@@ -141,6 +142,18 @@ ActiveRecord::Schema.define(:version => 20090902162811) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "sync_status", :force => true do |t|
+    t.integer  "userfile_id"
+    t.integer  "remote_resource_id"
+    t.string   "status"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "sync_status", ["remote_resource_id"], :name => "index_sync_status_on_remote_resource_id"
+  add_index "sync_status", ["userfile_id", "remote_resource_id"], :name => "index_sync_status_on_userfile_id_and_remote_resource_id"
+  add_index "sync_status", ["userfile_id"], :name => "index_sync_status_on_userfile_id"
 
   create_table "tags", :force => true do |t|
     t.string   "name"
@@ -183,10 +196,10 @@ ActiveRecord::Schema.define(:version => 20090902162811) do
     t.boolean  "group_writable",   :default => false
   end
 
-  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
-  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
-  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
+  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
+  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
+  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
 
   create_table "users", :force => true do |t|
     t.string   "full_name"

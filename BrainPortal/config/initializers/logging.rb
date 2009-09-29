@@ -310,6 +310,3 @@ class ActiveRecord::Base
   end
 end
 
-class ActiveResource::Base
-  include ActRecLog
-end

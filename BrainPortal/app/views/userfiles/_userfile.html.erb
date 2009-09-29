@@ -10,28 +10,43 @@
 -%>
 
 <tr class= "<%= cycle('list-odd', 'list-even')%>" onMouseOver="javascript:highlightTableRowVersionA(this, '#FFEBE5')">
+
    <td class="checkbox" ><%= check_box_tag("filelist[]", userfile.id.to_s, params[:select_all], :class => "userfile_checkbox") %></td>
+
    <td>
       <%= tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
       <%= userfile.pretty_type %>      
+      <% SyncStatus.find(:all, :conditions => { :userfile_id => userfile.id }).each do |syncstat| %>
+        <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+      <% end %>
    </td>
+
    <td class="centered"><%= h userfile.user.login  %></td>
+
    <td class="centered">
       <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
          <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
       </span>
    </td>
+
    <% if userfile.size != nil %>
      <td><%= h(userfile.format_size)-%></td>
    <% else %>
      <td></td>
    <% end %>
+
    <td class = "centered"><center><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></center></td>
-       <% if userfile.group != nil %>
-         <td class = "centered"><%= h userfile.group.name -%></td>
-         <td class = "centered"><%= userfile.group_writable ? 'Read/Write' : 'Read Only' -%></td>
-       <% else %>
-         <td/><td/>
-       <% end %>
+
+   <% if userfile.group != nil %>
+     <td class = "centered"><%= h userfile.group.name -%></td>
+     <td class = "centered"><%= userfile.group_writable ? 'Read/Write' : 'Read Only' -%></td>
+   <% else %>
+     <td/><td/>
+   <% end %>
+
+   <td>
+     <%= userfile.data_provider.name %>
+   </td>
+
 </tr>

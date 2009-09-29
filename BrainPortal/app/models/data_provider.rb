@@ -7,6 +7,8 @@
 
 require 'fileutils'
 require 'pathname'
+require 'socket'
+require 'digest/md5'
 
 #
 # = Data Provider interface
@@ -257,7 +259,9 @@ class DataProvider < ActiveRecord::Base
   # on the provider into the local cache.
   def sync_to_cache(userfile)
     raise "Error: provider is offline." unless self.online
-    impl_sync_to_cache(userfile)
+    SyncStatus.ready_to_copy_to_cache(userfile.id) do
+      impl_sync_to_cache(userfile)
+    end
   end
 
   # Synchronizes the content of +userfile+ from the
@@ -265,7 +269,9 @@ class DataProvider < ActiveRecord::Base
   def sync_to_provider(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
-    impl_sync_to_provider(userfile)
+    SyncStatus.ready_to_copy_to_dp(userfile.id) do
+      impl_sync_to_provider(userfile)
+    end
   end
 
   # Makes sure the local cache is properly configured
@@ -277,7 +283,9 @@ class DataProvider < ActiveRecord::Base
   def cache_prepare(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
-    mkdir_cache_subdirs(userfile.name)
+    SyncStatus.ready_to_modify_cache(userfile.id) do
+      mkdir_cache_subdirs(userfile.name)
+    end
     true
   end
 
@@ -325,8 +333,10 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is read_only." if self.read_only
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
-    File.open(localpath,"w") do |fh|
-      yield(fh)
+    SyncStatus.ready_to_modify_cache(userfile.id) do
+      File.open(localpath,"w") do |fh|
+        yield(fh)
+      end
     end
     userfile.size = File.size(localpath)
     sync_to_provider(userfile)
@@ -343,7 +353,9 @@ class DataProvider < ActiveRecord::Base
     cache_erase(userfile)
     cache_prepare(userfile)
     dest = cache_full_path(userfile)
-    FileUtils.cp_r(localpath,dest)
+    SyncStatus.ready_to_modify_cache(userfile.id) do
+      FileUtils.cp_r(localpath,dest)
+    end
     userfile.size = if File.directory?(localpath)
       Dir.entries(localpath).select { |e| e != "." && e != ".." }.size
     else
@@ -371,10 +383,9 @@ class DataProvider < ActiveRecord::Base
   def cache_erase(userfile)
     raise "Error: provider is offline."   unless self.online
     basename = userfile.name
-    FileUtils.remove_entry(cache_full_pathname(basename), true)
-    begin
-      Dir.rmdir(cache_full_dirname(basename))
-    rescue
+    SyncStatus.ready_to_modify_cache(userfile.id) do
+      FileUtils.remove_entry(cache_full_pathname(basename), true) rescue true
+      Dir.rmdir(cache_full_dirname(basename)) rescue true
     end
     true
   end
@@ -384,7 +395,9 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if self.read_only
     cache_erase(userfile)
-    impl_provider_erase(userfile)
+    SyncStatus.ready_to_modify_dp(userfile.id) do
+      impl_provider_erase(userfile)
+    end
   end
 
   # Renames +userfile+ on the provider side.
@@ -400,7 +413,9 @@ class DataProvider < ActiveRecord::Base
     target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
     return false if target_exists
     cache_erase(userfile)
-    impl_provider_rename(userfile,newname.to_s)
+    SyncStatus.ready_to_modify_dp(userfile.id) do
+      impl_provider_rename(userfile,newname.to_s)
+    end
   end
 
   # Move a +userfile+ from the current provider to
@@ -633,6 +648,52 @@ class DataProvider < ActiveRecord::Base
   #################################################################
   # Internal cache-handling methods
   #################################################################
+
+  # Returns (and creates if necessary) a unique key
+  # for this Ruby process' cache. This key is
+  # maintained in a file in the cache_rootdir().
+  # It's setup to be a MD5 checksum, 32 hex characters long.
+  # Note that this key is also recorded in a RemoteResource
+  # object during CBRAIN's validation steps, at launch time.
+  def self.cache_md5
+    return @@key if self.class_variable_defined?('@@key') && ! @@key.blank?
+
+    # Try to read key from special file in cache root directory
+    cache_root = cache_rootdir
+    key_file = (cache_root + "DP_Cache_Key.md5").to_s
+    if File.exist?(key_file)
+      @@key = File.read(key_file)  # a MD5 string, 32 hex characters
+      @@key.gsub!(/\W+/,"") unless @@key.blank?
+      return @@key          unless @@key.blank?
+    end
+
+    # Create a key. We MD5 the hostname, the cache root dir
+    # and the time. This should be good enough. It will still
+    # work even if the directory is moved about or the computer
+    # renamed, as long as the key file is left there.
+    keystring  = Socket.gethostname + "|" + cache_root + "|" + Time.now.to_i.to_s
+    md5encoder = Digest::MD5.new
+    @@key      = md5encoder.hexdigest(keystring).to_s
+
+    # Try to write it back. If the file suddenly has appeared,
+    # we ignore our own key and use THAT one instead (race condition).
+    begin
+      fd = IO::sysopen(key_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fh = IO.open(fd)
+      fh.syswrite(@@key)
+      fh.close
+      return @@key
+    rescue # Oh? Open write failed?
+      if ! File.exist?(key_file)
+        raise "Error: could not create a proper Data Provider Cache Key in file '#{key_file}' !"
+      end
+      sleep 2+rand(5) # make sure other process writing to it is done
+      @@key = File.read(key_file)
+      @@key.gsub!(/\W+/,"") unless @@key.blank?
+      raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}' !" if @@key.blank?
+      return @@key
+    end
+  end
 
   # Root directory for ALL DataProviders caches:
   #    "/CbrainCacheDir"

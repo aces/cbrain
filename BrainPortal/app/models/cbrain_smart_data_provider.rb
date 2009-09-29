@@ -73,7 +73,7 @@ class CbrainSmartDataProvider < DataProvider
   end
 
   def cache_copy_to_local_file(userfile,localfilename) #:nodoc:
-    @provider.cache_copy_from_local_file(userfile,localfilename)
+    @provider.cache_copy_to_local_file(userfile,localfilename)
   end
 
   def cache_erase(userfile) #:nodoc:
