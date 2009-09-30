@@ -35,6 +35,7 @@ class RemoteResource < ActiveRecord::Base
 
   belongs_to  :user
   belongs_to  :group
+  has_many    :sync_status
 
   def site_affiliation
     @site_affiliation ||= self.user.site

@@ -39,7 +39,7 @@ class UserfilesController < ApplicationController
     end
 
     @userfiles = Userfile.find(:all,
-      :include  => [:tags, {:user => :site}, :data_provider, :group],
+      :include  => [:tags, {:user => :site}, :data_provider, :group, :sync_status],
       :conditions => conditions,
       :order => "#{current_session.order}"
     )

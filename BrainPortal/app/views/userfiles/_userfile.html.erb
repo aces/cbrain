@@ -15,7 +15,7 @@
       <%= tree_view_icon(session[:order], userfile.level) if userfile.level > 0 -%>
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
       <%= userfile.pretty_type %>      
-      <% SyncStatus.find(:all, :conditions => { :userfile_id => userfile.id }).each do |syncstat| %>
+      <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
       <% end %>
    </td>

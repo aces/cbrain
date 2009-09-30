@@ -43,6 +43,7 @@ class Userfile < ActiveRecord::Base
   belongs_to              :data_provider
   belongs_to              :group
   has_and_belongs_to_many :tags
+  has_many                :sync_status
 
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
