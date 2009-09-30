@@ -124,7 +124,19 @@ class UserfilesController < ApplicationController
 
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
-    @userfile.sync_to_cache if @userfile.is_a?(FileCollection) #TODO costly!
+    # This is only used by FileCollection
+    @file_collection_status = 'ProvNewer' # same terminology as in SyncStatus
+    state = SyncStatus.find(:first, :conditions =>
+            { :userfile_id        => @userfile.id,
+              :remote_resource_id => CBRAIN::SelfRemoteResourceId } )
+    @file_collection_status = state.status if state
+    start_sync = params[:start_sync] || "no"
+    if @userfile.is_a?(FileCollection) && start_sync.to_s == "yes" && @file_collection_status !~ /^To|InSync|Corrupted/
+      spawn do
+        @userfile.sync_to_cache
+      end
+      @file_collection_status = "ToCache" # so the interface says 'in progress'
+    end
     
     if current_user.has_role? :admin
       @user_groups = Group.find(:all, :order => "type")

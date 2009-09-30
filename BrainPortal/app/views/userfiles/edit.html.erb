@@ -81,7 +81,17 @@
   
   
   <% if @userfile.is_a?(FileCollection) %>
-    <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
+    <% if @file_collection_status == "InSync" %>
+      <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
+    <% elsif @file_collection_status =~ /^To/ %>
+      <p>This File Collection is currently being synchronized, so
+         the content is not listable yet.</p>
+    <% else %>
+      <p>This File Collection is not currently synchronized, so
+         the content is not listable yet.<BR>Click
+         <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
+         to start the synchronization process.</p>
+    <% end %>
   <% end %>
 
   <br>
