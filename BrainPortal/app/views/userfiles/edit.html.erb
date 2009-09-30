@@ -19,7 +19,7 @@
 
   <%= f.error_messages %>
 
-  <div class = "splitleft_editfiles">
+  <div class = "splitleft">
 
   <table>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -76,7 +76,10 @@
     </tr>
 
   </table>
-
+  
+  <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
+  
+  
   <% if @userfile.is_a?(FileCollection) %>
     <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
   <% end %>
@@ -87,12 +90,9 @@
     <%= submit_tag "Update Fields" %>
     <br> 
   <% end %>
-
-  <%= button_to 'Back to Userfiles Index', userfiles_path %>
 </div>
 
-<div class = "splitright_editfiles">
-  <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
+<div class = "splitright">
 
   <% if @log %>
     <table>

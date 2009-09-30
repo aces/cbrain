@@ -119,6 +119,7 @@ pre {
     color: #fff; 
     padding-right: 8px; 
     font-weight: bold;
+    text-decoration:none;
 }
 
 #top-menu #loggedas {
@@ -235,16 +236,13 @@ pre {
     color: #0471B4;
 }
 
-.filter_option{
+.action_link{
     color: blue;
+    text-decoration:none;
 }
 
 .userfiles_option_close{
     text-align:center;
-}
-
-.userfiles_option_close a{
-    color:blue;
 }
 
 /* ######################################################### */
@@ -287,7 +285,7 @@ pre {
 
 a { 
     color: #000; 
-    text-decoration:none;
+    text-decoration:underline;
 }
 
 a:hover { 
@@ -365,9 +363,10 @@ a:hover {
 }
 
 .generalcontent {
-    float: left;
-    width: 99%;
-    margin-right: 4em;
+    width: 85%;
+    margin-right: 1em;
+    margin-left: 1em;
+    display: table;
 }
 
 .groupentry {
@@ -436,66 +435,13 @@ a:hover {
 
 
 /* ######################################################### */
-/* Userfiles table formatting */
-/* ######################################################### */
-
-.list-even {
-    border-bottom: 1px solid #6699CC;
-}
-
-tr.list-even {
-    border-bottom: 1px solid #6699CC;
-}
-
-/* ######################################################### */
-/* Formatting for the tags edit table. */
-/* ######################################################### */
-
-tags_edit        {
-    margin: 1em 1em 1em 0;
-    padding: 2px;
-    border-spacing: 2px 2px;
-    /*border: 2px solid #6699CC;*/
-}
-
-tags_edit th {
-    width: auto;
-    /*border: 1px solid #9CF;
-    color: #ffffff;
-    background: #0471B4;
-    */
-    padding-left: 10px;
-    padding-right: 10px;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-}
-
-tags_edit td {
-    width: auto;
-    /*border: 1px solid #9CF;*/
-    padding-top: 1px;
-    padding-bottom: 1px;
-    padding-left: 6px;
-    padding-right: 6px;
-    text-align: center;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    /*color: #404040;
-    background-color: #ffffff;*/ 
-}
-
-/* ######################################################### */
 /* General formatting for a table */
 /* ######################################################### */
 
 table {
     margin: 1em 1em 1em 0;
     padding: 2px;
-    border-spacing: 2px 2px;
+    border-spacing: 0em;
     border: 2px solid #6699CC;
 }
 
@@ -516,16 +462,15 @@ table th {
 table td {
     width: auto;
     border: 1px solid #9CF;
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     padding-left: 6px;
-    padding-right: 6px;
+    padding-right: 0px;
     text-align: center;
     font-family: Verdana, sans-serif, Arial;
     font-weight: normal;
     font-size: 11px;
     color: #404040;
-    background-color: #ffffff; 
 }
 
 td.title {
@@ -557,6 +502,14 @@ th.subtitle {
 td.tabletext {
     text-align: left;
     text-indent: 10px;
+}
+
+tr.list-even {
+    background-color: white;
+}
+
+tr.list-odd {
+    background-color: #F1F5FF;
 }
 
 /* ######################################################### */
@@ -781,14 +734,13 @@ td.taskinfo {
     border: 2px solid #6699CC;
 }
 
-#userfilesdisplay {
+.resource_list {
+    clear: both;
     margin-right: 1em;
-    /*float: left;
-    width: 100%;
-    padding: 6px; */
+    width: 90%;
 }
 
-#userfilesdisplay th {
+.resource_list th {
     border: 0px;
     background-color: #0471B4;
     text-align: center;
@@ -801,33 +753,31 @@ td.taskinfo {
     padding-right: 0;
 }
 
-#userfilesdisplay th a {
+.resource_list th a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.resource_list th a:link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.resource_list th {
     color: #ffffff;
 }
 
-#userfilesdisplay th a:link {
-    color: #ffffff;
-}
-
-#userfilesdisplay th {
-    color: #ffffff;
-}
-
-#userfilesdisplay tr.list-odd td {
-    background-color: #ffffff;  
-}
-
-#userfilesdisplay td.centered {
+.resource_list td{
     border: 0px;    
     text-align: center;
 }
 
-#userfilesdisplay td {
+.resource_list td.left {
     border: 0px;
     text-align: left;
 }
 
-table#userfilesdisplay td.checkbox {
+table.resource_list td.checkbox {
     text-align: center;
 }
 
@@ -907,13 +857,12 @@ table#userfilesdisplay td.checkbox {
     /*border: 1px solid #e4e4e4;*/
 }
 
-.userfiles_content {
-    margin-left: 1em;
-    margin-right: 1em;
-}
-
 #userfiles_top_menu {
     padding: 1em 0 0;
+}
+
+#userfiles_top_menu a {
+    text-decoration: none;
 }
 
 .userfiles_upper_form {
@@ -927,55 +876,11 @@ table#userfilesdisplay td.checkbox {
     padding: 0em 1em;
 }
 
-/* ######################################################### */
-/* Formatting for the data provider view */
-/* ######################################################### */
-
-.resource_list {
-    width: 100%;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    padding-right: 1px;
-    margin-top: 1em; 
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 4em;
-}
-
-.resource_list th {
-    border-bottom: 1px solid #9CF;
-    border-top:1px solid #9CF;
-    border-left: 1px solid #9CF;
-    border-right: 0px;
-    border-bottom: 1px solid #6699CC;
-    background-color: #0471B4;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-}
-
-.resource_list td {
-    border-bottom: 1px solid #9CF;
-    border-top: 1px solid #9CF;
-    border-left: 1px solid #9CF;
-    border-right: 1px solid #9CF;
-    text-align: center;
-    text-indent: 0em;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;
-    padding: 2px;
-}
 
 .resource_list_box {
     float:left; 
-    width: 98%;
-    margin: 1em;
+    width: 88%;
+    margin-top: 1em;
     padding: 1em;
     background-color: #f6f6f6;
     color: #505050;
@@ -1088,7 +993,7 @@ table#userfilesdisplay td.checkbox {
 /* Box for credits */
 /* ######################################################### */
 
-.box {
+.credit_box {
     float:left; 
     margin-left: 1em;
     margin-right: 1em;
@@ -1105,12 +1010,12 @@ table#userfilesdisplay td.checkbox {
 /* Splits the screen for credits */
 /* ######################################################### */
 
-.splitleft {
+.credit_splitleft {
     float: left;
     width: 50%;
 }
 
-.splitright {
+.credit_splitright {
     float: right;
     width: 50%;
 }
@@ -1120,7 +1025,7 @@ table#userfilesdisplay td.checkbox {
 /* Splits the screen for edit files */
 /* ######################################################### */
 
-.splitleft_editfiles {
+.splitleft {
     float: left;
     width: auto;
     margin-left: 1em;
@@ -1133,8 +1038,9 @@ table#userfilesdisplay td.checkbox {
     border: 1px solid #E4E4E4;
 }
 
-.splitright_editfiles {
+.splitright {
     float: left;
+    min-width: 25em;
     width: auto;
     margin-left: 1em;
     padding: 1em;
@@ -1318,18 +1224,3 @@ table#userfilesdisplay td.checkbox {
 }
 
 
-/* ######################################################### */
-/* For user show */
-/* ######################################################### */
-
-.user_left {
-    float: left;
-}
-
-.user_right {
-    width: 25em;
-}
-
-.user_right a{
-    color: blue;
-}

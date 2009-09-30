@@ -31,7 +31,7 @@
   </tr>
 
 <% for user in @users %>
-  <tr class="<%= cycle('list-odd', 'list-even') %>">
+  <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
     <td><%=h user.full_name %></td>
     <td><%=h user.login %></td>
     <td><%=h user.email %></td>

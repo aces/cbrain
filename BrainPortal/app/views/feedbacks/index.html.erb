@@ -28,7 +28,7 @@
          </tr>
    
          <% for feedback in @feedbacks %>
-           <tr class="<%= cycle('list-odd', 'list-even') %>">
+           <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
              <td><%=link_to h(feedback.summary), feedback %></td>
              <td><%= h feedback.user.login %></td>
              <td><%= h(to_localtime(feedback.created_at.to_s,:datetime)) %></td>

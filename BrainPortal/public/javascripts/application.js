@@ -17,4 +17,8 @@ document.observe("dom:loaded", function() {
       }
     })
   }
+  
+  $$("table.resource_list").invoke("observe", "mouseout", function() {highlightTableRowVersionA(0); });
+  $$(".row_highlight").invoke("observe", "mouseover", function() {highlightTableRowVersionA(this, '#FFEBE5') });
+  
 })

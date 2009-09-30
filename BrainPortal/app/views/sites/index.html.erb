@@ -14,7 +14,7 @@
     </tr>
 
   <% for site in @sites %>
-    <tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
       <td><%=link_to h(site.name), site_path(site) %></td>
       <td><%= site.managers.collect{ |m| h(m.login) }.join('<BR>') %></td>
       <td><%= site.users.count %></td>

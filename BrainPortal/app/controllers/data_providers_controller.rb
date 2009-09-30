@@ -19,6 +19,8 @@ class DataProvidersController < ApplicationController
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user)
+    @typelist = get_type_list
+    @ssh_keys = get_ssh_public_keys
   end
 
   # GET /data_providers/1
@@ -121,17 +123,23 @@ class DataProvidersController < ApplicationController
       end
     end
 
+  
     if @provider.errors.empty?
-      redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully created."
+      
+      respond_to do |format|
+        format.html {redirect_to(data_providers_url)}
+        format.js
+      end
     else
-      @users = current_user.available_users
-      @groups = current_user.available_groups
       @typelist = get_type_list
       @ssh_keys = get_ssh_public_keys
-       
-      render :action => :new
-      return
+
+      
+      respond_to do |format|
+        format.html { render :action => :new }
+        format.js
+      end
     end
   end
 
@@ -167,24 +175,32 @@ class DataProvidersController < ApplicationController
   end
 
   def destroy #:nodoc:
-    id        = params[:id]
-    @user     = current_user
-    @provider = DataProvider.find(id)
+    id         = params[:id]
+    @user      = current_user
+    @provider  = DataProvider.find(id)
+    @destroyed = false
 
     unless @provider.userfiles.empty?
       flash[:error] = "You cannot remove a provider that has still files registered on it."
-      redirect_to :action => :show, :id => id
+      respond_to do |format|
+        format.html {redirect_to :action => :show, :id => id}
+        format.js
+      end
       return
     end
 
     if @provider.has_owner_access?(current_user)
       @provider.destroy
+      @destroyed = true
       flash[:notice] = "Provider successfully deleted."
     else
       flash[:error] = "You cannot remove a provider that you do not own."
     end
 
-    redirect_to :action => :index
+    respond_to do |format|
+      format.html {redirect_to :action => :index}
+      format.js
+    end
   end
 
   #Browse the files of a data provider.

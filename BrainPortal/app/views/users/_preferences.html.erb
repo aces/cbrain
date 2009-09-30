@@ -2,7 +2,7 @@
    Account preferences for <%= @user.login %>
    <small><small>
       <%= 
-         link_to_function 'close' do |page|
+         link_to_function 'close', :class  => 'action_link' do |page|
             page << "current_options = null;"
             page['preferences'].visual_effect(:blind_up)
          end

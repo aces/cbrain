@@ -13,7 +13,6 @@
 -%>
 
 <% title 'Files' %><% #Side bar stuff goes here -%>
-<%= javascript_include_tag "tableH" %>
 <%= javascript_tag "var current_options;" %>
 
 <div id="sidebar_wrapper" style="display:none;">
@@ -58,7 +57,7 @@
   </div>
 </div>   <!-- End id="sidebar" -->
 
-<div class="userfiles_content">
+<div class="generalcontent">
   <div id="userfiles_top_menu">
     <%= userfiles_menu_option('Tags', 'tag_option', 'tag_table') %>
     <%= userfiles_menu_option('Groups', 'group_option', 'groups_table') %>
@@ -96,7 +95,7 @@
 
   <br>
 
-  <%= link_to_function "<< Show Filters",  {:class  => 'filter_option', :id => 'filter_option_show'} do |page|
+  <%= link_to_function "<< Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:84%", :duration  => 0.5)
         page['filter_option_show'].hide
@@ -104,7 +103,7 @@
       end
   %>
 
-  <%= link_to_function ">> Hide Filters",  {:class  => 'filter_option', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+  <%= link_to_function ">> Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
         page['userfilesdisplay'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
         page['filter_option_hide'].hide
@@ -112,7 +111,7 @@
       end
   %>
 
-      <table id="userfilesdisplay" onMouseOut="javascript:highlightTableRowVersionA(0);" style="width: 90%">
+      <table id="userfilesdisplay" class="resource_list" style="width: 90%">
           <%= render :partial => 'userfiles_table' %>
       </table>
   <% end %>

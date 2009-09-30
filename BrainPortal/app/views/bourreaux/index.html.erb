@@ -19,8 +19,8 @@
          <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
     </div>  <!-- End class="bourreauxbox" -->
   <% end %>
-  
-  <table class="resource_list">
+  <br>
+  <table class="resource_list" onMouseOut="javascript:highlightTableRowVersionA(0);">
      <tr>
          <th>Bourreau Name</th>
          <th>Owner</th>
@@ -33,7 +33,7 @@
      </tr>
   
      <% for bour in @bourreaux %>
-         <tr class="<%= cycle('list-odd', 'list-even') %>">
+         <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
            <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
            <td><%= h(bour.user.login) %></td>
            <td><%= h(bour.group.name) %></td>

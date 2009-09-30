@@ -82,7 +82,18 @@ module UserfilesHelper
                    :complete  => "if(current_options){Element.hide(current_options + '_div'); Element.update(current_options + '_div', ''););Element.update(current_options + '_div', '');} Effect.BlindDown('#{option_name + '_div'}', {duration: 0.4})"
                    },
                   {:class => "userfile_menu", :id  => 'upload_option'}
-  end  
+  end 
+  
+  def userfiles_menu_close_button
+    '<div class="userfiles_option_close">' +
+    link_to_function('close', :class  => 'action_link') do |page|
+      page << "new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+      page << "Element.hide(current_options + '_div');"
+      page << "Element.update(current_options + '_div', '');"
+      page << "current_options = null;"
+    end +
+    '</div>'
+  end 
 
   def status_html_symbol(statkeyword)
     case statkeyword

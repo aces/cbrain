@@ -1,0 +1,15 @@
+if @provider.errors.empty?
+  if ! flash[:notice].nil? && ! flash[:notice].empty?
+    page << "if($('flash_notice')){"
+    page['flash_notice'].replace_html "#{flash[:notice].gsub(/\n/,'<BR>')}"
+    page << "}else{"
+    page.insert_html :top, 'content', "<p class=\"notice\" id=\"flash_notice\">#{flash[:notice].gsub(/\n/,'<BR>')}</p>"
+    page << "}"
+    flash[:notice] = nil
+  end
+  page['new_data_provider'].hide
+  page.insert_html :bottom, 'data_provider_table', :partial => 'data_provider_table_row', :locals  => {:prov  => @provider}
+else
+  page['new_data_provider'].replace_html :partial  => 'new'
+  page.insert_html(:bottom, 'new_data_provider', link_to_function('close', :class  => 'action_link') { |page| page['new_data_provider'].hide })
+end

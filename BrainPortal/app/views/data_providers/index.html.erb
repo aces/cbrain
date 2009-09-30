@@ -16,11 +16,23 @@
    
    <% if check_role(:admin) || check_role(:site_manager)%>
       <div class = "resource_list_box">
-            <%= button_to 'Create New Data Provider', new_data_provider_path, :method => :get %>
+            <%= 
+              link_to_function 'Create New Data Provider', :class  => 'action_link' do |page|
+                page['new_data_provider'].visual_effect(:blind_down)
+              end 
+              %>
+            <div id="new_data_provider" style="display:none">
+              <%= render :partial  => 'new' %>
+              <%= 
+                link_to_function 'close', :class  => 'action_link' do |page|
+                  page['new_data_provider'].hide
+                end
+               %>
+            </div>
       </div> <!-- End class="dataproviderbox" -->
    <% end %>
-
-   <table class = "resource_list">
+<br>
+   <table class="resource_list" id="data_provider_table">
       <tr>
           <th>Provider Name</th>
           <th>Owner</th>
@@ -34,31 +46,7 @@
       </tr>
 
       <% for prov in @providers %>
-          <tr class="<%= cycle('list-odd', 'list-even') %>">
-            <td><%= link_if_manager(prov.name, data_provider_path(prov)) %></td>
-            <td><%= h(prov.user.login) %></td>
-            <td><%= h(prov.group.name) %></td>
-            <td><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
-            <td><%= h(prov.online ? "Yes" : "No") %></td>
-            <td><%= prov.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
-            <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
-            <td><%= h(prov.description) %></td>
-            <td>
-               <% if prov.has_owner_access?(current_user) %>
-               <%= button_to 'Edit', edit_data_provider_path(prov), :method => :get %>
-               <% end %>
-            </td>
-            <td>
-               <% if prov.has_owner_access?(current_user) %>
-               <%= button_to 'Delete', data_provider_path(prov), :confirm => 'Are you sure?', :method => :delete %>
-               <% end %>
-            </td>
-            <td>
-               <% if prov.is_browsable? && prov.can_be_accessed_by?(current_user) %>
-               <%= button_to 'Browse', browse_data_provider_path(prov), :method => :get %>
-               <% end %>
-            </td>
-          </tr>
+          <%= render :partial => 'data_provider_table_row', :locals  => {:prov  => prov} %>
       <% end %>
 
       <% if @providers.nil? || @providers.empty? %>
