@@ -55,6 +55,12 @@ class SyncStatus < ActiveRecord::Base
   # to the local cache.
   def self.ready_to_copy_to_cache(userfile_id)
 
+    # For brand new files, the userfile_id is nil,
+    # so we simply skip the sync mechanism altogether.
+    unless userfile_id
+      return yield
+    end
+
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ToCache: #{state.pretty} Enter" if DebugMessages
 
@@ -125,6 +131,12 @@ class SyncStatus < ActiveRecord::Base
   # file in the cache is available to be copied
   # to the data provider.
   def self.ready_to_copy_to_dp(userfile_id)
+
+    # For brand new files, the userfile_id is nil,
+    # so we simply skip the sync mechanism altogether.
+    unless userfile_id
+      return yield
+    end
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ToProv: #{state.pretty} Enter" if DebugMessages
@@ -197,6 +209,12 @@ class SyncStatus < ActiveRecord::Base
   # It doesn't care about the status of the provider.
   def self.ready_to_modify_cache(userfile_id)
 
+    # For brand new files, the userfile_id is nil,
+    # so we simply skip the sync mechanism altogether.
+    unless userfile_id
+      return yield
+    end
+
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ModCache: #{state.pretty} Enter" if DebugMessages
 
@@ -245,6 +263,12 @@ class SyncStatus < ActiveRecord::Base
   # file on the data provider is available to be modified.
   # It doesn't care about the status of the cache.
   def self.ready_to_modify_dp(userfile_id)
+
+    # For brand new files, the userfile_id is nil,
+    # so we simply skip the sync mechanism altogether.
+    unless userfile_id
+      return yield
+    end
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ModProv: #{state.pretty} Entering" if DebugMessages
