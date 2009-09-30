@@ -259,7 +259,7 @@ class DataProvider < ActiveRecord::Base
   # on the provider into the local cache.
   def sync_to_cache(userfile)
     raise "Error: provider is offline." unless self.online
-    SyncStatus.ready_to_copy_to_cache(userfile.id) do
+    SyncStatus.ready_to_copy_to_cache(userfile) do
       impl_sync_to_cache(userfile)
     end
   end
@@ -269,7 +269,7 @@ class DataProvider < ActiveRecord::Base
   def sync_to_provider(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
-    SyncStatus.ready_to_copy_to_dp(userfile.id) do
+    SyncStatus.ready_to_copy_to_dp(userfile) do
       impl_sync_to_provider(userfile)
     end
   end
@@ -283,7 +283,7 @@ class DataProvider < ActiveRecord::Base
   def cache_prepare(userfile)
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if     self.read_only
-    SyncStatus.ready_to_modify_cache(userfile.id) do
+    SyncStatus.ready_to_modify_cache(userfile) do
       mkdir_cache_subdirs(userfile.name)
     end
     true
@@ -333,7 +333,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is read_only." if self.read_only
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
-    SyncStatus.ready_to_modify_cache(userfile.id) do
+    SyncStatus.ready_to_modify_cache(userfile) do
       File.open(localpath,"w") do |fh|
         yield(fh)
       end
@@ -353,7 +353,7 @@ class DataProvider < ActiveRecord::Base
     cache_erase(userfile)
     cache_prepare(userfile)
     dest = cache_full_path(userfile)
-    SyncStatus.ready_to_modify_cache(userfile.id) do
+    SyncStatus.ready_to_modify_cache(userfile) do
       FileUtils.cp_r(localpath,dest)
     end
     userfile.size = if File.directory?(localpath)
@@ -383,7 +383,7 @@ class DataProvider < ActiveRecord::Base
   def cache_erase(userfile)
     raise "Error: provider is offline."   unless self.online
     basename = userfile.name
-    SyncStatus.ready_to_modify_cache(userfile.id) do
+    SyncStatus.ready_to_modify_cache(userfile) do
       FileUtils.remove_entry(cache_full_pathname(basename), true) rescue true
       Dir.rmdir(cache_full_dirname(basename)) rescue true
     end
@@ -395,7 +395,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: provider is offline."   unless self.online
     raise "Error: provider is read_only." if self.read_only
     cache_erase(userfile)
-    SyncStatus.ready_to_modify_dp(userfile.id) do
+    SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_erase(userfile)
     end
   end
@@ -413,7 +413,7 @@ class DataProvider < ActiveRecord::Base
     target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
     return false if target_exists
     cache_erase(userfile)
-    SyncStatus.ready_to_modify_dp(userfile.id) do
+    SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_rename(userfile,newname.to_s)
     end
   end

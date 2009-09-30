@@ -53,10 +53,11 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file on the data provider is available to be copied
   # to the local cache.
-  def self.ready_to_copy_to_cache(userfile_id)
+  def self.ready_to_copy_to_cache(userfile)
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
+    userfile_id = userfile.id
     unless userfile_id
       return yield
     end
@@ -130,10 +131,11 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file in the cache is available to be copied
   # to the data provider.
-  def self.ready_to_copy_to_dp(userfile_id)
+  def self.ready_to_copy_to_dp(userfile)
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
+    userfile_id = userfile.id
     unless userfile_id
       return yield
     end
@@ -207,10 +209,11 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file in the cache is available to be modified.
   # It doesn't care about the status of the provider.
-  def self.ready_to_modify_cache(userfile_id)
+  def self.ready_to_modify_cache(userfile)
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
+    userfile_id = userfile.id
     unless userfile_id
       return yield
     end
@@ -262,10 +265,11 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file on the data provider is available to be modified.
   # It doesn't care about the status of the cache.
-  def self.ready_to_modify_dp(userfile_id)
+  def self.ready_to_modify_dp(userfile)
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
+    userfile_id = userfile.id
     unless userfile_id
       return yield
     end
