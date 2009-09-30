@@ -871,6 +871,13 @@ table.resource_list td.checkbox {
     width: 45em;
 }
 
+.resource_list_upper_form {
+    border: 2px solid #6699CC;
+    padding: 0.5em;
+    margin-top: 1em;
+    width: 89%;
+}
+
 .upper_form {
     border: 2px solid #6699CC;
     padding: 0em 1em;
@@ -1028,14 +1035,10 @@ table.resource_list td.checkbox {
 .splitleft {
     float: left;
     width: auto;
-    margin-left: 1em;
+    margin-left: 3em;
     margin-right: 4em;
     margin-bottom: 1em;
-    padding: 2em;
-    background-color: #F6F6F6;
-    color: #505050;
     line-height: 1.5em;
-    border: 1px solid #E4E4E4;
 }
 
 .splitright {
@@ -1044,10 +1047,7 @@ table.resource_list td.checkbox {
     width: auto;
     margin-left: 1em;
     padding: 1em;
-    background-color: #F6F6F6;
-    color: #505050;
     line-height: 1.5em;
-    border: 1px solid #E4E4E4;
 }
 
 /* ######################################################### */

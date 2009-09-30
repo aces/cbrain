@@ -15,21 +15,16 @@
    <% title 'Data Providers' %>
    
    <% if check_role(:admin) || check_role(:site_manager)%>
-      <div class = "resource_list_box">
+      <div class="resource_list_upper_form">
             <%= 
               link_to_function 'Create New Data Provider', :class  => 'action_link' do |page|
-                page['new_data_provider'].visual_effect(:blind_down)
+                page << "Effect.toggle('new_data_provider', 'blind')"
               end 
               %>
-            <div id="new_data_provider" style="display:none">
+            <div id="new_data_provider" style="display:none;height:53em">
               <%= render :partial  => 'new' %>
-              <%= 
-                link_to_function 'close', :class  => 'action_link' do |page|
-                  page['new_data_provider'].hide
-                end
-               %>
             </div>
-      </div> <!-- End class="dataproviderbox" -->
+      </div> <!-- End class="upper_form" -->
    <% end %>
 <br>
    <table class="resource_list" id="data_provider_table">
