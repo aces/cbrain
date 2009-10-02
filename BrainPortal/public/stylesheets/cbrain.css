@@ -1134,16 +1134,15 @@ table.resource_list td.checkbox {
     text-align: center;
 }
 
-#leftfoot {
-    float: left;
+#site_logos {
     height: 8em;
 }
 
-#rightfoot {
-    float: right;
-    height:6em;
+#canarie_logo {
+    height:5em;
     margin-top: 1em;
     margin-right: 1em;
+    margin-bottom: 1em;
 }
 
 /* ######################################################### */
@@ -1152,7 +1151,7 @@ table.resource_list td.checkbox {
 
 .notice {
     z-index: 0;
-    width: 97%;
+    width: 79.5%;
     border: 1px;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -1171,7 +1170,7 @@ table.resource_list td.checkbox {
 
 .error {
     z-index: 0;
-    width: 97%;
+    width: 79.5%;
     border: 1px;
     padding-top: 1em;
     padding-bottom: 1em;

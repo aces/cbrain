@@ -1,0 +1,55 @@
+         <tr>
+             <th> 
+                 <%= link_to_function '&radic;' do |page|
+                     page.select(".checkbox").each do |check_box|
+                       check_box.checked=true
+                     end
+                   end
+                 %>
+               &nbsp;
+                 <%= link_to_function '<big>&times;</big>' do |page|
+                     page.select(".checkbox").each do |check_box|
+                       check_box.checked=false
+                     end
+                   end
+                 %>
+             </th>
+             <th>
+               <%= link_to_remote  "Task Name", :url  =>  {:action  => :index, :sort_order  => 'type', :sort_dir  => set_dir('type', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+               <%= set_order_icon('type', params[:sort_order], params[:sort_dir]) %>
+             </th>
+             <th>
+                <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'owner', :sort_dir  => set_dir('owner', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+                <%= set_order_icon('owner', params[:sort_order], params[:sort_dir]) %>
+             </th>
+             <th>
+               <%= link_to_remote  "Bourreau Name", :url  =>  {:action  => :index, :sort_order  => 'bourreau', :sort_dir  => set_dir('bourreau', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+               <%= set_order_icon('bourreau', params[:sort_order], params[:sort_dir]) %>
+             </th>
+             <th>
+                <%= link_to_remote  "Current Status", :url  =>  {:action  => :index, :sort_order  => 'status', :sort_dir  => set_dir('status', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+                <%= set_order_icon('status', params[:sort_order], params[:sort_dir]) %>
+             </th>
+             <th>
+               <%= link_to_remote  "Time Submitted", :url  =>  {:action  => :index, :sort_order  => 'created_at', :sort_dir  => set_dir('created_at', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+               <%= set_order_icon('created_at', params[:sort_order], params[:sort_dir]) %>
+             </th>
+             <th>
+               <%= link_to_remote  "Last Updated", :url  =>  {:action  => :index, :sort_order  => 'updated_at', :sort_dir  => set_dir('updated_at', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+                <%= set_order_icon('updated_at', params[:sort_order], params[:sort_dir]) %>
+             </th>
+         </tr>
+         <% for task in @tasks %>
+             <tr class ="<%= cycle('list-odd', 'list-even')%> row_highlight">
+               <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready', :class  => 'checkbox') %></td>
+               <td class="left"><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
+               <td><%= h(task.user.login) %></td>
+               <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
+               <td><%= h(task.status) %></td>
+               <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
+               <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
+             </tr>
+         <% end %>
+         <% if @tasks.blank? %>
+           <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
+         <% end %>

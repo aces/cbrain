@@ -1,0 +1,1 @@
+page['tasks_table'].replace_html :partial  => 'tasks_table'

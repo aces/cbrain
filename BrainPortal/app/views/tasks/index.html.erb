@@ -46,30 +46,8 @@
       </div>  <!-- End class="resource_list_box" -->
       
       
-      <table class = "resource_list">
-         <tr>
-             <th>Select</th>
-             <th>Task Name</th>
-             <th>Owner</th>
-             <th>Bourreau Name</th>
-             <th>Current Status</th>
-             <th>Time Submitted</th>
-             <th>Last Updated</th>
-         </tr>
-         <% for task in @tasks %>
-             <tr class ="<%= cycle('list-odd', 'list-even')%> row_highlight">
-               <td><%= check_box_tag("tasklist[]", task.bourreau_id.to_s + "," + task.id.to_s, task.status == 'Data Ready') %></td>
-               <td class="left"><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :bourreau_id => task.bourreau_id, :id => task.id  %></td>
-               <td><%= h(task.user.login) %></td>
-               <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
-               <td><%= h(task.status) %></td>
-               <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
-               <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
-             </tr>
-         <% end %>
-         <% if @tasks.blank? %>
-           <tr class="list-odd"><td colspan="<%= current_user.role == 'admin' ? "7" : "6" %>">There are no tasks in this list.</td></tr>
-         <% end %>
+      <table class = "resource_list" id="tasks_table">
+        <%= render :partial => 'tasks_table' %>
       </table>
    </div>  <!-- End class="generalcontent" -->
 <% end %>  <!-- End form -->

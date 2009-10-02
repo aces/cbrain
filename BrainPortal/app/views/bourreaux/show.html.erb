@@ -13,19 +13,7 @@
 
 <% title 'Bourreau Info' %>
 
-
-<% content_for(:sidebar) do %>
-  <% if @bourreau.is_alive? %>
-      <p class="notice">This bourreau is alive.</p>
-      <% if @info.name != @bourreau.name %>
-        <p class="error">Error! The remote Bourreau's name is '<%= h(@info.name) %>' while locally it is called '<%= h(@bourreau.name) %>' !</p>
-      <% end %>
-  <% else %>
-      <p class="error">This bourreau is NOT RESPONDING!</p>
-  <% end %>
-<% end %>
-
-<h2>Information about a Bourreau</h2>
+<h2>Information for <%= @bourreau.name %></h2>
 
 
 <div class = "generalcontent">
@@ -141,7 +129,7 @@
            <th colspan="2">Runtime Information</th>
          </tr>
 
-         <% if ! @bourreau.is_alive? %>
+         <% if @info.name == "???" %>
 
              <tr>
                <td colspan="2">This Bourreau is currently <font color="red">DOWN</font>.</td>

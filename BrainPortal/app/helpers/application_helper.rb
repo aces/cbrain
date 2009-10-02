@@ -142,5 +142,37 @@ module ApplicationHelper
       'id="unselected"'
     end
   end
+  
+  #Set direction for resource list sorting
+  def set_dir(current_order, prev_order, sort_order)
+    if(current_order.to_s == prev_order.to_s)
+      sort_order == 'DESC' ? '' : 'DESC'
+    end
+  end
+  
+  #Set arrow icon for ordering of userfiles. I.e. display a red arrow
+  #next to the header of a given column in the Userfile index table *if*
+  #that column is the one currently determining the order of the file.
+  #
+  #Toggles the direction of the arrow depending on whether the order is 
+  #ascending or descending.
+  def set_order_icon(location, current_order, current_dir = nil)
+    return if current_order == nil
+    
+    #order, direction = session_order.sub("type, ", "").split
+    
+    return unless location == current_order
+    
+    if location == 'userfiles.lft'
+      icon = '<font color="Red">&nbsp;&bull;</font>'
+    else
+      icon = '<font color="Red">&nbsp;&dArr;</font>'
+      if current_dir == 'DESC'
+        icon = '<font color="Red">&nbsp;&uArr;</font>'
+      end
+    end
+    
+    icon
+  end
 
 end

@@ -55,6 +55,36 @@ class TasksController < ApplicationController
       passive_tasks = ActRecTask.find(:all, :conditions => conditions)
       @tasks.concat(passive_tasks)
     end
+    
+    params[:sort_order] ||= 'updated_at'
+    sort_order = params[:sort_order] 
+    sort_dir   = params[:sort_dir]
+    
+    @tasks = @tasks.sort do |t1, t2|
+      if sort_dir == 'DESC'
+        task1 = t2
+        task2 = t1
+      else
+        task1 = t1
+        task2 = t2
+      end
+      
+      case sort_order
+      when 'type'
+        task1.class.to_s <=> task2.class.to_s
+      when 'owner'
+        task1.user.login <=> task2.user.login
+      when 'bourreau'
+        task1.bourreau.name <=> task2.bourreau.name
+      else
+        task1.send(sort_order) <=> task2.send(sort_order)
+      end
+    end
+        
+    respond_to do |format|
+      format.html
+      format.js
+    end
   end
 
   # GET /tasks/3/1
