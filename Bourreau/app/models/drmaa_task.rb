@@ -116,6 +116,25 @@ public
   # start_all(), post_process(), update_status()
   ##################################################################
 
+  # Returns the list of status keywords that represent
+  # tasks in 'active' states. These are usually states that can
+  # change independently of Bourreau, although the change can
+  # be also detected by Bourreau itself. Basically, tasks in
+  # on of these states need to be 'refreshed' in case the
+  # state has changed.
+  def self.active_status_keywords
+    [ 'Setting Up', 'Queued', 'On CPU', 'PostProcessing' ]
+  end
+
+  # Returns the list of status keywords that represent
+  # tasks in 'passive' or 'terminal' states. Tasks in these
+  # states will stay in them until explicitely changed by Bourreau.
+  def self.passive_status_keywords
+    [ 'Terminated', 'Data Ready', 'Completed', 'On Hold', 'Suspended',
+      'Failed To Setup', 'Failed To Start', 'Failed To PostProcess'
+    ]
+  end
+
   # This should be called only once when the object is new.
   # The object will be saved once in the main thread
   # and possibly several times in a background thread.
@@ -226,7 +245,8 @@ public
   end
 
   # Possible returned status values:
-  # [<b>Failed</b>]  (To Start, to Setup, etc) The task failed at some stage.
+  # [<b>Setting Up</b>] The task is in its asynchronous 'setup' state.
+  # [<b>Failed To *</b>]  (To Start, to Setup, etc) The task failed at some stage.
   # [<b>Queued</b>] The task is queued.   
   # [<b>On CPU</b>] The task is underway.
   # [<b>Data Ready</b>] The task has been completed, but data has not been sent back to BrainPortal.

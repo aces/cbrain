@@ -21,21 +21,39 @@ class TasksController < ApplicationController
     @bourreaux = available_bourreaux(current_user)
     @bourreaux.each do |bourreau|
       bourreau_id = bourreau.id
-      DrmaaTask.adjust_site(bourreau_id)
-      begin
+
+      active_tasks = []
+      begin # This block fetches from Bourreau ONLY the tasks in 'active' states.
+        DrmaaTask.adjust_site(bourreau_id)
         raise "Failed to respond to 'alive' check" unless bourreau.is_alive?
         if current_user.has_role? :admin
-          tasks = DrmaaTask.find(:all) || []
+          active_tasks = DrmaaTask.find(:all) || []
         else
-          tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
+          active_tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
         end
-        tasks = [ tasks ] unless tasks.is_a?(Array)
-        @tasks.concat(tasks)
+        active_tasks = [ active_tasks ] unless active_tasks.is_a?(Array)
       rescue => e
         bourreau_name = bourreau.name
         flash.now[:error] ||= ""
         flash.now[:error] += "Bourreau '#{bourreau_name}' is down: #{e.to_s}\n"
+
+        # We recover by fetching directly from the DB...
+        conditions = { :bourreau_id => bourreau_id,
+                       :status      => DrmaaTask.active_status_keywords
+                     }
+        conditions.merge!( :user_id => current_user.id ) if current_user.has_role? :admin
+        active_tasks = ActRecTask.find(:all, :conditions => conditions)
+        active_tasks.each { |t| t.status = "UNKNOWN!" } # ... but marking them as bad.
       end
+      @tasks.concat(active_tasks)
+
+      # Now add the tasks in 'passive' states by accessing directly the DB
+      conditions = { :bourreau_id => bourreau_id,
+                     :status      => DrmaaTask.passive_status_keywords
+                   }
+      conditions.merge!( :user_id => current_user.id ) if current_user.has_role? :admin
+      passive_tasks = ActRecTask.find(:all, :conditions => conditions)
+      @tasks.concat(passive_tasks)
     end
   end
 

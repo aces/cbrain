@@ -23,11 +23,12 @@ class TasksController < ApplicationController
   # GET /tasks
   # Formats: xml
   def index #:nodoc:
-    if params[:user_id]
-      @tasks = DrmaaTask.find(:all, :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID, :user_id => params[:user_id]} ) || []
-    else
-      @tasks = DrmaaTask.find(:all, :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID } ) || []
-    end
+    active_states = DrmaaTask.active_status_keywords
+    conditions    = { :bourreau_id => CBRAIN::BOURREAU_ID,
+                      :status      => active_states
+                    }
+    conditions.merge!(:user_id => params[:user_id]) if params[:user_id]
+    @tasks = DrmaaTask.find(:all, :conditions => conditions) || []
     @tasks = [ @tasks ] unless @tasks.is_a?(Array)
     @tasks.each { |t| t.update_status }
     #puts @tasks.to_xml( :root => "DrmaaTasks" )

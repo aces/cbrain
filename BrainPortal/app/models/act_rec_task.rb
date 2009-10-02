@@ -26,11 +26,11 @@ class ActRecTask < ActiveRecord::Base
 
   private
 
-  def self.instantiate(record) #:nodoc:
-    if record.has_key?("type")
-      subtype = record.delete("type")
-    end
-    super(record)
-  end
+  #def self.instantiate(record) #:nodoc:
+  #  if record.has_key?("type")
+  #    subtype = record.delete("type")
+  #  end
+  #  super(record)
+  #end
 
 end
