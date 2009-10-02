@@ -41,7 +41,7 @@ class TasksController < ApplicationController
         conditions = { :bourreau_id => bourreau_id,
                        :status      => DrmaaTask.active_status_keywords
                      }
-        conditions.merge!( :user_id => current_user.id ) if current_user.has_role? :admin
+        conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
         active_tasks = ActRecTask.find(:all, :conditions => conditions)
         active_tasks.each { |t| t.status = "UNKNOWN!" } # ... but marking them as bad.
       end
@@ -51,7 +51,7 @@ class TasksController < ApplicationController
       conditions = { :bourreau_id => bourreau_id,
                      :status      => DrmaaTask.passive_status_keywords
                    }
-      conditions.merge!( :user_id => current_user.id ) if current_user.has_role? :admin
+      conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
       passive_tasks = ActRecTask.find(:all, :conditions => conditions)
       @tasks.concat(passive_tasks)
     end
