@@ -43,7 +43,11 @@ class TasksController < ApplicationController
                      }
         conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
         active_tasks = ActRecTask.find(:all, :conditions => conditions)
-        active_tasks.each { |t| t.status = "UNKNOWN!" } # ... but marking them as bad.
+        active_tasks.each do |t|  # ugly kludge
+          t.updated_at = Time.parse(t.updated_at)
+          t.created_at = Time.parse(t.created_at)
+          t.status     = "UNKNOWN!" # ... but marking them as bad.
+        end
       end
       @tasks.concat(active_tasks)
 
@@ -53,13 +57,17 @@ class TasksController < ApplicationController
                    }
       conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
       passive_tasks = ActRecTask.find(:all, :conditions => conditions)
+      passive_tasks.each do |t|  # ugly kludge
+        t.updated_at = Time.parse(t.updated_at)
+        t.created_at = Time.parse(t.created_at)
+      end
       @tasks.concat(passive_tasks)
     end
     
     params[:sort_order] ||= 'updated_at'
     sort_order = params[:sort_order] 
     sort_dir   = params[:sort_dir]
-    
+
     @tasks = @tasks.sort do |t1, t2|
       if sort_dir == 'DESC'
         task1 = t2
