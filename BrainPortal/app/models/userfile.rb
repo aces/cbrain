@@ -335,6 +335,18 @@ class Userfile < ActiveRecord::Base
     "(???)"
   end
 
+  # This method returns, if it exists, the SyncStatus
+  # object that represents the syncronization state of
+  # the content of this userfile on the local RAILS
+  # application's DataProvider cache. Returns nil if
+  # no SyncStatus object currently exists for the file.
+  def local_sync_status
+    SyncStatus.find(:first, :conditions => {
+      :userfile_id        => self.id,
+      :remote_resource_id => CBRAIN::SelfRemoteResourceId
+      } )
+  end
+
   ##############################################
   # Data Provider easy access methods
   ##############################################

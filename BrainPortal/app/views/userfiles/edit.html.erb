@@ -80,18 +80,26 @@
   <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
   
   
-  <% if @userfile.is_a?(FileCollection) %>
-    <% if @file_collection_status == "InSync" %>
+  <% if @sync_status == "InSync" %>
+    <% if @userfile.is_a?(FileCollection) %>
       <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
-    <% elsif @file_collection_status =~ /^To/ %>
-      <p>This File Collection is currently being synchronized, so
-         the content is not listable yet.</p>
-    <% else %>
-      <p>This File Collection is not currently synchronized, so
-         the content is not listable yet.<BR>Click
-         <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
-         to start the synchronization process.</p>
     <% end %>
+  <% elsif @sync_status =~ /^To/ %>
+    <% if @userfile.is_a?(FileCollection) %>
+      <p>This Collection is currently being synchronized,
+         so the content is not listable yet.</p>
+    <% else %>
+      <p>This file is currently being synchronized.</p>
+    <% end %>
+  <% else %>
+    <% if @userfile.is_a?(FileCollection) %>
+      <p>This Collection is not currently synchronized, so
+         the content is not listable yet.<BR>
+    <% else %>
+      <p>This file is not currently synchronized.<BR>
+    <% end %>
+    Click <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
+    to start the synchronization process.</p>
   <% end %>
 
   <br>

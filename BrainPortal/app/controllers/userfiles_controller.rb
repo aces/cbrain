@@ -128,18 +128,18 @@ class UserfilesController < ApplicationController
 
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
-    # This is only used by FileCollection
-    @file_collection_status = 'ProvNewer' # same terminology as in SyncStatus
+    # This allows the user to manually trigger the syncing to the Portal's cache
+    @sync_status = 'ProvNewer' # same terminology as in SyncStatus
     state = SyncStatus.find(:first, :conditions =>
             { :userfile_id        => @userfile.id,
               :remote_resource_id => CBRAIN::SelfRemoteResourceId } )
-    @file_collection_status = state.status if state
+    @sync_status = state.status if state
     start_sync = params[:start_sync] || "no"
-    if @userfile.is_a?(FileCollection) && start_sync.to_s == "yes" && @file_collection_status !~ /^To|InSync|Corrupted/
+    if start_sync.to_s == "yes" && @sync_status !~ /^To|InSync|Corrupted/
       spawn do
         @userfile.sync_to_cache
       end
-      @file_collection_status = "ToCache" # so the interface says 'in progress'
+      @sync_status = "ToCache" # so the interface says 'in progress'
     end
     
     if current_user.has_role? :admin
@@ -195,12 +195,11 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
-    tmpcontentfile         = "/tmp/#{$$}-#{basename}"
-
-    begin # large block to ensure we remove the tmpcontentfile
+    tmpcontentfile         = "/tmp/#{$$}-#{rand(10000).to_s}-#{basename}"
 
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
+
       userfile = SingleFile.new(
                    params[:userfile].merge(
                      :name             => basename,
@@ -210,33 +209,37 @@ class UserfilesController < ApplicationController
                    )
                  )
 
-      if userfile.save
-        flash[:notice] += "File '#{basename}' added."
+      # TODO: notification?
+      if ! userfile.save
+        flash[:error]  += "File '#{basename}' could not be added (internal error?)."
+        redirect_to :action => :new
+        return
+      end
 
-        spawn do
-          localpath = upload_stream.local_path rescue "" # optimize for large files
-          if localpath.blank?
+      flash[:notice] += "File '#{basename}' being added in background."
+
+      spawn do
+        localpath = upload_stream.local_path rescue "" # optimize for large files
+        if localpath.blank?
+          begin
             File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
             userfile.cache_copy_from_local_file(tmpcontentfile)
             userfile.size = File.size(tmpcontentfile) rescue 0
-            File.delete(tmpcontentfile)
-          else
-            userfile.cache_copy_from_local_file(localpath)
-            userfile.size = File.size(localpath) rescue 0
+          ensure
+            File.delete(tmpcontentfile) rescue true
           end
-          userfile.save
-          userfile.addlog_context(self,"Uploaded by #{current_user.login}")
-          current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
-        end 
+        else
+          userfile.cache_copy_from_local_file(localpath)
+          userfile.size = File.size(localpath) rescue 0
+        end
+        userfile.save
+        userfile.addlog_context(self,"Uploaded by #{current_user.login}")
+        current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
+      end 
       
-        redirect_to :action => :index
-      else
-        flash[:error]  += "File '#{basename}' could not be added (internal error?)."
-        redirect_to :action => :new
-      end
-
+      redirect_to :action => :index
       return
-    end
+    end # save
 
     # We will be processing some archive file.
     # First, check for supported extensions
@@ -248,13 +251,16 @@ class UserfilesController < ApplicationController
 
     # Create a collection
     if params[:archive] =~ /collection/
+
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
         flash[:error] = "File '#{collection_name}' already exists."
         redirect_to :action => :new
         return
       end
+
       collectionType = params[:archive] =~/civet/i ? CivetCollection : FileCollection
+
       collection = collectionType.new(
         params[:userfile].merge(
           :name              => collection_name,
@@ -267,9 +273,12 @@ class UserfilesController < ApplicationController
       if collection.save
 
         spawn do
-          File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
-          collection.extract_collection_from_archive_file(tmpcontentfile)
-          File.delete(tmpcontentfile)
+          begin
+            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            collection.extract_collection_from_archive_file(tmpcontentfile)
+          ensure
+            File.delete(tmpcontentfile) rescue true
+          end
         end
       
         flash[:notice] = "Collection '#{collection_name}' created."
@@ -278,58 +287,33 @@ class UserfilesController < ApplicationController
       else
         flash[:error] = "Collection '#{collection_name}' could not be created."
         redirect_to :action => :new
-      end
+      end # save collection
       return
     end
 
-    # Prepare for creation of several objects
-    status           = :success
-    successful_files = []
-    failed_files     = []
-    nested_files     = []
+    # At this point, create a bunch of userfiles from the archive
+    raise "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
 
-    # Create a bunch of userfiles from the archive
-    if params[:archive] == 'extract'
-      attributes = {  # common attributes to all files
-        :user_id           => current_user.id,
-        :data_provider_id  => data_provider_id,
-        :tag_ids           => params[:tags],
-      }.merge(params[:userfile])
-      #spawn do
+    # Common attributes to all files
+    attributes = params[:userfile].merge({
+      :user_id           => current_user.id,
+      :data_provider_id  => data_provider_id,
+      :tag_ids           => params[:tags]
+    })
+
+    # Do it in background.
+    # TODO: notification?
+    spawn do
+      begin
         File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
-        status, successful_files, failed_files, nested_files = extract_from_archive(tmpcontentfile,attributes)
-        File.delete(tmpcontentfile)
-      #end
+        extract_from_archive(tmpcontentfile,attributes)
+      ensure
+        File.delete(tmpcontentfile) rescue true
+      end
     end
 
-    # Report about successes and failures
-    if successful_files.size > 0
-      flash[:notice] += "#{successful_files.size} files successfully added."
-    end
-    if failed_files.size > 0
-      flash[:error]  += "#{failed_files.size} files could not be added.\n"
-    end
-    if nested_files.size > 0
-      flash[:error]  += "#{nested_files.size} files could not be added as they are nested in directories."
-    end
-
-    if status == :overflow
-      flash[:error] += "Maximum of 50 files can be auto-extracted at a time.\nCreate a collection if you wish to add more."
-      redirect_to :action => :new
-      return
-    end
-
-    if status != :success
-      flash[:error] += "Some or all of the files were not extracted properly.\n"
-      redirect_to :action => :new
-      return
-    end
-
-    rescue
-      File.delete(tmpcontentfile)
-    end
-
-    format.html { redirect_to :action => :index }
+    flash[:notice] += "Your files are being extracted and added in background."
+    redirect_to :action => :index
   end
 
   # PUT /userfiles/1
@@ -647,6 +631,7 @@ class UserfilesController < ApplicationController
     data_provider_id    = attributes["data_provider_id"] ||
                           attributes[:data_provider_id]
     raise "No data provider ID supplied." unless data_provider_id
+
     user_id             = attributes["user_id"]  ||
                           attributes[:user_id]
     raise "No user ID supplied." unless user_id
@@ -666,7 +651,7 @@ class UserfilesController < ApplicationController
     count = all_files.select{ |f| f !~ /\// }.size
 
     #max of 50 files can be added to the file list at a time.
-    return [:overflow, -1, -1, -1] if count > 50
+    raise "Overflow: more than 50 files found in archive." if count > 50
 
     workdir = "/tmp/filecollection.#{$$}"
     Dir.mkdir(workdir)
@@ -708,8 +693,11 @@ class UserfilesController < ApplicationController
       successful_files.each do |file|
         u = SingleFile.new(attributes)
         u.name = file
-        u.cache_copy_from_local_file(file)
-        unless u.save(false)
+        if u.save(false)
+          u.cache_copy_from_local_file(file)
+          u.size = File.size(file)
+          u.save
+        else
           status = :failed
         end
       end
@@ -717,7 +705,8 @@ class UserfilesController < ApplicationController
 
     FileUtils.remove_dir(workdir, true)
 
-    [status, successful_files, failed_files, nested_files]
+    # TODO: report these values using new comm mechanism
+    #[status, successful_files, failed_files, nested_files]
   end
 
 end
