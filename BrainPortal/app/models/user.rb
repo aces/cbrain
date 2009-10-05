@@ -139,23 +139,27 @@ class User < ActiveRecord::Base
   
   #Return the list of groups available to this user based on role.
   def available_groups
+    return @available_groups if @available_groups
+    
     if self.has_role? :admin
-      Group.all
+      @available_groups = Group.all
     elsif self.has_role? :site_manager
-      [Group.find_by_name("everyone")] | self.site.groups.all
+      @available_groups = [Group.find_by_name("everyone")] | self.site.groups.all
     else
-      [Group.find_by_name("everyone")] | self.groups.all
+      @available_groups = [Group.find_by_name("everyone")] | self.groups.all
     end
   end
   
   #Return the list of users under this user's control based on role.
   def available_users
+    return @available_users if @available_users
+    
     if self.has_role? :admin
-      User.all
+      @available_users = User.all
     elsif self.has_role? :site_manager
-      self.site.users.all
+      @available_users = self.site.users.all
     else
-      [self]
+      @available_users = [self]
     end
   end
   

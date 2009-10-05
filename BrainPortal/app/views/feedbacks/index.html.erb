@@ -11,32 +11,29 @@
 
 <div class = "generalcontent">
 
-   <% title 'Files' %>
+   <% title 'Feedback' %>
 
-   <div class="resource_list_box">
-     <%= button_to 'Give Feedback', new_feedback_path, :method  => :get %>
-   </div>
+   <div class="resource_list_upper_form">
+         <%= 
+           link_to_function 'Give Feedback', :class  => 'action_link' do |page|
+             page['new_feedback'].toggle
+           end 
+           %>
+         <div id="new_feedback" style="display:none">
+           <%= render :partial  => 'new' %>
+         </div>
+   </div> <!-- End class="upper_form" -->
 
-      <table class="resource_list">
+      <table class="resource_list" id="feedback_table">
          <tr>
             <th>Summary</th>
             <th>Author</th>
             <th>Posted at</th>
-            <% if current_user.has_role? :admin %>
-               <th colspan="2"/>
-            <% end %>
+            <th colspan="2">Operations</th>
          </tr>
    
          <% for feedback in @feedbacks %>
-           <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
-             <td><%=link_to h(feedback.summary), feedback %></td>
-             <td><%= h feedback.user.login %></td>
-             <td><%= h(to_localtime(feedback.created_at.to_s,:datetime)) %></td>
-             <% if current_user.has_role? :admin %>
-                <td><%= button_to 'Edit', edit_feedback_path(feedback), :method  => :get %></td>
-                <td><%= button_to 'Destroy', feedback, :confirm => 'Are you sure?', :method => :delete %></td>
-             <% end %>
-           </tr>
+           <%= render :partial => 'feedback_table_row', :locals  => {:feedback  => feedback} %>
          <% end %>
       </table>
       <br/>

@@ -15,12 +15,19 @@
   <% title 'Execution Servers' %>
 
   <% if check_role(:admin) || check_role(:site_manager)%>
-    <div class = "resource_list_box">
-         <%= button_to 'Create New Execution Server', new_bourreau_path, :method => :get %>
-    </div>  <!-- End class="bourreauxbox" -->
-  <% end %>
-  <br>
-  <table class="resource_list" onMouseOut="javascript:highlightTableRowVersionA(0);">
+      <div class="resource_list_upper_form">
+            <%= 
+              link_to_function 'Create New Execution Server', :class  => 'action_link' do |page|
+                page['new_bourreau'].toggle
+              end 
+              %>
+            <div id="new_bourreau" style="display:none">
+              <%= render :partial  => 'new' %>
+            </div>
+      </div> <!-- End class="upper_form" -->
+   <% end %>
+   <br>
+  <table class="resource_list" id="bourreau_table">
      <tr>
          <th>Execution Server Name</th>
          <th>Owner</th>
@@ -33,27 +40,7 @@
      </tr>
   
      <% for bour in @bourreaux %>
-         <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
-           <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
-           <td><%= h(bour.user.login) %></td>
-           <td><%= h(bour.group.name) %></td>
-           <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
-           <td><%= h(bour.online ? "Yes" : "No") %></td>
-           <td><%= bour.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
-           <td><%= h(bour.description) %></td>
-           <% if bour.has_owner_access?(current_user) %>
-             <td><%= button_to 'Edit', edit_bourreau_path(bour), :method => :get %></td>
-             <td><%= button_to 'Delete', bourreau_path(bour), :confirm => 'Are you sure?', :method => :delete %> </td>
-             <% if bour.has_remote_control_info? %>
-               <td><%= button_to 'Start', start_bourreau_path(bour), :method => :get %></td>
-               <td><%= button_to 'Stop', stop_bourreau_path(bour), :method => :get %></td>
-             <% else %>
-               <td colspan="2"></td>
-             <% end %>
-           <% else %>
-             <td colspan="4"></td>
-           <% end %>
-         </tr>
+         <%= render :partial => 'bourreau_table_row', :locals  => {:bour  => bour} %>
      <% end %>
   
      <% if @bourreaux.nil? || @bourreaux.empty? %>

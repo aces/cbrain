@@ -1,0 +1,23 @@
+<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
+  <td><%=h user.full_name %></td>
+  <td><%=h user.login %></td>
+  <td><%=h user.email %></td>
+  <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
+  <td><%=h user.role.humanize %></td>
+  <td><%=h user.site.name rescue "(Unassigned)" %></td>
+  <td><%=h user.userfiles.size %></td>
+  <% unless user.login == 'admin' %>
+    <td><%= link_to 'Edit', edit_user_path(user), :class => 'action_link' %></td>
+    <td>
+      <%= 
+          link_to_remote  'Delete',
+                        {:url  => user_path(user),
+                         :method  => 'delete',
+                         :confirm => 'Are you sure?',
+                         :before  => "$('user_#{user.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                         },
+                        {:class => 'action_link'}
+        %>
+    </td>
+  <% else %><td colspan="2"></td><% end %>
+</tr>

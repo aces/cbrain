@@ -1,0 +1,19 @@
+<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="feedback_<%= feedback.id %>">
+  <td><%=link_to h(feedback.summary), feedback %></td>
+  <td><%= h feedback.user.login %></td>
+  <td><%= h(to_localtime(feedback.created_at.to_s,:datetime)) %></td>
+  <% if current_user.has_role?(:admin) || current_user.id == feedback.user_id %>
+     <td><%= link_to 'Edit', edit_feedback_path(feedback), :class  => 'action_link' %></td>
+     <td>
+       <%= 
+           link_to_remote  'Delete',
+                         {:url  => feedback_path(feedback),
+                          :method  => 'delete',
+                          :confirm => 'Are you sure?',
+                          :before  => "$('feedback_#{feedback.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                          },
+                         {:class => 'action_link'}
+         %>
+     </td>
+  <% end %>
+</tr>

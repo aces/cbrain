@@ -12,7 +12,6 @@
 #RESTful controller for the Feedback resource.
 class FeedbacksController < ApplicationController
   before_filter :login_required
-  before_filter :admin_role_required, :only => [:edit, :update, :delete]
   
   Revision_info="$Id$"
   
@@ -63,10 +62,10 @@ class FeedbacksController < ApplicationController
     respond_to do |format|
       if @feedback.save
         flash[:notice] = 'Feedback was successfully created.'
-        format.html { redirect_to(@feedback) }
+        format.js
         format.xml  { render :xml => @feedback, :status => :created, :location => @feedback }
       else
-        format.html { render :action => "new" }
+        format.js
         format.xml  { render :xml => @feedback.errors, :status => :unprocessable_entity }
       end
     end
@@ -93,10 +92,11 @@ class FeedbacksController < ApplicationController
   # DELETE /feedbacks/1.xml
   def destroy #:nodoc:
     @feedback = Feedback.find(params[:id])
-    @feedback.destroy
+    @destroyed = @feedback.destroy
 
     respond_to do |format|
       format.html { redirect_to(feedbacks_url) }
+      format.js
       format.xml  { head :ok }
     end
   end

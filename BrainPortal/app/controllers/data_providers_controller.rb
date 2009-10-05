@@ -76,25 +76,25 @@ class DataProvidersController < ApplicationController
 
   end
 
-  def new #:nodoc:
-    @user     = current_user
-    @provider = DataProvider.new( :user_id   => @user.id,
-                                  :group_id  => Group.find_by_name(@user.login).id,
-                                  :online    => true,
-                                  :read_only => false
-                                )
-    @users = current_user.available_users
-    @groups = current_user.available_groups
-      
-    @typelist = get_type_list
-    @ssh_keys = get_ssh_public_keys
-
-    respond_to do |format|
-      format.html { render :action => :new }
-      format.xml  { render :xml => @provider }
-    end
-
-  end
+  # def new #:nodoc:
+  #   @user     = current_user
+  #   @provider = DataProvider.new( :user_id   => @user.id,
+  #                                 :group_id  => Group.find_by_name(@user.login).id,
+  #                                 :online    => true,
+  #                                 :read_only => false
+  #                               )
+  #   @users = current_user.available_users
+  #   @groups = current_user.available_groups
+  #     
+  #   @typelist = get_type_list
+  #   @ssh_keys = get_ssh_public_keys
+  # 
+  #   respond_to do |format|
+  #     format.html { render :action => :new }
+  #     format.xml  { render :xml => @provider }
+  #   end
+  # 
+  # end
 
   def create #:nodoc:
     fields    = params[:data_provider]
@@ -122,24 +122,17 @@ class DataProvidersController < ApplicationController
         @provider.errors.add(attr, msg)
       end
     end
+    
+    @typelist = get_type_list
+    @ssh_keys = get_ssh_public_keys
 
   
     if @provider.errors.empty?
       flash[:notice] = "Provider successfully created."
-      
-      respond_to do |format|
-        format.html {redirect_to(data_providers_url)}
-        format.js
-      end
-    else
-      @typelist = get_type_list
-      @ssh_keys = get_ssh_public_keys
-
-      
-      respond_to do |format|
-        format.html { render :action => :new }
-        format.js
-      end
+    end 
+    
+    respond_to do |format|
+      format.js
     end
   end
 
@@ -198,7 +191,6 @@ class DataProvidersController < ApplicationController
     end
 
     respond_to do |format|
-      format.html {redirect_to :action => :index}
       format.js
     end
   end

@@ -1,4 +1,4 @@
-if @provider.errors.empty?
+if @bourreau.errors.empty?
   if ! flash[:notice].nil? && ! flash[:notice].empty?
     page << "if($('flash_notice')){"
     page['flash_notice'].replace_html "#{flash[:notice].gsub(/\n/,'<BR>')}"
@@ -7,9 +7,9 @@ if @provider.errors.empty?
     page << "}"
     flash[:notice] = nil
   end
-  page.insert_html :bottom, 'data_provider_table', :partial => 'data_provider_table_row', :locals  => {:prov  => @provider}
-  @provider = DataProvider.new
-  page['new_data_provider'].replace_html(:partial  => 'new').hide
+  page.insert_html :bottom, 'bourreau_table', :partial => 'bourreau_table_row', :locals  => {:bour  => @bourreau}
+  @bourreau = Bourreau.new
+  page['new_bourreau'].replace_html(:partial  => 'new').hide
 else
-  page['new_data_provider'].replace_html :partial  => 'new'
+  page['new_bourreau'].replace_html :partial  => 'new'
 end

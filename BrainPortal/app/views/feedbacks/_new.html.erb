@@ -1,0 +1,27 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# $Id: new.html.erb 457 2009-09-02 20:36:49Z tsherif $
+#
+
+-%>
+
+<div class = "generalcontent">
+      <% remote_form_for :feedback, @feedback, :url => { :action => "create" } do |f| -%>
+        <%= f.error_messages %>
+        <p>
+          <%= f.label :summary %><br />
+          <%= f.text_field :summary %>
+        </p>
+        <p>
+          <%= f.label :details %><br />
+          <%= f.text_area :details %>
+        </p>
+        <p>
+          <%= f.submit "Create" %>
+        </p>
+      <% end %>
+</div>  <!-- End class="generalcontent" -->

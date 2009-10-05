@@ -15,57 +15,59 @@
 <% title 'Edit User Information' %>
 
 <h2>Update Information</h2>
-<div class = "generalbox">
 
 <%= error_messages_for :user %>
-<% form_for @user do |f| -%>
-<p><label for="login">Full Name</label><br/>
-<%= f.text_field :full_name %></p>
 
-<p><label for="email">Email</label><br/>
-<%= f.text_field :email %></p>
+  <div class="splitleft">
+    <% form_for @user do |f| -%>
+    <p><label for="login">Full Name</label><br/>
+    <%= f.text_field :full_name %></p>
 
-<% if check_role(:admin) || check_role(:site_manager) %>
-	<%  if not_admin_user(@user) && check_role(:admin)%>
-   	<p><label for="role">Role</label><br/>
-	   <%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
-	   <p><label for="role">Site</label><br/>
-      <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
-	<% end %>
-   <label for="groups">Groups</label>
-   <table>
-      <% for group in @groups %>
-       <tr>
-         <td class="info"><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
-         <td class="info"><%= h(group.name) -%></td>
-       </tr>
-       <% end %>
-   </table>
-<% end %>
+    <p><label for="email">Email</label><br/>
+    <%= f.text_field :email %></p>
+
+    <% if check_role(:admin) || check_role(:site_manager) %>
+    	<%  if not_admin_user(@user) && check_role(:admin)%>
+       	<p><label for="role">Role</label><br/>
+    	   <%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
+    	   <p><label for="role">Site</label><br/>
+          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+    	<% end %>
+       <label for="groups">Groups</label>
+       <table>
+          <% for group in @groups %>
+           <tr>
+             <td class="info"><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
+             <td class="info"><%= h(group.name) -%></td>
+           </tr>
+           <% end %>
+       </table>
+    <% end %>
+    <br>
+
+    <h3>Create a new password (leave blank to keep the old one.)</h3>
+    <p><label for="password">Password</label><br/>
+    <%= f.password_field :password %></p>
+
+    <p><label for="password_confirmation">Confirm Password</label><br/>
+    <%= f.password_field :password_confirmation %></p>
+
+    <p><%= submit_tag 'Update' %></p>
+    <% end -%>
+  </div>
 <br>
 
-<h3>Create a new password (leave blank to keep the old one.)</h3>
-<p><label for="password">Password</label><br/>
-<%= f.password_field :password %></p>
+<% if @log %>
+       <table>
+         <tr class="<%= cycle('list-odd', 'list-even') %>">
+           <th colspan="3">User activity log</th>
+         </tr>
+         <tr class="<%= cycle('list-odd', 'list-even') %>">
+           <td colspan="3"><pre><%= @log %></pre></td>
+         </tr>
+       </table>
+<% end %>
 
-<p><label for="password_confirmation">Confirm Password</label><br/>
-<%= f.password_field :password_confirmation %></p>
-
-<p><%= submit_tag 'Update' %></p>
-<% end -%>
-
-<%= button_to 'Cancel', check_role(:admin) ? users_path : home_path, :method => :get %>
+   
 </div>
-</div>
-
-   <% if @log %>
-     <table>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <th colspan="3">User activity log</th>
-       </tr>
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td colspan="3"><pre><%= @log %></pre></td>
-       </tr>
-     </table>
-   <% end %>
 

@@ -25,6 +25,14 @@ class UsersController < ApplicationController
       @users = current_user.site.users.find(:all, :include => :groups)
     end
     
+    #For the 'new' panel
+    @user = User.new(:site_id => current_user.site_id)
+    if current_user.has_role? :admin
+      @groups = WorkGroup.find(:all)
+    elsif current_user.has_role? :site_manager
+      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+    end
+    
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @users }
@@ -93,17 +101,19 @@ class UsersController < ApplicationController
     @user.save
     
     if @user.errors.empty?
-      redirect_to(users_url)
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")
-    else
-      if current_user.has_role? :admin
-        @groups = WorkGroup.find(:all)
-      elsif current_user.has_role? :site_manager
-        @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-      end      
-      render :action => 'new'
+    end
+    
+    if current_user.has_role? :admin
+      @groups = WorkGroup.find(:all)
+    elsif current_user.has_role? :site_manager
+      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+    end
+    
+    respond_to do |format|
+      format.js
     end
   end
 
@@ -137,17 +147,21 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
     end
+    
+    @destroyed = false
         
     begin      
       @user.destroy
+      @destroyed = true
       respond_to do |format|
-        format.html { redirect_to(users_url) }
+        format.js
         format.xml  { head :ok }
       end
     rescue => e
+      @destroyed = false
       flash[:error] = e.message
       respond_to do |format|
-        format.html { redirect_to(users_url) }
+        format.js
         format.xml  { render :xml => @user, :status => :unprocessable_entity }
       end
     end

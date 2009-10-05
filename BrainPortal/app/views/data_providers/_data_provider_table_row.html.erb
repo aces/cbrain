@@ -14,7 +14,6 @@
   </td>
   <td>
      <% if prov.has_owner_access?(current_user) %>
-     <!-- <%= link_to_remote 'Delete', data_provider_path(prov), :confirm => 'Are you sure?', :class => 'action_link' %> -->
      <%= 
         link_to_remote  'Delete',
                       {:url  => data_provider_path(prov),

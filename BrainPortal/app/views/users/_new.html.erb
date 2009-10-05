@@ -1,0 +1,60 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Tarek Sherif
+#
+# $Id: new.html.erb 429 2009-08-17 21:50:15Z tsherif $
+#
+
+-%>
+<div class = "generalcontent">
+<br>
+<% title 'Create New User' %>
+
+<%= error_messages_for :user %>
+
+<% remote_form_for :user, @user, :url => { :action => "create" } do |f| -%>
+
+<div class="splitleft">
+  <p><label for="full_name">Full Name</label><br/>
+  <%= f.text_field :full_name %></p>
+
+  <p><label for="login">Login</label><br/>
+  <%= f.text_field :login %></p>
+
+  <p><label for="email">Email</label><br/>
+  <%= f.text_field :email %></p>
+  
+  <p><label for="role">Role</label><br/>
+  <%= f.select :role, roles_for_user(current_user), {} %> </p>
+  
+  <p><label for="password">Password</label><br/>
+  <%= f.password_field :password %></p>
+
+  <p><label for="password_confirmation">Confirm Password</label><br/>
+  <%= f.password_field :password_confirmation %></p>
+  
+  <br><br>
+  <p><%= submit_tag 'Create User' %></p>
+</div>
+
+<div class="splitright">
+  <p><label for="role">Site</label><br/>
+  <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+
+  <br/>
+  <label for="groups">Groups</label>
+  <table>
+     <% for group in @groups %>
+         <tr>
+           <td class="info"><%= check_box_tag("user[group_ids][]", group.id.to_s) %></td>
+           <td class="info"><%= h(group.name) -%></td>
+         </tr>
+     <% end %>
+  </table>
+</div>
+<% end -%>
+</div>

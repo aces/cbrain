@@ -14,11 +14,18 @@
 
 <% title "Users"%>
 
-<div class = "resource_list_box">
-  <%= button_to 'Create New User', new_user_path, :method => :get %>
-</div>
+<div class="resource_list_upper_form">
+      <%= 
+        link_to_function 'Create New User', :class  => 'action_link' do |page|
+          page['new_user'].toggle
+        end 
+        %>
+      <div id="new_user" style="display:none">
+        <%= render :partial  => 'new' %>
+      </div>
+</div> <!-- End class="upper_form" -->
 
-<table class="resource_list">
+<table class="resource_list" id="user_table">
   <tr>
     <th>Name</th>
     <th>Login</th>
@@ -31,19 +38,7 @@
   </tr>
 
 <% for user in @users %>
-  <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight">
-    <td><%=h user.full_name %></td>
-    <td><%=h user.login %></td>
-    <td><%=h user.email %></td>
-    <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
-    <td><%=h user.role.humanize %></td>
-    <td><%=h user.site.name rescue "(Unassigned)" %></td>
-    <td><%=h user.userfiles.size %></td>
-    <% unless user.login == 'admin' %>
-      <td><%= button_to 'Edit', edit_user_path(user), :method => :get %></td>
-      <td><%= button_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete %></td>
-    <% else %><td colspan="2"></td><% end %>
-  </tr>
+  <%= render :partial => 'user_table_row', :locals  => {:user  => user}%>
 <% end %>
 </table>
 </div>

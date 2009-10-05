@@ -76,8 +76,6 @@ class BourreauxController < ApplicationController
                               :group_id  => Group.find_by_name(current_user.login).id,
                               :online    => true
                             )
-    @users = current_user.available_users
-    @groups = current_user.available_groups
 
     respond_to do |format|
       format.html { render :action => :new }
@@ -92,16 +90,15 @@ class BourreauxController < ApplicationController
     @bourreau = Bourreau.new( fields )
     @bourreau.save
 
-    if @bourreau.errors.empty?
-      redirect_to(bourreaux_url)
-      flash[:notice] = "Bourreau successfully created."
-    else
-      @users = current_user.available_users
-      @groups = current_user.available_groups
-      render :action => :new
-      return
-    end
     
+
+    if @bourreau.errors.empty?
+      flash[:notice] = "Bourreau successfully created."
+    end
+   
+    respond_to do |format|
+      format.js
+    end
   end
 
   def update #:nodoc:
@@ -132,6 +129,7 @@ class BourreauxController < ApplicationController
   def destroy #:nodoc:
     id        = params[:id]
     @bourreau = Bourreau.find(id)
+    @destroyed = false
     
     raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
@@ -144,12 +142,15 @@ class BourreauxController < ApplicationController
     raise "This Bourreau cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy
+      @destroyed = true
       flash[:notice] = "Bourreau successfully deleted."
     else
       flash[:error] = "Bourreau destruction failed."
     end
 
-    redirect_to :action => :index
+    respond_to do |format|
+      format.js
+    end
 
   end
 

@@ -5,7 +5,28 @@
 # $Id$
 #
 -%>
-   <div class = "infobox">
+<br>
+  <div class="alone_per_line">
+    <%= 
+      link_to_function "Show configuration notes", {:id  => 'show_info', :class  => 'action_link'} do |page|
+        page['infobox'].toggle
+        page['show_info'].hide
+        page['hide_info'].show
+      end
+     %>
+
+     <%= 
+       link_to_function "Hide configuration notes", {:id  => 'hide_info', :style  => 'display:none', :class  => 'action_link'} do |page|
+         page['infobox'].toggle
+         page['show_info'].show
+         page['hide_info'].hide
+       end
+      %>
+  </div>
+  
+  <br>
+  
+   <div id="infobox" style="display:none">
 
       <h3>Some Notes About Configuring A Execution Server</h3>
 
@@ -106,4 +127,4 @@
       and tunneling is disabled by blanking out the port field, then
       the backup <em>database.yml</em> will be restored.
 
-   <div> <!-- End class="infobox" -->
+   </div> <!-- End class="infobox" -->

@@ -18,10 +18,10 @@
       <div class="resource_list_upper_form">
             <%= 
               link_to_function 'Create New Data Provider', :class  => 'action_link' do |page|
-                page << "Effect.toggle('new_data_provider', 'blind')"
+                page['new_data_provider'].toggle
               end 
               %>
-            <div id="new_data_provider" style="display:none;height:53em">
+            <div id="new_data_provider" style="display:none">
               <%= render :partial  => 'new' %>
             </div>
       </div> <!-- End class="upper_form" -->

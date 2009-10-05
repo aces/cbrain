@@ -353,8 +353,7 @@ a:hover {
     border: 1px solid #E4E4E4;  
 }
 
-.infobox {
-    width: 500px; 
+#infobox {
     float: right;
     padding: 1em; 
     background-color: #F6F6F6;
@@ -773,15 +772,32 @@ td.taskinfo {
     text-align: center;
 }
 
-.resource_list td.left {
+/*.resource_list td.left {
     border: 0px;
     text-align: left;
-}
+}*/
 
 table.resource_list td.checkbox {
     text-align: center;
 }
 
+.alone_per_line {
+    display: block;
+    clear: both;
+}
+
+td.left{
+    text-align: left;
+}
+
+/*#bourreau_show_info {
+    clear:both;
+}
+
+#bourreau_hide_info {
+    clear:both;
+}
+*/
 .userfiles {
     border: 0px;
 }
