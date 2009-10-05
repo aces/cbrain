@@ -11,7 +11,7 @@
 
 -%>
 
-<% title 'Bourreau Info' %>
+<% title 'Execution Server Info' %>
 
 <h2>Information for <%= @bourreau.name %></h2>
 
@@ -37,7 +37,7 @@
          </tr>
 
          <tr>
-             <th>Revision Info (Bourreau Client)</th>
+             <th>Revision Info (Client Side)</th>
              <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
          </tr>
 
@@ -103,7 +103,7 @@
              </tr>
 
              <tr>
-                 <th>Bourreau Rails HOME</th>
+                 <th>Execution Server Rails HOME</th>
                  <td class="info"><%= h(@bourreau.ssh_control_rails_dir) %></td>
              </tr>
 
@@ -132,13 +132,13 @@
          <% if @info.name == "???" %>
 
              <tr>
-               <td colspan="2">This Bourreau is currently <font color="red">DOWN</font>.</td>
+               <td colspan="2">This Execution Server is currently <font color="red">DOWN</font>.</td>
              </tr>
 
          <% else %>
 
              <tr>
-                 <th>Revision Info (Bourreau Server)</th>
+                 <th>Revision Info (Server Side)</th>
                  <td class="info">
                      <strong>Subversion Revision: </strong><%= @info.revision %><br>
                      <strong>Last Change Author: </strong><%= @info.lc_author %><br>
@@ -158,7 +158,7 @@
              </tr>
 
              <tr>
-                 <th>Bourreau Server uptime</th>
+                 <th>Execution Server uptime</th>
                  <td class="info">
                    Up since: <%= h(@info.bourreau_uptime.to_i.ago.to_s(:db)) %><br>
                    (for: <%= pretty_elapsed(@info.bourreau_uptime.to_i) %>)
@@ -166,7 +166,7 @@
              </tr>
 
              <tr>
-                 <th>Bourreau Cluster Management System</th>
+                 <th>Execution Server Cluster Management System</th>
                  <td class="info">
                    Type: <%= h(@info.bourreau_cms) %><br>
                    Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
@@ -174,7 +174,7 @@
              </tr>
 
              <tr>
-                 <th>Bourreau SSH Public Key</th>
+                 <th>Execution Server SSH Public Key</th>
                  <td class="info"><SMALL><SMALL><PRE><%= pretty_ssh_key(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
              </tr>
 

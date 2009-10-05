@@ -28,15 +28,10 @@
       </tr>
 
       <tr>
-          <th>Bourreau Name</th>
+          <th>Execution Server</th>
           <td><%= h(@task.bourreau.name) %></td>
       </tr>
 
-      <tr>
-           <th>Bourreau Name</th>
-           <td><%= h(@task.bourreau.name) %></td>
-      </tr>
-   
       <tr>
           <th>Current Status</th>
           <td><%= h(@task.status) %></td>
@@ -85,20 +80,23 @@
    
    </table>
 
+   <% prettystdout="(None)" ; prettystderr="(None)"
+      prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
+      prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
+   %>
+
    <table class = "showtaskstable">
       <tr>
-          <th width="50%">DRMAA stdout</th><th width="50%">DRMAA stderr</th>
+          <th>DRMAA stdout</th>
       </tr>
-
-      <% prettystdout="(None)" ; prettystderr="(None)"
-         prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
-         prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
-      %>
-
       <tr>
           <td class="info"><pre><%= h(prettystdout) -%></pre></td>
+      </tr>
+      <tr>
+          <th>DRMAA stderr</th>
+      </tr>
+      <tr>
           <td class="info"><pre><%= h(prettystderr) -%></pre></td>
       </tr>
-
    </table>
 </div>

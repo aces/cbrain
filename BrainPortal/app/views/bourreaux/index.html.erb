@@ -12,17 +12,17 @@
 -%>
 <div class = "generalcontent">
 
-  <% title 'Bourreaux' %>
+  <% title 'Execution Servers' %>
 
   <% if check_role(:admin) || check_role(:site_manager)%>
     <div class = "resource_list_box">
-         <%= button_to 'Create New Bourreau', new_bourreau_path, :method => :get %>
+         <%= button_to 'Create New Execution Server', new_bourreau_path, :method => :get %>
     </div>  <!-- End class="bourreauxbox" -->
   <% end %>
   <br>
   <table class="resource_list" onMouseOut="javascript:highlightTableRowVersionA(0);">
      <tr>
-         <th>Bourreau Name</th>
+         <th>Execution Server Name</th>
          <th>Owner</th>
          <th>Group</th>
          <th>Site</th>
@@ -57,7 +57,7 @@
      <% end %>
   
      <% if @bourreaux.nil? || @bourreaux.empty? %>
-       <tr class="list-odd"><td colspan="9">There are no Bourreaux in this list.</td></tr>
+       <tr class="list-odd"><td colspan="9">There are no Execution Servers in this list.</td></tr>
      <% end %>
   
   </table>

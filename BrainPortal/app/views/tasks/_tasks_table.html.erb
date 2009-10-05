@@ -23,7 +23,7 @@
                 <%= set_order_icon('owner', params[:sort_order], params[:sort_dir]) %>
              </th>
              <th>
-               <%= link_to_remote  "Bourreau Name", :url  =>  {:action  => :index, :sort_order  => 'bourreau', :sort_dir  => set_dir('bourreau', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+               <%= link_to_remote  "Execution Server", :url  =>  {:action  => :index, :sort_order  => 'bourreau', :sort_dir  => set_dir('bourreau', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
                <%= set_order_icon('bourreau', params[:sort_order], params[:sort_dir]) %>
              </th>
              <th>

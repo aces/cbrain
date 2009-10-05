@@ -7,9 +7,9 @@
 -%>
    <div class = "infobox">
 
-      <h3>Some Notes About Bourreau Configuration</h3>
+      <h3>Some Notes About Configuring A Execution Server</h3>
 
-      A Bourreau is a remote Rails application that is used by the
+      An Execution Server is a remote Rails application that is used by the
       BrainPortal. Like all Rails applications, it runs on some host
       somewhere, it listens to HTTP connections on some port and needs
       to connect to the same database server as the BrainPortal.
@@ -20,13 +20,13 @@
       from a user's browser, but they are XML requests issued by the
       BrainPortal using a Rails protocol called ActiveResource. There
       are several ways that the BrainPortal can be told how to connect to
-      and manage the Bourreau, which explains all the fields in this form.
+      and manage the Execution Server, which explains all the fields in this form.
 
       <p>
       <h4>Hardcoded DB and ActiveResource</h4>
       <p>
 
-      In the most ordinary case, a Bourreau is installed and deployed
+      In the most ordinary case, an Execution Server is installed and deployed
       manually by a CBRAIN administrator; this requires choosing the
       listen port (the <em>port</em> argument to its <em>script/server
       -p port</em> command when it's started) and creating its
@@ -42,9 +42,9 @@
 
       If the fields in the section <strong>SSH Remote Control
       Configuration</strong> are filled and describe the deployment
-      remote account of the Bourreau, then the BrainPortal will have the
+      remote account of the Execution Server, then the BrainPortal will have the
       ability to establish a persistent SSH master connection to that
-      host and allow the administrator to start and stop the Bourreau
+      host and allow the administrator to start and stop the Server
       right from the WEB interface. Note that the UNIX user under which
       the BrainPortal runs must have the proper SSH public keys for that
       remote account installed.
@@ -54,7 +54,7 @@
       <p>
 
       It's possible the further deviate from the standard hardcoded
-      Bourreau by having the BrainPortal set up SSH tunnels for
+      Execution Server by having the BrainPortal set up SSH tunnels for
       either (or both) of the ActiveResource connection and the
       Database Server connection. This can be turned on by entering
       port numbers in the two fields in the section <strong>Tunneling
@@ -68,12 +68,12 @@
 
       <strong>Tunneling the ActiveResource connection:</strong> Entering
       a port number here will tell the BrainPortal to select this
-      port for the Bourreau's Rails listening port (the <em>port</em>
+      port for the Execution Server's Rails listening port (the <em>port</em>
       argument to its <em>script/server -p port</em> command when it's
-      started). When starting the Bourreau using the interface, a SSH
+      started). When starting the Execution Server using the interface, a SSH
       tunnel will be established between a local port (not shown here
       anywhere) on the BrainPortal side and the listening HTTP port
-      of the Bourreau selected here. This means that the two fields in
+      of the Server selected here. This means that the two fields in
       the form's section <strong>ActiveResource Configuration</strong>
       will be completely ignored.
 
@@ -81,10 +81,10 @@
 
       <strong>Tunneling the DB server connection:</strong> Entering a port
       number here will tell the BrainPortal to select this port for the
-      Bourreau's Rails DB connection; more accurately, by doing this, the
+      Execution Server's Rails DB connection; more accurately, by doing this, the
       BrainPortal will create from scratch a new <em>database.yml</em>
-      file, send it over to the Bourreau side, and force it to use
-      it. This <em>database.yml</em> will tell the Bourreau to connect
+      file, send it over to the Execution Server side, and force it to use
+      it. This <em>database.yml</em> will tell the Server to connect
       to host 127.0.0.1 on the port number specified here. This port
       will be configured to tunnel back to the BrainPortal all the way
       to the DB server used by the BrainPortal itself. Note that this
@@ -98,9 +98,9 @@
       <p>
 
       A side effect of tunneling the DB server is that any
-      <em>database.yml</em> file already present on the Bourreau side will
+      <em>database.yml</em> file already present on the Execution Server side will
       be backed up, and also that the newly created <em>database.yml</em>
-      file will be DELETED after the Bourreau is started. This provides a
+      file will be DELETED after the Server is started. This provides a
       high security context for the DB server's connection as if there
       were no <em>database.yml</em> file at all. And if there were,
       and tunneling is disabled by blanking out the port field, then
