@@ -494,14 +494,20 @@ class UserfilesController < ApplicationController
                  DataProvider.find_first_online_rw(current_user).id
                  )
             )
-        status = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
-        if status == :success
-          flash[:notice] = "Collection #{collection.name} was created."
-        elsif status == :collision
-          flash[:error] = "There was a collision in file names. Collection merge aborted."
-        else
-          flash[:error] = "Collection merge fails (internal error?)."
+
+        spawn do
+          collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
         end
+
+        flash[:notice] = "Collection #{collection.name} is being created in background."
+
+        #if status == :success
+        #  flash[:notice] = "Collection #{collection.name} was created."
+        #elsif status == :collision
+        #  flash[:error] = "There was a collision in file names. Collection merge aborted."
+        #else
+        #  flash[:error] = "Collection merge fails (internal error?)."
+        #end
 
       when "move_to_other_provider"
 
