@@ -10,7 +10,10 @@
 #
 
 class CBRAIN
-    
+
+  Revision_info="$Id$"
+  Redmine_Version="1.1.8"
+
   public
 
   # Utility constants

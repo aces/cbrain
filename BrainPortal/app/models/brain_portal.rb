@@ -11,4 +11,6 @@
 # This model represents a BrainPortal RAILS app.
 class BrainPortal < RemoteResource
 
+  Revision_info="$Id$"
+
 end

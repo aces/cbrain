@@ -35,11 +35,11 @@ class SessionsController < ApplicationController
   end
 
   def destroy #:nodoc:
+    current_user.addlog_context(self,"Logged out") if current_user
     self.current_user.forget_me if logged_in?
     cookies.delete :auth_token
     reset_session
     flash[:notice] = "You have been logged out."
-    current_user.addlog_context(self,"Logged out")
     redirect_to new_session_path
   end
 

@@ -1,4 +1,6 @@
 class ClusterTaskGenerator < Rails::Generator::NamedBase
+
+  Revision_info="$Id$"
     
   def manifest        
     task_manifest = record do |m|

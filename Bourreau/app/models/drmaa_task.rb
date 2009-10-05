@@ -478,12 +478,14 @@ public
      #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
      #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
      if File.exist?(stdoutfile)
-        io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 200 | tail -100","r")
+        #io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 200 | tail -100","r")
+        io = IO.popen("tail -100 #{stdoutfile}","r")
         @capt_stdout_b64 = Base64.encode64(io.read)
         io.close
      end
      if File.exist?(stderrfile)
-        io = IO.popen("tail -30 #{stderrfile} | fold -b -w 200 | tail -100","r")
+        #io = IO.popen("tail -30 #{stderrfile} | fold -b -w 200 | tail -100","r")
+        io = IO.popen("tail -100 #{stderrfile}","r")
         @capt_stderr_b64 = Base64.encode64(io.read)
         io.close
      end
