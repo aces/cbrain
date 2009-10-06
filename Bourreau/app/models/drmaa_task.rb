@@ -123,7 +123,7 @@ public
   # on of these states need to be 'refreshed' in case the
   # state has changed.
   def self.active_status_keywords
-    [ 'Setting Up', 'Queued', 'On CPU', 'PostProcessing' ]
+    [ 'Setting Up', 'Queued', 'On CPU', 'Post Processing' ]
   end
 
   # Returns the list of status keywords that represent
