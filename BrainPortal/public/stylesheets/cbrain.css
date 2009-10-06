@@ -14,7 +14,7 @@ body {
     color:#484848; 
     margin: 0; 
     padding: 0;
-    min-width: 88em;
+    min-width: 95em;
     max-height:100%;
     line-height: 18px;
 }
@@ -364,8 +364,8 @@ a:hover {
 
 .generalcontent {
     width: 90%;
-    margin-right: 1em;
-    margin-left: 1em;
+    margin-right: auto;
+    margin-left: auto;
     display: table;
 }
 
@@ -737,7 +737,7 @@ td.taskinfo {
 .resource_list {
     clear: both;
     margin-right: 1em;
-    width: 90%;
+    width: 100%;
 }
 
 .resource_list th {
@@ -892,7 +892,6 @@ td.left{
     border: 2px solid #6699CC;
     padding: 0.5em;
     margin-top: 1em;
-    width: 89%;
 }
 
 .upper_form {
@@ -918,14 +917,13 @@ td.left{
 
 .loginbox {
     margin-top: 1em;
-    margin-right: 1em;
+    margin-right: auto;
     margin-bottom: 2em;
-    margin-left: 1em;
+    margin-left: auto;
     padding-top: 1em;
     padding-left: 1em;
     padding-bottom: 2em;
-    padding-right: 2em;  
-    float: left;
+    padding-right: 2em;
     width: 30%;
     height: 12em;
 }
@@ -941,12 +939,12 @@ td.left{
     padding-left: 1em;
     padding-bottom: 1em;
     padding-bottom: 1em;
-    background-color: #ffffdd;
 }
 
 .logintable td {
     border: 0px;
-    background-color:#ffffdd;
+    font-size: 1em;
+    color: #0471B4;
     text-align: right;
     padding: 2px;
     margin: 0px;
@@ -959,13 +957,8 @@ td.left{
 
 .logintable tr {
     margin: 1px;
-    background-color:#ffffdd;
 }
 
-.login {
-    float: right;
-    width: 50%;
-}
 
 /* ######################################################### */
 /* Formatting for the Userfiles view (new) */

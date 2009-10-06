@@ -28,6 +28,9 @@
              <label for="password"><td>Password</td></label>
              <td class= "field"><%= password_field_tag 'password' %></td>
            </tr>
+           <tr>
+            <td/><td class="field"><br><%= submit_tag 'Log in' %></td></td>
+           </tr>
          </table>
          <br>
 
@@ -35,9 +38,6 @@
          <p><label for="remember_me">Remember me:</label>
          <%= check_box_tag 'remember_me' %></p>
          -->
-         <div class= "login">
-            <center><p><%= submit_tag 'Log in' %></p></center>
-         </div> <!-- End class="login" -->
       <% end -%>
    </div>  <!-- End class="loginbox" -->
 </div>   <!-- End class="generalcontent" -->

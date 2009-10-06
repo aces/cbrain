@@ -57,7 +57,7 @@
   </div>
 </div>   <!-- End id="sidebar" -->
 
-<div class="generalcontent">
+<div class="generalcontent" id="main_userfiles_content"  style="width: 90%">
   <div id="userfiles_top_menu">
     <%= userfiles_menu_option('Tags', 'tag_option', 'tag_table') %>
     <%= userfiles_menu_option('Groups', 'group_option', 'groups_table') %>
@@ -97,7 +97,7 @@
 
   <%= link_to_function "<< Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
-        page['userfilesdisplay'].visual_effect(:morph, :style  => "width:84%", :duration  => 0.5)
+        page['main_userfiles_content'].visual_effect(:morph, :style  => "width:87%", :duration  => 0.5)
         page['filter_option_show'].hide
         page['filter_option_hide'].show
       end
@@ -105,13 +105,13 @@
 
   <%= link_to_function ">> Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
         page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
-        page['userfilesdisplay'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
+        page['main_userfiles_content'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
         page['filter_option_hide'].hide
         page['filter_option_show'].show
       end
   %>
 
-      <table id="userfilesdisplay" class="resource_list" style="width: 90%">
+      <table id="userfilesdisplay" class="resource_list">
           <%= render :partial => 'userfiles_table' %>
       </table>
   <% end %>
