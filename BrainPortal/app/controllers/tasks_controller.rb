@@ -22,8 +22,9 @@ class TasksController < ApplicationController
     @bourreaux.each do |bourreau|
       bourreau_id = bourreau.id
 
+      # This section fetches from Bourreau ONLY the tasks in 'active' states.
       active_tasks = []
-      begin # This block fetches from Bourreau ONLY the tasks in 'active' states.
+      begin
         DrmaaTask.adjust_site(bourreau_id)
         raise "Failed to respond to 'alive' check" unless bourreau.is_alive?
         if current_user.has_role? :admin
@@ -50,6 +51,8 @@ class TasksController < ApplicationController
         end
       end
       @tasks.concat(active_tasks)
+      active_ids = {}
+      active_tasks.each { |t| active_ids[t.id] = true }
 
       # Now add the tasks in 'passive' states by accessing directly the DB
       conditions = { :bourreau_id => bourreau_id,
@@ -57,6 +60,7 @@ class TasksController < ApplicationController
                    }
       conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
       passive_tasks = ActRecTask.find(:all, :conditions => conditions)
+      passive_tasks.reject! { |t| active_ids[t.id] } # just to remove duplicates for fast changing tasks
       passive_tasks.each do |t|  # ugly kludge
         t.updated_at = Time.parse(t.updated_at)
         t.created_at = Time.parse(t.created_at)
