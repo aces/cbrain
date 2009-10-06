@@ -12,8 +12,6 @@
 -%>
 <div class = "generalcontent">
 <br>
-<% title 'Create New User' %>
-
 <%= error_messages_for :user %>
 
 <% remote_form_for :user, @user, :url => { :action => "create" } do |f| -%>

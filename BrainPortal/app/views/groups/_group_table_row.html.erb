@@ -1,0 +1,22 @@
+<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="group_<%= group.id %>">
+  <td><%= link_to h(group.name), group_path(group) %></td>
+  <td><%= group.class.name %></td>
+  <td><%= group.users.map{|u| h(u.login)}.join("<br>") %></td>
+  <td><%= group.site.name rescue "(Unassigned)" %></td>
+  <% if group.is_a? SystemGroup %>
+    <td colspan="3" />
+  <% else %>
+    <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>
+    <td>
+      <%= 
+          link_to_remote  'Delete',
+                        {:url  => group_path(group),
+                         :method  => 'delete',
+                         :confirm => 'Are you sure?',
+                         :before  => "$('group_#{group.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                         },
+                        {:class => 'action_link'}
+        %>
+    </td>
+  <% end %>
+</tr>

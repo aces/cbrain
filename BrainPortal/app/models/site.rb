@@ -33,7 +33,7 @@ class Site < ActiveRecord::Base
   attr_accessor           :manager_ids
   
   def managers
-    @managers ||= self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
+    self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end
   
   def userfiles_find_all(options = {})
@@ -99,9 +99,10 @@ class Site < ActiveRecord::Base
   end
   
   def set_managers
-    current_manager_ids = self.manager_ids || []
+    current_manager_ids = self.manager_ids.collect(&:to_s) || []
+    current_user_ids = self.user_ids.collect(&:to_s)
     
-    User.find(self.user_ids | current_manager_ids).each do |user|
+    User.find(current_user_ids | current_manager_ids).each do |user|
       if current_manager_ids.include? user.id.to_s
         if user.has_role? :user
           user.update_attributes(:site_id  => self.id, :role  => "site_manager")

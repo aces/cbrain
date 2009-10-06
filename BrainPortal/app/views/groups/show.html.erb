@@ -14,8 +14,6 @@
 <div class = "generalcontent">
 
 
-   <% title "#{@group.name}"%>
-
    <h2>Details for group: <%= h @group.name %></h2>
 
    <div class = "generalbox">
@@ -35,7 +33,6 @@
       <% end %>
       </table>
 
-      <%= button_to 'Edit', edit_group_path(@group), :method => :get %><br/>
-      <%= link_to 'Index', groups_path %>
+      <%= link_to 'Edit', edit_group_path(@group), :class => 'action_link' %><br/>
    </div>
 </div>

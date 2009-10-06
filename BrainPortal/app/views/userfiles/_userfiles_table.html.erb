@@ -15,28 +15,31 @@
                  <%= link_to_remote  "Tree view", :url  =>  {:action  => :index, :sort_order  => 'userfiles.lft'}, :method  => 'get'  %>
                  <%= set_order_icon('userfiles.lft', params[:sort_order]) %>
            </div>
+           
+           <div id="filter_div">
+             Active Filters
+             <div id="current_filters">
+               <%= render :partial => 'current_filters' %>
+             </div>
+           </div>
       </td>
    </tr>
   
     <tr>
       <th>
-        <div class="userfiles_select_all">
-          <%= link_to_function '&radic;' do |page|
+          <%= link_to_function '&#10004;' do |page|
               page.select(".userfile_checkbox").each do |check_box|
                 check_box.checked=true
               end
             end
           %>
-        </div>
         &nbsp;
-        <div class="userfiles_select_all">
           <%= link_to_function '<big>&times;</big>' do |page|
               page.select(".userfile_checkbox").each do |check_box|
                 check_box.checked=false
               end
             end
           %>
-        </div>
       </th>
       <th>
         <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :sort_order  => 'userfiles.name', :sort_dir  => set_dir('userfiles.name', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>

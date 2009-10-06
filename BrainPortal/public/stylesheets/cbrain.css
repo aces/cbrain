@@ -790,6 +790,10 @@ td.left{
     text-align: left;
 }
 
+th.right_align {
+   text-align: right;
+}
+
 /*#bourreau_show_info {
     clear:both;
 }
@@ -871,7 +875,25 @@ td.left{
     background-color: #ffffff;
     color: #505050;
     border: none;
+    float: left;
     /*border: 1px solid #e4e4e4;*/
+}
+
+#filter_div {
+    float: right;
+    width: 8%;
+    min-width: 14em;
+    color: black;
+}
+
+#current_filters ul {
+    padding-left: 0;
+    color: #0471B4;
+}
+
+#current_filters a {
+    text-decoration: none;
+    color: blue;
 }
 
 #userfiles_top_menu {
@@ -1160,7 +1182,9 @@ td.left{
 
 .notice {
     z-index: 0;
-    width: 79.5%;
+    width: 90%;
+    margin-right: auto;
+    margin-left: auto;
     border: 1px;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -1168,8 +1192,6 @@ td.left{
     padding-right: 1em;
     margin-bottom: 2em;
     margin-top: 2em;
-    margin-right: 1em;
-    margin-left: 1em;
     background-color: #ffffdd;
 }
 
@@ -1179,7 +1201,9 @@ td.left{
 
 .error {
     z-index: 0;
-    width: 79.5%;
+    width: 90%;
+    margin-right: auto;
+    margin-left: auto;
     border: 1px;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -1187,8 +1211,6 @@ td.left{
     padding-right: 1em;
     margin-bottom: 2em;
     margin-top: 2em;
-    margin-right: 1em;
-    margin-left: 1em;
     background-color: #ffeeee;
 }
 

@@ -1,6 +1,17 @@
-<h1>Editing <%= @site.name %></h1>
+<%
 
-<% form_for(@site) do |f| %>
+#
+# CBRAIN Project
+#
+# Original author: Tarek Sherif
+#
+# $Id: new.html.erb 457 2009-09-02 20:36:49Z tsherif $
+#
+
+-%>
+<div class = "generalcontent">
+<br>
+<% remote_form_for :site, @site, :url => { :action => "create" } do |f| -%>
   <%= f.error_messages %>
 
   <p>
@@ -17,8 +28,8 @@
 	   <% for user in User.all %>
 	       <tr>
 	         <td class="info"><%= h(user.full_name) -%></td>
-	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
-	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id) %></td>
+	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
 	       </tr>
 	   <% end %>
 	</table>
@@ -27,13 +38,12 @@
 	   <% for group in WorkGroup.all %>
 	       <tr>
 	         <td class="info"><%= h(group.name) -%></td>
-	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
+	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
 	       </tr>
 	   <% end %>
 	</table>
   <p>
-    <%= f.submit "Update" %>
+    <%= f.submit "Create" %>
   </p>
 <% end %>
-
-<%= link_to 'Back', sites_path %>
+</div>

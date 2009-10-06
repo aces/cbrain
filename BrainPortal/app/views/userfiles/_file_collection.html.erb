@@ -67,18 +67,32 @@
          <% if @userfile.is_a?(CivetCollection) %>
             <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
          <% end %>
-         <table>
+         <table class="resource_list">
             <tr class="list-odd">
-               <th rowspan="<%= @userfile.size %>" valign="top">Files:</th>
-               <td><%= @userfile.list_files[0].sub(/^#{@userfile.name + '/'}/, "") %></td>
-               <td><%= check_box_tag("filelist[]", @userfile.list_files[0]) %></td>
-               <% for file in @userfile.list_files[1..-1] %>
-                  <tr class="list-odd">
-                     <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
-                     <td><%= check_box_tag("filelist[]", file) %></td>
-                  </tr>
-               <% end %> <!-- End for -->
+              <th>
+                &nbsp;
+                <%= link_to_function '&#10004;' do |page|
+                    page.select(".collection_checkbox").each do |check_box|
+                      check_box.checked=true
+                    end
+                  end
+                %>
+                &nbsp;
+                <%= link_to_function '<big>&times;</big>' do |page|
+                    page.select(".collection_checkbox").each do |check_box|
+                      check_box.checked=false
+                    end
+                  end
+                %>
+              </th>
+               <th>File</th>
             </tr>
+            <% for file in @userfile.list_files %>
+               <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
+                  <td><%= check_box_tag("filelist[]", file, false, :class  => "collection_checkbox") %></td>
+                  <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
+               </tr>
+            <% end %> <!-- End for -->
          </table>
       <% end %>
          

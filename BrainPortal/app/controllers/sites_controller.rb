@@ -40,22 +40,18 @@ class SitesController < ApplicationController
 
   # GET /sites/new
   # GET /sites/new.xml
-  def new
-    @site = Site.new
-    @users  = User.all
-    @groups = WorkGroup.all
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @site }
-    end
-  end
-
+  # def new
+  #    @site = Site.new
+  # 
+  #    respond_to do |format|
+  #      format.html # new.html.erb
+  #      format.xml  { render :xml => @site }
+  #    end
+  #  end
+ 
   # GET /sites/1/edit
   def edit
     @site = Site.find(params[:id])
-    @users  = User.all
-    @groups = WorkGroup.all
   end
 
   # POST /sites
@@ -66,12 +62,10 @@ class SitesController < ApplicationController
     respond_to do |format|
       if @site.save
         flash[:notice] = 'Site was successfully created.'
-        format.html { redirect_to(@site) }
+        format.js
         format.xml  { render :xml => @site, :status => :created, :location => @site }
       else
-        @users  = User.all
-        @groups = WorkGroup.all
-        format.html { render :action => "new" }
+        format.js
         format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
       end
     end
@@ -92,8 +86,6 @@ class SitesController < ApplicationController
         format.html { redirect_to(@site) }
         format.xml  { head :ok }
       else
-        @users  = User.all
-        @groups = WorkGroup.all
         format.html { render :action => "edit" }
         format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
       end
@@ -104,10 +96,10 @@ class SitesController < ApplicationController
   # DELETE /sites/1.xml
   def destroy
     @site = Site.find(params[:id])
-    @site.destroy
+    @destroyed = @site.destroy
 
     respond_to do |format|
-      format.html { redirect_to(sites_url) }
+      format.js
       format.xml  { head :ok }
     end
   end

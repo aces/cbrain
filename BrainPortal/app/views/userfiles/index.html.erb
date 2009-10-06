@@ -28,7 +28,7 @@
    <li><%= link_to_remote 'JIV Files', :url  => {:action  => :index, :search_type => :jiv}, :method  => 'get' %></li>
    <% current_user.custom_filters.each do |filter| %>
    <li>
-   <%= link_to_remote filter.name, :url  => {:action  => :index, :custom_filter  => filter.id}, :method  => 'get' %><br>
+   <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :custom_filter  => filter.id}, :method  => 'get' %><br>
    <small><small>
       <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
       <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
@@ -43,17 +43,9 @@
    </h3>
    <ul>
    <% current_user.tags.collect(&:name).each do |tag| %> 
-     <li><%= link_to_remote tag, :url  => {:action  => :index, :tag_filter => tag}, :method  => 'get' %></li>
+     <li><%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :tag_filter => tag}, :method  => 'get' %></li>
    <% end %> 
    </ul>
-   
-   <h3>
-      Current filters
-    </h3>
-    <div id="current_filters">
-      <%= render :partial => 'current_filters' %>
-    </div>
-
   </div>
 </div>   <!-- End id="sidebar" -->
 

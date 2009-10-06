@@ -1,0 +1,18 @@
+    <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="site_<%= site.id %>">
+      <td><%=link_to h(site.name), site_path(site) %></td>
+      <td><%= site.managers.collect{ |m| h(m.login) }.join('<BR>') %></td>
+      <td><%= site.users.count %></td>
+      <td><%= site.groups.count %></td>   
+      <td><%= link_to 'Edit', edit_site_path(site), :class  => 'action_link' %></td>
+      <td>
+        <%= 
+            link_to_remote  'Delete',
+                          {:url  => site_path(site),
+                           :method  => 'delete',
+                           :confirm => 'Are you sure?',
+                           :before  => "$('site_#{site.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                           },
+                          {:class => 'action_link'}
+          %>
+      </td>
+    </tr>

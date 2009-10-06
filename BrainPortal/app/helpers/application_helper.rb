@@ -174,5 +174,13 @@ module ApplicationHelper
     
     icon
   end
+  
+  def crop_text_to(length, string)
+    if string.length <= length
+      string
+    else
+      string[0,length-3] + "..."
+    end
+  end
 
 end

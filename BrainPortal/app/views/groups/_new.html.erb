@@ -1,0 +1,38 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Tarek Sherif
+#
+# $Id: new.html.erb 457 2009-09-02 20:36:49Z tsherif $
+#
+
+-%>
+<div class = "generalcontent">
+<br>
+      <% remote_form_for :group, @group, :url => { :action => "create" } do |f| -%>
+        <%= f.error_messages %>
+
+        <p>
+          <%= f.label :name %><br />
+          <%= f.text_field :name %>
+        </p>
+        <p><label for="role">Site</label><br/>
+         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+
+        <label for="users">Users in group:</label>
+        <table>
+           <% for user in @users %>
+               <tr>
+                 <td class="info"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+                 <td class="info"><%= h(user.full_name) -%></td>
+               </tr>
+           <% end %>
+        </table>
+        <p>
+          <%= f.submit "Create" %>
+        </p>
+      <% end %>
+</div>   <!-- End class="generalcontent" -->

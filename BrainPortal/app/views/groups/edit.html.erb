@@ -23,8 +23,8 @@
           <%= f.label :name %><br />
           <%= f.text_field :name %>
         </p>
-        <br/>
-  
+        <p><label for="role">Site</label><br/>
+         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>  
         <label for="users">Users in group:</label>
         <table>
            <% for user in @users %>

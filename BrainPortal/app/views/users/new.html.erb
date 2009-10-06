@@ -17,7 +17,7 @@
 <div class = "generalbox">
 
 <%= error_messages_for :user %>
-<% form_for @user do |f| -%>
+<% remote_form_for @user do |f| -%>
 <p><label for="full_name">Full Name</label><br/>
 <%= f.text_field :full_name %></p>
 

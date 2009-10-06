@@ -25,6 +25,14 @@ class GroupsController < ApplicationController
       @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "SystemGroup"}, :include => [:users])
       @work_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"}, :include => [:users])
     end
+    
+    #For new panel
+    @group = WorkGroup.new
+    if current_user.has_role? :admin
+      @users = User.all.reject{|u| u.login == 'admin'}
+    else
+      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+    end
 
      respond_to do |format|
       format.html # index.html.erb
@@ -47,21 +55,21 @@ class GroupsController < ApplicationController
     end
   end
 
-  # GET /groups/new
-  # GET /groups/new.xml
-  def new  #:nodoc:
-    @group = WorkGroup.new
-    if current_user.has_role? :admin
-      @users = User.all.reject{|u| u.login == 'admin'}
-    else
-      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-    end
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @group }
-    end
-  end
+  #GET /groups/new
+  #GET /groups/new.xml
+  # def new  #:nodoc:
+  #   @group = WorkGroup.new
+  #   if current_user.has_role? :admin
+  #     @users = User.all.reject{|u| u.login == 'admin'}
+  #   else
+  #     @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+  #   end
+  # 
+  #   respond_to do |format|
+  #     format.html # new.html.erb
+  #     format.xml  { render :xml => @group }
+  #   end
+  # end
 
   # GET /groups/1/edit
   def edit  #:nodoc:
@@ -77,24 +85,25 @@ class GroupsController < ApplicationController
   # POST /groups
   # POST /groups.xml
   def create  #:nodoc:
-    @group = WorkGroup.new(params[:work_group])
+    @group = WorkGroup.new(params[:group])
     
     if current_user.has_role? :site_manager
       @group.site = current_user.site
     end
 
+    if current_user.has_role? :admin
+      @users = User.all.reject{|u| u.login == 'admin'}
+    else
+      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+    end
+
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Group was successfully created.'
-        format.html { redirect_to groups_path }
+        format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        if current_user.has_role? :admin
-          @users = User.all.reject{|u| u.login == 'admin'}
-        else
-          @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-        end
-        format.html { render :action => "new" }
+        format.js
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
     end
@@ -132,10 +141,10 @@ class GroupsController < ApplicationController
     else
       @group = current_user.site.groups.find(params[:id], :conditions  => {:type  => "WorkGroup"})
     end
-    @group.destroy
+    @destroyed = @group.destroy
 
     respond_to do |format|
-      format.html { redirect_to(groups_url) }
+      format.js
       format.xml  { head :ok }
     end
   end

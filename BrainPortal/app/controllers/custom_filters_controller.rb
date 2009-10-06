@@ -61,10 +61,15 @@ class CustomFiltersController < ApplicationController
   # PUT /custom_filters/1.xml
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
-
+    filter_name = @custom_filter.name
+    
     respond_to do |format|
       if @custom_filter.update_attributes(params[:custom_filter])
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
+        if current_session.custom_filters.include?(filter_name)
+          current_session.custom_filters.delete filter_name
+          current_session.custom_filters << @custom_filter.name
+        end
         format.html { redirect_to(userfiles_path) }
         format.xml  { head :ok }
       else

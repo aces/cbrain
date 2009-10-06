@@ -21,57 +21,57 @@
 
   <div class = "splitleft">
 
-  <table>
+  <table class="resource_list">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Name:</th>
+      <th class="right_align">Name:</th>
       <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Owner:</th>
+      <th class="right_align">Owner:</th>
       <td colspan="2"><%=h @userfile.user.full_name %></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Size:</th>
+      <th class="right_align">Size:</th>
       <td colspan="2"><%=h @userfile.size %></td>
     </tr>  
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Data Provider:</th>
+      <th class="right_align">Data Provider:</th>
       <td colspan="2"><%=h @userfile.data_provider.name %></td>
     </tr>  
   
     <%if @userfile.is_a? SingleFile %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th>Parent:</th>
+        <th class="right_align">Parent:</th>
         <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
 
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th>Task:</th>
+        <th class="right_align">Task:</th>
         <td colspan="2"><%= @userfile.task rescue ""%></td>
       </tr>
      
       <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th>Children:</th>
+        <th class="right_align">Children:</th>
         <td colspan="2"><%=h @userfile.parent.name rescue ""%></td>
       </tr>
     <% end %> <!-- singlefile -->
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Created at:</th>
+      <th class="right_align">Created at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Modified at:</th>
+      <th class="right_align">Modified at:</th>
       <td colspan="2"><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
     </tr>
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th>Group:</th>
+      <th class="right_align">Group:</th>
       <td colspan="2"><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
     </tr>
     <tr>
-      <th>Group permission on file:</th>
+      <th class="right_align">Group permission on file:</th>
       <td colspan="2"><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
     </tr>
 

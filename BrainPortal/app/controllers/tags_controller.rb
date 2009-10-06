@@ -78,11 +78,16 @@ class TagsController < ApplicationController
   # PUT /tags/1.xml
   def update #:nodoc:
     @tag = current_user.tags.find(params[:id])
+    tag_name = @tag.name
 
     respond_to do |format|
       if @tag.update_attributes(params[:tag])
         flash[:notice] = 'Tag was successfully updated.'
-        format.html { redirect_to(@tag) }
+        if current_session.tag_filters.include?(tag_name)
+          current_session.tag_filters.delete tag_name
+          current_session.tag_filters << @tag.name
+        end
+        format.html { redirect_to userfiles_path }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
