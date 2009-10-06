@@ -166,4 +166,20 @@ class UsersController < ApplicationController
       end
     end
   end
+
+  def switch
+    if current_user.has_role? :admin
+      @user = User.find(params[:id])
+    elsif current_user.has_role? :site_manager
+      @user = current_user.site.users.find(params[:id])
+    end
+
+    current_user.addlog("Switching to user '#{@user.login}'")
+    @user.addlog("Switched from user '#{current_user.login}'")
+
+    current_user = @user
+    session[:user_id] = @user.id
+    redirect_to home_path
+  end
+
 end

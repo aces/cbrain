@@ -35,7 +35,7 @@ class BourreauxController < ApplicationController
     
     @user_tasks_info = {}
     begin
-       tasks = ActRecTask.all
+       tasks = ActRecTask.find(:all, :conditions => { :bourreau_id => @bourreau.id })
     rescue
        tasks = []
     end
