@@ -229,9 +229,10 @@ public
   def spawn
     dbconfig = ActiveRecord::Base.remove_connection
     pid = Kernel.fork do
+      require 'mongrel'
+      Mongrel::HttpServer.cbrain_force_close_server_socket
       begin
         # Monkey-patch Mongrel to not remove its pid file in the child
-        require 'mongrel'
         Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
         ActiveRecord::Base.establish_connection(dbconfig)
         yield

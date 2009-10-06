@@ -45,7 +45,14 @@ module Mongrel
     # with the close-on-exec flag.
     def configure_socket_options
       @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) rescue true
+      @@cbrain_socket = @socket
       original_configure_socket_options
+    end
+
+    # This CBRAIN patch method allows explicitely to close
+    # Mongrel's main acceptor socket (stored in a class variable).
+    def self.cbrain_force_close_server_socket
+      @@cbrain_socket.close rescue true
     end
   
   end
