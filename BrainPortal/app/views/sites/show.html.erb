@@ -25,7 +25,6 @@
   </table>
 
   <% if check_role(:admin) %>
-     <%= button_to 'Edit', edit_site_path(@site), :method => :get %><br>
-     <%= link_to 'Site Index', sites_path %>   
+     <%= link_to 'Edit', edit_site_path(@site), :class => 'action_link' %><br>
   <% end %>
 </div>
