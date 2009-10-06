@@ -1,39 +1,39 @@
-<h1>Editing <%= @site.name %></h1>
+<div class="generalcontent">
+  <h2>Editing <%= @site.name %></h2>
 
-<% form_for(@site) do |f| %>
-  <%= f.error_messages %>
+  <% form_for(@site) do |f| %>
+    <%= f.error_messages %>
 
-  <p>
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </p>
-	<label for="users">Users:</label>
-	<table>
-	   <tr>
-	     <td>Name</td>
-	     <td>Regular User</td>
-	     <td>Site Manager</td>
-	   </tr>
-	   <% for user in User.all %>
-	       <tr>
-	         <td class="info"><%= h(user.full_name) -%></td>
-	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
-	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
-	       </tr>
-	   <% end %>
-	</table>
-	<label for="groups">Groups</label>
-	<table>
-	   <% for group in WorkGroup.all %>
-	       <tr>
-	         <td class="info"><%= h(group.name) -%></td>
-	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
-	       </tr>
-	   <% end %>
-	</table>
-  <p>
-    <%= f.submit "Update" %>
-  </p>
-<% end %>
-
-<%= link_to 'Back', sites_path %>
+    <p>
+      <%= f.label :name %><br />
+      <%= f.text_field :name %>
+    </p>
+  	<label for="users">Users:</label>
+  	<table>
+  	   <tr>
+  	     <td>Name</td>
+  	     <td>Regular User</td>
+  	     <td>Site Manager</td>
+  	   </tr>
+  	   <% for user in User.all %>
+  	       <tr>
+  	         <td class="info"><%= h(user.full_name) -%></td>
+  	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
+  	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+  	       </tr>
+  	   <% end %>
+  	</table>
+  	<label for="groups">Groups</label>
+  	<table>
+  	   <% for group in WorkGroup.all %>
+  	       <tr>
+  	         <td class="info"><%= h(group.name) -%></td>
+  	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
+  	       </tr>
+  	   <% end %>
+  	</table>
+    <p>
+      <%= f.submit "Update" %>
+    </p>
+  <% end %>
+</div>
