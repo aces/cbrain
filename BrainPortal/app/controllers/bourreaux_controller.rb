@@ -26,28 +26,36 @@ class BourreauxController < ApplicationController
   def show #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     @info = @bourreau.info
 
     @user_id_name = {}
     User.all.each { |user| @user_id_name[user.id] = user.login }
     
-    @user_tasks_info = {}    #  user -> [ completed_tasks, total_tasks ]
+    @user_tasks_info = {}
     begin
-       DrmaaTask.adjust_site(@bourreau.id)
-       tasks = DrmaaTask.find(:all);
+       tasks = ActRecTask.all
     rescue
        tasks = []
     end
 
+    @statuses = { 'TOTAL' => 0 }
     tasks.each do |t|
-      user_id = t.user_id
+      user_id = t.user_id.to_i
       name    = @user_id_name[user_id] || "User-#{user_id}"
-      @user_tasks_info[name] ||= [0,0]
-      @user_tasks_info[name][0] += 1 if t.status == "Completed"
-      @user_tasks_info[name][1] += 1
+      status  = t.status
+      @statuses[status]               ||= 0
+      @statuses[status]                += 1
+      @statuses['TOTAL']               += 1
+      @user_tasks_info[name]          ||= {}
+      @user_tasks_info[name][status]  ||= 0
+      @user_tasks_info[name][status]   += 1
+      @user_tasks_info[name]['TOTAL'] ||= 0
+      @user_tasks_info[name]['TOTAL']  += 1
     end
+    @statuses_list = @statuses.keys.sort.reject { |s| s == 'TOTAL' }
+    @statuses_list << 'TOTAL'
 
     respond_to do |format|
       format.html # show.html.erb
@@ -59,7 +67,7 @@ class BourreauxController < ApplicationController
   def edit #:nodoc:
     @bourreau = Bourreau.find(params[:id])
     
-    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
     
     @users = current_user.available_users
     @groups = current_user.available_groups
@@ -93,7 +101,7 @@ class BourreauxController < ApplicationController
     
 
     if @bourreau.errors.empty?
-      flash[:notice] = "Bourreau successfully created."
+      flash[:notice] = "Execution Server successfully created."
     end
    
     respond_to do |format|
@@ -105,7 +113,7 @@ class BourreauxController < ApplicationController
     id        = params[:id]
     @bourreau = Bourreau.find(id)
     
-    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     fields    = params[:bourreau]
     subtype   = fields.delete(:type)
@@ -116,7 +124,7 @@ class BourreauxController < ApplicationController
 
     if @bourreau.errors.empty?
       redirect_to(bourreaux_url)
-      flash[:notice] = "Bourreau successfully updated."
+      flash[:notice] = "Execution Server successfully updated."
     else
       @users = current_user.available_users
       @groups = current_user.available_groups
@@ -131,7 +139,7 @@ class BourreauxController < ApplicationController
     @bourreau = Bourreau.find(id)
     @destroyed = false
     
-    raise "Bourreau not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     tasks_left = 0
     begin
@@ -139,13 +147,13 @@ class BourreauxController < ApplicationController
       tasks_left = DrmaaTask.find(:all).size
     rescue
     end
-    raise "This Bourreau cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
+    raise "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy
       @destroyed = true
-      flash[:notice] = "Bourreau successfully deleted."
+      flash[:notice] = "Execution Server successfully deleted."
     else
-      flash[:error] = "Bourreau destruction failed."
+      flash[:error] = "Execution Server destruction failed."
     end
 
     respond_to do |format|
@@ -157,10 +165,10 @@ class BourreauxController < ApplicationController
   def start
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
-    raise "This Bourreau is already alive." if @bourreau.is_alive?
+    raise "This Execution Server is already alive." if @bourreau.is_alive?
 
     @bourreau.start_tunnels
     raise "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
@@ -168,9 +176,9 @@ class BourreauxController < ApplicationController
 
     sleep 5+rand(3)
     if @bourreau.is_alive?
-      flash[:notice] = "Bourreau started."
+      flash[:notice] = "Execution Server started."
     else
-      flash[:error] = "Bourreau could not be started."
+      flash[:error] = "Execution Server could not be started."
     end
 
     redirect_to :action => :index
@@ -183,12 +191,12 @@ class BourreauxController < ApplicationController
   def stop
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Bourreau not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    raise "Bourreau is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    raise "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     @bourreau.stop
     @bourreau.ssh_master.stop
-    flash[:notice] = "Bourreau stopped. Tunnels stopped."
+    flash[:notice] = "Execution Server stopped. Tunnels stopped."
     redirect_to :action => :index
 
     rescue => e

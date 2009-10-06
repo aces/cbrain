@@ -203,18 +203,28 @@
 
       <table>
         <tr>
-          <th colspan="3">Task Statistics</th>
+          <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
         </tr>
         <tr>
-          <th>User</th><th>Number of Completed Tasks</th><th>Total Number Of Tasks</th>
+          <th>User</th>
+          <% @statuses_list.each do |stat| %>
+            <th><%= h(stat) %></th>
+          <% end %>
         </tr>
-        <% @user_tasks_info.each do |user, comp_tot| %>
+        <% @user_tasks_info.each do |user, statcnt| %>
           <tr>
             <td class="info"><%= h(user) %></td>
-            <td class="info"><%= h(comp_tot[0].to_s) %></td>
-            <td class="info"><%= h(comp_tot[1].to_s) %></td>
+            <% @statuses_list.each do |stat| %>
+              <td><%= h(statcnt[stat]) %></td>
+            <% end %>
           </tr>
         <% end %>
+          <tr>
+            <td class="info">TOTAL</td>
+            <% @statuses_list.each do |stat| %>
+              <td><%= h(@statuses[stat]) %></td>
+            <% end %>
+          <tr>
       </table>
 
    </div>  <!-- End class="generalbox" -->

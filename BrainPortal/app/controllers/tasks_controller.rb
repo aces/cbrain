@@ -36,7 +36,7 @@ class TasksController < ApplicationController
       rescue => e
         bourreau_name = bourreau.name
         flash.now[:error] ||= ""
-        flash.now[:error] += "Bourreau '#{bourreau_name}' is down: #{e.to_s}\n"
+        flash.now[:error] += "Execution Server '#{bourreau_name}' is down: #{e.to_s}\n"
 
         # We recover by fetching directly from the DB...
         conditions = { :bourreau_id => bourreau_id,

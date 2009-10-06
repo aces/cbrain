@@ -394,12 +394,12 @@ class DataProvidersController < ApplicationController
     Bourreau.all.each do |b|
       next unless b.can_be_accessed_by?(current_user)
       name = b.name
-      ssh_key = "This Bourreau is DOWN!"
+      ssh_key = "This Execution Server is DOWN!"
       if b.is_alive?
         info = b.info
         ssh_key = info.ssh_public_key
       end
-      keys << [ "Bourreau '#{name}'", ssh_key ]
+      keys << [ "Execution Server '#{name}'", ssh_key ]
     end
 
     keys
