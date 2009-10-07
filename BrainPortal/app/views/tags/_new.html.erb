@@ -4,26 +4,18 @@
 #
 # CBRAIN Project
 #
-# $Id$
+# $Id: new.html.erb 457 2009-09-02 20:36:49Z tsherif $
 #
 
 -%>
 
 <div class = "generalcontent">
-
-   <h2>New tag</h2>
-   <div class = "generalbox">
-      <% form_for(@tag) do |f| %>
+      <br>
+      <% remote_form_for :tag, @tag, :url => { :action => "create" } do |f| -%>
         <%= f.error_messages %>
-        <p>
           <%= f.label :name %><br />
           <%= f.text_field :name %>
-        </p>
-        <p>
           <%= f.submit "Create" %>
-        </p>
       <% end %>
-
-      <%= link_to 'Back', tags_path %>
-   </div>   <!-- End class="generalbox" -->
+      <br>
 </div>   <!-- End class="generalcontent" -->

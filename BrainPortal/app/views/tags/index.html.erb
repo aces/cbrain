@@ -10,25 +10,27 @@
 -%>
 
 <div class = "generalcontent">
-
-   <h2>Tags</h2>
      
-     <div class="resource_list_box">
-       <%= button_to 'Create New Tag', new_tag_path, :method => :get %>
-     </div>
+     <div class="resource_list_upper_form">
+            <%= 
+              link_to_function 'Create New Tag', :class  => 'action_link' do |page|
+                page['new_tag'].toggle
+              end 
+              %>
+            <div id="new_tag" style="display:none">
+              <%= render :partial  => 'new' %>
+            </div>
+      </div> <!-- End class="upper_form" -->
 
 
-      <table class="resource_list">
+      <table class="resource_list" id="tag_table">
         <tr>
           <th>Tag Name</th>
           <th colspan="3">Operations</th>
         </tr>
 
          <% for tag in @tags %>
-           <tr class="<%= cycle( 'list-odd', 'list-even') -%>">
-             <td><%= link_to h(tag.name), edit_tag_path(tag) %></td>
-             <td><%= link_to 'Destroy', tag, :confirm => 'Are you sure?', :method => :delete %></td>
-           </tr>
+            <%= render :partial => 'tag_table_row', :locals  => {:tag  => tag} %>
          <% end %>
       </table>
       <br/>

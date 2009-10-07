@@ -41,14 +41,14 @@ class TagsController < ApplicationController
 
   # GET /tags/new
   # GET /tags/new.xml
-  def new #:nodoc:
-    @tag = Tag.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @tag }
-    end
-  end
+  # def new #:nodoc:
+  #   @tag = Tag.new
+  # 
+  #   respond_to do |format|
+  #     format.html # new.html.erb
+  #     format.xml  { render :xml => @tag }
+  #   end
+  # end
 
   # GET /tags/1/edit
   def edit #:nodoc:
@@ -64,11 +64,10 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to userfiles_path }
+        format.js
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
-        flash[:error] = 'Tag requires a name.'
-        format.html { redirect_to userfiles_path }
+        format.js
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
     end
@@ -101,10 +100,10 @@ class TagsController < ApplicationController
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
     current_session.tag_filters.delete @tag.name
-    @tag.destroy
+    @destroyed = @tag.destroy
 
     respond_to do |format|
-      format.html { redirect_to(tags_url) }
+      format.js
       format.xml  { head :ok }
     end
   end

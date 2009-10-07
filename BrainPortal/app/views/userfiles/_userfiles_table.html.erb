@@ -17,7 +17,10 @@
            </div>
            
            <div id="filter_div">
-             Active Filters
+             Active Filters 
+             <small>
+                <%= link_to_remote 'clear', {:url  => {:action  => :index, :search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
+             </small>
              <div id="current_filters">
                <%= render :partial => 'current_filters' %>
              </div>
