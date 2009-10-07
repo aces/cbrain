@@ -17,7 +17,7 @@ class GroupsController < ApplicationController
   before_filter :login_required, :manager_role_required
   # GET /groups
   # GET /groups.xml
-  def index  #:nodoc:
+  def index  #:nodoc:    
     if current_user.has_role? :admin
       @system_groups = SystemGroup.find(:all, :include => [:users, :site])
       @work_groups = WorkGroup.find(:all, :include => [:users, :site])

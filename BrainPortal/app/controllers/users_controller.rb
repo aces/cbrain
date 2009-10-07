@@ -150,21 +150,21 @@ class UsersController < ApplicationController
     
     @destroyed = false
         
-    begin      
+#    begin      
       @user.destroy
       @destroyed = true
       respond_to do |format|
         format.js
         format.xml  { head :ok }
       end
-    rescue => e
-      @destroyed = false
-      flash[:error] = e.message
-      respond_to do |format|
-        format.js
-        format.xml  { render :xml => @user, :status => :unprocessable_entity }
-      end
-    end
+#    rescue => e
+      # @destroyed = false
+      # flash[:error] = e.message
+      # respond_to do |format|
+      #   format.js
+      #   format.xml  { render :xml => @user, :status => :unprocessable_entity }
+      # end
+#    end
   end
 
   def switch

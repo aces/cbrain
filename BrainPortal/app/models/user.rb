@@ -197,16 +197,16 @@ class User < ActiveRecord::Base
   #Ensure that the system will be in a valid state if this user is destroyed.
   def validate_destroy
     if self.login == 'admin'
-      raise "Default admin user cannot be destroyed."
+      cb_error "Default admin user cannot be destroyed.", :action  => :index
     end
     unless self.userfiles.empty?
-      raise "User #{self.login} cannot be destroyed while there are still files on the account."
+      cb_error "User #{self.login} cannot be destroyed while there are still files on the account.", :action  => :index
     end
     unless self.data_providers.empty?
-      raise "User #{self.login} cannot be destroyed while there are still data providers on the account."
+      cb_error "User #{self.login} cannot be destroyed while there are still data providers on the account.", :action  => :index
     end
     unless self.remote_resources.empty?
-      raise "User #{self.login} cannot be destroyed while there are still remote resources on the account."
+      cb_error "User #{self.login} cannot be destroyed while there are still remote resources on the account.", :action  => :index
     end
     destroy_system_group
   end

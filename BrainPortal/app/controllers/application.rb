@@ -21,12 +21,31 @@ class ApplicationController < ActionController::Base
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
+  around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
   
   private
+  
+  #Catch and display cbrain messages
+  def catch_cbrain_message
+    begin
+      yield
+    rescue CBRAINMessage => cbm
+      flash[cbm.type] = cbm.message
+      respond_to do |format|
+        format.html {redirect_to cbm.redirect}
+        format.js do
+          render :update do |page|
+            page.redirect_to cbm.redirect
+          end
+        end
+        format.xml  { render :xml => {:error  => cbm.message}, :status => :unprocessable_entity }
+      end
+    end
+  end
     
   #Checks that the current user's role matches +role+.
   def check_role(role)
