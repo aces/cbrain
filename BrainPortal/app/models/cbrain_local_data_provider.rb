@@ -109,7 +109,7 @@ class CbrainLocalDataProvider < DataProvider
   end
 
   def impl_provider_list_all #:nodoc:
-    raise "This data provider cannot be browsed."
+    cb_error "This data provider cannot be browsed."
   end
 
   def before_save #:nodoc:

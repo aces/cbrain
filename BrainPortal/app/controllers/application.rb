@@ -33,8 +33,12 @@ class ApplicationController < ActionController::Base
   def catch_cbrain_message
     begin
       yield
-    rescue CBRAINMessage => cbm
-      flash[cbm.type] = cbm.message
+    rescue CbrainException => cbm
+      if cbm.is_a? CbrainNotification
+         flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
+      else
+         flash[:error]  = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
+      end
       respond_to do |format|
         format.html {redirect_to cbm.redirect}
         format.js do
