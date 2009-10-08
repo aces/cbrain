@@ -59,12 +59,25 @@ class UserfilesController < ApplicationController
 
     @search_term = params[:search_term] if params[:search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
-    @user_groups = current_user.groups.find(:all)
+    if current_user.has_role? :admin
+      @user_groups = Group.find(:all, :order => "type")
+    elsif current_user.has_role? :site_manager
+      @user_groups = Group.find(:all, 
+                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
+                                  current_user.site_id, current_user.group_ids],
+                                :order  => "type")
+    else
+      @user_groups = current_user.groups.find(:all, :order => "type")
+    end
     @default_group = SystemGroup.find_by_name(current_user.login).id
     @data_providers = available_data_providers(current_user)
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
     @prefered_bourreau_id = current_user.user_preference.bourreau_id
     
+    #For the 'new' panel
+    @userfile = Userfile.new(
+        :group_id => SystemGroup.find_by_name(current_user.login).id
+    )
     
     #jiv stuff
     jiv_files = current_user.userfiles.find(:all, :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"]).map(&:name)
@@ -93,31 +106,31 @@ class UserfilesController < ApplicationController
   end
 
   #The new action displays a view for uploading files.
-  def new
-    @userfile = Userfile.new(
-        :group_id => SystemGroup.find_by_name(current_user.login).id
-    )
-    if current_user.has_role? :admin
-      @user_groups = Group.find(:all, :order => "type")
-    elsif current_user.has_role? :site_manager
-      @user_groups = Group.find(:all, 
-                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
-                                  current_user.site_id, current_user.group_ids],
-                                :order  => "type")
-    else
-      @user_groups = current_user.groups.find(:all, :order => "type")
-    end
-    
-    @user_tags = current_user.tags.find(:all)
-    @data_providers = available_data_providers(current_user)
-
-    #upload_stream = params[:upload_file]   # an object encoding the file data stream
-    respond_to do |format|
-      format.js   { render :action  => 'new', :layout  => false }
-      format.xml  { render :xml => @userfile }
-    end
-  end
-
+  # def new
+  #     @userfile = Userfile.new(
+  #         :group_id => SystemGroup.find_by_name(current_user.login).id
+  #     )
+  #     if current_user.has_role? :admin
+  #       @user_groups = Group.find(:all, :order => "type")
+  #     elsif current_user.has_role? :site_manager
+  #       @user_groups = Group.find(:all, 
+  #                                 :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
+  #                                   current_user.site_id, current_user.group_ids],
+  #                                 :order  => "type")
+  #     else
+  #       @user_groups = current_user.groups.find(:all, :order => "type")
+  #     end
+  #     
+  #     @user_tags = current_user.tags.find(:all)
+  #     @data_providers = available_data_providers(current_user)
+  # 
+  #     #upload_stream = params[:upload_file]   # an object encoding the file data stream
+  #     respond_to do |format|
+  #       format.js   { render :action  => 'new', :layout  => false }
+  #       format.xml  { render :xml => @userfile }
+  #     end
+  #   end
+  
   # GET /userfiles/1/edit
   def edit  #:nodoc:
     session[:full_civet_display] ||= 'on'
@@ -211,8 +224,11 @@ class UserfilesController < ApplicationController
 
       # TODO: notification?
       if ! userfile.save
-        flash[:error]  += "File '#{basename}' could not be added (internal error?)."
-        redirect_to :action => :new
+        flash[:error]  += "File '#{basename}' could not be added.\n"
+        userfile.errors.each do |field, error|
+          flash[:error] += field.capitalize + " " + error + ".\n"
+        end
+        redirect_to :action => :index
         return
       end
 
@@ -244,8 +260,8 @@ class UserfilesController < ApplicationController
     # We will be processing some archive file.
     # First, check for supported extensions
     if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
-      flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip."
-      redirect_to :action => :new
+      flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
+      redirect_to :action => :index
       return
     end
 
@@ -254,8 +270,8 @@ class UserfilesController < ApplicationController
 
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
-        flash[:error] = "File '#{collection_name}' already exists."
-        redirect_to :action => :new
+        flash[:error] = "Collection '#{collection_name}' already exists.\n"
+        redirect_to :action => :index
         return
       end
 
@@ -285,8 +301,11 @@ class UserfilesController < ApplicationController
         current_user.addlog_context(self,"Uploaded FileCollection '#{collection_name}'")
         redirect_to :action => :index
       else
-        flash[:error] = "Collection '#{collection_name}' could not be created."
-        redirect_to :action => :new
+        flash[:error] = "Collection '#{collection_name}' could not be created.\n"
+        collection.errors.each do |field, error|
+          flash[:error] += field.capitalize + " " + error + ".\n"
+        end
+        redirect_to :action => :index
       end # save collection
       return
     end
