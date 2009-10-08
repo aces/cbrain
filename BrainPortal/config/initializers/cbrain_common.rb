@@ -39,6 +39,7 @@ module Mongrel
   class HttpServer
 
     alias original_configure_socket_options configure_socket_options
+    alias original_process_client           process_client
 
     # This is a patch to Mongrel::HttpServer to make sure
     # that Mongrel's internal listen socket is configured
@@ -49,10 +50,28 @@ module Mongrel
       original_configure_socket_options
     end
 
+    # This is a patch to Mongrel::HttpServer to make sure
+    # that Mongrel's internal listen socket is configured
+    # with the close-on-exec flag. We also record the two
+    # socket endpoints of the server's HTTP channel, so
+    # that we can quickly close them in the patch method
+    # cbrain_force_close_server_socket()
+    def process_client(client)
+      @@cbrain_client_socket ||= {}
+      @@cbrain_client_socket[Thread.current.object_id] = client
+      original_process_client(client)
+      @@cbrain_client_socket.delete(Thread.current.object_id)
+    end
+
     # This CBRAIN patch method allows explicitely to close
-    # Mongrel's main acceptor socket (stored in a class variable).
+    # Mongrel's main acceptor socket (stored in a class variable)
+    # and the client's socket (stored in a class hash, by thread).
     def self.cbrain_force_close_server_socket
-      @@cbrain_socket.close rescue true
+      begin
+        @@cbrain_socket.close                                  rescue true
+        @@cbrain_client_socket[Thread.current.object_id].close rescue true
+      rescue
+      end
     end
   
   end
