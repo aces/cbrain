@@ -46,13 +46,44 @@ class FileCollection < Userfile
       end
     end
 
+    #Get size
+    #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
+
     self.flatten
-    self.size = self.list_files.size
+    Dir.chdir(self.cache_full_path.parent) do
+      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
+    end
+    self.num_files = self.list_files.size 
     self.sync_to_provider
     self.save
 
     true
   end
+  
+  def format_size
+    super + " (#{self.num_files} files)"
+  end
+  
+  #Checks whether the size attributes (size and num_files) have been set.
+  def size_set?
+    ! (self.size.blank? || self.num_files.blank?)
+  end
+  
+  #Calculates and sets the size attribute.
+  def set_size
+    local_sync = self.local_sync_status
+    unless local_sync && local_sync.status == "InSync"
+      self.sync_to_cache
+    end
+    
+    Dir.chdir(self.cache_full_path.parent) do
+      #self.size = IO.popen("du -s #{self.name}","r") { |fh| fh.readline.split[0].to_i}
+      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
+      self.num_files = self.list_files.size
+      self.save!
+    end
+  end
+  
   
   #Merge the collections and files in the array +userfiles+
   #Returns the status of the merge as a *symbol*:
@@ -87,7 +118,10 @@ class FileCollection < Userfile
 
     end
     
-    self.size = self.list_files.size
+    Dir.chdir(self.cache_full_path.parent) do
+      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
+    end
+    self.num_files = self.list_files.size
     
     if self.save!
       self.sync_to_provider
@@ -134,9 +168,9 @@ class FileCollection < Userfile
   end
   
   #Format size for display (make it more human-readable).
-  def format_size
-    "#{self.size || "?"} files" 
-  end
+  # def format_size
+  #   "#{self.size || "?"} files" 
+  # end
   
   # Returns a simple keyword identifying the type of
   # the userfile; used mostly by the index view.

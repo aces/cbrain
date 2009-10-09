@@ -56,6 +56,20 @@ class Userfile < ActiveRecord::Base
   def site
     @site ||= self.user.site
   end
+  
+  #Format size for display in the view.
+  #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
+  def format_size
+    if self.size > 10**9
+      "#{self.size/10**9} GB"
+    elsif   self.size > 10**6
+      "#{self.size/10**6} MB"
+    elsif   self.size > 10**3
+      "#{self.size/10**3} KB"
+    else
+      "#{self.size} bytes"     
+    end 
+  end
 
   #Return an array of the tags associated with this file
   #by +user+.
@@ -327,6 +341,18 @@ class Userfile < ActiveRecord::Base
   #FileCollection).
   def list_files
     [self.name]
+  end
+  
+  #Checks whether the size attribute(s) have been set.
+  #(Abstract: should be redefined in subclass).
+  def size_set?
+    raise "size_set? called on Userfile. Should only be called in a subclass."
+  end
+  
+  #Calculates and sets.
+  #(Abstract: should be redefined in subclass).
+  def set_size
+    raise "set_size called on Userfile. Should only be called in a subclass."
   end
 
   # Returns a simple keyword identifying the type of

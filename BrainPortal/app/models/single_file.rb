@@ -16,25 +16,29 @@ require 'fileutils'
 class SingleFile < Userfile
   
   Revision_info="$Id$"
-  
-  #Format size for display in the view.
-  #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
-  def format_size
-    if self.size > 10**9
-      "#{self.size/10**9} GB"
-    elsif   self.size > 10**6
-      "#{self.size/10**6} MB"
-    elsif   self.size > 10**3
-      "#{self.size/10**3} KB"
-    else
-      "#{self.size} bytes"     
-    end 
-  end
 
   # Returns a simple keyword identifying the type of
   # the userfile; used mostly by the index view.
   def pretty_type
     ""
+  end
+  
+  #Checks whether the size attribute have been set.
+  def size_set?
+    ! self.size.blank?
+  end
+  
+  #Calculates and sets the size attribute.
+  def set_size
+    local_sync = self.local_sync_status
+    unless local_sync && local_sync.status == "InSync"
+      self.sync_to_cache
+    end
+    
+    Dir.chdir(self.cache_full_path.parent) do
+      self.size = File.size(self.name)
+      self.save!
+    end
   end
 
 end

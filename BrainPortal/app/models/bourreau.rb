@@ -12,6 +12,8 @@
 class Bourreau < RemoteResource
 
   Revision_info="$Id$"
+  
+  has_many :user_preferences,  :dependent => :nullify
 
   # Checks if this Bourreau is available or not.
   def is_alive?

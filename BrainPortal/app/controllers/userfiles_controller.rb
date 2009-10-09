@@ -719,7 +719,7 @@ class UserfilesController < ApplicationController
       successful_files.each do |file|
         u = SingleFile.new(attributes)
         u.name = file
-        if u.save(false)
+        if u.save
           u.cache_copy_from_local_file(file)
           u.size = File.size(file)
           u.save

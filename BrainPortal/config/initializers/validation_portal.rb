@@ -232,6 +232,15 @@ Bourreau.all.each do |bourreau|
   end
 end
 
+#-----------------------------------------------------------------------------
+puts "C> Checking that size variables for userfiles are properly set... "
+#-----------------------------------------------------------------------------
+Userfile.all.each do |u|
+  unless u.size_set?
+    puts "C> \t- #{u.type} #{u.name} (id: #{u.id}) does not have it's size properly set. Updating..."
+    u.set_size
+  end
+end
 
 
 #-----------------------------------------------------------------------------
