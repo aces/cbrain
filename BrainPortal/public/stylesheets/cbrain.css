@@ -1196,6 +1196,26 @@ th.right_align {
 }
 
 /* ######################################################### */
+/* Format for system messages */
+/* ######################################################### */
+
+.system {
+    z-index: 0;
+    width: 90%;
+    margin-right: auto;
+    margin-left: auto;
+    border: 1px;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 2em;
+    margin-top: 2em;
+    background-color: #ddeeff;
+}
+
+
+/* ######################################################### */
 /* Format for error messages */
 /* ######################################################### */
 

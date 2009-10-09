@@ -21,6 +21,7 @@ class ApplicationController < ActionController::Base
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
+  before_filter :prepare_messages
   around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
@@ -28,6 +29,20 @@ class ApplicationController < ActionController::Base
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
   
   private
+  
+  def prepare_messages
+    return unless current_user
+    
+    current_user.messages.all(:conditions  => { :read => false }).each do |mess|
+      mess_type = mess.message_type.to_sym
+      flash.now[mess_type] ||= ""
+      flash.now[mess_type] += "#{mess.header}\n"
+      
+      unless mess.expiry && mess.expiry > Time.now
+        mess.update_attributes(:read  => true)
+      end
+    end
+  end
   
   #Catch and display cbrain messages
   def catch_cbrain_message

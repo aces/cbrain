@@ -92,6 +92,9 @@
             
         
             <div id="content">
+              <% if ! flash[:system].nil? && ! flash[:system].empty? %>
+                <p class = "system" id="system_notice"><%= h(flash[:system]).gsub(/\n/,"<BR>") -%></p>  
+              <% end %>
                <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
                  <p class = "notice" id="flash_notice"><%= h(flash[:notice]).gsub(/\n/,"<BR>") -%></p>  
                <% end %>

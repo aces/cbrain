@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091009154940) do
+ActiveRecord::Schema.define(:version => 20091009185018) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -100,6 +100,18 @@ ActiveRecord::Schema.define(:version => 20091009154940) do
     t.text     "environment"
     t.text     "request"
     t.datetime "created_at"
+  end
+
+  create_table "messages", :force => true do |t|
+    t.string   "header"
+    t.text     "description"
+    t.text     "variable_text"
+    t.string   "message_type"
+    t.boolean  "read"
+    t.integer  "user_id"
+    t.datetime "expiry"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "remote_resources", :force => true do |t|

@@ -46,6 +46,7 @@ class User < ActiveRecord::Base
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources
+  has_many                :messages
   has_and_belongs_to_many :groups
   belongs_to              :site
 
