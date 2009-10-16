@@ -10,6 +10,9 @@
 #
 
 class CbrainException < Exception
+
+   Revision_info="$Id$"
+
    attr_accessor :redirect
 
    def initialize(message = "Something went wrong.", redirect = nil)

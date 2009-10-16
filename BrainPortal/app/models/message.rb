@@ -9,6 +9,8 @@
 # between any user, group and process to any CBRAIN user.
 class Message < ActiveRecord::Base
 
+  Revision_info="$Id$"
+
   belongs_to :user
   
   # Send a new message to a user, the users of a group, or a site.
