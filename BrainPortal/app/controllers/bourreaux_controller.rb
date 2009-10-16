@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#RESTful controller for managing the Bourreau (remote execution server) resource. 
-#All actions except +index+ require *admin* privileges.
+# RESTful controller for managing the Bourreau (remote execution server) resource. 
+# All actions except +index+ and +show+ require *admin* privileges.
 class BourreauxController < ApplicationController
 
   Revision_info="$Id$"
@@ -21,12 +21,11 @@ class BourreauxController < ApplicationController
   def index #:nodoc:
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
   end
-
   
   def show #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
     @info = @bourreau.info
 
@@ -67,7 +66,7 @@ class BourreauxController < ApplicationController
   def edit #:nodoc:
     @bourreau = Bourreau.find(params[:id])
     
-    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
     
     @users = current_user.available_users
     @groups = current_user.available_groups
@@ -113,7 +112,7 @@ class BourreauxController < ApplicationController
     id        = params[:id]
     @bourreau = Bourreau.find(id)
     
-    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     fields    = params[:bourreau]
     subtype   = fields.delete(:type)
@@ -139,7 +138,7 @@ class BourreauxController < ApplicationController
     @bourreau = Bourreau.find(id)
     @destroyed = false
     
-    raise "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     tasks_left = 0
     begin
@@ -147,7 +146,7 @@ class BourreauxController < ApplicationController
       tasks_left = DrmaaTask.find(:all).size
     rescue
     end
-    raise "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
+    cb_notice "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy
       @destroyed = true
@@ -165,13 +164,13 @@ class BourreauxController < ApplicationController
   def start
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    raise "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
-    raise "This Execution Server is already alive." if @bourreau.is_alive?
+    cb_notice "This Execution Server is already alive." if @bourreau.is_alive?
 
     @bourreau.start_tunnels
-    raise "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
+    cb_error "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
     @bourreau.start
 
     sleep 5+rand(3)
@@ -191,8 +190,8 @@ class BourreauxController < ApplicationController
   def stop
     @bourreau = Bourreau.find(params[:id])
 
-    raise "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    raise "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     @bourreau.stop
     @bourreau.ssh_master.stop

@@ -43,15 +43,15 @@ class ScirLocalSession < Scir::Session
   end
 
   def suspend(jid)
-    system("kill -STOP #{shell_escape(jid)}");
+    Process.kill("STOP",jid.to_i) rescue true
   end
 
   def resume(jid)
-    system("kill -CONT #{shell_escape(jid)}");
+    Process.kill("CONT",jid.to_i) rescue true
   end
 
   def terminate(jid)
-    system("( kill -TERM #{shell_escape(jid)};sleep 5;kill -KILL #{shell_escape(jid)} ) &");
+    Process.kill("TERM",jid.to_i) rescue true
   end
 
   def queue_tasks_tot_max

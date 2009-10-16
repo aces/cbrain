@@ -66,6 +66,7 @@
                           <li <%= set_selected(params[:controller], :data_providers) %>><%= link_to 'Data Providers', data_providers_path %></li>
                           <li <%= set_selected(params[:controller], :bourreaux) %>><%= link_to 'Execution Servers', bourreaux_path %></li>               
                           <li <%= set_selected(params[:controller], :feedbacks) %>><%= link_to 'Feedback', feedbacks_path %></li>
+                          <li <%= set_selected(params[:controller], :messages) %>><%= link_to 'Messages', messages_path %></li>
                           <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
                             <li <%= set_selected(params[:controller], :users) %>><%= link_to 'Users', users_path %></li>
                             <li <%= set_selected(params[:controller], :groups) %>><%= link_to 'Groups', groups_path %></li>
@@ -100,6 +101,12 @@
                <% end %>
                <% if ! flash[:error].nil? && ! flash[:error].empty? %>
                   <p class="error" id="flash_error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
+               <% end %>
+               <% if current_user %>
+                 <% Message.find(:all, :conditions => { :user_id => current_user.id, :read => false }).each do |message| %>
+                    <%= render :partial => 'layouts/message', :locals  => { :message  => message }%>
+                    <% message.update_attributes :read => true %>
+                 <% end %>
                <% end %>
                <%= yield :layout %>
             </div>   <!-- End id="content" -->

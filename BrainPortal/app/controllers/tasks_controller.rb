@@ -17,60 +17,23 @@ class TasksController < ApplicationController
   before_filter :login_required
    
   def index #:nodoc:
-    @tasks = []
     @bourreaux = available_bourreaux(current_user)
-    @bourreaux.each do |bourreau|
-      bourreau_id = bourreau.id
+    bourreau_ids = @bourreaux.map { |b| b.id }
 
-      # This section fetches from Bourreau ONLY the tasks in 'active' states.
-      active_tasks = []
-      begin
-        DrmaaTask.adjust_site(bourreau_id)
-        raise "Failed to respond to 'alive' check" unless bourreau.is_alive?
-        if current_user.has_role? :admin
-          active_tasks = DrmaaTask.find(:all) || []
-        else
-          active_tasks = DrmaaTask.find(:all, :params => { :user_id => current_user.id } ) || []
-        end
-        active_tasks = [ active_tasks ] unless active_tasks.is_a?(Array)
-      rescue => e
-        bourreau_name = bourreau.name
-        flash.now[:error] ||= ""
-        flash.now[:error] += "Execution Server '#{bourreau_name}' is down: #{e.to_s}\n"
-
-        # We recover by fetching directly from the DB...
-        conditions = { :bourreau_id => bourreau_id,
-                       :status      => DrmaaTask.active_status_keywords
-                     }
-        conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
-        active_tasks = ActRecTask.find(:all, :conditions => conditions)
-        active_tasks.each do |t|  # ugly kludge
-          t.updated_at = Time.parse(t.updated_at)
-          t.created_at = Time.parse(t.created_at)
-          t.status     = "UNKNOWN!" # ... but marking them as bad.
-        end
-      end
-      @tasks.concat(active_tasks)
-      active_ids = {}
-      active_tasks.each { |t| active_ids[t.id] = true }
-
-      # Now add the tasks in 'passive' states by accessing directly the DB
-      conditions = { :bourreau_id => bourreau_id,
-                     :status      => DrmaaTask.passive_status_keywords
-                   }
-      conditions.merge!( :user_id => current_user.id ) unless current_user.has_role? :admin
-      passive_tasks = ActRecTask.find(:all, :conditions => conditions)
-      passive_tasks.reject! { |t| active_ids[t.id] } # just to remove duplicates for fast changing tasks
-      passive_tasks.each do |t|  # ugly kludge
-        t.updated_at = Time.parse(t.updated_at)
-        t.created_at = Time.parse(t.created_at)
-      end
-      @tasks.concat(passive_tasks)
+    @tasks = ActRecTask.find(:all, :conditions => {
+                                     :user_id     => current_user.id,
+                                     :bourreau_id => bourreau_ids
+                                   } )
+    @tasks.each do |t|  # ugly kludge
+      t.updated_at = Time.parse(t.updated_at)
+      t.created_at = Time.parse(t.created_at)
     end
     
-    params[:sort_order] ||= 'updated_at'
-    sort_order = params[:sort_order] 
-    sort_dir   = params[:sort_dir]
+    # Set sort order and make it persistent.
+    sort_order = params[:sort_order] || session[:task_sort_order] || 'updated_at'
+    sort_dir   = params[:sort_dir]   || session[:task_sort_dir]   || 'DESC'
+    session[:task_sort_order] = params[:sort_order] = sort_order
+    session[:task_sort_dir]   = params[:sort_dir]   = sort_dir
 
     @tasks = @tasks.sort do |t1, t2|
       if sort_dir == 'DESC'
@@ -177,8 +140,6 @@ class TasksController < ApplicationController
 
   #This action handles requests to modify the status of a given task.
   #Potential operations are:
-  #[*Postprocess*] If processing of the task is completed, sync files from
-  #                the task's working directory back to the system.
   #[*Hold*] Put the task on hold (while it is queued).
   #[*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
   #[*Suspend*] Stop processing of the task (while it is on cpu).
@@ -186,12 +147,7 @@ class TasksController < ApplicationController
   #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database. 
   def operation
-    if params[:commit] == 'Trigger postprocessing of selected tasks'
-      operation = 'postprocess'
-    else
-      operation   = params[:operation]
-    end
-    
+    operation   = params[:operation]
     tasklist    = params[:tasklist] || []
 
     flash[:error]  ||= ""
@@ -225,9 +181,6 @@ class TasksController < ApplicationController
       continue if task.user_id != current_user.id && current_user.role != 'admin'
 
       case operation
-        when "postprocess"
-          task.status = "postprocess"  # keyword is significant
-          task.save
         when "hold"
           task.status = "On Hold"
           task.save

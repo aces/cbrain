@@ -67,28 +67,6 @@ end
 
 
 #-----------------------------------------------------------------------------
-puts "C> Setting up subprocess locks directory..."
-#-----------------------------------------------------------------------------
-
-CBRAIN::DRMAA_SubprocessLocksDir = (Pathname.new(CBRAIN::DRMAA_sharedir) + ".SubprocessLocks").to_s
-unless File.directory?(CBRAIN::DRMAA_SubprocessLocksDir)
-  Dir.mkdir(CBRAIN::DRMAA_SubprocessLocksDir)
-  puts " -> Created as '#{CBRAIN::DRMAA_SubprocessLocksDir}'"
-end
-Dir.chdir(CBRAIN::DRMAA_SubprocessLocksDir) do
-   Dir.new(".").each do |entry|
-      stat = File::Stat.new(entry)
-      next unless stat.file?
-      mtime = stat.mtime
-      next if mtime > 1.day.ago # ignore recent files; they may still be active
-      puts " -> Warning: cleaning up old subprocess lock file '#{entry}'."
-      File.unlink(entry)
-   end
-end
-
-
-
-#-----------------------------------------------------------------------------
 puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
 #-----------------------------------------------------------------------------
 
@@ -162,5 +140,20 @@ case CBRAIN::CLUSTER_TYPE
     require 'scir_local.rb'
   else
     raise "CBRAIN configuration error: CLUSTER_TYPE is set to unknown value #{CBRAIN::CLUSTER_TYPE}!"
+end
+
+#-----------------------------------------------------------------------------
+puts "C> Reporting Bourreau Worker Processes (if any)..."
+#-----------------------------------------------------------------------------
+
+# This will reconnect with any and all workers already
+# running, for instance if Bourreau was shut down and the workers
+# were still alive.
+allworkers = BourreauWorker.rescan_workers
+allworkers.each do |worker|
+  puts "C> \t - Found worker already running: #{worker.pid.to_s}"
+end
+if allworkers.size == 0
+  puts "C> \t - No worker process found. It's OK, they'll be started as needed."
 end
 

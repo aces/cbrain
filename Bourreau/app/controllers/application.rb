@@ -40,4 +40,26 @@ class ApplicationController < ActionController::Base #:nodoc:
       @task = Class.const_get(subtype).new(subtypehash)
     end
   end
+
+  # This is a before_filter for the tasks controller.
+  # It just makes sure some workers are available.
+  # It's unfortunate that due to technical reasons,
+  # such workers cannot be started when the application
+  # boots (CBRAIN.spawn_with_active_records() won't work
+  # properly until RAILS is fully booted).
+  def start_bourreau_workers
+    allworkers = BourreauWorker.all
+    return true if allworkers.size > 0
+    # For the moment we only start one worker, but
+    # in the future we may want to start more than one,
+    # once we're sure they dont interfere with each other.
+    worker = BourreauWorker.new
+    worker.check_interval = 10                          # in seconds, default is 10
+    worker.bourreau       = CBRAIN::SelfRemoteResource  # Optional, when logging to Bourreau's log
+    worker.log_to         = 'stdout'                    # 'stdout,bourreau'
+    worker.verbose        = true                        # if we want each job action logged!
+    worker.launch
+    true
+  end
+
 end

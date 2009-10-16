@@ -73,4 +73,12 @@ class Group < ActiveRecord::Base
       dp.update_attributes!(:group => user_group[user.id])
     end
   end
+
+  # Returns itself; this method is here to make it symetrical
+  # with other resource classes such as User and Site, which
+  # both have a meaningful own_group() method.
+  def own_group
+    self
+  end
+
 end

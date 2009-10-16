@@ -29,7 +29,7 @@ class DataProvidersController < ApplicationController
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
 
-    raise "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
+    cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
     @ssh_keys = get_ssh_public_keys
 
@@ -75,26 +75,6 @@ class DataProvidersController < ApplicationController
     end
 
   end
-
-  # def new #:nodoc:
-  #   @user     = current_user
-  #   @provider = DataProvider.new( :user_id   => @user.id,
-  #                                 :group_id  => Group.find_by_name(@user.login).id,
-  #                                 :online    => true,
-  #                                 :read_only => false
-  #                               )
-  #   @users = current_user.available_users
-  #   @groups = current_user.available_groups
-  #     
-  #   @typelist = get_type_list
-  #   @ssh_keys = get_ssh_public_keys
-  # 
-  #   respond_to do |format|
-  #     format.html { render :action => :new }
-  #     format.xml  { render :xml => @provider }
-  #   end
-  # 
-  # end
 
   def create #:nodoc:
     fields    = params[:data_provider]
@@ -319,6 +299,7 @@ class DataProvidersController < ApplicationController
           next
         end
         num_unregistered += Userfile.delete(userfile.id)
+        userfile.destroy_log rescue true
         next
       end
 
@@ -377,7 +358,7 @@ class DataProvidersController < ApplicationController
     typelist = %w{ SshDataProvider } 
     if check_role(:admin) || check_role(:site_manager)
       typelist += %w{ CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
-                    VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
+                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
     end
     typelist
   end

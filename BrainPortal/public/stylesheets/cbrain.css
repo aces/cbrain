@@ -1185,14 +1185,14 @@ th.right_align {
     width: 90%;
     margin-right: auto;
     margin-left: auto;
-    border: 1px;
+    border: 2px solid green;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;
     padding-right: 1em;
     margin-bottom: 2em;
     margin-top: 2em;
-    background-color: #ffffdd;
+    background-color: #ddffdd;
 }
 
 /* ######################################################### */
@@ -1204,7 +1204,7 @@ th.right_align {
     width: 90%;
     margin-right: auto;
     margin-left: auto;
-    border: 1px;
+    border: 2px solid #00ffff;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;
@@ -1224,7 +1224,7 @@ th.right_align {
     width: 90%;
     margin-right: auto;
     margin-left: auto;
-    border: 1px;
+    border: 2px solid red;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;

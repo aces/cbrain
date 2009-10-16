@@ -240,7 +240,7 @@ puts "C> Checking that size variables for userfiles are properly set... "
 Userfile.find(:first, :conditions => { :num_files => 123456 })
 Userfile.all.each do |u|
   unless u.size_set?
-    puts "C> \t- #{u.type} #{u.name} (id: #{u.id}) does not have it's size properly set. Updating..."
+    puts "C> \t- #{u.type} #{u.name} (id: #{u.id}) does not have its size properly set. Updating..."
     u.set_size
   end
 end

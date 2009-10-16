@@ -1,1 +1,0 @@
-../../../BrainPortal/config/initializers/cbrain_common.rb

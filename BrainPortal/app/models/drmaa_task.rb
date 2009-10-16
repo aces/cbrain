@@ -261,25 +261,6 @@ class DrmaaTask < ActiveResource::Base
     end
   end
 
-  # Returns the list of status keywords that represent
-  # tasks in 'active' states. These are usually states that can
-  # change independently of Bourreau, although the change can
-  # be also detected by Bourreau itself. Basically, tasks in
-  # on of these states need to be 'refreshed' in case the
-  # state has changed.
-  def self.active_status_keywords
-    [ 'Setting Up', 'Queued', 'On CPU', 'Post Processing' ]
-  end
-
-  # Returns the list of status keywords that represent
-  # tasks in 'passive' or 'terminal' states. Tasks in these
-  # states will stay in them until explicitely changed by Bourreau.
-  def self.passive_status_keywords
-    [ 'Terminated', 'Data Ready', 'Completed', 'On Hold', 'Suspended',
-      'Failed To Setup', 'Failed To Start', 'Failed To PostProcess'
-    ]
-  end
-
   #Return the Bourreau object associated with this task.
   def bourreau
     @bourreau ||= Bourreau.find(self.bourreau_id)

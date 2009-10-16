@@ -1,0 +1,290 @@
+
+#
+# CBRAIN Project
+#
+# This class implements a worker subprocess
+# that manages the CBRAIN queue of tasks.
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+# = Bourreau Worker Class
+#
+# This class implements a worker subprocess
+# that manages the CBRAIN queue of tasks.
+# This model is not an ActiveRecord class.
+class BourreauWorker
+
+  Revision_info="$Id$"
+
+  PIDfile_prefix="BouWork-"
+
+  attr_accessor :pid, :pidfile_path, :check_interval, :bourreau, :log_to, :verbose
+
+  # Get a list of all workers known to have been activated.
+  # They may not all still be alive.
+  def self.all
+    # Because RAILS zaps the class variables when running in
+    # development mode, I'm forced to store them in a global
+    # variable instead of @@bourreau_workers like I'd like. Eh.
+    $bourreau_workers ||= []
+  end
+
+  # Rebuild a list of currently active workers.
+  # This is based on the list of PID files, and
+  # a check is made to make sure that the subprocesses
+  # are running. Dead workers (and their PID files)
+  # are cleaned up.
+  def self.rescan_workers
+    $bourreau_workers = []
+    Dir.chdir(self.piddir_path.to_s) do
+      Dir.glob("#{PIDfile_prefix}*.run").each do |basepid|
+        worker = self.new
+        worker.pidfile_path = self.piddir_path + basepid
+        if worker.validate_running_worker
+          $bourreau_workers << worker
+        end
+      end
+    end
+    $bourreau_workers
+  end
+
+  def initialize #:nodoc:
+    self.pid            = nil
+    self.check_interval = 10 # seconds
+    self.log_to         = 'stdout'  # bourreau,stdout (join keywords with commas)
+    self.verbose        = false
+  end
+
+  # Check that a subprocess is running for this
+  # worker.
+  def is_alive?
+    self.check_unix_process
+  end
+
+  # Starts an asynchronous subprocess for the worker.
+  # The PID is recorded in the parent's and child's
+  # object.
+  def launch
+    self.pid = CBRAIN.spawn_with_active_records(nil,"Bourreau Worker") do
+      self.pid = $$
+      Kernel.at_exit { delete_pidfile }
+      begin
+        record_pidfile_path
+        write_pidfile
+        mainloop
+      ensure
+        delete_pidfile
+      end
+    end
+    record_pidfile_path
+    $bourreau_workers ||= []
+    $bourreau_workers << self
+  end
+
+  # Send a kill signal to the worker's subprocess.
+  def terminate
+    Process.kill("TERM",self.pid) if self.pid
+    self.pidfile_path = ""
+    $bourreau_workers.reject! { |w| w.object_id == self.object_id }
+    true
+  end
+
+  # This method re-reads the PID file for
+  # the worker, and makes sure that the process
+  # with that PID is a worker. If not, it erases
+  # the PID file. It returns true if we have
+  # a proper running worker.
+  def validate_running_worker #:nodoc:
+    return false unless read_pidfile
+    isrunning = self.check_unix_process
+    self.delete_pidfile unless isrunning
+    isrunning
+  end
+
+  # Log a message to stdout, or to
+  # the bourreau's internal log,
+  # as determined by the content of
+  # the log_to instance variable.
+  #
+  # This method should only be called from inside
+  # the worker subprocess itself, and very infrequently
+  # too.
+  def addlog(message)
+    return unless self.log_to
+
+    message = "Bourreau Worker #{self.pid}: " + message
+
+    # Send log entry to Bourreau's internal log
+    if self.bourreau && self.log_to.to_s =~ /bourreau/i
+      self.bourreau.addlog(message)
+    end
+
+    # Send log entry to stdout
+    if self.log_to.to_s =~ /stdout/i
+      lines = message.split(/\s*\n/)
+      lines.pop while lines.size > 0 && lines[-1] == ""
+      message = lines.join("\n") + "\n"
+      message = Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + message
+      puts message
+    end
+
+  end
+
+  protected
+
+
+
+  ########################################################
+  # Worker Processing
+  ########################################################
+
+  # This is the main loop for the worker's subprocess.
+  # It goes on until infinity, or until the process is
+  # killed, or until the PID file is removed by an
+  # external source, whichever comes first.
+  def mainloop
+    go_on = true
+    Kernel.trap("SIGINT")  { self.addlog "Got SIGINT, scheduling stop."  ; go_on = false }
+    Kernel.trap("SIGTERM") { self.addlog "Got SIGTERM, scheduling stop." ; go_on = false }
+    self.addlog "Starting main worker loop."
+    self.addlog "Revision " + self.revision_info.svn_id_pretty_rev_author_date
+    while go_on
+
+       tasks_todo = DrmaaTask.find(:all,
+         :conditions => { :status      => [ 'New', 'Queued', 'Running', 'Data Ready' ],
+                          :bourreau_id => CBRAIN::SelfRemoteResourceId } )
+       
+       tasks_todo.each do |task|
+         process_task(task) # this can take a long time...
+         break unless go_on
+       end
+
+       unless File.exist?(self.pidfile_path.to_s)
+         self.addlog "PID file has been erased, stopping."
+         go_on = false
+       end
+
+       break unless go_on
+       sleep check_interval+rand(5)
+    end
+    self.addlog "Finishing properly."
+  end
+
+  # This is the worker method that executes the necessary
+  # code to make a task go from state *New* to *Setting* *Up*
+  # and from state *Data* *Ready* to *Post* *Processing*.
+  #
+  # It also updates the statuses from *Queued* to
+  # *Running* and *Running* to *Data* *Ready* based on
+  # activity on the cluster, but no code is run for these
+  # transitions.
+  def process_task(task)
+    begin
+      task.reload # Make sure we got it up to date
+      self.addlog "--- Got #{task.bname_tid} in state #{task.status}" if verbose
+      task.update_status
+      self.addlog "Updated #{task.bname_tid} to state #{task.status}" if verbose
+      case task.status
+        when 'New'
+          task.addlog_context(self,"Setting Up")
+          self.addlog "Start   #{task.bname_tid}" if verbose
+          task.start_all
+        when 'Data Ready'
+          task.addlog_context(self,"Post Process")
+          self.addlog "PostPro #{task.bname_tid}" if verbose
+          task.post_process
+      end
+      if task.status == 'Completed'
+        Message.send_message(task.user,
+                             :notice,
+                             "Task #{task.name} Completed Successfully",
+                             "Oh great!", # description
+                             task.bname_tid # variable_text TODO hyperlink ?
+                            )
+      elsif task.status =~ /^Failed/
+        Message.send_message(task.user,
+                             :error,
+                             "Task #{task.name} Failed",
+                             "Sorry about that. Check the task's log.", # description
+                             task.bname_tid # variable_text TODO hyperlink ?
+                            )
+      end
+    rescue => e
+      self.addlog "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}" +
+                  e.backtrace[0..10].join("\n")
+    end
+  end
+
+
+
+  ########################################################
+  # System architecture specific methods
+  ########################################################
+
+  # Makes sure that a worker subprocess runs for
+  # this worker.
+  def check_unix_process #:nodoc:
+    return false if self.pid.blank?
+    @@uname_output ||= `uname -a`
+    begin
+      lines = []
+      command = case @@uname_output
+        # Works on MacOS X and Linux
+        when /^(Linux|Darwin)/
+          "ps -o uid,command -p #{self.pid} 2>&1"
+        # Works on Solaris
+        when /Solaris/
+          "ps -o uid,args -p #{self.pid} 2>&1"
+        else # Just a guess.
+          "ps -p #{self.pid} 2>&1"
+        end
+      IO.popen(command,"r") do |s|
+        lines = s.read.split(/\n/)
+      end
+      lines.pop while lines.size > 0 && lines[-1].blank?
+      if lines.size > 1 && lines[-1] =~ /^\s*(\d+).*(irb|ruby|mongrel)/i
+         other_uid = Regexp.last_match[1].to_i
+         return true if other_uid == Process.uid || other_uid == Process.euid
+      end
+      return false
+    rescue => e
+      return false
+    end
+    false
+  end
+  
+
+
+  ########################################################
+  # PID file methods
+  ########################################################
+
+  def self.piddir_path #:nodoc:
+    Pathname.new(RAILS_ROOT) + "tmp/pids"
+  end
+
+  def record_pidfile_path #:nodoc:
+    self.pidfile_path = self.class.piddir_path + "#{PIDfile_prefix}#{self.pid}.run"
+  end
+
+  def write_pidfile #:nodoc:
+    File.open(self.pidfile_path,"w") { |fh| fh.write(self.pid.to_s) }
+  end
+
+  def read_pidfile #:nodoc:
+    filename = self.pidfile_path.to_s || ""
+    if filename =~ /(\d+)\.run$/
+      self.pid = Regexp.last_match[1].to_i
+      return self.pid
+    end
+    self.pid = nil
+  end
+
+  def delete_pidfile #:nodoc:
+    File.unlink(self.pidfile_path) rescue true
+  end
+
+end

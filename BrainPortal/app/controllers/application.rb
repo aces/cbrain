@@ -17,11 +17,11 @@ class ApplicationController < ActionController::Base
 
   helper_method :check_role, :not_admin_user, :current_session
   helper_method :available_data_providers, :available_bourreaux
-  helper :all # include all helpers, all the time
+  helper        :all # include all helpers, all the time
+
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
-  before_filter :prepare_messages
   around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
@@ -30,26 +30,12 @@ class ApplicationController < ActionController::Base
   
   private
   
-  def prepare_messages
-    return unless current_user
-    
-    current_user.messages.all(:conditions  => { :read => false }).each do |mess|
-      mess_type = mess.message_type.to_sym
-      flash.now[mess_type] ||= ""
-      flash.now[mess_type] += "#{mess.header}\n"
-      
-      unless mess.expiry && mess.expiry > Time.now
-        mess.update_attributes(:read  => true)
-      end
-    end
-  end
-  
   #Catch and display cbrain messages
   def catch_cbrain_message
     begin
       yield
     rescue CbrainException => cbm
-      if cbm.is_a? CbrainNotification
+      if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
       else
          flash[:error]  = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")

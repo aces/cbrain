@@ -24,16 +24,21 @@ class CbrainException < Exception
 
 end
 
-class CbrainNotification < CbrainException
+class CbrainNotice < CbrainException
 end
 
 class CbrainError < CbrainException
 end
 
+# Raises a CbrainNotice exception, with a default redirect to
+# the current controller's index action.
 def cb_notify(message = "Something may have gone awry.", redirect = { :action  => :index } )
-  raise CbrainNotification.new(message, redirect)
+  raise CbrainNotice.new(message, redirect)
 end
+alias cb_notice cb_notify
 
+# Raises a CbrainError exception, with a default redirect to
+# the current controller's index action.
 def cb_error(message = "Some error occured.",  redirect = { :action  => :index } )
   raise CbrainError.new(message, redirect)
 end

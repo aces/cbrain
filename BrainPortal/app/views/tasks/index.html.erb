@@ -21,12 +21,10 @@
            
       <div class = "resource_list_upper_form">
         <br>        
-            <%= submit_tag('Trigger postprocessing of selected tasks') %><br><br>
-      
-               Other operations: <%= select_tag(
+               <%= select_tag(
                   "operation",
                   '
-                  <option value="">Select an operation</option>
+                  <option value="">Operations on selected tasks:</option>
                   
                   <optgroup label="Operations for queued tasks">
                   <option value="hold">Hold queued tasks</option>

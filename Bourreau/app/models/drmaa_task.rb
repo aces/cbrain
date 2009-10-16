@@ -116,38 +116,19 @@ public
   # start_all(), post_process(), update_status()
   ##################################################################
 
-  # Returns the list of status keywords that represent
-  # tasks in 'active' states. These are usually states that can
-  # change independently of Bourreau, although the change can
-  # be also detected by Bourreau itself. Basically, tasks in
-  # on of these states need to be 'refreshed' in case the
-  # state has changed.
-  def self.active_status_keywords
-    [ 'Setting Up', 'Queued', 'On CPU', 'Post Processing' ]
-  end
-
-  # Returns the list of status keywords that represent
-  # tasks in 'passive' or 'terminal' states. Tasks in these
-  # states will stay in them until explicitely changed by Bourreau.
-  def self.passive_status_keywords
-    [ 'Terminated', 'Data Ready', 'Completed', 'On Hold', 'Suspended',
-      'Failed To Setup', 'Failed To Start', 'Failed To PostProcess'
-    ]
-  end
-
   # This should be called only once when the object is new.
-  # The object will be saved once in the main thread
-  # and possibly several times in a background thread.
   # A temporary, grid-aware working directory is created
   # for the job.
   def start_all
+    cb_error "Task is not 'New'" if self.status && self.status != 'New'
     self.addlog("Setting up.")
     self.status = "Setting Up"
     save_status = self.save
-    save_status && self.spawn do
+
+    # This used to be run in background, but now that
+    # we have a worker subprocess, we no longer need
+    # to have a spawn occur here.
       begin
-        self.delay_subprocess
-        self.lock_subprocess
         self.makeDRMAAworkdir
         Dir.chdir(self.drmaa_workdir) do
           if ! self.setup
@@ -161,16 +142,13 @@ public
             end
           end
         end
-        self.unlock_subprocess
       rescue => e
-        self.unlock_subprocess
-        self.addlog("Exception raised when setting up: #{e.inspect}")
+        self.addlog("Exception raised while setting up: #{e.class.to_s}: #{e.message}")
         e.backtrace.slice(0,10).each { |m| self.addlog(m) }
         self.status = "Failed To Setup"
       end
-      self.save
-    end # end of spawned subprocess
-    save_status
+
+    self.save
   end
 
   # This is called
@@ -178,25 +156,23 @@ public
   # successfully run on the cluster. The main purpose
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
-  #
-  # TODO: trigger this automatically when 'Data Ready' state is reached.
   def post_process
 
     # Make sure job is ready.
-    self.update_status
     if self.status != "Data Ready"
-      raise "post_process() called on a job that is not in Data Ready state"
+      cb_error "post_process() called on a job that is not in Data Ready state"
     end
 
     self.addlog("Starting asynchronous postprocessing.")
     self.status = "Post Processing"
     self.save
 
-    # Asynchronous processing
-    self.spawn do
+    # Processing.
+    # This used to be run in background, but now that
+    # we have a worker subprocess, we no longer need
+    # to have a spawn occur here.
+
       begin
-        self.delay_subprocess
-        self.lock_subprocess
         saveok = false
         Dir.chdir(self.drmaa_workdir) do
           # Call the subclass-provided save_results()
@@ -208,52 +184,26 @@ public
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
         end
-        self.unlock_subprocess
       rescue => e
-        self.unlock_subprocess
-        self.addlog("Exception raised when post processing results: #{e.inspect}")
+        self.addlog("Exception raised while post processing results: #{e.class.to_s}: #{e.message}")
+        e.backtrace.slice(0,10).each { |m| self.addlog(m) }
         self.status = "Failed To PostProcess"
       end
-      self.save
-      #self.removeDRMAAworkdir
-    end # end of spawned subprocess
 
-    return true
-  end
-
-  # Run the associated block as a backgroung process to avoid
-  # blocking.
-  #
-  # Most of the code in this method comes from a blog entry
-  # by {Scott Persinger}[http://geekblog.vodpod.com/?p=26].
-  def spawn
-    dbconfig = ActiveRecord::Base.remove_connection
-    pid = Kernel.fork do
-      require 'mongrel'
-      Mongrel::HttpServer.cbrain_force_close_server_socket
-      begin
-        # Monkey-patch Mongrel to not remove its pid file in the child
-        Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
-        ActiveRecord::Base.establish_connection(dbconfig)
-        yield
-      ensure
-        ActiveRecord::Base.remove_connection
-      end
-      Kernel.exit!
-    end
-    Process.detach(pid)
-    ActiveRecord::Base.establish_connection(dbconfig)
+    self.save
   end
 
   # Possible returned status values:
+  # [<b>New</b>] The task is new and not yet set up.
   # [<b>Setting Up</b>] The task is in its asynchronous 'setup' state.
   # [<b>Failed To *</b>]  (To Start, to Setup, etc) The task failed at some stage.
   # [<b>Queued</b>] The task is queued.   
   # [<b>On CPU</b>] The task is underway.
   # [<b>Data Ready</b>] The task has been completed, but data has not been sent back to BrainPortal.
+  # [<b>Post Processing</b>] The task is sending back its data to the BrainPortal.
   # [<b>Completed</b>] The task has been completed, and data has been sent back to BrainPortal.
   # [<b>On Hold</b>] The task is queued, but should not be sent to the CPU even if it's ready.
-  # [<b>Suspended</b>] The has been stopped while it was on cpu.
+  # [<b>Suspended</b>] The has been suspended while it was on CPU.
   # [<b>Terminated</b>] The task has been terminated by request of the user.
   #
   # The values are determined by BOTH the current state returned by
@@ -264,7 +214,7 @@ public
 
     ar_status = self.status
     if ar_status.blank?
-      raise "Unknown blank status obtained from Active Record"
+      cb_error "Unknown blank status obtained from Active Record"
     end
 
     # Final states that we can't get out of, except for:
@@ -272,7 +222,7 @@ public
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
+    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
 
     drmaastatus = self.drmaa_status
     #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")
@@ -291,7 +241,7 @@ public
       return ar_status
     end
 
-    raise "DRMAA job finished with unknown Active Record status #{ar_status} and DRMAA status #{drmaastatus}"
+    cb_error "DRMAA job finished with unknown Active Record status #{ar_status} and DRMAA status #{drmaastatus}"
   end
 
 
@@ -498,14 +448,33 @@ public
   # Utility Pseudo-Attributes Methods
   ##################################################################
 
-  # Returns the login name of the task's User
+  # Returns the task's User
   def user
-    @user ||= User.find(self.user_id).login
+    @user ||= User.find(self.user_id)
   end
 
   # Returns a simple name for the task (without the Drmaa prefix).
   def name
     @name ||= self.class.to_s.gsub(/^Drmaa/,"")
+  end
+
+  def bourreau
+    # In development mode, the stupid RAILS zaps the constant.
+    #@bourreau ||= CBRAIN::SelfRemoteResource || Bourreau.find(self.bourreau_id)
+    @bourreau ||= Bourreau.find(self.bourreau_id)
+  end
+
+  # Returns an ID string containing both the bourreau_id +b+
+  # and the task ID +t+ in format "b/t"
+  def bid_tid
+    @bid_tid ||= "#{self.bourreau_id || '?'}/#{self.id || '?'}"
+  end
+
+  # Returns an ID string containing both the bourreau_name +b+
+  # and the task ID +t+ in format "b/t"
+  def bname_tid
+    @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
+    @bname_tid
   end
 
 
@@ -632,11 +601,11 @@ public
   # Create the directory in which to run the job.
   def makeDRMAAworkdir
     name = self.name
-    user = self.user
+    user = self.user.login
     self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + $$.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
     unless Dir.mkdir(self.drmaa_workdir,0700)
-      raise "Cannot create directory '#{self.drmaa_workdir}': $!"
+      cb_error "Cannot create directory '#{self.drmaa_workdir}': $!"
     end
   end
 
@@ -656,57 +625,6 @@ public
 
   def capt_stderr_b64 #:nodoc:
     @capt_stderr_b64
-  end
-
-
-
-  ##################################################################
-  # Subprocess Locking Mechanism
-  ##################################################################
-
-  # Returns the full path to a lockfile for this subprocess
-  def lockfile
-    @lockfile ||= CBRAIN::DRMAA_SubprocessLocksDir + "/" + "#{self.user}-#{self.name}-" + $$.to_s + "-" + self.status.gsub(/\s+/,"")
-  end
-
-  # Creates the lockfile on the file system
-  def lock_subprocess
-    File.open(self.lockfile,"w") { |fh| true } # touch file
-  end
-
-  # Delete the lockfile on the file system
-  def unlock_subprocess
-    (File.unlink(self.lockfile) > 0 ? true : false) rescue false
-  end
-
-  # Delay this subprocess S seconds until there are N or less lockfiles
-  # present, where S and N are hardcoded (see source)
-  def delay_subprocess
-    random_max_wait = Time.now + 4000 + rand(4000)
-    sleep 3+rand(3)
-    while Time.now < random_max_wait
-      numlocks = get_num_subprocess_locks
-      break if numlocks < 1  # N
-      sleep 3+rand(3)        # S
-    end
-  end
-
-  # Get the number of subprocess locks currently active;
-  # at the same time, will remove old locks.
-  def get_num_subprocess_locks
-    numlocks = 0
-    Dir.chdir(CBRAIN::DRMAA_SubprocessLocksDir) do
-      Dir.new(".").each do |entry|
-        stat = File.stat(entry) rescue File.stat(".")
-        next unless stat.file?
-        if stat.mtime > 1.day.ago # means it's RECENT, less than one day old!
-          numlocks += 1
-        else # an old lockfile ? clean it
-          File.unlink(entry) rescue true
-        end
-      end
-    end
-    numlocks
   end
 
 end

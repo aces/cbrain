@@ -72,6 +72,15 @@ class Site < ActiveRecord::Base
     @data_provider ||= DataProvider.find(id, options)
   end
   
+  # Returns the SystemGroup associated with the site; this is a
+  # group with the same name as the site.
+  def system_group
+    SystemGroup.find(:first, :conditions => { :name => self.login } )
+  end
+
+  # An alias for system_group()
+  alias own_group system_group
+
   private
   
   def create_system_group

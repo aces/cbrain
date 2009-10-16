@@ -117,7 +117,7 @@ class SyncStatus < ActiveRecord::Base
       implstatus = yield
       state.update_attributes( :status => "InSync" )
       puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
-      implstatus
+      return implstatus
     rescue => implerror
       state.update_attributes( :status => "ProvNewer" ) # cache is no good
       puts "SYNC: ToCache: #{state.pretty} Except" if DebugMessages
@@ -195,7 +195,7 @@ class SyncStatus < ActiveRecord::Base
       implstatus = yield
       state.update_attributes( :status => "InSync" )
       puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
-      implstatus
+      return implstatus
     rescue => implerror
       state.update_attributes( :status => "Corrupted" ) # provider is no good
       puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
@@ -251,7 +251,7 @@ class SyncStatus < ActiveRecord::Base
       implstatus = yield
       state.update_attributes( :status => "CacheNewer" )
       puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
-      implstatus
+      return implstatus
     rescue => implerror
       state.update_attributes( :status => "ProvNewer" ) # cache is no longer good
       puts "SYNC: ModCache: #{state.pretty} Except" if DebugMessages
@@ -324,7 +324,7 @@ class SyncStatus < ActiveRecord::Base
       others.each { |o| o.destroy } # Zap all other status fields...
       state.destroy                 # ... then zap ours. A bit like ProvNewer.
       puts "SYNC: ModProv: Destroyed ALL" if DebugMessages
-      implstatus
+      return implstatus
     rescue => implerror
       state.update_attributes( :status => "Corrupted" ) # dp is no longer good
       puts "SYNC: ModProv: #{state.pretty} Except" if DebugMessages

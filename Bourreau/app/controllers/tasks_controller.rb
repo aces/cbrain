@@ -18,20 +18,14 @@ class TasksController < ApplicationController
 
   Revision_info="$Id$"
 
-  before_filter :find_or_initialize_task, :except => [ :index, :ping ]
+  before_filter :find_or_initialize_task, :except => [ :index ]
+  before_filter :start_bourreau_workers
 
   # GET /tasks
   # Formats: xml
+  # NOT USED ANYMORE!
   def index #:nodoc:
-    active_states = DrmaaTask.active_status_keywords
-    conditions    = { :bourreau_id => CBRAIN::BOURREAU_ID,
-                      :status      => active_states
-                    }
-    conditions.merge!(:user_id => params[:user_id]) if params[:user_id]
-    @tasks = DrmaaTask.find(:all, :conditions => conditions) || []
-    @tasks = [ @tasks ] unless @tasks.is_a?(Array)
-    @tasks.each { |t| t.update_status }
-    #puts @tasks.to_xml( :root => "DrmaaTasks" )
+    @tasks = []
     respond_to do |format|
       format.html { head :method_not_allowed }
       
@@ -45,7 +39,8 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       
-      if @task.start_all # this saves an preliminary object which we get here
+      @task.status = 'New'
+      if @task.save
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
@@ -77,15 +72,10 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
 
-      oldstatus   = @task.status
-
       # Find the hash table where ActiveResource supply the new attributes
       uncameltask = @task.uncamelize
       newparams   = params[uncameltask]
       newstatus   = newparams['status']
-
-      # This action triggers postprocessing, changing from "Data Ready" to "Completed"
-      @task.post_process if newstatus == "postprocess" && oldstatus == "Data Ready"
 
       # These actions trigger DRMAA task control actions
       # They will update the "status" field depending on the action's result
@@ -95,7 +85,6 @@ class TasksController < ApplicationController
       @task.release      if newstatus == "Queued"
       @task.terminate    if newstatus == "Terminated"
 
-      #if @task.update_attributes(params[@task.uncamelize])
       if @task.save
         format.xml { render :xml => @task.to_xml }
       else

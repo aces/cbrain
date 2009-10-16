@@ -149,7 +149,7 @@ class UserfilesController < ApplicationController
     @sync_status = state.status if state
     start_sync = params[:start_sync] || "no"
     if start_sync.to_s == "yes" && @sync_status !~ /^To|InSync|Corrupted/
-      spawn do
+      CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
         @userfile.sync_to_cache
       end
       @sync_status = "ToCache" # so the interface says 'in progress'
@@ -222,7 +222,6 @@ class UserfilesController < ApplicationController
                    )
                  )
 
-      # TODO: notification?
       if ! userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
@@ -234,7 +233,7 @@ class UserfilesController < ApplicationController
 
       flash[:notice] += "File '#{basename}' being added in background."
 
-      spawn do
+      CBRAIN.spawn_with_active_records(current_user,"Upload of SingleFile") do
         localpath = upload_stream.local_path rescue "" # optimize for large files
         if localpath.blank?
           begin
@@ -251,6 +250,7 @@ class UserfilesController < ApplicationController
         userfile.save
         userfile.addlog_context(self,"Uploaded by #{current_user.login}")
         current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
+        Message.send_message(current_user,'notice', "SingleFile Uploaded", "", userfile.name)
       end 
       
       redirect_to :action => :index
@@ -288,10 +288,11 @@ class UserfilesController < ApplicationController
       
       if collection.save
 
-        spawn do
+        CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
             File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
             collection.extract_collection_from_archive_file(tmpcontentfile)
+            Message.send_message(current_user,'notice', "Collection Uploaded", "", collection.name)
           ensure
             File.delete(tmpcontentfile) rescue true
           end
@@ -311,7 +312,7 @@ class UserfilesController < ApplicationController
     end
 
     # At this point, create a bunch of userfiles from the archive
-    raise "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
+    cb_error "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
 
     # Common attributes to all files
     attributes = params[:userfile].merge({
@@ -321,11 +322,10 @@ class UserfilesController < ApplicationController
     })
 
     # Do it in background.
-    # TODO: notification?
-    spawn do
+    CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
         File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
-        extract_from_archive(tmpcontentfile,attributes)
+        extract_from_archive(tmpcontentfile,attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
       end
@@ -443,7 +443,7 @@ class UserfilesController < ApplicationController
           basename = userfile.name
           if userfile.data_provider.is_browsable?
             userfile.destroy_log rescue true
-            userfile.delete
+            Userfile.delete(userfile.id)
             flash[:notice] += "File '#{basename}' unregistered.\n"
           else
             userfile.destroy
@@ -514,8 +514,9 @@ class UserfilesController < ApplicationController
                  )
             )
 
-        spawn do
+        CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
           collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
+          Message.send_message(current_user,'notice', "Collections Merged", "", collection.name)
         end
 
         flash[:notice] = "Collection #{collection.name} is being created in background."
@@ -545,7 +546,9 @@ class UserfilesController < ApplicationController
           return
         end
 
-        spawn do
+        CBRAIN.spawn_with_active_records(current_user,"Move To Other Data Provider") do
+          moved_list  = []
+          failed_list = []
           filelist.each do |id|
             u = Userfile.find(id)
             next unless u
@@ -555,18 +558,20 @@ class UserfilesController < ApplicationController
               if orig_provider.provider_move_to_otherprovider(u,new_provider)
                 u.save
                 u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+                moved_list << u.name
               end
             rescue => e
               u.addlog "Could not move from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
+              failed_list << u.name
             end
           end
+          Message.send_message(current_user,'notice', "Files moved to #{new_provider.name}", "",
+                               "List:\n" + moved_list.join("\n")) if moved_list.size > 0
+          Message.send_message(current_user,'error', "Some files could not be moved to #{new_provider.name}", "",
+                               "List:\n" + failed_list.join("\n")) if failed_list.size > 0
         end
 
-        flash[:notice] +=
-           "Your files are being moved in the background.\n" +
-           "You will know when it's ready once their Data Provider has been reassigned.\n" +
-           "Check for this later. In the meantime do NOT move these files further or start tasks using them!"
-
+        flash[:notice] += "Your files are being moved in the background.\n"
         redirect_to :action => :index
         return
 
@@ -621,30 +626,6 @@ class UserfilesController < ApplicationController
 
   private
   
-  # Run the associated block as a background process to avoid
-  # blocking.
-  #
-  # Most of the code in this method comes from a blog entry
-  # by {Scott Persinger}[http://geekblog.vodpod.com/?p=26].
-  def spawn
-    dbconfig = ActiveRecord::Base.remove_connection
-    pid = Kernel.fork do
-      require 'mongrel'
-      Mongrel::HttpServer.cbrain_force_close_server_socket
-      begin
-        # Monkey-patch Mongrel to not remove its pid file in the child
-        Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
-        ActiveRecord::Base.establish_connection(dbconfig)
-        yield
-      ensure
-        ActiveRecord::Base.remove_connection
-      end
-      Kernel.exit!
-    end
-    Process.detach(pid)
-    ActiveRecord::Base.establish_connection(dbconfig)
-  end
-
   #Extract files from an archive and register them in the database.
   #The first argument is a path to an archive file (tar or zip).
   #The second argument is a hash of attributes for all the files,
@@ -656,11 +637,11 @@ class UserfilesController < ApplicationController
     # Check for required attributes
     data_provider_id    = attributes["data_provider_id"] ||
                           attributes[:data_provider_id]
-    raise "No data provider ID supplied." unless data_provider_id
+    cb_error "No data provider ID supplied." unless data_provider_id
 
     user_id             = attributes["user_id"]  ||
                           attributes[:user_id]
-    raise "No user ID supplied." unless user_id
+    cb_error "No user ID supplied." unless user_id
 
     # Create content list
     all_files        = []
@@ -671,13 +652,13 @@ class UserfilesController < ApplicationController
     elsif archive_file_name =~ /\.zip/i
       all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
-      raise "Cannot process file with unknown extension: #{archive_file_name}"
+      cb_error "Cannot process file with unknown extension: #{archive_file_name}"
     end
 
     count = all_files.select{ |f| f !~ /\// }.size
 
     #max of 50 files can be added to the file list at a time.
-    raise "Overflow: more than 50 files found in archive." if count > 50
+    cb_error "Overflow: more than 50 files found in archive." if count > 50
 
     workdir = "/tmp/filecollection.#{$$}"
     Dir.mkdir(workdir)
@@ -690,7 +671,7 @@ class UserfilesController < ApplicationController
         system("unzip '#{escaped_archivefile}'")
       else
         FileUtils.remove_dir(workdir, true)
-        raise "Cannot process file with unknown extension: #{archive_file_name}"
+        cb_error "Cannot process file with unknown extension: #{archive_file_name}"
       end
     end
 
@@ -731,8 +712,28 @@ class UserfilesController < ApplicationController
 
     FileUtils.remove_dir(workdir, true)
 
-    # TODO: report these values using new comm mechanism
-    #[status, successful_files, failed_files, nested_files]
+    # Report these values using new comm mechanism
+    # [status, successful_files, failed_files, nested_files]
+    report = "Base on the content of the archive we found:\n" +
+             "#{successful_files.size.to_s} files successfully extracted;\n" +
+             "#{failed_files.size.to_s} files failed extracting;\n" +
+             "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
+    if status == :success && failed_files.size == 0 && nested_files.size == 0
+      Message.send_message(current_user.own_group,
+        'notice',
+        "File extraction completed",
+        "Your files have been extracted from archive '#{archive_file_name}'",
+        report
+      )
+    else
+      Message.send_message(current_user.own_group,
+        'error',
+        "File extraction failed",
+        "Some errors occured while extracting files from archive '#{archive_file_name}'",
+        report
+      )
+    end
+                         
   end
 
 end

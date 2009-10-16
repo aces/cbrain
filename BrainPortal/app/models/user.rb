@@ -164,6 +164,15 @@ class User < ActiveRecord::Base
     end
   end
   
+  # Returns the SystemGroup associated with the user; this is a
+  # group with the same name as the user.
+  def system_group
+    SystemGroup.find(:first, :conditions => { :name => self.login } )
+  end
+
+  # An alias for system_group()
+  alias own_group system_group
+
   protected
 
   # before filter 
@@ -252,4 +261,5 @@ class User < ActiveRecord::Base
     end
     self.group_ids = group_ids
   end
+
 end

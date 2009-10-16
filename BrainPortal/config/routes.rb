@@ -1,6 +1,4 @@
 ActionController::Routing::Routes.draw do |map|
-  map.resources :messages
-
 
   # Session
   map.resource  :session
@@ -12,6 +10,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :feedbacks
   map.resources :tags
   map.resources :groups
+  map.resources :messages
 
   # Standard CRUD resources with extra methods
   map.resources :users,          :member => { :switch  => :get }

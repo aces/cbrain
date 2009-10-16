@@ -1,0 +1,5 @@
+<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="message_<%= mess.id %>">
+  <td><%= h (mess.updated_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%></td>
+  <td><%= render :partial => 'layouts/message', :locals  => { :message => mess }%></td>
+  <td><%= check_box_tag("messlist[]", mess.id.to_s, mess.read , :class  => 'messfile_checkbox') %></td>
+</tr>

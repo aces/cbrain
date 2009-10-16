@@ -1,0 +1,60 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+-%>
+<div class = "generalcontent">
+
+  <% title 'CBRAIN Messaging Center' %>
+
+      <div class="resource_list_upper_form">
+            <%= 
+              link_to_function 'Create New Message', :class  => 'action_link' do |page|
+                page['new_message'].toggle
+              end 
+              %>
+            <div id="new_message" style="display:none">
+              <%= render :partial  => 'new' %>
+            </div>
+      </div> <!-- End class="upper_form" -->
+
+  <br>
+
+  <H2>Message Center Note: this page is just a draft, work is in progress!</H2>
+  <p>
+  Future updates will include:<br>
+  <ul>
+  <li>1-click expand from summary to full message (right now you always see the full thing)
+  <li>1-click delete of messages
+  <li>creation of new messages for other users/groups
+  <li>forwarding of messages to anyone (good for bug reports!)
+  <li>sorting message list (by type, header, etc)
+  <li>expiration dates (for broadcast messages etc)
+  <li>pretty formatting of variable_text section (highlight timestamps, etc)
+  </ul>
+  <p>
+
+  <table width="100%" id="message_table">
+     <tr>
+         <th>Last Updated</th>
+         <th>Summary</th>
+         <th>Read?</th>
+     </tr>
+  
+     <% for mess in @messages %>
+         <%= render :partial => 'message_table_row', :locals  => {:mess  => mess} %>
+     <% end %>
+  
+     <% if @messages.nil? || @messages.empty? %>
+       <tr class="list-odd"><td colspan="3">There are no Messages in this list.</td></tr>
+     <% end %>
+  
+  </table>
+</div>  <!-- End class="generalcontent" -->
