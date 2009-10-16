@@ -42,6 +42,13 @@ class Group < ActiveRecord::Base
                           :assign_remote_resource_to_owner_group,
                           :assign_data_provider_to_owner_group
   
+  # Returns itself; this method is here to make it symetrical
+  # with other resource classes such as User and Site, which
+  # both have a meaningful own_group() method.
+  def own_group
+    self
+  end
+
   private
   
   def assign_userfile_to_owner_group
@@ -72,13 +79,6 @@ class Group < ActiveRecord::Base
       
       dp.update_attributes!(:group => user_group[user.id])
     end
-  end
-
-  # Returns itself; this method is here to make it symetrical
-  # with other resource classes such as User and Site, which
-  # both have a meaningful own_group() method.
-  def own_group
-    self
   end
 
 end

@@ -113,7 +113,7 @@ class Message < ActiveRecord::Base
     # Try to send message to everyone; by setting the var_text to nil,
     # we won't change messages already sent, but we will create
     # new message for new users with a variable_text that is blank.
-    found        = self.class.send_message(destination,self.header,self.type,self.description,nil)
+    found        = self.class.send_message(destination,self.message_type,self.header,self.description,nil)
 
     # Now, if the current message DID have a var_text, we need to copy it to
     # the new messages just sent; these will be detected by
