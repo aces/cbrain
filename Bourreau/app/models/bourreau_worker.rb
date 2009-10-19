@@ -142,9 +142,12 @@ class BourreauWorker
   ########################################################
 
   # This is the main loop for the worker's subprocess.
-  # It goes on until infinity, or until the process is
-  # killed, or until the PID file is removed by an
-  # external source, whichever comes first.
+  # Every +check_interval+ seconds it scans the list of
+  # active tasks (all subclasses of DrmaaTask) and
+  # calls process_task() on them. It goes on until
+  # the end of the world, or until the process is
+  # sent SIGKILL or SIGTERM, or until the PID file is
+  # removed by an external source, whichever comes first.
   def mainloop
     go_on = true
     Kernel.trap("SIGINT")  { self.addlog "Got SIGINT, scheduling stop."  ; go_on = false }
@@ -179,8 +182,8 @@ class BourreauWorker
   #
   # It also updates the statuses from *Queued* to
   # *Running* and *Running* to *Data* *Ready* based on
-  # activity on the cluster, but no code is run for these
-  # transitions.
+  # the activity on the cluster, but no code is run for
+  # these transitions.
   def process_task(task)
     begin
       task.reload # Make sure we got it up to date

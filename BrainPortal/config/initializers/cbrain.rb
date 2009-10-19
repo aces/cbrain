@@ -44,6 +44,9 @@ class CBRAIN
   # a CBRAIN Message will be sent to +destination+ (which can be a Group,
   # a User, or a Site) with +taskname+ being reported in the header of
   # the Message.
+  #
+  # This method won't work if used inside the RAILS initialization
+  # code in 'config/initializers'.
   def self.spawn_with_active_records(destination = nil, taskname = 'Internal Background Task')
     dbconfig = ActiveRecord::Base.remove_connection
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent

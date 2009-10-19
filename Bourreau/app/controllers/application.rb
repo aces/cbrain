@@ -52,7 +52,7 @@ class ApplicationController < ActionController::Base #:nodoc:
     return true if allworkers.size > 0
     # For the moment we only start one worker, but
     # in the future we may want to start more than one,
-    # once we're sure they dont interfere with each other.
+    # once we're sure they don't interfere with each other.
     worker = BourreauWorker.new
     worker.check_interval = 10                          # in seconds, default is 10
     worker.bourreau       = CBRAIN::SelfRemoteResource  # Optional, when logging to Bourreau's log

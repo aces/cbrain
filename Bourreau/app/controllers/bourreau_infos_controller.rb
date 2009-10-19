@@ -13,6 +13,8 @@ class BourreauInfosController < ApplicationController
 
   Revision_info="$Id$"
 
+  before_filter :start_bourreau_workers
+
   # GET /bourreau_infos.xml
   # The only supported HTTP call is 'GET /bourreau_infos.xml', which
   # returns an array of a single XML object of type BourreauInfo

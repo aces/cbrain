@@ -62,12 +62,14 @@ class TasksController < ApplicationController
     end
   end
 
-  # GET /tasks/3/1
-  # GET /tasks/3/1.xml
+  # GET /tasks/1
+  # GET /tasks/1.xml
   def show #:nodoc:
-    bourreau_id = params[:bourreau_id]
-    DrmaaTask.adjust_site(bourreau_id)
-    @task = DrmaaTask.find(params[:id])
+    task_id     = params[:id]
+    actrectask  = ActRecTask.find(task_id) # Fetch once...
+    bourreau_id = actrectask.bourreau_id
+    DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
+    @task = DrmaaTask.find(task_id)        # Fetch twice... :-(
 
     respond_to do |format|
       format.html # show.html.erb
@@ -167,12 +169,13 @@ class TasksController < ApplicationController
 
     affected_tasks = []
 
-    tasklist.each do |task_bid_tid|
+    tasklist.each do |task_id|
 
-      (bourreau_id,task_id) = task_bid_tid.split(/,/)
       begin 
-        DrmaaTask.adjust_site(bourreau_id)
-        task = DrmaaTask.find(task_id.to_i)
+        actrectask  = ActRecTask.find(task_id) # Fetch once...
+        bourreau_id = actrectask.bourreau_id
+        DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
+        task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
       rescue
         flash[:error] += "Task #{task_id} does not exist."
         next

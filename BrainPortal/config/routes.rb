@@ -12,7 +12,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :groups
   map.resources :messages
 
-  # Standard CRUD resources with extra methods
+  # Standard CRUD resources, with extra methods
   map.resources :users,          :member => { :switch  => :get }
   map.resources :bourreaux,      :member => { :start   => :get, :stop => :get }
   map.resources :data_providers, :member => { :browse  => :get, :register => :post }
@@ -37,7 +37,7 @@ ActionController::Routing::Routes.draw do |map|
 
   # Individual maps
   map.connect 'tasks/:action',                  :controller => 'tasks'
-  map.connect 'tasks/:action/:bourreau_id/:id', :controller => 'tasks'
+  map.connect 'tasks/:action/:id',              :controller => 'tasks'
   map.connect "logged_exceptions/:action/:id",  :controller => "logged_exceptions" 
 
   # The priority is based upon order of creation: first created -> highest priority.

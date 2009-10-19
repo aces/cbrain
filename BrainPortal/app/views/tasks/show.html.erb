@@ -17,9 +17,37 @@
 
 <div class = "generalcontent">
 
-
    <h2>Task Information</h2>
 
+   <!-- HOLD & RELEASE -->
+   <% if @task.status == 'Queued' %>
+     <%= button_to 'Hold Task',    :action => 'operation', :params => { 'operation' => 'hold', 'tasklist[]' => @task.id } %>
+   <% end %>
+   <% if @task.status == 'On Hold' %>
+     <%= button_to 'Release Task', :action => 'operation', :params => { 'operation' => 'release', 'tasklist[]' => @task.id } %>
+   <% end %>
+
+   <!-- SUSPEND & RESUME -->
+   <% if @task.status == 'On CPU' %>
+     <%= button_to 'Suspend Task', :action => 'operation', :params => { 'operation' => 'suspend', 'tasklist[]' => @task.id } %>
+   <% end %>
+   <% if @task.status == 'Suspended' %>
+     <%= button_to 'Resume Task',  :action => 'operation', :params => { 'operation' => 'resume', 'tasklist[]' => @task.id } %>
+   <% end %>
+
+   <!-- TERMINATE & REMOVE -->
+   <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
+     <%= button_to 'Terminate Task', :action => 'operation', :params => { 'operation' => 'terminate', 'tasklist[]' => @task.id } %>
+   <% end %>
+   <% if @task.status =~ /New|Queued|On Hold|On CPU|Suspended|Failed.*|Completed/ %>
+     <%= button_to 'Remove Task',  :action => 'operation', :params => { 'operation' => 'delete', 'tasklist[]' => @task.id } %>
+   <% end %>
+
+   <!-- REFRESH -->
+   <% if @task.status =~ /Setting Up|Post Processing/ %>
+     <%= button_to 'Refresh',      :action => 'show', :id => @task.id %>
+   <% end %>
+   
    <table class ="showtasksdisplay">
 
       <tr>
