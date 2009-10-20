@@ -16,32 +16,31 @@ class ScirSgeSession < Scir::Session
 
   Revision_info="$Id$"
 
+  # Register ourselves as the real implementation for Scir::Session
   Scir.session_subclass = self.to_s
 
-  def revision_info
-    self.class.const_get("Revision_info")
-  end
-
-  def job_ps(jid)
+  def update_job_info_cache
+    @job_info_cache = {}
     IO.popen("qstat -xml 2>/dev/null","r") do |input|
       paragraphs = input.read.split(/(<\/?job_list)/)
       paragraphs.each_index do |i|
-        if paragraphs[i] == "<job_list"
-          if paragraphs[i+1] =~ /<JB_job_number>([^<]+)/ && Regexp.last_match[1] == jid
-            if paragraphs[i+1] =~ /<state>(\w+)/
-              state = Regexp.last_match[1]
-              # The ORDER of these things is important here
-              return Scir::STATE_RUNNING        if state =~ /r/i
-              return Scir::STATE_USER_SUSPENDED if state =~ /s/i
-              return Scir::STATE_USER_ON_HOLD   if state =~ /h/i
-              return Scir::STATE_QUEUED_ACTIVE  if state =~ /q/i
-            end
-            return Scir::STATE_UNDETERMINED
-          end
-        end
+        next unless paragraphs[i] == "<job_list"
+        next unless paragraphs[i+1] =~ /<JB_job_number>([^<]+)/
+        jid = Regexp.last_match[1]
+        next unless paragraphs[i+1] =~ /<state>(\w+)/
+        statechar = Regexp.last_match[1]
+        state     = statestring_to_stateconst(statechar)
+        @job_info_cache[jid.to_s] = { :drmaa_state => state }
       end
-      return Scir::STATE_UNDETERMINED
     end
+  end
+
+  def statestring_to_stateconst(state)
+    return Scir::STATE_RUNNING        if state =~ /r/i
+    return Scir::STATE_USER_SUSPENDED if state =~ /s/i
+    return Scir::STATE_USER_ON_HOLD   if state =~ /h/i
+    return Scir::STATE_QUEUED_ACTIVE  if state =~ /q/i
+    return Scir::STATE_UNDETERMINED
   end
 
   def hold(jid)
@@ -105,6 +104,7 @@ end
 
 class ScirSgeJobTemplate < Scir::JobTemplate
 
+  # Register ourselves as the real implementation for Scir::JobTemplate
   Scir.jobtemplate_subclass = self.to_s
 
   def qsub_command

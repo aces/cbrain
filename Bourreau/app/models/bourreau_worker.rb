@@ -53,7 +53,7 @@ class BourreauWorker
 
   def initialize #:nodoc:
     self.pid            = nil
-    self.check_interval = 10 # seconds
+    self.check_interval = 55 # seconds
     self.log_to         = 'stdout'  # bourreau,stdout (join keywords with commas)
     self.verbose        = false
   end
@@ -231,10 +231,9 @@ class BourreauWorker
   # this worker.
   def check_unix_process #:nodoc:
     return false if self.pid.blank?
-    @@uname_output ||= `uname -a`
     begin
       lines = []
-      command = case @@uname_output
+      command = case CBRAIN::System_Uname
         # Works on MacOS X and Linux
         when /^(Linux|Darwin)/
           "ps -o uid,command -p #{self.pid} 2>&1"

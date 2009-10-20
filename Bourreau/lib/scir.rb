@@ -68,19 +68,20 @@ public
 
   # Opens a session once, then cache it
   def Session.session_cache #:nodoc:
-    @@session_cache = Scir::Session.new_session unless self.class_variable_defined?('@@session_cache')
+    @@session_cache = self.new_session unless self.class_variable_defined?('@@session_cache')
     @@session_cache
   end
 
-  def self.new_session(check_delay = 5)
+  def self.new_session(job_ps_cache_delay = 60.seconds)
     subclassname = Scir.session_subclass
     subclass     = Class.const_get(subclassname)
-    return subclass.new(check_delay)
+    return subclass.new(job_ps_cache_delay)
   end
 
-  def initialize(check_delay = 5)
-    #@job_info_cache = {}
-    #@cache_last_updated = Time.now.to_i - check_delay - check_delay
+  def initialize(job_ps_cache_delay = 60.seconds)
+    @job_ps_cache_delay = job_ps_cache_delay
+    @job_info_cache     = {}   # jid => { :drmaa_state => drmaa_state_const, ... }
+    @cache_last_updated = (2*job_ps_cache_delay).seconds.ago
   end
 
   def run(job)
@@ -90,8 +91,18 @@ public
     end
   end
 
+  def update_job_info_cache
+    true
+  end
+
   def job_ps(jid)
-    raise "This method must be provided in a subclass"
+    if @cache_last_updated < @job_ps_cache_delay.ago
+      update_job_info_cache
+      @cache_last_updated = Time.now
+    end
+    jinfo = @job_info_cache[jid.to_s]
+    return jinfo[:drmaa_state] if jinfo
+    Scir::STATE_UNDETERMINED
   end
 
   def hold(jid)

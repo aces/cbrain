@@ -16,23 +16,33 @@ class ScirPbsSession < Scir::Session
 
   Revision_info="$Id$"
 
+  # Register ourselves as the real implementation for Scir::Session
   Scir.session_subclass = self.to_s
 
-  def revision_info
-    self.class.const_get("Revision_info")
-  end
-
-  def job_ps(jid)
-    IO.popen("qstat -f #{shell_escape(jid)} 2>/dev/null","r") do |i|
-      i.readlines.each do |line|
-        next unless line.match(/job_state\s*=\s*(\W+)/)
-        return Scir::STATE_RUNNING        if line.match(/ = .*R/i)
-        return Scir::STATE_QUEUED_ACTIVE  if line.match(/ = .*Q/i)
-        return Scir::STATE_USER_ON_HOLD   if line.match(/ = .*H/i)
-        return Scir::STATE_USER_SUSPENDED if line.match(/ = .*S/i)
-        return Scir::STATE_UNDETERMINED
+  def update_job_info_cache
+    @job_info_cache = {}
+    jid = 'Dummy'
+    IO.popen("qstat -f #{CBRAIN::DEFAULT_QUEUE} 2>/dev/null","r") do |fh|
+      fh.readlines.each do |line|
+        if line =~ /^Job\s+id\s*:\s*(\S+)/i
+          jid = Regexp.last_match[1]
+          if jid =~ /^(\d+)/
+            jid = Regexp.last_match[1]
+          end
+          next
+        end
+        next unless line =~ /^\s*job_state\s*=\s*(\S+)/i
+        state = statestring_to_stateconst(Regexp.last_match[1])
+        @job_info_cache[jid.to_s] = { :drmaa_state => state }
       end
     end
+  end
+
+  def statestring_to_stateconst(state)
+    return Scir::STATE_RUNNING        if state.match(/R/i)
+    return Scir::STATE_QUEUED_ACTIVE  if state.match(/Q/i)
+    return Scir::STATE_USER_ON_HOLD   if state.match(/H/i)
+    return Scir::STATE_USER_SUSPENDED if state.match(/S/i)
     return Scir::STATE_UNDETERMINED
   end
 
@@ -95,6 +105,7 @@ end
 
 class ScirPbsJobTemplate < Scir::JobTemplate
 
+  # Register ourselves as the real implementation for Scir::JobTemplate
   Scir.jobtemplate_subclass = self.to_s
 
   def qsub_command

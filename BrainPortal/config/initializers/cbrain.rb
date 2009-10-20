@@ -24,6 +24,7 @@ class CBRAIN
   Rails_UserId      = Process.uid
   Rails_UserName    = Etc.getpwuid(Rails_UserId).name
   Rails_UserHome    = Etc.getpwuid(Rails_UserId).dir
+  System_Uname      = `uname -a`.chomp
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control

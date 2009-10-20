@@ -17,20 +17,34 @@ class ScirLocalSession < Scir::Session
 
   Revision_info="$Id$"
 
+  # Register ourselves as the real implementation for Scir::Session
   Scir.session_subclass = self.to_s
 
-  def job_ps(jid)
-    IO.popen("ps -p #{shell_escape(jid)} -O state 2>/dev/null","r") do |i|
-      i.readlines.each do |line|
-        next unless line.match(/^\s*\d+\s+(\S+)/)
-        state = Regexp.last_match[1]
-        return Scir::STATE_USER_SUSPENDED if state.match(/[t]/i)
-        return Scir::STATE_RUNNING        if state.match(/[sruz]/i)
-        #return Scir::STATE_QUEUED_ACTIVE  if state.match(//i)
-        #return Scir::STATE_USER_ON_HOLD   if state.match(//i)
-        return Scir::STATE_UNDETERMINED
+  def update_job_info_cache
+    @job_info_cache = {}
+    ps_command = case CBRAIN::System_Uname
+      when /Linux/
+        "ps -x -o pid,uid,state"
+      when /Solaris/
+        "ps -x -o pid,uid,state"  # not tested
+      else
+        "ps -x -o pid,uid,state"  # not tested
+    end
+    IO.popen(ps_command, "r") do |fh|
+      fh.readlines.each do |line|
+        next unless line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)/
+        pid       = Regexp.last_match[1]
+        uid       = Regexp.last_match[2]  # not used
+        statechar = Regexp.last_match[3]
+        state     = statestring_to_stateconst(statechar)
+        @job_info_cache[pid.to_s] = { :drmaa_state => state }
       end
     end
+  end
+
+  def statestring_to_stateconst(state)
+    return Scir::STATE_USER_SUSPENDED if state.match(/[t]/i)
+    return Scir::STATE_RUNNING        if state.match(/[sruz]/i)
     return Scir::STATE_UNDETERMINED
   end
 
@@ -76,6 +90,7 @@ end
 
 class ScirLocalJobTemplate < Scir::JobTemplate
 
+  # Register ourselves as the real implementation for Scir::JobTemplate
   Scir.jobtemplate_subclass = self.to_s
 
   def qsub_command
