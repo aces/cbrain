@@ -157,7 +157,7 @@ class BourreauWorker
     while go_on
 
        tasks_todo = DrmaaTask.find(:all,
-         :conditions => { :status      => [ 'New', 'Queued', 'Running', 'Data Ready' ],
+         :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready' ],
                           :bourreau_id => CBRAIN::SelfRemoteResourceId } )
        
        tasks_todo.each do |task|
@@ -181,7 +181,7 @@ class BourreauWorker
   # and from state *Data* *Ready* to *Post* *Processing*.
   #
   # It also updates the statuses from *Queued* to
-  # *Running* and *Running* to *Data* *Ready* based on
+  # *On* *CPU* and *On* *CPU* to *Data* *Ready* based on
   # the activity on the cluster, but no code is run for
   # these transitions.
   def process_task(task)
