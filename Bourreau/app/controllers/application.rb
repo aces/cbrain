@@ -54,7 +54,7 @@ class ApplicationController < ActionController::Base #:nodoc:
     # in the future we may want to start more than one,
     # once we're sure they don't interfere with each other.
     worker = BourreauWorker.new
-    worker.check_interval = 10                          # in seconds, default is 10
+    worker.check_interval = 55                          # in seconds, default is 55
     worker.bourreau       = CBRAIN::SelfRemoteResource  # Optional, when logging to Bourreau's log
     worker.log_to         = 'stdout'                    # 'stdout,bourreau'
     worker.verbose        = true                        # if we want each job action logged!
