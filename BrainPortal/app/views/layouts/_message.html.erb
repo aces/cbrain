@@ -1,6 +1,0 @@
-<p class="<%= message.message_type.to_s %>">
-  <BIG><%= h(message.header || "Unknown Header") %></BIG><BR>
-  Description:&nbsp;<%= h(message.description       || "No Description") %><BR>
-  Type:&nbsp;<%=        h(message.message_type.to_s || "No Type") %><BR>
-  Variable:<BR><%=      h((message.variable_text    || "No Var")).gsub(/\n/,"<BR>") -%>
-</p>

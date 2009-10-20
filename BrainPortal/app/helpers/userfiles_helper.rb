@@ -90,4 +90,30 @@ module UserfilesHelper
         '<font color="red">?</font>'
     end
   end
+  
+  def display_contents(userfile)
+    before_content = '<div id="userfile_contents_display">'
+    before_content += link_to_function '<strong>File Contents</strong>' do |page|
+      page[:userfile_contents_display_toggle].toggle
+    end
+    
+    content = ""
+    after_content = '</div>'
+    
+    file_name = userfile.name
+    case file_name
+    when /(\.txt|\.xml)$/
+      content = simple_format(h(File.read(userfile.cache_full_path)))
+    when /(\.jpe?g|\.gif|\.png)$/
+      content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
+    else
+      before_content = ""
+      content = ""
+      after_content = ""
+    end
+    
+    content = '<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>' + content + '</div>'
+    
+    before_content + content + after_content
+  end
 end

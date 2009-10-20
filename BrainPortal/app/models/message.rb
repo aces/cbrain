@@ -71,7 +71,8 @@ class Message < ActiveRecord::Base
                :conditions => {
                    :message_type => type,
                    :header       => header,
-                   :description  => description
+                   :description  => description,
+                   :read         => false
                }
              ) || 
              Message.new(

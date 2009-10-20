@@ -93,22 +93,10 @@
             
         
             <div id="content">
-              <% if ! flash[:system].nil? && ! flash[:system].empty? %>
-                <p class = "system" id="system_notice"><%= h(flash[:system]).gsub(/\n/,"<BR>") -%></p>  
-              <% end %>
-               <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-                 <p class = "notice" id="flash_notice"><%= h(flash[:notice]).gsub(/\n/,"<BR>") -%></p>  
-               <% end %>
-               <% if ! flash[:error].nil? && ! flash[:error].empty? %>
-                  <p class="error" id="flash_error"><%= h(flash[:error]).gsub(/\n/,"<BR>") -%></p>
-               <% end %>
-               <% if current_user %>
-                 <% Message.find(:all, :conditions => { :user_id => current_user.id, :read => false }).each do |message| %>
-                    <%= render :partial => 'layouts/message', :locals  => { :message  => message }%>
-                    <% message.update_attributes :read => true %>
-                 <% end %>
-               <% end %>
-               <%= yield :layout %>
+              <div id="message_display">
+                <%= render :partial => 'layouts/message_display' %>
+              </div>
+              <%= yield :layout %>
             </div>   <!-- End id="content" -->
          </div>  <!-- End id="main" -->
 

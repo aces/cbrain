@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
+  before_filter :prepare_messages
   around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
@@ -51,6 +52,20 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+  
+  def prepare_messages
+      return unless current_user
+      @display_messages = []
+      
+      current_user.messages.all(:conditions  => { :read => false }).each do |mess|
+        if !mess.expiry || mess.expiry < Time.now
+          mess_type = mess.message_type.to_sym
+          @display_messages << mess
+        else  
+          mess.update_attributes(:read  => true)
+        end
+      end
+    end
     
   #Checks that the current user's role matches +role+.
   def check_role(role)

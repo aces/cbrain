@@ -83,6 +83,8 @@
   <% if @sync_status == "InSync" %>
     <% if @userfile.is_a?(FileCollection) %>
       <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
+    <% else %>
+        <%= display_contents(@userfile) %>
     <% end %>
   <% elsif @sync_status =~ /^To/ %>
     <% if @userfile.is_a?(FileCollection) %>
