@@ -64,4 +64,10 @@ class CBRAIN
       "# bash line 3 ..."
   ]
 
+  # Parameters for Bourreau Workers
+  BOURREAU_WORKERS_INSTANCES      = 1  # more than 1 NOT SUPPORTED!
+  BOURREAU_WORKERS_CHECK_INTERVAL = 55 # in seconds
+  BOURREAU_WORKERS_LOG_TO         = 'stdout'
+  BOURREAU_WORKERS_VERBOSE        = false
+
 end
