@@ -41,6 +41,7 @@ class TasksController < ApplicationController
       
       @task.status = 'New'
       if @task.save
+        #BourreauWorker.all.each { |bw| Process.kill("CONT",bw.pid) rescue true }
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
@@ -85,7 +86,10 @@ class TasksController < ApplicationController
       @task.release      if newstatus == "Queued"
       @task.terminate    if newstatus == "Terminated"
 
-      if @task.save
+      if !@task.changed?
+        format.xml { render :xml => @task.to_xml }
+      elsif @task.save
+        #BourreauWorker.all.each { |bw| Process.kill("CONT",bw.pid) rescue true }
         format.xml { render :xml => @task.to_xml }
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }

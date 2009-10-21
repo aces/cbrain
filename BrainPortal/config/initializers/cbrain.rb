@@ -15,7 +15,7 @@ require 'cbrain_exception'
 class CBRAIN
 
   Revision_info="$Id$"
-  Redmine_Version="1.1.8"
+  Redmine_Version="1.2.0"
 
   public
 
@@ -84,14 +84,14 @@ class CBRAIN
             "Background Error: '#{taskname}'",                            
   
             # Description
-            "An internal error occured in a background task.\n"       +   
-            "Please let the CBRAIN development team know about it,\n" +
-            "as this is not supposed to go unchecked.\n"              +
-            "The last 15 caller entries are in attachement.\n",
+            "An internal error occured in a background task (PID #{$$}).\n" +   
+            "Please let the CBRAIN development team know about it,\n"       +
+            "as this is not supposed to go unchecked.\n"                    +
+            "The last 30 caller entries are in attachement.\n",
   
             # Var text
             "#{itswrong.class.to_s}: #{itswrong.message}\n" +   
-            itswrong.backtrace[0..15].join("\n") + "\n"
+            itswrong.backtrace[0..30].join("\n") + "\n"
           )
         ensure
           ActiveRecord::Base.remove_connection

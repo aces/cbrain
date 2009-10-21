@@ -96,7 +96,7 @@ class Bourreau < RemoteResource
 
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
-    return false unless master.start
+    return false unless master.start("Bourreau_#{self.name}")
     true
   end
 

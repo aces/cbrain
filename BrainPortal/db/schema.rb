@@ -49,9 +49,9 @@ ActiveRecord::Schema.define(:version => 20091009185018) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|

@@ -175,7 +175,7 @@ class SshDataProvider < DataProvider
   # necessary).
   def ssh_shared_options
     master = SshTunnel.find_or_create(remote_user,remote_host,remote_port)
-    master.start # does nothing is it's already started
+    master.start("DataProvider_#{self.name}") # does nothing is it's already started
     master.ssh_shared_options("auto") # ControlMaster=auto
   end
   

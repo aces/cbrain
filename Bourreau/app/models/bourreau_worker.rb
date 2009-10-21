@@ -159,6 +159,13 @@ class BourreauWorker
        tasks_todo = DrmaaTask.find(:all,
          :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready' ],
                           :bourreau_id => CBRAIN::SelfRemoteResourceId } )
+
+       #if tasks_todo.size == 0
+       #  self.addlog("No tasks need handling, going to STOPPED state.") if verbose
+       #  Process.kill("STOP",$$)
+       #  self.addlog("Waking up from STOP.") if verbose
+       #  redo
+       #end
        
        tasks_todo.each do |task|
          process_task(task) # this can take a long time...
@@ -188,6 +195,7 @@ class BourreauWorker
     begin
       task.reload # Make sure we got it up to date
       self.addlog "--- Got #{task.bname_tid} in state #{task.status}" if verbose
+
       task.update_status
       self.addlog "Updated #{task.bname_tid} to state #{task.status}" if verbose
       case task.status

@@ -223,10 +223,6 @@ Bourreau.all.each do |bourreau|
     else
       puts "C> \t- Bourreau '#{name}' not marked as 'online'."
     end
-    #if tunnels_ok
-    #  started = bourreau.start
-    #  puts "C> \t- Bourreau '#{name}' RAILS app " + (started ? 'started.' : 'NOT started.')
-    #end
   else
     puts "C> \t- Bourreau '#{name}' not configured for remote control."
   end

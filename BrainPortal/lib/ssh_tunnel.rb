@@ -221,12 +221,16 @@ class SshTunnel
   # necessary. The connection is maintained in a subprocess.
   # If a subprocess is already running, nothing will happen:
   # you have to stop() if before you can restart it.
-  def start
+  def start(label = nil)
 
     self.properly_registered?
     return true if self.read_pidfile
 
     sshcmd = "ssh -n -N -x -M "
+
+    if ! label.blank? && label.to_s =~ /^\w+$/
+      sshcmd += "-o SendEnv=#{label.to_s} "
+    end
 
     self.get_tunnels_strings(:forward).each { |spec| sshcmd += " -L #{spec}" }
     self.get_tunnels_strings(:reverse).each { |spec| sshcmd += " -R #{spec}" }
