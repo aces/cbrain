@@ -1,0 +1,7 @@
+<p class="<%= mess.message_type.to_s %>">
+  <%= h(mess.description) %>
+  <% unless mess.variable_text.blank? %>
+    <BR><BR>
+    <%= h(mess.variable_text).gsub(/\n/,"<BR>") -%>
+  <% end %>
+</p>
