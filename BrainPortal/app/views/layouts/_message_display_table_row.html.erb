@@ -1,7 +1,7 @@
 <tr id="message_display_<%= mess.id %>">
   <td  class="<%= mess.message_type %>_display left_side">
     <%= 
-      link_to_function h(mess.header) do |page|
+      link_to_function parse_message( h(mess.header) ) do |page|
         page["message_display_details_#{mess.id}"].toggle
       end 
     %>
@@ -14,7 +14,7 @@
         link_to_remote  'Mark&nbsp;as&nbsp;Read',
                       {:url  => message_path(mess, :read  => true),
                        :method  => 'put',
-                       :before  => "$('message_display_#{mess.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Updating...</td>');"
+                       :before  => "$$('#message_display_#{mess.id}').invoke('update', '<td colspan=\"11\" style=\"color:red; text-align:center;\">Updating...</td>');"
                        },
                       {:class => 'action_link'}
       %>&nbsp;&nbsp;&nbsp;&nbsp;<%= 
@@ -22,7 +22,7 @@
                       {:url  => message_path(mess),
                        :method  => 'delete',
                        :confirm => 'Are you sure?',
-                       :before  => "$('message_display_#{mess.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                       :before  => "$$('#message_display_#{mess.id}').invoke('update', '<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
                        },
                       {:class => 'action_link'}
       %>

@@ -108,6 +108,8 @@ class Site < ActiveRecord::Base
   end
   
   def set_managers
+    self.manager_ids ||= []
+    self.user_ids ||= []
     current_manager_ids = self.manager_ids.collect(&:to_s) || []
     current_user_ids = self.user_ids.collect(&:to_s)
     

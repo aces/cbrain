@@ -15,10 +15,11 @@ class MessagesController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
+  before_filter :manager_role_required, :only  => :create
   # GET /messages
   # GET /messages.xml
   def index
-    @messages = current_user.messages.all
+    @messages = current_user.messages.all(:order  => "last_sent DESC")
 
     respond_to do |format|
       format.html # index.html.erb
@@ -57,15 +58,23 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create
     @message = Message.new(params[:message])
+    
+    @message.send_me_to(Group.find(params[:groups][:group_id]))
 
     respond_to do |format|
-      if @message.save
-        flash[:notice] = 'Message was successfully created.'
-        format.html { redirect_to(@message) }
-        format.xml  { render :xml => @message, :status => :created, :location => @message }
-      else
-        format.html { render :action => "new" }
-        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
+      flash[:notice] = 'Message was successfully sent.'
+      format.xml  { render :xml => @message, :status => :created, :location => @message }
+      
+      format.js do
+        @messages = current_user.messages.all(:order  => "last_sent DESC")
+        prepare_messages
+        
+        render :update do |page|
+            @message = Message.new
+            page['new_message'].replace_html(:partial  => 'new').hide
+            page.replace_html :message_display, :partial  => 'layouts/message_display'
+            page.replace_html :message_table,   :partial  => 'message_table'
+        end
       end
     end
   end
@@ -77,13 +86,20 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       if @message.update_attributes(:read  => params[:read])
-        prepare_messages
-        format.js
         format.xml  { head :ok }
       else
         flash.now[:error] = "Problem updating message."
-        format.js
         format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
+      end
+      format.js do
+        @messages = current_user.messages.all(:order  => "last_sent DESC")
+        prepare_messages
+        render :update do |page|
+          page.replace_html :message_display, :partial  => 'layouts/message_display'
+            page << "if($('message_table')){"
+            page.replace_html :message_table,   :partial  => 'message_table'
+            page << "}"        
+          end
       end
     end
   end
@@ -95,12 +111,16 @@ class MessagesController < ApplicationController
     unless @message.destroy
       flash.now[:error] = "Could not delete message."
     end
+    @messages = current_user.messages.all(:order  => "last_sent DESC")
     prepare_messages
     
     respond_to do |format|
       format.js do
         render :update do |page|
-          page[:message_display].replace_html :partial  => 'layouts/message_display'
+          page.replace_html :message_display, :partial  => 'layouts/message_display'
+          page << "if($('message_table')){"
+          page.replace_html :message_table,   :partial  => 'message_table'
+          page << "}"
         end
       end
       format.xml  { head :ok }

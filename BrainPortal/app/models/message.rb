@@ -97,13 +97,18 @@ class Message < ActiveRecord::Base
         mess.append_variable_text(var_text)
       end
 
-      mess.read          = false
+      mess.read      = false
+      mess.last_sent = Time.now
       mess.save
 
       messages_sent << mess
     end
 
     messages_sent
+  end
+  
+  def send_me_to(destination)
+    Message.send_message(destination, self.message_type, self.header, self.description, self.variable_text, self.expiry)
   end
 
   # Given an existing message, send it to other users/group.

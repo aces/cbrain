@@ -250,7 +250,7 @@ class UserfilesController < ApplicationController
         userfile.save
         userfile.addlog_context(self,"Uploaded by #{current_user.login}")
         current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
-        Message.send_message(current_user,'notice', "SingleFile Uploaded", "", userfile.name)
+        Message.send_message(current_user,'notice', "SingleFile Uploaded", "", "#{userfile.name} [[View][/userfiles/#{userfile.id}/edit]]")
       end 
       
       redirect_to :action => :index

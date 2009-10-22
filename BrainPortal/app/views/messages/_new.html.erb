@@ -1,37 +1,33 @@
-<big>New form goes here<big>
-  
-<% form_for(Message.new) do |f| %>
-  <%= f.error_messages %>
-
-  <p>
-    <%= f.label :header %><br />
-    <%= f.text_field :header %>
-  </p>
-  <p>
-    <%= f.label :description %><br />
-    <%= f.text_area :description %>
-  </p>
-  <p>
-    <%= f.label :variable_text %><br />
-    <%= f.text_area :variable_text %>
-  </p>
-  <p>
-    <%= f.label :type %><br />
-    <%= f.text_field :type %>
-  </p>
-  <p>
-    <%= f.label :read %><br />
-    <%= f.check_box :read %>
-  </p>
-  <p>
-    <%= f.label :user_id %><br />
-    <%= f.text_field :user_id %>
-  </p>
-  <p>
-    <%= f.label :expiry %><br />
-    <%= f.date_select :expiry %>
-  </p>
-  <p>
-    <%= f.submit "Create" %>
-  </p>
-<% end %>
+<div class="generalcontent">
+  <% remote_form_for :message, @message, :url => { :action => "create" } do |f| %>
+    <%= f.error_messages %>
+    
+    <p>
+      To: <%= collection_select(:groups, :group_id, current_user.available_groups.reject { |g|  g.name == 'everyone' if current_user.has_role? :site_manager}, :id, :name, {}) %>
+    </p>
+    <p>
+      <%= f.label :header %><br />
+      <%= f.text_field :header %>
+    </p>
+    <p>
+      <%= f.label :description %><br />
+      <%= f.text_area :description, :rows => 5 %>
+    </p>
+    <p>
+      <%= f.label :variable_text %><br />
+      <%= f.text_area :variable_text, :rows => 5 %>
+    </p>
+    <p>
+      <%= f.label :message_type %><br />
+      <%= f.select :message_type, ["system", "notice", "error"] %>
+    </p>
+    <p>
+      <%= f.label :expiry %><br />
+      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
+    </p>
+    <br>
+    <p>
+      <%= f.submit "Create" %>
+    </p>
+  <% end %>
+</div>

@@ -145,7 +145,7 @@ class User < ActiveRecord::Base
     if self.has_role? :admin
       @available_groups = Group.all
     elsif self.has_role? :site_manager
-      @available_groups = [Group.find_by_name("everyone")] | self.site.groups.all
+      @available_groups = [Group.find_by_name("everyone")] | self.site.groups.all | self.groups.all
     else
       @available_groups = [Group.find_by_name("everyone")] | self.groups.all
     end

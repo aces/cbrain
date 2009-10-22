@@ -14,18 +14,20 @@
 
   <% title 'CBRAIN Messaging Center' %>
 
-      <div class="resource_list_upper_form">
-            <%= 
-              link_to_function 'Create New Message', :class  => 'action_link' do |page|
-                page['new_message'].toggle
-              end 
-              %>
-            <div id="new_message" style="display:none">
-              <%= render :partial  => 'new' %>
-            </div>
-      </div> <!-- End class="upper_form" -->
+      <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
+        <div class="resource_list_upper_form">
+               <%= 
+                 link_to_function 'Create New Message', :class  => 'action_link' do |page|
+                   page['new_message'].toggle
+                 end 
+                 %>
+               <div id="new_message" style="display:none">
+                 <%= render :partial  => 'new' %>
+               </div>
+         </div>
+      <% end %>
 
-  <br>
+   <br>
 
 <!--   <H2>Message Center Note: this page is just a draft, work is in progress!</H2>
   <p>
@@ -42,19 +44,6 @@
   <p> -->
 
   <table class="resource_list" id="message_table">
-     <tr>
-         <th>Last Updated</th>
-         <th>Summary</th>
-         <th>Read?</th>
-     </tr>
-  
-     <% for mess in @messages %>
-         <%= render :partial => 'message_table_row', :locals  => {:mess  => mess} %>
-     <% end %>
-  
-     <% if @messages.nil? || @messages.empty? %>
-       <tr class="list-odd"><td colspan="3">There are no Messages in this list.</td></tr>
-     <% end %>
-  
+     <%= render :partial => 'message_table' %>
   </table>
 </div>  <!-- End class="generalcontent" -->

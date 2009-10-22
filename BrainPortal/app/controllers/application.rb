@@ -57,7 +57,7 @@ class ApplicationController < ActionController::Base
       return unless current_user
       @display_messages = []
       
-      current_user.messages.all(:conditions  => { :read => false }).each do |mess|
+      current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC").each do |mess|
         if !mess.expiry || mess.expiry < Time.now
           mess_type = mess.message_type.to_sym
           @display_messages << mess

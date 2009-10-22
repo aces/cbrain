@@ -1288,7 +1288,7 @@ td.right_align {
     border: 0;
     margin-left:auto;
     margin-right:auto;
-    width: 40%;
+    width: 70%;
 }
 
 #message_display_table th {
@@ -1303,7 +1303,7 @@ td.right_align {
     border-style: solid;
     text-align: left;    
     font-size: 1em;
-    padding: 1em;
+    padding: 0.2em 0.4em;
 }
 
 #message_display_table tr {
@@ -1336,7 +1336,10 @@ td.right_align {
     font-weight: bold;
 }
 
-
+.message_unread{
+   background-color: yellow;
+   font-weight: bold;
+}
 
 
 

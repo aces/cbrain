@@ -175,12 +175,26 @@ module ApplicationHelper
     icon
   end
   
+  #Reduces a string to the length specified by +length+.
   def crop_text_to(length, string)
     if string.length <= length
       string
     else
       string[0,length-3] + "..."
     end
+  end
+  
+  def parse_message(message)
+    arr = message.split(/(\[\[.*?\]\])/)
+    arr.each_with_index do |str,i|
+      if i % 2 == 0
+        arr[i] = h(arr[i])
+      else
+        arr[i].sub! /\[\[(.+?)\]\[(.+?)\]\]/, "<a href='\\2' class='action_link'>\\1</a>"
+      end
+    end   
+    
+    arr.join
   end
 
 end

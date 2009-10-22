@@ -1,7 +1,17 @@
-<p class="<%= mess.message_type.to_s %>">
-  <%= h(mess.description) %>
-  <% unless mess.variable_text.blank? %>
-    <BR><BR>
-    <%= h(mess.variable_text).gsub(/\n/,"<BR>") -%>
-  <% end %>
-</p>
+<% unless mess.description.blank? %>
+  <p class="<%= mess.message_type.to_s %>">
+    <%= parse_message( h(mess.description) )%>
+  </p>
+<% end %>
+
+<% unless mess.variable_text.blank? %>
+    <p class="<%= mess.message_type.to_s %>">
+      <%= parse_message( h(mess.variable_text) ).gsub(/\n/,"<BR>") -%>
+    </p>
+<% end %>
+
+<% if mess.description.blank? && mess.variable_text.blank? %>
+  <p>
+    (No Details)
+  </p>
+<% end %>

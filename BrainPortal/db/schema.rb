@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091009185018) do
+ActiveRecord::Schema.define(:version => 20091022181157) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -112,6 +112,7 @@ ActiveRecord::Schema.define(:version => 20091009185018) do
     t.datetime "expiry"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.datetime "last_sent"
   end
 
   create_table "remote_resources", :force => true do |t|
