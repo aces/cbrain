@@ -89,6 +89,7 @@ public
     IO.popen(command,"r") do |i|
       return qsubout_to_jid(i)
     end
+    @cache_last_updated = (2*job_ps_cache_delay).seconds.ago # invalidates @job_info_cache
   end
 
   def update_job_info_cache

@@ -51,6 +51,16 @@ class BourreauWorker
     $bourreau_workers
   end
 
+  # This method sends a +signal+ to all known active workers.
+  def self.signal_all(signal = 'TERM')
+    self.all.each { |bw| Process.kill(signal,bw.pid) rescue true }
+  end
+
+  # This method send a wake up signal (USR1) to all known active workers.
+  def self.wake_all
+    self.signal_all('USR1')
+  end
+
   def initialize #:nodoc:
     self.pid            = nil
     self.check_interval = 55 # seconds
@@ -149,36 +159,71 @@ class BourreauWorker
   # sent SIGKILL or SIGTERM, or until the PID file is
   # removed by an external source, whichever comes first.
   def mainloop
-    go_on = true
-    Kernel.trap("SIGINT")  { self.addlog "Got SIGINT, scheduling stop."  ; go_on = false }
-    Kernel.trap("SIGTERM") { self.addlog "Got SIGTERM, scheduling stop." ; go_on = false }
+
+    # Variables modified by signals
+    go_on                   = true
+    sleep_mode              = false
+
+    # Sleep mode internal time limit variable
+    sleep_mode_time_entered = Time.now
+
+    # Signal handlers
+    Kernel.trap("INT")  { self.addlog "Got SIGINT, scheduling stop."  ; go_on = false }
+    Kernel.trap("TERM") { self.addlog "Got SIGTERM, scheduling stop." ; go_on = false }
+    Kernel.trap("USR1") { self.addlog "Got SIGUSR1, waking up." if self.verbose && sleep_mode ; sleep_mode = false }
+
+    # Starts main infinite loop
     self.addlog "Starting main worker loop."
     self.addlog "Revision " + self.revision_info.svn_id_pretty_rev_author_date
+    sleep rand(3)
+
     while go_on
 
+       # This is the eternal SLEEP mode when there is nothing to do; it
+       # lets our process be responsive to signals while not querying
+       # the database all the time for nothing.
+       # This mode is reset to normal 'scan' mode when receiving a USR1 signal
+       # or at least once every hour (so that there is at least some
+       # kind of DB activity; some DB servers close their socket otherwise)
+       if sleep_mode
+         sleep 1
+         # make sure we make ONE true scan every hour at least
+         if Time.now - sleep_mode_time_entered > 3600
+           self.addlog "Waking up from sleep mode for hourly protocolar DB check."
+           sleep_mode = false
+         end
+         redo
+       end
+
+       # Checks for disappearing PID file
+       unless File.exist?(self.pidfile_path.to_s)
+         self.addlog "PID file has been erased, stopping."
+         go_on = false
+         break
+       end
+
+       # Asks the DB for the list of tasks that need handling.
        tasks_todo = DrmaaTask.find(:all,
          :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready' ],
                           :bourreau_id => CBRAIN::SelfRemoteResourceId } )
 
-       #if tasks_todo.size == 0
-       #  self.addlog("No tasks need handling, going to STOPPED state.") if verbose
-       #  Process.kill("STOP",$$)
-       #  self.addlog("Waking up from STOP.") if verbose
-       #  redo
-       #end
+       # Detects and turns on sleep mode.
+       if tasks_todo.size == 0
+         self.addlog("No tasks need handling, going to eternal SLEEP state.") if verbose
+         sleep_mode = true
+         sleep_mode_time_entered = Time.now
+         redo
+       end
        
+       # Processes each task in the active list
        tasks_todo.each do |task|
          process_task(task) # this can take a long time...
          break unless go_on
        end
 
-       unless File.exist?(self.pidfile_path.to_s)
-         self.addlog "PID file has been erased, stopping."
-         go_on = false
-       end
-
        break unless go_on
-       sleep check_interval+rand(5)
+       sleep check_interval+rand(5) # Scan mode sleep interval.
+
     end
     self.addlog "Finishing properly."
   end

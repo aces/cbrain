@@ -106,6 +106,12 @@
       <table id="userfilesdisplay" class="resource_list">
           <%= render :partial => 'userfiles_table' %>
       </table>
+
+      Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+      <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+        <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+      <% end %>
+
   <% end %>
   
 </div>

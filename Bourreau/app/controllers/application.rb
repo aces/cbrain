@@ -49,16 +49,19 @@ class ApplicationController < ActionController::Base #:nodoc:
   # properly until RAILS is fully booted).
   def start_bourreau_workers
     allworkers = BourreauWorker.all
-    return true if allworkers.size > 0
-    # For the moment we only start one worker, but
-    # in the future we may want to start more than one,
-    # once we're sure they don't interfere with each other.
-    worker = BourreauWorker.new
-    worker.check_interval = 55                          # in seconds, default is 55
-    worker.bourreau       = CBRAIN::SelfRemoteResource  # Optional, when logging to Bourreau's log
-    worker.log_to         = 'stdout'                    # 'stdout,bourreau'
-    worker.verbose        = true                        # if we want each job action logged!
-    worker.launch
+    return true if allworkers.size >= CBRAIN::BOURREAU_WORKERS_INSTANCES
+    while allworkers.size < CBRAIN::BOURREAU_WORKERS_INSTANCES
+      # For the moment we only start one worker, but
+      # in the future we may want to start more than one,
+      # once we're sure they don't interfere with each other.
+      worker = BourreauWorker.new
+      worker.check_interval = CBRAIN::BOURREAU_WORKERS_CHECK_INTERVAL # in seconds, default is 55
+      worker.bourreau       = CBRAIN::SelfRemoteResource              # Optional, when logging to Bourreau's log
+      worker.log_to         = CBRAIN::BOURREAU_WORKERS_LOG_TO         # 'stdout,bourreau'
+      worker.verbose        = CBRAIN::BOURREAU_WORKERS_VERBOSE        # if we want each job action logged!
+      worker.launch
+      allworkers = BourreauWorker.all
+    end
     true
   end
 

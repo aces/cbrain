@@ -41,7 +41,7 @@ class TasksController < ApplicationController
       
       @task.status = 'New'
       if @task.save
-        #BourreauWorker.all.each { |bw| Process.kill("CONT",bw.pid) rescue true }
+        BourreauWorker.wake_all
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
@@ -89,7 +89,7 @@ class TasksController < ApplicationController
       if !@task.changed?
         format.xml { render :xml => @task.to_xml }
       elsif @task.save
-        #BourreauWorker.all.each { |bw| Process.kill("CONT",bw.pid) rescue true }
+        BourreauWorker.wake_all
         format.xml { render :xml => @task.to_xml }
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }
@@ -103,7 +103,8 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       
-      if @task.destroy
+      if @task.status !~ /Setting Up|Post Processing/ && @task.destroy
+        BourreauWorker.wake_all
         format.xml { head :ok }
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }

@@ -559,6 +559,8 @@ class UserfilesController < ApplicationController
                 u.save
                 u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
                 moved_list << u.name
+              else
+                failed_list << u.name
               end
             rescue => e
               u.addlog "Could not move from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"

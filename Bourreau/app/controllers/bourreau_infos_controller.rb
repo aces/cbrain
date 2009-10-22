@@ -20,13 +20,27 @@ class BourreauInfosController < ApplicationController
   # returns an array of a single XML object of type BourreauInfo
   def index #:nodoc:
 
+    @info = generate_info
+    @infos = [ @info ]
+
+    respond_to do |format|
+      format.html { head :method_not_allowed }
+      format.xml  { render :xml => @infos.to_xml }
+    end
+  end
+
+  #######################################################################
+  private
+  #######################################################################
+
+  def generate_info
     me = Bourreau.find_by_name(CBRAIN::BOURREAU_CLUSTER_NAME)
 
     home = CBRAIN::Rails_UserHome
     
-    host_uptime    = `uptime`.strip   # TODO make more robust
+    host_uptime    = `uptime 2>/dev/null`.strip   # TODO make more robust
     elapsed        = Time.now.localtime - CBRAIN::Startup_LocalTime
-    ssh_public_key = `cat #{home}/.ssh/id_rsa.pub`   # TODO make more robust
+    ssh_public_key = `cat #{home}/.ssh/id_rsa.pub 2>/dev/null`   # TODO make more robust
 
     queue_tasks_tot_max = Scir::Session.session_cache.queue_tasks_tot_max
     queue_tasks_tot     = queue_tasks_tot_max[0]
@@ -38,7 +52,7 @@ class BourreauInfosController < ApplicationController
                 'Last Changed Date'   => 'unknown'
               }
 
-    IO.popen("svn info #{RAILS_ROOT}","r") do |fh|
+    IO.popen("svn info #{RAILS_ROOT} 2>/dev/null","r") do |fh|
       fh.each do |line|
         if line.match(/^Revision|Last Changed/i)
           comps = line.split(/:\s*/,2)
@@ -49,7 +63,10 @@ class BourreauInfosController < ApplicationController
       end
     end
 
-    @info = BourreauInfo.new.merge(   # not an active record
+    workers = BourreauWorker.all
+    workers_pids = workers.map(&:pid).join(",")
+
+    info = BourreauInfo.new.merge(   # not an active record
       :name               => CBRAIN::BOURREAU_CLUSTER_NAME,
       :id                 => me.id,
       :bourreau_cms       => CBRAIN::CLUSTER_TYPE,
@@ -59,6 +76,7 @@ class BourreauInfosController < ApplicationController
       :tasks_max          => queue_tasks_max,
       :tasks_tot          => queue_tasks_tot,
       :ssh_public_key     => ssh_public_key,
+      :worker_pids        => workers_pids,
 
       # Svn info
       :revision           => revinfo['Revision'],
@@ -69,12 +87,7 @@ class BourreauInfosController < ApplicationController
       :dummy              => 'hello'
     )
 
-    @infos = [ @info ]
-
-    respond_to do |format|
-      format.html { head :method_not_allowed }
-      format.xml  { render :xml => @infos.to_xml }
-    end
+    return info
   end
 
 end

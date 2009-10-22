@@ -383,7 +383,7 @@ class DataProvider < ActiveRecord::Base
   def cache_erase(userfile)
     cb_error "Error: provider is offline."   unless self.online
     basename = userfile.name
-    SyncStatus.ready_to_modify_cache(userfile) do
+    SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
       FileUtils.remove_entry(cache_full_pathname(basename), true) rescue true
       Dir.rmdir(cache_full_dirname(basename)) rescue true
     end

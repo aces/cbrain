@@ -25,6 +25,10 @@ Needed_Constants = %w(
                        DRMAA_sharedir Quarantine_dir CIVET_dir
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
+                       BOURREAU_WORKERS_INSTANCES
+                       BOURREAU_WORKERS_CHECK_INTERVAL
+                       BOURREAU_WORKERS_LOG_TO
+                       BOURREAU_WORKERS_VERBOSE
                      )
 
 # Constants
@@ -62,6 +66,10 @@ end
 
 if ! CBRAIN::EXTRA_BASH_INIT_CMDS.is_a?(Array) || CBRAIN::EXTRA_BASH_INIT_CMDS.find { |s| ! s.is_a?(String) }
   raise "CBRAIN configuration error: the EXTRA_BASH_INIT_CMDS is not an array of strings!"
+end
+
+if CBRAIN::BOURREAU_WORKERS_INSTANCES > 1
+  raise "Error: right now we only support a SINGLE instance of a Bourreau Worker! Check your value for BOURREAU_WORKERS_INSTANCES."
 end
 
 

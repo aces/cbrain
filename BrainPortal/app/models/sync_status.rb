@@ -209,7 +209,7 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file in the cache is available to be modified.
   # It doesn't care about the status of the provider.
-  def self.ready_to_modify_cache(userfile)
+  def self.ready_to_modify_cache(userfile, final_status = 'CacheNewer')
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
@@ -249,7 +249,7 @@ class SyncStatus < ActiveRecord::Base
     begin
       puts "SYNC: ModCache: #{state.pretty} YIELD" if DebugMessages
       implstatus = yield
-      state.update_attributes( :status => "CacheNewer" )
+      state.update_attributes( :status => (final_status || "CacheNewer") )
       puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
       return implstatus
     rescue => implerror

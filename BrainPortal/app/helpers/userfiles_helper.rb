@@ -79,7 +79,7 @@ module UserfilesHelper
       when "ProvNewer"
         '<font color="green">&lowast;</font>'
       when "CacheNewer"
-        '<font color="yellow">&there4;</font>'
+        '<font color="purple">&there4;</font>'
       when "ToCache"
         '<font color="blue">&darr;</font>'
       when "ToProvider"
