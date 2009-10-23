@@ -1300,7 +1300,6 @@ td.right_align {
 }
 
 #message_display_table td{
-    border-style: solid;
     font-size: 1em;
     padding: 0.2em 0.4em;
 }
@@ -1311,16 +1310,19 @@ td.right_align {
 
 
 td.notice_display{
+    border-style: solid;
     background-color: #ddffdd;
     border-color: green;
 }
 
 td.error_display{
+    border-style: solid;
     background-color: #ffeeee;
     border-color: red;
 }
 
 td.system_display{
+    border-style: solid;
     background-color: #ddeeff;
     border-color: blue;
 }

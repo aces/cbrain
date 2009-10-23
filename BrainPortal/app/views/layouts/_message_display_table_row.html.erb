@@ -9,6 +9,9 @@
       <%= render :partial  => 'layouts/message_details', :locals  => {:mess  => mess} %>
     </div>
   </td>
+  <td class="<%= mess.message_type %>_display middle">
+    <%= to_localtime(mess.last_sent, :datetime) %>
+  </td>
   <td class="<%= mess.message_type %>_display right_side">
     <%= 
         link_to_remote  'Mark&nbsp;as&nbsp;Read',

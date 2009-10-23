@@ -22,8 +22,8 @@
       <%= f.select :message_type, ["system", "notice", "error"] %>
     </p>
     <p>
-      <%= f.label :expiry %><br />
-      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
+      <%= f.label :expiry %> (Current time: <%= to_localtime(Time.now, :datetime) %>)<br>
+      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %> <%= Time.zone.name %>
     </p>
     <br>
     <p>

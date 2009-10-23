@@ -10,7 +10,7 @@
     </div>
   </td>
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> middle">
-    <%= mess.last_sent %>
+    <%= to_localtime(mess.last_sent, :datetime) %>
   </td>
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
     <% unless mess.read %>

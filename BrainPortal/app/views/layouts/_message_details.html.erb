@@ -10,7 +10,13 @@
     </p>
 <% end %>
 
-<% if mess.description.blank? && mess.variable_text.blank? %>
+<% unless mess.expiry.blank? %>
+    <p class="<%= mess.message_type.to_s %>">
+      Expires: <%=to_localtime(mess.expiry, :datetime) -%>
+    </p>
+<% end %>
+
+<% if mess.description.blank? && mess.variable_text.blank? && mess.expiry.blank? %>
   <p>
     (No Details)
   </p>

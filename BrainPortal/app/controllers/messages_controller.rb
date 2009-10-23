@@ -62,12 +62,12 @@ class MessagesController < ApplicationController
     @message.send_me_to(Group.find(params[:groups][:group_id]))
 
     respond_to do |format|
-      flash[:notice] = 'Message was successfully sent.'
+      flash.now[:notice] = 'Message was successfully sent.'
       format.xml  { render :xml => @message, :status => :created, :location => @message }
       
       format.js do
-        @messages = current_user.messages.all(:order  => "last_sent DESC")
         prepare_messages
+        @messages = current_user.messages.all(:order  => "last_sent DESC")
         
         render :update do |page|
             @message = Message.new
@@ -92,8 +92,9 @@ class MessagesController < ApplicationController
         format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
       end
       format.js do
-        @messages = current_user.messages.all(:order  => "last_sent DESC")
         prepare_messages
+        @messages = current_user.messages.all(:order  => "last_sent DESC")
+        
         render :update do |page|
           page.replace_html :message_display, :partial  => 'layouts/message_display'
             page << "if($('message_table')){"
@@ -111,8 +112,8 @@ class MessagesController < ApplicationController
     unless @message.destroy
       flash.now[:error] = "Could not delete message."
     end
-    @messages = current_user.messages.all(:order  => "last_sent DESC")
     prepare_messages
+    @messages = current_user.messages.all(:order  => "last_sent DESC")
     
     respond_to do |format|
       format.js do
