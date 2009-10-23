@@ -3,7 +3,7 @@
     <%= content_tag :div, h(msg).gsub(/\n/, '<BR>'), :id => "flash_#{name}" %>
   <% end %>
 <%- end -%>
-<% unless @display_messages.blank? || params[:controller].to_sym == :messages %>
+<% unless @display_messages.blank? %>
   <table id="message_display_table">
     <tr><th colspan="3">Messages</th></tr>
     <% for mess in @display_messages %>
