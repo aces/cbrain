@@ -151,6 +151,7 @@ class UserfilesController < ApplicationController
     if start_sync.to_s == "yes" && @sync_status !~ /^To|InSync|Corrupted/
       CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
         @userfile.sync_to_cache
+        @userfile.set_size
       end
       @sync_status = "ToCache" # so the interface says 'in progress'
     end

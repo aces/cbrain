@@ -71,10 +71,12 @@ class FileCollection < Userfile
   
   #Calculates and sets the size attribute.
   def set_size
-    local_sync = self.local_sync_status
-    unless local_sync && local_sync.status == "InSync"
-      self.sync_to_cache
-    end
+    self.set_size! unless self.size_set?
+  end
+
+  #Calculates and sets the size attribute (active recount forced)
+  def set_size!
+    self.sync_to_cache
     
     Dir.chdir(self.cache_full_path.parent) do
       #self.size = IO.popen("du -s #{self.name}","r") { |fh| fh.readline.split[0].to_i}
