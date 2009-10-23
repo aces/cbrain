@@ -1,5 +1,5 @@
-<tr id="message_display_<%= mess.id %>" class="<%= mess.read ? cycle("list-odd", "list-even") : "message_unread" %> row_highlight">
-  <td  class="<%= mess.message_type %>_display left">
+<tr id="message_display_<%= mess.id %>" class="<%= cycle("list-odd", "list-even") %> row_highlight">
+  <td  class="<%= "#{mess.message_type}_display" unless mess.read? %> left_side">
     <%= 
       link_to_function parse_message( h(mess.header) ) do |page|
         page["message_table_details_#{mess.id}"].toggle
@@ -9,10 +9,10 @@
       <%= render :partial  => 'layouts/message_details', :locals  => {:mess  => mess} %>
     </div>
   </td>
-  <td>
+  <td class="<%= "#{mess.message_type}_display" unless mess.read? %> middle">
     <%= mess.last_sent %>
   </td>
-  <td class="<%= mess.message_type %>_display right_side">
+  <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
     <% unless mess.read %>
     <%= 
         link_to_remote  'Mark&nbsp;as&nbsp;Read',

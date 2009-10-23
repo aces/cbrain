@@ -1301,7 +1301,6 @@ td.right_align {
 
 #message_display_table td{
     border-style: solid;
-    text-align: left;    
     font-size: 1em;
     padding: 0.2em 0.4em;
 }
@@ -1311,29 +1310,35 @@ td.right_align {
 }
 
 
-#message_display_table td.notice_display{
+td.notice_display{
     background-color: #ddffdd;
     border-color: green;
 }
 
-#message_display_table td.error_display{
+td.error_display{
     background-color: #ffeeee;
     border-color: red;
 }
 
-#message_display_table td.system_display{
+td.system_display{
     background-color: #ddeeff;
     border-color: blue;
 }
 
-#message_display_table td.right_side{
+td.right_side{
     border-width: 0.2em 0.2em 0.2em 0;
     text-align: right;
 }
 
-#message_display_table td.left_side{
+td.left_side{
     border-width: 0.2em 0em 0.2em 0.2em;
+    text-align: left;
     font-weight: bold;
+}
+
+td.middle{
+    border-width: 0.2em 0em 0.2em;
+    text-align: center;
 }
 
 .message_unread{
