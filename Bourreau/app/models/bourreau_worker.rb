@@ -260,14 +260,14 @@ class BourreauWorker
                              :notice,
                              "Task #{task.name} Completed Successfully",
                              "Oh great!", # description
-                             task.bname_tid # variable_text TODO hyperlink ?
+                             "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
                             )
       elsif task.status =~ /^Failed/
         Message.send_message(task.user,
                              :error,
                              "Task #{task.name} Failed",
                              "Sorry about that. Check the task's log.", # description
-                             task.bname_tid # variable_text TODO hyperlink ?
+                             "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
                             )
       end
     rescue => e
