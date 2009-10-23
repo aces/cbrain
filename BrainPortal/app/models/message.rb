@@ -136,6 +136,25 @@ class Message < ActiveRecord::Base
     found
   end
 
+  # Sends an internal error message where the main context
+  # is an exception object.
+  def self.send_internal_error_message(destination,header,exception)
+    Message.send_message(destination, :error,
+      # Header
+      "Internal error: #{header}",
+
+      # Description
+      "An internal error occured inside the CBRAIN code.\n"     +
+      "Please let the CBRAIN development team know about it,\n" +
+      "as this is not supposed to go unchecked.\n"              +
+      "The last 30 caller entries are in attachement.\n",
+
+      # Var text
+      "#{exception.class.to_s}: #{exception.message}\n" +
+      exception.backtrace[0..30].join("\n") + "\n"
+    )
+  end
+
   # Will append the text document in argument to the
   # variable_text attribute, prefixing it with a
   # timestamp.

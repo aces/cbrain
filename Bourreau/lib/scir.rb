@@ -72,32 +72,37 @@ public
     @@session_cache
   end
 
-  def self.new_session(job_ps_cache_delay = 60.seconds)
+  def self.new_session(job_ps_cache_delay = 30.seconds)
     subclassname = Scir.session_subclass
     subclass     = Class.const_get(subclassname)
     return subclass.new(job_ps_cache_delay)
   end
 
-  def initialize(job_ps_cache_delay = 60.seconds)
+  def initialize(job_ps_cache_delay = 30.seconds)
     @job_ps_cache_delay = job_ps_cache_delay
-    @job_info_cache     = {}   # jid => { :drmaa_state => drmaa_state_const, ... }
-    @cache_last_updated = (2*job_ps_cache_delay).seconds.ago
+    reset_job_info_cache
   end
 
   def run(job)
+    reset_job_info_cache
     command = job.qsub_command
-    IO.popen(command,"r") do |i|
-      return qsubout_to_jid(i)
-    end
-    @cache_last_updated = (2*job_ps_cache_delay).seconds.ago # invalidates @job_info_cache
+    qsubout = ""
+    IO.popen(command,"r") { |fh| qsubout = fh.read }
+    return qsubout_to_jid(qsubout)
   end
 
   def update_job_info_cache
-    true
+    # sets @job_info_cache to a hash: { jid => drmaa_status, ... }
+    raise "This method must be provided in a subclass"
+  end
+
+  def reset_job_info_cache
+    @job_info_cache     = nil
+    @cache_last_updated = (100*@job_ps_cache_delay).seconds.ago
   end
 
   def job_ps(jid)
-    if @cache_last_updated < @job_ps_cache_delay.ago
+    if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago
       update_job_info_cache
       @cache_last_updated = Time.now
     end

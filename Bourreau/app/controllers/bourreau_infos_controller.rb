@@ -63,6 +63,7 @@ class BourreauInfosController < ApplicationController
       end
     end
 
+    BourreauWorker.rescan_workers
     workers = BourreauWorker.all
     workers_pids = workers.map(&:pid).join(",")
 

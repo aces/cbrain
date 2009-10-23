@@ -103,7 +103,9 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       
-      if @task.status !~ /Setting Up|Post Processing/ && @task.destroy
+      if @task.status =~ /Setting Up|Post Processing/
+        format.xml { head :ok }
+      elsif @task.destroy
         BourreauWorker.wake_all
         format.xml { head :ok }
       else

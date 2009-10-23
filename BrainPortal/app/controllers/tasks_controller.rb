@@ -94,8 +94,12 @@ class TasksController < ApplicationController
     # The page has a parameter page, so get the default values....
     begin
       @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
-    rescue  => e
+    rescue CbrainException => e
       flash[:error] = e.to_s
+      redirect_to userfiles_path
+      return
+    rescue => e
+      Message.send_internal_error_message(current_user,"Task args for #{@task_class}",e)
       redirect_to userfiles_path
       return
     end
@@ -127,13 +131,17 @@ class TasksController < ApplicationController
       flash[:notice] += @task_class.launch(params)
       current_user.addlog_context(self,"Launched #{@task_class.to_s}")
       current_user.addlog_revinfo(@task_class)
-    rescue  => e
+    rescue CbrainException => e
       flash[:error] = e.to_s
       if @task_class.has_args?
         redirect_to :action  => :new, :file_ids => params[:file_ids], :task  => params[:task]
       else
         redirect_to userfiles_path
       end
+      return
+    rescue => e
+      Message.send_internal_error_message(current_user,"Task launch for #{@task_class}",e)
+      redirect_to userfiles_path
       return
     end
     
@@ -177,7 +185,7 @@ class TasksController < ApplicationController
         DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
         task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
       rescue
-        flash[:error] += "Task #{task_id} does not exist."
+        flash[:error] += "Task #{task_id} does not exist, or its Execution Server is currently down.\n"
         next
       end
 

@@ -92,9 +92,8 @@ class ScirSgeSession < Scir::Session
 
   private
 
-  def qsubout_to_jid(i)
-    id = i.read
-    if id && id =~ /Your job (\d+)/i
+  def qsubout_to_jid(txt)
+    if txt && txt =~ /Your job (\d+)/i
       return Regexp.last_match[1]
     end
     raise "Cannot find job ID from qsub output"

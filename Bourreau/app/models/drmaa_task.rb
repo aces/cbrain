@@ -13,6 +13,7 @@ require 'scir'
 require 'stringio'
 require 'base64'
 require 'fileutils'
+require 'cbrain_exception'
 
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS jobs using Scir.
@@ -184,7 +185,7 @@ public
           self.addlog("Asynchronous postprocessing completed.")
           self.status = "Completed"
         end
-      rescue => e
+      rescue Exception => e
         self.addlog("Exception raised while post processing results: #{e.class.to_s}: #{e.message}")
         e.backtrace.slice(0,10).each { |m| self.addlog(m) }
         self.status = "Failed To PostProcess"

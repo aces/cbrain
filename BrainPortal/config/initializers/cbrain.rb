@@ -76,23 +76,7 @@ class CBRAIN
             destination = User.find_by_login('admin')
             taskname += " (No Destination Provided!)"
           end
-          messtype = 'error'
-          messtype = 'notice' if itswrong.is_a? CbrainNotice # TODO handle CbrainError too?
-
-          Message.send_message(destination, messtype,
-            # Header
-            "Background Error: '#{taskname}'",                            
-  
-            # Description
-            "An internal error occured in a background task (PID #{$$}).\n" +   
-            "Please let the CBRAIN development team know about it,\n"       +
-            "as this is not supposed to go unchecked.\n"                    +
-            "The last 30 caller entries are in attachement.\n",
-  
-            # Var text
-            "#{itswrong.class.to_s}: #{itswrong.message}\n" +   
-            itswrong.backtrace[0..30].join("\n") + "\n"
-          )
+          Message.send_internal_error_message(destination,"#{taskname} with PID #{$$}",itswrong)
         ensure
           ActiveRecord::Base.remove_connection
           Kernel.exit! # End of subchild.
@@ -137,6 +121,28 @@ class CBRAIN
   end
 
 end
+
+#
+# Kernel extensions
+#
+
+module Kernel
+
+  # Raises a CbrainNotice exception, with a default redirect to
+  # the current controller's index action.
+  def cb_notify(message = "Something may have gone awry.", redirect = { :action  => :index } )
+    raise CbrainNotice.new(message, redirect)
+  end
+  alias cb_notice cb_notify
+
+  # Raises a CbrainError exception, with a default redirect to
+  # the current controller's index action.
+  def cb_error(message = "Some error occured.",  redirect = { :action  => :index } )
+    raise CbrainError.new(message, redirect)
+  end
+
+end
+
 
 #
 # Mongrel and Rails code patches

@@ -338,7 +338,7 @@ class DataProvider < ActiveRecord::Base
         yield(fh)
       end
     end
-    userfile.size = File.size(localpath)
+    userfile.set_size
     sync_to_provider(userfile)
   end
 
@@ -356,11 +356,7 @@ class DataProvider < ActiveRecord::Base
     SyncStatus.ready_to_modify_cache(userfile) do
       FileUtils.cp_r(localpath,dest)
     end
-    userfile.size = if File.directory?(localpath)
-      Dir.entries(localpath).select { |e| e != "." && e != ".." }.size
-    else
-      File.size(localpath)
-    end
+    userfile.set_size
     sync_to_provider(userfile)
   end
 

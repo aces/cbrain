@@ -78,9 +78,8 @@ class ScirLocalSession < Scir::Session
 
   private
 
-  def qsubout_to_jid(i)
-    id = i.readline  # we must read only ONE line
-    if id && id =~ /PID=(\d+)/
+  def qsubout_to_jid(txt)
+    if txt && txt =~ /^PID=(\d+)/
       return Regexp.last_match[1]
     end
     raise "Cannot find job ID from bash subshell output"

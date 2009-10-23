@@ -192,7 +192,7 @@ class BourreauWorker
            self.addlog "Waking up from sleep mode for hourly protocolar DB check."
            sleep_mode = false
          end
-         redo
+         next
        end
 
        # Checks for disappearing PID file
@@ -212,7 +212,7 @@ class BourreauWorker
          self.addlog("No tasks need handling, going to eternal SLEEP state.") if verbose
          sleep_mode = true
          sleep_mode_time_entered = Time.now
-         redo
+         next
        end
        
        # Processes each task in the active list
@@ -246,12 +246,14 @@ class BourreauWorker
       case task.status
         when 'New'
           task.addlog_context(self,"Setting Up")
-          self.addlog "Start   #{task.bname_tid}" if verbose
+          self.addlog "Start   #{task.bname_tid}"                         if verbose
           task.start_all
+          self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
         when 'Data Ready'
-          task.addlog_context(self,"Post Process")
-          self.addlog "PostPro #{task.bname_tid}" if verbose
+          task.addlog_context(self,"Post Processing")
+          self.addlog "PostPro #{task.bname_tid}"                         if verbose
           task.post_process
+          self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
       end
       if task.status == 'Completed'
         Message.send_message(task.user,
