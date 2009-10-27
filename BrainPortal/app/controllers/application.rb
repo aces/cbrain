@@ -59,7 +59,12 @@ class ApplicationController < ActionController::Base
       
       current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC").each do |mess|
         if mess.expiry.blank? || mess.expiry > Time.now
-          @display_messages << mess
+          if mess.critical? || mess.display?
+            @display_messages << mess
+            unless mess.critical?
+              mess.update_attributes(:display  => false)
+            end
+          end
         else  
           mess.update_attributes(:read  => true)
         end

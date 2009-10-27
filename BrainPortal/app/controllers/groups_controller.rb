@@ -55,22 +55,6 @@ class GroupsController < ApplicationController
     end
   end
 
-  #GET /groups/new
-  #GET /groups/new.xml
-  # def new  #:nodoc:
-  #   @group = WorkGroup.new
-  #   if current_user.has_role? :admin
-  #     @users = User.all.reject{|u| u.login == 'admin'}
-  #   else
-  #     @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-  #   end
-  # 
-  #   respond_to do |format|
-  #     format.html # new.html.erb
-  #     format.xml  { render :xml => @group }
-  #   end
-  # end
-
   # GET /groups/1/edit
   def edit  #:nodoc:
     if current_user.has_role? :admin

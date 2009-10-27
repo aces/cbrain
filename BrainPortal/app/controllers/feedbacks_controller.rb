@@ -26,28 +26,6 @@ class FeedbacksController < ApplicationController
     end
   end
 
-  # GET /feedbacks/1
-  # GET /feedbacks/1.xml
-  def show #:nodoc:
-    @feedback = Feedback.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @feedback }
-    end
-  end
-
-  # GET /feedbacks/new
-  # GET /feedbacks/new.xml
-  def new #:nodoc:
-    @feedback = Feedback.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @feedback }
-    end
-  end
-
   # GET /feedbacks/1/edit
   def edit #:nodoc:
     @feedback = Feedback.find(params[:id])
@@ -79,7 +57,7 @@ class FeedbacksController < ApplicationController
     respond_to do |format|
       if @feedback.update_attributes(params[:feedback])
         flash[:notice] = 'Feedback was successfully updated.'
-        format.html { redirect_to(@feedback) }
+        format.html { redirect_to feedbacks_path }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }

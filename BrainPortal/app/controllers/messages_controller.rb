@@ -32,7 +32,6 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create
     @message = Message.new(params[:message])
-    
     @message.send_me_to(Group.find(params[:groups][:group_id]))
 
     respond_to do |format|
@@ -40,7 +39,6 @@ class MessagesController < ApplicationController
       format.xml  { render :xml => @message, :status => :created, :location => @message }
       
       format.js do
-        prepare_messages
         @messages = current_user.messages.all(:order  => "last_sent DESC")
         
         render :update do |page|

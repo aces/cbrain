@@ -13,6 +13,16 @@ class Message < ActiveRecord::Base
 
   belongs_to :user
   
+  #Returns whether or not this is a critical message.
+  def critical?
+    self.critical
+  end
+  
+  #Returns whether or not this message should be displayed.
+  def displayed?
+    self.display
+  end
+  
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, or a Site.
@@ -34,7 +44,7 @@ class Message < ActiveRecord::Base
   #
   # The method returns the list of the messages objects created,
   # updated or simply found (if no update occured).
-  def self.send_message(destination, type, header, description = nil, var_text = nil, expiry = nil)
+  def self.send_message(destination, type, header, description = nil, var_text = nil, expiry = nil, critical = false)
 
     # Find the group associated with the destination
     group = case destination
@@ -72,7 +82,8 @@ class Message < ActiveRecord::Base
                    :message_type => type,
                    :header       => header,
                    :description  => description,
-                   :read         => false
+                   :read         => false,
+                   :critical     => critical 
                }
              ) || 
              Message.new(
@@ -81,7 +92,8 @@ class Message < ActiveRecord::Base
                :header       => header,
                :description  => description,
                :expiry       => expiry,
-               :read         => false
+               :read         => false,
+               :critical     => critical 
              )
       
       # If the message is a pure repeat of an existing message,
@@ -99,6 +111,7 @@ class Message < ActiveRecord::Base
 
       mess.read      = false
       mess.last_sent = Time.now
+      mess.display   = true
       mess.save
 
       messages_sent << mess
@@ -108,7 +121,7 @@ class Message < ActiveRecord::Base
   end
   
   def send_me_to(destination)
-    Message.send_message(destination, self.message_type, self.header, self.description, self.variable_text, self.expiry)
+    Message.send_message(destination, self.message_type, self.header, self.description, self.variable_text, self.expiry, self.critical)
   end
 
   # Given an existing message, send it to other users/group.

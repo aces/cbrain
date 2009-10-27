@@ -6,6 +6,10 @@
       To: <%= collection_select(:groups, :group_id, current_user.available_groups.reject { |g|  g.name == 'everyone' if current_user.has_role? :site_manager}, :id, :name, {}) %>
     </p>
     <p>
+      <%= f.label :critical %>
+      <%= f.check_box :critical %>
+    </p>
+    <p>
       <%= f.label :header %><br />
       <%= f.text_field :header %>
     </p>

@@ -124,7 +124,7 @@ Site.all.each do |s|
      site_group.save!
    end
   
-   unless s.user_ids == site_group.user_ids
+   unless s.user_ids.sort == site_group.user_ids.sort
      puts "C> \t- '#{site_group.name}' group user list does not match site user list. Resetting users."
      site_group.user_ids = s.user_ids
    end
