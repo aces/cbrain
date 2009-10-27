@@ -66,7 +66,7 @@
                           <li <%= set_selected(params[:controller], :data_providers) %>><%= link_to 'Data Providers', data_providers_path %></li>
                           <li <%= set_selected(params[:controller], :bourreaux) %>><%= link_to 'Execution Servers', bourreaux_path %></li>               
                           <li <%= set_selected(params[:controller], :feedbacks) %>><%= link_to 'Feedback', feedbacks_path %></li>
-                          <li <%= set_selected(params[:controller], :messages) %>><%= link_to 'Messages', messages_path %></li>
+                          <li <%= set_selected(params[:controller], :messages) %>><%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %></li>
                           <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
                             <li <%= set_selected(params[:controller], :users) %>><%= link_to 'Users', users_path %></li>
                             <li <%= set_selected(params[:controller], :groups) %>><%= link_to 'Groups', groups_path %></li>
@@ -106,7 +106,7 @@
            </div>   <!-- End id="topfooter" -->
            <div id="bottomfooter">
              <p>
-               <img id="canarie_logo" src="/images/canarie_logo_2007.jpg" />
+               <img id="canarie_logo" src="/images/CANARIE_h.jpg" />
               </p>
              <p>
                <img id="site_logos" src="/images/site_logos.png" />   

@@ -196,5 +196,4 @@ module ApplicationHelper
     
     arr.join
   end
-
 end

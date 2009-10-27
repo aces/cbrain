@@ -57,7 +57,10 @@ class ApplicationController < ActionController::Base
       return unless current_user
       @display_messages = []
       
-      current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC").each do |mess|
+      unread_messages = current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC")
+      @unread_message_count = unread_messages.size
+      
+      unread_messages.each do |mess|
         if mess.expiry.blank? || mess.expiry > Time.now
           if mess.critical? || mess.display?
             @display_messages << mess

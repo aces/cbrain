@@ -20,8 +20,7 @@ class MessagesController < ApplicationController
   # GET /messages.xml
   def index
     @messages = current_user.messages.all(:order  => "last_sent DESC")
-    @display_messages = [] #So the upper table doesn't display on the message index page.
-
+    
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @messages }
@@ -33,6 +32,7 @@ class MessagesController < ApplicationController
   def create
     @message = Message.new(params[:message])
     @message.send_me_to(Group.find(params[:groups][:group_id]))
+    prepare_messages
 
     respond_to do |format|
       flash.now[:notice] = 'Message was successfully sent.'
@@ -68,11 +68,12 @@ class MessagesController < ApplicationController
         @messages = current_user.messages.all(:order  => "last_sent DESC")
         
         render :update do |page|
+          page[:message_menu_tab].title = pluralize(@unread_message_count, "unread message")
           page.replace_html :message_display, :partial  => 'layouts/message_display'
-            page << "if($('message_table')){"
-            page.replace_html :message_table,   :partial  => 'message_table'
-            page << "}"        
-          end
+          page << "if($('message_table')){"
+          page.replace_html :message_table,   :partial  => 'message_table'
+          page << "}"        
+        end
       end
     end
   end
@@ -90,6 +91,7 @@ class MessagesController < ApplicationController
     respond_to do |format|
       format.js do
         render :update do |page|
+          page[:message_menu_tab].title = pluralize(@unread_message_count, "unread message")
           page.replace_html :message_display, :partial  => 'layouts/message_display'
           page << "if($('message_table')){"
           page.replace_html :message_table,   :partial  => 'message_table'

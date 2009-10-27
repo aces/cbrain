@@ -13,16 +13,6 @@ class Message < ActiveRecord::Base
 
   belongs_to :user
   
-  #Returns whether or not this is a critical message.
-  def critical?
-    self.critical
-  end
-  
-  #Returns whether or not this message should be displayed.
-  def displayed?
-    self.display
-  end
-  
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, or a Site.
