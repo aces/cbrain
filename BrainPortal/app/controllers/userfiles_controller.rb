@@ -104,32 +104,6 @@ class UserfilesController < ApplicationController
     userfile.sync_to_cache
     send_file userfile.cache_full_path
   end
-
-  #The new action displays a view for uploading files.
-  # def new
-  #     @userfile = Userfile.new(
-  #         :group_id => SystemGroup.find_by_name(current_user.login).id
-  #     )
-  #     if current_user.has_role? :admin
-  #       @user_groups = Group.find(:all, :order => "type")
-  #     elsif current_user.has_role? :site_manager
-  #       @user_groups = Group.find(:all, 
-  #                                 :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
-  #                                   current_user.site_id, current_user.group_ids],
-  #                                 :order  => "type")
-  #     else
-  #       @user_groups = current_user.groups.find(:all, :order => "type")
-  #     end
-  #     
-  #     @user_tags = current_user.tags.find(:all)
-  #     @data_providers = available_data_providers(current_user)
-  # 
-  #     #upload_stream = params[:upload_file]   # an object encoding the file data stream
-  #     respond_to do |format|
-  #       format.js   { render :action  => 'new', :layout  => false }
-  #       format.xml  { render :xml => @userfile }
-  #     end
-  #   end
   
   # GET /userfiles/1/edit
   def edit  #:nodoc:
@@ -251,7 +225,11 @@ class UserfilesController < ApplicationController
         userfile.save
         userfile.addlog_context(self,"Uploaded by #{current_user.login}")
         current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
-        Message.send_message(current_user,'notice', "SingleFile Uploaded", "", "#{userfile.name} [[View][/userfiles/#{userfile.id}/edit]]")
+        Message.send_message(current_user,
+                             :message_type  => 'notice', 
+                             :header  => "SingleFile Uploaded", 
+                             :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}/edit]]"
+                             )
       end 
       
       redirect_to :action => :index
@@ -293,7 +271,11 @@ class UserfilesController < ApplicationController
           begin
             File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
             collection.extract_collection_from_archive_file(tmpcontentfile)
-            Message.send_message(current_user,'notice', "Collection Uploaded", "", collection.name)
+            Message.send_message(current_user,
+                                  :message_type  => 'notice', 
+                                  :header  => "Collection Uploaded", 
+                                  :variable_text  => collection.name
+                                  )
           ensure
             File.delete(tmpcontentfile) rescue true
           end
@@ -517,7 +499,11 @@ class UserfilesController < ApplicationController
 
         CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
           collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
-          Message.send_message(current_user,'notice', "Collections Merged", "", collection.name)
+          Message.send_message(current_user,
+                              :message_type  => 'notice', 
+                              :header  => "Collections Merged", 
+                              :variable_text  => collection.name
+                              )
         end
 
         flash[:notice] = "Collection #{collection.name} is being created in background."
@@ -568,10 +554,21 @@ class UserfilesController < ApplicationController
               failed_list << u.name
             end
           end
-          Message.send_message(current_user,'notice', "Files moved to #{new_provider.name}", "",
-                               "List:\n" + moved_list.join("\n")) if moved_list.size > 0
-          Message.send_message(current_user,'error', "Some files could not be moved to #{new_provider.name}", "",
-                               "List:\n" + failed_list.join("\n")) if failed_list.size > 0
+          if moved_list.size > 0
+            Message.send_message(current_user,
+                                :message_type  => 'notice', 
+                                :header  => "Files moved to #{new_provider.name}",
+                                :variable_text  => "List:\n" + moved_list.join("\n")
+                                ) 
+          end
+          
+          if failed_list.size > 0
+            Message.send_message(current_user,
+                                :message_type  => 'error', 
+                                :header  => "Some files could not be moved to #{new_provider.name}",
+                                :variable_text  => "List:\n" + failed_list.join("\n")
+                                )
+          end
         end
 
         flash[:notice] += "Your files are being moved in the background.\n"
@@ -723,17 +720,17 @@ class UserfilesController < ApplicationController
              "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
     if status == :success && failed_files.size == 0 && nested_files.size == 0
       Message.send_message(current_user.own_group,
-        'notice',
-        "File extraction completed",
-        "Your files have been extracted from archive '#{archive_file_name}'",
-        report
+        :message_type  => 'notice',
+        :header  => "File extraction completed",
+        :description  => "Your files have been extracted from archive '#{archive_file_name}'",
+        :variable_text  => report
       )
     else
       Message.send_message(current_user.own_group,
-        'error',
-        "File extraction failed",
-        "Some errors occured while extracting files from archive '#{archive_file_name}'",
-        report
+        :message_type  => 'error',
+        :header  => "File extraction failed",
+        :description  => "Some errors occured while extracting files from archive '#{archive_file_name}'",
+        :variable_text  => report
       )
     end
                          

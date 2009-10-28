@@ -140,7 +140,7 @@ class TasksController < ApplicationController
       end
       return
     rescue => e
-      Message.send_internal_error_message(current_user,"Task launch for #{@task_class}",e)
+      Message.send_internal_error_message(current_user,"Task launch for #{@task_class}", e)
       redirect_to userfiles_path
       return
     end

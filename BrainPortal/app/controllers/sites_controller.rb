@@ -37,17 +37,6 @@ class SitesController < ApplicationController
       format.xml  { render :xml => @site }
     end
   end
-
-  # GET /sites/new
-  # GET /sites/new.xml
-  # def new
-  #    @site = Site.new
-  # 
-  #    respond_to do |format|
-  #      format.html # new.html.erb
-  #      format.xml  { render :xml => @site }
-  #    end
-  #  end
  
   # GET /sites/1/edit
   def edit

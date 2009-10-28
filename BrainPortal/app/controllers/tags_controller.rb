@@ -39,17 +39,6 @@ class TagsController < ApplicationController
     end
   end
 
-  # GET /tags/new
-  # GET /tags/new.xml
-  # def new #:nodoc:
-  #   @tag = Tag.new
-  # 
-  #   respond_to do |format|
-  #     format.html # new.html.erb
-  #     format.xml  { render :xml => @tag }
-  #   end
-  # end
-
   # GET /tags/1/edit
   def edit #:nodoc:
     @tag = current_user.tags.find(params[:id])

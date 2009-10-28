@@ -34,7 +34,13 @@ class Message < ActiveRecord::Base
   #
   # The method returns the list of the messages objects created,
   # updated or simply found (if no update occured).
-  def self.send_message(destination, type, header, description = nil, var_text = nil, expiry = nil, critical = false)
+  def self.send_message(destination, params = {})
+    type         = params[:message_type] || params["message_type"]
+    header       = params[:header] || params["header"]
+    description  = params[:description] || params["description"]
+    var_text     = params[:variable_text] || params["variable_text"]
+    expiry       = params[:expiry] || params["expiry"]
+    critical     = params[:critical] || params["critical"] || false
 
     # Find the group associated with the destination
     group = case destination
@@ -111,7 +117,7 @@ class Message < ActiveRecord::Base
   end
   
   def send_me_to(destination)
-    Message.send_message(destination, self.message_type, self.header, self.description, self.variable_text, self.expiry, self.critical)
+    Message.send_message(destination, self.attributes)
   end
 
   # Given an existing message, send it to other users/group.
@@ -122,7 +128,10 @@ class Message < ActiveRecord::Base
     # Try to send message to everyone; by setting the var_text to nil,
     # we won't change messages already sent, but we will create
     # new message for new users with a variable_text that is blank.
-    found        = self.class.send_message(destination,self.message_type,self.header,self.description,nil)
+    found        = self.class.send_message(destination, 
+                                    :message_type => self.message_type,
+                                    :header       => self.header,
+                                    :description  => self.description)
 
     # Now, if the current message DID have a var_text, we need to copy it to
     # the new messages just sent; these will be detected by
@@ -142,19 +151,17 @@ class Message < ActiveRecord::Base
   # Sends an internal error message where the main context
   # is an exception object.
   def self.send_internal_error_message(destination,header,exception)
-    Message.send_message(destination, :error,
-      # Header
-      "Internal error: #{header}",
+    Message.send_message(destination,
+      :message_type  => :error,
+      :header  => "Internal error: #{header}",
 
-      # Description
-      "An internal error occured inside the CBRAIN code.\n"     +
-      "Please let the CBRAIN development team know about it,\n" +
-      "as this is not supposed to go unchecked.\n"              +
-      "The last 30 caller entries are in attachement.\n",
+      :description  => "An internal error occured inside the CBRAIN code.\n"     +
+                       "Please let the CBRAIN development team know about it,\n" +
+                       "as this is not supposed to go unchecked.\n"              +
+                       "The last 30 caller entries are in attachement.\n",
 
-      # Var text
-      "#{exception.class.to_s}: #{exception.message}\n" +
-      exception.backtrace[0..30].join("\n") + "\n"
+      :variable_text  => "#{exception.class.to_s}: #{exception.message}\n" +
+                          exception.backtrace[0..30].join("\n") + "\n"
     )
   end
 

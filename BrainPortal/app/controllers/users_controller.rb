@@ -58,16 +58,6 @@ class UsersController < ApplicationController
       format.xml  { render :xml => @userfile }
     end
   end
-
-  # render new.rhtml
-  # def new #:nodoc:
-  #   @user = User.new(:site_id => current_user.site_id)
-  #   if current_user.has_role? :admin
-  #     @groups = WorkGroup.find(:all)
-  #   elsif current_user.has_role? :site_manager
-  #     @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-  #   end
-  # end
   
   def edit #:nodoc:
     @user = User.find(params[:id], :include => :groups)
@@ -150,21 +140,12 @@ class UsersController < ApplicationController
     
     @destroyed = false
         
-#    begin      
-      @user.destroy
-      @destroyed = true
-      respond_to do |format|
-        format.js
-        format.xml  { head :ok }
-      end
-#    rescue => e
-      # @destroyed = false
-      # flash[:error] = e.message
-      # respond_to do |format|
-      #   format.js
-      #   format.xml  { render :xml => @user, :status => :unprocessable_entity }
-      # end
-#    end
+    @user.destroy
+    @destroyed = true
+    respond_to do |format|
+      format.js
+      format.xml  { head :ok }
+    end
   end
 
   def switch
