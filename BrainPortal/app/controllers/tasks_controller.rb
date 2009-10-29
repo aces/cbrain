@@ -46,13 +46,23 @@ class TasksController < ApplicationController
       
       case sort_order
       when 'type'
-        task1.class.to_s <=> task2.class.to_s
+        att1 = task1.class.to_s
+        att2 = task2.class.to_s
       when 'owner'
-        task1.user.login <=> task2.user.login
+        att1 = task1.user.login
+        att2 = task2.user.login
       when 'bourreau'
-        task1.bourreau.name <=> task2.bourreau.name
+        att1 = task1.bourreau.name
+        att2 = task2.bourreau.name
       else
-        task1.send(sort_order) <=> task2.send(sort_order)
+        att1 = task1.send(sort_order)
+        att2 = task2.send(sort_order)
+      end
+      
+      if att1.blank? || att2.blank?
+        1
+      else
+        att1 <=> att2
       end
     end
         

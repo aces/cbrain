@@ -262,7 +262,8 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    old_options = new_options = options
+    old_options = options.dup
+    new_options = options.dup
 
     unless user.has_role?(:admin)
       conditions = options[:conditions] || []
@@ -426,16 +427,5 @@ class Userfile < ActiveRecord::Base
   def cache_copy_to_local_file(filename)
     self.data_provider.cache_copy_to_local_file(self,filename)
   end
-
-  private
-
-  ##################################
-  # Active Record Callbacks
-  ##################################
-
-  # This will work will all subclasses.
-  # def before_destroy #:nodoc:
-  #     self.provider_erase
-  #   end
 
 end

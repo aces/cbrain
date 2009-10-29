@@ -36,36 +36,54 @@ class Site < ActiveRecord::Base
     self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end
   
+  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_all(options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
     @userfiles ||= Userfile.find(:all, options)
   end
   
+  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def remote_resources_find_all(options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
     @remote_resources ||= RemoteResource.find(:all, options)
   end
   
+  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def data_providers_find_all(options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
     @data_provider ||= DataProvider.find(:all, options)
   end
   
+  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_id(id, options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
     @userfiles ||= Userfile.find(id, options)
   end
   
+  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def remote_resources_find_id(id, options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
     @remote_resources ||= RemoteResource.find(id, options)
   end
   
+  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #
+  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def data_providers_find_id(id, options = {})
     raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])

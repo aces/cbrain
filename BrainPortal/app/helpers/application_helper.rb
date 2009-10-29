@@ -177,6 +177,7 @@ module ApplicationHelper
   
   #Reduces a string to the length specified by +length+.
   def crop_text_to(length, string)
+    return "" if string.blank?
     if string.length <= length
       string
     else

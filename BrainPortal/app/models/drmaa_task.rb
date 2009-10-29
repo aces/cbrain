@@ -165,6 +165,9 @@ class DrmaaTask < ActiveResource::Base
     else
       available_group_ids = User.find(self.user_id).group_ids
       bourreau_list = Bourreau.find(:all, :conditions => { :group_id => available_group_ids, :online => true }).select(&:is_alive?)
+      if bourreau_list.empty?
+        cb_error("Unable to find an execution server. Please notify your administrator of the problem.")
+      end
       bourreau_list.slice(rand(bourreau_list.size)).id  # a random one
     end
   end

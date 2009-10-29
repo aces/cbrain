@@ -508,14 +508,6 @@ class UserfilesController < ApplicationController
 
         flash[:notice] = "Collection #{collection.name} is being created in background."
 
-        #if status == :success
-        #  flash[:notice] = "Collection #{collection.name} was created."
-        #elsif status == :collision
-        #  flash[:error] = "There was a collision in file names. Collection merge aborted."
-        #else
-        #  flash[:error] = "Collection merge fails (internal error?)."
-        #end
-
       when "move_to_other_provider"
 
         unless params[:operation] =~ /^moveto_(\d+)$/

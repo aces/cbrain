@@ -132,18 +132,6 @@ class FileCollection < Userfile
       :failure
     end
   end
-
-  #find longest common root of a list of file paths.
-  # def get_common_base(files)
-  #     return nil if files.empty?
-  #     base = ""
-  #     source = dirs[0].split('/')
-  #     source.each_with_index do |dir, i|
-  #       break unless dirs.all? {|d| d =~ /^#{base + dir + '/'}/}
-  #       base += dir + '/'
-  #     end
-  #     base
-  #   end
   
   #Returns an array of the relative paths to all files contained in this collection.
   def list_files    

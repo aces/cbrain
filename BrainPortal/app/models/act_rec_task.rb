@@ -24,13 +24,4 @@ class ActRecTask < ActiveRecord::Base
 
   serialize :params
 
-  private
-
-  #def self.instantiate(record) #:nodoc:
-  #  if record.has_key?("type")
-  #    subtype = record.delete("type")
-  #  end
-  #  super(record)
-  #end
-
 end

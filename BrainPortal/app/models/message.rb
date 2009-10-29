@@ -116,6 +116,9 @@ class Message < ActiveRecord::Base
     messages_sent
   end
   
+  #Instance method version of send_message.
+  #Allows one to create an object and set its attributes,
+  #then send it to +destination+.
   def send_me_to(destination)
     Message.send_message(destination, self.attributes)
   end
