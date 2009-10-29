@@ -40,20 +40,20 @@ class GroupsController < ApplicationController
     end
   end
 
-  # GET /groups/1
-  # GET /groups/1.xml
-  def show  #:nodoc:
-    if current_user.has_role? :admin
-      @group = Group.find(params[:id], :include => [:users])
-    else
-      @group = current_user.site.groups.find(params[:id], :include => [:users])
-    end
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @group }
-    end
-  end
+  # # GET /groups/1
+  #  # GET /groups/1.xml
+  #  def show  #:nodoc:
+  #    if current_user.has_role? :admin
+  #      @group = Group.find(params[:id], :include => [:users])
+  #    else
+  #      @group = current_user.site.groups.find(params[:id], :include => [:users])
+  #    end
+  # 
+  #    respond_to do |format|
+  #      format.html # show.html.erb
+  #      format.xml  { render :xml => @group }
+  #    end
+  #  end
 
   # GET /groups/1/edit
   def edit  #:nodoc:

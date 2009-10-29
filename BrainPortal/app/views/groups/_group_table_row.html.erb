@@ -1,5 +1,5 @@
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="group_<%= group.id %>">
-  <td><%= link_to h(group.name), group_path(group) %></td>
+  <td><%= work_group_link group, h(group.name), edit_group_path(group) %></td>
   <td><%= group.class.name %></td>
   <td><%= group.users.map{|u| h(u.login)}.join("<br>") %></td>
   <td><%= group.site.name rescue "(Unassigned)" %></td>
