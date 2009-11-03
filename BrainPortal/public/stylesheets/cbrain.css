@@ -1340,10 +1340,69 @@ td.middle{
     text-align: center;
 }
 
-.message_unread{
-   background-color: yellow;
-   font-weight: bold;
+/*
+    #Task summary page 
+*/
+
+.task_summary{
+    clear: both;
+    margin-left:auto;
+    margin-right:auto;
+    text-align: center;
+    padding: 1em;
+    margin-top: 1em;
+    width: 50%;
 }
 
+#completed_task_summary{
+    background-color: #ddffdd;
+}
 
+#completed_task_summary th{
+    background-color: green;
+    border: none;
+}
+
+#running_task_summary{
+    background-color: #ddeeff;
+}
+
+#completed_task_summary th{
+    background-color: blue;
+    border: none;
+}
+
+#failed_task_summary{
+    background-color: #ffeeee;
+}
+
+#failed_task_summary th{
+    background-color: red;
+    border: none;
+}
+
+.task_summary_count{
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.task_summary_count a{
+    font-size: 0.5em;
+    font-weight: normal;
+    color: blue;
+}
+
+.task_summary_table{
+    margin-left:auto;
+    margin-right:auto;
+    border: 0px;
+}
+
+.task_summary_table td{
+    padding: 0.4em 1em 0.5em 1em;
+    
+    font-weight: bold;
+    border: 0px;    
+    text-align: left;
+}
 

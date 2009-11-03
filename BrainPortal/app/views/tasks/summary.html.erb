@@ -1,0 +1,66 @@
+<script type="text/javascript">
+window.onload=function(){
+Nifty("div.task_summary","big");
+}
+</script>
+
+<div class="generalcontent">
+  <br><br>
+  <div id="completed_task_summary" class="task_summary">
+    <div class="task_summary_count">
+      Completed tasks: <%= @tasks_by_status[:completed].size %>
+      <br><br>
+      <%= link_to "Go to Index Page", :action  => :index %>
+    </div>
+      <% unless @tasks_by_status[:completed].blank? %>
+        <table class="task_summary_table">
+          <tr><th colspan="2">Recent Activity</th></tr>
+          <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+            <tr>
+              <td><%= h(task.type) %></td>
+              <td><%= task.updatde_at %></td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
+  </div>
+  <br>
+  <div id="running_task_summary" class="task_summary">
+    <div class="task_summary_count">
+      Running tasks: <%= @tasks_by_status[:running].size %>
+      <br><br>
+      <%= link_to "Go to Index Page", :action  => :index %>
+    </div>
+    <% unless @tasks_by_status[:running].blank? %>
+      <table class="task_summary_table">
+        <tr><th colspan="2">Recent Activity</th></tr>
+        <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+          <tr>
+            <td><%= h(task.type) %></td>
+            <td><%= task.updated_at %></td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+  <br>
+  <div id="failed_task_summary" class="task_summary">
+    <div class="task_summary_count">
+      Failed tasks: <%= @tasks_by_status[:failed].size %>
+      <br><br>
+      <%= link_to "Go to Index Page", :action  => :index %>
+    </div>
+    <% unless @tasks_by_status[:failed].blank? %>
+      <table class="task_summary_table">
+        <tr><th colspan="2">Recent Activity</th></tr>
+        <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+          <tr>
+            <td><%= link_to h(task.class.to_s.sub("Drmaa", "")), :controller => :tasks, :action => :show, :id => task.id %></td>
+            <td><%= task.updated_at %></td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+  
+</div>

@@ -71,6 +71,32 @@ class TasksController < ApplicationController
       format.js
     end
   end
+  
+  def summary
+    bourreau_ids = available_bourreaux(current_user).collect(&:id)
+    @tasks = ActRecTask.find(:all, :conditions => {
+                                       :user_id     => current_user.id,
+                                       :bourreau_id => bourreau_ids
+                                     } )
+    @tasks_by_status = @tasks.group_by do |task|
+      case task.status
+      when /(On CPU|Queued|New)/
+        :running
+      when /^Failed (T|t)o/
+        :failed
+      when "(Completed|Data Ready)"
+        :completed
+      else
+        :other
+      end
+    end
+    
+    @tasks_by_status = @tasks_by_status.to_hash
+    
+    @tasks_by_status[:completed] ||= []
+    @tasks_by_status[:running] ||= []
+    @tasks_by_status[:failed] ||= []
+  end
 
   # GET /tasks/1
   # GET /tasks/1.xml
