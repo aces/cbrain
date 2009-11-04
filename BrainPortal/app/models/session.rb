@@ -42,6 +42,9 @@ class Session
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)
+    controller = params[:controller]
+    @session[controller.to_sym] ||= {}
+    
     filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     if params[:search_type] == 'unfilter'
       @session[:basic_filters] = []
@@ -67,6 +70,16 @@ class Session
     if params[:pagination]
       @session[:pagination] = params[:pagination]
     end
+    
+    if params[controller]
+      if params[controller]["filter_off"]
+        @session[controller.to_sym] = {}
+      elsif params[controller]["remove_filter"]
+        @session[controller.to_sym].delete(params[controller]["remove_filter"])
+      else
+        @session[controller.to_sym].merge!(params[controller] || {})
+      end
+    end
   end
   
   #Is pagination of the Userfile index currently active?
@@ -77,6 +90,10 @@ class Session
   #Is the current *admin* user viewing all files on the system (or only his/her own)?
   def view_all?
     @session[:view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
+  end
+  
+  def params_for(controller)
+    @session[controller.to_sym] || {}
   end
   
   #The method_missing method has been redefined to allow for simplified access to session parameters.

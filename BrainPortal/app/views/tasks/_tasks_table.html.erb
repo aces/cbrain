@@ -1,4 +1,28 @@
          <tr>
+            <td colspan="8">
+              <div id="filter_div">
+                 Active Filters 
+                 <small>
+                    <%= link_to_remote 'clear', {:url  => {:action  => :index, :tasks => {:filter_off  => true}}, :method  => 'get'}, {:class  => 'action_link'} %>
+                 </small>
+                 <div id="current_filters">
+                   <ul>
+      
+                       <% @filter_params.each do |key, value| %>
+                           <li>
+                             <% if key == "bourreau_filter" %>
+                               <%= crop_text_to(20, Bourreau.find(value).name) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+                             <% else %>
+                               <%= crop_text_to(20, value.sub(/^Drmaa/, "")) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+                             <% end %>
+                           </li>
+                       <% end %>
+                   </ul>
+                 </div>
+               </div>
+            </td>
+         </tr>
+         <tr>
              <th> 
                  <%= link_to_function '&radic;' do |page|
                      page.select(".checkbox").each do |check_box|

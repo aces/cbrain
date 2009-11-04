@@ -16,15 +16,25 @@ class TasksController < ApplicationController
 
   before_filter :login_required
    
-  def index #:nodoc:
-    @bourreaux = available_bourreaux(current_user)
-    bourreau_ids = @bourreaux.map { |b| b.id }
+  def index #:nodoc:   
+    @bourreaux = available_bourreaux(current_user)    
+    conditions = { :user_id => current_user.id }
+    
+    if @filter_params["bourreau_filter"]
+      conditions[:bourreau_id] = @filter_params["bourreau_filter"]
+    else
+      conditions[:bourreau_id] = @bourreaux.map { |b| b.id }
+    end
 
-    @tasks = ActRecTask.find(:all, :conditions => {
-                                     :user_id     => current_user.id,
-                                     :bourreau_id => bourreau_ids
-                                   } )
+    unless @filter_params["type_filter"].blank?
+      conditions[:type] = @filter_params["type_filter"]
+    end
+
+    @tasks = ActRecTask.find(:all, :conditions => conditions)
+    @task_types = []
+    
     @tasks.each do |t|  # ugly kludge
+      @task_types |= [t.type.to_s]
       t.updated_at = Time.parse(t.updated_at)
       t.created_at = Time.parse(t.created_at)
     end
@@ -59,8 +69,10 @@ class TasksController < ApplicationController
         att2 = task2.send(sort_order)
       end
       
-      if att1.blank? || att2.blank?
+      if att1.blank?
         1
+      elsif att2.blank?
+        -1
       else
         att1 <=> att2
       end

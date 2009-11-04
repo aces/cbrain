@@ -14,7 +14,7 @@ body {
     color:#484848; 
     margin: 0; 
     padding: 0;
-    min-width: 95em;
+    min-width: 120em;
     max-height:100%;
     line-height: 18px;
 }
@@ -226,6 +226,7 @@ pre {
 
 #sidebar_wrapper{
      float:left;
+     max-width: 9%;
 }
 
 #sidebar ul li {
@@ -1174,12 +1175,21 @@ td.right_align {
     text-align: center;
 }
 
+#bottomfooter a{
+    color: white;
+    text-decoration: none;
+}
+
 #site_logos {
-    height: 8em;
+    float: right;
+    margin-right: 2em;
+    height: 9em;
 }
 
 #canarie_logo {
-    height:5em;
+    float: left;
+    margin-left: 2em;
+    height:7em;
 }
 
 /* ######################################################### */

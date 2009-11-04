@@ -13,41 +13,78 @@
 
 <% title 'Tasks' %>
 
-<%= javascript_include_tag "tableH" %>
+<div id="sidebar_wrapper" style="display:none;">
+  <div id="sidebar">
+    <br><br>
+   <h3>
+      Filter Type
+   </h3>
+   <ul>
+     <% @task_types.sort.each do |task_type| %>
+        <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^Drmaa/, ""))), :url  => {:action  => :index, :tasks => {:type_filter  => task_type}}, :method  => 'get' %> </li> 
+     <% end %>
+   </ul>
+   
+   <h3>
+       Filter Server
+    </h3>
+    <ul>
+      <% @bourreaux.each do |bourreau| %>
+         <li><%= link_to_remote h(crop_text_to(20, bourreau.name)), :url  => {:action  => :index, :tasks => {:bourreau_filter  => bourreau.id}}, :method  => 'get' %> </li> 
+      <% end %>
+    </ul>
+  </div>
+</div>   <!-- End id="sidebar" -->
 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
    <div class = "generalcontent">
-           
-      <div class = "resource_list_upper_form">
-        <br>        
-               <%= select_tag(
-                  "operation",
-                  '
-                  <option value="">Operations on selected tasks:</option>
+      <div id="main_task_content" style="width: 90%">
+          <div class = "resource_list_upper_form">
+          <br>        
+                 <%= select_tag(
+                    "operation",
+                    '
+                    <option value="">Operations on selected tasks:</option>
                   
-                  <optgroup label="Operations for queued tasks">
-                  <option value="hold">Hold queued tasks</option>
-                  <option value="release">Release held tasks</option>
+                    <optgroup label="Operations for queued tasks">
+                    <option value="hold">Hold queued tasks</option>
+                    <option value="release">Release held tasks</option>
                   
-                  <optgroup label="Operations for running tasks">
-                  <option value="suspend">Suspend running tasks</option>
-                  <option value="resume">Resume suspended tasks</option>
+                    <optgroup label="Operations for running tasks">
+                    <option value="suspend">Suspend running tasks</option>
+                    <option value="resume">Resume suspended tasks</option>
                   
-                  <optgroup label="Operations for all tasks">
-                  <option value="terminate">Terminate selected tasks</option>
-                  <option value="delete">Remove selected tasks</option>
-                  '
-                  ) %>
+                    <optgroup label="Operations for all tasks">
+                    <option value="terminate">Terminate selected tasks</option>
+                    <option value="delete">Remove selected tasks</option>
+                    '
+                    ) %>
             
-                  <%= submit_tag("Apply Operation") %>
-            <br><br>
-      </div>  <!-- End class="resource_list_box" -->
+                    <%= submit_tag("Apply Operation") %>
+              <br><br>
+        </div>  <!-- End class="resource_list_box" -->
+      <br>
+        <%= link_to_function "<< Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
+              page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
+              page['main_task_content'].visual_effect(:morph, :style  => "width:87%", :duration  => 0.5)
+              page['filter_option_show'].hide
+              page['filter_option_hide'].show
+            end
+        %>
+
+        <%= link_to_function ">> Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+              page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
+              page['main_task_content'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
+              page['filter_option_hide'].hide
+              page['filter_option_show'].show
+            end
+        %>
       
-      
-      <table class = "resource_list" id="tasks_table">
-        <%= render :partial => 'tasks_table' %>
-      </table>
+        <table class = "resource_list" id="tasks_table">
+          <%= render :partial => 'tasks_table' %>
+        </table>
+      </div>
    </div>  <!-- End class="generalcontent" -->
 <% end %>  <!-- End form -->
 

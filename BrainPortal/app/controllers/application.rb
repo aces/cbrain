@@ -23,6 +23,7 @@ class ApplicationController < ActionController::Base
 
   before_filter :set_cache_killer
   before_filter :prepare_messages
+  before_filter :set_session, :only  => :index
   around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
@@ -30,6 +31,11 @@ class ApplicationController < ActionController::Base
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
   
   private
+  
+  def set_session
+    current_session.update(params)
+    @filter_params = current_session.params_for(params[:controller])
+  end
   
   #Catch and display cbrain messages
   def catch_cbrain_message

@@ -19,8 +19,6 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:        
-    current_session.update(params)
-
     custom_filters = current_session.custom_filters
     custom_filter_tags = []
     custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
