@@ -245,12 +245,12 @@ class SshTunnel
 
 
     # Start the SSH master in a sub-subprocess
+    socket = self.control_path
+    File.unlink(socket) rescue true
     pid = Process.fork do
       (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
       subpid = Process.fork do
         self.write_pidfile($$,:force)  # Overwrite
-        socket = self.control_path
-        File.unlink(socket) rescue true
         Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
         Kernel.exit!  # should never reach here
       end
@@ -260,14 +260,14 @@ class SshTunnel
 
     # Wait for it to be fully established (up to 10 seconds).
     Process.waitpid(pid) # not to PID we want in @pid!
-    socket = self.control_path
+    pidfile = self.pidfile_path
     10.times do
-      break if File.exist?(socket)
+      break if File.exist?(socket) && File.exist?(pidfile)
       sleep 1
     end
     self.read_pidfile
 
-    true
+    return @pid.blank? ? false : true
   end
 
   # Stop the master SSH connection, disabling all tunnels if
