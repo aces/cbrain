@@ -10,6 +10,8 @@
 # $Id$
 #
 
+require 'fcntl'
+
 # = SSH Tunnel Utility Class 
 #
 # This class provides the functionality necessary to create,
@@ -240,11 +242,12 @@ class SshTunnel
 
     unless self.write_pidfile("0",:check) # 0 means in the process of starting up subprocess
       self.read_pidfile
-      return true  # so it's already running, eh.
+      return true if @pid # so it's already running, eh.
     end
 
 
     # Start the SSH master in a sub-subprocess
+    @pid = nil # will inherit value of 'subpid' below
     socket = self.control_path
     File.unlink(socket) rescue true
     pid = Process.fork do
@@ -259,7 +262,7 @@ class SshTunnel
     end
 
     # Wait for it to be fully established (up to 10 seconds).
-    Process.waitpid(pid) # not to PID we want in @pid!
+    Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
     10.times do
       break if File.exist?(socket) && File.exist?(pidfile)
@@ -355,13 +358,15 @@ class SshTunnel
   end
 
   def write_pidfile(pid,action) #:nodoc:
+    pidfile = self.pidfile_path
     if action == :force
-      File.open(self.pidfile_path,"w") { |fh| fh.write(pid.to_s) }
+      File.open(pidfile,"w") { |fh| fh.write(pid.to_s) }
       return true
     end
     # Action is :check, it means we must fail if the file exists
+    return false if File.exist?(pidfile)
     begin
-      fd = IO::sysopen(self.pidfile_path, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fd = IO::sysopen(pidfile, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       f = IO.open(fd)
       f.syswrite(pid.to_s)
       f.close
@@ -377,16 +382,17 @@ class SshTunnel
   # before returning it. Otherwise, makes sure
   # @pid is reset to nil.
   def read_pidfile #:nodoc:
-    socket = self.control_path
-    unless File.exist?(socket)
-      File.unlink(self.pidfile_path) rescue true
+    socket  = self.control_path
+    pidfile = self.pidfile_path
+    unless File.exist?(socket) && File.exist?(pidfile)
+      self.delete_pidfile
       @pid = nil
       return nil
     end
     return @pid if @pid
     begin
       line = nil
-      File.open(self.pidfile_path,"r") { |fh| line = fh.read }
+      File.open(pidfile,"r") { |fh| line = fh.read }
       return nil unless line && line.match(/^\d+/)
       @pid = line.to_i
       @pid = nil if @pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
