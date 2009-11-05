@@ -36,14 +36,14 @@ class UserfilesController < ApplicationController
       conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
     end
     
-    params[:sort_order] ||= 'userfiles.lft'
-    sort_order = params[:sort_order]
-    sort_dir   = params[:sort_dir]
-
+    # params[:sort_order] ||= 'userfiles.lft'
+    #  sort_order = params[:sort_order]
+    #  sort_dir   = params[:sort_dir]
+    
     @userfiles = Userfile.find(:all,
       :include  => [:tags, {:user => :site}, :data_provider, :group, :sync_status],
       :conditions => conditions,
-      :order => "#{sort_order} #{sort_dir}"
+      :order => "#{current_session.sort_order} #{current_session.sort_dir}"
     )
 
     @userfile_count     = @userfiles.size

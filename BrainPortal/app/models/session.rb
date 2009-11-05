@@ -30,22 +30,24 @@ class Session
 
   Revision_info="$Id$"
 
-  def initialize(session) #:nodoc:
+  def initialize(session, params) #:nodoc:
     @session = session
     @session[:basic_filters] ||= []
     @session[:tag_filters] ||= []
     @session[:custom_filters] ||= []
     @session[:pagination] ||= 'on'
-    #@session[:order] ||= 'userfiles.lft'
+    @session[:sort_order] ||= 'userfiles.lft'
+    
+    controller = params[:controller]
+    @session[controller.to_sym] ||= {}
+    @session[controller.to_sym]["filters"] ||= {}
+    @session[controller.to_sym]["sort"] ||= {}
   end
   
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)
     controller = params[:controller]
-    @session[controller.to_sym] ||= {}
-    @session[controller.to_sym]["filters"] ||= {}
-    @session[controller.to_sym]["sort"] ||= {}
     
     filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     if params[:search_type] == 'unfilter'
@@ -65,9 +67,10 @@ class Session
       @session[:view_all] = params[:view_all]
     end
     
-    #if params[:order] && !params[:page]
-    #  @session[:order] = Userfile.set_order(params[:order], @session[:order])
-    #end
+    if params[:sort_order] && !params[:page]
+      @session[:sort_order] = params[:sort_order]
+      @session[:sort_dir] = params[:sort_dir]
+    end
         
     if params[:pagination]
       @session[:pagination] = params[:pagination]
@@ -96,11 +99,15 @@ class Session
   end
   
   def params_for(controller)
-    current_params = @session[controller.to_sym] || {}
-    current_params["filters"] ||= {}
-    current_params["sort"] ||= {}
-    
-    current_params
+    @session[controller.to_sym]
+  end
+  
+  def [](key)
+    @session[key]
+  end
+  
+  def []=(key, value)
+    @session[key] = value
   end
   
   #The method_missing method has been redefined to allow for simplified access to session parameters.

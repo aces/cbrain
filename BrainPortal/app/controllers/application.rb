@@ -98,7 +98,7 @@ class ApplicationController < ActionController::Base
   
   #Returns the current session as a Session object.
   def current_session
-    @session ||= Session.new(session)
+    @session ||= Session.new(session, params)
   end
 
   #Returns an array of the DataProvider objects representing the data providers that can be accessed by +user+.
