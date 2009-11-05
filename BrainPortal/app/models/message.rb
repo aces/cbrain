@@ -16,8 +16,12 @@ class Message < ActiveRecord::Base
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, or a Site.
-  # The +type+ header should be one of :notice, :error or :system.
-  # The +description+ and var_text are optional. An expiration
+  #
+  # Potential options are +type+, +header+, +description+,
+  # +variable_text+, +expiry+ and +critical+.
+  #
+  # The +type+ option should be one of :notice, :error or :system.
+  # The +description+ and +var_text+ are optional. An +expiry+
   # date can also be provided, such that unacknowledged messages
   # disappear from view when they are no longer relevent (for
   # instance, for system broadcast messages).
@@ -35,12 +39,12 @@ class Message < ActiveRecord::Base
   # The method returns the list of the messages objects created,
   # updated or simply found (if no update occured).
   def self.send_message(destination, params = {})
-    type         = params[:message_type] || params["message_type"]
-    header       = params[:header] || params["header"]
-    description  = params[:description] || params["description"]
+    type         = params[:message_type]  || params["message_type"] || :notice
+    header       = params[:header]        || params["header"]
+    description  = params[:description]   || params["description"]
     var_text     = params[:variable_text] || params["variable_text"]
-    expiry       = params[:expiry] || params["expiry"]
-    critical     = params[:critical] || params["critical"] || false
+    expiry       = params[:expiry]        || params["expiry"]
+    critical     = params[:critical]      || params["critical"] || false
 
     # Find the group associated with the destination
     group = case destination

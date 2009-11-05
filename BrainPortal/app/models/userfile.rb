@@ -421,11 +421,13 @@ class Userfile < ActiveRecord::Base
   # See the description in class DataProvider
   def cache_copy_from_local_file(filename)
     self.data_provider.cache_copy_from_local_file(self,filename)
+    self.set_size
   end
 
   # See the description in class DataProvider
   def cache_copy_to_local_file(filename)
     self.data_provider.cache_copy_to_local_file(self,filename)
+    self.set_size
   end
 
 end

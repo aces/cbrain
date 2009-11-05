@@ -338,9 +338,7 @@ class DataProvider < ActiveRecord::Base
         yield(fh)
       end
     end
-    
     sync_to_provider(userfile)
-    userfile.set_size
   end
 
   # This method provides a quick way to set the cache's file
@@ -357,9 +355,7 @@ class DataProvider < ActiveRecord::Base
     SyncStatus.ready_to_modify_cache(userfile) do
       FileUtils.cp_r(localpath,dest)
     end
-    
     sync_to_provider(userfile)
-    userfile.set_size
   end
 
   # This method provides a quick way to copy the cache's file
