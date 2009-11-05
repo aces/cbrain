@@ -44,6 +44,8 @@ class Session
   def update(params)
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
+    @session[controller.to_sym]["filters"] ||= {}
+    @session[controller.to_sym]["sort"] ||= {}
     
     filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
     if params[:search_type] == 'unfilter'
@@ -70,14 +72,15 @@ class Session
     if params[:pagination]
       @session[:pagination] = params[:pagination]
     end
-    
+        
     if params[controller]
       if params[controller]["filter_off"]
-        @session[controller.to_sym] = {}
+        @session[controller.to_sym]["filters"] = {}
       elsif params[controller]["remove_filter"]
-        @session[controller.to_sym].delete(params[controller]["remove_filter"])
+        @session[controller.to_sym]["filters"].delete(params[controller]["remove_filter"])
       else
-        @session[controller.to_sym].merge!(params[controller] || {})
+        @session[controller.to_sym]["filters"].merge!(params[controller]["filters"] || {})
+        @session[controller.to_sym]["sort"] = params[controller]["sort"] || {}
       end
     end
   end
@@ -93,7 +96,11 @@ class Session
   end
   
   def params_for(controller)
-    @session[controller.to_sym] || {}
+    current_params = @session[controller.to_sym] || {}
+    current_params["filters"] ||= {}
+    current_params["sort"] ||= {}
+    
+    current_params
   end
   
   #The method_missing method has been redefined to allow for simplified access to session parameters.

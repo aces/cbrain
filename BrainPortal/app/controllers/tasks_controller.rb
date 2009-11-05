@@ -20,31 +20,31 @@ class TasksController < ApplicationController
     @bourreaux = available_bourreaux(current_user)    
     conditions = { :user_id => current_user.id }
     
-    if @filter_params["bourreau_filter"]
-      conditions[:bourreau_id] = @filter_params["bourreau_filter"]
+    if @filter_params["filters"]["bourreau_filter"]
+      conditions[:bourreau_id] = @filter_params["filters"]["bourreau_filter"]
     else
       conditions[:bourreau_id] = @bourreaux.map { |b| b.id }
     end
 
-    unless @filter_params["type_filter"].blank?
-      conditions[:type] = @filter_params["type_filter"]
+    unless @filter_params["filters"]["type_filter"].blank?
+      conditions[:type] = @filter_params["filters"]["type_filter"]
     end
 
     @tasks = ActRecTask.find(:all, :conditions => conditions)
-    @task_types = []
+    @task_types = ActRecTask.find(:all, :conditions =>{ :user_id => current_user.id }).map{ |t| t.class.to_s  }.uniq
     
     @tasks.each do |t|  # ugly kludge
-      @task_types |= [t.type.to_s]
       t.updated_at = Time.parse(t.updated_at)
       t.created_at = Time.parse(t.created_at)
     end
     
+    
     # Set sort order and make it persistent.
-    sort_order = params[:sort_order] || session[:task_sort_order] || 'updated_at'
-    sort_dir   = params[:sort_dir]   || session[:task_sort_dir]   || 'DESC'
-    session[:task_sort_order] = params[:sort_order] = sort_order
-    session[:task_sort_dir]   = params[:sort_dir]   = sort_dir
-
+    @filter_params["sort"]["order"] ||= 'updated_at'
+    @filter_params["sort"]["dir"]   ||= 'DESC'
+    sort_order = @filter_params["sort"]["order"]
+    sort_dir   = @filter_params["sort"]["dir"]  
+    
     @tasks = @tasks.sort do |t1, t2|
       if sort_dir == 'DESC'
         task1 = t2

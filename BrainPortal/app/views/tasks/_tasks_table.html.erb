@@ -8,7 +8,7 @@
                  <div id="current_filters">
                    <ul>
       
-                       <% @filter_params.each do |key, value| %>
+                       <% @filter_params["filters"].each do |key, value| %>
                            <li>
                              <% if key == "bourreau_filter" %>
                                <%= crop_text_to(20, Bourreau.find(value).name) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
@@ -39,32 +39,67 @@
                  %>
              </th>
              <th>
-               <%= link_to_remote  "Task Name", :url  =>  {:action  => :index, :sort_order  => 'type', :sort_dir  => set_dir('type', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-               <%= set_order_icon('type', params[:sort_order], params[:sort_dir]) %>
+               <%= link_to_remote  "Task Name", :url  =>  {
+                                                  :action  => :index, 
+                                                  :tasks  => {:sort  => {:order  => 'type', :dir  => set_dir('type', @filter_params["sort"])}}
+                                                }, 
+                                                :method  => 'get'  
+               %>
+               <%= set_order_icon('type', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-                <%= link_to_remote  "Description", :url  =>  {:action  => :index, :sort_order  => 'description', :sort_dir  => set_dir('description', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-                 <%= set_order_icon('description', params[:sort_order], params[:sort_dir]) %>
+                <%= link_to_remote  "Description", :url  =>  {
+                                                      :action  => :index, 
+                                                      :tasks  => {:sort  => {:order  => 'description', :dir  => set_dir('description', @filter_params["sort"])}}
+                                                    }, 
+                                                    :method  => 'get'
+                %>
+                 <%= set_order_icon('description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-                <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'owner', :sort_dir  => set_dir('owner', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-                <%= set_order_icon('owner', params[:sort_order], params[:sort_dir]) %>
+                <%= link_to_remote  "Owner", :url  =>  {
+                                                :action  => :index, 
+                                                :tasks  => {:sort  => {:order  => 'owner', :dir  => set_dir('owner', @filter_params["sort"])}}
+                                              }, 
+                                              :method  => 'get'  
+                %>
+                <%= set_order_icon('owner', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-               <%= link_to_remote  "Execution Server", :url  =>  {:action  => :index, :sort_order  => 'bourreau', :sort_dir  => set_dir('bourreau', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-               <%= set_order_icon('bourreau', params[:sort_order], params[:sort_dir]) %>
+               <%= link_to_remote  "Execution Server", :url  =>  {
+                                                         :action  => :index, 
+                                                         :tasks  => {:sort  => {:order  => 'bourreau', :dir  => set_dir('bourreau', @filter_params["sort"])}}
+                                                       }, 
+                                                       :method  => 'get'  
+               %>
+               <%= set_order_icon('bourreau', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-                <%= link_to_remote  "Current Status", :url  =>  {:action  => :index, :sort_order  => 'status', :sort_dir  => set_dir('status', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-                <%= set_order_icon('status', params[:sort_order], params[:sort_dir]) %>
+                <%= link_to_remote  "Current Status", :url  =>  {
+                                                        :action  => :index, 
+                                                        :tasks  => {:sort  => {:order  => 'status', :dir  => set_dir('status', @filter_params["sort"])}}
+                                                      }, 
+                                                      :method  => 'get'  
+                %>
+                <%= set_order_icon('status', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-               <%= link_to_remote  "Time Submitted", :url  =>  {:action  => :index, :sort_order  => 'created_at', :sort_dir  => set_dir('created_at', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-               <%= set_order_icon('created_at', params[:sort_order], params[:sort_dir]) %>
+               <%= link_to_remote  "Time Submitted", :url  =>  {
+                                                       :action  => :index, 
+                                                       :tasks  => {:sort  => {:order  => 'created_at', :dir  => set_dir('created_at', @filter_params["sort"])}}
+                                                     }, 
+                                                     :method  => 'get'  
+               %>
+               <%= set_order_icon('created_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
              <th>
-               <%= link_to_remote  "Last Updated", :url  =>  {:action  => :index, :sort_order  => 'updated_at', :sort_dir  => set_dir('updated_at', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
-                <%= set_order_icon('updated_at', params[:sort_order], params[:sort_dir]) %>
+               <%= link_to_remote  "Last Updated", :url  =>  {
+                                                   :action  => :index, 
+                                                   :tasks  => {:sort  => {:order  => 'updated_at', :dir  => set_dir('updated_at', @filter_params["sort"])}}
+                                                 }, 
+                                                 :method  => 'get'  
+               %>
+                <%= set_order_icon('updated_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
              </th>
          </tr>
          <% for task in @tasks %>

@@ -21,7 +21,7 @@
    </h3>
    <ul>
      <% @task_types.sort.each do |task_type| %>
-        <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^Drmaa/, ""))), :url  => {:action  => :index, :tasks => {:type_filter  => task_type}}, :method  => 'get' %> </li> 
+        <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^Drmaa/, ""))), :url  => {:action  => :index, :tasks => {:filters => {:type_filter  => task_type}}}, :method  => 'get' %> </li> 
      <% end %>
    </ul>
    
@@ -29,8 +29,8 @@
        Filter Server
     </h3>
     <ul>
-      <% @bourreaux.each do |bourreau| %>
-         <li><%= link_to_remote h(crop_text_to(20, bourreau.name)), :url  => {:action  => :index, :tasks => {:bourreau_filter  => bourreau.id}}, :method  => 'get' %> </li> 
+      <% @bourreaux.sort_by(&:name).each do |bourreau| %>
+         <li><%= link_to_remote h(crop_text_to(20, bourreau.name)), :url  => {:action  => :index, :tasks => {:filters => {:bourreau_filter  => bourreau.id}}}, :method  => 'get' %> </li> 
       <% end %>
     </ul>
   </div>

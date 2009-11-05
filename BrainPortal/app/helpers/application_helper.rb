@@ -144,7 +144,11 @@ module ApplicationHelper
   end
   
   #Set direction for resource list sorting
-  def set_dir(current_order, prev_order, sort_order)
+  def set_dir(current_order, sort_params)
+    return unless sort_params
+    prev_order = sort_params["order"]
+    sort_order = sort_params["dir"]
+    
     if(current_order.to_s == prev_order.to_s)
       sort_order == 'DESC' ? '' : 'DESC'
     end
