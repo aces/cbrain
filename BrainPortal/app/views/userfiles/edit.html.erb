@@ -79,6 +79,9 @@
   
   <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
   
+  <% if @userfile.can_be_accessed_by?(current_user)  %>
+    <%= submit_tag "Update Fields" %>
+  <% end %>
   
   <% if @sync_status == "InSync" %>
     <% if @userfile.is_a?(FileCollection) %>
@@ -104,16 +107,10 @@
     to start the synchronization process.</p>
   <% end %>
 
-  <br>
+  </div> <!-- splitleft -->
 
-  <% if @userfile.can_be_accessed_by?(current_user)  %>
-    <%= submit_tag "Update Fields" %>
-    <br> 
-  <% end %>
-</div>
 
-<div class = "splitright">
-
+  <div class = "splitright">
   <% if @log %>
     <table>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -124,6 +121,6 @@
       </tr>
     </table>
   <% end %>
-</div>
+  </div>
 
 <% end %> <!-- form -->

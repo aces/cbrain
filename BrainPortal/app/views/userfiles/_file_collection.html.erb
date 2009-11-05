@@ -8,95 +8,18 @@
 
 -%> 
  
- <% if @userfile.is_a?(FileCollection) && @userfile.list_files.size > 0 %>
-      <% form_tag(extract_from_collection_userfiles_path) do %>
-      <%= hidden_field_tag :collection_id, @userfile.id %>
-      <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on'%>
-         <%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off')%>
-         <table class="userfiles">
-            <tr>
-               <th>Final</th>
-               <th>Native</th>
-               <th>Surfaces</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_final.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/final/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_native.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/native/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_surfaces.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/surfaces/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-            <tr>
-               <th>Classify</th>
-               <th>Thickness</th>
-               <th>Verify</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_classify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/classify/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_thickness.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/thickness/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_verify.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/verify/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-            <tr>
-               <th>Linear Transformations</th>
-               <th>Non-linear Transformations</th>
-               <th>Surface Transformations</th>
-            </tr>
-            <tr class="list-odd">
-               <td>
-                  <%= @userfile.list_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/linear/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_non_linear_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/nonlinear/" + file) + file}.join('<br>') %>
-               </td>
-               <td>
-                  <%= @userfile.list_surfreg_transforms.map{ |file|  check_box_tag('filelist[]', "#{@userfile.name}/transforms/surfreg/" + file) + file}.join('<br>') %>
-               </td>
-            </tr>
-         </table>
-      <% else %>
-         <% if @userfile.is_a?(CivetCollection) %>
-            <%= link_to "Display civet output", edit_userfile_path(@userfile, :full_civet_display => 'on')%>
-         <% end %>
-         <table class="resource_list">
-            <tr class="list-odd">
-              <th>
-                &nbsp;
-                <%= link_to_function '&#10004;' do |page|
-                    page.select(".collection_checkbox").each do |check_box|
-                      check_box.checked=true
-                    end
-                  end
-                %>
-                &nbsp;
-                <%= link_to_function '<big>&times;</big>' do |page|
-                    page.select(".collection_checkbox").each do |check_box|
-                      check_box.checked=false
-                    end
-                  end
-                %>
-              </th>
-               <th>File</th>
-            </tr>
-            <% for file in @userfile.list_files %>
-               <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
-                  <td><%= check_box_tag("filelist[]", file, false, :class  => "collection_checkbox") %></td>
-                  <td><%= file.sub(/^#{@userfile.name + '/'}/, "") %></td>
-               </tr>
-            <% end %> <!-- End for -->
-         </table>
-      <% end %>
-         
-      <%= submit_tag "Extract Files from Collection" %>
-      <br>
+<% if @userfile.list_files.size > 0 %>
+
+  <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on' %>
+     <P><CENTER><%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off'), :class => 'action_link' %></CENTER>
+     <%= render :partial => 'file_collection_civet_file_list' %>
+  <% else %>
+     <% if @userfile.is_a?(CivetCollection) %>
+       <P><CENTER><%= link_to "Display CIVET file list", edit_userfile_path(@userfile, :full_civet_display => 'on'), :class => 'action_link' %></CENTER>
+     <% end %>
+     <%= render :partial => 'file_collection_plain_file_list' %>
   <% end %> <!-- End if   -->
+
+  <%= submit_tag "Extract Files from Collection" %>
+
 <% end %>  <!-- End if   -->
