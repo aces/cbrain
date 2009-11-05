@@ -28,17 +28,23 @@ class SingleFile < Userfile
     ! self.size.blank?
   end
   
-  #Calculates and sets the size attribute.
   def set_size
+    self.set_size! unless self.size_set?
+  end
+  
+  #Calculates and sets the size attribute.
+  def set_size!
     local_sync = self.local_sync_status
     unless local_sync && local_sync.status == "InSync"
-      self.sync_to_cache
+      return false
     end
     
     Dir.chdir(self.cache_full_path.parent) do
       self.size = File.size(self.name)
       self.save!
     end
+    
+    true
   end
 
 end
