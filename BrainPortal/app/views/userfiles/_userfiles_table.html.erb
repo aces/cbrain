@@ -72,7 +72,10 @@
         <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:sort_order  => 'userfiles.group_writable', :sort_dir  => set_dir_old('userfiles.group_writable', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('userfiles.group_writable', current_session[:sort_order], current_session[:sort_dir]) %>
       </th>
-      <th>Provider</th>
+      <th>
+        <%= link_to_remote  "Provider", :url  =>  userfiles_path(:sort_order  => 'data_providers.name', :sort_dir  => set_dir_old('data_providers.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
+         <%= set_order_icon('data_providers.name', current_session[:sort_order], current_session[:sort_dir]) %>
+      </th>
     </tr>
   </thead>
   <tbody>
