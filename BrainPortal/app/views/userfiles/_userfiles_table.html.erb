@@ -45,31 +45,31 @@
           %>
       </th>
       <th>
-        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :sort_order  => 'userfiles.name', :sort_dir  => set_dir('userfiles.name', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :sort_order  => 'userfiles.name', :sort_dir  => set_dir_old('userfiles.name', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('userfiles.name', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'users.login', :sort_dir  => set_dir('users.login', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
+        <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'users.login', :sort_dir  => set_dir_old('users.login', params[:sort_order], params[:sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('users.login', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:sort_order  => 'userfiles.created_at', :sort_dir  => set_dir('userfiles.created_at', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
+        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:sort_order  => 'userfiles.created_at', :sort_dir  => set_dir_old('userfiles.created_at', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
         <%= set_order_icon('userfiles.created_at', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Size", :url  =>  userfiles_path(:sort_order  => 'userfiles.size', :sort_dir  => set_dir('userfiles.size', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
+        <%= link_to_remote  "Size", :url  =>  userfiles_path(:sort_order  => 'userfiles.size', :sort_dir  => set_dir_old('userfiles.size', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
         <%= set_order_icon('userfiles.size', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Tags", :url  =>  userfiles_path(:sort_order  => 'tags.name', :sort_dir  => set_dir('tags.name', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
+         <%= link_to_remote  "Tags", :url  =>  userfiles_path(:sort_order  => 'tags.name', :sort_dir  => set_dir_old('tags.name', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('tags.name', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Groups", :url  =>  userfiles_path(:sort_order  => 'groups.name', :sort_dir  => set_dir('groups.name', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
+         <%= link_to_remote  "Groups", :url  =>  userfiles_path(:sort_order  => 'groups.name', :sort_dir  => set_dir_old('groups.name', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('groups.name', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:sort_order  => 'userfiles.group_writable', :sort_dir  => set_dir('userfiles.group_writable', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
+        <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:sort_order  => 'userfiles.group_writable', :sort_dir  => set_dir_old('userfiles.group_writable', params[:sort_order], params[:sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('userfiles.group_writable', params[:sort_order], params[:sort_dir]) %>
       </th>
       <th>Provider</th>
