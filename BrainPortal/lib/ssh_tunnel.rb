@@ -371,7 +371,7 @@ class SshTunnel
       f.syswrite(pid.to_s)
       f.close
       return true
-    rescue
+    rescue Errno::EEXIST
       return false
     end
   end

@@ -31,6 +31,9 @@ class CBRAIN
   # of 'monit' which clears the environment of almost everything!
   ENV['HOME'] = Rails_UserHome        # Most notably, Net::SFTP needs this
 
+  # File creation umask
+  File.umask(0027)  # octal literal
+
   # Run the associated block as a background process to avoid
   # blocking.
   #

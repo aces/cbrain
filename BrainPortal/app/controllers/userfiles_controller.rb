@@ -319,6 +319,12 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
+
+    if params[:commit] =~ /extract.*collection/i
+      extract_from_collection
+      return
+    end
+
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     flash[:notice] ||= ""
@@ -585,7 +591,7 @@ class UserfilesController < ApplicationController
   def extract_from_collection
     success = failure = 0
 
-    collection = FileCollection.find_accessible_by_user(params[:collection_id], current_user, :access_requested  => :read)
+    collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:filelist].each do |file|
@@ -596,8 +602,8 @@ class UserfilesController < ApplicationController
           :data_provider_id => data_provider_id
       )
       Dir.chdir(collection_path.parent) do
-        userfile.cache_copy_from_local_file(file)
         if userfile.save
+          userfile.cache_copy_from_local_file(file)
           success += 1
         else
           failure += 1
@@ -704,7 +710,7 @@ class UserfilesController < ApplicationController
 
     # Report these values using new comm mechanism
     # [status, successful_files, failed_files, nested_files]
-    report = "Base on the content of the archive we found:\n" +
+    report = "Based on the content of the archive we found:\n" +
              "#{successful_files.size.to_s} files successfully extracted;\n" +
              "#{failed_files.size.to_s} files failed extracting;\n" +
              "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
