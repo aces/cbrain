@@ -415,19 +415,23 @@ class Userfile < ActiveRecord::Base
 
   # See the description in class DataProvider
   def cache_writehandle(&block)
+    self.save
     self.data_provider.cache_writehandle(self,&block)
+    self.set_size!
   end
 
   # See the description in class DataProvider
   def cache_copy_from_local_file(filename)
+    self.save
     self.data_provider.cache_copy_from_local_file(self,filename)
-    self.set_size
+    self.set_size!
   end
 
   # See the description in class DataProvider
   def cache_copy_to_local_file(filename)
+    self.save
     self.data_provider.cache_copy_to_local_file(self,filename)
-    self.set_size
+    self.set_size!
   end
 
 end
