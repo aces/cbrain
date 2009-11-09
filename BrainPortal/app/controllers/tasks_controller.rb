@@ -34,8 +34,8 @@ class TasksController < ApplicationController
     @task_types = ActRecTask.find(:all, :conditions =>{ :user_id => current_user.id }).map{ |t| t.class.to_s  }.uniq
     
     @tasks.each do |t|  # ugly kludge
-      t.updated_at = Time.parse(t.updated_at + " UTC") # and uglier...
-      t.created_at = Time.parse(t.created_at + " UTC") # and uglier.
+      t.updated_at = Time.parse(t.updated_at)
+      t.created_at = Time.parse(t.created_at)
     end
     
     
