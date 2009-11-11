@@ -26,6 +26,17 @@ class FeedbacksController < ApplicationController
     end
   end
 
+  # GET /feedbacks/1
+  # GET /feedbacks/1.xml
+  def show #:nodoc:
+    @feedback = Feedback.find(params[:id])
+
+    respond_to do |format|
+      format.html # show.html.erb
+      format.xml  { render :xml => @feedback }
+    end
+  end
+
   # GET /feedbacks/1/edit
   def edit #:nodoc:
     @feedback = Feedback.find(params[:id])
@@ -40,6 +51,13 @@ class FeedbacksController < ApplicationController
     respond_to do |format|
       if @feedback.save
         flash[:notice] = 'Feedback was successfully created.'
+        Message.send_message( Group.find_by_name('admin'), {
+                              :message_type   => :notice,
+                              :header         => "New feeback is available!",
+                              :description    => nil,
+                              :variable_text  => "#{current_user.full_name} : [[View][/feedbacks/#{@feedback.id}]]"
+                              }
+                            )
         format.js
         format.xml  { render :xml => @feedback, :status => :created, :location => @feedback }
       else
