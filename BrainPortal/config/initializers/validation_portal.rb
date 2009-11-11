@@ -165,6 +165,7 @@ end
 #-----------------------------------------------------------------------------
 puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
 #-----------------------------------------------------------------------------
+
 dp_cache_md5 = DataProvider.cache_md5
 brainportal  = BrainPortal.find(:first,
                :conditions => { :cache_md5 => dp_cache_md5 })
@@ -227,6 +228,29 @@ Bourreau.all.each do |bourreau|
     puts "C> \t- Bourreau '#{name}' not configured for remote control."
   end
 end
+
+
+
+#-----------------------------------------------------------------------------
+puts "C> Cleaning up old SyncStatus objects..."
+#-----------------------------------------------------------------------------
+
+rr_ids = RemoteResource.all.index_by { |rr| rr.id }
+ss_deleted = 0
+SyncStatus.all.each do |ss|
+  ss_rr_id = ss.remote_resource_id
+  if ss_rr_id.blank? || ! rr_ids[ss_rr_id]
+    ss.destroy rescue true
+    ss_deleted += 1
+  end
+end
+if ss_deleted > 0
+  puts "C> \t- Removed #{ss_deleted} old SyncStatus objects."
+else
+  puts "C> \t- No old SyncStatus objects to delete."
+end
+
+
 
 ##-----------------------------------------------------------------------------
 #puts "C> Checking that size variables for userfiles are properly set... "
