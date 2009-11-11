@@ -14,7 +14,7 @@ body {
     color:#484848; 
     margin: 0; 
     padding: 0;
-    min-width: 120em;
+    min-width: 87em;
     max-height:100%;
     line-height: 18px;
 }
@@ -248,6 +248,50 @@ pre {
 }
 
 /* ######################################################### */
+/* side_filter_menu View */
+/* ######################################################### */
+
+#side_filter_menu h3 {
+    font-size: 18px; 
+    margin-top:14px; 
+    color: #666; 
+    border-bottom: 2px solid #666; 
+    margin-left: 12px;  
+    padding: 0 0 0 0;
+}
+
+#main.nosidebar #side_filter_menu {
+    display: none; 
+}
+
+#main.nosidebar #content {
+    width: auto; 
+    border-right: 0; 
+}
+
+#side_filter_menu {
+    color: #666;
+    background-color: #FFFFFF;
+    margin-right: 10px;
+    padding: 1em;
+    margin-top: 1em;
+    border: 0.2em solid #0471B4;
+}
+
+#side_filter_menu_wrapper{
+     position: absolute;
+}
+
+#side_filter_menu ul li {
+    margin-left: -10px;
+    color: #0471B4;
+}
+
+#side_filter_menu a{
+    text-decoration: none;
+}
+
+/* ######################################################### */
 /* Login Formatting */
 /* ######################################################### */
 
@@ -364,7 +408,6 @@ a:hover {
 }
 
 .generalcontent {
-    width: 90%;
     margin-right: auto;
     margin-left: auto;
     display: table;
@@ -737,8 +780,8 @@ td.taskinfo {
 
 .resource_list {
     clear: both;
-    margin-right: 1em;
-    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .resource_list th {
@@ -750,8 +793,6 @@ td.taskinfo {
     font-weight: bold;
     font-size: 11px;
     color: #ffffff;
-    padding-left: 0;
-    padding-right: 0;
 }
 
 .resource_list th a {
@@ -764,13 +805,11 @@ td.taskinfo {
     text-decoration: none;
 }
 
-.resource_list th {
-    color: #ffffff;
-}
-
 .resource_list td{
     border: 0px;    
     text-align: center;
+    padding-left: 2em;
+    padding-right: 2em;
 }
 
 /*.resource_list td.left {
@@ -799,14 +838,6 @@ td.right_align {
    text-align: right;
 }
 
-/*#bourreau_show_info {
-    clear:both;
-}
-
-#bourreau_hide_info {
-    clear:both;
-}
-*/
 .userfiles {
     border: 0px;
 }
@@ -903,6 +934,9 @@ td.right_align {
 
 #userfiles_top_menu {
     padding: 1em 0 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50em;
 }
 
 #userfiles_top_menu a {
@@ -910,9 +944,10 @@ td.right_align {
 }
 
 .userfiles_upper_form {
-    display: inline-block;
     margin-top: 1em;
     width: 45em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #userfile_contents_display{
@@ -1362,6 +1397,7 @@ td.middle{
     padding: 1em;
     margin-top: 1em;
     width: 50%;
+    min-width: 30em;
 }
 
 #completed_task_summary{
@@ -1416,3 +1452,20 @@ td.middle{
     text-align: left;
 }
 
+#welcome_glance th{
+    font-size: 1.3em;
+    padding: 0.2em;
+}
+
+#welcome_glance td{
+    font-size: 1.3em;
+    padding: 0.2em;
+}
+
+.filter_list {
+    position: absolute;
+    margin: 0;
+    padding: 1em 1em 1em 2em;
+    background-color: #05A3D6;
+    text-align:left;
+}

@@ -27,7 +27,7 @@
     </p>
     <p>
       <%= f.label :expiry %> (Current time: <%= to_localtime(Time.now, :datetime) %>)<br>
-      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %> <%= Time.zone.name %>
+      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
     </p>
     <br>
     <p>

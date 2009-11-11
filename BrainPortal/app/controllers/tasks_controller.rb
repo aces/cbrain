@@ -17,8 +17,26 @@ class TasksController < ApplicationController
   before_filter :login_required
    
   def index #:nodoc:   
-    @bourreaux = available_bourreaux(current_user)    
-    conditions = { :user_id => current_user.id }
+    @bourreaux = available_bourreaux(current_user)
+    if current_user.has_role? :admin
+      unless @filter_params["filters"]["owner_filter"].blank?
+        conditions = { :user_id => @filter_params["filters"]["owner_filter"] }
+      else
+        conditions = {}
+      end
+    else
+      conditions = { :user_id => current_user.id }
+    end
+    
+    #Used to create filters
+    @task_types = []
+    @task_descriptions = []
+    @task_owners = []
+    ActRecTask.find(:all, :conditions =>conditions).each do |task|
+      @task_types |= [task.class.to_s]
+      @task_descriptions |= [task.description] if task.description
+      @task_owners |= [task.user]
+    end
     
     if @filter_params["filters"]["bourreau_filter"]
       conditions[:bourreau_id] = @filter_params["filters"]["bourreau_filter"]
@@ -29,9 +47,12 @@ class TasksController < ApplicationController
     unless @filter_params["filters"]["type_filter"].blank?
       conditions[:type] = @filter_params["filters"]["type_filter"]
     end
+    
+    unless @filter_params["filters"]["description_filter"].blank?
+      conditions[:description] = @filter_params["filters"]["description_filter"]
+    end
 
     @tasks = ActRecTask.find(:all, :conditions => conditions)
-    @task_types = ActRecTask.find(:all, :conditions =>{ :user_id => current_user.id }).map{ |t| t.class.to_s  }.uniq
     
     @tasks.each do |t|  # ugly kludge
       t.updated_at = Time.parse(t.updated_at)
@@ -84,32 +105,6 @@ class TasksController < ApplicationController
     end
   end
   
-  def summary
-    bourreau_ids = available_bourreaux(current_user).collect(&:id)
-    @tasks = ActRecTask.find(:all, :conditions => {
-                                       :user_id     => current_user.id,
-                                       :bourreau_id => bourreau_ids
-                                     } )
-    @tasks_by_status = @tasks.group_by do |task|
-      case task.status
-      when /(On CPU|Queued|New|Data Ready)/
-        :running
-      when /^Failed/
-        :failed
-      when /(Completed)/
-        :completed
-      else
-        :other
-      end
-    end
-    
-    @tasks_by_status = @tasks_by_status.to_hash
-    
-    @tasks_by_status[:completed] ||= []
-    @tasks_by_status[:running]   ||= []
-    @tasks_by_status[:failed]    ||= []
-  end
-
   # GET /tasks/1
   # GET /tasks/1.xml
   def show #:nodoc:

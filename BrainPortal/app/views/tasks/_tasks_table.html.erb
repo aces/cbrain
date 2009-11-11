@@ -12,6 +12,8 @@
                            <li>
                              <% if key == "bourreau_filter" %>
                                <%= crop_text_to(20, Bourreau.find(value).name) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+                               <% elsif key == "owner_filter" %>
+                                  <%= crop_text_to(20, User.find(value).login) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>   
                              <% else %>
                                <%= crop_text_to(20, value.sub(/^Drmaa/, "")) %><%= link_to_remote "&nbsp;x", :url  => {:action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
                              <% end %>
@@ -24,7 +26,7 @@
          </tr>
          <tr>
              <th> 
-                 <%= link_to_function '&radic;' do |page|
+                 <%= link_to_function '&#10004;' do |page|
                      page.select(".checkbox").each do |check_box|
                        check_box.checked=true
                      end
@@ -38,16 +40,21 @@
                    end
                  %>
              </th>
-             <th>
+             <th id="task_type_header" onMouseOver="$('task_filters_list').show()" onMouseOut="$('task_filters_list').hide()">
                <%= link_to_remote  "Task Name", :url  =>  {
                                                   :action  => :index, 
                                                   :tasks  => {:sort  => {:order  => 'type', :dir  => set_dir('type', @filter_params["sort"])}}
                                                 }, 
                                                 :method  => 'get'  
                %>
-               <%= set_order_icon('type', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+               <%= set_order_icon('type', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %><br>
+               <ul class="filter_list" id="task_filters_list" style="display:none;">
+                  <% @task_types.sort.each do |task_type| %>
+                     <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^Drmaa/, ""))), :url  => {:action  => :index, :tasks => {:filters => {:type_filter  => task_type}}}, :method  => 'get' %> </li> 
+                  <% end %>
+                </ul>
              </th>
-             <th>
+             <th onMouseOver="$('description_filters_list').show()" onMouseOut="$('description_filters_list').hide()">
                 <%= link_to_remote  "Description", :url  =>  {
                                                       :action  => :index, 
                                                       :tasks  => {:sort  => {:order  => 'description', :dir  => set_dir('description', @filter_params["sort"])}}
@@ -55,8 +62,14 @@
                                                     :method  => 'get'
                 %>
                  <%= set_order_icon('description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+                  <br>
+                  <ul class="filter_list" id="description_filters_list" style="display:none;">
+                     <% @task_descriptions.sort.each do |task_desc| %>
+                        <li><%= link_to_remote h(crop_text_to(40, task_desc)), :url  => {:action  => :index, :tasks => {:filters => {:description_filter  => task_desc}}}, :method  => 'get' %> </li> 
+                     <% end %>
+                   </ul>
              </th>
-             <th>
+             <th onMouseOver="$('owner_filters_list').show()" onMouseOut="$('owner_filters_list').hide()">
                 <%= link_to_remote  "Owner", :url  =>  {
                                                 :action  => :index, 
                                                 :tasks  => {:sort  => {:order  => 'owner', :dir  => set_dir('owner', @filter_params["sort"])}}
@@ -64,8 +77,16 @@
                                               :method  => 'get'  
                 %>
                 <%= set_order_icon('owner', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+                <% if current_user.has_role? :admin %>
+                  <br>
+                    <ul class="filter_list" id="owner_filters_list" style="display:none;">
+                       <% @task_owners.sort_by(&:login).each do |task_owner| %>
+                          <li><%= link_to_remote h(task_owner.login), :url  => {:action  => :index, :tasks => {:filters => {:owner_filter  => task_owner.id}}}, :method  => 'get' %> </li> 
+                       <% end %>
+                    </ul>
+                 <% end %>
              </th>
-             <th>
+             <th onMouseOver="$('bourreau_filters_list').show()" onMouseOut="$('bourreau_filters_list').hide()">
                <%= link_to_remote  "Execution Server", :url  =>  {
                                                          :action  => :index, 
                                                          :tasks  => {:sort  => {:order  => 'bourreau', :dir  => set_dir('bourreau', @filter_params["sort"])}}
@@ -73,6 +94,12 @@
                                                        :method  => 'get'  
                %>
                <%= set_order_icon('bourreau', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+                <br>
+                  <ul class="filter_list" id="bourreau_filters_list" style="display:none;">
+                     <% @bourreaux.sort_by(&:name).each do |bourreau| %>
+                        <li><%= link_to_remote h(bourreau.name), :url  => {:action  => :index, :tasks => {:filters => {:bourreau_filter  => bourreau.id}}}, :method  => 'get' %> </li> 
+                     <% end %>
+                  </ul>
              </th>
              <th>
                 <%= link_to_remote  "Current Status", :url  =>  {

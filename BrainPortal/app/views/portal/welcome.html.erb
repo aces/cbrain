@@ -12,33 +12,99 @@
 
 -%>
 
+<script type="text/javascript">
+window.onload=function(){
+Nifty("div.task_summary","big");
+}
+</script>
+
 <div class = "generalcontent">
-   <br><br>
-   <h2>Welcome to CBRAIN, <%= current_user.full_name %></h2>
-   <br>
-   <div class = "generalbox">
+   <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
+        <div class="splitleft">
+          <br>
+          <h1><%= link_to "Account Info", user_path(current_user) %></h1>
+          
+          <div class="generalbox">
+            <p>
+              <strong>Login:</strong> <%= h(current_user.login) %>
+            </p>
+            <p>
+              <strong>Site:</strong> <%= h(current_user.site.name) rescue "No Site Assigned"%>
+            </p>
+            <p>
+               <strong>Groups you belong to:</strong>  <%= h(@groups) %>
+            </p>
+           <p>
+            <strong>Default Data Provider:</strong> <%= h(@default_data_provider) %>
+           </p>
+            <p>
+              <strong>Default Execution Server:</strong> <%= h(@default_bourreau) %>
+            </p>
+          </div>
+        </div>
+        
+          <div class="splitright">
+            <h1><%= link_to "Tasks", :controller  => :tasks,  :action  => :index %></h1>
 
-      <table class = "welcometable">
-        <tbody>
-        <tr>
-          <th><b>Number of files in your account:</b></td>
-          <td class = "welcomeresult"><%= h @num_files  %><br><br></td>
-        </tr>
-        <tr>
-          <th><b>Groups you belong to:</b></td>
-          <td class = "welcomeresult"><%= h @groups %><br><br></td>
-        </tr>
-        <tr>
-          <th><b>Default Data Provider:</b></td>
-          <td class = "welcomeresult"><%= h @default_data_provider %><br><br></td>
-        </tr>
-        <tr>
-          <th><b>Default Execution Server:</b></td>
-          <td class = "welcomeresult"><%= h @default_bourreau %><br><br></td>
-        </tr>
-        </tbody>
-      </table>  
-
-   </div>  <!-- End class="generalbox" -->
+             <div id="completed_task_summary" class="task_summary">
+               <div class="task_summary_count">
+                 Completed tasks: <%= @tasks_by_status[:completed].size %>
+                 <br><br>
+                 <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index %>
+               </div>
+                 <% unless @tasks_by_status[:completed].blank? %>
+                   <table class="task_summary_table">
+                     <tr><th colspan="2">Recent Activity</th></tr>
+                     <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+                       <tr>
+                         <td><%= link_to h(task.class.to_s.sub("Drmaa", "")), :controller => :tasks, :action => :show, :id => task.id %></td>
+                         <td><%= task.updatde_at %></td>
+                       </tr>
+                     <% end %>
+                   </table>
+                 <% end %>
+             </div>
+             <br>
+             <div id="running_task_summary" class="task_summary">
+               <div class="task_summary_count">
+                 Running tasks: <%= @tasks_by_status[:running].size %>
+                 <br><br>
+                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index %>
+               </div>
+               <% unless @tasks_by_status[:running].blank? %>
+                 <table class="task_summary_table">
+                   <tr><th colspan="2">Recent Activity</th></tr>
+                   <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+                     <tr>
+                       <td><%= link_to h(task.class.to_s.sub("Drmaa", "")), :controller => :tasks, :action => :show, :id => task.id %></td>
+                       <td><%= task.updated_at %></td>
+                     </tr>
+                   <% end %>
+                 </table>
+               <% end %>
+             </div>
+             <br>
+             <div id="failed_task_summary" class="task_summary">
+               <div class="task_summary_count">
+                 Failed tasks: <%= @tasks_by_status[:failed].size %>
+                 <br><br>
+                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index %>
+               </div>
+               <% unless @tasks_by_status[:failed].blank? %>
+                 <table class="task_summary_table">
+                   <tr><th colspan="2">Recent Activity</th></tr>
+                   <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+                     <tr>
+                       <td><%= link_to h(task.class.to_s.sub("Drmaa", "")), :controller => :tasks, :action => :show, :id => task.id %></td>
+                       <td><%= task.updated_at %></td>
+                     </tr>
+                   <% end %>
+                 </table>
+               <% end %>
+             </div>
+          </div>
+        
+     
+  
 </div>  <!-- End class="generalcontent" -->
 

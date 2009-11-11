@@ -15,41 +15,8 @@
 <% title 'Files' %><% #Side bar stuff goes here -%>
 <%= javascript_tag "var current_options;" %>
 
-<div id="sidebar_wrapper" style="display:none;">
-  <div id="sidebar">
-    <br><br>
-   <h3>
-      Filters<br> 
-      <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br>
-   </h3>
-   <ul>
-   <li><%= link_to_remote 'All Files', :url  => {:action  => :index, :search_type  => :unfilter}, :method  => 'get' %> </li> 
-   <li><%= link_to_remote 'MINC Files', :url  => {:action  => :index, :search_type => :minc}, :method  => 'get' %> </li>
-   <li><%= link_to_remote 'JIV Files', :url  => {:action  => :index, :search_type => :jiv}, :method  => 'get' %></li>
-   <% current_user.custom_filters.each do |filter| %>
-   <li>
-   <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :custom_filter  => filter.id}, :method  => 'get' %><br>
-   <small><small>
-      <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
-      <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
-   </small></small>
-   </li>
-   <% end %>
-   </ul>
-   <br>
-   <h3>
-      Filter Tags<br> 
-      <small><small><small><%= link_to 'Manage Tags', tags_path %></small></small></small>
-   </h3>
-   <ul>
-   <% current_user.tags.collect(&:name).each do |tag| %> 
-     <li><%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :tag_filter => tag}, :method  => 'get' %></li>
-   <% end %> 
-   </ul>
-  </div>
-</div>   <!-- End id="sidebar" -->
-
-<div class="generalcontent" id="main_userfiles_content"  style="width: 90%">
+<div class="generalcontent">
+  <div id="main_userfiles_content"  style="width: 90%">
   <div id="userfiles_top_menu">
     <%= userfiles_menu_option('Tags', 'tag_option', 'tag_table') %>
     <%= userfiles_menu_option('Groups', 'group_option', 'groups_table') %>
@@ -87,33 +54,87 @@
 
   <br><br>
 
-  <%= link_to_function "<< Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
-        page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
-        page['main_userfiles_content'].visual_effect(:morph, :style  => "width:87%", :duration  => 0.5)
+  <%= link_to_function "Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
+        page['side_filter_menu_wrapper'].visual_effect(:blind_down, :duration  => 0.2)
         page['filter_option_show'].hide
         page['filter_option_hide'].show
       end
   %>
 
-  <%= link_to_function ">> Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
-        page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
-        page['main_userfiles_content'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
+  <%= link_to_function "Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+        page['side_filter_menu_wrapper'].visual_effect(:blind_up, :duration  => 0.2)
         page['filter_option_hide'].hide
         page['filter_option_show'].show
       end
   %>
+  <div id="side_filter_menu_wrapper" style="display:none;">
+    <div id="side_filter_menu">
+     <h3>
+        Filters<br> 
+        <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br>
+     </h3>
+     <ul>
+     <li>
+          <%= link_to_remote 'All Files', :url  => {:action  => :index, :search_type  => :unfilter}, 
+                                         :method  => 'get',
+                                         :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+          %> 
+     </li> 
+     <li><%= link_to_remote 'MINC Files', :url  => {:action  => :index, :search_type => :minc}, 
+                                    :method  => 'get',
+                                    :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+     %> 
+   </li>
+     <li><%= link_to_remote 'JIV Files', :url  => {:action  => :index, :search_type => :jiv},
+                                    :method  => 'get',
+                                    :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+     %> 
+    </li>
+     <% current_user.custom_filters.each do |filter| %>
+     <li>
+     <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :custom_filter  => filter.id},
+                                     :method  => 'get',
+                                     :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+      %>
+      <br>
+     <small><small>
+        <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
+        <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
+     </small></small>
+     </li>
+     <% end %>
+     </ul>
+     <br>
+     <h3>
+        Filter Tags<br> 
+        <small><small><small><%= link_to 'Manage Tags', tags_path %></small></small></small>
+     </h3>
+     <ul>
+     <% current_user.tags.collect(&:name).each do |tag| %> 
+      <li>
+       <%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :tag_filter => tag},
+                                       :method  => 'get',
+                                       :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+        %>
+      </li>
+     <% end %> 
+     </ul>
+    </div>
+  </div>   <!-- End id="side_filter_menu_wrapper" -->
 
       <table id="userfilesdisplay" class="resource_list">
           <%= render :partial => 'userfiles_table' %>
       </table>
-
-      Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-      <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-        <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-      <% end %>
+      
+      <center>
+        Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+        <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+          <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+        <% end %>
+      </center>
 
   <% end %>
-  
+  </div>
 </div>
 
 

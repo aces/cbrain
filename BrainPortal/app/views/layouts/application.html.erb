@@ -64,7 +64,7 @@
                        <ul>      
                           <li <%= set_selected(params[:controller], :portal) %>><a class="home" href="/home">Home</a></li>
                           <li <%= set_selected(params[:controller], :userfiles) %>><%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %></li>
-                          <li <%= set_selected(params[:controller], :tasks) %>><%= link_to 'Tasks', :controller => :tasks, :action => :summary %></li>
+                          <li <%= set_selected(params[:controller], :tasks) %>><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
                           <li <%= set_selected(params[:controller], :data_providers) %>><%= link_to 'Data Providers', data_providers_path %></li>
                           <li <%= set_selected(params[:controller], :bourreaux) %>><%= link_to 'Execution Servers', bourreaux_path %></li>               
                           <li <%= set_selected(params[:controller], :feedbacks) %>><%= link_to 'Feedback', feedbacks_path %></li>
@@ -74,7 +74,7 @@
                             <li <%= set_selected(params[:controller], :groups) %>><%= link_to 'Groups', groups_path %></li>
                      		 <% if current_user.has_role?(:admin) %>
                     			    <li <%= set_selected(params[:controller], :sites) %>><%= link_to 'Sites', sites_path %></li> 	
-                    	          <li <%= set_selected(params[:controller], :logged_exception) %>><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
+                    	        <li <%= set_selected(params[:controller], :logged_exception) %>><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
                     			 <% end %>
                           <% end %>
                           <% if current_user.site %>

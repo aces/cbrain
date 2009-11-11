@@ -13,28 +13,7 @@
 
 <% title 'Tasks' %>
 
-<div id="sidebar_wrapper" style="display:none;">
-  <div id="sidebar">
-    <br><br>
-   <h3>
-      Filter Task
-   </h3>
-   <ul>
-     <% @task_types.sort.each do |task_type| %>
-        <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^Drmaa/, ""))), :url  => {:action  => :index, :tasks => {:filters => {:type_filter  => task_type}}}, :method  => 'get' %> </li> 
-     <% end %>
-   </ul>
-   
-   <h3>
-       Filter Server
-    </h3>
-    <ul>
-      <% @bourreaux.sort_by(&:name).each do |bourreau| %>
-         <li><%= link_to_remote h(crop_text_to(20, bourreau.name)), :url  => {:action  => :index, :tasks => {:filters => {:bourreau_filter  => bourreau.id}}}, :method  => 'get' %> </li> 
-      <% end %>
-    </ul>
-  </div>
-</div>   <!-- End id="sidebar" -->
+
 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
@@ -64,22 +43,6 @@
                     <%= submit_tag("Apply Operation") %>
               <br><br>
         </div>  <!-- End class="resource_list_box" -->
-      <br>
-        <%= link_to_function "<< Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
-              page['sidebar_wrapper'].visual_effect(:blind_right, :duration  => 0.5)
-              page['main_task_content'].visual_effect(:morph, :style  => "width:87%", :duration  => 0.5)
-              page['filter_option_show'].hide
-              page['filter_option_hide'].show
-            end
-        %>
-
-        <%= link_to_function ">> Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
-              page['sidebar_wrapper'].visual_effect(:blind_left, :duration  => 0.5)
-              page['main_task_content'].visual_effect(:morph, :style  => "width:90%", :duration  => 0.5)
-              page['filter_option_hide'].hide
-              page['filter_option_show'].show
-            end
-        %>
       
         <table class = "resource_list" id="tasks_table">
           <%= render :partial => 'tasks_table' %>
