@@ -62,12 +62,14 @@
                                                     :method  => 'get'
                 %>
                  <%= set_order_icon('description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+                 <% unless @task_descriptions.blank? %>
                   <br>
-                  <ul class="filter_list" id="description_filters_list" style="display:none;">
-                     <% @task_descriptions.sort.each do |task_desc| %>
-                        <li><%= link_to_remote h(crop_text_to(40, task_desc)), :url  => {:action  => :index, :tasks => {:filters => {:description_filter  => task_desc}}}, :method  => 'get' %> </li> 
-                     <% end %>
-                   </ul>
+                    <ul class="filter_list" id="description_filters_list" style="display:none;">
+                       <% @task_descriptions.sort.each do |task_desc| %>
+                          <li><%= link_to_remote h(crop_text_to(40, task_desc)), :url  => {:action  => :index, :tasks => {:filters => {:description_filter  => task_desc}}}, :method  => 'get' %> </li> 
+                       <% end %>
+                     </ul>
+                  <% end  %>
              </th>
              <th onMouseOver="$('owner_filters_list').show()" onMouseOut="$('owner_filters_list').hide()">
                 <%= link_to_remote  "Owner", :url  =>  {
@@ -101,7 +103,7 @@
                      <% end %>
                   </ul>
              </th>
-             <th>
+             <th onMouseOver="$('status_filters_list').show()" onMouseOut="$('status_filters_list').hide()">
                 <%= link_to_remote  "Current Status", :url  =>  {
                                                         :action  => :index, 
                                                         :tasks  => {:sort  => {:order  => 'status', :dir  => set_dir('status', @filter_params["sort"])}}
@@ -109,6 +111,12 @@
                                                       :method  => 'get'  
                 %>
                 <%= set_order_icon('status', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+                <br>
+                  <ul class="filter_list" id="status_filters_list" style="display:none;">
+                     <% @task_status.sort.each do |task_status| %>
+                        <li><%= link_to_remote h(task_status), :url  => {:action  => :index, :tasks => {:filters => {:status_filter  => task_status}}}, :method  => 'get' %> </li> 
+                     <% end %>
+                  </ul>
              </th>
              <th>
                <%= link_to_remote  "Time Submitted", :url  =>  {

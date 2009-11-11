@@ -411,6 +411,7 @@ a:hover {
     margin-right: auto;
     margin-left: auto;
     display: table;
+    min-width: 50em;
 }
 
 .groupentry {
@@ -782,6 +783,7 @@ td.taskinfo {
     clear: both;
     margin-right: auto;
     margin-left: auto;
+    width: 100%;
 }
 
 .resource_list th {

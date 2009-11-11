@@ -32,16 +32,31 @@ class TasksController < ApplicationController
     @task_types = []
     @task_descriptions = []
     @task_owners = []
+    @task_status = []
     ActRecTask.find(:all, :conditions =>conditions).each do |task|
       @task_types |= [task.class.to_s]
       @task_descriptions |= [task.description] if task.description
       @task_owners |= [task.user]
+      @task_status |= [task.status]
     end
     
     if @filter_params["filters"]["bourreau_filter"]
       conditions[:bourreau_id] = @filter_params["filters"]["bourreau_filter"]
     else
       conditions[:bourreau_id] = @bourreaux.map { |b| b.id }
+    end
+    
+    unless @filter_params["filters"]["status_filter"].blank?
+      case @filter_params["filters"]["status_filter"].to_sym
+      when :completed
+        conditions[:status] = DrmaaTask::COMPLETED_STATUS
+      when :running
+        conditions[:status] = DrmaaTask::RUNNING_STATUS
+      when :failed
+        conditions[:status] = DrmaaTask::FAILED_STATUS
+      else
+        conditions[:status] = @filter_params["filters"]["status_filter"]
+      end
     end
 
     unless @filter_params["filters"]["type_filter"].blank?

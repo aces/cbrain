@@ -33,12 +33,12 @@ class PortalController < ApplicationController
                                      } )
     @tasks_by_status = @tasks.group_by do |task|
       case task.status
-      when /(On CPU|Queued|New|Data Ready)/
-        :running
-      when /^Failed (T|t)o/
-        :failed
-      when /(Completed)/
+      when /((#{DrmaaTask::COMPLETED_STATUS.join('|')}))/
         :completed
+      when /(#{DrmaaTask::RUNNING_STATUS.join('|')})/
+        :running
+      when /(#{DrmaaTask::FAILED_STATUS.join('|')})/
+        :failed
       else
         :other
       end

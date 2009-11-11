@@ -50,7 +50,7 @@ Nifty("div.task_summary","big");
                <div class="task_summary_count">
                  Completed tasks: <%= @tasks_by_status[:completed].size %>
                  <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index %>
+                 <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index, :tasks  => {:filters => {:status_filter  => :completed}} %>
                </div>
                  <% unless @tasks_by_status[:completed].blank? %>
                    <table class="task_summary_table">
@@ -69,7 +69,7 @@ Nifty("div.task_summary","big");
                <div class="task_summary_count">
                  Running tasks: <%= @tasks_by_status[:running].size %>
                  <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index %>
+                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status_filter  => :running}} %>
                </div>
                <% unless @tasks_by_status[:running].blank? %>
                  <table class="task_summary_table">
@@ -88,7 +88,7 @@ Nifty("div.task_summary","big");
                <div class="task_summary_count">
                  Failed tasks: <%= @tasks_by_status[:failed].size %>
                  <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index %>
+                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status_filter  => :failed}} %>
                </div>
                <% unless @tasks_by_status[:failed].blank? %>
                  <table class="task_summary_table">

@@ -26,7 +26,7 @@ class SessionsController < ApplicationController
       end
       redirect_back_or_default('/home')
       current_user.addlog_context(self,"Logged in from #{request.remote_ip}")
-      flash[:notice] = "Logged in successfully."
+      #flash[:notice] = "Logged in successfully."
     else
       flash[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.

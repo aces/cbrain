@@ -39,6 +39,10 @@ class DrmaaTask < ActiveResource::Base
 
   Revision_info="$Id$"
 
+  COMPLETED_STATUS = ["Completed"]
+  RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready"]
+  FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed To Start"]
+
   # This sets the default resource address to an
   # invalid URL; it will be replaced as needed by the
   # URL of a real bourreau ActiveResource later on.
