@@ -42,7 +42,7 @@ class CBRAIN
   # on the portal side.
   BOURREAU_CLUSTER_NAME    = "nameit"
 
-  # Your local cluster management system: one of 'PBS', 'SGE', or 'UNIX'
+  # Your local cluster management system: one of 'PBS', 'SGE', 'MOAB' or 'UNIX'
   CLUSTER_TYPE             = ""
 
   # Default cluster queue to use; leave empty to use cluster's default

@@ -146,9 +146,12 @@ case CBRAIN::CLUSTER_TYPE
     require 'scir_pbs.rb'
   when "UNIX"
     require 'scir_local.rb'
+  when "MOAB"
+    require 'scir_moab.rb'
   else
     raise "CBRAIN configuration error: CLUSTER_TYPE is set to unknown value #{CBRAIN::CLUSTER_TYPE}!"
 end
+puts "C> \t - Layer for '#{CBRAIN::CLUSTER_TYPE}' loaded."
 
 #-----------------------------------------------------------------------------
 puts "C> Reporting Bourreau Worker Processes (if any)..."

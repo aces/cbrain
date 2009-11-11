@@ -92,11 +92,11 @@ class TasksController < ApplicationController
                                      } )
     @tasks_by_status = @tasks.group_by do |task|
       case task.status
-      when /(On CPU|Queued|New)/
+      when /(On CPU|Queued|New|Data Ready)/
         :running
-      when /^Failed (T|t)o/
+      when /^Failed/
         :failed
-      when "(Completed|Data Ready)"
+      when /(Completed)/
         :completed
       else
         :other
