@@ -78,6 +78,9 @@ class BourreauWorker
   # The PID is recorded in the parent's and child's
   # object.
   def launch
+    if self.pid || $bourreau_workers.include?(self)
+      raise "Cannot launch a Worker that seems to be already active!"
+    end
     self.pid = CBRAIN.spawn_with_active_records(nil,"Bourreau Worker") do
       self.pid = $$
       Kernel.at_exit { delete_pidfile }
@@ -97,6 +100,7 @@ class BourreauWorker
   # Send a kill signal to the worker's subprocess.
   def terminate
     Process.kill("TERM",self.pid) if self.pid
+    self.pid          = nil
     self.pidfile_path = ""
     $bourreau_workers.reject! { |w| w.object_id == self.object_id }
     true

@@ -162,9 +162,13 @@ puts "C> Reporting Bourreau Worker Processes (if any)..."
 # were still alive.
 allworkers = BourreauWorker.rescan_workers
 allworkers.each do |worker|
-  puts "C> \t - Found worker already running: #{worker.pid.to_s}"
+  puts "C> \t - Found worker already running: #{worker.pid.to_s} ..."
 end
 if allworkers.size == 0
   puts "C> \t - No worker process found. It's OK, they'll be started as needed."
+else
+  puts "C> \t - Scheduling restart for all of them ..."
+  BourreauWorker.wake_all
+  BourreauWorker.signal_all('TERM')
 end
 
