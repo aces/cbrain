@@ -117,4 +117,13 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
+  # When a remote resource is destroy, clean up the SyncStatus table
+  def after_destroy
+    rr_id = self.id
+    SyncStatus.find(:all, :conditions => { :remote_resource_id => rr_id }).each do |ss|
+      ss.destroy rescue true
+    end
+    true
+  end
+
 end
