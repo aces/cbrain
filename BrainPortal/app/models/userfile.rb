@@ -8,7 +8,7 @@
 #
 # $Id$
 #
-
+# I do this change to test pierre scripts
 require 'set'
 
 #Abstract model representing files actually registered to the system.
