@@ -1413,7 +1413,7 @@ td.middle{
     background-color: #ddeeff;
 }
 
-#completed_task_summary th{
+#running_task_summary th{
     background-color: blue;
     border: none;
 }
