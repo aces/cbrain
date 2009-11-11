@@ -793,6 +793,7 @@ td.taskinfo {
     font-weight: bold;
     font-size: 11px;
     color: #ffffff;
+    white-space: nowrap;
 }
 
 .resource_list th a {
@@ -810,6 +811,7 @@ td.taskinfo {
     text-align: center;
     padding-left: 2em;
     padding-right: 2em;
+    white-space: nowrap;
 }
 
 /*.resource_list td.left {
