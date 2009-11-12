@@ -12,6 +12,7 @@
 
 require 'ftools'
 require 'fileutils'
+require 'find'
 
 #This model is meant to represent an arbitrary collection files (which
 #may or may not contain subdirectories) registered as a single entry in 
@@ -46,7 +47,9 @@ class FileCollection < Userfile
       end
     end
 
-
+    self.remove_unwanted_files
+    
+    
     #Get size
     #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
 
@@ -174,6 +177,21 @@ class FileCollection < Userfile
     "(Collection)"
   end
 
+  #Mathieu Desrosiers
+  #remove unwanted .DS_Store file and "._" files from a packages if there is some
+  #this function may be harmfull and only matter if the archive came from a MACOSX archive
+  def remove_unwanted_files
+    dir_name = self.cache_full_path
+    Dir.chdir(dir_name) do       
+      Find.find("."){|file|
+        if File.fnmatch("._*",File.basename(file))
+          File.delete(file)
+        elsif File.fnmatch(".DS_Store",File.basename(file))
+          File.delete(file)
+        end
+      }
+    end
+  end
 
   #Remove the common root (if there is one) from the directory structure of this collection.
   def flatten
@@ -207,3 +225,5 @@ class FileCollection < Userfile
 
   end
 end
+
+
