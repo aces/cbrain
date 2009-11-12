@@ -70,7 +70,7 @@
          <%= set_order_icon('tags.name', current_session[:sort_order], current_session[:sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Groups", :url  =>  userfiles_path(:sort_order  => 'groups.name', :sort_dir  => set_dir_old('groups.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
+         <%= link_to_remote  "Group", :url  =>  userfiles_path(:sort_order  => 'groups.name', :sort_dir  => set_dir_old('groups.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('groups.name', current_session[:sort_order], current_session[:sort_dir]) %>
       </th>
       <th>

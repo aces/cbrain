@@ -1223,6 +1223,7 @@ td.right_align {
     float: right;
     margin-right: 2em;
     height: 9em;
+    border: 0;
 }
 
 #canarie_logo {
