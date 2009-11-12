@@ -46,7 +46,6 @@ class FileCollection < Userfile
       end
     end
 
-    self.remove_unwanted_files
 
     #Get size
     #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
@@ -175,18 +174,7 @@ class FileCollection < Userfile
     "(Collection)"
   end
 
-  #Mathieu Desrosiers, this function is dangerous, it should test if the archive came from a MACOSX archive
-  #remove the unwanted .DS_Store file and "._" files from a packages 
-  def remove_unwanted_files
-    require find
-    Find.find("."){|file|
-    if File.fnmatch("._*",File.basename(file))
-      File.delete(file)
-    elsif File.fnmatch(".DS_Store",File.basename(file))
-      File.delete(file)
-    end
-  }
- 
+
   #Remove the common root (if there is one) from the directory structure of this collection.
   def flatten
     dir_name = self.cache_full_path
