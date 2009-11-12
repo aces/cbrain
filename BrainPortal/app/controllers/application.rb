@@ -41,6 +41,13 @@ class ApplicationController < ActionController::Base
   def catch_cbrain_message
     begin
       yield
+    rescue ActiveRecord::RecordNotFound
+      flash[:error] = "The record you requested does not exist."
+      if self.respond_to?(:index)
+         redirect_to :action => :index
+      else
+         redirect_to home_path
+      end
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")

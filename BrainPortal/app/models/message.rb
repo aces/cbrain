@@ -15,7 +15,8 @@ class Message < ActiveRecord::Base
   
   # Send a new message to a user, the users of a group, or a site.
   #
-  # The +destination+ argument can be a User, a Group, or a Site.
+  # The +destination+ argument can be a User, a Group, a Site,
+  # or an (mixed) array of any of these.
   #
   # Potential options are +type+, +header+, +description+,
   # +variable_text+, +expiry+ and +critical+.
@@ -46,14 +47,6 @@ class Message < ActiveRecord::Base
     expiry       = params[:expiry]        || params["expiry"]
     critical     = params[:critical]      || params["critical"] || false
 
-    # Find the group associated with the destination
-    group = case destination
-              when Group, User, Site
-                destination.own_group
-              else
-                cb_error "Destination not acceptable for send_message."
-            end
-
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
 
@@ -61,16 +54,11 @@ class Message < ActiveRecord::Base
     description = nil if description.blank?
     var_text    = nil if var_text.blank?
 
-    # Select the list of users in a group; a special case is made when the
-    # group contains only one user along with 'admin', in that case
-    # admin is rejected.
-    allusers = group.users
-    if group.name != 'admin' && allusers.size == 2
-      allusers.reject! { |u| u.login == 'admin' }
-    end
-
     # What the method returns
     messages_sent = []
+
+    # Find the list of users who will receive the messages
+    allusers = find_users_for_destination(destination)
 
     # Send to all selected users
     allusers.each do |user|
@@ -200,5 +188,36 @@ class Message < ActiveRecord::Base
     # Update and create message
     self.variable_text = current_text
   end
-  
+
+  private
+
+  def self.find_users_for_destination(destination)
+
+    # Find the group(s) associated with the destination
+    groups = case destination
+              when Group, User, Site
+                [ destination.own_group ]
+              when Array
+                begin
+                  (destination.map &:own_group) | []
+                rescue NoMethodError
+                  cb_error "Destination not acceptable for send_message."
+                end
+              else
+                cb_error "Destination not acceptable for send_message."
+            end
+
+    # Get a unique list of all users from all these groups
+    allusers = groups.inject([]) { |flat,group| flat |= group.users }
+
+    # Select the list of users in list of groups; a special case is made
+    # when a single group contains only one user along with 'admin', in that case
+    # admin is rejected.
+    if groups.size == 1 && groups[0].name != 'admin' && allusers.size == 2
+      allusers.reject! { |u| u.login == 'admin' }
+    end
+
+    allusers
+  end
+
 end
