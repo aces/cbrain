@@ -380,6 +380,11 @@ class UserfilesController < ApplicationController
   #[<b>Delete files</b>] Delete the selected files (delete the file on disk
   #                      and purge the record from the database).
   def operation
+    unless params[:redirect_to_index].blank?
+      redirect_to :action => :index, :search_type => params[:search_type], :search_term => params[:search_term]
+      return
+    end
+    
     if params[:commit] == 'Download Files'
       operation = 'download'
     elsif params[:commit] == 'Delete Files'

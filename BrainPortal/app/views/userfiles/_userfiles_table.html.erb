@@ -44,9 +44,14 @@
             end
           %>
       </th>
-      <th>
+      <th onMouseOver="$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
         <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :sort_order  => 'userfiles.name', :sort_dir  => set_dir_old('userfiles.name', current_session[:sort_order], current_session[:sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('userfiles.name', current_session[:sort_order], current_session[:sort_dir]) %>
+        <div id="name_search_filter" class="filter_list" style="display:none;">
+          <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
+          <%= hidden_field_tag :search_type, "name_search" %>
+          Search: <%= text_field_tag :search_term %>
+        </div>
       </th>
       <th>
         <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'users.login', :sort_dir  => set_dir_old('users.login', current_session[:sort_order], current_session[:sort_dir])}, :method  => 'get'  %>
