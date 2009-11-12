@@ -46,12 +46,12 @@ end
 unless File.directory?(CBRAIN::DRMAA_sharedir)
   raise "CBRAIN configuration error: grid work directory '#{CBRAIN::DRMAA_sharedir}' does not exist!"
 end
-#unless File.directory?(CBRAIN::Quarantine_dir)
-#  raise "CBRAIN configuration error: quarantine dir '#{CBRAIN::Quarantine_dir}' does not exist!"
-#end
-#unless File.directory?(CBRAIN::CIVET_dir)
-#  raise "CBRAIN configuration error: civet code dir '#{CBRAIN::CIVET_dir}' does not exist!"
-#end
+unless File.directory?(CBRAIN::Quarantine_dir)
+  raise "CBRAIN configuration error: quarantine dir '#{CBRAIN::Quarantine_dir}' does not exist!"
+end
+unless File.directory?(CBRAIN::CIVET_dir)
+  raise "CBRAIN configuration error: civet code dir '#{CBRAIN::CIVET_dir}' does not exist!"
+end
 
 if CBRAIN::BOURREAU_CLUSTER_NAME.empty? || CBRAIN::BOURREAU_CLUSTER_NAME == "nameit"
   raise "CBRAIN configuration error: this Bourreau has not been given a name!"
