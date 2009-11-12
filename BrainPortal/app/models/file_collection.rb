@@ -36,7 +36,7 @@ class FileCollection < Userfile
     Dir.chdir(directory) do
       escaped_tmparchivefile = archive_file_name.gsub("'", "'\\\\''")
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-        system("tar -xzf '#{escaped_tmparchivefile}'")
+        system("gunzip < '#{escaped_tmparchivefile}' | tar xf -")
       elsif archive_file_name =~ /\.tar$/i
         system("tar -xf '#{escaped_tmparchivefile}'")
       elsif archive_file_name =~ /\.zip/i
@@ -45,6 +45,8 @@ class FileCollection < Userfile
         raise "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
       end
     end
+
+    self.remove_unwanted_files
 
     #Get size
     #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
@@ -173,6 +175,18 @@ class FileCollection < Userfile
     "(Collection)"
   end
 
+  #Mathieu Desrosiers, this function is dangerous, it should test if the archive came from a MACOSX archive
+  #remove the unwanted .DS_Store file and "._" files from a packages 
+  def remove_unwanted_files
+    require find
+    Find.find("."){|file|
+    if File.fnmatch("._*",File.basename(file))
+      File.delete(file)
+    elsif File.fnmatch(".DS_Store",File.basename(file))
+      File.delete(file)
+    end
+  }
+ 
   #Remove the common root (if there is one) from the directory structure of this collection.
   def flatten
     dir_name = self.cache_full_path
