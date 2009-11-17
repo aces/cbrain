@@ -230,7 +230,7 @@ class SshTunnel
 
     sshcmd = "ssh -n -N -x -M "
 
-    if ! label.blank? && label.to_s =~ /^\w+$/
+    if ! label.blank? && label.to_s =~ /^[\w\-\.\+]+$/
       sshcmd += "-o SendEnv=#{label.to_s} "
     end
 
