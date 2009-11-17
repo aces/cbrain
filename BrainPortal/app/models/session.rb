@@ -32,11 +32,11 @@ class Session
 
   def initialize(session, params) #:nodoc:
     @session = session
-    @session[:basic_filters] ||= []
-    @session[:tag_filters] ||= []
-    @session[:custom_filters] ||= []
-    @session[:pagination] ||= 'on'
-    @session[:sort_order] ||= 'userfiles.lft'
+    @session[:userfiles_basic_filters] ||= []
+    @session[:userfiles_tag_filters] ||= []
+    @session[:userfiles_custom_filters] ||= []
+    @session[:userfiles_pagination] ||= 'on'
+    @session[:userfiles_sort_order] ||= 'userfiles.lft'
     
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
@@ -48,32 +48,32 @@ class Session
   #contained in the +params+ hash.
   def update(params)
     controller = params[:controller]
-    
-    filter = Userfile.get_filter_name(params[:search_type], params[:search_term])   
-    if params[:search_type] == 'unfilter'
-      @session[:basic_filters] = []
-      @session[:tag_filters] = []
-      @session[:custom_filters] = []
+
+    filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])   
+    if params[:userfiles_search_type] == 'unfilter'
+      @session[:userfiles_basic_filters] = []
+      @session[:userfiles_tag_filters] = []
+      @session[:userfiles_custom_filters] = []
     else
-      @session[:basic_filters] |= [filter] unless filter.blank?
-      @session[:tag_filters] |= [params[:tag_filter]] unless params[:tag_filter].blank?
-      @session[:custom_filters] |= [CustomFilter.find(params[:custom_filter]).name] unless params[:custom_filter].blank?
-      @session[:basic_filters].delete params[:remove_basic_filter] if params[:remove_basic_filter]
-      @session[:custom_filters].delete params[:remove_custom_filter] if params[:remove_custom_filter]
-      @session[:tag_filters].delete params[:remove_tag_filter] if params[:remove_tag_filter]
+      @session[:userfiles_basic_filters] |= [filter] unless filter.blank?
+      @session[:userfiles_tag_filters] |= [params[:userfiles_tag_filter]] unless params[:userfiles_tag_filter].blank?
+      @session[:userfiles_custom_filters] |= [CustomFilter.find(params[:userfiles_custom_filter]).name] unless params[:userfiles_custom_filter].blank?
+      @session[:userfiles_basic_filters].delete params[:userfiles_remove_basic_filter] if params[:userfiles_remove_basic_filter]
+      @session[:userfiles_custom_filters].delete params[:userfiles_remove_custom_filter] if params[:userfiles_remove_custom_filter]
+      @session[:userfiles_tag_filters].delete params[:userfiles_remove_tag_filter] if params[:userfiles_remove_tag_filter]
     end
         
-    if params[:view_all] && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
-      @session[:view_all] = params[:view_all]
+    if params[:userfiles_view_all] && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
+      @session[:userfiles_view_all] = params[:userfiles_view_all]
     end
     
-    if params[:sort_order] && !params[:page]
-      @session[:sort_order] = params[:sort_order]
-      @session[:sort_dir] = params[:sort_dir]
+    if params[:userfiles_sort_order] && !params[:page]
+      @session[:userfiles_sort_order] = params[:userfiles_sort_order]
+      @session[:userfiles_sort_dir] = params[:userfiles_sort_dir]
     end
         
-    if params[:pagination]
-      @session[:pagination] = params[:pagination]
+    if params[:userfiles_pagination]
+      @session[:userfiles_pagination] = params[:userfiles_pagination]
     end
         
     if params[controller]
@@ -90,12 +90,12 @@ class Session
   
   #Is pagination of the Userfile index currently active?
   def paginate?
-    @session[:pagination] == 'on'
+    @session[:userfiles_pagination] == 'on'
   end
   
   #Is the current *admin* user viewing all files on the system (or only his/her own)?
   def view_all?
-    @session[:view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
+    @session[:userfiles_view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
   end
   
   def params_for(controller)

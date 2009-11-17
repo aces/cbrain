@@ -19,12 +19,12 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:        
-    custom_filters = current_session.custom_filters
+    custom_filters = current_session.userfiles_custom_filters
     custom_filter_tags = []
     custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
 
-    name_filters = current_session.basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
-    tag_filters = current_session.tag_filters + custom_filter_tags
+    name_filters = current_session.userfiles_basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
+    tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
 
     conditions = Userfile.convert_filters_to_sql_query(name_filters)
 
@@ -43,7 +43,7 @@ class UserfilesController < ApplicationController
     @userfiles = Userfile.find(:all,
       :include  => [:tags, {:user => :site}, :data_provider, :group, :sync_status],
       :conditions => conditions,
-      :order => "#{current_session.sort_order} #{current_session.sort_dir}"
+      :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
     )
 
     @userfile_count     = @userfiles.size
@@ -55,7 +55,7 @@ class UserfilesController < ApplicationController
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
     end
 
-    @search_term = params[:search_term] if params[:search_type] == 'name_search'
+    @search_term = params[:userfiles_search_term] if params[:userfiles_search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
     if current_user.has_role? :admin
       @user_groups = Group.find(:all, :order => "type")
@@ -381,7 +381,7 @@ class UserfilesController < ApplicationController
   #                      and purge the record from the database).
   def operation
     unless params[:redirect_to_index].blank?
-      redirect_to :action => :index, :search_type => params[:search_type], :search_term => params[:search_term]
+      redirect_to :action => :index, :userfiles_search_type => params[:userfiles_search_type], :userfiles_search_term => params[:userfiles_search_term]
       return
     end
     

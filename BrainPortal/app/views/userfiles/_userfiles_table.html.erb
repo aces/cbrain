@@ -3,23 +3,23 @@
       <td colspan="10" class="left">
   
            <div id="pages">
-                <% if session[:pagination] == 'on' %>
+                <% if session[:userfiles_pagination] == 'on' %>
                    <%= will_paginate %>
                  <% end %>
                  <% if @userfile_count > @userfiles_per_page %>
-                     <%= link_to_remote "Toggle Pagination", :url  => userfiles_path(:pagination => set_toggle(session[:pagination])), :method  => 'get' %>
+                     <%= link_to_remote "Toggle Pagination", :url  => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method  => 'get' %>
                  <% end %><br>
                  <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-                   <%= link_to_remote session[:view_all] == 'on' ? "Show your files ": "Show all files on the system", :url  => userfiles_path(:view_all => set_toggle(session[:view_all])), :method  => 'get' %>
+                   <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url  => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method  => 'get' %>
                  <% end %><br><br>
-                 <%= link_to_remote  "Tree view", :url  =>  {:action  => :index, :sort_order  => 'userfiles.lft'}, :method  => 'get'  %>
-                 <%= set_order_icon('userfiles.lft', current_session[:sort_order]) %>
+                 <%= link_to_remote  "Tree view", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.lft'}, :method  => 'get'  %>
+                 <%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
            </div>
            
            <div id="filter_div">
              Active Filters 
              <small>
-                <%= link_to_remote 'clear', {:url  => {:action  => :index, :search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
+                <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
              </small>
              <div id="current_filters">
                <%= render :partial => 'current_filters' %>
@@ -45,41 +45,41 @@
           %>
       </th>
       <th onMouseOver="$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
-        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :sort_order  => 'userfiles.name', :sort_dir  => set_dir_old('userfiles.name', current_session[:sort_order], current_session[:sort_dir])}, :method  => 'get'  %>
-        <%= set_order_icon('userfiles.name', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+        <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
         <div id="name_search_filter" class="filter_list" style="display:none;">
           <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
-          <%= hidden_field_tag :search_type, "name_search" %>
-          Search: <%= text_field_tag :search_term %>
+          <%= hidden_field_tag :userfiles_search_type, "name_search" %>
+          Search: <%= text_field_tag :userfiles_search_term %>
         </div>
       </th>
       <th>
-        <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :sort_order  => 'users.login', :sort_dir  => set_dir_old('users.login', current_session[:sort_order], current_session[:sort_dir])}, :method  => 'get'  %>
-        <%= set_order_icon('users.login', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+        <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:sort_order  => 'userfiles.created_at', :sort_dir  => set_dir_old('userfiles.created_at', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-        <%= set_order_icon('userfiles.created_at', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Size", :url  =>  userfiles_path(:sort_order  => 'userfiles.size', :sort_dir  => set_dir_old('userfiles.size', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-        <%= set_order_icon('userfiles.size', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Size", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= set_order_icon('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Tags", :url  =>  userfiles_path(:sort_order  => 'tags.name', :sort_dir  => set_dir_old('tags.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-         <%= set_order_icon('tags.name', current_session[:sort_order], current_session[:sort_dir]) %>
+         <%= link_to_remote  "Tags", :url  =>  userfiles_path(:userfiles_sort_order  => 'tags.name', :userfiles_sort_dir  => set_dir_old('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+         <%= set_order_icon('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Group", :url  =>  userfiles_path(:sort_order  => 'groups.name', :sort_dir  => set_dir_old('groups.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-         <%= set_order_icon('groups.name', current_session[:sort_order], current_session[:sort_dir]) %>
+         <%= link_to_remote  "Group", :url  =>  userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+         <%= set_order_icon('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:sort_order  => 'userfiles.group_writable', :sort_dir  => set_dir_old('userfiles.group_writable', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-         <%= set_order_icon('userfiles.group_writable', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+         <%= set_order_icon('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Provider", :url  =>  userfiles_path(:sort_order  => 'data_providers.name', :sort_dir  => set_dir_old('data_providers.name', current_session[:sort_order], current_session[:sort_dir])), :method  => 'get'  %>
-         <%= set_order_icon('data_providers.name', current_session[:sort_order], current_session[:sort_dir]) %>
+        <%= link_to_remote  "Provider", :url  =>  userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+         <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
     </tr>
   </thead>
