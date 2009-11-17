@@ -248,7 +248,7 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups
-    newGroup = SystemGroup.new(:name => self.login, :site  => self.site)
+    newGroup = UserGroup.new(:name => self.login, :site  => self.site)
     newGroup.save!
     
     everyoneGroup = SystemGroup.find_by_name("everyone")

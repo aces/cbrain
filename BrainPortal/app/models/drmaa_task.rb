@@ -43,6 +43,30 @@ class DrmaaTask < ActiveResource::Base
   RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready"]
   FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed To Start"]
 
+  # This associate on the the keywords we use in the interface
+  # to a task status that 'implements' the operation (basically,
+  # simply setting the task's status to the value modifies the
+  # task's state). This is used in the controller.
+  OperationToNewStatus = {
+    "hold"      => "On Hold",
+    "release"   => "Queued",
+    "suspend"   => "Suspended",
+    "resume"    => "On CPU",
+  }
+
+  # In order to optimize the set of state transitions
+  # allowed in the tasks, this hash list when we can
+  # attempt to change the tasks states. This is also
+  # used in the controller.
+  AllowedOperations = { # destroy is handled differently
+    "Queued"    => [ "Terminated", "On Hold"   ],
+    "On Hold"   => [ "Terminated", "Queued"    ],
+    "On CPU"    => [ "Terminated", "Suspended" ],
+    "Suspended" => [ "Terminated", "On CPU"    ]
+    # Other transitions not used by the interface,
+    # as they cannot be triggered by the user.
+  }
+
   # This sets the default resource address to an
   # invalid URL; it will be replaced as needed by the
   # URL of a real bourreau ActiveResource later on.

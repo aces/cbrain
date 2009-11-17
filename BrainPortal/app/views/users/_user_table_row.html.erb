@@ -2,7 +2,7 @@
   <td><%=h user.full_name %></td>
   <td><%=h user.login %></td>
   <td><%=h user.email %></td>
-  <td><%= user.groups.map{|g| h(g.name)}.join("<br>") %></td>
+  <td><%= user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.map{|g| h(g.name)}.sort.join("<br>") %></td>
   <td><%=h user.role.humanize %></td>
   <td><%=h user.site.name rescue "(Unassigned)" %></td>
   <td><%=h user.userfiles.size %></td>

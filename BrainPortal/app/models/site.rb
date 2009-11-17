@@ -102,7 +102,7 @@ class Site < ActiveRecord::Base
   private
   
   def create_system_group
-    SystemGroup.create!(:name => self.name, :site_id  => self.id)
+    SiteGroup.create!(:name => self.name, :site_id  => self.id)
   end
   
   def user_system_group_remove(user)

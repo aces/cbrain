@@ -124,7 +124,7 @@ class UserfilesController < ApplicationController
       CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
         @userfile.sync_to_cache
         @userfile.set_size
-      end
+      end # spawn
       @sync_status = "ToCache" # so the interface says 'in progress'
     end
     
@@ -228,7 +228,7 @@ class UserfilesController < ApplicationController
                              :header  => "SingleFile Uploaded", 
                              :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}/edit]]"
                              )
-      end 
+      end # spawn
       
       redirect_to :action => :index
       return
@@ -277,7 +277,7 @@ class UserfilesController < ApplicationController
           ensure
             File.delete(tmpcontentfile) rescue true
           end
-        end
+        end # spawn
       
         flash[:notice] = "Collection '#{collection_name}' created."
         current_user.addlog_context(self,"Uploaded FileCollection '#{collection_name}'")
@@ -310,7 +310,7 @@ class UserfilesController < ApplicationController
       ensure
         File.delete(tmpcontentfile) rescue true
       end
-    end
+    end # spawn
 
     flash[:notice] += "Your files are being extracted and added in background."
     redirect_to :action => :index
@@ -399,6 +399,10 @@ class UserfilesController < ApplicationController
       operation = 'permission_update'
     elsif params[:commit] == 'Move Files'
       operation = 'move_to_other_provider'
+      task      = 'move'
+    elsif params[:commit] == 'Copy Files'
+      operation = 'move_to_other_provider'
+      task      = 'copy'
     else
       operation   = 'cluster_task'
       task = params[:operation]
@@ -420,8 +424,6 @@ class UserfilesController < ApplicationController
       redirect_to :action => :index
       return
     end
-
-    user_systemgroup = Group.find_by_name(current_user.login)
 
     # TODO: replace "case" and make each operation a private method ?
     case operation
@@ -499,7 +501,7 @@ class UserfilesController < ApplicationController
       when 'merge_collections'
         collection = FileCollection.new(
             :user_id          => current_user.id,
-            :group_id         => user_systemgroup.id,
+            :group_id         => current_user.own_group.id,
             :data_provider_id => (
                  params[:data_provider_id] ||
                  DataProvider.find_first_online_rw(current_user).id
@@ -511,16 +513,24 @@ class UserfilesController < ApplicationController
           Message.send_message(current_user,
                               :message_type  => 'notice', 
                               :header  => "Collections Merged", 
-                              :variable_text  => collection.name
+                              :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
                               )
-        end
+        end # spawn
 
         flash[:notice] = "Collection #{collection.name} is being created in background."
 
       when "move_to_other_provider"
 
+        # Default message keywords for 'move'
+        word_move  = 'move'
+        word_moved = 'moved'
+        if task == 'copy'  # switches to 'copy' mode, so adjust the words
+          word_move  = 'copy'
+          word_moved = 'copied'
+        end
+
         unless params[:operation] =~ /^moveto_(\d+)$/
-          flash[:error] += "No data provider provided.\n"
+          flash[:error] += "No data provider specified.\n"
           redirect_to :action => :index
           return
         end
@@ -534,7 +544,7 @@ class UserfilesController < ApplicationController
           return
         end
 
-        CBRAIN.spawn_with_active_records(current_user,"Move To Other Data Provider") do
+        CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
           moved_list  = []
           failed_list = []
           filelist.each do |id|
@@ -543,36 +553,43 @@ class UserfilesController < ApplicationController
             orig_provider = u.data_provider
             next if orig_provider.id == data_provider_id
             begin
-              if orig_provider.provider_move_to_otherprovider(u,new_provider)
-                u.save
-                u.addlog "Moved from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
-                moved_list << u.name
+              if task == 'move'
+                res = u.provider_move_to_otherprovider(new_provider)
               else
-                failed_list << u.name
+                res = u.provider_copy_to_otherprovider(new_provider)
+              end
+              if res
+                u.save
+                u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+                moved_list << u
+              else
+                failed_list << u
               end
             rescue => e
-              u.addlog "Could not move from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
-              failed_list << u.name
+              u.addlog "Could not #{word_move} from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
+              failed_list << u
             end
           end
+
           if moved_list.size > 0
             Message.send_message(current_user,
                                 :message_type  => 'notice', 
-                                :header  => "Files moved to #{new_provider.name}",
-                                :variable_text  => "List:\n" + moved_list.join("\n")
+                                :header  => "Files #{word_moved} to #{new_provider.name}",
+                                :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
                                 ) 
           end
-          
+
           if failed_list.size > 0
             Message.send_message(current_user,
                                 :message_type  => 'error', 
-                                :header  => "Some files could not be moved to #{new_provider.name}",
-                                :variable_text  => "List:\n" + failed_list.join("\n")
+                                :header  => "Some files could not be #{word_moved} to #{new_provider.name}",
+                                :variable_text  => "List:\n" + failed_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
                                 )
           end
-        end
 
-        flash[:notice] += "Your files are being moved in the background.\n"
+        end # spawn
+
+        flash[:notice] += "Your files are being #{word_moved} in the background.\n"
         redirect_to :action => :index
         return
 

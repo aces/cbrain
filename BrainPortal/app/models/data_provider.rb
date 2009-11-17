@@ -127,6 +127,7 @@ require 'digest/md5'
 # * provider_erase(userfile)
 # * provider_rename(userfile,newname)
 # * provider_move_to_otherprovider(userfile,otherprovider)
+# * provider_copy_to_otherprovider(userfile,otherprovider)
 # * provider_list_all
 #
 # Note that provider_erase() and provider_rename() are also present in
@@ -140,8 +141,9 @@ require 'digest/md5'
 #
 # None of the methods issue a save() operation on the +userfile+
 # they are given in argument; this means that after a successful
-# provider_rename() or provider_move_to_otherprovider(), the caller
-# must call the save() method explicitely.
+# provider_rename(), provider_move_to_otherprovider() or
+# provider_copy_to_otherprovider(), the caller must call
+# the save() method explicitely.
 #
 # = Implementations In Subclasses
 #
@@ -417,8 +419,8 @@ class DataProvider < ActiveRecord::Base
   # update the +userfile+'s data_provider_id but it
   # will NOT save it back to the DB!
   def provider_move_to_otherprovider(userfile,otherprovider)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online
-    cb_error "Error: provider #{self.name} is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."            unless self.online
+    cb_error "Error: provider #{self.name} is read_only."          if self.read_only
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
     cb_error "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
     return true if self.id == otherprovider.id
@@ -441,7 +443,47 @@ class DataProvider < ActiveRecord::Base
     provider_erase(userfile)
     userfile.data_provider_id = otherprovider.id  # must return it to true value
 
-    true
+    self
+  end
+
+  # Copy a +userfile+ from the current provider to
+  # +otherprovider+. Returns the newly created file.
+  # Optionally, rename the file at the same time.
+  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil)
+    cb_error "Error: provider #{self.name} is offline."            unless self.online
+    cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
+    cb_error "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
+    return true  if self.id == otherprovider.id
+    return false if newname && ! Userfile.is_legal_filename?(newname)
+    target_exists = Userfile.find(:first,
+        :conditions => { :name             => (newname || userfile.name),
+                         :data_provider_id => otherprovider.id,
+                         :user_id          => userfile.user_id } )
+    return false if target_exists
+
+    # Create new file entry
+    newfile                  = userfile.clone
+    newfile.data_provider_id = otherprovider.id
+    newfile.name             = newname if newname
+    newfile.save
+
+    # Copy log
+    old_log = userfile.getlog
+    newfile.addlog("Copy of file '#{userfile.name}' on DataProvider '#{self.name}'")
+    if old_log
+      newfile.addlog("---- Original log follows: ----")
+      newfile.raw_append_log(old_log)
+      newfile.addlog("---- Original log ends here ----")
+    end
+
+    # Get path to cached copy on current provider
+    sync_to_cache(userfile)
+    currentcache = userfile.cache_full_path
+
+    # Copy to other provider
+    otherprovider.cache_copy_from_local_file(newfile,currentcache)
+
+    newfile
   end
 
   # This method provides a way for a client of the provider

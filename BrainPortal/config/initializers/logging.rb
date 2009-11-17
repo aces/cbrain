@@ -260,6 +260,20 @@ module ActRecLog
     arl.log
   end
 
+  # This appends the raw +text+ to the current
+  # ActiveRecord's log, without any reformating.
+  # Use addlog() for normal operation; this method
+  # is rarely used in normal situations.
+  def raw_append_log(text)
+    return false if self.is_a?(ActiveRecordLog)
+    arl = active_record_log_find_or_create
+    log = arl.log + text
+    while log.size > 65500 && log =~ /\n/   # TODO: archive ?
+      log.sub!(/^[^\n]*\n/,"")
+    end
+    arl.update_attributes( { :log => log } )
+  end
+
   protected
 
   def active_record_log #:nodoc:

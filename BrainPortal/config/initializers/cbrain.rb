@@ -103,6 +103,25 @@ class CBRAIN
     subchildpid
   end
 
+  # This method is just like spawn_with_active_records() except
+  # that the block will be spawn only when +condition+ is
+  # true; otherwise the block is executed in the current process.
+  #
+  # This is useful on the portal side when you have a block of
+  # instructions where in some circumstances you want it spawned
+  # and in others you want to wait until it's finished.
+  def self.spawn_with_active_records_if(condition,destination = nil, taskname = 'Internal Background Task')
+    if condition
+      self.spawn_with_active_records(destination,taskname) { yield }
+    else
+      begin
+        yield
+      rescue => itswrong
+        Message.send_internal_error_message(destination,"#{taskname} with PID #{$$}",itswrong)
+      end
+    end
+  end
+
   def self.spawn_fully_independent
     pid = Process.fork do  # TODO fork two levels too ?
       Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN

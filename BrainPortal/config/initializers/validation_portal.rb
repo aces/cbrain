@@ -9,9 +9,16 @@
 # $Id$
 #
 
+#=================================================================
+# IMPORTANT NOTE : When adding new validation code in this file,
+# remember that in deployment there can be several instances of
+# the Rails application all executing this code at the same time.
+#=================================================================
+
 #-----------------------------------------------------------------------------
 puts "C> CBRAIN BrainPortal validation starting, " + Time.now.to_s
 #-----------------------------------------------------------------------------
+
 require 'socket'
 
 
@@ -36,7 +43,8 @@ unless File.directory?(CBRAIN::DataProviderCache_dir)
 end
 
 
-begin
+# Traps exceptions likely to happen for system in need of migrations
+begin # See the two matching keywords :RESCUE:
 
 
 
@@ -92,12 +100,12 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
   user_group = Group.find_by_name(u.login)
   if ! user_group
     puts "C> \t- User #{u.login} doesn't have their own system group. Creating one."
-    user_group = SystemGroup.create!(:name  => u.login)
+    user_group = UserGroup.create!(:name  => u.login)
     u.groups  << user_group
     u.save!
-  elsif ! user_group.is_a?(SystemGroup)
-    puts "C> \t- '#{user_group.name}' group migrated to SystemGroup."
-    user_group.type = 'SystemGroup'
+  elsif ! user_group.is_a?(UserGroup)
+    puts "C> \t- '#{user_group.name}' group migrated to class UserGroup."
+    user_group.type = 'UserGroup'
     user_group.save!
   end
   
@@ -110,17 +118,17 @@ end
 
 
 #-----------------------------------------------------------------------------
-puts "C> Ensuring that all sites have a group and that all their users belong to it."
+puts "C> Ensuring that all sites have a group and that all their users belong to it..."
 #-----------------------------------------------------------------------------
 
 Site.all.each do |s|
   site_group = Group.find_by_name(s.name)
   if ! site_group
-     puts "C> \t- Site #{s.name} doesn't have their own system group. Creating one."
-     site_group = SystemGroup.create!(:name  => s.name, :site_id => s.id)
-   elsif ! site_group.is_a?(SystemGroup)
-     puts "C> \t- '#{site_group.name}' group migrated to SystemGroup."
-     site_group.type = 'SystemGroup'
+     puts "C> \t- Site #{s.name} doesn't have their own site group. Creating one."
+     site_group = SiteGroup.create!(:name  => s.name, :site_id => s.id)
+   elsif ! site_group.is_a?(SiteGroup)
+     puts "C> \t- '#{site_group.name}' group migrated to class SiteGroup."
+     site_group.type = 'SiteGroup'
      site_group.save!
    end
   
@@ -240,8 +248,9 @@ ss_deleted = 0
 SyncStatus.all.each do |ss|
   ss_rr_id = ss.remote_resource_id
   if ss_rr_id.blank? || ! rr_ids[ss_rr_id]
-    ss.destroy rescue true
-    ss_deleted += 1
+    if (ss.destroy rescue false)
+      ss_deleted += 1
+    end
   end
 end
 if ss_deleted > 0
@@ -267,7 +276,11 @@ end
 
 
 #-----------------------------------------------------------------------------
+# :RESCUE: For the cases when the Rails application is started as part of
+# a DB migration.
+#-----------------------------------------------------------------------------
 rescue => error
+
   if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
     puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
   elsif error.to_s.match(/Mysql::Error: Unknown column/i)
@@ -277,4 +290,5 @@ rescue => error
   else
     raise
   end
-end
+
+end # :RESCUE:

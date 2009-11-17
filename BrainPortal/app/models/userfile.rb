@@ -409,6 +409,16 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
+  def provider_move_to_otherprovider(otherprovider)
+    self.data_provider.provider_move_to_otherprovider(self,otherprovider)
+  end
+
+  # See the description in class DataProvider
+  def provider_copy_to_otherprovider(otherprovider,newname = nil)
+    self.data_provider.provider_copy_to_otherprovider(self,otherprovider,newname)
+  end
+
+  # See the description in class DataProvider
   def cache_readhandle(&block)
     self.data_provider.cache_readhandle(self,&block)
   end

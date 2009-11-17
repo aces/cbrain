@@ -15,7 +15,7 @@ class TasksController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-   
+
   def index #:nodoc:   
     @bourreaux = available_bourreaux(current_user)
     if current_user.has_role? :admin
@@ -233,7 +233,18 @@ class TasksController < ApplicationController
       return
     end
 
-    affected_tasks = []
+    # Prepare counters for how many tasks affected.
+    sent_ok      = 0
+    sent_failed  = 0
+    sent_skipped = 0
+
+    # Decide in which conditions we spawn a background job to send
+    # the operation to the tasks...
+    do_in_spawn  = tasklist.size > 5
+
+    # This block will either run in background or not depending
+    # on do_in_spawn
+    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to a list of tasks") do
 
     tasklist.each do |task_id|
 
@@ -243,42 +254,60 @@ class TasksController < ApplicationController
         DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
         task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
       rescue
-        flash[:error] += "Task #{task_id} does not exist, or its Execution Server is currently down.\n"
+        sent_failed += 1
         next
       end
 
-      continue if task.user_id != current_user.id && current_user.role != 'admin'
-
-      case operation
-        when "hold"
-          task.status = "On Hold"
-          task.save
-        when "release"
-          task.status = "Queued"
-          task.save
-        when "suspend"
-          task.status = "Suspended"
-          task.save
-        when "resume"
-          task.status = "On CPU"
-          task.save
-        when "delete"
-          task.destroy
-        when "terminate"
-          task.status = "Terminated"
-          task.save
+      if task.user_id != current_user.id && current_user.role != 'admin'
+        sent_skipped += 1
+        continue 
       end
 
-      affected_tasks << task.bname_tid
+      begin
+        if operation == 'delete'
+          task.destroy
+          sent_ok += 1
+        else
+          cur_status  = task.status
+          allowed_new = DrmaaTask::AllowedOperations[cur_status] || []
+          new_status  = DrmaaTask::OperationToNewStatus[operation]
+          if new_status && allowed_new.include?(new_status)
+            task.status = new_status
+            if task.save
+              sent_ok += 1
+            else
+              sent_failed += 1
+            end
+          else
+            sent_skipped += 1
+          end
+        end
+      rescue => e # TODO record what error occured to inform user?
+        sent_failed += 1
+      end
+
+    end # foreach task ID
+
+    if do_in_spawn
+      Message.send_message(current_user, {
+        :header        => "Finished sending #{operation} to #{tasklist.size} tasks.",
+        :message_type  => :notice,
+        :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
+        }
+      )
     end
 
-    message = "Sent '#{operation}' to tasks: #{affected_tasks.join(", ")}"
+    end # End of spawn_if block
 
-    current_user.addlog_context(self,message)
-    flash[:notice] += message
+    if do_in_spawn
+      flash[:notice] = "The tasks are being notified in background."
+    else
+      flash[:notice] = "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
+    end
 
+    current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
     redirect_to :action => :index
 
-  end
+  end # method 'operation'
 
 end
