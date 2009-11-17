@@ -13,10 +13,14 @@
    <%= select_tag(
     "operation", 
     ' <option value="">Select a Conversion Operation</option>
-     <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-     <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-     <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>
-     <option value="DrmaaDcm2nii">Convert a DICOM run to NIfTI</option>' 
+      <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
+      <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
+      <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>
+      <option value="DrmaaDcm2nii">Convert a DICOM run to NIfTI</option>     
+      <option value="DrmaaDicom2hrrt">Convert DICOM collection to HRRT</option>
+      <option value="DrmaaAnalyze2hrrt">Convert ANALYZE collection to HRRT</option>
+      <option value="DrmaaMinc2analyze">Convert MINC files to ANALYZE</option>
+      <option value="DrmaaAsipro2minc">Convert ASIPRO files to MINC</option>' 
    ) 
    %>
 
