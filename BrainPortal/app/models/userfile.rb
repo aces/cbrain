@@ -285,13 +285,16 @@ class Userfile < ActiveRecord::Base
   #on file ownership or group access.
   def self.restrict_access_on_query(user, query, options = {})
     access_requested = options[:access_requested] || :write
+    
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
+        
     if access_requested.to_sym == :read
-      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?)))", query.shift].compact.join(" AND ")
+      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", query.shift].compact.join(" AND ")
     else
-      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.group_writable = true))", query.shift].compact.join(" AND ")
+      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", query.shift].compact.join(" AND ")
     end
 
-    variables = [user.id, user.group_ids] + query
+    variables = [user.id, user.group_ids, data_provider_ids] + query
 
     result_query = [query_string] + variables
 
