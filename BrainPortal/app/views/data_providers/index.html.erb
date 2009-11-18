@@ -66,7 +66,7 @@
       <tr>
           <th><%= h(@report_userlabels[uid]) %></th>
           <% @report_dplist.each do |dpid| %>
-            <% cell = @report_stats[uid][dpid] %>
+            <% cell = @report_stats[uid] ? @report_stats[uid][dpid] : nil %>
             <% if cell %>
               <td><%= pretty_size(cell[:size]) %><BR>
                   <%= pluralize(cell[:numfiles],"file") %><BR>
