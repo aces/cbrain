@@ -78,7 +78,10 @@ class UserfilesController < ApplicationController
     )
     
     #jiv stuff
-    jiv_files = current_user.userfiles.find(:all, :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"]).map(&:name)
+    jiv_files = Userfile.find_all_accessible_by_user(current_user, 
+                                                :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"], 
+                                                :access_requested => :read
+                                                ).map(&:name)   
     @subjects = Jiv.filter_subjects(jiv_files)
     @combos = []
     

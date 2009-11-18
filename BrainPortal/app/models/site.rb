@@ -40,9 +40,10 @@ class Site < ActiveRecord::Base
   #
   #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_all(options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @userfiles ||= Userfile.find(:all, options)
+    #raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
+    scope = Userfile.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    @userfiles ||= scope
   end
   
   #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
@@ -67,9 +68,10 @@ class Site < ActiveRecord::Base
   #
   #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_id(id, options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @userfiles ||= Userfile.find(id, options)
+    #raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
+    scope = Userfile.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ? AND userfiles.id = ?", self.id, id])
+    @userfiles ||= scope.first
   end
   
   #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).

@@ -536,7 +536,7 @@ class DataProvider < ActiveRecord::Base
   #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
   #except for :conditions which is set internally.
   def self.find_accessible_by_user(id, user, options = {})
-    new_options = options
+    new_options = options.dup
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]
@@ -560,7 +560,7 @@ class DataProvider < ActiveRecord::Base
   #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
   #except for :conditions which is set internally.
   def self.find_all_accessible_by_user(user, options = {})
-    new_options = options
+    new_options = options.dup
     
     unless user.has_role? :admin
       new_options[:conditions] = ["(data_providers.group_id IN (?))", user.group_ids]

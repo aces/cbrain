@@ -238,7 +238,7 @@ class Userfile < ActiveRecord::Base
     new_options = options.dup
 
     unless user.has_role?(:admin)
-      conditions = options[:conditions] || []
+      conditions = options[:conditions].dup || []
       conditions = [conditions] if conditions.is_a? String
       new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
     end
@@ -264,14 +264,15 @@ class Userfile < ActiveRecord::Base
   def self.find_all_accessible_by_user(user, options = {})
     old_options = options.dup
     new_options = options.dup
-
+    
     unless user.has_role?(:admin)
-      conditions = options[:conditions] || []
+      conditions = options[:conditions].dup || []
       conditions = [conditions] if conditions.is_a? String
-      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
+      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)      
     end
     old_options.delete :access_requested
     new_options.delete :access_requested
+
 
     if user.has_role? :site_manager
       user.site.userfiles_find_all(old_options) | find(:all, new_options)
