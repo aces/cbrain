@@ -50,4 +50,36 @@
 
    </table>
 
+<P>
+
+   <table class=resource_list" id="data_provider_stats">
+      <tr>
+        <th COLSPAN="<%= 1+@report_dplist.size %>">Disk Usage Statistics</th>
+      </tr>
+      <tr>
+          <th>-</th>
+          <% @report_dplist.each do |dpid| %>
+            <th><%= h(@report_dplabels[dpid]) %></th>
+          <% end %>
+      </tr>
+      <% @report_userlist.each do |uid| %>
+      <tr>
+          <th><%= h(@report_userlabels[uid]) %></th>
+          <% @report_dplist.each do |dpid| %>
+            <% cell = @report_stats[uid][dpid] %>
+            <% if cell %>
+              <td><%= pretty_size(cell[:size]) %><BR>
+                  <%= pluralize(cell[:numfiles],"file") %><BR>
+                  <% if cell[:unknowns] > 0 %>
+                     <%= cell[:unknowns] %> unknowns
+                  <% end %>
+            <% else %>
+              <td></td>
+            <% end %>
+          <% end %>
+      </tr>
+      <% end %>
+   </table>
+   
+
 </div> <!-- End class="generalcontent" --> 

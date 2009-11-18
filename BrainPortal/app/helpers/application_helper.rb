@@ -86,6 +86,24 @@ module ApplicationHelper
     final
   end
   
+  # Format a byte size for display in the view.
+  # Returns the size as one of
+  #   12.3 GB
+  #   12.3 MB
+  #   12.3 KB
+  #   123 bytes
+  def pretty_size(size)
+    if    size >= 10**9
+      sprintf "%6.1f GB", size/(10**9 + 0.0)
+    elsif size >= 10**6
+      sprintf "%6.1f MB", size/(10**6 + 0.0)
+    elsif size >= 10**3
+      sprintf "%6.1f KB", size/(10**3 + 0.0)
+    else
+      sprintf "%d bytes", size
+    end 
+  end
+
   #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
   #the current user has a role of *admin*. Otherwise, +name+ will be 
   #displayed as static text.

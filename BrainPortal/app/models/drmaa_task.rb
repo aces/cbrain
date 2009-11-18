@@ -43,11 +43,14 @@ class DrmaaTask < ActiveResource::Base
   RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready", "Setting Up"]
   FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed To Start"]
 
-  # This associate on the the keywords we use in the interface
+  # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
   # simply setting the task's status to the value modifies the
-  # task's state). This is used in the controller.
+  # task's state). This is used in the tasks controller.
   OperationToNewStatus = {
+    # HTML page
+    # op keyw   =>  New status
+    #----------    ------------
     "hold"      => "On Hold",
     "release"   => "Queued",
     "suspend"   => "Suspended",
@@ -57,8 +60,10 @@ class DrmaaTask < ActiveResource::Base
   # In order to optimize the set of state transitions
   # allowed in the tasks, this hash list when we can
   # attempt to change the tasks states. This is also
-  # used in the controller.
+  # used by the tasks controller.
   AllowedOperations = { # destroy is handled differently
+    # Current   =>   List of states we can change to
+    #----------    ------------------------------
     "Queued"    => [ "Terminated", "On Hold"   ],
     "On Hold"   => [ "Terminated", "Queued"    ],
     "On CPU"    => [ "Terminated", "Suspended" ],

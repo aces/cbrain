@@ -21,6 +21,29 @@ class DataProvidersController < ApplicationController
     @providers = DataProvider.find_all_accessible_by_user(current_user)
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
+
+    # Create statistics table
+    userlist         = if check_role(:admin)
+                         User.all
+                       elsif check_role(:site_admin)
+                         current_user.site.users
+                       else
+                         [ current_user ]
+                       end
+    @report_stats    = gather_usage_statistics(userlist,@providers)
+
+    # Keys into statistics tables
+    @report_userlist   = userlist.map &:id   ; @report_userlist << 'AllUsers' if @report_userlist.size > 1
+    @report_dplist     = @providers.map &:id ; @report_dplist   << 'AllDps'   if @report_dplist.size   > 1
+
+    # Labels for users
+    @report_userlabels = { 'AllUsers' => 'All Users' }
+    userlist.each   { |u| @report_userlabels[u.id] = u.login }
+ 
+    # Labels for DPs
+    @report_dplabels   = { 'AllDps'   => 'All Providers' }
+    @providers.each { |p| @report_dplabels[p.id]   = p.name }
+
   end
 
   # GET /data_providers/1
@@ -409,6 +432,61 @@ class DataProvidersController < ApplicationController
 
     # Return it
     fileinfolist
+  end
+
+  def gather_usage_statistics(users = nil,providers = nil)
+
+    # Which users to gather stats for
+    userlist = if users
+                 users.is_a?(Array) ? users : [ users ]
+               else
+                 User.all
+               end
+
+    # Which data providers to gather stats for
+    dplist   = if providers
+                 providers.is_a?(Array) ? providers : [ providers ]
+               else
+                 DataProviders.all
+               end
+
+    # All files that belong to these users on these data providers
+    filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
+
+    # Stats structure. It represents a two-dimensional table
+    # where rows are users and columns are data providers.
+    # And extra row called 'AllUsers' sums up the stats for all users
+    # on a data provider, and an extra row called 'AllDps' sums up
+    # the stats for one users on all data providers.
+    stats = { 'AllUsers' => {} }
+
+    tt = stats['AllUsers']['AllDps'] = { :size => 0, :numfiles => 0, :unknowns => 0 }
+
+    filelist.each do |userfile|
+      filetype          = userfile.class.to_s
+      size              = userfile.size
+      user_id           = userfile.user_id
+      data_provider_id  = userfile.data_provider_id
+
+           stats[user_id]                      ||= {} # row init
+      # up is normal cell for one user on one dp
+      # tp is total cell for all users on one dp
+      # ut is total cell for on user on all dps
+      up = stats[user_id][data_provider_id]    ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+      tp = stats['AllUsers'][data_provider_id] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+      ut = stats[user_id]['AllDps']            ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+
+      [up,tp,ut,tt].each do |cell|
+        if size
+          cell[:size]     += size
+          cell[:numfiles] += 1
+        else
+          cell[:unknowns] += 1
+        end
+      end
+    end
+
+    stats
   end
 
 end

@@ -62,7 +62,7 @@ class SshDataProvider < DataProvider
     end
 
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a -L --delete :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --delete :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     raise "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
     true
@@ -76,7 +76,7 @@ class SshDataProvider < DataProvider
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a -L --delete #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --delete #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     raise "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
     true

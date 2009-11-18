@@ -816,6 +816,10 @@ td.taskinfo {
     white-space: nowrap;
 }
 
+.edit_file_table td {
+    text-align: left;
+}
+
 /*.resource_list td.left {
     border: 0px;
     text-align: left;

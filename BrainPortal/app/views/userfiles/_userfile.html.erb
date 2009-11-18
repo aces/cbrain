@@ -27,9 +27,9 @@
    </td>
 
    <% if userfile.size != nil %>
-     <td><%= h(userfile.format_size)-%></td>
+     <td><span title="<%= userfile.size %> bytes"><%= h(pretty_size(userfile.size)) -%></span></td>
    <% else %>
-     <td></td>
+     <td><font color="red">unknown</font></td>
    <% end %>
    <td><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></td>
    <% if userfile.group != nil %>
