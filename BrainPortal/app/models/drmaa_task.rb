@@ -40,7 +40,7 @@ class DrmaaTask < ActiveResource::Base
   Revision_info="$Id$"
 
   COMPLETED_STATUS = ["Completed"]
-  RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready"]
+  RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready", "Setting Up"]
   FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed To Start"]
 
   # This associate on the the keywords we use in the interface
