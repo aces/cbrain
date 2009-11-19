@@ -25,7 +25,7 @@ class DataProvidersController < ApplicationController
     # Create statistics table
     userlist         = if check_role(:admin)
                          User.all
-                       elsif check_role(:site_admin)
+                       elsif check_role(:site_manager)
                          current_user.site.users
                        else
                          [ current_user ]
