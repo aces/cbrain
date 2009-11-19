@@ -144,49 +144,85 @@ class Userfile < ActiveRecord::Base
   #to be used in pulling userfiles from the database.
   #Note that tag filters will not be converted, as they are
   #handled by the apply_tag_filters method.
-  def self.convert_filters_to_sql_query(filters)
-    query = []
-    arguments = []
+  # def self.convert_filters_to_sql_query(filters)
+  #     query = []
+  #     arguments = []
+  # 
+  #     filters.each do |filter|
+  #       type, term = filter.split(':')
+  #       case type
+  #       when 'name'
+  #         query << "(userfiles.name LIKE ?)"
+  #         arguments << "%#{term}%"
+  #       when 'custom'
+  #         custom_filter = CustomFilter.find_by_name(term)
+  #         unless custom_filter.query.blank?
+  #           query << "(#{custom_filter.query})"
+  #           arguments += custom_filter.variables
+  #         end
+  #       when 'file'
+  #         case term
+  #         when 'jiv'
+  #           query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
+  #           arguments += ["%.raw_byte", "%.raw_byte.gz", "%.header"]
+  #         when 'minc'
+  #           query << "(userfiles.name LIKE ?)"
+  #           arguments << "%.mnc"
+  #         when 'cw5'
+  #           query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
+  #           arguments += ["%.flt", "%.mls", "%.bin", "%.cw5" ]
+  #         when 'flt'
+  #           query << "(userfiles.name LIKE ?)"
+  #           arguments += ["%.flt"]
+  #         when 'mls'
+  #           query << "(userfiles.name LIKE ?)"
+  #           arguments += ["%.mls"]
+  #         end
+  #       end
+  #     end
+  # 
+  #     unless query.empty?
+  #       [query.join(" AND ")] + arguments
+  #     else
+  #       []
+  #     end
+  # 
+  #   end
+  
+  #Convert the array of +filters+ into an scope
+  #to be used in pulling userfiles from the database.
+  #Note that tag filters will not be converted, as they are
+  #handled by the apply_tag_filters method.
+  def self.convert_filters_to_scope(filters)
+    scope = self.scoped({})
 
     filters.each do |filter|
       type, term = filter.split(':')
       case type
       when 'name'
-        query << "(userfiles.name LIKE ?)"
-        arguments << "%#{term}%"
+        scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{term}%"])
       when 'custom'
         custom_filter = CustomFilter.find_by_name(term)
         unless custom_filter.query.blank?
-          query << "(#{custom_filter.query})"
-          arguments += custom_filter.variables
+          scope = scope.scoped(:conditions => ["(#{custom_filter.query})"] + custom_filter.variables)
         end
       when 'file'
         case term
         when 'jiv'
-          query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
-          arguments += ["%.raw_byte", "%.raw_byte.gz", "%.header"]
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"])
         when 'minc'
-          query << "(userfiles.name LIKE ?)"
-          arguments << "%.mnc"
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)",  "%.mnc"])
         when 'cw5'
-          query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
-          arguments += ["%.flt", "%.mls", "%.bin", "%.cw5" ]
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
         when 'flt'
-          query << "(userfiles.name LIKE ?)"
-          arguments += ["%.flt"]
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.flt"])
         when 'mls'
-          query << "(userfiles.name LIKE ?)"
-          arguments += ["%.mls"]
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.mls"])
         end
       end
     end
-
-    unless query.empty?
-      [query.join(" AND ")] + arguments
-    else
-      []
-    end
-
+    
+    scope
   end
 
   #Returns whether or not +user+ has access to this
@@ -234,22 +270,20 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    old_options = options.dup
-    new_options = options.dup
-
+    access_options = {}
+    access_options[:access_requested] = options.delete :access_requested
+    
+    scope = self.scoped(options)
+    
     unless user.has_role?(:admin)
-      conditions = options[:conditions].dup || []
-      conditions = [conditions] if conditions.is_a? String
-      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)
+      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
-    old_options.delete :access_requested
-    new_options.delete :access_requested
 
 
     if user.has_role? :site_manager
-      find(id, new_options) rescue user.site.userfiles_find_id(id, old_options)
+      scope.find(id) rescue user.site.userfiles_find_id(id, options)
     else
-      find(id, new_options)
+      scope.find(id)
     end
   end
 
@@ -262,44 +296,40 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    old_options = options.dup
-    new_options = options.dup
+    access_options = {}
+    access_options[:access_requested] = options.delete :access_requested
+    
+    scope = self.scoped(options)
     
     unless user.has_role?(:admin)
-      conditions = options[:conditions].dup || []
-      conditions = [conditions] if conditions.is_a? String
-      new_options[:conditions] = Userfile.restrict_access_on_query(user, conditions, options)      
+      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
-    old_options.delete :access_requested
-    new_options.delete :access_requested
 
 
     if user.has_role? :site_manager
-      user.site.userfiles_find_all(old_options) | find(:all, new_options)
+      user.site.userfiles_find_all(options) | scope.all
     else
-      find(:all, new_options)
+      scope.all
     end
   end
 
   #This method takes in an array to be used as the :+conditions+
   #parameter for Userfile.find and modifies it to restrict based
   #on file ownership or group access.
-  def self.restrict_access_on_query(user, query, options = {})
+  def self.restrict_access_on_query(user, scope, options = {})
     access_requested = options[:access_requested] || :write
     
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
         
     if access_requested.to_sym == :read
-      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", query.shift].compact.join(" AND ")
+      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
+                                            user.id, user.group_ids, data_provider_ids])
     else
-      query_string = ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", query.shift].compact.join(" AND ")
+      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
+                                            user.id, user.group_ids, data_provider_ids])
     end
-
-    variables = [user.id, user.group_ids, data_provider_ids] + query
-
-    result_query = [query_string] + variables
-
-    result_query
+    
+    scope
   end
 
   #This method takes in an array to be used as the :+conditions+
@@ -308,13 +338,8 @@ class Userfile < ActiveRecord::Base
   #
   #Note: Requires that the +users+ table be joined, either
   #of the <tt>:join</tt> or <tt>:include</tt> options.
-  def self.restrict_site_on_query(user, query, options = {})
-    query_string = ["(users.site_id = ?)", query.shift].compact.join(" AND ")
-    variables = [user.site_id] + query
-
-    result_query = [query_string] + variables
-
-    result_query
+  def self.restrict_site_on_query(user, scope)
+    scope.scoped(:conditions => ["(users.site_id = ?)", user.site_id])
   end
 
   #Set the attribute by which to sort the file list

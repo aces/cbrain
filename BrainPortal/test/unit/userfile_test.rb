@@ -29,24 +29,24 @@ class UserfileTest < ActiveSupport::TestCase
     assert_equal Userfile.get_filter_name('tag_search', 'hello'), 'tag:hello'  
   end
   
-  def test_filter_to_sql
-    filters = ['file:minc']
-    assert_equal Userfile.convert_filters_to_sql_query(filters), ["(userfiles.name LIKE ?)", '%.mnc']
-    filters << 'name:hello'
-    assert_equal Userfile.convert_filters_to_sql_query(filters), 
-                    ["(userfiles.name LIKE ?) AND (userfiles.name LIKE ?)", '%.mnc', '%hello%']
-    filters << 'file:jiv'
-    assert_equal Userfile.convert_filters_to_sql_query(filters), 
-                    ["(userfiles.name LIKE ?) AND (userfiles.name LIKE ?) AND (userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)",
-                       '%.mnc', '%hello%', "%.raw_byte", "%.raw_byte.gz", "%.header"]
-  end
+  # def test_filter_to_sql
+  #   filters = ['file:minc']
+  #   assert_equal Userfile.convert_filters_to_sql_query(filters), ["(userfiles.name LIKE ?)", '%.mnc']
+  #   filters << 'name:hello'
+  #   assert_equal Userfile.convert_filters_to_sql_query(filters), 
+  #                   ["(userfiles.name LIKE ?) AND (userfiles.name LIKE ?)", '%.mnc', '%hello%']
+  #   filters << 'file:jiv'
+  #   assert_equal Userfile.convert_filters_to_sql_query(filters), 
+  #                   ["(userfiles.name LIKE ?) AND (userfiles.name LIKE ?) AND (userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)",
+  #                      '%.mnc', '%hello%', "%.raw_byte", "%.raw_byte.gz", "%.header"]
+  # end
   
-  def test_sql_queries
-    filters = ['file:minc']
-    assert Userfile.find(:all, :conditions => Userfile.convert_filters_to_sql_query(filters)).all?{|file| file.name =~ /.*\.mnc$/}
-    filters << 'name:e'
-    assert Userfile.find(:all, :conditions => Userfile.convert_filters_to_sql_query(filters)).all?{|file| file.name =~ /.*\.mnc$/ && file.name =~ /e/}
-  end
+  # def test_sql_queries
+  #     filters = ['file:minc']
+  #     assert Userfile.find(:all, :conditions => Userfile.convert_filters_to_sql_query(filters)).all?{|file| file.name =~ /.*\.mnc$/}
+  #     filters << 'name:e'
+  #     assert Userfile.find(:all, :conditions => Userfile.convert_filters_to_sql_query(filters)).all?{|file| file.name =~ /.*\.mnc$/ && file.name =~ /e/}
+  #   end
   
   def test_tag_filtering
     filter1 = 'tag:' + Tag.first.name

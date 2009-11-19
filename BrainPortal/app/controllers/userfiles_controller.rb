@@ -26,23 +26,21 @@ class UserfilesController < ApplicationController
     name_filters = current_session.userfiles_basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
     tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
 
-    conditions = Userfile.convert_filters_to_sql_query(name_filters)
+    scope = Userfile.convert_filters_to_scope(name_filters)
 
     if current_session.view_all?
       if current_user.has_role? :site_manager
-        conditions = Userfile.restrict_site_on_query(current_user, conditions)
+        scope = Userfile.restrict_site_on_query(current_user, scope)
       end
     else
-      conditions = Userfile.restrict_access_on_query(current_user, conditions, :access_requested => :read)
+      scope = Userfile.restrict_access_on_query(current_user, scope, :access_requested => :read)
     end
     
     # params[:sort_order] ||= 'userfiles.lft'
     #  sort_order = params[:sort_order]
     #  sort_dir   = params[:sort_dir]
-    
-    @userfiles = Userfile.find(:all,
+    @userfiles = scope.scoped( 
       :include  => [:tags, {:user => :site}, :data_provider, :group, :sync_status],
-      :conditions => conditions,
       :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
     )
 

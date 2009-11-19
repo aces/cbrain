@@ -69,23 +69,20 @@ class RemoteResource < ActiveRecord::Base
   #*Accessible* remote resources  are:
   #[For *admin* users:] any remote resource on the system.
   #[For regular users:] all remote resources that belong to a group to which the user belongs.
-  #
-  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
-  #except for :conditions which is set internally.
   def self.find_accessible_by_user(id, user, options = {})
-    new_options = options.dup
+    scope = self.scoped(options)
     
     unless user.has_role? :admin
-      new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+      scope = scope.scoped(:joins  => :user)
       
       if user.has_role? :site_manager
-        new_options[:joins] = :user
-        new_options[:conditions][0] += "OR (users.site_id = ?)"
-        new_options[:conditions] << user.site_id
+        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.group_ids, user.site_id])
+      else                   
+        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?))", user.group_ids])
       end
     end
     
-    find(id, new_options)
+    scope.find(id)
   end
   
   #Find all remote resources accessible by +user+.
@@ -93,23 +90,20 @@ class RemoteResource < ActiveRecord::Base
   #*Accessible* remote resources  are:
   #[For *admin* users:] any remote resource on the system.
   #[For regular users:] all remote resources that belong to a group to which the user belongs.
-  #
-  #*Note*: the options hash will accept any of the standard ActiveRecord +find+ parameters
-  #except for :conditions which is set internally.
   def self.find_all_accessible_by_user(user, options = {})
-    new_options = options.dup
+    scope = self.scoped(options)
     
     unless user.has_role? :admin
-      new_options[:conditions] = ["(remote_resources.group_id IN (?))", user.group_ids]
+      scope = scope.scoped(:joins  => :user)
       
       if user.has_role? :site_manager
-        new_options[:joins] = :user
-        new_options[:conditions][0] += "OR (users.site_id = ?)"
-        new_options[:conditions] << user.site_id
+        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.group_ids, user.site_id])
+      else                   
+        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?))", user.group_ids])
       end
     end
     
-    find(:all, new_options)
+    scope.find(:all)
   end
 
   #Returns whether or not this resource is active.

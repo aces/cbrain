@@ -37,59 +37,45 @@ class Site < ActiveRecord::Base
   end
   
   #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_all(options = {})
-    #raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     scope = Userfile.scoped(options)
     scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
     @userfiles ||= scope
   end
   
   #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def remote_resources_find_all(options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @remote_resources ||= RemoteResource.find(:all, options)
+    scope = RemoteResource.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    @remote_resources ||= scope
   end
   
   #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def data_providers_find_all(options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @data_provider ||= DataProvider.find(:all, options)
+    scope = DataProvider.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    @data_providers ||= scope
   end
   
   #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def userfiles_find_id(id, options = {})
-    #raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
     scope = Userfile.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ? AND userfiles.id = ?", self.id, id])
-    @userfiles ||= scope.first
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope.find(id)
   end
   
   #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def remote_resources_find_id(id, options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @remote_resources ||= RemoteResource.find(id, options)
+    scope = RemoteResource.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope.find(id)
   end
   
   #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
-  #
-  #*NOTE*: the +joins+ and +conditions+ options cannot be used as they are used internally.
   def data_providers_find_id(id, options = {})
-    raise "Options :joins and :conditions cannont be used with this method. They are set internally." if options[:joins] || options[:conditions]
-    options.merge!( :joins => :user, :conditions => ["users.site_id = ?", self.id])
-    @data_provider ||= DataProvider.find(id, options)
+    scope = DataProvider.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope.find(id)
   end
   
   # Returns the SystemGroup associated with the site; this is a
@@ -103,31 +89,31 @@ class Site < ActiveRecord::Base
 
   private
   
-  def create_system_group
+  def create_system_group #:nodoc:
     SiteGroup.create!(:name => self.name, :site_id  => self.id)
   end
   
-  def user_system_group_remove(user)
+  def user_system_group_remove(user) #:nodoc:
     if user.has_role? :site_manager
       user.update_attributes!(:role  => "user")
     end
     SystemGroup.find_by_name(user.login).update_attributes!(:site => nil)
   end
   
-  def remove_user_from_site_group(user)
+  def remove_user_from_site_group(user) #:nodoc:
     site_group = SystemGroup.find_by_name(self.name)
     site_group.users.delete(user)
   end
   
-  def save_old_manager_ids
+  def save_old_manager_ids #:nodoc:
     @old_manager_ids = self.managers.collect{ |m| m.id.to_s }
   end
   
-  def save_old_user_ids
+  def save_old_user_ids #:nodoc:
     @old_user_ids = self.users.collect{ |m| m.id.to_s }
   end
   
-  def set_managers
+  def set_managers #:nodoc:
     self.manager_ids ||= []
     self.user_ids ||= []
     current_manager_ids = self.manager_ids.collect(&:to_s) || []
@@ -150,7 +136,7 @@ class Site < ActiveRecord::Base
     end
   end
   
-  def set_system_groups
+  def set_system_groups #:nodoc:
     current_user_ids = self.user_ids || []
     @new_user_ids   = current_user_ids - @old_user_ids
     @unset_user_ids = @old_user_ids - current_user_ids
@@ -164,7 +150,7 @@ class Site < ActiveRecord::Base
     end
   end
   
-  def unset_managers
+  def unset_managers #:nodoc:
     self.managers.each do |user|
       if user.has_role? :site_manager
         user.update_attributes!(:role  => "user")
@@ -172,7 +158,7 @@ class Site < ActiveRecord::Base
     end
   end
   
-  def system_group_rename
+  def system_group_rename #:nodoc:
     if self.changed.include?("name")
       old_name = self.changes["name"].first
       SystemGroup.find_by_name(old_name).update_attributes!(:name => self.name)
