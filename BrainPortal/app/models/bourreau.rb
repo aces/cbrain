@@ -228,6 +228,7 @@ class Bourreau < RemoteResource
       infos = BourreauInfo.find(:all)
       @info = infos[0] if infos[0]
     rescue
+      BourreauInfo.site    = "http://localhost:99999/"  # Dummy; we need a value for the new() below to work.
     end
     @info ||= BourreauInfo.new(
       :name               => "???",
