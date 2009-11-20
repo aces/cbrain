@@ -203,9 +203,7 @@ class Userfile < ActiveRecord::Base
         scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{term}%"])
       when 'custom'
         custom_filter = CustomFilter.find_by_name(term)
-        unless custom_filter.query.blank?
-          scope = scope.scoped(:conditions => ["(#{custom_filter.query})"] + custom_filter.variables)
-        end
+        scope = custom_filter.filter_scope(scope)
       when 'file'
         case term
         when 'jiv'
