@@ -435,13 +435,14 @@ class DataProvider < ActiveRecord::Base
     currentcache = userfile.cache_full_path
 
     # Copy to other provider
-    userfile.data_provider_id = otherprovider.id
+    userfile.data_provider = otherprovider
     otherprovider.cache_copy_from_local_file(userfile,currentcache)
 
     # Erase on current provider
-    userfile.data_provider_id = self.id  # temporarily set it back
+    userfile.data_provider = self  # temporarily set it back
     provider_erase(userfile)
-    userfile.data_provider_id = otherprovider.id  # must return it to true value
+    userfile.data_provider = otherprovider  # must return it to true value
+    userfile.sync_to_cache # dummy as it's already in cache, but adjusts the SyncStatus
 
     self
   end
@@ -463,7 +464,7 @@ class DataProvider < ActiveRecord::Base
 
     # Create new file entry
     newfile                  = userfile.clone
-    newfile.data_provider_id = otherprovider.id
+    newfile.data_provider    = otherprovider
     newfile.name             = newname if newname
     newfile.save
 

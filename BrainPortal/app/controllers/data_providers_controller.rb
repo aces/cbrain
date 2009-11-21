@@ -30,19 +30,15 @@ class DataProvidersController < ApplicationController
                        else
                          [ current_user ]
                        end
-    @report_stats    = gather_usage_statistics(userlist,@providers)
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+    @report_stats    = gather_usage_statistics(userlist,@providers,rrlist)
 
     # Keys into statistics tables
-    @report_userlist   = userlist.map &:id   ; @report_userlist << 'AllUsers' if @report_userlist.size > 1
-    @report_dplist     = @providers.map &:id ; @report_dplist   << 'AllDps'   if @report_dplist.size   > 1
-
-    # Labels for users
-    @report_userlabels = { 'AllUsers' => 'All Users' }
-    userlist.each   { |u| @report_userlabels[u.id] = u.login }
- 
-    # Labels for DPs
-    @report_dplabels   = { 'AllDps'   => 'All Providers' }
-    @providers.each { |p| @report_dplabels[p.id]   = p.name }
+    @report_dp_labels   = @report_stats['!dp_labels!']   # just DP names
+    @report_rr_labels   = @report_stats['!rr_labels!']   # just RR names
+    @report_user_labels = @report_stats['!user_labels!'] # not used
+    @report_col_labels  = @report_stats['!col_labels!']  # DPs + 'all' + RRs
+    @report_row_labels  = @report_stats['!row_labels!']  # users + 'all'
 
   end
 
@@ -434,7 +430,7 @@ class DataProvidersController < ApplicationController
     fileinfolist
   end
 
-  def gather_usage_statistics(users = nil,providers = nil)
+  def gather_usage_statistics(users = nil,providers = nil,remote_resources = nil)
 
     # Which users to gather stats for
     userlist = if users
@@ -447,36 +443,97 @@ class DataProvidersController < ApplicationController
     dplist   = if providers
                  providers.is_a?(Array) ? providers : [ providers ]
                else
-                 DataProviders.all
+                 DataProvider.all
+               end
+
+    # Which remote resource to gather stats for
+    rrlist   = if remote_resources
+                 remote_resources.is_a?(Array) ? remote_resources : [ remote_resources ]
+               else
+                 RemoteResource.all
                end
 
     # All files that belong to these users on these data providers
-    filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
+    if users.nil? && providers.nil?
+      filelist = Userfile.find(:all)
+    elsif users.nil?
+      filelist = Userfile.find(:all, :conditions => { :data_provider_id => dplist })
+    elsif providers.nil?
+      filelist = Userfile.find(:all, :conditions => { :user_id => userlist })
+    else
+      filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
+    end
+
+    # Arrays and hashes used to record the names of the
+    # rows and columns of the report
+    users_index = userlist.index_by &:id
+    dp_index    = dplist.index_by   &:id
+    rr_index    = rrlist.index_by   &:id
+    seenusers = {}
+    seendps   = {}
+    seenrrs   = {}
+    userkeys  = []
+    dpkeys    = []
+    rrkeys    = []
 
     # Stats structure. It represents a two-dimensional table
     # where rows are users and columns are data providers.
-    # And extra row called 'AllUsers' sums up the stats for all users
-    # on a data provider, and an extra row called 'AllDps' sums up
+    # And extra row called 'All Users' sums up the stats for all users
+    # on a data provider, and an extra row called 'All Providers' sums up
     # the stats for one users on all data providers.
-    stats = { 'AllUsers' => {} }
+    stats = { 'All Users' => {} }
 
-    tt = stats['AllUsers']['AllDps'] = { :size => 0, :numfiles => 0, :unknowns => 0 }
+    tt_cell = stats['All Users']['All Providers'] = { :size => 0, :numfiles => 0, :unknowns => 0 }
 
     filelist.each do |userfile|
       filetype          = userfile.class.to_s
       size              = userfile.size
+
       user_id           = userfile.user_id
+      user_name         = users_index[user_id].login
+
       data_provider_id  = userfile.data_provider_id
+      dp_name           = dp_index[data_provider_id].name
 
-           stats[user_id]                      ||= {} # row init
-      # up is normal cell for one user on one dp
-      # tp is total cell for all users on one dp
-      # ut is total cell for on user on all dps
-      up = stats[user_id][data_provider_id]    ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
-      tp = stats['AllUsers'][data_provider_id] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
-      ut = stats[user_id]['AllDps']            ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+      # Record the user's name and DP's name (first time only)
+      userkeys << user_name unless seenusers[user_name]
+      dpkeys   << dp_name   unless seendps[dp_name]
+      seenusers[user_name] = true
+      seendps[dp_name]     = true
 
-      [up,tp,ut,tt].each do |cell|
+      # up_cell is normal cell for one user on one dp
+      # tp_cell is total cell for all users on one dp
+      # ut_cell is total cell for on user on all dps
+           stats[user_name]                  ||= {} # row init
+      up_cell = stats[user_name][dp_name]         ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+      tp_cell = stats['All Users'][dp_name]       ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+      ut_cell = stats[user_name]['All Providers'] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+
+      cells = [ up_cell, tp_cell, ut_cell, tt_cell ]
+
+      # Gather information from caches on remote_resources
+      synclist = userfile.sync_status
+      synclist.each do |syncstat| # we assume ALL status keywords mean there is some content in the cache
+        rr_id   = syncstat.remote_resource_id
+        rr_obj  = rr_index[rr_id]
+        next unless rr_obj
+        rr_type = rr_obj.class.to_s
+        rr_name = rr_type + " " + rr_obj.name
+
+        # Add name if not already seen
+        rrkeys  << rr_name unless seenrrs[rr_name]
+        seenrrs[rr_name] = true
+
+        # rr is normal cell for one user on one remote resource
+        # tr is total cell for all users on one remote resource
+        rr_cell = stats[user_name][rr_name]   ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+        tr_cell = stats['All Users'][rr_name] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+        cells << rr_cell
+        cells << tr_cell
+      end
+
+      # Update counts for all cells
+      cells.each do |cell|
         if size
           cell[:size]     += size
           cell[:numfiles] += 1
@@ -485,6 +542,16 @@ class DataProvidersController < ApplicationController
         end
       end
     end
+
+    stats['!dp_labels!']   = dpkeys
+    stats['!rr_labels!']   = rrkeys
+    stats['!user_labels!'] = userkeys
+
+    stats['!col_labels!']  = dpkeys
+    stats['!col_labels!'] += [ 'All Providers' ] if dpkeys.size > 1
+    stats['!col_labels!'] += rrkeys
+    stats['!row_labels!']  = userkeys
+    stats['!row_labels!'] += [ 'All Users' ] if userkeys.size > 1
 
     stats
   end

@@ -54,19 +54,25 @@
 
    <table class=resource_list" id="data_provider_stats">
       <tr>
-        <th COLSPAN="<%= 1+@report_dplist.size %>">Disk Usage Statistics</th>
+        <th COLSPAN="<%= 1+@report_col_labels.size %>">Disk Usage Statistics</th>
       </tr>
       <tr>
-          <th>-</th>
-          <% @report_dplist.each do |dpid| %>
-            <th><%= h(@report_dplabels[dpid]) %></th>
+        <th ROWSPAN="2"></th>
+        <th COLSPAN="<%= @report_dp_labels.size + (@report_dp_labels.size > 1 ? 1 : 0) %>">Data Providers</th>
+        <% if @report_rr_labels.size > 0 %>
+          <th COLSPAN="<%= @report_rr_labels.size %>">Remote Resources Caches</th>
+        <% end %>
+      </tr>
+      <tr>
+          <% @report_col_labels.each do |col_label| %>
+            <th><%= h(col_label) %></th>
           <% end %>
       </tr>
-      <% @report_userlist.each do |uid| %>
+      <% @report_row_labels.each do |row_label| %>
       <tr>
-          <th><%= h(@report_userlabels[uid]) %></th>
-          <% @report_dplist.each do |dpid| %>
-            <% cell = @report_stats[uid] ? @report_stats[uid][dpid] : nil %>
+          <th><%= h(row_label) %></th>
+          <% @report_col_labels.each do |col_label| %>
+            <% cell = @report_stats[row_label] ? @report_stats[row_label][col_label] : nil %>
             <% if cell %>
               <td><%= pretty_size(cell[:size]) %><BR>
                   <%= pluralize(cell[:numfiles],"file") %><BR>
