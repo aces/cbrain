@@ -96,6 +96,15 @@ class CustomFilter < ActiveRecord::Base
     scope.scoped(:conditions  => ["userfiles.group_id = ?", self.group_id])
   end
   
+  #Convert tag_ids attribute into an array of tag filters (format: "tag:<tag_name>").
+  def prepare_tags
+    if self.tag_ids
+      self.tags = Tag.find(self.tag_ids).collect{ |tag| "#{tag.name}"}
+    else
+      self.tags = []
+    end
+  end
+  
   #Returns the sql query to be executed by the filter.
   #
   #*Example*: If the filter is meant to collect userfiles with a name containing
@@ -137,14 +146,6 @@ class CustomFilter < ActiveRecord::Base
   #     parse_group_query        unless self.group_id.blank?
   #   end
   #   
-  #   #Convert tag_ids attribute into an array of tag filters (format: "tag:<tag_name>").
-  #   def prepare_tags
-  #     if self.tag_ids
-  #       self.tags = Tag.find(self.tag_ids).collect{ |tag| "#{tag.name}"}
-  #     else
-  #       self.tags = []
-  #     end
-  #   end
   #   
   #   #Contruct the portion of the filter query which functions on 
   #   #the Userfile entry's name.
