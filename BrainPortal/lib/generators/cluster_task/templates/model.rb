@@ -73,6 +73,7 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
     #   userfile = Userfile.find(id, :include  => :user)
     #   task = <%= "Drmaa#{class_name}" %>.new
     #   task.user_id = userfile.user.id
+    #   task.description = params[:description]
     #   task.params = { :mincfile_id => id }
     #   task.save
     #   

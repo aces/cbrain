@@ -14,6 +14,9 @@
 <%%= hidden_field_tag 'file_ids[]',  id %>
 <%% end %>
 
+<strong>Description (optional)</strong><BR>
+<%%=  text_area_tag :description, nil, :cols  => 40 %><br><br>
+
 <!-- 
    Render form fields here.
    Default arguments returned by <%= "Drmaa#{class_name}" %>.get_default_args()
