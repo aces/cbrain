@@ -15,7 +15,6 @@ class DataProvidersController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :browse, :register]
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user)
@@ -74,7 +73,6 @@ class DataProvidersController < ApplicationController
   
   def edit #:nodoc:
     @provider = DataProvider.find(params[:id])
-    #@mode     = "update"
 
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
@@ -156,7 +154,6 @@ class DataProvidersController < ApplicationController
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."
     else
-      #@mode = "update"
       @users = current_user.available_users
       @groups = current_user.available_groups
       @ssh_keys = get_ssh_public_keys
