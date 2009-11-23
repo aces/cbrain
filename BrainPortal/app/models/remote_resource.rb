@@ -76,9 +76,9 @@ class RemoteResource < ActiveRecord::Base
       scope = scope.scoped(:joins  => :user)
       
       if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.group_ids, user.site_id])
+        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
       else                   
-        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?))", user.group_ids])
+        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?))", user.id, user.group_ids])
       end
     end
     
@@ -97,9 +97,9 @@ class RemoteResource < ActiveRecord::Base
       scope = scope.scoped(:joins  => :user)
       
       if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.group_ids, user.site_id])
+        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
       else                   
-        scope = scope.scoped(:conditions  => ["(remote_resources.group_id IN (?))", user.group_ids])
+        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?))", user.id, user.group_ids])
       end
     end
     
