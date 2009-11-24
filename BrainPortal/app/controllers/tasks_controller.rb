@@ -240,56 +240,56 @@ class TasksController < ApplicationController
     # on do_in_spawn
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to a list of tasks") do
 
-    tasklist.each do |task_id|
+      tasklist.each do |task_id|
 
-      begin 
-        actrectask  = ActRecTask.find(task_id) # Fetch once...
-        bourreau_id = actrectask.bourreau_id
-        DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
-        task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
-      rescue
-        sent_failed += 1
-        next
-      end
-
-      if task.user_id != current_user.id && current_user.role != 'admin'
-        sent_skipped += 1
-        continue 
-      end
-
-      begin
-        if operation == 'delete'
-          task.destroy
-          sent_ok += 1
-        else
-          cur_status  = task.status
-          allowed_new = DrmaaTask::AllowedOperations[cur_status] || []
-          new_status  = DrmaaTask::OperationToNewStatus[operation]
-          if new_status && allowed_new.include?(new_status)
-            task.status = new_status
-            if task.save
-              sent_ok += 1
-            else
-              sent_failed += 1
-            end
-          else
-            sent_skipped += 1
-          end
+        begin 
+          actrectask  = ActRecTask.find(task_id) # Fetch once...
+          bourreau_id = actrectask.bourreau_id
+          DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
+          task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
+        rescue
+          sent_failed += 1
+          next
         end
-      rescue => e # TODO record what error occured to inform user?
-        sent_failed += 1
+
+        if task.user_id != current_user.id && current_user.role != 'admin'
+          sent_skipped += 1
+          continue 
+        end
+
+        begin
+          if operation == 'delete'
+            task.destroy
+            sent_ok += 1
+          else
+            cur_status  = task.status
+            allowed_new = DrmaaTask::AllowedOperations[cur_status] || []
+            new_status  = DrmaaTask::OperationToNewStatus[operation]
+            if new_status && allowed_new.include?(new_status)
+              task.status = new_status
+              if task.save
+                sent_ok += 1
+              else
+                sent_failed += 1
+              end
+            else
+              sent_skipped += 1
+            end
+          end
+        rescue => e # TODO record what error occured to inform user?
+          sent_failed += 1
+        end
+
+      end # foreach task ID
+
+      if do_in_spawn
+        Message.send_message(current_user, {
+          :header        => "Finished sending #{operation} to #{tasklist.size} tasks.",
+          :message_type  => :notice,
+          :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
+          }
+        )
       end
-
-    end # foreach task ID
-
-    if do_in_spawn
-      Message.send_message(current_user, {
-        :header        => "Finished sending #{operation} to #{tasklist.size} tasks.",
-        :message_type  => :notice,
-        :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
-        }
-      )
-    end
 
     end # End of spawn_if block
 

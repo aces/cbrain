@@ -434,16 +434,26 @@ class UserfilesController < ApplicationController
         return
 
       when "delete"
+        deleted_count      = 0
+        unregistered_count = 0
+        
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           basename = userfile.name
           if userfile.data_provider.is_browsable?
             userfile.destroy_log rescue true
             Userfile.delete(userfile.id)
-            flash[:notice] += "File '#{basename}' unregistered.\n"
+            unregistered_count += 1
           else
             userfile.destroy
-            flash[:notice] += "File '#{basename}' deleted.\n"
+            deleted_count += 1
           end
+        end
+        
+        if deleted_count > 0
+          flash[:notice] += "#{@template.pluralize(deleted_count, "files")} deleted.\n"
+        end
+        if unregistered_count > 0
+          flash[:notice] += "#{@template.pluralize(unregistered_count, "files")} unregistered.\n"
         end
 
       when "download"
@@ -472,32 +482,62 @@ class UserfilesController < ApplicationController
         return
 
       when 'tag_update'
+        success_count = 0
+        failure_count = 0
+        
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read).each do |userfile|
           userfile.set_tags_for_user(current_user, params[:tags])
           if userfile.save
-            flash[:notice] += "Tags for #{userfile.name} successfully updated."
+            success_count += 1
           else
-            flash[:error] += "Tags for #{userfile.name} could not be updated."
+            failure_count +=1
           end
+        end
+        
+        if success_count > 0
+          flash[:notice] += "Tags for #{@template.pluralize(success_count, "files")} successfully updated."
+        end
+        if failure_count > 0
+          flash[:error] += "Tags for #{@template.pluralize(failure_count, "files")} could not be updated."
         end
 
       when 'group_update'
+        success_count = 0
+        failure_count = 0
+        
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           if userfile.update_attributes(:group_id => params[:userfile][:group_id])
-             flash[:notice] += "Group for #{userfile.name} successfully updated."
+             success_count += 1
            else
-             flash[:error] += "Group for #{userfile.name} could not be updated."
+             failure_count +=1
            end
-        end
+         end
+
+         if success_count > 0
+           flash[:notice] += "Group for #{@template.pluralize(success_count, "files")} successfully updated."
+         end
+         if failure_count > 0
+           flash[:error] += "Group for #{@template.pluralize(failure_count, "files")} could not be updated."
+         end
 
       when 'permission_update'
+        success_count = 0
+        failure_count = 0
+        
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
-             flash[:notice] += "Permissions for #{userfile.name} successfully updated."
+             success_count += 1
            else
-             flash[:error] += "Permissions for #{userfile.name} could not be updated."
+             failure_count +=1
            end
-        end
+         end
+
+         if success_count > 0
+           flash[:notice] += "Permissions for #{@template.pluralize(success_count, "files")} successfully updated."
+         end
+         if failure_count > 0
+           flash[:error] += "Permissions for #{@template.pluralize(failure_count, "files")} could not be updated."
+         end
 
       when 'merge_collections'
         collection = FileCollection.new(
