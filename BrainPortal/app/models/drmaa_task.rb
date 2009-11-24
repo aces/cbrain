@@ -219,8 +219,14 @@ class DrmaaTask < ActiveResource::Base
   #if he/she chooses to save them). It is the hash created by the 
   #save_options class method.
   #
-  #If an exception is raised here it will cause a redirect to the 
-  #userfiles index page where the exception message will be displayed.
+  #If a cb_error is sent here it will cause a redirect that defaults to the 
+  #userfiles index page where the error message will be displayed.
+  #
+  #If you wish to redirect to another page, simply add a redirect path
+  #as the second argument to cb_error. 
+  #e.g:
+  #cb_error "Problem in launch", {:controller => :portal, :action => :welcome}
+  #cb_error "Another problem", "/userfiles"
   def self.get_default_args(params = {}, saved_args = nil)
     {}
   end
@@ -233,14 +239,19 @@ class DrmaaTask < ActiveResource::Base
   #bourreau_id attribute on the DrmaaTask subclass object (task.bourreau_id) 
   #explicitly.
   #
-  #If an exception is raised here, it will cause a redirect to one of the 
-  #following pages:
-  #[<b>The argument input page (tasks/new)</b>] if the task has an argument input page 
-  #                                             (i.e. has_args? returns true).
-  #[<b>The Userfile index (userfiles/index)</b>] if the task has no argument input page 
-  #                                              (i.e. has_args? returns false).
-  #The exception message will be displayed to the user as 
-  #a flash message after the redirect.
+  #If a cb_error is sent here, it will cause a redirect that defaults to one of 
+  #the following pages:
+  #1. The argument input page for <%= name %> if the has_args? returns true.
+  #2. The userfiles index page if has_args? returns false.
+  #
+  #The cb_error message will be displayed to the user as 
+  #a flash error after the redirect.
+  #
+  #If you wish to redirect to another page, simply add a redirect path
+  #as the second argument to cb_error. 
+  #e.g:
+  #cb_error "Problem in launch", {:controller => :portal, :action => :welcome}
+  #cb_error "Another problem", "/userfiles"
   #
   #<b>Example:</b>
   #         def self.launch(params)

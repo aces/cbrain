@@ -33,8 +33,14 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   #The saved_args argument is the hash from the user preferences for 
   # <%= "Drmaa#{class_name}" %>. It is the has created by the 
   # self.save_options method (see below).
-  #If an exception is raised here it will cause a redirect to the 
-  # userfiles index page where the exception message will be displayed.
+  #If a cb_error is sent here it will cause a redirect that defaults to the 
+  # userfiles index page where the error message will be displayed.
+  #
+  #If you wish to redirect to another page, simply add a redirect path
+  # as the second argument to cb_error. 
+  #e.g:
+  # cb_error "Problem in launch", {:controller => :portal, :action => :welcome}
+  # cb_error "Another problem", "/userfiles"
   #
   #NOTE: The comment below is for use by rdoc.
   #########################################################################
@@ -52,13 +58,19 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   # You can select a specific cluster to launch to by setting the 
   # bourreau_id attribute on the Drmaa<%= class_name %> object (task.bourreau_id) 
   # explicitly.
-  # If an exception is raised here, it will cause a redirect to one of the 
-  # following pages:
+  # If a cb_error is sent here, it will cause a redirect that defaults to one of 
+  # the following pages:
   # 1. The argument input page for <%= name %> if the has_args? returns true.
   # 2. The userfiles index page if has_args? returns false.
   #
-  # The exception message will be displayed to the user as 
-  # a flash message after the redirect.
+  # The cb_error message will be displayed to the user as 
+  # a flash error after the redirect.
+  #
+  #If you wish to redirect to another page, simply add a redirect path
+  # as the second argument to cb_error. 
+  #e.g:
+  # cb_error "Problem in launch", {:controller => :portal, :action => :welcome}
+  # cb_error "Another problem", "/userfiles"
   #
   #NOTE: The comment below is for use by rdoc.
   #########################################################################

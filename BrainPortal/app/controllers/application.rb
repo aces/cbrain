@@ -43,11 +43,7 @@ class ApplicationController < ActionController::Base
       yield
     rescue ActiveRecord::RecordNotFound
       flash[:error] = "The record you requested does not exist."
-      if self.respond_to?(:index)
-         redirect_to :action => :index
-      else
-         redirect_to home_path
-      end
+      redirect_to default_redirect
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
@@ -55,14 +51,21 @@ class ApplicationController < ActionController::Base
          flash[:error]  = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
       end
       respond_to do |format|
-        format.html {redirect_to cbm.redirect}
+        format.html { redirect_to cbm.redirect || default_redirect }
         format.js do
           render :update do |page|
-            page.redirect_to cbm.redirect
+            page.redirect_to cbm.redirect || default_redirect
           end
         end
         format.xml  { render :xml => {:error  => cbm.message}, :status => :unprocessable_entity }
       end
+    rescue => e
+      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
+      
+      Message.send_internal_error_message(current_user, "Exception Caught", e, params)
+      log_exception(e)
+      redirect_to default_redirect
+      return
     end
   end
   
@@ -121,6 +124,14 @@ class ApplicationController < ActionController::Base
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
       render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
+  end
+  
+  def default_redirect
+    if self.respond_to?(:index)
+      {:action => :index}
+    else
+      home_path
+    end
   end
   
   #Prevents pages from being cached in the browser. 

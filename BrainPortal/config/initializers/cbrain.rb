@@ -152,14 +152,14 @@ module Kernel
 
   # Raises a CbrainNotice exception, with a default redirect to
   # the current controller's index action.
-  def cb_notify(message = "Something may have gone awry.", redirect = { :action  => :index } )
+  def cb_notify(message = "Something may have gone awry.", redirect = nil )
     raise CbrainNotice.new(message, redirect)
   end
   alias cb_notice cb_notify
 
   # Raises a CbrainError exception, with a default redirect to
   # the current controller's index action.
-  def cb_error(message = "Some error occured.",  redirect = { :action  => :index } )
+  def cb_error(message = "Some error occured.",  redirect = nil )
     raise CbrainError.new(message, redirect)
   end
 

@@ -1,6 +1,6 @@
 <% unless mess.description.blank? %>
   <p class="<%= mess.message_type.to_s %>">
-    <%= parse_message( h(mess.description) )%>
+    <%= parse_message( h(mess.description).gsub(/\n/,"<BR>") )%>
   </p>
 <% end %>
 

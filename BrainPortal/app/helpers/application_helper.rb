@@ -218,7 +218,7 @@ module ApplicationHelper
     arr = message.split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       if i % 2 == 0
-        arr[i] = h(arr[i])
+        arr[i] = arr[i]
       else
         arr[i].sub! /\[\[(.+?)\]\[(.+?)\]\]/, "<a href='\\2' class='action_link'>\\1</a>"
       end
