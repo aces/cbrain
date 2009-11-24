@@ -71,9 +71,9 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.update_attributes(params[:tag])
         flash[:notice] = 'Tag was successfully updated.'
-        if current_session.tag_filters.include?(tag_name)
-          current_session.tag_filters.delete tag_name
-          current_session.tag_filters << @tag.name
+        if current_session.userfiles_tag_filters.include?(tag_name)
+          current_session.userfiles_tag_filters.delete tag_name
+          current_session.userfiles_tag_filters << @tag.name
         end
         format.html { redirect_to userfiles_path }
         format.xml  { head :ok }
@@ -88,7 +88,7 @@ class TagsController < ApplicationController
   # DELETE /tags/1.xml
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
-    current_session.tag_filters.delete @tag.name
+    current_session.userfiles_tag_filters.delete @tag.name
     @destroyed = @tag.destroy
 
     respond_to do |format|
