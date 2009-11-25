@@ -26,6 +26,12 @@ class PortalController < ApplicationController
     @default_data_provider  = current_user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = current_user.user_preference.bourreau.name rescue "(Unset)"
     
+    if current_user.has_role? :admin
+      @active_users = Session.active_users
+    elsif current_user.has_role? :site_manager
+      @active_users = Session.active_users(:conditions  => {:site_id  => current_user.site_id})
+    end
+    
     bourreau_ids = available_bourreaux(current_user).collect(&:id)
     @tasks = ActRecTask.find(:all, :conditions => {
                                        :user_id     => current_user.id,

@@ -44,6 +44,26 @@ class Session
     @session[controller.to_sym]["sort"] ||= {}
   end
   
+  #Mark this session as active in the database.
+  def activate
+    @session.model.update_attributes!(:user_id => @session[:user_id], :active => true)
+  end
+  
+  #Mark this session as inactive in the database.
+  def deactivate
+    @session.model.update_attributes!(:active => false)
+  end
+  
+  #Returns the list of currently active users on the system.
+  def self.active_users(options = {})
+    scope = User.scoped(options)
+    scope.scoped(
+        :conditions => {:id => CGI::Session::ActiveRecordStore::Session.find(:all, 
+                                    :conditions => ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
+                                    ).map(&:user_id)}
+    )
+  end
+  
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091029172745) do
+ActiveRecord::Schema.define(:version => 20091125181730) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -49,9 +49,9 @@ ActiveRecord::Schema.define(:version => 20091029172745) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -148,6 +148,8 @@ ActiveRecord::Schema.define(:version => 20091029172745) do
     t.text     "data"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
+    t.boolean  "active"
   end
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"

@@ -40,6 +40,11 @@ Nifty("div.task_summary","big");
             <p>
               <strong>Default Execution Server:</strong> <%= h(@default_bourreau) %>
             </p>
+            <% if @active_users %>
+              <p>
+                <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
+              </p>
+            <% end %>
           </div>
         </div>
         
