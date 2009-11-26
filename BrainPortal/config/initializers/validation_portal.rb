@@ -64,7 +64,6 @@ end
 
 unless User.find(:first, :conditions => {:login  => 'admin'})
   puts "C> \t- Admin user does not exist yet. Creating one."
-  admin_group = SystemGroup.create!(:name  => "admin")
   
   pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
   User.create!(
@@ -73,7 +72,6 @@ unless User.find(:first, :conditions => {:login  => 'admin'})
     :password              => pwdduh,
     :password_confirmation => pwdduh,
     :email                 => 'admin@here',
-    :group_ids             => [everyone_group.id, admin_group.id],
     :role                  => 'admin'
   )
   puts("******************************************************")
