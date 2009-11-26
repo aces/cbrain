@@ -190,10 +190,9 @@ unless brainportal
   puts "C> \t- NOTE: You might want to use the console and give it a better name than '#{brainportal.name}'."
 end
 
-# These two constants are helpful whenever we want to
+# This constant is very helpful whenever we want to
 # access the info about this very RAILS app.
 # Note that SelfRemoteResourceId is used by SyncStatus methods.
-CBRAIN::SelfRemoteResource   = brainportal
 CBRAIN::SelfRemoteResourceId = brainportal.id
 
 

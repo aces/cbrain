@@ -25,9 +25,19 @@ class PortalController < ApplicationController
     @groups                 = current_user.groups.collect{|g| g.name}.join(', ')
     @default_data_provider  = current_user.user_preference.data_provider.name rescue "(Unset)"
     @default_bourreau       = current_user.user_preference.bourreau.name rescue "(Unset)"
-    
+        
     if current_user.has_role? :admin
       @active_users = Session.active_users
+      if request.post?
+        if params[:lock_portal] == "lock"
+          BrainPortal.current_portal.lock!
+          flash.now[:notice] = "This portal has been locked."
+        elsif params[:lock_portal] == "unlock"
+          BrainPortal.current_portal.unlock!
+          flash.now[:notice] = "This portal has been unlocked."
+          flash.now[:error] = ""        
+        end
+      end
     elsif current_user.has_role? :site_manager
       @active_users = Session.active_users(:conditions  => {:site_id  => current_user.site_id})
     end
@@ -53,8 +63,8 @@ class PortalController < ApplicationController
     @tasks_by_status = @tasks_by_status.to_hash
 
     @tasks_by_status[:completed] ||= []
-    @tasks_by_status[:running] ||= []
-    @tasks_by_status[:failed] ||= []
+    @tasks_by_status[:running]   ||= []
+    @tasks_by_status[:failed]    ||= []
   end
   
   #Display general information about the CBRAIN project.

@@ -19,7 +19,15 @@ class SessionsController < ApplicationController
 
   def create #:nodoc:
     self.current_user = User.authenticate(params[:login], params[:password])
+        
     if logged_in?
+      if BrainPortal.current_portal.portal_locked? && !current_user.has_role?(:admin)
+        self.current_user = nil
+        flash.now[:error] = 'The system is currently locked. Please try again later.'
+        render :action  => :new
+        return
+      end
+       
       current_session.activate
       if params[:remember_me] == "1"
         current_user.remember_me unless current_user.remember_token?

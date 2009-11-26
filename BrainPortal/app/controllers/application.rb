@@ -70,25 +70,31 @@ class ApplicationController < ActionController::Base
   end
   
   def prepare_messages
-      return unless current_user
-      @display_messages = []
-      
-      unread_messages = current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC")
-      @unread_message_count = unread_messages.size
-      
-      unread_messages.each do |mess|
-        if mess.expiry.blank? || mess.expiry > Time.now
-          if mess.critical? || mess.display?
-            @display_messages << mess
-            unless mess.critical?
-              mess.update_attributes(:display  => false)
-            end
+    if BrainPortal.current_portal.portal_locked?
+      flash.now[:error] ||= ""
+      flash.now[:error] += "This portal is currently locked."
+    end
+    
+    return unless current_user
+    
+    @display_messages = []
+    
+    unread_messages = current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC")
+    @unread_message_count = unread_messages.size
+    
+    unread_messages.each do |mess|
+      if mess.expiry.blank? || mess.expiry > Time.now
+        if mess.critical? || mess.display?
+          @display_messages << mess
+          unless mess.critical?
+            mess.update_attributes(:display  => false)
           end
-        else  
-          mess.update_attributes(:read  => true)
         end
+      else  
+        mess.update_attributes(:read  => true)
       end
     end
+  end
     
   #Checks that the current user's role matches +role+.
   def check_role(role)
