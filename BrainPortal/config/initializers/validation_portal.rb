@@ -106,6 +106,11 @@ User.find(:all, :include => [:groups, :user_preference]).each do |u|
     user_group.type = 'UserGroup'
     user_group.save!
   end
+  if user_group.users != [u]
+    puts "C> \t- '#{user_group.name}' group not used for user '#{u.login}'. Resetting user list."
+    user_group.users = [u]
+    user_group.save!
+  end
   
   unless u.user_preference
     puts "C> \t- User #{u.login} doesn't have a user preference resource. Creating one."
@@ -127,6 +132,11 @@ Site.all.each do |s|
    elsif ! site_group.is_a?(SiteGroup)
      puts "C> \t- '#{site_group.name}' group migrated to class SiteGroup."
      site_group.type = 'SiteGroup'
+     site_group.save!
+   end
+   if site_group.site != s
+     puts "C> \t- '#{site_group.name}' group doesn't have site set to #{s.name}. Resetting it."
+     site_group.site = s
      site_group.save!
    end
   

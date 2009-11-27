@@ -22,7 +22,7 @@ class GroupsController < ApplicationController
       @system_groups = SystemGroup.find(:all, :include => [:users, :site])
       @work_groups = WorkGroup.find(:all, :include => [:users, :site])
     else
-      @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "SystemGroup"}, :include => [:users])
+      @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]}, :include => [:users])
       @work_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"}, :include => [:users])
     end
     

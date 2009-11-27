@@ -112,7 +112,7 @@ class UsersController < ApplicationController
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     params[:user][:group_ids] ||= []
-    params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => "SystemGroup"} )  
+    params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]} )  
       
     respond_to do |format|
       if @user.update_attributes(params[:user])
