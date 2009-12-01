@@ -43,6 +43,9 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show #:nodoc:
     @user = User.find(params[:id], :include => [:groups, :user_preference])
+    
+    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+
     if current_user.has_role? :admin
       @groups = WorkGroup.find(:all)
     elsif current_user.has_role? :site_manager
@@ -61,6 +64,9 @@ class UsersController < ApplicationController
   
   def edit #:nodoc:
     @user = User.find(params[:id], :include => :groups)
+    
+    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+    
     if current_user.has_role? :admin
       @groups = WorkGroup.find(:all)
     elsif current_user.has_role? :site_manager
@@ -111,6 +117,9 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
+    
+    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+    
     params[:user][:group_ids] ||= []
     params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]} )  
       
@@ -159,7 +168,7 @@ class UsersController < ApplicationController
     @user.addlog("Switched from user '#{current_user.login}'")
 
     current_user = @user
-    session[:user_id] = @user.id
+    current_session[:user_id] = @user.id
     redirect_to home_path
   end
 
