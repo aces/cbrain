@@ -33,9 +33,9 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Size:</th>
-      <td><%= pretty_size(@userfile.size) %></td>
+      <td><%= h(@userfile.format_size) %></td>
       <td><% if @userfile.size >= 10**3 -%>
-         (<%= @userfile.size %> bytes)
+          = <%= @userfile.size %> bytes
           <% end -%>
       </td>
     </tr>  

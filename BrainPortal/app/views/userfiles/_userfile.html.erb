@@ -27,7 +27,7 @@
    </td>
 
    <% if userfile.size != nil %>
-     <td><span title="<%= userfile.size %> bytes"><%= h(pretty_size(userfile.size)) -%></span></td>
+     <td><span title="<%= userfile.size %> bytes"><%= h(userfile.format_size) -%></span></td>
    <% else %>
      <td><font color="red">unknown</font></td>
    <% end %>
