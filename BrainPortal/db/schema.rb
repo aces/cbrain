@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091125211107) do
+ActiveRecord::Schema.define(:version => 20091201162200) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -23,17 +23,11 @@ ActiveRecord::Schema.define(:version => 20091125211107) do
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
-    t.string   "file_name_type"
-    t.string   "file_name_term"
-    t.string   "created_date_type"
-    t.datetime "created_date_term"
-    t.string   "size_type"
-    t.integer  "size_term"
-    t.integer  "group_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.text     "tags"
+    t.string   "type"
+    t.text     "data"
   end
 
   add_index "custom_filters", ["user_id"], :name => "index_custom_filters_on_user_id"

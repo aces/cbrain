@@ -202,7 +202,7 @@ class Userfile < ActiveRecord::Base
       when 'name'
         scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{term}%"])
       when 'custom'
-        custom_filter = CustomFilter.find_by_name(term)
+        custom_filter = UserfileCustomFilter.find_by_name(term)
         scope = custom_filter.filter_scope(scope)
       when 'file'
         case term

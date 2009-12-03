@@ -29,7 +29,7 @@
 class Session
 
   Revision_info="$Id$"
-
+  
   def initialize(session, params) #:nodoc:
     @session = session
     @session[:userfiles_basic_filters] ||= []
@@ -69,6 +69,7 @@ class Session
   def update(params)
     controller = params[:controller]
 
+    #TODO: It would be nice if userfiles used the generalized system.
     filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])   
     if params[:userfiles_search_type] == 'unfilter'
       @session[:userfiles_basic_filters] = []
@@ -103,7 +104,7 @@ class Session
         @session[controller.to_sym]["filters"].delete(params[controller]["remove_filter"])
       else
         @session[controller.to_sym]["filters"].merge!(params[controller]["filters"] || {})
-        @session[controller.to_sym]["sort"] = params[controller]["sort"] || {}
+        @session[controller.to_sym]["sort"].merge!(params[controller]["sort"] || {})
       end
     end
   end
@@ -118,15 +119,21 @@ class Session
     @session[:userfiles_view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
   end
   
+  #Returns the params saved for +controller+.
   def params_for(controller)
     @session[controller.to_sym]
   end
   
+  #Hash-like access to session attributes.
   def [](key)
     @session[key]
   end
   
+  #Hash-like assignment to session attributes.
   def []=(key, value)
+    if key == :user_id
+      @session.model.update_attributes!(:user_id => value)
+    end
     @session[key] = value
   end
   

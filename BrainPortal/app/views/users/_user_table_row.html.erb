@@ -1,5 +1,5 @@
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
-  <td><%=h user.full_name %></td>
+  <td><%= link_to h(user.full_name), user_path(user) %></td>
   <td><%=h user.login %></td>
   <td><%=h user.email %></td>
   <td><%= user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.map{|g| h(g.name)}.sort.join("<br>") %></td>
@@ -7,7 +7,6 @@
   <td><%=h user.site.name rescue "(Unassigned)" %></td>
   <td><%=h user.userfiles.size %></td>
   <% unless user.login == 'admin' %>
-    <td><%= link_to 'Edit', edit_user_path(user), :class => 'action_link' %></td>
     <td>
       <%= 
           link_to_remote  'Delete',
@@ -20,5 +19,5 @@
         %>
     </td>
     <td><%= link_to 'Switch', switch_user_path(user), :class => 'action_link' %></td>
-  <% else %><td colspan="3"></td><% end %>
+  <% else %><td colspan="2"></td><% end %>
 </tr>

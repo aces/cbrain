@@ -4,60 +4,15 @@
 
 
    <div class = "generalbox">
-      <% form_for(@custom_filter) do |f| %>
+      <% form_for :custom_filter, @custom_filter, :url => { :action => "create" } do |f| %>
+         <%= hidden_field_tag :type, params[:type]%>
          <%= f.error_messages %>
            <p>
              <strong>Filter name:</strong><br>
              <%= f.text_field :name %>
            </p>
   
-           <p>
-              Filename:<br>
-              
-                  <%= f.select :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']]  %>
-                  <%= f.text_field :file_name_term %>
-                
-           </p>
-           <p>
-              Creation Date:<br>
-              
-                  <%= f.select :created_date_type, [["Don't filter date", ''], ['Before', '<'], ['On', '='], ['After', '>']] %>
-                  <%= f.date_select :created_date_term %>
-              
-           </p>
-           <p>
-              Size:<br>
-              
-                  <%= f.select :size_type, [["Don't filter size", ''], ['=', '='], ['<', '<'], ['>', '>']] %>
-                  <%= f.text_field :size_term %> kb
-              
-           </p>
-      
-      
-           <% if @user_groups %>
-                <p>
-                   Group:<br>
-                   
-                      <%= f.collection_select(:group_id, @user_groups, :id, :name, :class => :group, :include_blank  => true) %>
-                   
-                </p> 
-           <% end %>      
-           
-           <% if @user_tags %>
-                 <p>
-                    Tags:
-                    
-                       <table>
-                         <% for tag in @user_tags %>
-                             <tr class="<%= cycle('list-odd', 'list-even') %>">
-                               <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s) %></td>
-                               <td><%= h(tag.name) -%></td>
-                             </tr>
-                         <% end %>
-                       </table>
-                    
-                 </p>
-           <% end %>
+           <%= render :partial => "#{params[:type]}_custom_filter" %>
     
          <%= f.submit "Create" %>
       <% end %>

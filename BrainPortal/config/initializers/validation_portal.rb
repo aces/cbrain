@@ -266,6 +266,20 @@ else
   puts "C> \t- No old SyncStatus objects to delete."
 end
 
+#-----------------------------------------------------------------------------
+puts "C> Ensuring custom filters have a type..."
+#-----------------------------------------------------------------------------
+
+if CustomFilter.column_names.include?("type")
+  CustomFilter.all.each do |cf|
+    if cf.class == CustomFilter
+      puts "C> \t- Giving filter #{cf.name} the type 'UserfileCustomFilter'."
+      cf.type = 'UserfileCustomFilter'
+      cf.save!
+    end
+  end
+end
+
 
 
 ##-----------------------------------------------------------------------------

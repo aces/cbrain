@@ -21,6 +21,9 @@ class ActRecTask < ActiveRecord::Base
   Revision_info="$Id$"
 
   self.table_name = "drmaa_tasks"
+  
+  belongs_to  :bourreau
+  belongs_to  :user
 
   serialize :params
 

@@ -1,0 +1,34 @@
+<p>
+   Task:<br>
+   
+      <%= select :data, :type, DrmaaTask.subclasses.sort.map{ |t| [t.sub(/^Drmaa/, ""), t] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
+   
+</p>
+<p>
+   Description:<br>
+   
+       <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => @custom_filter.data["description_type"]    %>
+       <%= text_field_tag "data[description_term]", @custom_filter.data["description_term"] %>
+     
+</p>
+<p>
+   Creation Date:<br>
+   
+       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', '<'], ['On', '='], ['After', '>']], :selected => @custom_filter.data["created_date_type"]  %>
+       <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse(@custom_filter.data["created_date_term"] || Time.now.to_s) %>
+   
+</p>
+
+<p>
+   Owner:<br>
+   
+      <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["user_id"]  %>
+   
+</p> 
+
+<p>
+   Bourreau:<br>
+   
+      <%= select :data, :bourreau_id, available_bourreaux(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["bourreau_id"]  %>
+   
+</p>

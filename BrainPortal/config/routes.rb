@@ -19,11 +19,13 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }
 
   # Redirect for polymorphism
-  map.resources :single_files,     :controller => :userfiles
-  map.resources :file_collection,  :controller => :userfiles
-  map.resources :civet_collection, :controller => :userfiles
-  map.resources :work_groups,      :controller => :groups
-  map.resources :system_groups,    :controller => :groups 
+  map.resources :single_files,            :controller => :userfiles  
+  map.resources :file_collection,         :controller => :userfiles  
+  map.resources :civet_collection,        :controller => :userfiles  
+  map.resources :work_groups,             :controller => :groups     
+  map.resources :system_groups,           :controller => :groups     
+  map.resources :userfile_custom_filters, :controller => :custom_filters
+  map.resources :task_custom_filters,     :controller => :custom_filters
 
   # Special named routes
   map.home        '/home',     :controller => 'portal',   :action => 'welcome'

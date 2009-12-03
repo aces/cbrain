@@ -71,7 +71,7 @@
     <div id="side_filter_menu">
      <h3>
         Filters<br> 
-        <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path %></small></small></small><br>
+        <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %></small></small></small><br>
      </h3>
      <ul>
      <li>
@@ -90,7 +90,7 @@
                                     :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
      %> 
     </li>
-     <% current_user.custom_filters.each do |filter| %>
+     <% UserfileCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
      <li>
      <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :userfiles_custom_filter  => filter.id},
                                      :method  => 'get',

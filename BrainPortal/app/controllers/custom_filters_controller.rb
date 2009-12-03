@@ -19,7 +19,8 @@ class CustomFiltersController < ApplicationController
   # GET /custom_filters/new
   # GET /custom_filters/new.xml
   def new #:nodoc:
-    @custom_filter = CustomFilter.new
+    filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
+    @custom_filter = filter_class.new
     @user_groups   = current_user.groups
     @user_tags   = current_user.tags
 
@@ -38,14 +39,17 @@ class CustomFiltersController < ApplicationController
 
   # POST /custom_filters
   # POST /custom_filters.xml
-  def create #:nodoc: 
-    @custom_filter = CustomFilter.new(params[:custom_filter])
+  def create #:nodoc:
+    filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
+    @custom_filter = filter_class.new(params[:custom_filter])
+    @custom_filter.data = params[:data]
+    
     @custom_filter.user_id = current_user.id
         
     respond_to do |format|
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
-        format.html { redirect_to(userfiles_path) }
+        format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
         format.xml  { render :xml => @custom_filter, :status => :created, :location => @custom_filter }
       else
         @user_groups   = current_user.groups  
@@ -63,14 +67,19 @@ class CustomFiltersController < ApplicationController
     @custom_filter = current_user.custom_filters.find(params[:id])
     filter_name = @custom_filter.name
     
+    params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
+    @custom_filter.data = params[:data]
+    
     respond_to do |format|
-      if @custom_filter.update_attributes(params[:custom_filter])
+      if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-        if current_session.userfiles_custom_filters.include?(filter_name)
-          current_session.userfiles_custom_filters.delete filter_name
-          current_session.userfiles_custom_filters << @custom_filter.name
+        if @custom_filter.filtered_class_controller == "userfiles"    
+          if current_session.userfiles_custom_filters.include?(filter_name)
+            current_session.userfiles_custom_filters.delete filter_name
+            current_session.userfiles_custom_filters << @custom_filter.name
+          end
         end
-        format.html { redirect_to(userfiles_path) }
+        format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
         format.xml  { head :ok }
       else
         @user_groups   = current_user.groups
@@ -85,14 +94,18 @@ class CustomFiltersController < ApplicationController
   # DELETE /custom_filters/1
   # DELETE /custom_filters/1.xml
   def destroy #:nodoc:
-    @custom_filter = current_user.custom_filters.find(params[:id])    
-    current_session.userfiles_custom_filters.delete @custom_filter.name
+    @custom_filter = current_user.custom_filters.find(params[:id])
+    if @custom_filter.filtered_class_controller == "userfiles"    
+      current_session.userfiles_custom_filters.delete @custom_filter.name
+    else
+      current_session[@custom_filter.filtered_class_controller.to_sym]["filters"].delete "custom_filter"
+    end
     @custom_filter.destroy
 
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
 
     respond_to do |format|
-      format.html { redirect_to(userfiles_path) }
+      format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
       format.xml  { head :ok }
     end
   end

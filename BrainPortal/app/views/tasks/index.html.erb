@@ -43,7 +43,45 @@
                     <%= submit_tag("Apply Operation") %>
               <br><br>
         </div>  <!-- End class="resource_list_box" -->
-      
+        <br><br>
+        <%= link_to_function "Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
+              page['side_filter_menu_wrapper'].visual_effect(:blind_down, :duration  => 0.2)
+              page['filter_option_show'].hide
+              page['filter_option_hide'].show
+            end
+        %>
+
+        <%= link_to_function "Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
+              page['side_filter_menu_wrapper'].visual_effect(:blind_up, :duration  => 0.2)
+              page['filter_option_hide'].hide
+              page['filter_option_show'].show
+            end
+        %>
+        <div id="side_filter_menu_wrapper" style="display:none;">
+          <div id="side_filter_menu">
+           <h3>
+              Filters<br> 
+              <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'task') %></small></small></small><br>
+           </h3>
+           <ul>
+           <% TaskCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+           <li>
+           <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :tasks => {:filters  => {:custom_filter  => filter.id}}},
+                                           :method  => 'get',
+                                           :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
+            %>
+            <br>
+           <small><small>
+              <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
+              <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
+           </small></small>
+           </li>
+           <% end %>
+           </ul>
+          </div>
+        </div>   <!-- End id="side_filter_menu_wrapper" -->
+        
+        
         <table class = "resource_list" id="tasks_table">
           <%= render :partial => 'tasks_table' %>
         </table>

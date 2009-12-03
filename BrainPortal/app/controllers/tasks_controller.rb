@@ -18,14 +18,13 @@ class TasksController < ApplicationController
 
   def index #:nodoc:   
     @bourreaux = available_bourreaux(current_user)
+    scope = ActRecTask.scoped({})
     if current_user.has_role? :admin
-      unless @filter_params["filters"]["owner_filter"].blank?
-        conditions = { :user_id => @filter_params["filters"]["owner_filter"] }
-      else
-        conditions = {}
+      unless @filter_params["filters"]["user_id"].blank?
+        scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
       end
     else
-      conditions = { :user_id => current_user.id }
+      scope = scope.scoped(:conditions => {:user_id => current_user.id} )
     end
     
     #Used to create filters
@@ -33,87 +32,96 @@ class TasksController < ApplicationController
     @task_descriptions = []
     @task_owners = []
     @task_status = []
-    ActRecTask.find(:all, :conditions =>conditions).each do |task|
+    scope.find(:all).each do |task|
       @task_types |= [task.class.to_s]
       @task_descriptions |= [task.description] if task.description
       @task_owners |= [task.user]
       @task_status |= [task.status]
     end
     
-    if @filter_params["filters"]["bourreau_filter"]
-      conditions[:bourreau_id] = @filter_params["filters"]["bourreau_filter"]
-    else
-      conditions[:bourreau_id] = @bourreaux.map { |b| b.id }
-    end
     
-    unless @filter_params["filters"]["status_filter"].blank?
-      case @filter_params["filters"]["status_filter"].to_sym
-      when :completed
-        conditions[:status] = DrmaaTask::COMPLETED_STATUS
-      when :running
-        conditions[:status] = DrmaaTask::RUNNING_STATUS
-      when :failed
-        conditions[:status] = DrmaaTask::FAILED_STATUS
+    @filter_params["filters"].each do |att, val|
+      att = att.to_sym
+      next if att == :user_id
+      value = val
+      case att
+      when :status
+        case value.to_sym
+        when :completed
+          value = DrmaaTask::COMPLETED_STATUS
+        when :running
+          value = DrmaaTask::RUNNING_STATUS
+        when :failed
+          value = DrmaaTask::FAILED_STATUS
+        end 
+      end
+      if att == :custom_filter
+        custom_filter = TaskCustomFilter.find(value)
+        scope = custom_filter.filter_scope(scope)
       else
-        conditions[:status] = @filter_params["filters"]["status_filter"]
+        scope = scope.scoped(:conditions => {att => value})
       end
     end
-
-    unless @filter_params["filters"]["type_filter"].blank?
-      conditions[:type] = @filter_params["filters"]["type_filter"]
-    end
     
-    unless @filter_params["filters"]["description_filter"].blank?
-      conditions[:description] = @filter_params["filters"]["description_filter"]
+    if @filter_params["filters"]["bourreau_id"].blank?
+      scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
     end
 
-    @tasks = ActRecTask.find(:all, :conditions => conditions)
-    
-    @tasks.each do |t|  # ugly kludge
-      t.updated_at = Time.parse(t.updated_at)
-      t.created_at = Time.parse(t.created_at)
-    end
-    
-    
     # Set sort order and make it persistent.
-    @filter_params["sort"]["order"] ||= 'updated_at'
+    @filter_params["sort"]["order"] ||= 'drmaa_tasks.updated_at'
     @filter_params["sort"]["dir"]   ||= 'DESC'
-    sort_order = @filter_params["sort"]["order"]
-    sort_dir   = @filter_params["sort"]["dir"]  
     
-    @tasks = @tasks.sort do |t1, t2|
-      if sort_dir == 'DESC'
-        task1 = t2
-        task2 = t1
-      else
-        task1 = t1
-        task2 = t2
-      end
-      
-      case sort_order
-      when 'type'
-        att1 = task1.class.to_s
-        att2 = task2.class.to_s
-      when 'owner'
-        att1 = task1.user.login
-        att2 = task2.user.login
-      when 'bourreau'
-        att1 = task1.bourreau.name
-        att2 = task2.bourreau.name
-      else
-        att1 = task1.send(sort_order)
-        att2 = task2.send(sort_order)
-      end
-      
-      if att1.blank?
-        1
-      elsif att2.blank?
-        -1
-      else
-        att1 <=> att2
-      end
-    end
-        
+    scope = scope.scoped(:joins  => [:bourreau, :user], 
+                         :readonly  => false, 
+                         :order => "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}" )
+
+    @tasks = scope.find(:all)
+    
+    # @tasks.each do |t|  # ugly kludge
+    #   t.updated_at = Time.parse(t.updated_at)
+    #   t.created_at = Time.parse(t.created_at)
+    # end
+    # 
+    # 
+    # # Set sort order and make it persistent.
+    # @filter_params["sort"]["order"] ||= 'drmaa_task.updated_at'
+    # @filter_params["sort"]["dir"]   ||= 'DESC'
+    # sort_order = @filter_params["sort"]["order"]
+    # sort_dir   = @filter_params["sort"]["dir"]  
+    # 
+    # @tasks = @tasks.sort do |t1, t2|
+    #   if sort_dir == 'DESC'
+    #     task1 = t2
+    #     task2 = t1
+    #   else
+    #     task1 = t1
+    #     task2 = t2
+    #   end
+    #   
+    #   case sort_order
+    #   when 'type'
+    #     att1 = task1.class.to_s
+    #     att2 = task2.class.to_s
+    #   when 'owner'
+    #     att1 = task1.user.login
+    #     att2 = task2.user.login
+    #   when 'bourreau'
+    #     att1 = task1.bourreau.name
+    #     att2 = task2.bourreau.name
+    #   else
+    #     att1 = task1.send(sort_order)
+    #     att2 = task2.send(sort_order)
+    #   end
+    #   
+    #   if att1.blank?
+    #     1
+    #   elsif att2.blank?
+    #     -1
+    #   else
+    #     att1 <=> att2
+    #   end
+    # end
+    #     
     respond_to do |format|
       format.html
       format.js
