@@ -1,0 +1,129 @@
+<span title="The name of the data provider.">
+  <p><label for="name">Name</label><br/>
+  <%= f.text_field :name, { :disabled =>  (params[:action].to_sym == :edit)  } %></p>
+</span>
+         
+<span title="Brief description of the data provider.">
+  <p><label for="description">Description</label><br/>
+  <%= f.text_field :description %></p>
+</span>
+
+<span title="Type of data provider.">
+  <p><label for="type">Type</label><br/>
+  <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %></p>
+
+  <%= 
+      link_to_function "Data Provider Type Information", :class  => 'action_link' do |page|
+        page[:data_provider_classes].toggle
+      end
+   %>  
+
+  <div id="data_provider_classes" style="display:none">
+    <strong>SshDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are accessed through ssh and rsync.
+    The provider's files are stored in a flat directory, one
+    level deep, directly specified by the object's remote_dir
+    attribute. The file "hello" is this stored in a path like this: /remote_dir/hello
+    <br><br>
+    <strong>CbrainSshDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are accessed through ssh and rsync.
+    The provider's files are stored in the 'CBRAIN enhanced
+    directory tree'; such a tree stores the file "hello"
+    of user "myuser" into a relative path like this: /remote_dir/myuser/01/23/hello
+    where the components "01" and "23" are computed based on the "hello" string.
+    <br><br>
+    <strong>CbrainLocalDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are not even remote, they are local
+    to the currently running rails application. The provider's
+    files are stored in the 'cbrain enhanced
+    directory tree'; such a tree stores the file "hello"
+    of user "myuser" into a relative path like this: /root_dir/myuser/01/23/hello
+    where root_dir is the data provider's remote_dir (a local
+    directory) and the components "01" and "23" are computed based
+    on the hello string.
+    This data provider does not cache anything! The 'remote' files
+    are in fact all local, and accesing the 'cached' files mean
+    accessing the real provider's files. All methods are adjusted
+    so that their behavior is sensible.
+    <br><br>
+    <strong>CbrainSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
+    acts either as a CbrainLocalDataProvider or a CbrainSshDataProvider
+    depending on whether or not the current hostname matches
+    the value of the attribute remote_host.
+    This means that in the case where the current Rails application
+    runs on the same machine as the data provider, the faster
+    and more efficient CbrainLocalDataProvider will be used.
+    <br><br>
+    <strong>VaultSshDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are accessed through ssh and rsync.
+    The provider's files are stored in a flat directory, two levels
+    deep, directly specified by the object's remote_dir
+    attribute and the user's login name. The file "hello"
+    of user "myuser" is thus stored into a path like this:
+        /remote_dir/myuser/hello
+    For the list of API methods, see the DataProvider superclass.
+    <br><br>
+    <strong>VaultLocalDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are not even remote, they are local
+    to the currently running rails application. The provider's
+    files are stored in a flat directory, two levels
+    deep, directly specified by the object's remote_dir
+    attribute and the user's login name. The file "hello"
+    of user "myuser" is thus stored into a path like this:
+        /root_dir/myuser/hello
+    where root_dir is the data provider's remote_dir (a local
+    directory).
+    This data provider does not cache anything! The 'remote' files
+    are in fact all local, and accessing the 'cached' files mean
+    accessing the real provider's files. All methods are adjusted
+    so that their behavior is sensible.
+    <br><br>
+    <strong>VaultSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
+    acts either as a VaultLocalDataProvider or a VaultSshDataProvider
+    depending on whether or not the current hostname matches
+    the value of the attribute remote_host.
+    This means that in the case where the current Rails application
+    runs on the same machine as the data provider, the faster
+    and more efficient VaultLocalDataProvider will be used.
+  </div>
+</span>
+
+<span title="Owner of this data provider.">
+  <p><label for="user_id">Owner</label><br/>
+  <%= f.select :user_id, current_user.available_users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+</span>
+
+<span title="Group ownership of this data provider.">
+  <p><label for="group_id">Group</label><br/>
+  <%= f.select :group_id, current_user.available_groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>  
+</span>
+
+<span title="Is this data provider currently online?">
+  <p><label for="online">Status</label><br/>
+  <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>  
+</span>
+
+<span title="Is this data provider writable or read-only?">
+  <p><label for="read_only">Mode</label><br/>
+  <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, :prompt => "Select mode" %></p>
+</span>
+
+<span title="Name of the remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <p><label for="remote_host">Remote Hostname</label><br/>
+  <%= f.text_field :remote_host %></p>
+</span>
+
+<span title="Username on the remote machine where the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <p><label for="remote_user">Remote Username</label><br/>
+  <%= f.text_field :remote_user %></p>
+</span>
+
+<span title="Directory used for storing files on the remote machine where the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <p><label for="remote_dir">Remote Directory</label><br/>
+  <%= f.text_field :remote_dir %></p>
+</span>
+
+<span title="Port number used to access remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <p><label for="remote_port">Remote Port Number</label><br/>
+  <%= f.text_field :remote_port %></p>
+</span>

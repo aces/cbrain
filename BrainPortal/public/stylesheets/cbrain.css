@@ -1478,3 +1478,11 @@ td.middle{
     background-color: #05A3D6;
     text-align:left;
 }
+
+#data_provider_classes{
+    max-width: 60em;
+    position: absolute;
+    background-color: white;
+    border: 0.2em solid #0471B4;
+    padding: 1em;
+}

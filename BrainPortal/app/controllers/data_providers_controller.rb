@@ -80,8 +80,6 @@ class DataProvidersController < ApplicationController
        return
     end
 
-    @users = current_user.available_users
-    @groups = current_user.available_groups
     @typelist = get_type_list
 
     @ssh_keys = get_ssh_public_keys
@@ -154,8 +152,6 @@ class DataProvidersController < ApplicationController
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."
     else
-      @users = current_user.available_users
-      @groups = current_user.available_groups
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
       render :action => 'edit'
