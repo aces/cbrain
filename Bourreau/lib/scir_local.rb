@@ -110,7 +110,7 @@ class ScirLocalJobTemplate < Scir::JobTemplate
     command += " 2> #{shell_escape(stderr)} "             if stderr
     command += " 2>&1 "                                   if self.join
 
-    command = "bash -c \"echo PID=\\$\\$ ; #{command}\" & "
+    command = "bash -c \"echo PID=\\$\\$ ; #{command}\" | head -1 & "
 
     return command
   end
