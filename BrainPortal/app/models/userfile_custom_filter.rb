@@ -28,7 +28,9 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_name(scope)  unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
     scope = scope_date(scope)  unless self.data["created_date_type"].blank? || self.data["date_term"].blank?
     scope = scope_size(scope)  unless self.data["size_type"].blank? || self.data["size_term"].blank?
+    scope = scope_user(scope)  unless self.data["user_id"].blank?
     scope = scope_group(scope) unless self.data["group_id"].blank?
+    scope = scope_dp(scope)    unless self.data["data_provider_id"].blank?
     scope
   end
   
@@ -85,9 +87,19 @@ class UserfileCustomFilter < CustomFilter
     scope.scoped(:conditions  => ["userfiles.size #{self.data["size_type"]} ?", (self.data["size_term"].to_i * 1000)])
   end
   
+  #Return +scope+ modified to filter the Userfile entry's owner.
+  def scope_user(scope)
+    scope.scoped(:conditions  => ["userfiles.user_id = ?", self.data["user_id"]])
+  end
+  
   #Return +scope+ modified to filter the Userfile entry's group ownership.
   def scope_group(scope)
     scope.scoped(:conditions  => ["userfiles.group_id = ?", self.data["group_id"]])
+  end
+  
+  #Return +scope+ modified to filter the Userfile entry's data provider.
+  def scope_dp(scope)
+    scope.scoped(:conditions  => ["userfiles.data_provider_id = ?", self.data["data_provider_id"]])
   end
   
   #Returns the sql query to be executed by the filter.

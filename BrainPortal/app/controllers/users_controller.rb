@@ -62,24 +62,24 @@ class UsersController < ApplicationController
     end
   end
   
-  def edit #:nodoc:
-    @user = User.find(params[:id], :include => :groups)
-    
-    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
-    
-    if current_user.has_role? :admin
-      @groups = WorkGroup.find(:all)
-    elsif current_user.has_role? :site_manager
-      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-    end
-
-    @log = @user.getlog()
-    
-    if !edit_permission? @user
-      access_error(401)
-      return
-    end
-  end 
+  # def edit #:nodoc:
+  #   @user = User.find(params[:id], :include => :groups)
+  #   
+  #   cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+  #   
+  #   if current_user.has_role? :admin
+  #     @groups = WorkGroup.find(:all)
+  #   elsif current_user.has_role? :site_manager
+  #     @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+  #   end
+  # 
+  #   @log = @user.getlog()
+  #   
+  #   if !edit_permission? @user
+  #     access_error(401)
+  #     return
+  #   end
+  # end 
 
   def create #:nodoc:
     cookies.delete :auth_token
@@ -129,12 +129,16 @@ class UsersController < ApplicationController
         format.html { redirect_to @user }
         format.xml  { head :ok }
       else
+        flash.now[:error] ||= ""
+        @user.errors.each do |field, message|
+          flash.now[:error] += "#{field} #{message}.\n".humanize
+        end
         if current_user.has_role? :admin
           @groups = WorkGroup.find(:all)
         elsif current_user.has_role? :site_manager
           @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
         end
-        format.html { render :action => "edit" }
+        format.html { render :action => "show" }
         format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
       end
     end

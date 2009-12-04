@@ -21,8 +21,6 @@ class CustomFiltersController < ApplicationController
   def new #:nodoc:
     filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
     @custom_filter = filter_class.new
-    @user_groups   = current_user.groups
-    @user_tags   = current_user.tags
 
     respond_to do |format|
       format.html # new.html.erb
@@ -33,8 +31,6 @@ class CustomFiltersController < ApplicationController
   # GET /custom_filters/1/edit
   def edit #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
-    @user_groups   = current_user.groups
-    @user_tags   = current_user.tags
   end
 
   # POST /custom_filters
@@ -52,9 +48,6 @@ class CustomFiltersController < ApplicationController
         format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
         format.xml  { render :xml => @custom_filter, :status => :created, :location => @custom_filter }
       else
-        @user_groups   = current_user.groups  
-        @user_tags   = current_user.tags
-              
         format.html { render :action => "new" }
         format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       end
@@ -81,10 +74,7 @@ class CustomFiltersController < ApplicationController
         end
         format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
         format.xml  { head :ok }
-      else
-        @user_groups   = current_user.groups
-        @user_tags   = current_user.tags
-        
+      else        
         format.html { render :action => "edit" }
         format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       end

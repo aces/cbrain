@@ -1,48 +1,59 @@
 <p>
-             Filename:<br>
-             
-                 <%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => @custom_filter.data["file_name_type"]    %>
-                 <%= text_field_tag "data[file_name_term]", @custom_filter.data["file_name_term"] %>
-               
-          </p>
-          <p>
-             Creation Date:<br>
-             
-                 <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', '<'], ['On', '='], ['After', '>']], :selected => @custom_filter.data["created_date_type"]  %>
-                 <%= date_select "custom_filter[date_term]", :date_term, :default  => Date.parse(@custom_filter.data["date_term"] || Time.now.to_s) %>
-             
-          </p>
-          <p>
-             Size:<br>
-             
-                 <%= select :data, :size_type, [["Don't filter size", ''], ['=', '='], ['<', '<'], ['>', '>']], :selected  => @custom_filter.data["file_name_type"] %>
-                 <%= text_field_tag "data[size_term]", @custom_filter.data["size_term"] %> kb
-             
-          </p>
+   Filename:<br>
+   
+       <%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => @custom_filter.data["file_name_type"]    %>
+       <%= text_field_tag "data[file_name_term]", @custom_filter.data["file_name_term"] %>
      
-     
-          <% if @user_groups %>
-               <p>
-                  Group:<br>
-                  
-                     <%= select :data, :group_id, @user_groups.map{ |g| [g.name, g.id.to_s] }, :class => :group, :include_blank  => true, :selected  => @custom_filter.data["group_id"]  %>
-                  
-               </p> 
-          <% end %>      
-          
-          <% if @user_tags %>
-                <p>
-                   Tags:
-                   
-                      <table>
-                        <% for tag in @user_tags %>
-                            <tr class="<%= cycle('list-odd', 'list-even') %>">
-                              <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, @custom_filter.tags.include?(tag.name)) %></td>
-                              <td><%= h(tag.name) -%></td>
-                            </tr>
-                        <% end %>
-                      </table>
-                   
-                </p>
-          <% end %>
+</p>
+<p>
+   Creation Date:<br>
+   
+       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', '<'], ['On', '='], ['After', '>']], :selected => @custom_filter.data["created_date_type"]  %>
+       <%= date_select "custom_filter[date_term]", :date_term, :default  => Date.parse(@custom_filter.data["date_term"] || Time.now.to_s) %>
+   
+</p>
+<p>
+   Size:<br>
+   
+       <%= select :data, :size_type, [["Don't filter size", ''], ['=', '='], ['<', '<'], ['>', '>']], :selected  => @custom_filter.data["size_type"] %>
+       <%= text_field_tag "data[size_term]", @custom_filter.data["size_term"] %> kb
+   
+</p>
+
+<p>
+   Owner:<br>
+
+      <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["user_id"]  %>
+
+</p>
+
+<p>
+   Group:<br>
+ 
+      <%= select :data, :group_id, current_user.available_groups.map{ |g| [g.name, g.id.to_s] }, :class => :group, :include_blank  => true, :selected  => @custom_filter.data["group_id"]  %>
+ 
+</p>
+
+<p>
+    Data Provider:<br>
+
+       <%= select :data, :data_provider_id, DataProvider.find_all_accessible_by_user(current_user).map{ |dp| [dp.name, dp.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["data_provider_id"]  %>
+
+</p> 
+
+<% if current_user.tags %>
+      <p>
+         Tags:
+         
+            <table>
+              <% for tag in current_user.tags %>
+                  <tr class="<%= cycle('list-odd', 'list-even') %>">
+                    <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, @custom_filter.tags.include?(tag.name)) %></td>
+                    <td><%= h(tag.name) -%></td>
+                  </tr>
+              <% end %>
+            </table>
+         
+      </p>
+<% end %>
    

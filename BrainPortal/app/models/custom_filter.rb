@@ -70,6 +70,6 @@ class CustomFilter < ActiveRecord::Base
   
   #Virtual attribute for mass assigning to the data hash.
   def data=(new_data)
-    self.write_attribute(:data, self.data.merge(new_data))
+    self.write_attribute(:data, new_data)
   end
 end

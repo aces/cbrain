@@ -27,8 +27,8 @@
 </p> 
 
 <p>
-   Bourreau:<br>
+   Execution Server:<br>
    
-      <%= select :data, :bourreau_id, available_bourreaux(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["bourreau_id"]  %>
+      <%= select :data, :bourreau_id, Bourreau.find_all_accessible_by_user(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["bourreau_id"]  %>
    
 </p>
