@@ -15,7 +15,7 @@ require 'cbrain_exception'
 class CBRAIN
 
   Revision_info="$Id$"
-  Redmine_Version="1.2.1"
+  Redmine_Version="1.2.3"
 
   public
 

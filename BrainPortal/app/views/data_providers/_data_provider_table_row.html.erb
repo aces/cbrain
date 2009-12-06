@@ -3,7 +3,7 @@
   <td><%= h(prov.user.login) %></td>
   <td><%= h(prov.group.name) %></td>
   <td><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
-  <td><%= h(prov.online ? "Yes" : "No") %></td>
+  <td><%= prov.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= prov.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
   <td><%= h(prov.description) %></td>
