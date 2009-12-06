@@ -44,7 +44,6 @@ class VaultLocalDataProvider < DataProvider
   end
 
   def cache_prepare(userfile) #:nodoc:
-    basename  = userfile.name
     username  = userfile.user.login
     userdir = Pathname.new(remote_dir) + username
     Dir.mkdir(userdir) unless File.directory?(userdir)
@@ -96,34 +95,35 @@ class VaultLocalDataProvider < DataProvider
   protected
 
   # Root directory for DataProvider's cache dir:
-  #    "/CbrainCacheDir/ProviderName"
+  #     "/CbrainCacheDir/ProviderName"
   def cache_providerdir #:nodoc:
-    raise "No caching in this provider!"
+    cb_error "No caching in this provider!"
   end
 
-  # Make, if needed, the two subdirectory levels for a cached file:
-  # mkdir "/CbrainCacheDir/ProviderName/34"
-  # mkdir "/CbrainCacheDir/ProviderName/34/45"
-  def mkdir_cache_subdirs(basename) #:nodoc:
-    raise "No caching in this provider!"
+  # Make, if needed, the three subdirectory levels for a cached file:
+  #     mkdir "/CbrainCacheDir/ProviderName/username"
+  #     mkdir "/CbrainCacheDir/ProviderName/username/34"
+  #     mkdir "/CbrainCacheDir/ProviderName/username/34/45"
+  def mkdir_cache_subdirs(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
   end
 
-  # Returns the relative path of the two subdirectory levels:
-  # "34/45"
-  def cache_subdir_path(basename) #:nodoc:
-    raise "No caching in this provider!"
+  # Returns the relative path of the three subdirectory levels:
+  #     "username/34/45"
+  def cache_subdir_path(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
   end
 
-  # Returns the full path of the two subdirectory levels:
-  # "/CbrainCacheDir/ProviderName/34/45"
-  def cache_full_dirname(basename) #:nodoc:
-    raise "No caching in this provider!"
+  # Returns the full path of the three subdirectory levels:
+  #     "/CbrainCacheDir/ProviderName/username/34/45"
+  def cache_full_dirname(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
   end
 
   # Returns the full path of the cached file:
-  # "/CbrainCacheDir/ProviderName/34/45/basename"
-  def cache_full_pathname(basename) #:nodoc:
-    raise "No caching in this provider!"
+  #     "/CbrainCacheDir/ProviderName/username/34/45/basename"
+  def cache_full_pathname(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
   end
 
 end

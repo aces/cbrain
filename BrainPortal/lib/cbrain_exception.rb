@@ -9,7 +9,7 @@
 # $Id$
 #
 
-class CbrainException < Exception
+class CbrainException < StandardError
 
    Revision_info="$Id$"
 

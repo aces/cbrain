@@ -3,6 +3,9 @@ ActionController::Routing::Routes.draw do |map|
   # Session
   map.resource  :session
 
+  # Control channel
+  map.resources :controls,                :controller => :controls
+
   # Standard CRUD resources
   map.resources :sites
   map.resources :custom_filters
@@ -15,7 +18,7 @@ ActionController::Routing::Routes.draw do |map|
   # Standard CRUD resources, with extra methods
   map.resources :users,          :member => { :switch  => :get }
   map.resources :bourreaux,      :member => { :start   => :get, :stop => :get }
-  map.resources :data_providers, :member => { :browse  => :get, :register => :post }
+  map.resources :data_providers, :member => { :browse  => :get, :register => :post }, :collection => { :cleanup => :post }
   map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }
 
   # Redirect for polymorphism

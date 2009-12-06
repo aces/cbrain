@@ -16,53 +16,21 @@ class ApplicationController < ActionController::Base #:nodoc:
   # from your application log (in this case, all fields with names like "password"). 
   # filter_parameter_logging :password
   
-  private
-  
-  def find_or_initialize_task
-    if params[:id]
-      if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID } )
-        @task.update_status
-      else
-        render_optional_error_file :not_found
+  #Patch: Load all models so single-table inheritance works properly.
+  begin
+    Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+      Dir.glob("*.rb").each do |model|
+        require_dependency model unless Object.const_defined? model.split(".")[0].classify
       end
+    end
+  rescue => error
+    if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+      puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+    elsif error.to_s.match(/Unknown database/i)
+      puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
     else
-      # This is all fuzzy logic trying to figure out the
-      # expected real class for the new object, based on
-      # the content of the keys and values of params
-      subtypes = params.keys.select { |x| x =~ /^drmaa_/i }
-      subtypekey  = subtypes[0] # hopefully just one
-      if subtypekey && subtypehash = params[subtypes[0]]
-        subtype  = subtypehash[:type]
-      end
-      if !subtype && subtypekey # try another way
-        subtype = subtypekey.camelize.sub(/^drmaa_/i,"Drmaa")
-      end
-      @task = Class.const_get(subtype).new(subtypehash)
+      raise
     end
-  end
-
-  # This is a before_filter for the tasks controller.
-  # It just makes sure some workers are available.
-  # It's unfortunate that due to technical reasons,
-  # such workers cannot be started when the application
-  # boots (CBRAIN.spawn_with_active_records() won't work
-  # properly until RAILS is fully booted).
-  def start_bourreau_workers
-    allworkers = BourreauWorker.all
-    return true if allworkers.size >= CBRAIN::BOURREAU_WORKERS_INSTANCES
-    while allworkers.size < CBRAIN::BOURREAU_WORKERS_INSTANCES
-      # For the moment we only start one worker, but
-      # in the future we may want to start more than one,
-      # once we're sure they don't interfere with each other.
-      worker = BourreauWorker.new
-      worker.check_interval = CBRAIN::BOURREAU_WORKERS_CHECK_INTERVAL # in seconds, default is 55
-      worker.bourreau       = CBRAIN::SelfRemoteResource              # Optional, when logging to Bourreau's log
-      worker.log_to         = CBRAIN::BOURREAU_WORKERS_LOG_TO         # 'stdout,bourreau'
-      worker.verbose        = CBRAIN::BOURREAU_WORKERS_VERBOSE        # if we want each job action logged!
-      worker.launch
-      allworkers = BourreauWorker.all
-    end
-    true
   end
 
 end

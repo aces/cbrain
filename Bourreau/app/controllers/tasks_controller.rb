@@ -19,17 +19,12 @@ class TasksController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :find_or_initialize_task, :except => [ :index ]
-  before_filter :start_bourreau_workers
 
-  # GET /tasks
-  # Formats: xml
-  # NOT USED ANYMORE!
-  def index #:nodoc:
-    @tasks = []
+  # Index method no longer avilable.
+  def index
     respond_to do |format|
       format.html { head :method_not_allowed }
-      
-      format.xml { render :xml => @tasks.to_xml }
+      format.xml  { head :method_not_allowed }
     end
   end
 
@@ -114,4 +109,31 @@ class TasksController < ApplicationController
     end
   end
   
+  private
+
+  def find_or_initialize_task
+    if params[:id]
+      if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID } )
+        @task.update_status
+      else
+        render_optional_error_file :not_found
+      end
+    else
+      # This is all fuzzy logic trying to figure out the
+      # expected real class for the new object, based on
+      # the content of the keys and values of params
+      subtypekey = params.keys.detect { |x| x =~ /^drmaa_/i }
+      if subtypekey && subtypehash = params[subtypekey]
+        subtype  = subtypehash[:type]
+      end
+      if !subtype && subtypekey # try another way
+        subtype = subtypekey.camelize.sub(/^drmaa_/i,"Drmaa")
+      end
+      #token = subtypehash.delete(:originator_token)
+      #cb_error "Un-authorized request" unless
+      #  token && RemoteResource.valid_token?(token)
+      @task = Class.const_get(subtype).new(subtypehash)
+    end
+  end
+
 end

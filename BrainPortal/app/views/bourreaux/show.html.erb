@@ -15,6 +15,7 @@
 
 <h2>Information for <%= @bourreau.name %></h2>
 
+<% isbourreau = @bourreau.is_a?(Bourreau) %>
 
 <div class = "generalcontent">
 
@@ -138,11 +139,6 @@
          <% else %>
 
              <tr>
-                 <th>Worker PIDs</th>
-                 <td class="info"><%= @info.worker_pids %></td>
-             </tr>
-
-             <tr>
                  <th>Revision Info (Server Side)</th>
                  <td class="info">
                      <strong>Subversion Revision: </strong><%= @info.revision %><br>
@@ -153,8 +149,18 @@
              </tr>
 
              <tr>
-                 <th>Number of tasks (running/max)</th>
-                 <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+                 <th>Host name</th>
+                 <td class="info"><%= h(@info.host_name) %></td>
+             </tr>
+
+             <tr>
+                 <th>Host IP address</th>
+                 <td class="info"><%= h(@info.host_ip) %></td>
+             </tr>
+
+             <tr>
+                 <th>Host OS type</th>
+                 <td class="info"><%= h(@info.host_uname) %></td>
              </tr>
 
              <tr>
@@ -163,11 +169,22 @@
              </tr>
 
              <tr>
-                 <th>Execution Server uptime</th>
+                 <th>Server uptime</th>
                  <td class="info">
-                   Up since: <%= h(@info.bourreau_uptime.to_i.ago.to_s(:db)) %><br>
-                   (for: <%= pretty_elapsed(@info.bourreau_uptime.to_i) %>)
+                   Up since: <%= h(@info.uptime.to_i.ago.to_s(:db)) %><br>
+                   (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
                  </td>
+             </tr>
+
+             <% if isbourreau %>
+             <tr>
+                 <th>Worker PIDs</th>
+                 <td class="info"><%= @info.worker_pids %></td>
+             </tr>
+
+             <tr>
+                 <th>Number of tasks (running/max)</th>
+                 <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
              </tr>
 
              <tr>
@@ -177,6 +194,7 @@
                    Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
                  </td>
              </tr>
+             <% end %>
 
              <tr>
                  <th>Execution Server SSH Public Key</th>
@@ -185,7 +203,7 @@
 
          <% end %>
 
-         <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+         <% if isbourreau && (check_role(:admin) || @bourreau.user_id == current_user.id) %>
 
             <tr>
                <td class="info" align="center" colspan="2">
@@ -206,6 +224,7 @@
 
       </table>
 
+      <% if isbourreau %>
       <table>
         <tr>
           <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
@@ -231,6 +250,7 @@
             <% end %>
           <tr>
       </table>
+      <% end %>
 
    </div>  <!-- End class="generalbox" -->
 

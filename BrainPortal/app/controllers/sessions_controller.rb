@@ -21,7 +21,7 @@ class SessionsController < ApplicationController
     self.current_user = User.authenticate(params[:login], params[:password])
         
     if logged_in?
-      if BrainPortal.current_portal.portal_locked? && !current_user.has_role?(:admin)
+      if BrainPortal.current_resource.portal_locked? && !current_user.has_role?(:admin)
         self.current_user = nil
         flash.now[:error] = 'The system is currently locked. Please try again later.'
         render :action  => :new

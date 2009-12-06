@@ -88,6 +88,14 @@ class VaultSmartDataProvider < DataProvider
     @provider.provider_rename(userfile,newname)
   end
 
+  def provider_move_to_otherprovider(userfile,otherprovider)
+    @provider.provider_move_to_otherprovider(userfile,otherprovider)
+  end
+
+  def provider_copy_to_otherprovider(userfile,otherprovider)
+    @provider.provider_copy_to_otherprovider(userfile,otherprovider)
+  end
+
   def provider_list_all #:nodoc:
     @provider.provider_list_all
   end

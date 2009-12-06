@@ -52,40 +52,91 @@
 
 <P>
 
+   <!-- *********************************** -->
+   <!-- Disk usage summary -->
+   <!-- *********************************** -->
+
+   <% form_tag(url_for(:controller => 'data_providers', :action => 'cleanup'), :method => :post) do %>
+
    <table class=resource_list" id="data_provider_stats">
       <tr>
-        <th COLSPAN="<%= 1+@report_col_labels.size %>">Disk Usage Statistics</th>
+        <th COLSPAN="<%= 1+@report_col_objects.size %>">Disk Usage Statistics</th>
       </tr>
       <tr>
         <th ROWSPAN="2"></th>
-        <th COLSPAN="<%= @report_dp_labels.size + (@report_dp_labels.size > 1 ? 1 : 0) %>">Data Providers</th>
-        <% if @report_rr_labels.size > 0 %>
-          <th COLSPAN="<%= @report_rr_labels.size %>">Remote Resources Caches</th>
+        <th COLSPAN="<%= @report_dps.size + (@report_dps.size > 1 ? 1 : 0) %>">Data Providers</th>
+        <% if @report_rrs.size > 0 %>
+          <th COLSPAN="<%= @report_rrs.size %>">Data Provider Caches</th>
         <% end %>
       </tr>
       <tr>
-          <% @report_col_labels.each do |col_label| %>
-            <th><%= h(col_label) %></th>
+          <% @report_col_objects.each do |col| %>
+            <th><%= h(col.is_a?(String) ? col : col.name) %></th>
           <% end %>
       </tr>
-      <% @report_row_labels.each do |row_label| %>
+      <% @report_row_objects.each do |row| %>
       <tr>
-          <th><%= h(row_label) %></th>
-          <% @report_col_labels.each do |col_label| %>
-            <% cell = @report_stats[row_label] ? @report_stats[row_label][col_label] : nil %>
+          <th><%= h(row.is_a?(String) ? row : row.login) %></th>
+          <% @report_col_objects.each do |col| %>
+            <% cell = @report_stats[row] ? @report_stats[row][col] : nil %>
             <% if cell %>
-              <td><%= pretty_size(cell[:size]) %><BR>
-                  <%= pluralize(cell[:numfiles],"file") %><BR>
+              <% cellcolor = if cell[:size]    > 10000000000 # 10 gig
+                                "#ff4444"
+                             elsif cell[:size] >  1000000000 # 1 gig
+                                "#ff8888"
+                             elsif cell[:size] >   100000000 # 100 megs
+                                "#ffcccc"
+                             elsif cell[:size] >    10000000 # 10 megs
+                                "#ffffcc"
+                             else
+                                "#ffffff"
+                             end
+              %>
+              <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]) %><BR>
+                  <%= pluralize(cell[:num_entries],"entry") %>&nbsp;/&nbsp;<%= pluralize(cell[:num_files],"file") %>
                   <% if cell[:unknowns] > 0 %>
-                     <%= cell[:unknowns] %> unknowns
+                     <BR><%= pluralize(cell[:unknowns],"unknown") %>
                   <% end %>
+                  <% if @report_rrs.include?(col) && @report_users.include?(row) %>
+                    <% if col.is_a?(Bourreau) || col.id == CBRAIN::SelfRemoteResourceId %>
+                      <BR><%= check_box_tag('clean_cache[]', "#{row.id},#{col.id}", false ) %>
+                    <% end %>
+                  <% end %>
+              </td>
             <% else %>
-              <td></td>
+              <td bgcolor="#cccccc"></td>
             <% end %>
           <% end %>
       </tr>
       <% end %>
+
+      <% if @report_rrs.size > 0 %>
+        <tr>
+          <th COLSPAN="<%= 1+@report_col_objects.size %>">
+            <%= submit_tag 'Cleanup Selected Caches' %>
+          </th>
+        </tr>
+      <% end %>
+
    </table>
+
+   <%= hidden_field_tag "cleanup_before", @cache_older %>
+
+   <% end %> <!-- form -->
+
+
+
+   <!-- *********************************** -->
+   <!-- Refresh form -->
+   <!-- *********************************** -->
+
+   <% form_tag(url_for(:controller => 'data_providers', :action => 'index'), :method => :get) do %>
+
+   Files reported under the <em>Caches</em> columns were last accessed
+   <%= select_tag("cache_older", options_for_select( @offset_times, @cache_older )) %>
+   <%= submit_tag 'Refresh' %>
+
+   <% end %> <!-- form -->
    
 
 </div> <!-- End class="generalcontent" --> 

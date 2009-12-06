@@ -31,7 +31,7 @@ Nifty("div.task_summary","big");
               <% end %>
               <% if current_user.has_role? :admin %>
                 <% form_tag home_path do %>
-                  <% if BrainPortal.current_portal.portal_locked? %>
+                  <% if BrainPortal.current_resource.portal_locked? %>
                     <%= hidden_field_tag :lock_portal, "unlock" %>
                     <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
                   <% else %>

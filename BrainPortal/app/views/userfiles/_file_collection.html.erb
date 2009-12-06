@@ -8,7 +8,7 @@
 
 -%> 
  
-<% if @userfile.list_files.size > 0 %>
+<% if @userfile.num_files && @userfile.num_files > 0 %>
 
   <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on' %>
      <P><CENTER><%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off'), :class => 'action_link' %></CENTER>

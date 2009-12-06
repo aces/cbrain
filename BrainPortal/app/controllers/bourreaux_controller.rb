@@ -19,11 +19,16 @@ class BourreauxController < ApplicationController
   before_filter :manager_role_required, :except  => [:index, :show]
    
   def index #:nodoc:
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    if current_user.has_role?(:admin)
+      @bourreaux = RemoteResource.all
+      @bourreaux.sort! { |a,b| b.class.to_s <=> a.class.to_s } # we depend on 'BrainPortal' > 'Bourreau'
+    else
+      @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    end
   end
   
   def show #:nodoc:
-    @bourreau = Bourreau.find(params[:id])
+    @bourreau = RemoteResource.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
@@ -64,7 +69,7 @@ class BourreauxController < ApplicationController
   end
   
   def edit #:nodoc:
-    @bourreau = Bourreau.find(params[:id])
+    @bourreau = RemoteResource.find(params[:id])
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
     
@@ -176,6 +181,12 @@ class BourreauxController < ApplicationController
     sleep 5+rand(3)
     if @bourreau.is_alive?
       flash[:notice] = "Execution Server started."
+      begin
+        @bourreau.send_command_start_workers
+        flash[:notice] += "\nWorkers on Execution Server started."
+      rescue
+        flash[:notice] += "\nHowever, we couldn't start the workers."
+      end
     else
       flash[:error] = "Execution Server could not be started."
     end
@@ -193,14 +204,21 @@ class BourreauxController < ApplicationController
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
+    begin
+      @bourreau.send_command_stop_workers
+      flash[:notice] = "Workers on Execution Server stopped."
+    rescue
+      flash[:notice] = "It seems we couldn't stop the workers. They'll likely die by themselves."
+    end
+
     @bourreau.stop
     @bourreau.ssh_master.stop
-    flash[:notice] = "Execution Server stopped. Tunnels stopped."
+    flash[:notice] += "\nExecution Server stopped. Tunnels stopped."
     redirect_to :action => :index
 
-    rescue => e
-       flash[:error] = e.message
-       redirect_to :action => :index
+  rescue => e
+    flash[:error] = e.message
+    redirect_to :action => :index
   end
 
 end

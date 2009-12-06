@@ -21,7 +21,42 @@ class DataProvidersController < ApplicationController
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
 
-    # Create statistics table
+    # List of cache update offsets we support
+    @offset_times = [
+      [ "Anytime",           0.seconds.to_i ],
+      [ "One hour ago",      1.hour.to_i    ],
+      [ "Six hours ago",     6.hour.to_i    ],
+      [ "One day ago",       6.day.to_i     ],
+      [ "One week ago",      1.week.to_i    ],
+      [ "Two weeks ago",     2.week.to_i    ],
+      [ "One month ago",     1.month.to_i   ],
+      [ "Two months ago",    2.months.to_i  ],
+      [ "Three months ago",  3.months.to_i  ],
+      [ "Four months ago",   4.months.to_i  ],
+      [ "Six months ago",    6.months.to_i  ],
+      [ "Nine months ago",   9.months.to_i  ],
+      [ "Over one year ago", 1.year.to_i    ]
+    ]
+
+    # Restrict cache info stats to files 'older' than
+    # a certain number of seconds (by access time).
+    accessed_before = nil
+    accessed_after  = nil # not used right now
+    @cache_older     = params[:cache_older] || 0
+    if @cache_older.to_s =~ /^\d+/
+      @cache_older = @cache_older.to_i
+      @offset_times.reverse_each do |pair|
+        if @cache_older >= pair[1]
+          @cache_older = pair[1]
+          break
+        end
+      end
+      accessed_before = @cache_older.seconds.ago # this is a Time
+    else
+      @cache_older = 0
+    end
+
+    # Users in statistics table
     userlist         = if check_role(:admin)
                          User.all
                        elsif check_role(:site_manager)
@@ -29,15 +64,24 @@ class DataProvidersController < ApplicationController
                        else
                          [ current_user ]
                        end
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
-    @report_stats    = gather_usage_statistics(userlist,@providers,rrlist)
 
-    # Keys into statistics tables
-    @report_dp_labels   = @report_stats['!dp_labels!']   # just DP names
-    @report_rr_labels   = @report_stats['!rr_labels!']   # just RR names
-    @report_user_labels = @report_stats['!user_labels!'] # not used
-    @report_col_labels  = @report_stats['!col_labels!']  # DPs + 'all' + RRs
-    @report_row_labels  = @report_stats['!row_labels!']  # users + 'all'
+    # Remote resources in statistics table
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+
+    # Create statistics table
+    stats_options = { :users            => userlist,
+                      :providers        => @providers,
+                      :remote_resources => rrlist,
+                      :accessed_before  => accessed_before
+                    }
+    @report_stats    = gather_usage_statistics(stats_options)
+
+    # Keys and arrays into statistics tables, for HTML output
+    @report_col_objects = @report_stats['!col_objects!']  # DPs+   + 'all'? + RRs+
+    @report_row_objects = @report_stats['!row_objects!']  # users+ + 'all'?
+    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
+    @report_rrs         = @report_stats['!rrs!']
+    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
 
   end
 
@@ -363,6 +407,77 @@ class DataProvidersController < ApplicationController
     redirect_to :action => :browse
     
   end
+
+
+  # Provides the interface to trigger cache cleanup operations
+  def cleanup
+    flash[:notice] ||= ""
+
+    # First param is cleanup_before, which is the number
+    # of second before NOW at which point files become
+    # eligible for elimination
+    cleanup_before = params[:cleanup_before] || 0
+    if cleanup_before.to_s =~ /^\d+/
+      cleanup_before = cleanup_before.to_i
+      cleanup_before = 1.year.to_i if cleanup_before > 1.year.to_i
+    else
+      cleanup_before = 0
+    end
+
+    # Second param is clean_cache, a set of pairs in
+    # the form "uuu,rrr" where uuu is a user_id and
+    # rrr is a remote_resource_id. Both must be accessible
+    # by the current user.
+    clean_cache    = params[:clean_cache]    || []
+    unless clean_cache.is_a?(Array)
+      clean_cache = [ clean_cache ]
+    end
+
+    # List of acceptable users
+    userlist         = if check_role(:admin)
+                         User.all
+                       elsif check_role(:site_manager)
+                         current_user.site.users
+                       else
+                         [ current_user ]
+                       end
+
+    # List of acceptable remote_resources
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+
+    # Index of acceptable users and remote_resources
+    userlist_index   = userlist.index_by &:id
+    rrlist_index     = rrlist.index_by &:id
+
+    # Extract what caches are asked to be cleaned up
+    rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
+    clean_cache.each do |pair|
+      next unless pair.to_s.match(/^(\d+),(\d+)$/)
+      user_id            = Regexp.last_match[1].to_i
+      remote_resource_id = Regexp.last_match[2].to_i
+      # Make sure we're allowed
+      next unless userlist_index[user_id] && rrlist_index[remote_resource_id]
+      # Group and uniq them
+      rrid_to_userids[remote_resource_id] ||= {}
+      rrid_to_userids[remote_resource_id][user_id] = true
+    end
+
+    # Send the cleanup message
+    rrid_to_userids.each_key do |rrid|
+      remote_resource = RemoteResource.find(rrid)
+      userlist = rrid_to_userids[rrid]  # uid => true, uid => true ...
+      userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
+      flash[:notice] += "\n" unless flash[:notice].blank?
+      begin
+        remote_resource.send_command_clean_cache(userids,cleanup_before.ago)
+        flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
+      rescue => e
+        flash[:notice] += "Could not contact #{remote_resource.name}."
+      end
+    end
+
+    redirect_to :action => :index, :cache_older => cleanup_before
+  end
   
   private 
   
@@ -423,7 +538,32 @@ class DataProvidersController < ApplicationController
     fileinfolist
   end
 
-  def gather_usage_statistics(users = nil,providers = nil,remote_resources = nil)
+  # Creates and returns a table with statistics for disk usage on a
+  # set of Data Providers and Remote Resource caches.
+  #
+  # The +options+ arguments can restrict the domain of the statistics
+  # gathered:
+  #
+  #   * :users            => [ user, user...]
+  #   * :providers        => [ dp, dp...]
+  #   * :remote_resources => [ rr, rr...]
+  #   * :accessed_before  => Time
+  #   * :accessed_after   => Time
+  #
+  # The accessed_* options apply to the cached userfiles
+  # on the remote_resources, and are compared to the
+  # :accessed_at attribute of the SyncStatus structure.
+  def gather_usage_statistics(options)
+
+    users            = options[:users]
+    providers        = options[:providers]
+    remote_resources = options[:remote_resources]
+    accessed_before  = options[:accessed_before]
+    accessed_after   = options[:accessed_after]
+
+    # Internal constants
+    all_users_label  = 'All Users'     # used as a key in the table's hash
+    all_dps_label    = 'All Providers' # used as a key in the table's hash
 
     # Which users to gather stats for
     userlist = if users
@@ -462,65 +602,55 @@ class DataProvidersController < ApplicationController
     users_index = userlist.index_by &:id
     dp_index    = dplist.index_by   &:id
     rr_index    = rrlist.index_by   &:id
-    seenusers = {}
-    seendps   = {}
-    seenrrs   = {}
-    userkeys  = []
-    dpkeys    = []
-    rrkeys    = []
 
     # Stats structure. It represents a two-dimensional table
     # where rows are users and columns are data providers.
     # And extra row called 'All Users' sums up the stats for all users
     # on a data provider, and an extra row called 'All Providers' sums up
     # the stats for one users on all data providers.
-    stats = { 'All Users' => {} }
+    stats = { all_users_label => {} }
 
-    tt_cell = stats['All Users']['All Providers'] = { :size => 0, :numfiles => 0, :unknowns => 0 }
+    tt_cell = stats[all_users_label][all_dps_label] = { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
 
     filelist.each do |userfile|
       filetype          = userfile.class.to_s
       size              = userfile.size
+      num_files         = userfile.num_files || 1
 
       user_id           = userfile.user_id
-      user_name         = users_index[user_id].login
+      user              = users_index[user_id]
 
       data_provider_id  = userfile.data_provider_id
-      dp_name           = dp_index[data_provider_id].name
-
-      # Record the user's name and DP's name (first time only)
-      userkeys << user_name unless seenusers[user_name]
-      dpkeys   << dp_name   unless seendps[dp_name]
-      seenusers[user_name] = true
-      seendps[dp_name]     = true
+      dp                = dp_index[data_provider_id]
 
       # up_cell is normal cell for one user on one dp
       # tp_cell is total cell for all users on one dp
       # ut_cell is total cell for on user on all dps
-           stats[user_name]                  ||= {} # row init
-      up_cell = stats[user_name][dp_name]         ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
-      tp_cell = stats['All Users'][dp_name]       ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
-      ut_cell = stats[user_name]['All Providers'] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+                stats[user]                ||= {} # row init
+      up_cell = stats[user][dp]            ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
+      tp_cell = stats[all_users_label][dp] ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
+      ut_cell = stats[user][all_dps_label] ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
 
       cells = [ up_cell, tp_cell, ut_cell, tt_cell ]
 
       # Gather information from caches on remote_resources
       synclist = userfile.sync_status
       synclist.each do |syncstat| # we assume ALL status keywords mean there is some content in the cache
+
+        # Only syncstats on the remote_resources we want to look at
         rr_id   = syncstat.remote_resource_id
-        rr_obj  = rr_index[rr_id]
-        next unless rr_obj
-        rr_type = rr_obj.class.to_s
-        rr_name = rr_type + " " + rr_obj.name
+        rr      = rr_index[rr_id]
+        next unless rr
 
-        # Add name if not already seen
-        rrkeys  << rr_name unless seenrrs[rr_name]
-        seenrrs[rr_name] = true
+        # Only syncstats with proper access time
+        accessed_at = syncstat.accessed_at
+        next if accessed_before && accessed_at > accessed_before
+        next if accessed_after  && accessed_at < accessed_after
 
-        # rr is normal cell for one user on one remote resource
-        # tr is total cell for all users on one remote resource
-        rr_cell = stats[user_name][rr_name]   ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
-        tr_cell = stats['All Users'][rr_name] ||= { :size => 0, :numfiles => 0, :unknowns => 0 }
+        # rr_cell is normal cell for one user on one remote resource
+        # tr_cell is total cell for all users on one remote resource
+        rr_cell = stats[user][rr]            ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
+        tr_cell = stats[all_users_label][rr] ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
         cells << rr_cell
         cells << tr_cell
       end
@@ -528,23 +658,35 @@ class DataProvidersController < ApplicationController
       # Update counts for all cells
       cells.each do |cell|
         if size
-          cell[:size]     += size
-          cell[:numfiles] += 1
+          cell[:size]        += size
+          cell[:num_entries] += 1
+          cell[:num_files]   += num_files
         else
           cell[:unknowns] += 1
         end
       end
     end
 
-    stats['!dp_labels!']   = dpkeys
-    stats['!rr_labels!']   = rrkeys
-    stats['!user_labels!'] = userkeys
+    dps_final   =    dp_index.values.sort { |a,b| a.name  <=> b.name  }
+    rrs_final   =    rr_index.values.sort { |a,b| a.name  <=> b.name  }
+    users_final = users_index.values.sort { |a,b| a.login <=> b.login }
 
-    stats['!col_labels!']  = dpkeys
-    stats['!col_labels!'] += [ 'All Providers' ] if dpkeys.size > 1
-    stats['!col_labels!'] += rrkeys
-    stats['!row_labels!']  = userkeys
-    stats['!row_labels!'] += [ 'All Users' ] if userkeys.size > 1
+    stats['!col_objects!']  = dps_final
+    stats['!col_objects!'] += [ all_dps_label ] if dps_final.size > 1
+    stats['!col_objects!'] += rrs_final
+
+    stats['!row_objects!']  = users_final
+    stats['!row_objects!'] += [ all_users_label ] if users_final.size > 1
+
+    stats['!dps!']      = dps_final
+    stats['!rrs!']      = rrs_final
+    stats['!users!']    = users_final
+
+    # These two entries are provided so that
+    # the presentation layer can tell which entries
+    # are the special summation columns
+    stats['!all_users_label!'] = all_users_label
+    stats['!all_dps_label!']   = all_dps_label
 
     stats
   end

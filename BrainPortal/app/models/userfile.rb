@@ -416,6 +416,11 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
+  def cache_erase
+    self.data_provider.cache_erase(self)
+  end
+
+  # See the description in class DataProvider
   def cache_prepare
     self.data_provider.cache_prepare(self)
   end
@@ -468,7 +473,6 @@ class Userfile < ActiveRecord::Base
   def cache_copy_to_local_file(filename)
     self.save
     self.data_provider.cache_copy_to_local_file(self,filename)
-    self.set_size!
   end
 
 end

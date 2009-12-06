@@ -30,10 +30,10 @@ class PortalController < ApplicationController
       @active_users = Session.active_users
       if request.post?
         if params[:lock_portal] == "lock"
-          BrainPortal.current_portal.lock!
+          BrainPortal.current_resource.lock!
           flash.now[:notice] = "This portal has been locked."
         elsif params[:lock_portal] == "unlock"
-          BrainPortal.current_portal.unlock!
+          BrainPortal.current_resource.unlock!
           flash.now[:notice] = "This portal has been unlocked."
           flash.now[:error] = ""        
         end
@@ -69,26 +69,20 @@ class PortalController < ApplicationController
   
   #Display general information about the CBRAIN project.
   def credits
+    # Nothing to do, just let the view show itself.
   end
   
   #Displays more detailed info about the CBRAIN project.
   def about_us
-    @revinfo = { 'Revision'            => 'unknown',
-                 'Last Changed Author' => 'unknown',
-                 'Last Changed Rev'    => 'unknown',
-                 'Last Changed Date'   => 'unknown'
+    myself = RemoteResource.current_resource
+    info   = myself.info
+
+    @revinfo = { 'Revision'            => info.revision,
+                 'Last Changed Author' => info.lc_author,
+                 'Last Changed Rev'    => info.lc_rev,
+                 'Last Changed Date'   => info.lc_date
                }
 
-    IO.popen("svn info #{RAILS_ROOT}","r") do |fh|
-      fh.each do |line|
-        if line.match(/^Revision|Last Changed/i)
-          comps = line.split(/:\s*/,2)
-          field = comps[0]
-          value = comps[1]
-          @revinfo[field]=value
-        end
-      end
-    end
   end
   
 end

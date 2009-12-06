@@ -29,22 +29,21 @@
    <br>
   <table class="resource_list" id="bourreau_table">
      <tr>
-         <th>Execution Server Name</th>
+         <th>Server Class</th>
+         <th>Server Name</th>
          <th>Owner</th>
          <th>Group</th>
          <th>Site</th>
          <th>Online?</th>
          <th>Alive?</th>
+         <th>Workers?</th>
+         <th>Load</th>
          <th>Description</th>
          <th colspan="4">Operations</th>
      </tr>
   
      <% for bour in @bourreaux %>
          <%= render :partial => 'bourreau_table_row', :locals  => {:bour  => bour} %>
-     <% end %>
-  
-     <% if @bourreaux.nil? || @bourreaux.empty? %>
-       <tr class="list-odd"><td colspan="9">There are no Execution Servers in this list.</td></tr>
      <% end %>
   
   </table>

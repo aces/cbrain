@@ -43,9 +43,9 @@ ActiveRecord::Schema.define(:version => 20091201162200) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -162,6 +162,7 @@ ActiveRecord::Schema.define(:version => 20091201162200) do
     t.string   "status"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.datetime "accessed_at"
   end
 
   add_index "sync_status", ["remote_resource_id"], :name => "index_sync_status_on_remote_resource_id"

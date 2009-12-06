@@ -99,8 +99,7 @@ class CbrainSshDataProvider < SshDataProvider
   # superclass SshDataProvider.
   def remote_full_path(userfile) #:nodoc:
     basename = userfile.name
-    username = userfile.user.login
-    Pathname.new(remote_dir) + username + cache_subdir_path(basename) + basename
+    Pathname.new(remote_dir) + cache_subdir_path(userfile) + basename
   end
   
 end

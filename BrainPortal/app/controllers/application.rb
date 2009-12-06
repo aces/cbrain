@@ -70,8 +70,10 @@ class ApplicationController < ActionController::Base
   end
   
   def prepare_messages
-    if BrainPortal.current_portal.portal_locked?
+
+    if BrainPortal.current_resource.portal_locked?
       flash.now[:error] ||= ""
+      flash.now[:error] += "\n" unless flash.now[:error].blank?
       flash.now[:error] += "This portal is currently locked."
     end
     

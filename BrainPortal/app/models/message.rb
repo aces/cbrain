@@ -18,17 +18,17 @@ class Message < ActiveRecord::Base
   # The +destination+ argument can be a User, a Group, a Site,
   # or an (mixed) array of any of these.
   #
-  # Potential options are +type+, +header+, +description+,
+  # Potential options are +message_type+, +header+, +description+,
   # +variable_text+, +expiry+ and +critical+.
   #
-  # The +type+ option should be one of :notice, :error or :system.
+  # The +message_type+ option should be one of :notice, :error or :system.
   # The +description+ and +var_text+ are optional. An +expiry+
   # date can also be provided, such that unacknowledged messages
   # disappear from view when they are no longer relevent (for
   # instance, for system broadcast messages).
   #
   # This method will create and update a single Message object for
-  # multiple successive calls that have the same +type+, +header+
+  # multiple successive calls that have the same +message_type+, +header+
   # and +description+ arguments, and will concatenate
   # and timestamps the successive +var_text+ messages into it.
   #
@@ -39,13 +39,14 @@ class Message < ActiveRecord::Base
   #
   # The method returns the list of the messages objects created,
   # updated or simply found (if no update occured).
-  def self.send_message(destination, params = {})
-    type         = params[:message_type]  || params["message_type"] || :notice
-    header       = params[:header]        || params["header"]
-    description  = params[:description]   || params["description"]
-    var_text     = params[:variable_text] || params["variable_text"]
-    expiry       = params[:expiry]        || params["expiry"]
-    critical     = params[:critical]      || params["critical"] || false
+  def self.send_message(destination, options = {})
+    type         = options[:message_type]  || options["message_type"]  ||
+                   options[:type]          || options["type"]          || :notice
+    header       = options[:header]        || options["header"]        || "No subject"
+    description  = options[:description]   || options["description"]   || nil
+    var_text     = options[:variable_text] || options["variable_text"] || nil
+    expiry       = options[:expiry]        || options["expiry"]        || nil
+    critical     = options[:critical]      || options["critical"]      || false
 
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
@@ -145,7 +146,7 @@ class Message < ActiveRecord::Base
 
   # Sends an internal error message where the main context
   # is an exception object.
-  def self.send_internal_error_message(destination, header, exception, params = {})
+  def self.send_internal_error_message(destination, header, exception, request_params = {})
     Message.send_message(destination,
       :message_type  => :error,
       :header  => "Internal error: #{header}",
@@ -153,7 +154,7 @@ class Message < ActiveRecord::Base
       :description  => "An internal error occured inside the CBRAIN code.\n"     +
                        "The CBRAIN admins have been alerted are working\n"       +
                        "towards solving the problem.\n"
-    )
+    ) unless destination.is_a?(User) && destination.login == 'admin'
     
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
@@ -162,7 +163,7 @@ class Message < ActiveRecord::Base
       :description  => "An internal error occured inside the CBRAIN code.\n"     +
                        "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n\n" +
                        "Users involved: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
-                       "Params: #{params.inspect}\n\n" +
+                       "Params: #{request_params.inspect}\n\n" +
                        "#{exception.class.to_s}: #{exception.message}\n" +
                        exception.backtrace[0..30].join("\n") + "\n"
     )

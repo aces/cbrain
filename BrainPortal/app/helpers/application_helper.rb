@@ -142,8 +142,8 @@ module ApplicationHelper
   def pretty_ssh_key(ssh_key)
      pretty = ""
      while ssh_key != ""
-       pretty += ssh_key[0,50] + "\n"
-       ssh_key[0,50] = ""
+       pretty += ssh_key[0,200] + "\n"
+       ssh_key[0,200] = ""
      end
      pretty
   end

@@ -461,7 +461,6 @@ public
 
   def bourreau
     # In development mode, the stupid RAILS zaps the constant.
-    #@bourreau ||= CBRAIN::SelfRemoteResource || Bourreau.find(self.bourreau_id)
     @bourreau ||= Bourreau.find(self.bourreau_id)
   end
 

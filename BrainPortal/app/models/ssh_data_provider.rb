@@ -14,7 +14,7 @@ require 'net/sftp'
 # where the remote files are accessed through +ssh+ and +rsync+.
 # The provider's files are stored in a flat directory, one
 # level deep, directly specified by the object's +remote_dir+
-# attribute. The file "hello" is this stored in a path like this:
+# attribute. The file "hello" is thus stored in a path like this:
 #
 #     /remote_dir/hello
 #
@@ -50,12 +50,11 @@ class SshDataProvider < DataProvider
   end
 
   def impl_sync_to_cache(userfile) #:nodoc:
-    basename    = userfile.name
-    localfull   = cache_full_pathname(basename)
+    localfull   = cache_full_pathname(userfile)
     remotefull  = remote_full_path(userfile)
     sourceslash = ""
 
-    mkdir_cache_subdirs(basename)
+    mkdir_cache_subdirs(userfile)
     if userfile.is_a?(FileCollection)
       Dir.mkdir(localfull) unless File.directory?(localfull)
       sourceslash="/"
@@ -64,21 +63,20 @@ class SshDataProvider < DataProvider
     rsync = rsync_over_ssh_prefix
     text = bash_this("#{rsync} -a -l --delete :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
-    raise "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
+    cb_error "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
     true
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
-    basename    = userfile.name
-    localfull   = cache_full_pathname(basename)
+    localfull   = cache_full_pathname(userfile)
     remotefull  = remote_full_path(userfile)
-    raise "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
+    cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
     text = bash_this("#{rsync} -a -l --delete #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
-    raise "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
+    cb_error "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
     true
   end
 
@@ -171,7 +169,7 @@ class SshDataProvider < DataProvider
   end
 
   # Returns the necessary options to connect to a master SSH
-  # command running in the background (which wil be started if
+  # command running in the background (which will be started if
   # necessary).
   def ssh_shared_options
     master = SshTunnel.find_or_create(remote_user,remote_host,remote_port)

@@ -1,5 +1,8 @@
 ActionController::Routing::Routes.draw do |map|
 
+  # Control channel
+  map.resources :controls,            :controller => :controls
+
   # All our task subclasses map to the same controller.
   map.resources :drmaa_tasks,         :controller => :tasks
   map.resources :drmaa_sleepers,      :controller => :tasks
@@ -12,15 +15,10 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_mincmaths,     :controller => :tasks
   map.resources :drmaa_mincresamples, :controller => :tasks
   
-
   # UNF resources
   map.resources :drmaa_cw5filters,    :controller => :tasks  
   map.resources :drmaa_matlabs,       :controller => :tasks
   map.resources :drmaa_cw5s,          :controller => :tasks  
-
-  # Info channel; read-only, only 'index' supported.
-  # I.e.   GET /infos.xml
-  map.resources :bourreau_infos,      :controller => 'bourreau_infos'
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'

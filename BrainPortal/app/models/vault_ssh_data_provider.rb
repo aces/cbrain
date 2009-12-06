@@ -26,7 +26,6 @@ class VaultSshDataProvider < SshDataProvider
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
-    basename = userfile.name
     username = userfile.user.login
     userdir = Pathname.new(remote_dir) + username
     ssh_opts = self.ssh_shared_options

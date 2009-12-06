@@ -100,7 +100,7 @@ require 'digest/md5'
 #
 # == Access restriction methods:
 #
-# * can_be_accessed_by?(user)    # user is a User object
+# * can_be_accessed_by?(user)  # user is a User object
 # * has_owner_access?(user)    # user is a User object
 #
 # == Synchronization methods:
@@ -130,8 +130,8 @@ require 'digest/md5'
 # * provider_copy_to_otherprovider(userfile,otherprovider)
 # * provider_list_all
 #
-# Note that provider_erase() and provider_rename() are also present in
-# the Userfile model.
+# Note that all of these except for provider_list_all() are
+# also present in the Userfile model.
 #
 # = Aditional notes
 #
@@ -286,7 +286,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if     self.read_only
     SyncStatus.ready_to_modify_cache(userfile) do
-      mkdir_cache_subdirs(userfile.name)
+      mkdir_cache_subdirs(userfile)
     end
     true
   end
@@ -294,10 +294,10 @@ class DataProvider < ActiveRecord::Base
   # Returns the full path to the file or subdirectory
   # where the cached content of +userfile+ is located.
   # The value returned is a Pathname object, so be careful
-  # to call to_s() on it when using it as necessary.
+  # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
     cb_error "Error: provider is offline."   unless self.online
-    cache_full_pathname(userfile.name)
+    cache_full_pathname(userfile)
   end
 
   # Executes a block on a filehandle open in +read+ mode for the
@@ -378,10 +378,26 @@ class DataProvider < ActiveRecord::Base
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
     cb_error "Error: provider is offline."   unless self.online
-    basename = userfile.name
     SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
-      FileUtils.remove_entry(cache_full_pathname(basename), true) rescue true
-      Dir.rmdir(cache_full_dirname(basename)) rescue true
+      # The cache contains three more levels, try to clean them:
+      #   "/CbrainCacheDir/ProviderName/username/34/45/basename"
+      begin
+        fullpath = cache_full_pathname(userfile)
+        # 1- Remove the basename itself (it's a file or a subdir)
+        FileUtils.remove_entry(fullpath, true) rescue true
+        # 2- Remove the last level of the cache, "45", if possible
+        level2 = fullpath.parent
+        Dir.rmdir(level2)
+        # 3- Remove the medium level of the cache, "34", if possible
+        level1 = level2.parent
+        Dir.rmdir(level1)
+        # 4- Remove the top level of the cache, "username", if possible
+        level0 = level1.parent
+        Dir.rmdir(level0)
+      rescue => e
+        # Nothing to do if we fail, as we are just trying to clean
+        # up the cache structure from bottom to top
+      end
     end
     true
   end
@@ -456,6 +472,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
     return true  if self.id == otherprovider.id
     return false if newname && ! Userfile.is_legal_filename?(newname)
+    return false unless userfile.id # must be a fully saved file
     target_exists = Userfile.find(:first,
         :conditions => { :name             => (newname || userfile.name),
                          :data_provider_id => otherprovider.id,
@@ -612,6 +629,13 @@ class DataProvider < ActiveRecord::Base
     FileUtils.remove_dir(cache_providerdir, true)  # recursive
   end
 
+  # Ensure that the system will be in a valid state if this data provider is destroyed.
+  def validate_destroy
+    unless self.userfiles.empty?
+      cb_error "You cannot remove a provider that has still files registered on it."
+    end
+  end
+
 
 
   #################################################################
@@ -714,7 +738,7 @@ class DataProvider < ActiveRecord::Base
       fh.syswrite(@@key)
       fh.close
       return @@key
-    rescue # Oh? Open write failed?
+    rescue # Oh? Open write failed? Some other process has created it underneath us.
       if ! File.exist?(key_file)
         raise "Error: could not create a proper Data Provider Cache Key in file '#{key_file}' !"
       end
@@ -726,15 +750,56 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
+  # This method returns the revision number of the last time
+  # the caching system was initialized. If the revision
+  # number is unknown, then a strning value of "0" is returned and
+  # the method will immediately store the current revision
+  # number. The value is stored in a file at the top of the
+  # caching system's directory structure.
+  def self.cache_revision_of_last_init
+    return @@cache_rev if self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
+
+    # Try to read rev from special file in cache root directory
+    cache_root = cache_rootdir
+    rev_file = (cache_root + "DP_Cache_Rev.id").to_s
+    if File.exist?(rev_file)
+      @@cache_rev = File.read(rev_file)  # a numeric ID as ASCII
+      @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
+      return @@cache_rev          unless @@cache_rev.blank?
+    end
+
+    # Lets use the current revision number then.
+    @@cache_rev = self.revision_info.svn_id_rev
+
+    # Try to write it back. If the file suddenly has appeared,
+    # we ignore our own rev and use THAT one instead (race condition).
+    begin
+      fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fh = IO.open(fd)
+      fh.syswrite(@@cache_rev + "\n")
+      fh.close
+      return "0" # String Zero, to indicate it was unknown.
+    rescue # Oh? Open write failed? Some other process has created it underneath us.
+      if ! File.exist?(rev_file)
+        raise "Error: could not create a proper Data Provider Cache Revision Number in file '#{rev_file}' !"
+      end
+      sleep 2+rand(5) # make sure other process writing to it is done
+      @@cache_rev = File.read(rev_file)
+      @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
+      raise "Error: could not read a proper Data Provider Cache Revision Number from file '#{rev_file}' !" if @@cache_rev.blank?
+      return "0" # String Zero, to indicate it was unknown.
+    end
+  end
+
   # Root directory for ALL DataProviders caches:
-  #    "/CbrainCacheDir"
+  #     "/CbrainCacheDir"
   # This is a class method.
   def self.cache_rootdir #:nodoc:
     Pathname.new(CBRAIN::DataProviderCache_dir)
   end
 
   # Root directory for DataProvider's cache dir:
-  #    "/CbrainCacheDir/ProviderName"
+  #     "/CbrainCacheDir/ProviderName"
   def cache_providerdir #:nodoc:
     Pathname.new(CBRAIN::DataProviderCache_dir) + self.name
   end
@@ -745,53 +810,62 @@ class DataProvider < ActiveRecord::Base
   # Although this method is mostly used internally by the
   # caching system, it can also be used by other data providers
   # which want to build similar directory trees.
+  #
+  # Note that unlike the other methods in the cache management
+  # layer, this method only takes a basename, not a userfile,
+  # in argument.
   def cache_subdirs(basename)
+    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if basename.is_a?(Userfile)
     s=0    # sum of bytes
     e=0    # xor of bytes
     basename.each_byte { |i| s += i; e ^= i }
     [ sprintf("%2.2d",s % 100), sprintf("%2.2d",e % 100) ]
   end
 
-  # Make, if needed, the two subdirectory levels for a cached file:
-  # mkdir "/CbrainCacheDir/ProviderName/34"
-  # mkdir "/CbrainCacheDir/ProviderName/34/45"
-  def mkdir_cache_subdirs(basename) #:nodoc:
+  # Make, if needed, the three subdirectory levels for a cached file:
+  #     mkdir "/CbrainCacheDir/ProviderName/username"
+  #     mkdir "/CbrainCacheDir/ProviderName/username/34"
+  #     mkdir "/CbrainCacheDir/ProviderName/username/34/45"
+  def mkdir_cache_subdirs(userfile) #:nodoc:
+    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    basename = userfile.name
+    username = userfile.user.login
     twolevels = cache_subdirs(basename)
-    level1 = Pathname.new(cache_providerdir) + twolevels[0]
+    level0 = Pathname.new(cache_providerdir) + username
+    level1 = level0                          + twolevels[0]
     level2 = level1                          + twolevels[1]
     mkdir_cache_providerdir
+    Dir.mkdir(level0) unless File.directory?(level0)
     Dir.mkdir(level1) unless File.directory?(level1)
     Dir.mkdir(level2) unless File.directory?(level2)
     true
   end
 
-  # Returns the relative path of the two subdirectory levels:
-  # "34/45"
-  def cache_subdir_path(basename) #:nodoc:
+  # Returns the relative path of the three subdirectory levels
+  # where a file is cached:
+  #     "username/34/45"
+  def cache_subdir_path(userfile) #:nodoc:
+    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    basename = userfile.name
+    username = userfile.user.login
     dirs = cache_subdirs(basename)
-    Pathname.new(dirs[0]) + dirs[1]
+    Pathname.new(username) + dirs[0] + dirs[1]
   end
 
-  # Returns the full path of the two subdirectory levels:
-  # "/CbrainCacheDir/ProviderName/34/45"
-  def cache_full_dirname(basename) #:nodoc:
-    cache_providerdir + cache_subdir_path(basename)
+  # Returns the full path of the three subdirectory levels:
+  #     "/CbrainCacheDir/ProviderName/username/34/45"
+  def cache_full_dirname(userfile) #:nodoc:
+    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    cache_providerdir + cache_subdir_path(userfile)
   end
 
   # Returns the full path of the cached file:
-  # "/CbrainCacheDir/ProviderName/34/45/basename"
-  def cache_full_pathname(basename) #:nodoc:
-    cache_full_dirname(basename) + basename
+  #     "/CbrainCacheDir/ProviderName/username/34/45/basename"
+  def cache_full_pathname(userfile) #:nodoc:
+    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    basename = userfile.name
+    cache_full_dirname(userfile) + basename
   end
   
-  private
-  
-  #Ensure that system will be in a valid state if this data provider is destroyed.
-  def validate_destroy
-    unless self.userfiles.empty?
-      cb_error "You cannot remove a provider that has still files registered on it."
-    end
-  end
-
 end
 

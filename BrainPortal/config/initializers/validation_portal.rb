@@ -208,6 +208,32 @@ CBRAIN::SelfRemoteResourceId = brainportal.id
 
 
 #-----------------------------------------------------------------------------
+puts "C> Checking to see if Data Provider caches nead wiping..."
+#-----------------------------------------------------------------------------
+dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
+dp_current_rev = DataProvider.revision_info.svn_id_rev
+if dp_init_rev.to_i <= 659 # Before Pierre's upgrade
+  puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
+  puts "C> \t- WARNING: This could take a long time so you should not"
+  puts "C> \t  start another instance of this Rails application."
+  Dir.chdir(DataProvider.cache_rootdir) do
+    Dir.foreach(".") do |entry|
+      next unless File.directory?(entry) && entry !~ /^\./
+      puts "C> \t\t- Removing old cache subdirectory '#{entry}' ..."
+      FileUtils.remove_entry(entry, true) rescue true
+    end
+  end
+  puts "C> \t- Synchronization objects are being wiped..."
+  synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => CBRAIN::SelfRemoteResourceId })
+  synclist.each do |ss|
+    ss.destroy rescue true
+  end
+  puts "C> \t- Done."
+end
+
+
+
+#-----------------------------------------------------------------------------
 puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
 #-----------------------------------------------------------------------------
 

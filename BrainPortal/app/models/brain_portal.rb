@@ -13,10 +13,6 @@ class BrainPortal < RemoteResource
 
   Revision_info="$Id$"
   
-  def self.current_portal
-    find(CBRAIN::SelfRemoteResourceId)
-  end
-  
   def lock!
     self.update_attributes!(:portal_locked => true)
   end
@@ -24,4 +20,5 @@ class BrainPortal < RemoteResource
   def unlock!
     self.update_attributes!(:portal_locked => false)
   end
+
 end
