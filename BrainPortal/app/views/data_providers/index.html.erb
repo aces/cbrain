@@ -92,10 +92,10 @@
                                 "#ffffff"
                              end
               %>
-              <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]) %><BR>
-                  <%= pluralize(cell[:num_entries],"entry") %>&nbsp;/&nbsp;<%= pluralize(cell[:num_files],"file") %>
+              <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
+                  <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
                   <% if cell[:unknowns] > 0 %>
-                     <BR><%= pluralize(cell[:unknowns],"unknown") %>
+                     <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
                   <% end %>
                   <% if @report_rrs.include?(col) && @report_users.include?(row) %>
                     <% if col.is_a?(Bourreau) || col.id == CBRAIN::SelfRemoteResourceId %>

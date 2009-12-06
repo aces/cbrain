@@ -11,8 +11,8 @@
   <td><%= h(bour.user.login) %></td>
   <td><%= h(bour.group.name) %></td>
   <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
-  <td><%= h(bour.online ? "Yes" : "No") %></td>
-  <td><%= info.name != "???"   ? "Yes"     : "<font color=\"red\">No</font>" %></td>
+  <td><%= bour.online          ? "Yes" : "<font color=\"red\">No</font>" %></td>
+  <td><%= info.name != "???"   ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <% if isbourreau %>
     <td><%= ! worker_pids.blank? ? "Running" : "<font color=\"red\">Stopped</font>" %></td>
     <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
