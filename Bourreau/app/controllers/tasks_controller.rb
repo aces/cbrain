@@ -19,6 +19,7 @@ class TasksController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :find_or_initialize_task, :except => [ :index ]
+  before_filter :start_workers
 
   # Index method no longer avilable.
   def index
@@ -134,6 +135,11 @@ class TasksController < ApplicationController
       #  token && RemoteResource.valid_token?(token)
       @task = Class.const_get(subtype).new(subtypehash)
     end
+  end
+
+  def start_workers
+    myself = RemoteResource.current_resource
+    myself.class.start_bourreau_workers
   end
 
 end
