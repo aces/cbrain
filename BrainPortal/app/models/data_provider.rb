@@ -756,13 +756,13 @@ class DataProvider < ActiveRecord::Base
   # the method will immediately store the current revision
   # number. The value is stored in a file at the top of the
   # caching system's directory structure.
-  def self.cache_revision_of_last_init
-    return @@cache_rev if self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
+  def self.cache_revision_of_last_init(force = nil)
+    return @@cache_rev if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
 
     # Try to read rev from special file in cache root directory
     cache_root = cache_rootdir
     rev_file = (cache_root + "DP_Cache_Rev.id").to_s
-    if File.exist?(rev_file)
+    if ! force && File.exist?(rev_file)
       @@cache_rev = File.read(rev_file)  # a numeric ID as ASCII
       @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
       return @@cache_rev          unless @@cache_rev.blank?
@@ -774,7 +774,11 @@ class DataProvider < ActiveRecord::Base
     # Try to write it back. If the file suddenly has appeared,
     # we ignore our own rev and use THAT one instead (race condition).
     begin
-      fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      if force
+        fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_CREAT)
+      else
+        fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      end
       fh = IO.open(fd)
       fh.syswrite(@@cache_rev + "\n")
       fh.close

@@ -212,6 +212,8 @@ puts "C> Checking to see if Data Provider caches nead wiping..."
 #-----------------------------------------------------------------------------
 dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
 dp_current_rev = DataProvider.revision_info.svn_id_rev
+raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
+   dp_current_rev && dp_current_rev =~ /^\d+/
 if dp_init_rev.to_i <= 659 # Before Pierre's upgrade
   puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
   puts "C> \t- WARNING: This could take a long time so you should not"
@@ -228,6 +230,8 @@ if dp_init_rev.to_i <= 659 # Before Pierre's upgrade
   synclist.each do |ss|
     ss.destroy rescue true
   end
+  puts "C> \t- Re-recording DataProvider revision number in cache."
+  DataProvider.cache_revision_of_last_init(:force)
   puts "C> \t- Done."
 end
 
