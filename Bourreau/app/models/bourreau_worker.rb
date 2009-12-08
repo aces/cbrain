@@ -249,10 +249,14 @@ class BourreauWorker
       self.addlog "Updated #{task.bname_tid} to state #{task.status}" if verbose
       case task.status
         when 'New'
-          task.addlog_context(self,"Setting Up")
-          self.addlog "Start   #{task.bname_tid}"                         if verbose
-          task.start_all
-          self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
+          if task.updated_at > (Time.now - (2 * self.check_interval)) # ignore if task too recent
+            self.addlog "Recent  #{task.bname_tid}"                         if verbose
+          else
+            task.addlog_context(self,"Setting Up")
+            self.addlog "Start   #{task.bname_tid}"                         if verbose
+            task.start_all
+            self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
+          end
         when 'Data Ready'
           task.addlog_context(self,"Post Processing")
           self.addlog "PostPro #{task.bname_tid}"                         if verbose
