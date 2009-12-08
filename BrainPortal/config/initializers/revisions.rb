@@ -115,6 +115,18 @@ class String
   #  "$Id$"
   #
   # it will return a string composed
+  # of two elements concatenated:
+  #
+  #   "date time"
+  def svn_id_datetime
+    self.svn_id_date + " " + self.svn_id_time
+  end
+
+  # Given a revision info string such as
+  #
+  #  "$Id$"
+  #
+  # it will return a string composed
   # of three elements concatenated:
   #
   #   "rev date time"

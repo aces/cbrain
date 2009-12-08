@@ -208,7 +208,7 @@ CBRAIN::SelfRemoteResourceId = brainportal.id
 
 
 #-----------------------------------------------------------------------------
-puts "C> Checking to see if Data Provider caches nead wiping..."
+puts "C> Checking to see if Data Provider caches need wiping..."
 #-----------------------------------------------------------------------------
 dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
 dp_current_rev = DataProvider.revision_info.svn_id_rev

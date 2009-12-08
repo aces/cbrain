@@ -94,13 +94,22 @@ class Bourreau < RemoteResource
     workers = BourreauWorker.all
     workers_pids = workers.map(&:pid).join(",")
 
+    worker_revinfo    = BourreauWorker.revision_info
+    worker_lc_rev     = worker_revinfo.svn_id_rev
+    worker_lc_author  = worker_revinfo.svn_id_author
+    worker_lc_date    = worker_revinfo.svn_id_datetime
+
     info.merge!(
       # Bourreau info
       :bourreau_cms       => CBRAIN::CLUSTER_TYPE,
       :bourreau_cms_rev   => Scir::Session.session_cache.revision_info,
       :tasks_max          => queue_tasks_max,
       :tasks_tot          => queue_tasks_tot,
-      :worker_pids        => workers_pids
+
+      :worker_pids        => workers_pids,
+      :worker_lc_rev      => worker_lc_rev,
+      :worker_lc_author   => worker_lc_author,
+      :worker_lc_date     => worker_lc_date
     )
 
     return info

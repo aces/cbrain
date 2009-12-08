@@ -39,7 +39,7 @@ class RemoteResourceInfo < RestrictedHash
      :host_uptime,          # Output of 'uptime' command
      :ssh_public_key,
 
-     # Svn info
+     # Svn info (Rails app)
      :revision,
      :lc_author,
      :lc_rev,
@@ -48,7 +48,12 @@ class RemoteResourceInfo < RestrictedHash
      # Bourreau-specific fields
      :bourreau_cms, :bourreau_cms_rev,
      :tasks_max,    :tasks_tot,
-     :worker_pids
+
+     # Bourreau Worker Svn info
+     :worker_pids,
+     :worker_lc_author,
+     :worker_lc_rev,
+     :worker_lc_date
 
    ]
 

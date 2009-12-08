@@ -36,7 +36,7 @@
       <table>
         <% @ssh_keys.each do |pair| %>
           <tr><th><%= h(pair[0]) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></th></tr>
+          <tr><td><SMALL><SMALL><PRE><%= h(pair[1]) %></PRE></SMALL></SMALL></th></tr>
         <% end %>
       </table>
    </div> <!-- End class="ssh_keys" -->

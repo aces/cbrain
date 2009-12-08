@@ -183,6 +183,15 @@
              </tr>
 
              <tr>
+                 <th>Worker Revision Info</th>
+                 <td class="info">
+                     <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
+                     <strong>Last Change Revision: </strong><%= @info.worker_lc_rev %><br>
+                     <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
+                 </td>
+             </tr>
+
+             <tr>
                  <th>Number of tasks (running/max)</th>
                  <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
              </tr>
@@ -198,7 +207,7 @@
 
              <tr>
                  <th>Execution Server SSH Public Key</th>
-                 <td class="info"><SMALL><SMALL><PRE><%= pretty_ssh_key(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+                 <td class="info"><SMALL><SMALL><PRE><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
              </tr>
 
          <% end %>
