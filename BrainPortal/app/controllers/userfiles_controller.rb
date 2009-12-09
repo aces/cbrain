@@ -654,6 +654,12 @@ class UserfilesController < ApplicationController
   def extract_from_collection
     success = failure = 0
 
+    unless params[:filelist] && params[:filelist].size > 0
+      flash[:notice] = "No files selected for extraction"
+      redirect_to :action  => :edit
+      return
+    end
+
     collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
