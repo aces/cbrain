@@ -568,10 +568,11 @@ class RemoteResource < ActiveRecord::Base
     myself = RemoteResource.current_resource
     cb_error "Got worker control command #{startstop} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
+    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
     if startstop == 'start'
       self.start_bourreau_workers
     elsif startstop == 'stop'
-      BourreauWorker.signal_all('TERM')
+      BourreauWorker.all.each { |w| w.terminate rescue true }
     else
       cb_error "Got unknown worker control command #{startstop}"
     end

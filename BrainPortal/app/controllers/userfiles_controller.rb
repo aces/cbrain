@@ -460,24 +460,30 @@ class UserfilesController < ApplicationController
         if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
           userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
           userfile.sync_to_cache
-          send_file userfile.cache_full_path
+          fullpath = userfile.cache_full_path
+          send_file fullpath, :stream => true, :filename => fullpath.basename
         else
           cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
           #cacherootdirlen = cacherootdir.to_s.size
           filenames = filelist.collect do |id|
             u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
             u.sync_to_cache
-            full = u.cache_full_path.to_s        # /a/b/c/prov/x/y/basename
-            #full = full[cacherootdirlen+1,9999]  # prov/x/y/basename
+            full = u.cache_full_path.to_s        # /a/b/c/prov/user/x/y/basename
+            #full = full[cacherootdirlen+1,9999]  # prov/user/x/y/basename
             full = "'" + full.gsub("'", "'\\\\''") + "'"
+            full
+          end
+          if filenames.size == 0
+            flash[:notice] = "No filenames selected for download."
+            redirect_to :action => :index
+            return
           end
           filenames_with_spaces = filenames.join(" ")
-          tarfile = "/tmp/#{current_user.login}_files.tar.gz"
+          tarfile = Pathname.new("/tmp/#{current_user.login}_files.tar.gz")
           Dir.chdir(cacherootdir) do
             system("tar -czf #{tarfile} #{filenames_with_spaces}")
           end
-          send_file tarfile, :stream  => false
-          File.delete(tarfile)
+          send_file tarfile.to_s, :stream  => true, :filename => tarfile.basename
         end
         return
 

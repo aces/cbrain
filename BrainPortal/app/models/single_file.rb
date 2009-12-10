@@ -31,8 +31,11 @@ class SingleFile < Userfile
   def set_size
     self.set_size! unless self.size_set?
   end
-  
-  #Calculates and sets the size attribute.
+
+  # Calculates and sets the size attribute.
+  # Well return true if the size was set;
+  # will return false if the file is not synchronized
+  # and thus the size can't be obtained from the cache.
   def set_size!
     local_sync = self.local_sync_status
     unless local_sync && local_sync.status == "InSync"
@@ -43,7 +46,7 @@ class SingleFile < Userfile
       self.size = File.size(self.name)
       self.save!
     end
-    
+
     true
   end
 

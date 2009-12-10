@@ -10,6 +10,7 @@
 #
 
 -%>
+
 <div class = "generalcontent">
 
    <% title 'Data Providers' %>
@@ -80,13 +81,13 @@
           <% @report_col_objects.each do |col| %>
             <% cell = @report_stats[row] ? @report_stats[row][col] : nil %>
             <% if cell %>
-              <% cellcolor = if cell[:size]    > 10000000000 # 10 gig
+              <% cellcolor = if cell[:size]    > 10_000_000_000 # 10 gig
                                 "#ff4444"
-                             elsif cell[:size] >  1000000000 # 1 gig
+                             elsif cell[:size] >  1_000_000_000 # 1 gig
                                 "#ff8888"
-                             elsif cell[:size] >   100000000 # 100 megs
+                             elsif cell[:size] >    100_000_000 # 100 megs
                                 "#ffcccc"
-                             elsif cell[:size] >    10000000 # 10 megs
+                             elsif cell[:size] >     10_000_000 # 10 megs
                                 "#ffffcc"
                              else
                                 "#ffffff"

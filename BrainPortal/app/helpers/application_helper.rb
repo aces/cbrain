@@ -93,12 +93,14 @@ module ApplicationHelper
   #   12.3 KB
   #   123 bytes
   def pretty_size(size)
-    if    size >= 10**9
-      sprintf "%6.1f GB", size/(10**9 + 0.0)
-    elsif size >= 10**6
-      sprintf "%6.1f MB", size/(10**6 + 0.0)
-    elsif size >= 10**3
-      sprintf "%6.1f KB", size/(10**3 + 0.0)
+    if size.blank?
+      "unknown"
+    elsif size >= 1_000_000_000
+      sprintf "%6.1f GB", size/(1_000_000_000 + 0.0)
+    elsif size >=     1_000_000
+      sprintf "%6.1f MB", size/(    1_000_000 + 0.0)
+    elsif size >=         1_000
+      sprintf "%6.1f KB", size/(        1_000 + 0.0)
     else
       sprintf "%d bytes", size
     end 

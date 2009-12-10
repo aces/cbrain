@@ -420,22 +420,26 @@ public
     self.class.to_s.downcase.sub(/^drmaa_?/i,"drmaa_")
   end
 
-  #Capture any error output for the running job.
+  # Read back the STDOUT and STDERR files for the job, and
+  # store (part of) their contents in the task's object;
+  # this is called explicitely only in the case when the
+  # portal performs a 'show' request on a single task
+  # otherise it's too expensive to do it every time. The
+  # pseudo attributes @capt_stdout_b64 and @capt_stderr_b64
+  # are not really part of the DrmaaTask model.
   def capture_job_out_err
      return if self.new_record?
-     workdir = self.drmaa_workdir
-     return unless workdir
-     stdoutfile = "#{workdir}/.qsub.sh.out"
-     stderrfile = "#{workdir}/.qsub.sh.err"
+     stdoutfile = self.stdoutDRMAAfilename
+     stderrfile = self.stderrDRMAAfilename
      #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
      #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
-     if File.exist?(stdoutfile)
+     if stdoutfile && File.exist?(stdoutfile)
         #io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 200 | tail -100","r")
         io = IO.popen("tail -100 #{stdoutfile}","r")
         @capt_stdout_b64 = Base64.encode64(io.read)
         io.close
      end
-     if File.exist?(stderrfile)
+     if stderrfile && File.exist?(stderrfile)
         #io = IO.popen("tail -30 #{stderrfile} | fold -b -w 200 | tail -100","r")
         io = IO.popen("tail -100 #{stderrfile}","r")
         @capt_stderr_b64 = Base64.encode64(io.read)
@@ -475,6 +479,13 @@ public
   def bname_tid
     @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
     @bname_tid
+  end
+
+  # Returns an ID string containing both the bourreau_name +b+
+  # and the task ID +t+ in format "b-t" ; this is suitable to
+  # be used as part of a filename.
+  def bname_tid_dashed
+    @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
 
@@ -565,8 +576,8 @@ public
     job = Scir::JobTemplate.new_jobtemplate
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
-    job.stdout  = ":#{workdir}/#{qsubfile}.out"   # see also after_initialize() later
-    job.stderr  = ":#{workdir}/#{qsubfile}.err"   # see also after_initialize() later
+    job.stdout  = ":" + self.stdoutDRMAAfilename
+    job.stderr  = ":" + self.stderrDRMAAfilename
     job.join    = false
     job.wd      = workdir
     job.name    = name
@@ -590,7 +601,7 @@ public
     # it's not our 'job' to figure out if it worked
     # or not.
     jobid            = Scir::Session.session_cache.run(job)
-    jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca")
+    #jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca") # TODO TOREMOVE
     self.drmaa_jobid = jobid
     self.status      = "Queued"
     self.addlog("Queued as job ID '#{jobid}'")
@@ -619,11 +630,39 @@ public
     end
   end
 
-  def capt_stdout_b64 #:nodoc:
+  # Returns the filename for the job's captured STDOUT
+  # Returns nil if the work directory has not yet been
+  # created, or no longer exists. The file itself is not
+  # garanteed to exist, either.
+  def stdoutDRMAAfilename
+    workdir = self.drmaa_workdir
+    return nil unless workdir
+    stdoutfile = "#{workdir}/.qsub.sh.out"
+  end
+
+  # Returns the filename for the job's captured STDERR
+  # Returns nil if the work directory has not yet been
+  # created, or no longer exists. The file itself is not
+  # garanteed to exist, either.
+  def stderrDRMAAfilename
+    workdir = self.drmaa_workdir
+    return nil unless workdir
+    stderrfile = "#{workdir}/.qsub.sh.err"
+  end
+
+  # Returns the captured STDOUT for the
+  # task; this pseudo-attribute is only
+  # filled in after explicitely calling
+  # the method capture_job_out_err()
+  def capt_stdout_b64
     @capt_stdout_b64
   end
 
-  def capt_stderr_b64 #:nodoc:
+  # Returns the captured STDERR for the
+  # task; this pseudo-attribute is only
+  # filled in after explicitely calling
+  # the method capture_job_out_err()
+  def capt_stderr_b64
     @capt_stderr_b64
   end
 

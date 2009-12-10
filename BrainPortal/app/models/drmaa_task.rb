@@ -316,13 +316,20 @@ class DrmaaTask < ActiveResource::Base
   # Returns an ID string containing both the bourreau_id +b+
   # and the task ID +t+ in format "b/t"
   def bid_tid
-    "#{self.bourreau_id || '?'}/#{self.id || '?'}"
+    @bid_tid ||= "#{self.bourreau_id || '?'}/#{self.id || '?'}"
   end
 
   # Returns an ID string containing both the bourreau_name +b+
   # and the task ID +t+ in format "b/t"
   def bname_tid
-    "#{self.bourreau.name || '?'}/#{self.id || '?'}"
+    @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
+  end
+
+  # Returns an ID string containing both the bourreau_name +b+
+  # and the task ID +t+ in format "b-t" ; this is suitable to
+  # be used as part of a filename.
+  def bname_tid_dashed
+    @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
   # Returns the user for this task

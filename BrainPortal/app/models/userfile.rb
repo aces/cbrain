@@ -60,15 +60,17 @@ class Userfile < ActiveRecord::Base
   #Format size for display in the view.
   #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
   def format_size
-    if self.size > 10**9
-      "#{self.size/10**9} GB"
-    elsif   self.size > 10**6
-      "#{self.size/10**6} MB"
-    elsif   self.size > 10**3
-      "#{self.size/10**3} KB"
+    if size.blank?
+      "unknown"
+    elsif size >= 1_000_000_000
+      sprintf "%6.1f GB", size/(1_000_000_000 + 0.0)
+    elsif size >=     1_000_000
+      sprintf "%6.1f MB", size/(    1_000_000 + 0.0)
+    elsif size >=         1_000
+      sprintf "%6.1f KB", size/(        1_000 + 0.0)
     else
-      "#{self.size} bytes"     
-    end 
+      sprintf "%d bytes", size
+    end
   end
 
   #Return an array of the tags associated with this file
