@@ -551,6 +551,16 @@ public
     name     = self.name
     commands = self.drmaa_commands  # Supplied by subclass; can use self.params
     workdir  = self.drmaa_workdir
+
+    # Special case of RUBY-only jobs (jobs that have no cluster-side).
+    # In this case, only the 'Setting Up' and 'Post Processing' states
+    # are actually performed.
+    if commands.nil? || commands.size == 0
+      self.addlog("No BASH commands associated with this task. Jumping to state 'Post Processing'.")
+      self.status = "Data Ready"  # Will trigger Post Processing later on.
+      self.save
+      return true
+    end
     
     # Create a bash command script out of the text
     # lines supplied by the subclass

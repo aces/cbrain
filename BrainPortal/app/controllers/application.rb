@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
   def catch_cbrain_message
     begin
       yield
-    rescue ActiveRecord::RecordNotFound
+    rescue ActiveRecord::RecordNotFound => e
       flash[:error] = "The record you requested does not exist."
       redirect_to default_redirect
     rescue CbrainException => cbm
@@ -120,12 +120,12 @@ class ApplicationController < ActionController::Base
   end
 
   #Returns an array of the DataProvider objects representing the data providers that can be accessed by +user+.
-  def available_data_providers(user)
+  def available_data_providers(user = current_user)
     DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by?(user) }
   end
 
   #Returns an array of the Bourreau objects representing the bourreaux that can be accessed by +user+.
-  def available_bourreaux(user)
+  def available_bourreaux(user = current_user)
     Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by?(user) }
   end
   

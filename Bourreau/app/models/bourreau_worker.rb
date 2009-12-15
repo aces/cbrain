@@ -52,13 +52,22 @@ class BourreauWorker
   end
 
   # This method sends a +signal+ to all known active workers.
-  def self.signal_all(signal = 'TERM')
+  # This method should not be used with signals that
+  # kills this worker. If you need to kill a worker, use the
+  # terminate() method instead, as it will properly
+  # de-register it too.
+  def self.signal_all(signal = 'USR1')
     self.all.each { |bw| Process.kill(signal,bw.pid) rescue true }
   end
 
   # This method send a wake up signal (USR1) to all known active workers.
   def self.wake_all
     self.signal_all('USR1')
+  end
+
+  # This method stops (terminate) all known active workers.
+  def self.stop_all
+     self.all.each { |w| w.terminate rescue true }
   end
 
   def initialize #:nodoc:

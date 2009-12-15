@@ -439,7 +439,7 @@ class RemoteResource < ActiveRecord::Base
     send_command(command)
   end
 
-  # Utility method to send a start_workers command to a
+  # Utility method to send a +start_workers+ command to a
   # RemoteResource, whether local or not.
   def send_command_start_workers
     command = RemoteCommand.new(
@@ -448,11 +448,20 @@ class RemoteResource < ActiveRecord::Base
     send_command(command)
   end
 
-  # Utility method to send a stop_workers command to a
+  # Utility method to send a +stop_workers+ command to a
   # RemoteResource, whether local or not.
   def send_command_stop_workers
     command = RemoteCommand.new(
       :command     => 'stop_workers'
+    )
+    send_command(command)
+  end
+
+  # Utility method to send a +wakeup_workers+ command to a
+  # RemoteResource, whether local or not.
+  def send_command_wakeup_workers
+    command = RemoteCommand.new(
+      :command     => 'wakeup_workers'
     )
     send_command(command)
   end
@@ -524,10 +533,8 @@ class RemoteResource < ActiveRecord::Base
 
     if command.command == "clean_cache"
       self.process_command_clean_cache(command.user_ids, command.before_date)
-    elsif command.command == "start_workers"
-      self.process_command_worker_control('start')
-    elsif command.command == "stop_workers"
-      self.process_command_worker_control('stop')
+    elsif command.command =~ /^(start|stop|wakeup)_workers/
+      self.process_command_worker_control(Regexp.last_match[1])
     else
       cb_error "Unknown command #{command.command}"
     end
@@ -563,18 +570,21 @@ class RemoteResource < ActiveRecord::Base
     true
   end
 
-  # Starts or stops Bourreau worker processes
+  # Starts, stops, or wakes up Bourreau worker processes.
   def self.process_command_worker_control(startstop)
     myself = RemoteResource.current_resource
     cb_error "Got worker control command #{startstop} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
     allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-    if startstop == 'start'
-      self.start_bourreau_workers
-    elsif startstop == 'stop'
-      BourreauWorker.all.each { |w| w.terminate rescue true }
+    case startstop
+      when 'start'
+        self.start_bourreau_workers
+      when 'stop'
+        BourreauWorker.stop_all
+      when 'wakeup'
+        BourreauWorker.wake_all
     else
-      cb_error "Got unknown worker control command #{startstop}"
+        cb_error "Got unknown worker control command #{startstop}"
     end
   end
 

@@ -21,10 +21,12 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :data_providers, :member => { :browse  => :get, :register => :post }, :collection => { :cleanup => :post }
   map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }
 
-  # Redirect for polymorphism
+  # Redirect for polymorphisms
   map.resources :single_files,            :controller => :userfiles  
   map.resources :file_collection,         :controller => :userfiles  
   map.resources :civet_collection,        :controller => :userfiles  
+  map.resources :civet_study,             :controller => :userfiles  
+
   map.resources :work_groups,             :controller => :groups     
   map.resources :system_groups,           :controller => :groups     
   map.resources :userfile_custom_filters, :controller => :custom_filters

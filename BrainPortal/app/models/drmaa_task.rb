@@ -169,7 +169,7 @@ class DrmaaTask < ActiveResource::Base
   # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
   def save #:nodoc:
-    self.bourreau_id = select_bourreau unless self.bourreau_id
+    self.bourreau_id = select_bourreau if self.bourreau_id.blank?
     adjust_site
     self.params ||= {}
     if self.params.respond_to? :[]
@@ -181,7 +181,7 @@ class DrmaaTask < ActiveResource::Base
   # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
   def save! #:nodoc:
-    self.bourreau_id = select_bourreau unless self.bourreau_id
+    self.bourreau_id = select_bourreau if self.bourreau_id.blank?
     adjust_site
     self.params ||= {}
     if self.params.respond_to? :[]
@@ -190,8 +190,8 @@ class DrmaaTask < ActiveResource::Base
     super
   end
 
-  #Choose a random Bourreau from the configured list
-  #of legal bourreaux.
+  # Choose a random Bourreau from the configured list
+  # of legal bourreaux.
   def select_bourreau
     unless DrmaaTask.prefered_bourreau_id.blank?
       DrmaaTask.prefered_bourreau_id
