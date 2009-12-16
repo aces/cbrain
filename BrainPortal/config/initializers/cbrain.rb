@@ -59,6 +59,8 @@ class CBRAIN
       # Child code starts here
       Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
       reader.close # Not needed in the child!
+
+      # Create subchild
       subchildpid = Kernel.fork do
 
         # Subchild code starts here
@@ -123,26 +125,53 @@ class CBRAIN
   end
 
   def self.spawn_fully_independent
-    pid = Process.fork do  # TODO fork two levels too ?
+    reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
+    childpid = Kernel.fork do
+
+      # Child code starts here
       Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
-      # Try to close all file descriptions from 3 to 50.
-      begin
-        (3..50).each { |i| x = IO.for_fd(i) rescue nil ; x.close if x }
-      rescue
+      reader.close # Not needed in the child!
+
+      # Create subchild
+      subchildpid = Kernel.fork do
+
+        # Try to close all file descriptors from 3 to 50.
+        writer.close # Not needed in the subchild!
+        begin
+          (3..50).each { |i| x = IO.for_fd(i) rescue nil ; x.close if x }
+        rescue
+        end
+
+        # Background code execution
+        begin
+          yield
+        rescue => itswrong
+          puts "Exception raised in spawn_fully_independent():\n"
+          puts itswrong.class.to_s + ": " + itswrong.message
+          puts itswrong.backtrace.join("\n")
+        end
+
+        Kernel.exit! # End of subchild.
       end
-      # Try executing the code
-      begin
-        yield
-      rescue
-      end
-      # End it all.
-      Kernel.exit!
+
+      # Child code continues here
+      Process.detach(subchildpid)
+      writer.write(subchildpid.to_s)
+      writer.close # Child is done sending the subchild's PID to parent
+      Kernel.exit! # End of child.
     end
-    Process.detach(subpid)
-    pid
+
+    # Parent code continues here
+    Process.detach(childpid)
+    writer.close # Not needed in parent!
+    subchildpid = reader.read.to_i
+    reader.close # Parent is done reading subchild's PID from child
+    subchildpid
   end
 
-end
+end  # End of CBRAIN class
+
+
 
 #
 # Kernel extensions
