@@ -115,11 +115,11 @@ class BourreauxController < ApplicationController
 
   def update #:nodoc:
     id        = params[:id]
-    @bourreau = Bourreau.find(id)
+    @bourreau = RemoteResource.find(id)
     
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+    cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    fields    = params[:bourreau]
+    fields    = @bourreau.is_a?(Bourreau) ? params[:bourreau] : params[:brain_portal]
     subtype   = fields.delete(:type)
 
     @bourreau.update_attributes(fields)
@@ -128,7 +128,7 @@ class BourreauxController < ApplicationController
 
     if @bourreau.errors.empty?
       redirect_to(bourreaux_url)
-      flash[:notice] = "Execution Server successfully updated."
+      flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
     else
       @users = current_user.available_users
       @groups = current_user.available_groups

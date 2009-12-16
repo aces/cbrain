@@ -21,9 +21,10 @@
     <td>-</td>
   <% end %>
   <td><%= h(bour.description) %></td>
-  <% if isbourreau && bour.has_owner_access?(current_user) %>
+  <% if bour.has_owner_access?(current_user) %>
     <td><%= link_to 'Edit', edit_bourreau_path(bour), :class => 'action_link' %></td>
     <td>
+      <% if RemoteResource.current_resource.id != bour.id %>
       <%= 
           link_to_remote  'Delete',
                         {:url  => bourreau_path(bour),
@@ -33,6 +34,7 @@
                          },
                         {:class => 'action_link'}
         %>
+       <% end %>
      </td>
     <% if bour.has_remote_control_info? %>
       <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link' %></td>

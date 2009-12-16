@@ -12,15 +12,18 @@
 -%>
 <div class = "generalcontent">
 
-   <% title "Edit Execution Server" %>
+   <% pretty_type = @bourreau.is_a?(Bourreau) ? "Execution Server" : "Brain Portal" %>
+   <% klass_sym   = @bourreau.is_a?(Bourreau) ? :bourreau          : :brain_portal  %>
 
-   <h2>Edit Execution Server</h2>
+   <% title "Edit #{pretty_type}" %>
+
+   <h2>Edit <%= pretty_type %></h2>
 
    <div class = "generalbox">
 
       <%= error_messages_for :bourreau %>
 
-      <% form_for :bourreau, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+      <% form_for klass_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
          <p><label for="name">Name</label><br/>
          <%= f.text_field :name %></p>
