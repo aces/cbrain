@@ -135,7 +135,14 @@ class TasksController < ApplicationController
     actrectask  = ActRecTask.find(task_id) # Fetch once...
     bourreau_id = actrectask.bourreau_id
     DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
-    @task = DrmaaTask.find(task_id)        # Fetch twice... :-(
+
+    begin
+      @task = DrmaaTask.find(task_id)        # Fetch twice... :-(
+    rescue Errno::ECONNREFUSED, EOFError
+      flash[:error] = "The Execution Server for this task is not available right now."
+      redirect_to :action => :index
+      return
+    end
 
     respond_to do |format|
       format.html # show.html.erb
