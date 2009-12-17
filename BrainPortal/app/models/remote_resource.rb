@@ -14,15 +14,34 @@ require 'socket'
 #the remote Rails application is a Bourreau or a BrainPortal,
 #or the current Rails application running locally.
 #
-#=Attributes:
+#=General Attributes:
 #[*name*] A string representing a the name of the remote resource.
-#[*remote_user*] A string representing a user name to use to access the remote site.
-#[*remote_host*] A string representing a the hostname of the remote resource.
-#[*remote_port*] An integer representing the port number of the remote resource.
-#[*remote_dir*] An string representing the directory of the remote resource.
 #[*online*] A boolean value set to whether or not the resource is online.
 #[*read_only*] A boolean value set to whether or not the resource is read only.
 #[*description*] Text with a description of the remote resource.
+#
+#==ActiveResource Attributes:
+#[*actres_user*] Username for the remote resource's ActiveResource connection;
+#                this is most often not used.
+#[*actres_host*] Hostname of the remote resource's ActiveResource connection.
+#[*actres_port*] The port number of the remote resource's ActiveResource connection.
+#[*actres_dir*] The directory prefix of the remote resource's ActiveResource connection;
+#               this is most often empty.
+#
+#==SSH Connection Attributes:
+#[*ssh_control_user*] Username of the UNIX account running the remote resource's Rails application.
+#[*ssh_control_host*] Hostname of the machine running the remote resource's Rails application.
+#[*ssh_control_port*] SSH port number of the machine running the remote resource's Rails application.
+#[*ssh_control_rails_dir*] Rails root directory where the remote resource is installed.
+#
+#==Optional Tunneling Port Numbers Attributes:
+#[*tunnel_mysql_port*] Used by a BrainPortal to offer its ActiveRecord DB connection to the
+#                      remote resource through a tunnel; this works only when the SSH
+#                      connection attributes are properly configured.
+#[*tunnel_actres_port*] Used by a BrainPortal to tunnel the remote resource's ActiveResource
+#                       connection; this works only when the SSH connection attributes
+#                       are properly configured. When in use, the ActiveResource attributes
+#                       above are ignored.
 #
 #= Associations:
 #*Belongs* *to*:
@@ -170,7 +189,7 @@ class RemoteResource < ActiveRecord::Base
   # *tunnel_actres_port*:: Optional; must be an unused port number on the remote
   #                        side that it will open as its HTTP acceptor (it will become
   #                        the argument to the "-p" option for its "script/server").
-  #                        The Rails app over there will tunnel its requests to it
+  #                        The Rails application over there will tunnel its requests to it
   #                        using a port number of (3090 + the ID of the remote resource).
   def start_tunnels
     
