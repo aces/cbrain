@@ -261,6 +261,8 @@
       </table>
       <% end %>
 
+      <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => (isbourreau ? "Bourreau Log" : "BrainPortal Log") } %>
+
    </div>  <!-- End class="generalbox" -->
 
 </div>  <!-- End class="generalcontent" -->

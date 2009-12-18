@@ -1,0 +1,16 @@
+
+<%
+  # This partial displays an object's log
+  # It requires two args, the 'log' and a 'title'
+%>
+
+<% if log %>
+  <table style="clear:both">
+  <tr class="list-odd">
+    <th><%= title %></th>
+  </tr>
+  <tr class="list-even">
+    <td><pre><%= h(log) %></pre></td>
+  </tr>
+  </table>
+<% end %>

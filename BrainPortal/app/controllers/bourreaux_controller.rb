@@ -61,6 +61,8 @@ class BourreauxController < ApplicationController
     @statuses_list = @statuses.keys.sort.reject { |s| s == 'TOTAL' }
     @statuses_list << 'TOTAL'
 
+    @log = @bourreau.getlog
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }
@@ -181,8 +183,10 @@ class BourreauxController < ApplicationController
     sleep 5+rand(3)
     if @bourreau.is_alive?
       flash[:notice] = "Execution Server started."
+      @bourreau.addlog("Rails application started by user #{current_user.login}.")
       begin
         @bourreau.send_command_start_workers
+        @bourreau.addlog("Workers started too.")
         flash[:notice] += "\nWorkers on Execution Server started."
       rescue
         flash[:notice] += "\nHowever, we couldn't start the workers."
@@ -206,6 +210,7 @@ class BourreauxController < ApplicationController
 
     begin
       @bourreau.send_command_stop_workers
+      @bourreau.addlog("Workers stopped by user #{current_user.login}.")
       flash[:notice] = "Workers on Execution Server stopped."
     rescue
       flash[:notice] = "It seems we couldn't stop the workers. They'll likely die by themselves."
@@ -213,6 +218,7 @@ class BourreauxController < ApplicationController
 
     @bourreau.stop
     @bourreau.ssh_master.stop
+    @bourreau.addlog("Rails application stopped.")
     flash[:notice] += "\nExecution Server stopped. Tunnels stopped."
     redirect_to :action => :index
 
