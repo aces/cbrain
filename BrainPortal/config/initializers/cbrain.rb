@@ -68,6 +68,7 @@ class CBRAIN
 
         # Background code execution
         begin
+          $0 = "CB: #{taskname}" # Clever!
           # Monkey-patch Mongrel to not remove its pid file in the child
           Mongrel::Configurator.class_eval("def remove_pid_file; true; end")
           ActiveRecord::Base.establish_connection(dbconfig)
@@ -124,7 +125,7 @@ class CBRAIN
     end
   end
 
-  def self.spawn_fully_independent
+  def self.spawn_fully_independent(taskname = 'Independent Background Task')
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
 
@@ -144,6 +145,7 @@ class CBRAIN
 
         # Background code execution
         begin
+          $0 = "CB: #{taskname}" # Clever!
           yield
         rescue => itswrong
           puts "Exception raised in spawn_fully_independent():\n"

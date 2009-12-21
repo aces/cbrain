@@ -9,6 +9,8 @@
 # $Id$
 #
 
+require 'fileutils'
+
 #RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
@@ -463,27 +465,23 @@ class UserfilesController < ApplicationController
           fullpath = userfile.cache_full_path
           send_file fullpath, :stream => true, :filename => fullpath.basename
         else
-          cacherootdir    = DataProvider.cache_rootdir  # /a/b/c
-          #cacherootdirlen = cacherootdir.to_s.size
-          filenames = filelist.collect do |id|
+          userfiles_list = filelist.collect do |id|
             u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
+            next unless u
             u.sync_to_cache
-            full = u.cache_full_path.to_s        # /a/b/c/prov/user/x/y/basename
-            #full = full[cacherootdirlen+1,9999]  # prov/user/x/y/basename
-            full = "'" + full.gsub("'", "'\\\\''") + "'"
-            full
+            u
           end
-          if filenames.size == 0
+          if userfiles_list.size == 0
             flash[:notice] = "No filenames selected for download."
             redirect_to :action => :index
             return
           end
-          filenames_with_spaces = filenames.join(" ")
-          tarfile = Pathname.new("/tmp/#{current_user.login}_files.tar.gz")
-          Dir.chdir(cacherootdir) do
-            system("tar -czf #{tarfile} #{filenames_with_spaces}")
+          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+          send_file tarfile, :stream  => true, :filename => Pathname.new(tarfile).basename
+          CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
+            sleep 300
+            File.unlink(tarfile)
           end
-          send_file tarfile.to_s, :stream  => true, :filename => tarfile.basename
         end
         return
 
@@ -805,6 +803,54 @@ class UserfilesController < ApplicationController
       )
     end
                          
+  end
+
+  def create_relocatable_tar_for_userfiles(ulist,username)
+    timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
+    tmpdir       = Pathname.new("/tmp/dl.#{$$}.#{timestamp}")
+    tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
+
+    relpath_to_tar = []
+    Dir.mkdir(tmpdir)
+    Dir.chdir(tmpdir) do  # /tmpdir
+
+      uids = ulist.group_by { |u1| u1.user_id }
+      uids.each do |uid,userfiles_per_user|
+        uname = User.find(uid).login
+        Dir.mkdir(uname)
+        Dir.chdir(uname) do # /tmpdir/user/dp
+
+          dpids = userfiles_per_user.group_by { |u2| u2.data_provider_id }
+          dpids.each do |dpid,userfiles_per_dp|
+            dpname = DataProvider.find(dpid).name
+            Dir.mkdir(dpname)
+            Dir.chdir(dpname) do # /tmpdir/user/dp
+
+              userfiles_per_dp.each do |u|
+                fullpath = u.cache_full_path
+                basename = fullpath.basename
+                File.symlink(fullpath,basename) # /tmpdir/user/dp/basename -> fullpath
+                relpath_to_tar << Pathname.new(uname) + dpname + basename
+              end # each file per dp per user
+            end # chdir tmpdir/user/dp
+          end # each dp per user
+        end # chdir tmpdir/user
+      end # each user
+
+      filelistname = "files_for_#{username}.lst"
+      File.open(filelistname,"w") do |fh|
+        fh.write relpath_to_tar.join("\n")
+        fh.write "\n"
+      end
+
+      system("tar -chf - -T #{filelistname} | gzip -c >#{tarfilename}")
+
+    end # chdir tmpdir
+
+    return tarfilename
+  ensure
+    FileUtils.remove_entry(tmpdir, true)
+    return tarfilename
   end
 
 end
