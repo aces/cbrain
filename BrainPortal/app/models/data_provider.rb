@@ -377,11 +377,14 @@ class DataProvider < ActiveRecord::Base
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
-    cb_error "Error: provider is offline."   unless self.online
+    # cb_error "Error: provider is offline."   unless self.online
     SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/ProviderName/username/34/45/basename"
       begin
+        # Get the path for the cached file. It's important
+        # to call cache_full_pathname() and NOT cache_full_path(), as
+        # it must raise an exception when there is no caching in the provider!
         fullpath = cache_full_pathname(userfile)
         # 1- Remove the basename itself (it's a file or a subdir)
         FileUtils.remove_entry(fullpath, true) rescue true

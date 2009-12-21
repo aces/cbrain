@@ -46,16 +46,18 @@ class CbrainLocalDataProvider < DataProvider
   end
 
   def cache_prepare(userfile) #:nodoc:
-    basename  = userfile.name
-    username  = userfile.user.login
-    twolevels = cache_subdirs(basename)
-    userdir = Pathname.new(remote_dir) + username
-    level1  = userdir                  + twolevels[0]
-    level2  = level1                   + twolevels[1]
-    Dir.mkdir(userdir) unless File.directory?(userdir)
-    Dir.mkdir(level1)  unless File.directory?(level1)
-    Dir.mkdir(level2)  unless File.directory?(level2)
-    true
+    SyncStatus.ready_to_modify_cache(userfile) do
+      basename  = userfile.name
+      username  = userfile.user.login
+      twolevels = cache_subdirs(basename)
+      userdir = Pathname.new(remote_dir) + username
+      level1  = userdir                  + twolevels[0]
+      level2  = level1                   + twolevels[1]
+      Dir.mkdir(userdir) unless File.directory?(userdir)
+      Dir.mkdir(level1)  unless File.directory?(level1)
+      Dir.mkdir(level2)  unless File.directory?(level2)
+      true
+    end
   end
 
   def cache_full_path(userfile) #:nodoc:
@@ -66,7 +68,9 @@ class CbrainLocalDataProvider < DataProvider
   end
 
   def cache_erase(userfile) #:nodoc:
-    true
+    SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
+      true
+    end
   end
 
   def impl_provider_erase(userfile)  #:nodoc:

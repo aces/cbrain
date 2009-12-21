@@ -44,10 +44,12 @@ class VaultLocalDataProvider < DataProvider
   end
 
   def cache_prepare(userfile) #:nodoc:
-    username  = userfile.user.login
-    userdir = Pathname.new(remote_dir) + username
-    Dir.mkdir(userdir) unless File.directory?(userdir)
-    true
+    SyncStatus.ready_to_modify_cache(userfile) do
+      username  = userfile.user.login
+      userdir = Pathname.new(remote_dir) + username
+      Dir.mkdir(userdir) unless File.directory?(userdir)
+      true
+    end
   end
 
   def cache_full_path(userfile) #:nodoc:
@@ -57,7 +59,9 @@ class VaultLocalDataProvider < DataProvider
   end
 
   def cache_erase(userfile) #:nodoc:
-    true
+    SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
+      true
+    end
   end
 
   def impl_provider_erase(userfile) #:nodoc:

@@ -582,7 +582,9 @@ class RemoteResource < ActiveRecord::Base
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil
         next if syncstatus && syncstatus.accessed_at >= before_date
-        userfile.data_provider.cache_erase(userfile)
+        #dp = userfile.data_provider
+        #next unless dp.online?
+        userfile.cache_erase
       end
     end
 
