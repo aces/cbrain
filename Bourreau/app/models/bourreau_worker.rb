@@ -316,7 +316,7 @@ class BourreauWorker
         lines = s.read.split(/\n/)
       end
       lines.pop while lines.size > 0 && lines[-1].blank?
-      if lines.size > 1 && lines[-1] =~ /^\s*(\d+).*(irb|ruby|mongrel)/i
+      if lines.size > 1 && lines[-1] =~ /^\s*(\d+).*(irb|ruby|mongrel|worker|bourreau w)/i
          other_uid = Regexp.last_match[1].to_i
          return true if other_uid == Process.uid || other_uid == Process.euid
       end

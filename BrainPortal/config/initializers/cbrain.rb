@@ -68,7 +68,7 @@ class CBRAIN
 
         # Background code execution
         begin
-          $0 = "CB: #{taskname}" # Clever!
+          $0 = "#{taskname}" # Clever!
           # Monkey-patch Mongrel to not remove its pid file in the child
           Mongrel::Configurator.class_eval("def remove_pid_file; true; end")
           ActiveRecord::Base.establish_connection(dbconfig)
@@ -145,7 +145,7 @@ class CBRAIN
 
         # Background code execution
         begin
-          $0 = "CB: #{taskname}" # Clever!
+          $0 = "#{taskname}" # Clever!
           yield
         rescue => itswrong
           puts "Exception raised in spawn_fully_independent():\n"
