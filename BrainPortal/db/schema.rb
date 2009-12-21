@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091201162200) do
+ActiveRecord::Schema.define(:version => 20091218183054) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -43,9 +43,9 @@ ActiveRecord::Schema.define(:version => 20091201162200) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
+    t.string   "description"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "description"
   end
 
   create_table "drmaa_tasks", :force => true do |t|
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(:version => 20091201162200) do
     t.integer  "user_id"
     t.integer  "bourreau_id"
     t.text     "description"
+    t.datetime "launch_time"
   end
 
   create_table "feedbacks", :force => true do |t|

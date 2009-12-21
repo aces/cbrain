@@ -1,0 +1,12 @@
+<% for task in @tasks %>
+    <tr class ="<%= cycle('list-odd', 'list-even')%> row_highlight">
+      <td><%= check_box_tag("tasklist[]", task.id, false, :class  => 'checkbox') %></td>
+      <td class="left"><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :id => task.id  %></td>
+      <td><%= h(crop_text_to(30, task.description)) %></td>
+      <td><%= h(task.user.login) %></td>
+      <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
+      <td><%= h(task.status) %></td>
+      <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
+      <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
+    </tr>
+<% end %>

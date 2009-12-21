@@ -10,7 +10,7 @@
 -%>
 
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
-   <td><%= check_box_tag("filelist[]", userfile.id.to_s, false, :class  => 'userfile_checkbox') %></td>
+   <td><%= check_box_tag("filelist[]", userfile.id.to_s, false, :class  => 'checkbox') %></td>
    <td class="left">
       <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if userfile.level > 0 -%>
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>

@@ -70,7 +70,7 @@ class UserfilesController < ApplicationController
     @default_group = SystemGroup.find_by_name(current_user.login).id
     @data_providers = available_data_providers(current_user)
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
-    @prefered_bourreau_id = current_user.user_preference.bourreau_id
+    @preferred_bourreau_id = current_user.user_preference.bourreau_id
     
     #For the 'new' panel
     @userfile = Userfile.new(

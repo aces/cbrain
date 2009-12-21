@@ -53,7 +53,7 @@ class <%= "Drmaa#{class_name}" %> < DrmaaTask
   #########################################################################
   #This method actually launches the <%= file_name %> job on the cluster, 
   # and returns the flash message to be displayed.
-  #Default behaviour is to launch the job to the user's prefered cluster,
+  #Default behaviour is to launch the job to the user's preferred cluster,
   # or if the latter is not set, to choose an available cluster at random.
   # You can select a specific cluster to launch to by setting the 
   # bourreau_id attribute on the Drmaa<%= class_name %> object (task.bourreau_id) 

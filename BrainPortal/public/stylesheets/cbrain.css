@@ -1486,3 +1486,7 @@ td.middle{
     border: 0.2em solid #0471B4;
     padding: 1em;
 }
+
+.batch_job_header{
+    background-color: #A3D3F6;
+}

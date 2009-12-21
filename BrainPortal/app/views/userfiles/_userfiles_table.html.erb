@@ -30,19 +30,12 @@
   
     <tr>
       <th>
-          <%= link_to_function '&#10004;' do |page|
-              page.select(".userfile_checkbox").each do |check_box|
-                check_box.checked=true
-              end
-            end
-          %>
-        &nbsp;
-          <%= link_to_function '<big>&times;</big>' do |page|
-              page.select(".userfile_checkbox").each do |check_box|
-                check_box.checked=false
-              end
-            end
-          %>
+          <input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
+            $$('.checkbox').each(function(value, index) {
+               value.checked = $('header_checkbox').checked;
+            });
+            } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
+          />
       </th>
       <th onMouseOver="$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
         <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>

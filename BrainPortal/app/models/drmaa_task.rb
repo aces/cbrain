@@ -170,6 +170,7 @@ class DrmaaTask < ActiveResource::Base
   # Then, reconfigure the class' site to point to it properly.
   def save #:nodoc:
     self.bourreau_id = select_bourreau if self.bourreau_id.blank?
+    self.launch_time = DrmaaTask.launch_time
     adjust_site
     self.params ||= {}
     if self.params.respond_to? :[]
@@ -182,6 +183,7 @@ class DrmaaTask < ActiveResource::Base
   # Then, reconfigure the class' site to point to it properly.
   def save! #:nodoc:
     self.bourreau_id = select_bourreau if self.bourreau_id.blank?
+    self.launch_time = DrmaaTask.launch_time
     adjust_site
     self.params ||= {}
     if self.params.respond_to? :[]
@@ -190,11 +192,11 @@ class DrmaaTask < ActiveResource::Base
     super
   end
 
-  # Choose a random Bourreau from the configured list
-  # of legal bourreaux.
+  #Choose a random Bourreau from the configured list
+  #of legal bourreaux.
   def select_bourreau
-    unless DrmaaTask.prefered_bourreau_id.blank?
-      DrmaaTask.prefered_bourreau_id
+    unless DrmaaTask.preferred_bourreau_id.blank?
+      DrmaaTask.preferred_bourreau_id
     else
       available_group_ids = User.find(self.user_id).group_ids
       bourreau_list = Bourreau.find(:all, :conditions => { :group_id => available_group_ids, :online => true }).select(&:is_alive?)
@@ -215,7 +217,7 @@ class DrmaaTask < ActiveResource::Base
   #This method should return a hash containing the default arguments for
   #for the task to be executed. These can be used to set up the tasks/new form.
   #The saved_args argument is the hash from the user preferences for 
-  #the DrmaaTask subclass (i.e. a given user's prefered arguments, 
+  #the DrmaaTask subclass (i.e. a given user's preferred arguments, 
   #if he/she chooses to save them). It is the hash created by the 
   #save_options class method.
   #
@@ -233,7 +235,7 @@ class DrmaaTask < ActiveResource::Base
   
   #This method actually launches the requested job on the cluster, 
   #and returns the flash message to be displayed to the user.
-  #Default behaviour is to launch the job to the user's prefered cluster,
+  #Default behaviour is to launch the job to the user's preferred cluster,
   #or if the latter is not set, to choose an available cluster at random.
   #You can select a specific cluster to launch to by setting the 
   #bourreau_id attribute on the DrmaaTask subclass object (task.bourreau_id) 
@@ -283,13 +285,13 @@ class DrmaaTask < ActiveResource::Base
   end
   
   #Retrieve the id of the preferred Bourreau for this task.
-  def self.prefered_bourreau_id
-    @@prefered_bourreau_id ||= nil
+  def self.preferred_bourreau_id
+    @@preferred_bourreau_id ||= nil
   end
   
   #Set the id of the preferred Bourreau for this task.
-  def self.prefered_bourreau_id=(id)
-    @@prefered_bourreau_id = id
+  def self.preferred_bourreau_id=(id)
+    @@preferred_bourreau_id = id
   end
   
   #Retrieve the id of the provider to save output to 
@@ -306,6 +308,14 @@ class DrmaaTask < ActiveResource::Base
     else
       @@data_provider_id = provider
     end
+  end
+  
+  def self.launch_time
+    @@launch_time ||= nil
+  end
+  
+  def self.launch_time=(time)
+    @@launch_time = time
   end
 
   #Return the Bourreau object associated with this task.

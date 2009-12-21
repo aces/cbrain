@@ -39,7 +39,6 @@ class TasksController < ApplicationController
       @task_status |= [task.status]
     end
     
-    
     @filter_params["filters"].each do |att, val|
       att = att.to_sym
       next if att == :user_id
@@ -62,21 +61,24 @@ class TasksController < ApplicationController
         scope = scope.scoped(:conditions => {att => value})
       end
     end
-    
+
     if @filter_params["filters"]["bourreau_id"].blank?
       scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
     end
 
     # Set sort order and make it persistent.
-    @filter_params["sort"]["order"] ||= 'drmaa_tasks.updated_at'
+    @filter_params["sort"]["order"] ||= 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
     @filter_params["sort"]["dir"]   ||= 'DESC'
-    
+
     scope = scope.scoped(:joins  => [:bourreau, :user], 
                          :readonly  => false, 
                          :order => "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}" )
 
-    @tasks = scope.find(:all)
+    @tasks = scope
     
+    if @filter_params["sort"]["order"] == 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
+      @tasks = @tasks.group_by(&:launch_time)
+    end
     # @tasks.each do |t|  # ugly kludge
     #   t.updated_at = Time.parse(t.updated_at)
     #   t.created_at = Time.parse(t.created_at)
@@ -183,11 +185,12 @@ class TasksController < ApplicationController
   def create #:nodoc:
     @task_class = params[:task].constantize
     unless params[:bourreau_id].blank?
-      @task_class.prefered_bourreau_id = params[:bourreau_id]
+      @task_class.preferred_bourreau_id = params[:bourreau_id]
     else
-      @task_class.prefered_bourreau_id = current_user.user_preference.bourreau_id
+      @task_class.preferred_bourreau_id = current_user.user_preference.bourreau_id
     end
     @task_class.data_provider_id     = params[:data_provider_id] || current_user.user_preference.data_provider
+    @task_class.launch_time          = Time.now
     
     if params[:save_as_defaults]
       current_user.user_preference.update_options(params[:task]  => @task_class.save_options(params))

@@ -103,8 +103,13 @@ class Session
       elsif params[controller]["remove_filter"]
         @session[controller.to_sym]["filters"].delete(params[controller]["remove_filter"])
       else
-        @session[controller.to_sym]["filters"].merge!(params[controller]["filters"] || {})
-        @session[controller.to_sym]["sort"].merge!(params[controller]["sort"] || {})
+        params[controller].each do |k, v|
+          if @session[controller.to_sym][k].respond_to? :merge!
+            @session[controller.to_sym][k].merge!(params[controller][k] || {})
+          else
+            @session[controller.to_sym][k] = params[controller][k]
+          end
+        end
       end
     end
   end

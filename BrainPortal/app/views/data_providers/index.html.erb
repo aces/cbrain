@@ -59,7 +59,7 @@
 
    <% form_tag(url_for(:controller => 'data_providers', :action => 'cleanup'), :method => :post) do %>
 
-   <table class=resource_list" id="data_provider_stats">
+   <table id="data_provider_stats">
       <tr>
         <th COLSPAN="<%= 1+@report_col_objects.size %>">Disk Usage Statistics</th>
       </tr>

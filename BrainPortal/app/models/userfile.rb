@@ -96,8 +96,8 @@ class Userfile < ActiveRecord::Base
 
   #Produces the list of files to display for a paginated Userfile index
   #view.
-  def self.paginate(files, page, prefered_per_page)
-    per_page = (prefered_per_page || Default_num_pages).to_i
+  def self.paginate(files, page, preferred_per_page)
+    per_page = (preferred_per_page || Default_num_pages).to_i
     offset = (page.to_i - 1) * per_page
 
     WillPaginate::Collection.create(page, per_page) do |pager|
