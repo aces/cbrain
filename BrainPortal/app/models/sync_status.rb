@@ -56,7 +56,7 @@ class SyncStatus < ActiveRecord::Base
   CheckInterval   = 10.seconds
   CheckMaxWait    = 24.hours
   TransferTimeout = 12.hours
-  DebugMessages   = true
+  DebugMessages   = false
 
   belongs_to              :userfile
   belongs_to              :remote_resource
