@@ -392,7 +392,8 @@ class SyncStatus < ActiveRecord::Base
     # "InSync" state is too old for current RemoteResource
     myself = RemoteResource.current_resource
     expire = myself.cache_trust_expire # in seconds before now
-    #expire = nil if expire && expire < 3600 # we don't accept thresholds less than one hour
+    expire = nil if expire && expire < 3600 # we don't accept thresholds less than one hour
+    expire = 2.years.to_i if expire and expire > 2.years.to_i
     if expire and self.status == "InSync" && self.synced_at < Time.now - expire
       puts "SYNC: Invalid: #{self.pretty} InSync Is Too Old" if DebugMessages
       self.update_attributes( :status => "ProvNewer" )
