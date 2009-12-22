@@ -33,6 +33,22 @@
 # ToCache::      DP content is being copied to cache 
 # ToProvider::   Cache content is being copied to DP
 # Corrupted::    Some transfer ToProvider never completed
+#
+# The model also uses two timestamps fields outside of Rail's
+# standard created_at and updated_at:
+#
+# synced_at::    The last time the userfile's content was
+#                requested for synchronization in one direction
+#                or the other, and the synchronization was
+#                actually performed and successful.
+# accessed_at::  The last time the object's content was
+#                requested for synchronization in one direction
+#                or the other; unlike synced_at this timestamp
+#                is updated even if the synchronization might
+#                not actually have been performed because
+#                the content was already synchronized and
+#                younger than the RemoteResource's threshold
+#                (specified by its cache_trust_expire).
 class SyncStatus < ActiveRecord::Base
 
   Revision_info="$Id$"
@@ -40,12 +56,14 @@ class SyncStatus < ActiveRecord::Base
   CheckInterval   = 10.seconds
   CheckMaxWait    = 24.hours
   TransferTimeout = 12.hours
-  DebugMessages   = false
+  DebugMessages   = true
 
   belongs_to              :userfile
   belongs_to              :remote_resource
 
   # This uniqueness restriction is VERY IMPORTANT.
+  # It's expected to make the create!() method return
+  # an exception in get_or_create_status().
   validates_uniqueness_of :remote_resource_id, :scope => :userfile_id
 
 
@@ -55,6 +73,16 @@ class SyncStatus < ActiveRecord::Base
   def accessed_at
     val = super
     val = updated_at if val.blank?
+    val
+  end
+
+  # This method normally returns the value of
+  # the attribute +synced_at+ but if it's not
+  # yet set, it returns a value WAY in the
+  # past (2 years ago)
+  def synced_at
+    val = super
+    val = 2.years.ago if val.blank?
     val
   end
 
@@ -85,7 +113,7 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "ProvNewer", :accessed_at => Time.now )
+      state.update_attributes( :status => "ProvNewer" )
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ToCache'."
     end
@@ -103,7 +131,7 @@ class SyncStatus < ActiveRecord::Base
 
     # Adjust state to let all other processes know what
     # WE want to do now. This will lock out other clients.
-    state.update_attributes( :status => "ToCache", :accessed_at => Time.now )
+    state.update_attributes( :status => "ToCache" )
     puts "SYNC: ToCache: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -117,7 +145,7 @@ class SyncStatus < ActiveRecord::Base
     end
 
     if ! allok # means timeout occured
-      state.update_attributes( :status => "ProvNewer", :accessed_at => Time.now )
+      state.update_attributes( :status => "ProvNewer" )
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToCache'."
     end
@@ -126,11 +154,11 @@ class SyncStatus < ActiveRecord::Base
     begin
       puts "SYNC: ToCache: #{state.pretty} YIELD" if DebugMessages
       implstatus = yield
-      state.update_attributes( :status => "InSync", :accessed_at => Time.now )
+      state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
       puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
       return implstatus
     rescue => implerror
-      state.update_attributes( :status => "ProvNewer", :accessed_at => Time.now ) # cache is no good
+      state.update_attributes( :status => "ProvNewer" ) # cache is no good
       puts "SYNC: ToCache: #{state.pretty} Except" if DebugMessages
       raise implerror
     end
@@ -166,7 +194,7 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "CacheNewer", :accessed_at => Time.now )
+      state.update_attributes( :status => "CacheNewer" )
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ToProvider'."
     end
@@ -179,7 +207,7 @@ class SyncStatus < ActiveRecord::Base
 
     # Adjust state to let all other processes know what
     # WE want to do now. This will lock out other clients.
-    state.update_attributes( :status => "ToProvider", :accessed_at => Time.now )
+    state.update_attributes( :status => "ToProvider" )
     puts "SYNC: ToProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -192,7 +220,7 @@ class SyncStatus < ActiveRecord::Base
     end
 
     if ! allok # means timeout occured
-      state.update_attributes( :status => "CacheNewer", :accessed_at => Time.now )
+      state.update_attributes( :status => "CacheNewer" )
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToProvider'."
     end
@@ -203,15 +231,15 @@ class SyncStatus < ActiveRecord::Base
       # obsolete.
       puts "SYNC: ToProv: #{state.pretty} Others => ProvNewer" if DebugMessages
       others = self.get_status_of_other_caches(userfile_id)
-      others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # do NOT set accessed_at here!
+      others.each { |o| o.update_attributes( :status => "ProvNewer" ) }
       # Call the provider's implementation of the sync operation.
       puts "SYNC: ToProv: #{state.pretty} YIELD" if DebugMessages
       implstatus = yield
-      state.update_attributes( :status => "InSync", :accessed_at => Time.now )
+      state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
       puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
       return implstatus
     rescue => implerror
-      state.update_attributes( :status => "Corrupted", :accessed_at => Time.now ) # provider is no good
+      state.update_attributes( :status => "Corrupted" ) # provider is no good
       puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
       raise implerror
     end
@@ -256,7 +284,7 @@ class SyncStatus < ActiveRecord::Base
     # true, as we are not copying from the DP, but it will
     # still lock out other processes trying to start data
     # operations, which is what we want.
-    state.update_attributes( :status => "ToCache", :accessed_at => Time.now ) # TODO not exactly true
+    state.update_attributes( :status => "ToCache" ) # TODO not exactly true
     puts "SYNC: ModCache: #{state.pretty} Update" if DebugMessages
 
     # Now, perform the ModifyCache operation
@@ -266,12 +294,12 @@ class SyncStatus < ActiveRecord::Base
       if final_status == "ProvNewer"
         state.destroy
       else
-        state.update_attributes( :status => final_status, :accessed_at => Time.now )
+        state.update_attributes( :status => final_status )
       end
       puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
       return implstatus
     rescue => implerror
-      state.update_attributes( :status => "ProvNewer", :accessed_at => Time.now ) # cache is no longer good
+      state.update_attributes( :status => "ProvNewer" ) # cache is no longer good
       puts "SYNC: ModCache: #{state.pretty} Except" if DebugMessages
       raise implerror
     end
@@ -307,17 +335,17 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "CacheNewer", :accessed_at => Time.now )
+      state.update_attributes( :status => "CacheNewer" )
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ModifyProvider'."
     end
 
     # Adjust state to let all other processes know that
-    # we want to modify the cache. "ToProvider" is not exactly
-    # true, as we are not copying to the DP, but it will
+    # we want to modify the provider side. "ToProvider" is not
+    # exactly true, as we are not copying to the DP, but it will
     # still lock out other processes trying to start data
     # operations, which is what we want.
-    state.update_attributes( :status => "ToProvider", :accessed_at => Time.now ) # TODO not exactly true
+    state.update_attributes( :status => "ToProvider" ) # TODO not exactly true
     puts "SYNC: ModProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -344,19 +372,40 @@ class SyncStatus < ActiveRecord::Base
       puts "SYNC: ModProv: Destroyed ALL" if DebugMessages
       return implstatus
     rescue => implerror
-      state.update_attributes( :status => "Corrupted", :accessed_at => Time.now ) # dp is no longer good
+      state.update_attributes( :status => "Corrupted" ) # dp is no longer good
       puts "SYNC: ModProv: #{state.pretty} Except" if DebugMessages
       raise implerror
     end
   end
 
-  # Changes a object's status if it's been too long since
-  # it has been updated, when the status was an action operation.
+  # This method does two things:
+  #
+  # Changes an object's InSync status if this state has been
+  # recorded too long ago according to the current
+  # RemoteResource's configuration for cache_trust_expire.
+  #
+  # Changes an object's status if it's been too long since
+  # it has been updated, when the status was an action operation
+  # that was aborted.
   def invalidate_old_status
+
+    # "InSync" state is too old for current RemoteResource
+    myself = RemoteResource.current_resource
+    expire = myself.cache_trust_expire # in seconds before now
+    #expire = nil if expire && expire < 3600 # we don't accept thresholds less than one hour
+    if expire and self.status == "InSync" && self.synced_at < Time.now - expire
+      puts "SYNC: Invalid: #{self.pretty} InSync Is Too Old" if DebugMessages
+      self.update_attributes( :status => "ProvNewer" )
+      return
+    end
+
+    # ToProvider or ToCache states are too old (aborted?)
     if self.updated_at && self.updated_at < Time.now - TransferTimeout
       self.update_attributes( :status => "Corrupted" ) if self.status == "ToProvider"
       self.update_attributes( :status => "ProvNewer" ) if self.status == "ToCache"
+      return
     end
+
   end
 
   # For debugging: prints a pretty summary of this object.
@@ -375,7 +424,8 @@ class SyncStatus < ActiveRecord::Base
       :userfile_id        => userfile_id,
       :remote_resource_id => CBRAIN::SelfRemoteResourceId,
       :status             => "ProvNewer",
-      :accessed_at        => Time.now
+      :accessed_at        => Time.now,
+      :synced_at          => 2.years.ago
     ) rescue nil
     puts "SYNC: Status: #{state.pretty} Create" if   state && DebugMessages
     puts "SYNC: Status: Exist"                  if ! state && DebugMessages

@@ -124,6 +124,15 @@
                  <td class="info"><%= h(@bourreau.tunnel_actres_port) %></td>
              </tr>
 
+             <tr>
+                 <th colspan="2">Cache Management Configuration</th>
+             </tr>
+
+             <tr>
+                 <th>Cache Expiration Timeout (in seconds)</th>
+                 <td class="info"><%= h(@bourreau.cache_trust_expire) %></td>
+             </tr>
+
          <% end %>
 
          <tr>

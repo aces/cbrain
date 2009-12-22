@@ -79,6 +79,14 @@
 
          </div>
 
+         <p><label>Cache Management Configuration</label><br/>
+         <div class="groupentry">
+
+             <p><label for="cache_trust_expire">Cache Expiration Timeout (in seconds)</label><br/>
+             <%= f.text_field :cache_trust_expire %></p>
+
+         </div>
+
          <p><%= submit_tag 'Update' %></p>
 
       <% end -%>
