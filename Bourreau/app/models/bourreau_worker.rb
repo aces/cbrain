@@ -57,17 +57,20 @@ class BourreauWorker
   # terminate() method instead, as it will properly
   # de-register it too.
   def self.signal_all(signal = 'USR1')
-    self.all.each { |bw| Process.kill(signal,bw.pid) rescue true }
+    self.all.dup.each { |bw| Process.kill(signal,bw.pid) rescue true }
+    true
   end
 
   # This method send a wake up signal (USR1) to all known active workers.
   def self.wake_all
     self.signal_all('USR1')
+    true
   end
 
   # This method stops (terminate) all known active workers.
   def self.stop_all
-     self.all.each { |w| w.terminate rescue true }
+    self.all.dup.each { |w| w.terminate rescue true }
+    true
   end
 
   def initialize #:nodoc:
@@ -75,6 +78,7 @@ class BourreauWorker
     self.check_interval = 55 # seconds
     self.log_to         = 'stdout'  # bourreau,stdout (join keywords with commas)
     self.verbose        = false
+    self
   end
 
   # Check that a subprocess is running for this
