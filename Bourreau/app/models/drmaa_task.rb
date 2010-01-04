@@ -50,6 +50,9 @@ class DrmaaTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
+  # Common methods for both the BrainPortal and Bourreau DrmaaTask objects
+  include DrmaaTaskCommon
+
   # The attribute 'params' is a serialized hash table
   # containing job-specific parameters; it's up to each
   # subclass of DrmaaTask to find/use/define its content
@@ -445,47 +448,6 @@ public
         @capt_stderr_b64 = Base64.encode64(io.read)
         io.close
      end
-  end
-
-
-
-  ##################################################################
-  # Utility Pseudo-Attributes Methods
-  ##################################################################
-
-  # Returns the task's User
-  def user
-    @user ||= User.find(self.user_id)
-  end
-
-  # Returns a simple name for the task (without the Drmaa prefix).
-  def name
-    @name ||= self.class.to_s.gsub(/^Drmaa/,"")
-  end
-
-  def bourreau
-    # In development mode, the stupid RAILS zaps the constant.
-    @bourreau ||= Bourreau.find(self.bourreau_id)
-  end
-
-  # Returns an ID string containing both the bourreau_id +b+
-  # and the task ID +t+ in format "b/t"
-  def bid_tid
-    @bid_tid ||= "#{self.bourreau_id || '?'}/#{self.id || '?'}"
-  end
-
-  # Returns an ID string containing both the bourreau_name +b+
-  # and the task ID +t+ in format "b/t"
-  def bname_tid
-    @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
-    @bname_tid
-  end
-
-  # Returns an ID string containing both the bourreau_name +b+
-  # and the task ID +t+ in format "b-t" ; this is suitable to
-  # be used as part of a filename.
-  def bname_tid_dashed
-    @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
 
