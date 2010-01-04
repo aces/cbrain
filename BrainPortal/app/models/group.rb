@@ -28,7 +28,7 @@
 class Group < ActiveRecord::Base
 
   Revision_info="$Id$"
-
+  has_many                :tools
   has_and_belongs_to_many :users 
   has_many                :userfiles
   has_many                :data_providers 

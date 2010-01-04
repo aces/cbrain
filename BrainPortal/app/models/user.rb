@@ -42,7 +42,7 @@ require 'digest/sha1'
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
-
+  has_many                :tools
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources

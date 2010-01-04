@@ -414,6 +414,15 @@ a:hover {
     min-width: 50em;
 }
 
+.generalcontenttools {
+    margin-right: auto;
+    margin-left: auto;
+		margin-top: 20px;
+    display: table;
+    min-width: 50em;
+}
+
+
 .groupentry {
     border: 1px solid black;
     width: auto

@@ -14,7 +14,8 @@ class Bourreau < RemoteResource
   Revision_info="$Id$"
   
   has_many :user_preferences,  :dependent => :nullify
-
+  has_and_belongs_to_many :tools
+  
   # Start a Bourreau remotely. As a requirement for this to work,
   # we need the following attributes set in the Bourreau
   # object:

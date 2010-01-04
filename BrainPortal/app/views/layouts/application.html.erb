@@ -69,16 +69,20 @@
                           <li <%= set_selected(params[:controller], :bourreaux) %>><%= link_to 'Execution Servers', bourreaux_path %></li>               
                           <li <%= set_selected(params[:controller], :feedbacks) %>><%= link_to 'Feedback', feedbacks_path %></li>
                           <li <%= set_selected(params[:controller], :messages) %>><%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %></li>
+                          <li <%= set_selected(params[:controller], :tools) %>><%= link_to 'Tools', tools_path %></li>
+                			  	
                           <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
                             <li <%= set_selected(params[:controller], :users) %>><%= link_to 'Users', users_path %></li>
                             <li <%= set_selected(params[:controller], :groups) %>><%= link_to 'Groups', groups_path %></li>
                      		 <% if current_user.has_role?(:admin) %>
                     			    <li <%= set_selected(params[:controller], :sites) %>><%= link_to 'Sites', sites_path %></li> 	
+                    			  	   
                     	        <li <%= set_selected(params[:controller], :logged_exception) %>><%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %></li>
                     			 <% end %>
                           <% end %>
                           <% if current_user.site %>
-         	  					<li <%= set_selected(params[:controller], :user_site_show) %>><%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %></li> 	
+         	  					<li <%= set_selected(params[:controller], :user_site_show) %>><%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %></li> 
+         	  					
          	  				  <% end %>
                        </ul>
                     <% end %>               

@@ -1,0 +1,56 @@
+<%
+
+#
+# CBRAIN Project
+#
+# $Id$
+#
+
+-%>
+
+
+<div class = "generalcontent">
+
+<% if current_user.has_role?(:admin) %>
+  <div class="resource_list_upper_form">  
+  <%= link_to 'Add New Tool', new_tool_path %>
+</div> <!-- End class="upper_form" -->
+<% end %>
+
+<table class="resource_list" id="feedback_table">
+  <tr>
+    <th>Tool Name</th>
+    <th>User</th>
+    <th>Group</th>
+    <th>Bourreau</th>
+    <th>Category</th>
+    <% if current_user.has_role?(:admin) %>
+      <th colspan="3">Operations</th>
+    <% end %>
+  </tr>
+
+<% for tool in @tools %>
+  <tr>
+    <td><%=h tool.tool_name %></td>
+      <% if tool.user_id != nil%>
+        <td><%=h User.find(tool.user_id).full_name %>
+      <% end %>
+      <% if tool.group_id != nil %>
+        <td><%=h Group.find(tool.group_id).name %></td>
+      <% end %>
+      <% for bourreau in tool.bourreaux %>
+        <td><%=h bourreau.name %></td>
+      <% end %>
+      <% if tool.bourreaux == [] %>
+      <td></td>
+      <% end %>
+      <td><%=h tool.category %></td>
+      <% if current_user.has_role?(:admin) %>
+        <td><%= link_to 'Edit', edit_tool_path(tool) %></td>
+        <td> <%= link_to 'Destroy', tool, :confirm => 'Are you sure?', :method => :delete %></td>  </tr>
+      <% end %>
+<% end %>
+</table>
+
+<br />
+
