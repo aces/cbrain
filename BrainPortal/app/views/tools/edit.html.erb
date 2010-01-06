@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# $Id$
+# Revision_info="$Id$"
 #
 
 -%>
@@ -21,11 +21,11 @@
   </p>
   <p>
      Belongs to:
-        <%= collection_select(:tool, :user_id, @users, :id, :full_name, {}, :class => :group) %>
+     <%= collection_select(:tool, :user_id, @users, :id, :full_name, {}, :class => :user) %>
   </p>
   <p>
      Belongs to group:
-        <%= collection_select(:tool, :group_id, @groups, :id, :name, {}, :class => :group)%>
+     <%= collection_select(:tool, :group_id, @groups, :id, :name, {}, :class => :group)%>
   </p>
   <p>
     Installed on the following bourreau: <br/>
@@ -44,6 +44,7 @@
     <%= f.submit "Update tool" %>
   </p>
 <% end %>
+
 <%= link_to 'Show Tool', @tool %> |
 <%= link_to 'Back', tools_path %>
 </div>

@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# $Id$
+# Revision_info="$Id$"
 #
 
 -%>
@@ -13,11 +13,11 @@
 
 <% if current_user.has_role?(:admin) %>
   <div class="resource_list_upper_form">  
-  <%= link_to 'Add New Tool', new_tool_path %>
-</div> <!-- End class="upper_form" -->
+    <%= link_to 'Add New Tool', new_tool_path %>
+  </div> <!-- End class="upper_form" -->
 <% end %>
 
-<table class="resource_list" id="feedback_table">
+<table class="resource_list" id="tool_table">
   <tr>
     <th>Tool Name</th>
     <th>User</th>
@@ -38,19 +38,13 @@
       <% if tool.group_id != nil %>
         <td><%=h Group.find(tool.group_id).name %></td>
       <% end %>
-      <% for bourreau in tool.bourreaux %>
-        <td><%=h bourreau.name %></td>
-      <% end %>
-      <% if tool.bourreaux == [] %>
-      <td></td>
-      <% end %>
+      <td><%= tool.bourreaux{g.name == bourreau.name}.map{|g| h(g.name)}.sort.join("<br>") %></td>
       <td><%=h tool.category %></td>
       <% if current_user.has_role?(:admin) %>
         <td><%= link_to 'Edit', edit_tool_path(tool) %></td>
         <td> <%= link_to 'Destroy', tool, :confirm => 'Are you sure?', :method => :delete %></td>  </tr>
       <% end %>
+  </tr>
 <% end %>
 </table>
-
-<br />
 
