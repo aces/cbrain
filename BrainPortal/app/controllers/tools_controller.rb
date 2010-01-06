@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Task controller for the BrainPortal interface
+# Tool controller for the BrainPortal interface
 #
 # Original author: Angela McCloskey
 #
@@ -54,8 +54,8 @@ class ToolsController < ApplicationController
   # GET /tools/1/edit
   def edit
     @tool = Tool.find(params[:id])
-      @groups = Group.find(:all)
-      @users = User.find(:all)
+    @groups = Group.find(:all)
+    @users = User.find(:all)
   end
 
   # POST /tools
@@ -63,13 +63,14 @@ class ToolsController < ApplicationController
   def create
     params[:tool][:bourreau_ids] ||= []
     @tool = Tool.new(params[:tool])
-
     respond_to do |format|
       if @tool.save
         flash[:notice] = 'Tool was successfully created.'
         format.html { redirect_to(@tool) }
         format.xml  { render :xml => @tool, :status => :created, :location => @tool }
       else
+        @groups = Group.find(:all)
+        @users = User.find(:all)
         format.html { render :action => "new" }
         format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
       end
@@ -80,15 +81,15 @@ class ToolsController < ApplicationController
   # PUT /tools/1.xml
   def update
     params[:tool][:bourreau_ids] ||= []
-    
     @tool = Tool.find(params[:id])
-
     respond_to do |format|
       if @tool.update_attributes(params[:tool])
         flash[:notice] = 'Tool was successfully updated.'
         format.html { redirect_to(@tool) }
         format.xml  { head :ok }
       else
+        @groups = Group.find(:all)
+        @users = User.find(:all)
         format.html { render :action => "edit" }
         format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
       end
@@ -100,7 +101,6 @@ class ToolsController < ApplicationController
   def destroy
     @tool = Tool.find(params[:id])
     @destroyed = @tool.destroy
-
     respond_to do |format|
       format.html { redirect_to(tools_url) }
       format.xml  { head :ok }
