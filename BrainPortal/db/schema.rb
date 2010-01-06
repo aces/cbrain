@@ -21,6 +21,11 @@ ActiveRecord::Schema.define(:version => 20091222180000) do
 
   add_index "active_record_logs", ["ar_id", "ar_class"], :name => "index_active_record_logs_on_ar_id_and_ar_class"
 
+  create_table "bourreaux_tools", :id => false, :force => true do |t|
+    t.integer "tool_id"
+    t.integer "bourreau_id"
+  end
+
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -184,6 +189,15 @@ ActiveRecord::Schema.define(:version => 20091222180000) do
   create_table "tags_userfiles", :id => false, :force => true do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
+  end
+
+  create_table "tools", :force => true do |t|
+    t.string   "tool_name"
+    t.integer  "user_id"
+    t.integer  "group_id"
+    t.string   "category"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "user_preferences", :force => true do |t|

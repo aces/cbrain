@@ -263,6 +263,8 @@ class DataProvidersController < ApplicationController
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
     end
 
+    registered_files = Userfile.find(:all, :conditions => {:data_provider_id => @provider.id}).index_by(&:name)
+
     @fileinfolist.each do |fi|
       fi_name  = fi.name
       fi_size  = fi.size
@@ -273,7 +275,7 @@ class DataProvidersController < ApplicationController
       fi.message  = ""
       fi.state_ok = false
 
-      registered = Userfile.find(:first, :conditions => { :name => fi_name, :data_provider_id => @provider.id})
+      registered = registered_files[fi_name]
       if registered
         fi.userfile = registered # the userfile object itself
         if ((fi_type == :symlink)                                    ||
@@ -299,11 +301,40 @@ class DataProvidersController < ApplicationController
 
     end
 
+    if params[:search]
+      params[:page] = 1
+      @fileinfolist = @fileinfolist.select{|file| file.name =~ /#{params[:search]}/}
+    end
+
+    page = (params[:page] || 1).to_i
+    @per_page = params[:pagination] == "on" ? 50 : 999_999_999
+
+    @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
+      pager.replace(@fileinfolist[(page-1) * @per_page, @per_page])
+      pager.total_entries = @fileinfolist.size
+      pager
+    end
+    
+    respond_to do |format|
+      format.html
+      format.js do
+        render :update do |page|
+          page[:browse_table].replace_html :partial  => "dp_browse_table"
+        end
+      end
+    end
+
   end
 
   #Register a given file into the system.
   #The file's meta data will be saved as a Userfile resource.
   def register
+    unless params[:redirect_to_browse].blank?
+      params[:action] = :browse
+      redirect_to :action => :browse, :search  => params[:search], :pagination  => params[:pagination]
+      return
+    end
+    
     @user        = current_user
     user_id      = @user.id
     provider_id  = params[:id]
