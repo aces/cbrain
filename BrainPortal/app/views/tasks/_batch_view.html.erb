@@ -34,7 +34,7 @@
       <% for task in tasks %>
         <tr class ="<%= cycle('list-odd', 'list-even')%> row_highlight batch_listing_<%= tasks.first.id %>" style="display:none">
            <td><%= check_box_tag("tasklist[]", task.id, false, :class  => "checkbox task_checkbox_#{tasks.first.id}") %></td>
-           <td class="left"><%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :id => task.id  %></td>
+           <td class="left">&nbsp;&nbsp;&#x21b3; <%= link_to task.class.to_s.sub(/^Drmaa/,""), :controller => :tasks, :action => :show, :id => task.id  %></td>
            <td><%= h(crop_text_to(30, task.description)) %></td>
            <td><%= h(task.user.login) %></td>
            <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
