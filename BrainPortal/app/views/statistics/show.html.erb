@@ -1,0 +1,22 @@
+<h2>Statistics for <%= @bourreau.name %> </h2>
+
+<div class = "generalcontent">
+
+<h3><%= @bourreau.name %> Statistics</h3>
+
+<table class="resource_list" id="stat_table">
+  <tr>
+    <th>Task</th>
+	<th>Number of times used</th>
+	<th>Percent Used</th>
+  </tr>
+	<% for stat in @task_stats %>
+		<tr>
+			<td><%=h stat.task_name %></td>
+			<td><%=h stats = Statistic.count_task_bourreau(stat.task_name, stat.bourreau_id) %></td>
+			<td><%=h ((stats.to_f*100)/(Statistic.total_task_bourreau(stat.bourreau_id)).to_f).round(2) %>%</tr>	
+	<% end %>
+		
+</table>
+
+<%= link_to 'Back', statistics_path %>

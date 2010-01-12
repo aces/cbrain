@@ -176,6 +176,8 @@ class DrmaaTask < ActiveResource::Base
     if self.params.respond_to? :[]
       self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
     end    
+    @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
+    @statistic.update_stats
     super
   end
 
@@ -189,6 +191,8 @@ class DrmaaTask < ActiveResource::Base
     if self.params.respond_to? :[]
       self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
     end
+    @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
+    @statistic.update_stats
     super
   end
 

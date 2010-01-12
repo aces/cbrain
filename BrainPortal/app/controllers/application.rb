@@ -10,6 +10,7 @@
 # session.
 class ApplicationController < ActionController::Base
 
+  
   Revision_info="$Id$"
 
   include AuthenticatedSystem
