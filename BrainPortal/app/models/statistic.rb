@@ -1,3 +1,13 @@
+#
+# CBRAIN Project
+#
+# Model for Statistics
+#
+# Original author: Angela McCloskey
+#
+# $Id$
+#
+
 class Statistic < ActiveRecord::Base
   
   def update_stats

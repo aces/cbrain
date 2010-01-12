@@ -1,4 +1,16 @@
+#
+# CBRAIN Project
+#
+# Controller for Statistics
+#
+# Original author: Angela McCloskey
+#
+# $Id$
+#
 class StatisticsController < ApplicationController
+
+  Revision_info = "$Id$"
+
   # GET /statistics
   # GET /statistics.xml
   def index
