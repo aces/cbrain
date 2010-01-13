@@ -18,12 +18,15 @@ module NavigationHelpers
       home_path
     when /the login page/
       new_session_path
+     when /the welcome page/
+        "/home"
     when /the (\S+) (page|index)/
       "/#{$~[1]}"
     when /(new|create) (\S+) (page)?/
       "/#{$~[2]}s/new"
     # Add more page name => path mappings here
-    
+    when /the portal page/
+      home_path
     else
       raise "Can't find mapping from \"#{page_name}\" to a path.\n" +
         "Now, go and add a mapping in features/support/paths.rb"

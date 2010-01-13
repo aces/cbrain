@@ -2,12 +2,13 @@ Given /^I have no files$/ do
   Userfile.delete_all
 end
 
-Given /^"([^\"]*)" has (\d+) files$/ do |login, n|
+Given /^"([^\"]*)" has (\d+) files from "([^\"]*)"$/ do |login, n, data_provider|
   Userfile.delete_all
   user = User.find_by_login(login)
   n = n.to_i
   1.upto(n) do |i|
     single_file = SingleFile.new(:name => i.to_s, :user_id  => user.id)
+    single_file.data_provider = DataProvider.find_by_name(data_provider)
     single_file.cache_writehandle { |io| io.write(i.to_s) }
     single_file.save
   end

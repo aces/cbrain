@@ -5,8 +5,18 @@ Given /^I am logged in as "([^\"]*)" with password "([^\"]*)"$/ do |login, passw
   click_button
 end
 
+Given /^I am logged in as "([^\"]*)" with password "([^\"]*)" and I accepted the policy$/ do |login, password|
+   When %{I am logged in as "#{login}" with password "#{password}"}
+   @user.policy = true
+   
+end
+
 Given /^the following user records$/ do |table|
-  User.delete_all
+  User.find(:all).each do |u|
+    if u.login != "admin"
+      u.destroy
+    end
+  end
   
   table.hashes.each do |hash|
     name = hash[:login]
@@ -15,6 +25,7 @@ Given /^the following user records$/ do |table|
     
     User.create!(:full_name  => name, :login => name, :email => "#{name}@example.com",
       :password => password, :password_confirmation => password, :role  => role)
+
   end
 end
 

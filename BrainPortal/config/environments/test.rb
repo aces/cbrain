@@ -21,5 +21,8 @@ config.action_controller.allow_forgery_protection    = false
 # ActionMailer::Base.deliveries array.
 config.action_mailer.delivery_method = :test
 
-#config.gem "cucumber"
+config.gem "cucumber"
+config.gem "rspec", :lib => false
+config.gem "rspec-rails", :lib => false
+config.gem "factory_girl"
 #config.gem "webrat"

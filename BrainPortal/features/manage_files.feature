@@ -7,8 +7,7 @@ Feature: Manage Files
    Background:
    Given the following user records
    | login | password | role    |
-   | admin    | secret   | admin   |
-   | manag    | secret   | manager |
+   | manag   | secret   | manager |
    | tarek    | secret   | user    |
 
    
@@ -40,13 +39,14 @@ Feature: Manage Files
    
    Examples:
     | login | action                                 |
-    | admin | see "Show all files on the system"     |
-    | manag | not see "Show all files on the system" |
+    | admin1 | see "Show all files on the system"     |
+    | manag1 | not see "Show all files on the system" |
     | tarek | not see "Show all files on the system" |
 
     Scenario: Pagination for more than 50 files
     Given I am logged in as "tarek" with password "secret"
-    And "tarek" has 75 files
+    And "tarek" has a data provider called "tarek_test_provider"
+	And "tarek" has 75 files from "tarek_test_provider"
     And I am on the userfiles page
     Then I should see "« Previous"
     And I should see "Next »"
