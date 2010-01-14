@@ -8,12 +8,23 @@
 
 -%>
 
-
 <div class = "generalcontent">
 
 <% if current_user.has_role?(:admin) %>
   <div class="resource_list_upper_form">  
-    <%= link_to 'Add New Tool', new_tool_path %>
+    <span title="Registers all subclasses of DrmaaTask as Tools">
+      <%= link_to 'Autoload Tools', {:action  => :create, :autoload  => true}, :method  => :post, :class  => "action_link" %>
+    </span>
+    <br><br>
+    <%= 
+      link_to_function 'Create New Tool', :class  => 'action_link' do |page|
+        page['new_tool'].toggle
+      end 
+    %>
+    <div id="new_tool" style="display:none">
+      <br>
+      <%= render :partial  => 'new' %>
+    </div>
   </div> <!-- End class="upper_form" -->
 <% end %>
 
@@ -30,21 +41,7 @@
   </tr>
 
 <% for tool in @tools %>
-  <tr>
-    <td><%=h tool.tool_name %></td>
-      <% if tool.user_id != nil%>
-        <td><%=h User.find(tool.user_id).full_name %>
-      <% end %>
-      <% if tool.group_id != nil %>
-        <td><%=h Group.find(tool.group_id).name %></td>
-      <% end %>
-      <td><%= tool.bourreaux{g.name == bourreau.name}.map{|g| h(g.name)}.sort.join("<br>") %></td>
-      <td><%=h tool.category %></td>
-      <% if current_user.has_role?(:admin) %>
-        <td><%= link_to 'Edit', edit_tool_path(tool) %></td>
-        <td> <%= link_to 'Destroy', tool, :confirm => 'Are you sure?', :method => :delete %></td>  </tr>
-      <% end %>
-  </tr>
+  <%= render :partial => 'tool_table_row', :locals  => {:tool  => tool} %>
 <% end %>
 </table>
 

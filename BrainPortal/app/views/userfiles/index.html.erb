@@ -14,7 +14,6 @@
 
 <% title 'Files' %><% #Side bar stuff goes here -%>
 <%= javascript_tag "var current_options;" %>
-
 <div class="generalcontent">
   <div id="main_userfiles_content"  style="width: 90%">
   <div id="userfiles_top_menu">
@@ -35,9 +34,7 @@
     <div id="jiv_option_div" class="upper_form" style="display:none">
     </div>
   </div>
-
   
-
   <% form_tag(operation_userfiles_path(:method => :post)) do %>
   <div class="userfiles_upper_form">
     <div id="tag_option_div" class="upper_form" style="display:none">

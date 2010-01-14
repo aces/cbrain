@@ -57,6 +57,13 @@ class Site < ActiveRecord::Base
     @data_providers ||= scope
   end
   
+  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  def tools_find_all(options = {})
+    scope = Tool.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    @tools ||= scope
+  end
+  
   #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
   def userfiles_find_id(id, options = {})
     scope = Userfile.scoped(options)
@@ -74,6 +81,13 @@ class Site < ActiveRecord::Base
   #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
   def data_providers_find_id(id, options = {})
     scope = DataProvider.scoped(options)
+    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope.find(id)
+  end
+  
+  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  def tools_find_id(id, options = {})
+    scope = Tool.scoped(options)
     scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
     scope.find(id)
   end

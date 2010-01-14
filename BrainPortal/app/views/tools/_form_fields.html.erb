@@ -1,0 +1,39 @@
+<%= f.error_messages %>
+<p>
+ Tool Name: 
+ <%= f.text_field :name %>
+</p>
+<p>
+  <span title="DrmaaTask subclass to which this tool is associated.">
+    DRMAA Class: 
+     <%= f.text_field :drmaa_class %>
+  </span>
+</p>
+<p>
+ Belongs to:
+ <%= collection_select(:tool, :user_id, current_user.available_users, :id, :full_name, {}, :class => :user) %>
+</p>
+<p>
+ Belongs to group:
+ <%= collection_select(:tool, :group_id, current_user.available_groups, :id, :name, {}, :class => :group)%>
+</p>
+<p>
+  Installed on the following execution servers: <br/>
+  <% for bourreau in Bourreau.find_all_accessible_by_user(current_user) %>
+    <%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %>
+    <%= bourreau.name %>
+  <% end %>
+</p>
+<p>
+  <%= f.label :category %>: 
+  <%= f.select :category, Tool::Categories %>  
+</p>
+<p>
+  Description:<br>
+  <%= f.text_area :description %>
+</p>
+<p>
+  Text for select box on the userfiles page:
+  <%= f.text_field :select_menu_text %>
+</p>
+<br>

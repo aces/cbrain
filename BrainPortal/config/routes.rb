@@ -1,5 +1,5 @@
 ActionController::Routing::Routes.draw do |map|
-  map.resources :tools
+  map.resources :tools,          :collection => { :bourreau_select  => :get }
 
   # Session
   map.resource  :session

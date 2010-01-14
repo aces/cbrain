@@ -184,11 +184,8 @@ class TasksController < ApplicationController
 
   def create #:nodoc:
     @task_class = params[:task].constantize
-    unless params[:bourreau_id].blank?
-      @task_class.preferred_bourreau_id = params[:bourreau_id]
-    else
-      @task_class.preferred_bourreau_id = current_user.user_preference.bourreau_id
-    end
+    @task_class.preferred_bourreau_id = params[:bourreau_id]
+    
     @task_class.data_provider_id     = params[:data_provider_id] || current_user.user_preference.data_provider
     @task_class.launch_time          = Time.now
     

@@ -414,15 +414,6 @@ a:hover {
     min-width: 50em;
 }
 
-.generalcontenttools {
-    margin-right: auto;
-    margin-left: auto;
-		margin-top: 20px;
-    display: table;
-    min-width: 50em;
-}
-
-
 .groupentry {
     border: 1px solid black;
     width: auto
@@ -1133,6 +1124,7 @@ td.right_align {
     margin-right: 4em;
     margin-bottom: 1em;
     line-height: 1.5em;
+		max-width: 45%;
 }
 
 .splitright {
@@ -1498,4 +1490,14 @@ td.middle{
 
 .batch_job_header{
     background-color: #A3D3F6;
+}
+
+.warning{
+	color:red;
+}
+
+h1.warning{
+	line-height: 1.1em;
+	padding: 0;
+	margin: 0;
 }

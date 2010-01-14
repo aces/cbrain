@@ -7,31 +7,37 @@
 #
 
 -%>
-<% unless @bourreaux.blank? %>
-  <br>
+<% unless current_user.available_conversion_tools.blank? %>  <br>
   
    <%= select_tag(
-    "operation", 
-    ' <option value="">Select a Conversion Operation</option>
-      <option value="DrmaaMinc2jiv">Convert selected MINC files to JIV</option>
-      <option value="DrmaaDcm2mnc">Convert selected DICOM collection to MINC files</option>
-      <option value="DrmaaMnc2nii">Convert selected MINC files to NIfTI</option>
-      <option value="DrmaaDcm2nii">Convert a DICOM run to NIfTI</option>     
-      <option value="DrmaaDicom2hrrt">Convert DICOM collection to HRRT</option>
-      <option value="DrmaaAnalyze2hrrt">Convert ANALYZE collection to HRRT</option>
-      <option value="DrmaaMinc2analyze">Convert MINC files to ANALYZE</option>
-      <option value="DrmaaAsipro2minc">Convert ASIPRO files to MINC</option>
-      <option value="DrmaaCivetCombiner">Combine several CIVET Collections</option>'
-   ) 
-   %>
+     "operation", 
+     ' <option value="">Select a Conversion Operation</option>' +
+       current_user.available_conversion_tools.inject("") { |options, tool| options += "<option value='#{tool.drmaa_class}'>#{tool.select_menu_text}</option>"},
+        :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
+                                      :with  => "'drmaa_class='+value",
+                                      :method  => :get,
+                                      :before => "$('bourreau_select').update('<span style=\\'color:red\\'>Loading...</span>');",
+                                      :update => "bourreau_select"
+                                      )
+    ) 
+    %>
+   
 
-   <%= render :partial => 'bourreau_select' %>
+   <span id="bourreau_select">
+   </span>
+    <br>
     <br>
     <%= submit_tag("Apply Operation") %>
     <br><br>
     
 <% else %>
-   <h1>No Execution Server Available</h1>
+<br>
+  <% if current_user.has_role? :admin %>
+    <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
+  <% else %>
+    <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>
+  <% end %>
+  <br>
 <% end %>
 <%= userfiles_menu_close_button %>
 <br>

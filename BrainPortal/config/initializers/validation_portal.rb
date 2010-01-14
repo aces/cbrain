@@ -310,8 +310,6 @@ if CustomFilter.column_names.include?("type")
   end
 end
 
-
-
 ##-----------------------------------------------------------------------------
 #puts "C> Checking that size variables for userfiles are properly set... "
 ##-----------------------------------------------------------------------------

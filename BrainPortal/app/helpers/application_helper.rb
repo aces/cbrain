@@ -228,4 +228,17 @@ module ApplicationHelper
     
     arr.join
   end
+  
+  def add_tool_tip(message, &block)
+    content = capture(&block)
+    
+    if message.blank?
+      concat(content)
+      return
+    end
+    concat("<span title='#{message}'>")
+    concat(content)
+    concat("</span>")
+  end
+  
 end

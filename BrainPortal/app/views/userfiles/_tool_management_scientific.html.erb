@@ -7,27 +7,37 @@
 #
 
 -%>
-<% unless @bourreaux.blank? %>
+<% unless current_user.available_scientific_tools.blank? %>
    <br>
    
    <%= select_tag(
-    "operation", 
-    ' <option value="">Select a Scientific Operation</option>
-      <option value="DrmaaCivet">Process selected MINC files through a simple CIVET pipeline</option>
-      <option value="DrmaaMincaverage">Average selected MINC files with mincaverage</option>
-      <option value="DrmaaMincmath">Mincmath</option>
-      <option value="DrmaaMincresample">Launch Mincresample</option>
-      <option value="DrmaaCw5filter">Deconvolute selected CW5 files</option>
-      <option value="DrmaaCw5">Process selected CW5 collection through an optical pipeline</option>'
-   ) 
-   %>
+      "operation", 
+      ' <option value="">Select a Scientific Operation</option>' +
+        current_user.available_scientific_tools.inject("") { |options, tool| options += "<option value='#{tool.drmaa_class}'>#{tool.select_menu_text}</option>"},
+         :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
+                                       :with  => "'drmaa_class='+value",
+                                       :method  => :get,
+                                       :before => "$('bourreau_select').update('<span class=\\'warning\\'>Loading...</span>');",
+                                       :update => "bourreau_select"
+                                       )
+     ) 
+     %>
 
-   <%= render :partial => 'bourreau_select' %>
+
+    <span id="bourreau_select">
+    </span>
+   <br>
    <br>
    <%= submit_tag("Apply Operation") %>
    <br><br>
 <% else %>
-   <h1>No Execution Server Available</h1>
+  <br>
+  <% if current_user.has_role? :admin %>
+    <h1 class="warning">No scientific tools available. New tools may be registered from the Tools index.</h1>
+  <% else %>
+    <h1 class="warning">No scientific tools available. Contact your admin to have them registered.</h1>
+  <% end %>
+  <br>
 <% end %>
 <%= userfiles_menu_close_button %>
 <br>

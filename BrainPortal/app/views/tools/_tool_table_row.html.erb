@@ -1,0 +1,22 @@
+
+  <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>" title="<%= h tool.description %>">
+    <td><%=h tool.name %></td>
+    <td><%=h tool.user.login %>
+    <td><%=h tool.group.name %></td>
+    <td><%= tool.bourreaux{g.name == bourreau.name}.map{|g| h(g.name)}.sort.join("<br>") %></td>
+    <td><%=h tool.category %></td>
+    <% if current_user.has_role?(:admin) %>
+      <td><%= link_to 'Edit', edit_tool_path(tool), :class  => "action_link" %></td>
+      <td>
+        <%= 
+            link_to_remote  'Delete',
+                          {:url  => tool_path(tool),
+                           :method  => 'delete',
+                           :confirm => 'Are you sure?',
+                           :before  => "$('tool_#{tool.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                           },
+                          {:class => 'action_link'}
+          %>
+      </td>
+    <% end %>
+  </tr>

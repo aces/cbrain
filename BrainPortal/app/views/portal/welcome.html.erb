@@ -57,6 +57,9 @@ Nifty("div.task_summary","big");
             <p>
                <strong>Groups you belong to:</strong>  <%= h(@groups) %>
             </p>
+            <p>
+               <strong>Tools available to you:</strong>  <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
+            </p>
            <p>
             <strong>Default Data Provider:</strong> <%= h(@default_data_provider) %>
            </p>

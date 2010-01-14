@@ -138,6 +138,25 @@ class User < ActiveRecord::Base
     return self.role == role.to_s
   end
   
+  #Find the tools that this user has access to.
+  def available_tools
+    @available_tools = if self.has_role? :admin
+                         Tool.scoped({})
+                       elsif self.has_role? :site_manager
+                         Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+                       else
+                         Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+                       end
+  end
+  
+  def available_scientific_tools
+    @available_scientific_tools = self.available_tools.scoped(:conditions  => {:category  => "scientific tool"})
+  end
+  
+  def available_conversion_tools
+    @available_conversion_tools = self.available_tools.scoped(:conditions  => {:category  => "conversion tool"})
+  end
+  
   #Return the list of groups available to this user based on role.
   def available_groups
     return @available_groups if @available_groups
