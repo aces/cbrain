@@ -29,7 +29,7 @@ class ToolsController < ApplicationController
   
   def bourreau_select
     @tool = current_user.available_tools.find_by_drmaa_class(params[:drmaa_class])
-    @bourreaux = @tool.bourreaux.all(:conditions  => {:online  => true})
+    @bourreaux = @tool.bourreaux.all(:conditions  => {:id  => available_bourreaux})
     
     respond_to do |format|
       format.html { render :layout  => false, :partial  => 'userfiles/bourreau_select'}
