@@ -14,7 +14,7 @@ class CustomFiltersControllerTest < ActionController::TestCase
 
   def test_should_create_custom_filter
     assert_difference('CustomFilter.count') do
-      post :create, :custom_filter => { }
+      post :create, :custom_filter => { :name => "test_should_create_custom_filter" }
     end
 
     assert_redirected_to custom_filter_path(assigns(:custom_filter))

@@ -15,6 +15,7 @@ Factory.define :user do |user|
   user.password              { "password" }
   user.password_confirmation { "password" }
   user.role                  { "user" }
+  user.site                  {|site| site.association(:site)}
 end
 
 #Group Factory
@@ -26,6 +27,17 @@ Factory.define :group do |group|
   group.name { Factory.next :group_name }
 end
 
+Factory.define :work_group do |work_group|
+  work_group.name { Factory.next :group_name }
+end
+
+#Site Factory
+Factory.sequence :site_name do |n|
+  "New site #{n}"
+end
+Factory.define :site  do |site|
+  site.name { Factory.next :site_name}
+end
 
 #Data Provider Factory
 Factory.sequence :data_provider_name do |n|
@@ -37,5 +49,10 @@ Factory.define :data_provider do |data_provider|
   data_provider.user {|user| user.association(:user)}
   data_provider.group {|group| group.association(:group)}
   data_provider.read_only true
+  data_provider.type {"CbrainLocalDataProvider"}
 end
+
+
+
+
 
