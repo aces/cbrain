@@ -52,7 +52,18 @@ Factory.define :data_provider do |data_provider|
   data_provider.type {"CbrainLocalDataProvider"}
 end
 
+#Tool Factory
+Factory.sequence :tool_name do |n|
+  "testing tool #{n}"
+end
 
-
+Factory.define :tool do |tool|
+  tool.name             { Factory.next :tool_name }
+  tool.drmaa_class      {"drmaa_class X"}
+  tool.user             {|user| user.association(:user)}
+  tool.group            {|group| group.association(:group)}
+  tool.category         {"scientific tool"}
+end
+  
 
 
