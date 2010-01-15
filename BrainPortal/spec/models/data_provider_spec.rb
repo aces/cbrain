@@ -11,7 +11,7 @@ describe DataProvider do
     @random_dude = Factory.create(:user)
    
    
-    #mock of impl_* methods 
+    #stub of impl_* methods 
     @provider.instance_eval do
         def impl_is_alive?
           true
