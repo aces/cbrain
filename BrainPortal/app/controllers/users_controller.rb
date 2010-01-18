@@ -167,12 +167,14 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
     end
-
+        
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
 
+    current_session.clear_data!
     current_user = @user
     current_session[:user_id] = @user.id
+    
     redirect_to home_path
   end
 

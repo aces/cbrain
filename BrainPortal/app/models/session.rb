@@ -64,6 +64,12 @@ class Session
     )
   end
   
+  def clear_data!
+    @session.data.each do |k,v|
+      @session[k] = nil
+    end
+  end
+  
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)
