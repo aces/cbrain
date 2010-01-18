@@ -76,16 +76,27 @@ class ScirSgeSession < Scir::Session
   end
 
   def queue_tasks_tot_max
-    queue = CBRAIN::DEFAULT_QUEUE
-    queue = "all.q" if queue.blank?
-    queueinfo = `qstat -q #{shell_escape(queue)} -f | grep #{shell_escape(queue)} | tail -1`
-    # queuename                      qtype resv/used/tot. load_avg arch          states
-    # ---------------------------------------------------------------------------------
-    # all.q@montague.bic.mni.mcgill. BIP   0/0/2          0.12     lx24-x86
-    if queueinfo.match(/(\d+)\/(\d+)\/(\d+)/)
-      return [ Regexp.last_match[2], Regexp.last_match[3] ]
+    queue = CBRAIN::DEFAULT_QUEUE.blank? ? "" : "-q #{shell_escape(queue)}"
+    tot = max = nil
+    IO.popen("qstat #{queue} -f 2>&1","r") do |fh|
+      # queuename                      qtype resv/used/tot. load_avg arch          states
+      # ---------------------------------------------------------------------------------
+      # all.q@montague.bic.mni.mcgill. BIP   0/0/2          0.12     lx24-x86
+      fh.readlines.each do |line|
+puts "LINE=#{line}==="
+        if line.match(/(\d+)\/(\d+)\/(\d+)/)
+          tot ||= 0
+          max ||= 0
+          tot += Regexp.last_match[2].to_i
+          max += Regexp.last_match[3].to_i
+        end
+      end
     end
-    [ "unparsable", "unparsable" ]
+    if tot.blank? || max.blank?
+      [ "unparsable", "unparsable" ]
+    else
+      [ tot.to_s, max.to_s ]
+    end
   rescue
     [ "exception", "exception" ]
   end
