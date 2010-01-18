@@ -45,7 +45,17 @@ describe DataProvider do
      @provider.read_only = nil
      @provider.valid?.should be(false)
    end
-
+   
+   it "should accept read_only being false" do
+     @provider.read_only = false
+     @provider.valid?.should be true
+   end
+   
+   it "should accept read_only being true" do 
+     @provider.read_only = true
+     @provider.valid?.should be true
+   end
+    
    it "should not accept a name with invalid chars" do 
      @provider.name = "*@$%"
      @provider.valid?.should be(false)

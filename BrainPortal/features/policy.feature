@@ -22,6 +22,6 @@ Feature:
 		When I go to the welcome page
 		Then I should see "User Agreement"
 		When I press "Reject"
-		Then I should see "WRONG ANSWER go away"
+		Then I should see "Sorry"
 
 	

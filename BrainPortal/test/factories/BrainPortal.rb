@@ -65,5 +65,15 @@ Factory.define :tool do |tool|
   tool.category         {"scientific tool"}
 end
   
+#Userfile factory
+Factory.sequence :userfile_name do |n|
+  "File #{n}"
+end
 
+Factory.define :userfile do |userfile|
+    userfile.name           {Factory.next :userfile_name}
+    userfile.user           {|user| user.association(:user)}
+    userfile.group          {|group| group.association(:group)}
+    userfile.data_provider  {|data_provider| data_provider.association (:data_provider)}
+end
 

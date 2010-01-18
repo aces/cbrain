@@ -26,3 +26,6 @@ config.gem "rspec", :lib => false
 config.gem "rspec-rails", :lib => false
 config.gem "factory_girl"
 #config.gem "webrat"
+
+ENV['AUTOFEATURE'] = "true"
+ENV['RSPEC'] = "true"
