@@ -76,9 +76,10 @@ class ScirSgeSession < Scir::Session
   end
 
   def queue_tasks_tot_max
-    queue = CBRAIN::DEFAULT_QUEUE.blank? ? "" : "-q #{shell_escape(queue)}"
+    queue = CBRAIN::DEFAULT_QUEUE || ""
+    queueopt = queue.blank? ? "" : "-q #{shell_escape(queue)}"
     tot = max = nil
-    IO.popen("qstat #{queue} -f 2>&1","r") do |fh|
+    IO.popen("qstat #{queueopt} -f 2>&1","r") do |fh|
       # queuename                      qtype resv/used/tot. load_avg arch          states
       # ---------------------------------------------------------------------------------
       # all.q@montague.bic.mni.mcgill. BIP   0/0/2          0.12     lx24-x86
