@@ -183,7 +183,8 @@ class DataProvider < ActiveRecord::Base
   has_many    :userfiles
 
   validates_uniqueness_of :name
-  validates_presence_of   :name, :user_id, :group_id, :read_only
+  validates_presence_of   :name, :user_id, :group_id
+  validates_inclusion_of :read_only, :in => [true, false]
 
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
     :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, and !',
