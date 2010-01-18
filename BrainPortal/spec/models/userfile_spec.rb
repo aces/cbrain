@@ -93,7 +93,5 @@ describe Userfile do
       @userfile.set_tags_for_user(@userfile.user, [test_tag])
       @userfile.tags.include?(test_tag).should be false
   end
-
-  it "s"
-    
+      
 end
