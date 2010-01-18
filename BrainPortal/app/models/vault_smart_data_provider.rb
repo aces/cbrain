@@ -92,8 +92,8 @@ class VaultSmartDataProvider < DataProvider
     @provider.provider_move_to_otherprovider(userfile,otherprovider)
   end
 
-  def provider_copy_to_otherprovider(userfile,otherprovider)
-    @provider.provider_copy_to_otherprovider(userfile,otherprovider)
+  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil)
+    @provider.provider_copy_to_otherprovider(userfile,otherprovider,newname)
   end
 
   def provider_list_all #:nodoc:
