@@ -59,10 +59,10 @@ describe Tool do
     @tool.select_menu_text.should == "keep this"
   end
   
-  #it "should validate that category is in the Categories constant" do
-    #@tool.category = "this is wrong"
-    #@tool.valid?.should be false
-  #end
+  it "should validate that category is in the Categories constant" do
+    @tool.category = "this is wrong"
+    @tool.valid?.should be false
+  end
   
   #Should it check for a valid category?
   

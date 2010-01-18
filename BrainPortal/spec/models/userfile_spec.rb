@@ -39,6 +39,7 @@ describe Userfile do
     @userfile.site.should == @userfile.user.site
   end
   
+  #Testing the format_size method
   it "should return unknown for the format_size when size is blank" do
     @userfile.size = nil
     @userfile.format_size.should match("unknown")
@@ -49,4 +50,50 @@ describe Userfile do
     @userfile.format_size.should match("1.0 GB")
   end
   
+  it "should return MB for format_size when the size is less than 1GB and more than 1MB" do
+    @userfile.size = 100000000
+    @userfile.format_size.should match("100.0 MB")
+  end
+  
+  it "should return KB for the format_size when the size is less than 1MB and more than 1KB" do
+    @userfile.size = 10000
+    @userfile.format_size.should match("10.0 KB")
+  end
+  
+  it "should return bytes for the format_size when the size is less than 1KB and more than 0" do
+    @userfile.size = 10
+    @userfile.format_size.should match("10 bytes")
+  end
+  
+  #Testing the get_tags_for_user method
+  it "should return no tags when user and files has no tags" do
+    @userfile.get_tags_for_user(@userfile.user)
+  end
+  
+  it "should return it's tags crossed with the user when get_tags_for_user(user) is called and the file has tags" do
+    test_tag = Factory.create(:tag, :name => "test_tag", :user => @userfile.user)
+    @userfile.tags << test_tag
+    @userfile.get_tags_for_user(@userfile.user).include?(test_tag).should be true
+  end
+  
+  it "should return no tags if the user has no tags in common with the userfile tags" do
+     test_tag = Factory.create(:tag, :name => "test_tag")
+     @userfile.tags << test_tag
+     @userfile.get_tags_for_user(@userfile.user).include?(test_tag).should be false
+   end
+   
+   it "should set new tags when I call set_tags_for_user with new tags" do
+     test_tag = Factory.create(:tag, :user => @userfile.user)
+     @userfile.set_tags_for_user(@userfile.user, [test_tag])
+     @userfile.get_tags_for_user(@userfile.user).include?(test_tag).should be true
+   end
+    
+   it "should not set new tags if not owned by user" do
+      test_tag = Factory.create(:tag)
+      @userfile.set_tags_for_user(@userfile.user, [test_tag])
+      @userfile.tags.include?(test_tag).should be false
+  end
+
+  it "s"
+    
 end

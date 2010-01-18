@@ -77,3 +77,12 @@ Factory.define :userfile do |userfile|
     userfile.data_provider  {|data_provider| data_provider.association (:data_provider)}
 end
 
+#Tag factory
+Factory.sequence :tag_name do |n|
+  "tag #{n}"
+end
+
+Factory.define :tag do |tag|
+  tag.name {Factory.next :tag_name}
+  tag.user {|user| user.association(:user)}
+end

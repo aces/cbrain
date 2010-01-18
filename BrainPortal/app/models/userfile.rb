@@ -91,7 +91,7 @@ class Userfile < ActiveRecord::Base
     all_tags = self.tag_ids
     current_user_tags = self.tag_ids & user.tag_ids
 
-    self.tag_ids = (all_tags - current_user_tags) + (tags || [])
+    self.tag_ids = (all_tags - current_user_tags) + (tags & user.tags || [])
   end
 
   #Produces the list of files to display for a paginated Userfile index
