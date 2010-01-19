@@ -171,8 +171,9 @@ class BourreauxController < ApplicationController
   def start
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "This Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "This Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "This Execution Server is not marked as online."                  unless @bourreau.online?
 
     cb_notice "This Execution Server is already alive." if @bourreau.is_alive?
 
@@ -185,6 +186,7 @@ class BourreauxController < ApplicationController
       flash[:notice] = "Execution Server started."
       @bourreau.addlog("Rails application started by user #{current_user.login}.")
       begin
+        @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
         @bourreau.send_command_start_workers
         @bourreau.addlog("Workers started too.")
         flash[:notice] += "\nWorkers on Execution Server started."
