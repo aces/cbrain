@@ -25,6 +25,9 @@ class ScirMoabSession < Scir::Session
     IO.popen("showq --xml 2>/dev/null","r") do |fh|
       xmltext = fh.read
     end
+    if xmltext =~ /(<cluster.*?<\/cluster>)/
+      @job_info_cache["!moab_cluster_info!"] = Regexp.last_match[1]
+    end
     jobs = xmltext.split(/(<job\s.*?<\/job>)/i) # odd elements are our stuff
     1.step(jobs.size,2) do |i|
       jobxml = jobs[i]
@@ -89,14 +92,20 @@ class ScirMoabSession < Scir::Session
   end
 
   def queue_tasks_tot_max
-    #queue = CBRAIN::DEFAULT_QUEUE
-    #queue = "default" if queue.blank?
-    #queueinfo = `qstat -Q #{shell_escape(queue)} | tail -1`
-    # Queue              Max   Tot   Ena   Str   Que   Run   Hld   Wat   Trn   Ext T
-    # ----------------   ---   ---   ---   ---   ---   ---   ---   ---   ---   --- -
-    # brain               90    33   yes   yes     0    33     0     0     0     0 E
-    #fields = queueinfo.split(/\s+/)
-    [ "unknown", "unknown" ]
+    job_ps("!dummy!") # trigger refresh if necessary
+    moab_cluster_info = @job_info_cache["!moab_cluster_info!"]
+    #<cluster LocalActiveNodes="43" LocalAllocProcs="270" LocalConfigNodes="49" LocalIdleNodes="4"
+    #         LocalIdleProcs="26" LocalUpNodes="47" LocalUpProcs="296" RemoteActiveNodes="0" RemoteAllocProcs="0"
+    #         RemoteConfigNodes="0" RemoteIdleNodes="0" RemoteIdleProcs="0" RemoteUpNodes="0" RemoteUpProcs="0"
+    #         time="1263919636"></cluster>
+    tot = max = "Unknown"
+    if moab_cluster_info =~ /LocalAllocProcs="(\d+)"/
+      tot = Regexp.last_match[1]
+    end
+    if moab_cluster_info =~ /LocalUpProcs="(\d+)"/
+      max = Regexp.last_match[1]
+    end
+    [ tot, max ]
   rescue
     [ "exception", "exception" ]
   end
