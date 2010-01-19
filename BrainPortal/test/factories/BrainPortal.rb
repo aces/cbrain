@@ -74,7 +74,7 @@ Factory.define :userfile do |userfile|
     userfile.name           {Factory.next :userfile_name}
     userfile.user           {|user| user.association(:user)}
     userfile.group          {|group| group.association(:group)}
-    userfile.data_provider  {|data_provider| data_provider.association (:data_provider)}
+    userfile.data_provider  {|data_provider| data_provider.association(:data_provider)}
 end
 
 #Tag factory

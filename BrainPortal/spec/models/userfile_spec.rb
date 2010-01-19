@@ -93,5 +93,13 @@ describe Userfile do
       @userfile.set_tags_for_user(@userfile.user, [test_tag])
       @userfile.tags.include?(test_tag).should be false
   end
-      
+  
+  it "should accept a nil for set_tags_for_user" do
+    begin
+      @userfile.set_tags_for_user(@userfile.user, nil)
+    rescue
+      false
+    end
+  end
+  
 end
