@@ -3,14 +3,19 @@ require 'spec_helper'
 describe DataProvider do
   before(:each) do 
     #objects required in tests below
-    @provider = Factory.build(:data_provider)
+    @provider = Factory.create(:data_provider)
     @admin = Factory.create(:user, :role => "admin")
     @user = Factory.create(:user)
     @site_manager = Factory.create(:user, :site => @provider.user.site, :role => "site_manager")
     @site_manager.site.save 
     @random_dude = Factory.create(:user)
-   
-   
+    @userfile = Factory.create(:userfile, :data_provider => @provider, :user => @user )
+    
+    #default state for provider
+    @provider.online = true
+    @provider.read_only = false
+    
+    
     #stub of impl_* methods 
     @provider.instance_eval do
         def impl_is_alive?
@@ -19,21 +24,24 @@ describe DataProvider do
         def impl_sync_to_cache(userfile)
           true
         end
+        def impl_sync_to_provider(userfile)
+          true
+        end
      end
   end
 
   it "should create a new instance given valid attributes" do
-    @provider.save.should be(true)
+    @provider.valid?.should be(true)
   end
 
   it "should not save with a blank name" do
     @provider.name = nil
-    @provider.save.should be(false)
+    @provider.valid?.should be(false)
   end
   
   it "should not save with no owner" do
     @provider.user = nil
-    @provider.save.should be(false)
+    @provider.valid?.should be(false)
   end
  
    it "should not save with no group" do 
@@ -148,7 +156,120 @@ describe DataProvider do
     it "should return false that random user has owner access" do
       @provider.has_owner_access?(@random_dude)
     end
-
-    #Needs more test
+    
+    
+    #################
+    # sync_to_cache #
+    #################
+    
+    it "should raise an exception if sync_to_cache is called on an offline provider" do
+      @provider.online = false
+      lambda{@provider.sync_to_cache(@userfile)}.should raise_error "Error: provider is offline."
+    end
+    
+    it "should return true when sync_to_cache is called and the provider is online and impl_sync_to_cache returns true" do
+      @provider.online = true
+      @provider.sync_to_cache(@userfile).should be true
+    end
+    
+    it "should return false if sync_to_cache is called and impl_sync_to_cache returns false" do
+       @provider.instance_eval do
+         def impl_sync_to_cache(userfile)
+           false
+         end
+       end
+       
+       @provider.sync_to_cache(@userfile).should be false
+     
+    end
+    
+    ############ Does sync_to_cache have other possibilities that needs testing?
+    
+    ####################
+    # sync_to_provider #
+    ####################
+    
+    
+    it "should raise an exception when sync_to_provider is called with an offline provider" do
+      @provider.online = false
+      lambda{@provider.sync_to_provider(@userfile)}.should raise_error("Error: provider is offline.")
+    end
+    
+    it "should raise an exception when sync_to_provider is called with read_only provider" do
+      @provider.read_only = true
+      lambda{@provider.sync_to_provider(@userfile)}.should raise_error "Error: provider is read_only."    
+    end
+    
+    it "should return true when sync_to_provider is called on an online and rw provider and impl_sync_to_provider returns true" do
+      @provider.sync_to_provider(@userfile).should be true
+    end
+    
+    it "should return false if I call sync_to_provider and impl_sync_to_provider is false" do
+      @provider.instance_eval do 
+        def impl_sync_to_provider(userfile)
+          false
+        end
+      end
+      @provider.sync_to_provider(@userfile).should be false
+    end
+    #### like sync_to_cache, I can't think of anymore tests, please complete for sync_to_provider
+    
+    #################
+    # cache_prepare #
+    #################
+    
+    it "should raise an exception when cache_prepare is called and provider is offline" do
+      @provider.online = false 
+      lambda{@provider.cache_prepare(@userfile)}.should raise_error "Error: provider is offline."
+    end
+    
+    it "should raise an exception when cache_prepare is called on read only provider" do
+       @provider.read_only = true
+       lambda{@provider.cache_prepare(@userfile)}.should raise_error "Error: provider is read_only."
+    end
+    
+    it "should return true when mkdir_cache_subdirs returns true (dp online and rw)" do
+      @provider.instance_eval do
+        def mkdir_cache_subdirs(userfile)
+          true
+        end
+      end
+      @provider.cache_prepare(@userfile).should be true
+    end
+    
+    ####################
+    # cache_full_path #  
+    ###################
+    
+    it "should raise an exception when cache_full_path is called on an offline provider" do
+      @provider.online = false
+      lambda{@provider.cache_full_path(@userfile)}.should raise_error "Error: provider is offline."
+    end
+    
+    it "should return the value of cache_full_pathname(userfile) when cache_full_path is called on online provider" do
+      @provider.instance_eval do
+        def cache_full_pathname(usefile)
+          true
+        end
+      end
+      
+      @provider.cache_full_path(@userfile).should be true
+    end
+    
+    #################### 
+    # cache_readhandle #
+    ####################
+    
+    it "should raise an exception when provider is offline and cache_readhandle is called" do
+      @provider.online = false
+      lambda{@provider.cache_readhandle(@userfile)}.should raise_error "Error: provider is offline."
+    end
+    
+    it "should raise an error when trying to use cache_readhandle on non-existant file" do 
+      def cache_full_pathname(usefile)
+        true
+      end
+      lambda{@provider.cache_readhandle(@userfile)}.should raise_error Errno::ENOENT
+    end
     
 end
