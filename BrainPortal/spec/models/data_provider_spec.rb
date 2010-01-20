@@ -272,4 +272,27 @@ describe DataProvider do
       lambda{@provider.cache_readhandle(@userfile)}.should raise_error Errno::ENOENT
     end
     
+    #####################
+    # cache_writehandle #
+    #####################
+    
+    it "should raise an exception when I call cache_writehandle on offline provider" do
+      @provider.online = false
+      lambda{@provider.cache_writehandle(@userfile)}.should raise_error "Error: provider is offline."
+    end
+    
+    it "should raise an exception when I call cache_writehandle on a read_only provider" do
+      @provider.read_only = true
+      lambda{@provider.cache_writehandle(@userfile)}.should raise_error "Error: provider is read_only."
+    end
+    
+    it "should raise an exception if I call cache_writehandle with an fake file" do
+      @provider.instance_eval do
+        def mkdir_cache_subdirs(userfile)
+          true
+        end
+      end
+      lambda{@provider.cache_writehandle(@userfile)}.should raise_error Errno::ENOENT
+    end
+    
 end
