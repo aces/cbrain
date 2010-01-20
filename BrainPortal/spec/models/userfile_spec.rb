@@ -84,13 +84,13 @@ describe Userfile do
    
    it "should set new tags when I call set_tags_for_user with new tags" do
      test_tag = Factory.create(:tag, :user => @userfile.user)
-     @userfile.set_tags_for_user(@userfile.user, [test_tag])
+     @userfile.set_tags_for_user(@userfile.user, [test_tag.id])
      @userfile.get_tags_for_user(@userfile.user).include?(test_tag).should be true
    end
     
    it "should not set new tags if not owned by user" do
       test_tag = Factory.create(:tag)
-      @userfile.set_tags_for_user(@userfile.user, [test_tag])
+      @userfile.set_tags_for_user(@userfile.user, [test_tag.id])
       @userfile.tags.include?(test_tag).should be false
   end
   
