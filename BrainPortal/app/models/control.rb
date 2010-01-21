@@ -18,10 +18,9 @@
 # object:
 #
 #     myinfo = RemoteResourceInfo.new() # acts like a Hash
-#     myinfo.is_populated
 #     tosend = Control.new(myinfo)
 #
-# When commands are send from one RemoteResource to another,
+# When a command is sent from one RemoteResource to another,
 # the Control object is filled with a RemoteCommand object:
 #
 #     mycom = RemoteCommand.new(blah blah) # acts like a Hash

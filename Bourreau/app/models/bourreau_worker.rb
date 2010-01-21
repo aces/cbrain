@@ -255,6 +255,8 @@ class BourreauWorker
   # these transitions.
   def process_task(task)
     begin
+      mypid = self.pid # PID of the current worker process
+
       task.reload # Make sure we got it up to date
       self.addlog "--- Got #{task.bname_tid} in state #{task.status}" if verbose
 
@@ -263,31 +265,33 @@ class BourreauWorker
       self.addlog "Updated #{task.bname_tid} to state #{task.status}" if verbose
       case task.status
         when 'New'
-          task.addlog_context(self,"Setting Up")
+          task.addlog_context(self,"Setting Up, PID=#{mypid}")
           self.addlog "Start   #{task.bname_tid}"                         if verbose
           task.start_all  # New -> Queued|Failed To Setup
           self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
         when 'Data Ready'
-          task.addlog_context(self,"Post Processing")
+          task.addlog_context(self,"Post Processing, PID=#{mypid}")
           self.addlog "PostPro #{task.bname_tid}"                         if verbose
           task.post_process # Data Ready -> Completed|Failed To PostProcess
           self.addlog "     -> #{task.bname_tid} to state #{task.status}" if verbose
       end
+
       if task.status == 'Completed'
         Message.send_message(task.user,
                              :message_type  => :notice,
-                             :header  => "Task #{task.name} Completed Successfully",
-                             :description  => "Oh great!",
-                             :variable_text  => "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
+                             :header        => "Task #{task.name} Completed Successfully",
+                             :description   => "Oh great!",
+                             :variable_text => "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
                             )
       elsif task.status =~ /^Failed/
         Message.send_message(task.user,
                              :message_type  => :error,
-                             :header  => "Task #{task.name} Failed",
-                             :description  => "Sorry about that. Check the task's log.",
-                             :variable_text  => "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
+                             :header        => "Task #{task.name} Failed",
+                             :description   => "Sorry about that. Check the task's log.",
+                             :variable_text => "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
                             )
       end
+
     rescue => e
       self.addlog "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}" +
                   e.backtrace[0..10].join("\n")
