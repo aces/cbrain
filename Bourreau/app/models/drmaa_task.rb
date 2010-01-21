@@ -50,13 +50,13 @@ class DrmaaTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
+  include DrmaaTaskCommon
+
   # The attribute 'params' is a serialized hash table
   # containing job-specific parameters; it's up to each
   # subclass of DrmaaTask to find/use/define its content
   # as necessary.
   serialize :params
-
-public
 
   def initialize(arguments = {}) #:nodoc:
     super(arguments)
@@ -445,45 +445,6 @@ public
         @capt_stderr_b64 = Base64.encode64(io.read)
         io.close
      end
-  end
-
-
-
-  ##################################################################
-  # Utility Pseudo-Attributes Methods
-  ##################################################################
-
-  # Returns the task's User
-  def user
-    @user ||= User.find(self.user_id)
-  end
-
-  # Returns a simple name for the task (without the Drmaa prefix).
-  def name
-    @name ||= self.class.to_s.gsub(/^Drmaa/,"")
-  end
-
-  def bourreau
-    @bourreau ||= Bourreau.find(self.bourreau_id)
-  end
-
-  # Returns an ID string containing both the bourreau_id +b+
-  # and the task ID +t+ in format "b/t"
-  def bid_tid
-    @bid_tid ||= "#{self.bourreau_id || '?'}/#{self.id || '?'}"
-  end
-
-  # Returns an ID string containing both the bourreau_name +b+
-  # and the task ID +t+ in format "b/t"
-  def bname_tid
-    @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
-  end
-
-  # Returns an ID string containing both the bourreau_name +b+
-  # and the task ID +t+ in format "b-t" ; this is suitable to
-  # be used as part of a filename.
-  def bname_tid_dashed
-    @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
 
