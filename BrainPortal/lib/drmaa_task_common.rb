@@ -19,8 +19,6 @@ module DrmaaTaskCommon
 
   Revision_info="$Id$"
 
-puts "--- WEIRD STUFF!\n" + caller.select { |c| c =~ /BrainPortal/ }.join("\n") + "\n--- END"
-
   # Returns the task's User
   def user
     @user ||= User.find(self.user_id)
