@@ -10,21 +10,94 @@
 #
 
 -%>
-
 <div class = "generalcontent">
 
    <% title 'Browse Data Provider' %>
 
    <h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
 
-      <% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
-      
-        <table class="resource_list" id="browse_table">
-          <%= render :partial => 'dp_browse_table' %>
-        </table>
+   <div class = "generalbox">
 
-        <%= submit_tag 'Register files' %>
-        <%= submit_tag 'Unregister files' %>
+      <% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
+
+      <%= link_to 'Select All', browse_data_provider_path(:select_all => params[:select_all] ? false : true) %>
+      <%= link_to 'Refresh', browse_data_provider_path(:select_all => params[:select_all] ? true : false, :refresh => true ) %>
+      <table>
+         <tr>
+             <th>Select</th>
+             <th>Name</th>
+             <th>Size</th>
+             <th>Type</th>
+             <th>Last modified</th>
+             <th>Registered?</th>
+             <th>Note</th>
+         </tr>
+
+         <% for fi in @fileinfolist
+               fi_name     = fi.name
+               fi_size     = fi.size
+               fi_type     = fi.symbolic_type
+               fi_mtime    = fi.mtime
+
+               fi_userfile = fi.userfile
+               fi_ok       = fi.state_ok
+               fi_message  = fi.message
+          %>
+             <tr class="<%= cycle('list-odd', 'list-even') %>">
+
+               <% if fi_ok %>
+                 <td><%= check_box_tag("basenames[]",fi_name,(! params[:select_all] || params[:select_all] == 'false') ? false : true) %></td>
+               <% else %>
+                 <td></td>
+               <% end %>
+
+               <td><%= h(fi_name) %></td>
+
+               <td><%= h(fi_size) %></td>
+
+               <% if fi_userfile %>
+                 <td><%= h(fi_userfile.class.to_s) %></td>
+               <% else %>
+                  <% if ! fi_ok %>
+                    <td>Conflict?</td>
+                  <% elsif fi_type == :regular %>
+                    <td>SingleFile</td>
+                  <% elsif fi_type == :directory %>
+                    <td><%= select_tag("directorytypes[]",
+                           options_for_select([
+                              [ "Directory as...", "Unset-#{fi_name}" ],
+                              [ "FileCollection",  "FileCollection-#{fi_name}" ],
+                              [ "CivetCollection", "CivetCollection-#{fi_name}" ]
+                           ])) %>
+                    </td>
+                  <% elsif fi_type == :symlink %>
+                    <td><%= select_tag("directorytypes[]",
+                           options_for_select([
+                              [ "Symbolic link as...", "Unset-#{fi_name}" ],
+                              [ "SingleFile",      "SingleFile-#{fi_name}" ],
+                              [ "FileCollection",  "FileCollection-#{fi_name}" ],
+                              [ "CivetCollection", "CivetCollection-#{fi_name}" ]
+                           ])) %>
+                    </td>
+                  <% end %>
+               <% end %>
+
+               <td><%= h(to_localtime(Time.at(fi_mtime).to_s,:datetime)) %></td>
+
+               <% if fi_userfile %>
+                 <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => fi_userfile.id } %></td>
+               <% else %>
+                 <td>No</td>
+               <% end %>
+               <td><%= h(fi_message) %></td>
+             </tr>
+         <% end %>
+
+      </table>
+
+      <%= submit_tag 'Register files' %>
+      <%= submit_tag 'UnRegister files' %>
 
       <% end %>
+   </div>  <!-- End class="generalbox" -->
 </div>  <!-- End class="generalcontent" -->
