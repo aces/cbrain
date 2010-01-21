@@ -85,7 +85,7 @@ class ScirSgeSession < Scir::Session
       # all.q@montague.bic.mni.mcgill. BIP   0/0/2          0.12     lx24-x86
       fh.readlines.each do |line|
 puts "LINE=#{line}==="
-        if line.match(/(\d+)\/(\d+)\/(\d+)/)
+        if line.match(/(\d+)\/(\d+)\/(\d+)\s+\d+\./)  # Note that the report can contain DATES, like 25/12/2010
           tot ||= 0
           max ||= 0
           tot += Regexp.last_match[2].to_i
