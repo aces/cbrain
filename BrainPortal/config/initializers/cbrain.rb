@@ -12,6 +12,7 @@
 require 'mongrel'
 require 'cbrain_exception'
 
+# CBRAIN constants and some global utility methods.
 class CBRAIN
 
   Revision_info="$Id$"
@@ -19,7 +20,6 @@ class CBRAIN
 
   public
 
-  # Utility constants
   Startup_LocalTime = Time.now.localtime
   Rails_UserId      = Process.uid
   Rails_UserName    = Etc.getpwuid(Rails_UserId).name
@@ -125,6 +125,11 @@ class CBRAIN
     end
   end
 
+  # This method runs a Ruby block in the background, as a separate subprocess,
+  # but without any access to the services provided by Rails (no ActiveRecords,
+  # no DB, all filehandles closed except for STDIN, STDOUT and STDERR). If
+  # an exception is raised, a message is printed in STDOUT and the subprocess
+  # exits.
   def self.spawn_fully_independent(taskname = 'Independent Background Task')
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
@@ -198,12 +203,17 @@ end
 
 
 #
-# Mongrel and Rails code patches
+# CBRAIN patches to Mongrel.
 #
-
-require 'mongrel'
-
 module Mongrel
+
+  #
+  # CBRAIN patches to its HTTP Server.
+  #
+  # These patches are mostly required by the CBRAIN methods
+  # spawn_with_active_records(), spawn_with_active_records_if()
+  # and spawn_fully_independent().
+  #
   class HttpServer
 
     alias original_configure_socket_options configure_socket_options

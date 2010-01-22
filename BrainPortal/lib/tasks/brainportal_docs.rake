@@ -7,6 +7,7 @@ namespace :doc do
      rdoc.main = 'doc/README_FOR_APP'
      rdoc.rdoc_files.include('doc/README_FOR_APP')
      rdoc.rdoc_files.include('app/**/*.rb')
+     rdoc.rdoc_files.include('config/initializers/cbrain.rb')
      rdoc.rdoc_files.include('config/initializers/revisions.rb')
      rdoc.rdoc_files.include('config/initializers/logging.rb')
      rdoc.rdoc_files.include('lib/ssh_tunnel.rb')
