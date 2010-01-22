@@ -15,8 +15,8 @@ class UsersController < ApplicationController
 
   Revision_info="$Id$"
 
-  before_filter :login_required
-  before_filter :manager_role_required, :except => [:show, :edit, :update]  
+  before_filter :login_required,        :except => [:request_password, :send_password]  
+  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
   
   def index #:nodoc:
     if current_user.has_role? :admin
@@ -122,6 +122,10 @@ class UsersController < ApplicationController
     
     params[:user][:group_ids] ||= []
     params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]} )  
+    
+    if params[:user][:password]
+      params[:user][:password_reset] = false
+    end
       
     respond_to do |format|
       if @user.update_attributes(params[:user])
@@ -176,6 +180,30 @@ class UsersController < ApplicationController
     current_session[:user_id] = @user.id
     
     redirect_to home_path
+  end
+  
+  def request_password
+  end
+  
+  def send_password
+    @user = User.find(:first, :conditions  => {:login  => params[:login], :email  => params[:email]})
+    
+    if @user
+      @user.password_reset = true
+      @user.set_random_password
+      if @user.save
+        CbrainMailer.deliver_forgotten_password(@user)
+        flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
+        flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
+        redirect_to login_path
+      else
+        flash[:error] = "Unable to reset password.\nPlease contact your admin."
+        redirect_to :action  => :request_password
+      end
+    else
+      flash[:error] = "Unable to find user with login #{params[:login]} and email #{params[:email]}.\nPlease contact your admin."
+      redirect_to :action  => :request_password
+    end
   end
 
 end

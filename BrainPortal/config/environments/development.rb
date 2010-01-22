@@ -1,3 +1,4 @@
+require 'socket'
 # Settings specified here will take precedence over those in config/environment.rb
 
 # In the development environment your application's code is reloaded on
@@ -13,5 +14,12 @@ config.action_controller.consider_all_requests_local = true
 config.action_view.debug_rjs                         = true
 config.action_controller.perform_caching             = false
 
-# Don't care if the mailer can't send
-config.action_mailer.raise_delivery_errors = false
+# Change to smtp if you want it to send emails.
+config.action_mailer.delivery_method       = :test
+config.action_mailer.raise_delivery_errors = true
+
+config.action_mailer.smtp_settings = {
+  :address  =>  "mailhost.mcgill.ca",
+  :port     =>  25,
+  :domain   =>  Socket.gethostname 
+}

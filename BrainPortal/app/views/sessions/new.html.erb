@@ -19,15 +19,18 @@
 
          <table class = "logintable">
            <tr>
-                 <label for="login"><td>Login</td></label>
+             <td><label for="login">Login</label></td>
              <td class= "field"><%= text_field_tag 'login' %></td>
            </tr>
            <tr>  
-             <label for="password"><td>Password</td></label>
+             <td><label for="password">Password</label></td>
              <td class= "field"><%= password_field_tag 'password' %></td>
            </tr>
            <tr>
             <td/><td class="field"><br><%= submit_tag 'Log in' %></td></td>
+           </tr>
+           <tr>
+            <td/><td class="field"><br><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
            </tr>
          </table>
          <br>

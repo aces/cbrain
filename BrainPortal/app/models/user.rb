@@ -81,12 +81,19 @@ class User < ActiveRecord::Base
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id
+  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id, :password_reset
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
     u = find_by_login(login) # need to get the salt
     u && u.authenticated?(password) ? u : nil
+  end
+  
+  #Create a random password (to be sent for resets).
+  def set_random_password
+    s = random_string
+    self.password = s
+    self.password_confirmation = s
   end
 
   # Encrypts some data with the salt.
@@ -206,6 +213,18 @@ class User < ActiveRecord::Base
   end
   
   private
+  
+  #Create a random string (currently for passwords).
+  def random_string
+    length = rand(5) + 6
+    s = ""
+    length.times do
+      c = rand(75) + 48
+      c += 1 if c == 96
+      s << c
+    end
+    s
+  end
    
   def prevent_group_collision #:nodoc:
     if self.login && (WorkGroup.find_by_name(self.login) || self.login == 'everyone') 

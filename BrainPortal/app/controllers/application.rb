@@ -25,6 +25,7 @@ class ApplicationController < ActionController::Base
   before_filter :set_cache_killer
   before_filter :prepare_messages
   before_filter :set_session, :only  => :index
+  before_filter :password_reset
   around_filter :catch_cbrain_message
     
   # See ActionController::RequestForgeryProtection for details
@@ -36,6 +37,15 @@ class ApplicationController < ActionController::Base
   def set_session
     current_session.update(params)
     @filter_params = current_session.params_for(params[:controller])
+  end
+  
+  def password_reset
+    if current_user && current_user.password_reset && params[:controller] != "sessions"
+      unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
+        flash[:notice] = "Please reset your password."
+        redirect_to user_path(current_user)
+      end
+    end
   end
   
   #Catch and display cbrain messages

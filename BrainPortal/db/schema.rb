@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100114183350) do
+ActiveRecord::Schema.define(:version => 20100122195858) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -257,6 +257,7 @@ ActiveRecord::Schema.define(:version => 20100114183350) do
     t.datetime "updated_at"
     t.string   "role"
     t.integer  "site_id"
+    t.boolean  "password_reset"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"

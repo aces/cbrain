@@ -1034,6 +1034,10 @@ td.right_align {
     margin: 1px;
 }
 
+#request_password{
+	padding-right: 12em;
+}
+
 
 /* ######################################################### */
 /* Formatting for the Userfiles view (new) */
