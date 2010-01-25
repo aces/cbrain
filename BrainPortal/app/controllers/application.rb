@@ -75,6 +75,7 @@ class ApplicationController < ActionController::Base
       
       Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       log_exception(e)
+      flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
       redirect_to default_redirect
       return
     end
@@ -146,7 +147,7 @@ class ApplicationController < ActionController::Base
   end
   
   def default_redirect
-    if self.respond_to?(:index)
+    if self.respond_to?(:index) && params[:action] != "index"
       {:action => :index}
     else
       home_path

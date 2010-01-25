@@ -47,6 +47,8 @@ class Message < ActiveRecord::Base
     var_text     = options[:variable_text] || options["variable_text"] || nil
     expiry       = options[:expiry]        || options["expiry"]        || nil
     critical     = options[:critical]      || options["critical"]      || false
+    send_email   = options[:send_email]    || options["send_email"]    || false
+    
 
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
@@ -105,6 +107,13 @@ class Message < ActiveRecord::Base
 
       messages_sent << mess
     end
+    
+    if send_email
+      CbrainMailer.deliver_message(allusers,
+        :subject  => header,
+        :body     => "#{description}\n\n#{var_text}"
+      )
+    end
 
     messages_sent
   end
@@ -153,8 +162,10 @@ class Message < ActiveRecord::Base
 
       :description  => "An internal error occured inside the CBRAIN code.\n"     +
                        "The CBRAIN admins have been alerted are working\n"       +
-                       "towards solving the problem.\n"
-    ) unless destination.is_a?(User) && destination.login == 'admin'
+                       "towards solving the problem.\n",
+                       
+      :send_email   => true
+    ) unless destination.is_a?(User) && destination.has_role?(:admin)
     
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
@@ -165,7 +176,9 @@ class Message < ActiveRecord::Base
                        "Users involved: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
                        "Params: #{request_params.inspect}\n\n" +
                        "#{exception.class.to_s}: #{exception.message}\n" +
-                       exception.backtrace[0..30].join("\n") + "\n"
+                       exception.backtrace[0..30].join("\n") + "\n",
+                       
+      :send_email   => true
     )
   end
 
