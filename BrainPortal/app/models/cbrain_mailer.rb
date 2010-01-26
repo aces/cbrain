@@ -1,5 +1,17 @@
+#
+# CBRAIN Project
+#
+# CBRAIN mailer
+#
+# Original author: Tarek Sherif
+#
+# $Id$
+#
+
 #ActionMailer subclass for sending system e-mails.
 class CbrainMailer < ActionMailer::Base
+  
+  Revision_info="$Id$"
   
   #Send a registration confirmation to new users.
   def registration_confirmation(user)
