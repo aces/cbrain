@@ -556,6 +556,9 @@ tr.list-even {
 tr.list-odd {
     background-color: #F1F5FF;
 }
+tr.list-unavailable {
+    background-color: #ff6699;
+}
 
 /* ######################################################### */
 /* Show tasks table formatting */

@@ -295,4 +295,33 @@ describe DataProvider do
       lambda{@provider.cache_writehandle(@userfile)}.should raise_error Errno::ENOENT
     end
     
+    it ".is_alive? should set the time_of_death field to current time if the provider is down and time_of_death is nil" do
+      @provider.instance_eval do
+        def impl_is_alive?
+          false
+        end
+      end
+      
+      @provider.time_of_death = nil 
+      @provider.is_alive?
+      (@provider.time_of_death - Time.now).should be_< 1.minute
+    end
+
+    it ".is_alive? should set the provider to offline if the time_of_death field is 1 hour old and impl_is_alive? returns false" do
+      @provider.instance_eval do 
+        def impl_is_alive?
+          false
+        end
+      end
+      @provider.time_of_death = 1.hour.ago
+      @provider.is_alive? 
+      @provider.online.should be false
+    end
+    
+    it ".is_alive? should reset the time_of_death field if data_provider comes back online" do
+      @provider.time_of_death = Time.now
+      @provider.is_alive?
+      @provider.time_of_death.should be nil
+    end
 end
+

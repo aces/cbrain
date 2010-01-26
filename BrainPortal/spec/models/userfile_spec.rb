@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Userfile do
   
   before(:each) do 
-    @userfile = Factory.build(:userfile)
+    @userfile = Factory.create(:userfile)
   end
   
   it "should be valid with valid attributes" do
@@ -100,6 +100,16 @@ describe Userfile do
     rescue
       false
     end
+  end
+
+  it ".available? should return true if provider is online" do
+    @userfile.data_provider.online = true
+    @userfile.available?.should be true
+  end
+  
+  it ".available? should be false if provider is offline" do
+    @userfile.data_provider.online = false
+    @userfile.available?.should be false
   end
   
 end

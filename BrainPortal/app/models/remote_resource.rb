@@ -301,7 +301,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Checks if this remote resource is available or not.
   # This must be a live check, not cached. A cached
-  # way to check the state of the resoruce is to use the
+  # way to check the state of the resource is to use the
   # info() method, which caches the information record.
   def is_alive?
     info = self.remote_resource_info

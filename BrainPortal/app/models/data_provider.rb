@@ -213,7 +213,25 @@ class DataProvider < ActiveRecord::Base
   # Returns +true+ or +false+.
   def is_alive?
     return false if self.online == false
-    impl_is_alive?
+    
+    #set time of death or set to offline is past 1 hour
+    if impl_is_alive? == false
+      self.time_of_death ||= Time.now
+      if self.time_of_death < 1.hour.ago
+        self.online = false
+      end
+      self.save
+      return false
+    end
+
+    #reset time of death 
+    if impl_is_alive? == true
+     self.time_of_death = nil 
+     self.save
+     return true
+    end
+
+    cb_error "Error: is_alive? is returning a non truth that is true" 
   end
 
   # Raises an exception if is_alive? is +false+, otherwise

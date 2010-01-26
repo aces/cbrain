@@ -476,5 +476,8 @@ class Userfile < ActiveRecord::Base
     self.save
     self.data_provider.cache_copy_to_local_file(self,filename)
   end
-
+  
+  def available?
+    self.data_provider.online
+  end
 end
