@@ -74,9 +74,6 @@
         <%= link_to_remote  "Provider", :url  =>  userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
-      <th>
-	Available?
-      </th>
     </tr>
   </thead>
   <tbody>

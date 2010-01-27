@@ -43,3 +43,14 @@ Then /^I should see all files for collection "([^\"]*)"$/ do |collection|
     response.should contain(file.split('/')[-1])
   end
 end
+
+
+When /^I attach the file at "([^\"]*)" to "([^\"]*)"$/ do |arg1, arg2|
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^"([^\"]*)" has "([^\"]*)" files$/ do |login, amount|
+  amount.to_i.each do 
+    Factory.create(:userfile, :user => User.find_by_login(login))
+  end
+end
