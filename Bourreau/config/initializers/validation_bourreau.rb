@@ -177,8 +177,10 @@ case CBRAIN::CLUSTER_TYPE
     require 'scir_local.rb'
   when "MOAB"
     require 'scir_moab.rb'
+  when "SHARCNET"
+    require 'scir_sharcnet.rb'
   else
-    raise "CBRAIN configuration error: CLUSTER_TYPE is set to unknown value #{CBRAIN::CLUSTER_TYPE}!"
+    raise "CBRAIN configuration error: CLUSTER_TYPE is set to unknown value '#{CBRAIN::CLUSTER_TYPE}' !"
 end
 puts "C> \t - Layer for '#{CBRAIN::CLUSTER_TYPE}' loaded."
 
