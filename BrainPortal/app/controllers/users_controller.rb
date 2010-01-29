@@ -61,25 +61,6 @@ class UsersController < ApplicationController
       format.xml  { render :xml => @userfile }
     end
   end
-  
-  # def edit #:nodoc:
-  #   @user = User.find(params[:id], :include => :groups)
-  #   
-  #   cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
-  #   
-  #   if current_user.has_role? :admin
-  #     @groups = WorkGroup.find(:all)
-  #   elsif current_user.has_role? :site_manager
-  #     @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-  #   end
-  # 
-  #   @log = @user.getlog()
-  #   
-  #   if !edit_permission? @user
-  #     access_error(401)
-  #     return
-  #   end
-  # end 
 
   def create #:nodoc:
     cookies.delete :auth_token

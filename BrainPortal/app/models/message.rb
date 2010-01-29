@@ -12,6 +12,7 @@ class Message < ActiveRecord::Base
   Revision_info="$Id$"
 
   belongs_to :user
+  attr_accessor :send_email
   
   # Send a new message to a user, the users of a group, or a site.
   #
@@ -122,7 +123,7 @@ class Message < ActiveRecord::Base
   #Allows one to create an object and set its attributes,
   #then send it to +destination+.
   def send_me_to(destination)
-    Message.send_message(destination, self.attributes)
+    Message.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
   end
 
   # Given an existing message, send it to other users/group.

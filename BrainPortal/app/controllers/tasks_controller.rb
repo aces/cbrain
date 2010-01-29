@@ -79,51 +79,7 @@ class TasksController < ApplicationController
     if @filter_params["sort"]["order"] == 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
       @tasks = @tasks.group_by(&:launch_time)
     end
-    # @tasks.each do |t|  # ugly kludge
-    #   t.updated_at = Time.parse(t.updated_at)
-    #   t.created_at = Time.parse(t.created_at)
-    # end
-    # 
-    # 
-    # # Set sort order and make it persistent.
-    # @filter_params["sort"]["order"] ||= 'drmaa_task.updated_at'
-    # @filter_params["sort"]["dir"]   ||= 'DESC'
-    # sort_order = @filter_params["sort"]["order"]
-    # sort_dir   = @filter_params["sort"]["dir"]  
-    # 
-    # @tasks = @tasks.sort do |t1, t2|
-    #   if sort_dir == 'DESC'
-    #     task1 = t2
-    #     task2 = t1
-    #   else
-    #     task1 = t1
-    #     task2 = t2
-    #   end
-    #   
-    #   case sort_order
-    #   when 'type'
-    #     att1 = task1.class.to_s
-    #     att2 = task2.class.to_s
-    #   when 'owner'
-    #     att1 = task1.user.login
-    #     att2 = task2.user.login
-    #   when 'bourreau'
-    #     att1 = task1.bourreau.name
-    #     att2 = task2.bourreau.name
-    #   else
-    #     att1 = task1.send(sort_order)
-    #     att2 = task2.send(sort_order)
-    #   end
-    #   
-    #   if att1.blank?
-    #     1
-    #   elsif att2.blank?
-    #     -1
-    #   else
-    #     att1 <=> att2
-    #   end
-    # end
-    #     
+
     respond_to do |format|
       format.html
       format.js

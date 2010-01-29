@@ -168,7 +168,6 @@ class ApplicationController < ActionController::Base
      # the origin server to authenticate the new reques
      # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
      # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-     #response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
      response.headers["Last-Modified"] = Time.now.httpdate
      response.headers["Expires"] = "#{1.year.ago}"
      # HTTP 1.0

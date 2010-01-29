@@ -40,19 +40,6 @@ class ToolsController < ApplicationController
     render :text  => ""
   end
 
-  # # GET /tools/new
-  # # GET /tools/new.xml
-  # def new
-  #   @tool = Tool.new
-  #   @groups = Group.find(:all)
-  #   @users = User.find(:all)
-  #   @bourreaux = Bourreau.find(:all)
-  #   respond_to do |format|
-  #     format.html # new.html.erb
-  #     format.xml  { render :xml => @tool }
-  #   end
-  # end
-
   # GET /tools/1/edit
   def edit
     @tool = current_user.available_tools.find(params[:id])
