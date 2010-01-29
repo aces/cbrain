@@ -14,8 +14,9 @@
   <div class="resource_list_upper_form">  
     <span title="Registers all subclasses of DrmaaTask as Tools">
       <%= link_to 'Autoload Tools', {:action  => :create, :autoload  => true}, :method  => :post, :class  => "action_link" %>
-    </span>
-    <br><br>
+    </span> <br/>
+    <%= link_to 'Tool Management', {:controller => "tools",  :action => "tool_management"}, :class => "action_link" %>
+    <br/><br/>
     <%= 
       link_to_function 'Create New Tool', :class  => 'action_link' do |page|
         page['new_tool'].toggle

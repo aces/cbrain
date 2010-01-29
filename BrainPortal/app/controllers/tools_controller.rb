@@ -13,7 +13,7 @@ class ToolsController < ApplicationController
  
   Revision_info="$Id$"
  
-  before_filter :login_required 
+  before_filter :login_required
   before_filter :admin_role_required, :except  => [:index, :bourreau_select]
  
   # GET /tools
@@ -54,7 +54,7 @@ class ToolsController < ApplicationController
       DrmaaTask.subclasses.sort.each do |tool|
         unless current_user.available_tools.find_by_drmaa_class(tool)
           @tool = Tool.new(
-                      :name         => tool.sub(/^Drmaa/, ""),
+                      :name    => tool.sub(/^Drmaa/, ""),
                       :drmaa_class  => tool,
                       :bourreau_ids => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
                       :user_id      => User.find_by_login("admin").id,
@@ -128,4 +128,10 @@ class ToolsController < ApplicationController
       format.xml  { head :ok }
     end
   end
+  
+  def tool_management
+      @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
+      @bourreaux = Bourreau.find(:all)
+  end
+
 end

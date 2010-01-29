@@ -122,15 +122,21 @@ class BourreauxController < ApplicationController
     cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
     fields    = @bourreau.is_a?(Bourreau) ? params[:bourreau] : params[:brain_portal]
-    subtype   = fields.delete(:type)
-
+    
+    subtype = fields.delete(:type)
+  
     @bourreau.update_attributes(fields)
 
     @bourreau.save
 
     if @bourreau.errors.empty?
-      redirect_to(bourreaux_url)
-      flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
+      if params[:tool_management] != nil 
+        redirect_to(:controller => "tools", :action =>"tool_management")
+        flash[:notice] = "#{@bourreau.name} successfully updated"
+      else
+        redirect_to(bourreaux_url)
+        flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
+      end
     else
       @users = current_user.available_users
       @groups = current_user.available_groups
