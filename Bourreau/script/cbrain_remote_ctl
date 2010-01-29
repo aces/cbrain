@@ -21,21 +21,21 @@
 
 # To start the Rails app:
 #
-#   $0 start <environment> <port>
+#   $0 start -e <environment> -p <port>
 #
 # which will result in reading the database.yml from stdin, installing
 # it, executing this command
 #
-#   script/server -e <environment> -p <port> -d
+#   script/server -e <environment> -p <port> -b 127.0.0.1 -d
 #
 # and finally removing the database.yml file. Any database.yml file
 # already present before doing all this will be backed up in
+#
 #     database.yml.cbrain_remote_bak.
 #
 # Note that if stdin contains nothing (zero bytes) the current
 # database.yml file will be used, or the script will restore and use
-# the backup file
-#     database.yml.cbrain_remote_bak.
+# the backup file 'database.yml.cbrain_remote_bak'.
 
 
 # To stop the Rails app:
@@ -48,7 +48,6 @@
 # This script is written in a way that depends
 # on as few ruby libraries as possible.
 
-require 'pathname'
 
 #########################
 # S U B R O U T I N E S #
@@ -140,18 +139,45 @@ else # db text is provided to us
   File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
 end
 
+# This environment variable holds the path to a status
+# file created by the server 'cbrain_mongrel_rails' at startup;
+# it will contain the word 'STARTED' or 'STOPPED'. This will happen
+# even if the server crashes early on.
+status_file = rails_home + "/tmp/pids/mongrel.status"
+ENV["CBRAIN_SERVER_STATUS_FILE"] = status_file
+File.unlink(status_file) rescue true # Make sure it's not there at all
+
 # Start the server
 Dir.chdir(rails_home) do
-  cmd = "script/server -p #{port} -e #{environment} -d"
+  # Note that the options for 'cbrain_mongrel_rails' are the same as
+  # for 'mongrel_rails', but they are different from 'script/server'
+  # (in particular, -b becomes -a).
+  cmd = "script/cbrain_mongrel_rails start -d -p #{port} -e #{environment} -a 127.0.0.1 -P #{pidfile}"
   system(cmd) # the -d will start it in background
+end
+
+# Wait for the status file to appear; it will appear whether or not the
+# server was able to properly start.
+start_check = Time.now
+while start_check > (Time.now - 120)  # check for two minutes, at most
+  sleep 1
+  break if File.exists?(status_file)
 end
 
 # If we were provided with a database.yml, we need
 # to wait a bit and delete it once the server has read
 # it.
 if ! blank_yml
-  sleep 5
   File.unlink(db_file)
 end
-puts "Bourreau Started"
+
+# Return a message to indicate to our calling context
+# whether or not the server started.
+status_message = File.read(status_file) rescue "FAILED\n";
+if status_message =~ /STARTED/i # see Bourreau's validation.rb
+  puts "Bourreau Started"
+else
+  puts "Bourreau Failed"
+end
 Kernel.exit(0)
+

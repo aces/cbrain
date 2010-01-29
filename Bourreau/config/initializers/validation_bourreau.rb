@@ -184,6 +184,8 @@ case CBRAIN::CLUSTER_TYPE
 end
 puts "C> \t - Layer for '#{CBRAIN::CLUSTER_TYPE}' loaded."
 
+
+
 #-----------------------------------------------------------------------------
 puts "C> Reporting Bourreau Worker Processes (if any)..."
 #-----------------------------------------------------------------------------
@@ -201,5 +203,21 @@ else
   puts "C> \t - Scheduling restart for all of them ..."
   BourreauWorker.wake_all
   BourreauWorker.signal_all('TERM')
+end
+
+
+
+#-----------------------------------------------------------------------------
+puts "C> Informing outside world that validations have passed..."
+#-----------------------------------------------------------------------------
+
+# The CBRAIN_SERVER_STATUS_FILE environment variable is set up in the
+# CBRAIN wrapper script 'cbrain_remote_ctl'. If it's not set we do not do
+# anything. It's used by the wrapper to figure out if we launched properly.
+server_status_file = ENV["CBRAIN_SERVER_STATUS_FILE"]
+if ! server_status_file.blank?
+  File.open(server_status_file,"w") do |fh|
+    fh.write "STARTED\n"
+  end
 end
 
