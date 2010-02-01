@@ -11,6 +11,9 @@ namespace :doc do
      rdoc.rdoc_files.include('config/initializers/revisions.rb')
      rdoc.rdoc_files.include('config/initializers/logging.rb')
      rdoc.rdoc_files.include('lib/ssh_tunnel.rb')
+     rdoc.rdoc_files.include('lib/cbrain_exception.rb')
+     rdoc.rdoc_files.include('lib/drmaa_task_common.rb')
+     rdoc.rdoc_files.include('lib/resource_access.rb')
   }
 end
   

@@ -12,5 +12,7 @@ namespace :doc do
      rdoc.rdoc_files.include('config/initializers/logging.rb')
      rdoc.rdoc_files.include('lib/scir*.rb')
      rdoc.rdoc_files.include('lib/ssh_tunnel.rb')
+     rdoc.rdoc_files.include('lib/cbrain_exception.rb')
+     rdoc.rdoc_files.include('lib/resource_access.rb')
   }
 end
