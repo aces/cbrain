@@ -216,9 +216,12 @@ class DataProvider < ActiveRecord::Base
     
     #set time of death or set to offline is past 1 hour
     alive_flag = impl_is_alive?
+
     if alive_flag == false
       self.time_of_death ||= Time.now
-      if self.time_of_death < 1.hour.ago
+      if self.time_of_death < 2.minutes.ago
+        self.time_of_death = Time.now
+      elsif self.time_of_death < Time.now
         self.online = false
       end
       self.save

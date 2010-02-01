@@ -105,7 +105,10 @@ describe DataProvider do
       @provider.online = true
       @provider.is_alive?.should be(false)
     end
-    
+    ############
+    # is_alive #
+    ############
+   
     it "should return true when is_alive! is called with is_alive? returning true" do
       @provider.online = true
       @provider.is_alive!.should be(true)
@@ -119,6 +122,48 @@ describe DataProvider do
         true
       end
     end
+
+        
+    it ".is_alive? should set the time_of_death field to current time if the provider is down and time_of_death is nil" do
+      @provider.instance_eval do
+        def impl_is_alive?
+          false
+        end
+      end
+      
+      @provider.time_of_death = nil 
+      @provider.is_alive?
+      (@provider.time_of_death - Time.now).should be_< 1.minute
+    end
+
+    it ".is_alive? should set the provider to offline if the time_of_death field is 1 minute old and impl_is_alive? returns false" do
+      @provider.instance_eval do 
+        def impl_is_alive?
+          false
+        end
+      end
+      @provider.time_of_death = 1.minute.ago
+      @provider.is_alive? 
+      @provider.online.should be false
+    end
+    it ".is_alive? should reset the time_of_death to now if the time_of_death field is < 2 minute old and impl_is_alive? returns false" do
+      @provider.instance_eval do 
+        def impl_is_alive?
+          false
+        end
+      end
+      @provider.time_of_death = 5.minute.ago
+      @provider.is_alive? 
+      (@provider.time_of_death-Time.now).should be_< 1.minute and @provider.online.should be true
+      
+    end
+    
+    it ".is_alive? should reset the time_of_death field if data_provider comes back online" do
+      @provider.time_of_death = Time.now
+      @provider.is_alive?
+      @provider.time_of_death.should be nil
+    end
+
     
     it "should return false when is_browsable? is called" do
       @provider.is_browsable?.should be(false)
@@ -294,34 +339,5 @@ describe DataProvider do
       end
       lambda{@provider.cache_writehandle(@userfile)}.should raise_error Errno::ENOENT
     end
-    
-    it ".is_alive? should set the time_of_death field to current time if the provider is down and time_of_death is nil" do
-      @provider.instance_eval do
-        def impl_is_alive?
-          false
-        end
-      end
-      
-      @provider.time_of_death = nil 
-      @provider.is_alive?
-      (@provider.time_of_death - Time.now).should be_< 1.minute
-    end
 
-    it ".is_alive? should set the provider to offline if the time_of_death field is 1 hour old and impl_is_alive? returns false" do
-      @provider.instance_eval do 
-        def impl_is_alive?
-          false
-        end
-      end
-      @provider.time_of_death = 1.hour.ago
-      @provider.is_alive? 
-      @provider.online.should be false
-    end
-    
-    it ".is_alive? should reset the time_of_death field if data_provider comes back online" do
-      @provider.time_of_death = Time.now
-      @provider.is_alive?
-      @provider.time_of_death.should be nil
-    end
 end
-

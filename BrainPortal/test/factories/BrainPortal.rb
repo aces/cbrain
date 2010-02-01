@@ -92,3 +92,16 @@ Factory.define :tag do |tag|
   tag.name {Factory.next :tag_name}
   tag.user {|user| user.association(:user)}
 end
+
+
+#Remote resource factory
+Factory.sequence :rr_name do |n|
+  "rr#{n}"
+end
+
+Factory.define :remote_resource do |remote_resource|
+  remote_resource.name {Factory.next :rr_name}
+  remote_resource.user {|user| user.association(:user)}
+  remote_resource.group {Group.find_by_name('everyone')}
+  remote_resource.online { true }
+end

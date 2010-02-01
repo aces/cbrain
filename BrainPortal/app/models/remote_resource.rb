@@ -304,9 +304,20 @@ class RemoteResource < ActiveRecord::Base
   # way to check the state of the resource is to use the
   # info() method, which caches the information record.
   def is_alive?
-    info = self.remote_resource_info
-    return false if info.name == "???"
-    @info = info # just a quick optimization
+    return false if self.online == false 
+    @info = self.remote_resource_info
+    if @info.name == "???"
+      self.time_of_death ||= Time.now
+      if self.time_of_death < 2.minutes.ago
+        self.time_of_death = Time.now
+      elsif self.time_of_death < Time.now
+        self.online = false
+      end
+      self.save
+      return false
+    end
+    self.time_of_death = nil
+    self.save
     true
   rescue
     false
@@ -336,7 +347,6 @@ class RemoteResource < ActiveRecord::Base
   # For remote Rails applications, the instance method
   # with the same name can be called.
   def self.remote_resource_info
-
     myself             = self.current_resource
     home               = CBRAIN::Rails_UserHome
     host_uptime        = `uptime 2>/dev/null`.strip   # TODO make more robust
@@ -410,13 +420,13 @@ class RemoteResource < ActiveRecord::Base
       return self.class.remote_resource_info
     end
 
-    @info = nil
+    info = nil
     begin
       if !self.has_ssh_control_info? || self.start_tunnels
         Control.site    = self.site
         Control.timeout = 10
         control_info = Control.find('info')
-        @info = RemoteResourceInfo.new(control_info.attributes)
+        info = RemoteResourceInfo.new(control_info.attributes)
       end
     rescue
       # oops, it's dead
@@ -425,16 +435,18 @@ class RemoteResource < ActiveRecord::Base
     # If we can't find the info, we return a
     # plain dummy record containing mostly
     # strings of '???' everywhere.
-    @info ||= RemoteResourceInfo.dummy_record
+    info ||= RemoteResourceInfo.dummy_record
 
-    @info
+    info
   end
 
   # Returns and cache a record of run-time information about the resource.
   # This method automatically calls update_info if the information has
   # not been cached yet.
   def info
-    @info ||= self.remote_resource_info
+
+    return @info if @info
+    @info = RemoteResourceInfo.dummy_record unless is_alive? 
     @info
   end
 
@@ -475,6 +487,7 @@ class RemoteResource < ActiveRecord::Base
     )
     send_command(command)
   end
+
 
   # Utility method to send a +wakeup_workers+ command to a
   # RemoteResource, whether local or not.

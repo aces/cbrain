@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100127221418) do
+ActiveRecord::Schema.define(:version => 20100129193605) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -142,6 +142,7 @@ ActiveRecord::Schema.define(:version => 20100127221418) do
     t.string   "cache_md5"
     t.boolean  "portal_locked"
     t.integer  "cache_trust_expire",    :default => 0
+    t.datetime "time_of_death"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
