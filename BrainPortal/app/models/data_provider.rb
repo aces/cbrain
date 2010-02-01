@@ -176,6 +176,8 @@ require 'digest/md5'
 class DataProvider < ActiveRecord::Base
 
   Revision_info="$Id$"
+  
+  include ResourceAccess
 
   belongs_to  :user
   belongs_to  :group
@@ -251,30 +253,6 @@ class DataProvider < ActiveRecord::Base
   def is_browsable?
     false
   end
-
-  # Returns true if +user+ can access this provider.
-  def can_be_accessed_by?(user)
-    return true if self.user_id == user.id || user.has_role?(:admin)
-    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
-    user.group_ids.include?(group_id)
-  end
-
-  #Returns whether or not +user+ has owner access to this
-  #data provider.
-  def has_owner_access?(user)
-    if user.has_role? :admin
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-  
-    false
-  end
-
 
   #################################################################
   # Data API methods (work on userfiles)
@@ -570,48 +548,6 @@ class DataProvider < ActiveRecord::Base
   #################################################################
   # Utility Non-API
   #################################################################
-  
-  #Find data provider identified by +id+ accessible by +user+.
-  #
-  #*Accessible* data providers  are:
-  #[For *admin* users:] any data provider on the system.
-  #[For regular users:] all data providers that belong to a group to which the user belongs.
-  def self.find_accessible_by_user(id, user, options = {})
-    scope = self.scoped(options)
-    
-    unless user.has_role? :admin
-      scope = scope.scoped(:joins  => :user)
-      
-      if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(data_providers.user_id = ?) OR (data_providers.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-      else
-        scope = scope.scoped(:conditions  => ["(data_providers.user_id = ?) OR (data_providers.group_id IN (?))", user.id, user.group_ids])
-      end
-    end
-    
-    scope.find(id)
-  end
-  
-  #Find all data providers accessible by +user+.
-  #
-  #*Accessible* data providers  are:
-  #[For *admin* users:] any data provider on the system.
-  #[For regular users:] all data providers that belong to a group to which the user belongs.
-  def self.find_all_accessible_by_user(user, options = {})
-    scope = self.scoped(options)
-    
-    unless user.has_role? :admin
-      scope = scope.scoped(:joins  => :user)
-      
-      if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(data_providers.user_id = ?) OR (data_providers.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-      else
-        scope = scope.scoped(:conditions  => ["(data_providers.user_id = ?) OR (data_providers.group_id IN (?))", user.id, user.group_ids])
-      end
-    end
-    
-    scope.find(:all)
-  end
 
   # This method is a TRANSITION utility method; it returns
   # any provider that's read/write for the user. The method

@@ -141,55 +141,6 @@ class Userfile < ActiveRecord::Base
       'file:mls'
     end
   end
-
-  #Convert the array of +filters+ into an sql query string
-  #to be used in pulling userfiles from the database.
-  #Note that tag filters will not be converted, as they are
-  #handled by the apply_tag_filters method.
-  # def self.convert_filters_to_sql_query(filters)
-  #     query = []
-  #     arguments = []
-  # 
-  #     filters.each do |filter|
-  #       type, term = filter.split(':')
-  #       case type
-  #       when 'name'
-  #         query << "(userfiles.name LIKE ?)"
-  #         arguments << "%#{term}%"
-  #       when 'custom'
-  #         custom_filter = CustomFilter.find_by_name(term)
-  #         unless custom_filter.query.blank?
-  #           query << "(#{custom_filter.query})"
-  #           arguments += custom_filter.variables
-  #         end
-  #       when 'file'
-  #         case term
-  #         when 'jiv'
-  #           query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
-  #           arguments += ["%.raw_byte", "%.raw_byte.gz", "%.header"]
-  #         when 'minc'
-  #           query << "(userfiles.name LIKE ?)"
-  #           arguments << "%.mnc"
-  #         when 'cw5'
-  #           query << "(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)"
-  #           arguments += ["%.flt", "%.mls", "%.bin", "%.cw5" ]
-  #         when 'flt'
-  #           query << "(userfiles.name LIKE ?)"
-  #           arguments += ["%.flt"]
-  #         when 'mls'
-  #           query << "(userfiles.name LIKE ?)"
-  #           arguments += ["%.mls"]
-  #         end
-  #       end
-  #     end
-  # 
-  #     unless query.empty?
-  #       [query.join(" AND ")] + arguments
-  #     else
-  #       []
-  #     end
-  # 
-  #   end
   
   #Convert the array of +filters+ into an scope
   #to be used in pulling userfiles from the database.

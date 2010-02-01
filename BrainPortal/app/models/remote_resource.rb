@@ -50,6 +50,8 @@ require 'socket'
 class RemoteResource < ActiveRecord::Base
 
   Revision_info="$Id$"
+  
+  include ResourceAccess
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
@@ -79,73 +81,6 @@ class RemoteResource < ActiveRecord::Base
   def site_affiliation
     @site_affiliation ||= self.user.site
   end
-
-  #Returns whether or not this resource can be accessed by +user+.
-  def can_be_accessed_by?(user)
-      return true if self.user_id == user.id || user.has_role?(:admin)
-      return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
-      user.group_ids.include?(group_id)
-  end
-  
-  #Returns whether or not +user+ has owner access to this
-  #remote resource.
-  def has_owner_access?(user)
-    if user.has_role? :admin
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-    
-    false
-  end
-  
-  #Find remote resource identified by +id+ accessible by +user+.
-  #
-  #*Accessible* remote resources  are:
-  #[For *admin* users:] any remote resource on the system.
-  #[For regular users:] all remote resources that belong to a group to which the user belongs.
-  def self.find_accessible_by_user(id, user, options = {})
-    scope = self.scoped(options)
-    
-    unless user.has_role? :admin
-      scope = scope.scoped(:joins  => :user)
-      
-      if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-      else                   
-        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?))", user.id, user.group_ids])
-      end
-    end
-    
-    scope.find(id)
-  end
-  
-  #Find all remote resources accessible by +user+.
-  #
-  #*Accessible* remote resources  are:
-  #[For *admin* users:] any remote resource on the system.
-  #[For regular users:] all remote resources that belong to a group to which the user belongs.
-  def self.find_all_accessible_by_user(user, options = {})
-    scope = self.scoped(options)
-    
-    unless user.has_role? :admin
-      scope = scope.scoped(:joins  => :user)
-      
-      if user.has_role? :site_manager
-        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-      else                   
-        scope = scope.scoped(:conditions  => ["(remote_resources.user_id = ?) OR (remote_resources.group_id IN (?))", user.id, user.group_ids])
-      end
-    end
-    
-    scope.find(:all)
-  end
-
-
 
   ############################################################################
   # ActiveRecord callbacks

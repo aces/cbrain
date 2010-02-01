@@ -4,7 +4,7 @@
 #
 # Module containing common methods for the DrmaaTask classes
 # used on the BrainPortal and Bourreau side; it's important
-# to realized that on the BrainPortal side, DrmaaTasks are
+# to realize that on the BrainPortal side, DrmaaTasks are
 # ActiveResource objects, while on the Bourreau side they
 # are ActiveRecords. Still, many methods are common, so they've
 # been extracted here.
