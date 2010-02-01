@@ -23,7 +23,7 @@ class ScirSharcnetSession < Scir::Session
   def update_job_info_cache
     @job_info_cache = {}
     jid = 'Dummy'
-    IO.popen("sqjobs -u #{CBRAIN::Rails_UserName} 2>/dev/null","r") do |fh|
+    IO.popen("sqjobs -u #{CBRAIN::Rails_UserName} 2>/dev/null;sqjobs -n","r") do |fh|
       fh.readlines.each do |line|
 
 # jobid queue state ncpus prio  nodes time command     
@@ -93,7 +93,7 @@ class ScirSharcnetSession < Scir::Session
 
   def queue_tasks_tot_max
     job_ps('!dummy!') # to trigger refresh of @job_ps_cache if necessary
-    tot_max = @job_ps_cache['!sharcnet_load!'] || [ 'unknown', 'unknown' ]
+    tot_max = @job_info_cache['!sharcnet_load!'] || [ 'unknown', 'unknown' ]
     tot_max
   rescue
     [ "exception", "exception" ]
