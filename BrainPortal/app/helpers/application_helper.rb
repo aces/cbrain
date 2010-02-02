@@ -85,6 +85,13 @@ module ApplicationHelper
 
     final
   end
+
+  def pretty_past_date(pastdate, what = :datetime)
+    loctime = Time.parse(pastdate.to_s).localtime
+    locdate = to_localtime(pastdate,what)
+    elapsed = pretty_elapsed(Time.now - loctime)
+    "#{locdate} (#{elapsed} ago)"
+  end
   
   # Format a byte size for display in the view.
   # Returns the size as one of

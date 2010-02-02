@@ -1,1 +1,3 @@
-<span title="<%= syncstat.remote_resource.class.to_s + " " + syncstat.remote_resource.name + ": " + syncstat.status %>"><%= status_html_symbol(syncstat.status) %></span>
+<span title="<%= syncstat.remote_resource.class.to_s + " '" + syncstat.remote_resource.name + "' : " + syncstat.status %><% if syncstat.status == 'InSync' %>
+Last Synchronized Date: <%= pretty_past_date syncstat.synced_at %>
+Last Accessed Date:     <%= pretty_past_date syncstat.accessed_at %><% end %>"><%= status_html_symbol(syncstat.status) %></span>
