@@ -21,5 +21,6 @@ config.action_mailer.raise_delivery_errors = true
 config.action_mailer.smtp_settings = {
   :address  =>  "mailhost.mcgill.ca",
   :port     =>  25,
-  :domain   =>  Socket.gethostname 
+  :domain   =>  Socket.gethostname
 }
+

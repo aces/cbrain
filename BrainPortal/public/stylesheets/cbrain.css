@@ -1508,3 +1508,18 @@ h1.warning{
 	padding: 0;
 	margin: 0;
 }
+
+.xstooltip 
+{
+    visibility: hidden; 
+    position: absolute; 
+    top: 0;  
+    left: 0; 
+    z-index: 2;
+ 		
+		background-color: #FFFFCC;
+    font: normal 8pt sans-serif;
+ 		color: black;
+    padding: 5px; 
+		border: 1px solid gray;
+}

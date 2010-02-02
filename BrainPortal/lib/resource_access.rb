@@ -2,19 +2,19 @@
 #
 # CBRAIN Project
 #
-# Module containing common methods for the models representing
-# resources owned by certain users and made available to others
-# through groups (currently Userfile, RemoteResource, DataProvider).
-#
-# This requires that classes that include them be ActiveRecord models
-# with at least the attributes +user_id+ and +group_id+.
+# Module containing common methods for resource access.
 #
 # Original author: Tarek Sherif
 #
 # $Id$
 #
 
-
+# Module containing common methods for the models representing
+# resources owned by certain users and made available to others
+# through groups (currently RemoteResource, DataProvider).
+#
+# This requires that classes that include them be ActiveRecord models
+# with at least the attributes +user_id+ and +group_id+.
 module ResourceAccess
 
   Revision_info="$Id$"
