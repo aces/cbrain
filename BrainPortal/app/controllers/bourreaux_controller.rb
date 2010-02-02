@@ -179,9 +179,14 @@ class BourreauxController < ApplicationController
 
     cb_notice "This Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "This Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "This Execution Server is not marked as online."                  unless @bourreau.online?
+    cb_notice "This Execution Server is already alive."                         if @bourreau.is_alive?
 
-    cb_notice "This Execution Server is already alive." if @bourreau.is_alive?
+    # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
+    unless @bourreau.online?
+      #cb_notice "This Execution Server is not marked as online."
+      @bourreau.online=true
+      @bourreau.save
+    end
 
     @bourreau.start_tunnels
     cb_error "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
@@ -213,7 +218,7 @@ class BourreauxController < ApplicationController
   def stop
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     begin
