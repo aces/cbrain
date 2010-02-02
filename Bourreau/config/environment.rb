@@ -38,6 +38,8 @@ Rails::Initializer.run do |config|
   if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*postgres/m
     config.gem "postgres"
   end
+  
+  config.action_mailer.delivery_method       = :test
 
   # Only load the plugins named here, in the order given. By default, all plugins 
   # in vendor/plugins are loaded in alphabetical order.

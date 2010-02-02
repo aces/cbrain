@@ -497,13 +497,24 @@ class RemoteResource < ActiveRecord::Base
     end
 
     puts "RemoteResource Processing Command: #{command.inspect}"
-
-    if command.command == "clean_cache"
-      self.process_command_clean_cache(command.user_ids, command.before_date)
-    elsif command.command =~ /^(start|stop|wakeup)_workers/
-      self.process_command_worker_control(Regexp.last_match[1])
+    
+    self.send("process_command_#{command.command}", command)
+    # if command.command == "clean_cache"
+    #   self.process_command_clean_cache(command.user_ids, command.before_date)
+    # elsif command.command =~ /^(start|stop|wakeup)_workers/
+    #   self.process_command_worker_control(Regexp.last_match[1])
+    # else
+    #   cb_error "Unknown command #{command.command}"
+    # end
+  end
+  
+  #Treat process_command_xxx calls as bad commands,
+  #otherwise as NoMethodErrors
+  def self.method_missing(method, *args)
+    if method.to_s =~ /^process_command_(.+)/
+      cb_error "Unknown command #{Regexp.last_match[1]}"
     else
-      cb_error "Unknown command #{command.command}"
+      super
     end
   end
 
@@ -512,9 +523,12 @@ class RemoteResource < ActiveRecord::Base
   # Clean the cached files of a list of users, for file
   # last accessed before the +before_date+ ; the task
   # is start in background, as it can be long.
-  def self.process_command_clean_cache(userids, before_date = Time.now)
+  def self.process_command_clean_cache(command)
+    user_ids     = command.user_ids
+    before_date = command.before_date || Time.now
+    
     userlist = []
-    userids.split(/,/).uniq.each do |idstring|
+    user_ids.split(/,/).uniq.each do |idstring|
       if idstring == 'all'
         userlist |= User.all
         next
@@ -539,23 +553,50 @@ class RemoteResource < ActiveRecord::Base
     true
   end
 
-  # Starts, stops, or wakes up Bourreau worker processes.
-  def self.process_command_worker_control(startstop)
+  # Starts Bourreau worker processes.
+  def self.process_command_start_workers(command)
     myself = RemoteResource.current_resource
-    cb_error "Got worker control command #{startstop} but I'm not a Bourreau!" unless
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
     allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-    case startstop
-      when 'start'
-        self.start_bourreau_workers
-      when 'stop'
-        BourreauWorker.stop_all
-      when 'wakeup'
-        BourreauWorker.wake_all
-    else
-        cb_error "Got unknown worker control command #{startstop}"
-    end
+    self.start_bourreau_workers
   end
+  
+  # Stops Bourreau worker processes.
+  def self.process_command_stop_workers(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
+    BourreauWorker.stop_all
+  end
+  
+  # Wakes up Bourreau worker processes.
+  def self.process_command_wakeup_workers(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
+    BourreauWorker.wake_all
+  end
+
+  # Starts, stops, or wakes up Bourreau worker processes.
+  # def self.process_command_worker_control(startstop)
+  #     myself = RemoteResource.current_resource
+  #     cb_error "Got worker control command #{startstop} but I'm not a Bourreau!" unless
+  #       myself.is_a?(Bourreau)
+  #     allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
+  #     case startstop
+  #       when 'start'
+  #         self.start_bourreau_workers
+  #       when 'stop'
+  #         BourreauWorker.stop_all
+  #       when 'wakeup'
+  #         BourreauWorker.wake_all
+  #     else
+  #         cb_error "Got unknown worker control command #{startstop}"
+  #     end
+  #   end
 
   # This just makes sure some workers are available.
   # It's unfortunate that due to technical reasons,
