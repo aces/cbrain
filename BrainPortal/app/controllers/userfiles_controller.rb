@@ -366,6 +366,7 @@ class UserfilesController < ApplicationController
       end
     end
   end
+  
 
   #This action is for performing a given operation on a Userfile.
   #
@@ -459,6 +460,18 @@ class UserfilesController < ApplicationController
         end
 
       when "download"
+        specified_filename = params[:specified_filename]
+        if ! specified_filename.blank?
+          if ! Userfile.is_legal_filename?(specified_filename)
+              flash[:error] += "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
+              redirect_to :action => :index
+              return
+          end
+        else
+          timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
+          specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
+        end
+        
         if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
           userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
           userfile.sync_to_cache
@@ -476,7 +489,7 @@ class UserfilesController < ApplicationController
             redirect_to :action => :index
             return
           end
-          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login, specified_filename)
           send_file tarfile, :stream  => true, :filename => Pathname.new(tarfile).basename
           CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
             sleep 300
@@ -805,10 +818,10 @@ class UserfilesController < ApplicationController
                          
   end
 
-  def create_relocatable_tar_for_userfiles(ulist,username)
+  def create_relocatable_tar_for_userfiles(ulist,username, specified_filename)
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
     tmpdir       = Pathname.new("/tmp/dl.#{$$}.#{timestamp}")
-    tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
+    tarfilename  = Pathname.new("/tmp/#{specified_filename}.tar.gz") # must be outside the tmp work dir
 
     relpath_to_tar = []
     Dir.mkdir(tmpdir)
