@@ -389,7 +389,8 @@ class SshTunnel
       @pid = nil
       return nil
     end
-    return @pid if @pid
+    # Unfortunately, this won't work when we have multiple instances of the Rails app.
+    #return @pid if @pid
     begin
       line = nil
       File.open(pidfile,"r") { |fh| line = fh.read }
