@@ -7,6 +7,9 @@
 
 # This class provides a asynchronous communication mechanism
 # between any user, group and process to any CBRAIN user.
+
+require 'socket'
+
 class Message < ActiveRecord::Base
 
   Revision_info="$Id$"
@@ -173,10 +176,15 @@ class Message < ActiveRecord::Base
       :header  => "Internal error: #{header}",
 
       :description  => "An internal error occured inside the CBRAIN code.\n"     +
-                       "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n\n" +
-                       "Users involved: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
-                       "Params: #{request_params.inspect}\n\n" +
-                       "#{exception.class.to_s}: #{exception.message}\n" +
+                       "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n" +
+                       "\n" +
+                       "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
+                       "Hostname: #{Socket.gethostname}\n" +
+                       "Process ID: #{Process.pid}\n" +
+                       "Process Name: #{$0}\n" +
+                       "Params: #{request_params.inspect}\n" +
+                       "\n" +
+                       "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                        exception.backtrace[0..30].join("\n") + "\n",
                        
       :send_email   => true
