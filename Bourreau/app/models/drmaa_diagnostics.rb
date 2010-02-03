@@ -26,7 +26,7 @@ class DrmaaDiagnostics < DrmaaTask
     user_id      = self.user_id
 
     files_hash    = params[:files_hash] || {}
-    file_ids      = files_hash.keys
+    file_ids      = files_hash.values
 
     self.addlog "Starting diagnostics on #{file_ids.size} files"
 
@@ -38,11 +38,15 @@ class DrmaaDiagnostics < DrmaaTask
       end
       mysize    = u.size || 0.0
       timestart = Time.now
-      u.sync_to_cache
-      difftime  = (0.0 + (Time.now - timestart))
-      difftime  = 1.0 if difftime < 1.0
-      bytes_per_sec = (0.0 + mysize) / difftime
-      self.addlog "Syncronized ID=#{id} NAME='#{u.name}' SIZE=#{mysize} TIME=#{difftime} AVG=#{bytes_per_sec} bytes/s"
+      begin
+        u.sync_to_cache
+        difftime  = (0.0 + (Time.now - timestart))
+        difftime  = 1.0 if difftime < 1.0
+        bytes_per_sec = (0.0 + mysize) / difftime
+        self.addlog "Synchronized: ID=#{id} NAME='#{u.name}' SIZE=#{mysize} TIME=#{difftime} AVG=#{bytes_per_sec} bytes/s"
+      rescue => ex
+        self.addlog "Failed Sync: ID=#{id} NAME='#{u.name}' SIZE=#{mysize} EXCEPT=#{ex.class} #{ex.message}"
+      end
     end
 
     true
@@ -56,6 +60,7 @@ class DrmaaDiagnostics < DrmaaTask
     files_hash    = params[:files_hash] || {}
     file_ids      = files_hash.keys
 
+    # Note: 'commands' is an ARRAY of strings.
     commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
 
       echo "============================================================="
@@ -87,11 +92,20 @@ class DrmaaDiagnostics < DrmaaTask
       commands << "echo \"Type=#{mytype}\""
       commands << "echo \"Start=`date`\""
       if mytype == 'SingleFile'
-        commands << "wc #{full}"
+        commands << "wc -c #{full}"
       else
         commands << "du -s #{full}"
       end
       commands << "echo \"End=`date`\""
+    end
+
+    delay = params[:delay_seconds].to_i rescue nil
+    if delay && delay > 0
+      commands << "\n"
+      commands << "echo \"============================================================\""
+      commands << "echo \"Sleeping #{delay} seconds.\""
+      commands << "sleep #{delay}"
+      commands << "\n"
     end
 
     commands

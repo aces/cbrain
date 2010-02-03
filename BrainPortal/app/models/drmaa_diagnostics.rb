@@ -16,7 +16,12 @@ class DrmaaDiagnostics < DrmaaTask
 
   #See DrmaaTask.
   def self.has_args?
-    false
+    true
+  end
+
+  def self.get_default_args(params = {}, saved_args = {})
+    params[:delay_seconds] = 0
+    params
   end
 
   #See DrmaaTask.
@@ -28,11 +33,11 @@ class DrmaaDiagnostics < DrmaaTask
 
     task             = DrmaaDiagnostics.new
     task.description = "Diagnostics with #{numfiles} files"
-    task.params      = { :files_hash => files_hash }
+    task.params      = { :files_hash => files_hash, :delay_seconds => params[:delay_seconds] }
     task.user_id     = params[:user_id]
     task.save
 
-    "Launched Diagnostics task with #{numfiles}"
+    "Launched Diagnostics task with #{numfiles} files."
   end
 
 end

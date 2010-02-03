@@ -1,0 +1,42 @@
+<!-- 
+   Partial to be rendered for DrmaaDiagnostics
+-->
+<% title 'Cluster Diagnostics Parameters' %>
+
+<div class = "generalbox">
+
+<h1>Cluster Diagnostics Parameters</h1>
+
+<h3>Bourreau: <%= Bourreau.find(params[:bourreau_id]).name %></h3>
+
+<%
+     form_tag( '/tasks/create' ) do 
+-%>
+
+<!-- 
+  Make sure parameters 'task' and 'file_ids' are always set to something,
+  as they are required internally.
+-->
+
+<%= hidden_field_tag :task,        'DrmaaDiagnostics' %>
+<%= hidden_field_tag :bourreau_id, params[:bourreau_id] %>
+
+<% params[:file_ids].each do |id| %>
+  <%= hidden_field_tag 'file_ids[]',  id %>
+<% end %>
+
+<strong>Optional task delay (in seconds):</strong>
+<%= text_field_tag :delay_seconds, params[:delay_seconds] %>
+
+<br>
+
+<strong>Save report to:</strong>
+<%= select_tag "data_provider_id", options_for_select(data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
+
+<br><br>
+
+<%= submit_tag 'Start Diagnostics' %>
+
+<% end %>
+
+</div> <!-- generalbox -->
