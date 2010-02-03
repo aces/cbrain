@@ -1,3 +1,13 @@
+#
+# CBRAIN Project
+#
+# Userfile spec
+#
+# Original author: Nicolas Kassis
+#
+# $Id:
+#
+
 require 'spec_helper'
 
 describe Userfile do

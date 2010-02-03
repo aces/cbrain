@@ -1,3 +1,14 @@
+#
+# CBRAIN Project
+#
+# DataProvider spec
+#
+# Original author: Nicolas Kassis
+#
+# $Id:
+#
+
+
 require 'spec_helper'
 
 describe DataProvider do

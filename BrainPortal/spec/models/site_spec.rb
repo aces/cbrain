@@ -1,3 +1,14 @@
+#
+# CBRAIN Project
+#
+# Site spec
+#
+# Original author: Nicolas Kassis
+#
+# $Id:
+#
+
+
 require 'spec_helper'
 
 describe Site do 

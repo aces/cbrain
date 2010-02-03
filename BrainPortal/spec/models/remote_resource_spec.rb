@@ -1,3 +1,15 @@
+
+#
+# CBRAIN Project
+#
+# RemoteResource Spec 
+#
+# Original author: Nicolas Kassis
+#
+# $Id: 
+#
+
+
 require 'spec_helper'
 
 describe RemoteResource do

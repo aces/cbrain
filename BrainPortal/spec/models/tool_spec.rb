@@ -1,5 +1,14 @@
-require 'spec_helper'
+#
+# CBRAIN Project
+#
+# Tool spec
+#
+# Original author: Nicolas Kassis
+#
+# $Id:
+#
 
+require 'spec_helper'
 
 describe Tool do
   before(:each) do
