@@ -120,6 +120,11 @@ class ScirSharcnetJobTemplate < Scir::JobTemplate
       self.command == "/bin/bash" && self.arg.size == 1
     raise "Error: stdin not supported" if self.stdin
 
+    stdoutfile = self.stdout
+    stderrfile = self.stderr
+    stdoutfile.sub!(/^:/,"") if stdoutfile
+    stderrfile.sub!(/^:/,"") if stderrfile
+
     # Prefix: chdir
     command  = ""
     command += "cd #{shell_escape(self.wd)}; "    if self.wd
@@ -127,8 +132,8 @@ class ScirSharcnetJobTemplate < Scir::JobTemplate
     # sqsub command
     command += "sqsub "
     command += "-j #{shell_escape(self.name)} "   if self.name
-    command += "-o #{shell_escape(self.stdout)} " if self.stdout
-    command += "-e #{shell_escape(self.stderr)} " if self.stderr && ! self.join && self.stderr != self.stdout
+    command += "-o #{shell_escape(stdoutfile)} "  if stdoutfile
+    command += "-e #{shell_escape(stderrfile)} "  if stderrfile && ! self.join && stderrfile != stdoutfile
     command += "-q #{shell_escape(self.queue)} "  if self.queue
     command += " #{CBRAIN::EXTRA_QSUB_ARGS} "     unless CBRAIN::EXTRA_QSUB_ARGS.empty?
     command += "/bin/bash #{shell_escape(self.arg[0])}"

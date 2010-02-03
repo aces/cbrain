@@ -17,7 +17,7 @@ class DrmaaDiagnostics < DrmaaTask
 
   def addlog(message,options={})
     puts "DIAGNOSTIC: #{message}"
-    super(message,options)
+    super(message,options.dup.merge( :caller_level => 1 ))
   end
 
   #See DrmaaTask.
