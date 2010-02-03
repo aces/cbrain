@@ -13,7 +13,7 @@
 puts "C> Checking for pending migrations..."
 #-----------------------------------------------------------------------------
 
-unless ARGV[0] == "db:migrate"
+unless ARGV[0] == "db:migrate" or ARGV[0] == "migration" 
   if defined? ActiveRecord
     pending_migrations = ActiveRecord::Migrator.new(:up, 'db/migrate').pending_migrations
     if pending_migrations.any?
