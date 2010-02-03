@@ -142,7 +142,9 @@ class TasksController < ApplicationController
     @task_class = params[:task].constantize
     @task_class.preferred_bourreau_id = params[:bourreau_id]
     
-    @task_class.data_provider_id     = params[:data_provider_id] || current_user.user_preference.data_provider
+    @task_class.data_provider_id     = params[:data_provider_id]                       ||
+                                       current_user.user_preference.data_provider      ||
+                                       available_data_providers(current_user).first.id
     @task_class.launch_time          = Time.now
     
     if params[:save_as_defaults]

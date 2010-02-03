@@ -103,7 +103,7 @@ module UserfilesHelper
     file_name = userfile.name
     case file_name
     when /(\.txt|\.xml)$/
-      content = simple_format(h(File.read(userfile.cache_full_path)))
+      content = '<PRE>' + h(File.read(userfile.cache_full_path)) + '</PRE>'
     when /(\.jpe?g|\.gif|\.png)$/
       content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
     else

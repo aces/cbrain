@@ -25,7 +25,7 @@
       <td><%= h(tasks.first.user.login) %></td>
       <td colspan="4">
         <% if launch_time %>
-          <%= pluralize(tasks.size, "job")%> launched at <%= launch_time %>
+          <%= pluralize(tasks.size, "job")%> launched at <%= to_localtime(launch_time,:datetime) %>
         <% else %>
           <%= pluralize(tasks.size, "old job")%>
         <% end %>

@@ -293,7 +293,7 @@ class BourreauWorker
       end
 
     rescue => e
-      self.addlog "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}" +
+      self.addlog "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" +
                   e.backtrace[0..10].join("\n")
     end
   end
