@@ -23,12 +23,12 @@ class ScirLocalSession < Scir::Session
   def update_job_info_cache
     @job_info_cache = {}
     ps_command = case CBRAIN::System_Uname
-      when /Linux/
-        "ps -x -o pid,uid,state"
-      when /Solaris/
-        "ps -x -o pid,uid,state"  # not tested
+      when /Linux/i
+        "ps x -o pid,uid,state"
+      when /Solaris/i
+        "ps x -o pid,uid,state"  # not tested
       else
-        "ps -x -o pid,uid,state"  # not tested
+        "ps x -o pid,uid,state"  # not tested
     end
     IO.popen(ps_command, "r") do |fh|
       fh.readlines.each do |line|
@@ -69,10 +69,23 @@ class ScirLocalSession < Scir::Session
   end
 
   def queue_tasks_tot_max
-    cpuinfo = `cat /proc/cpuinfo`.split("\n")
-    proclines = cpuinfo.select { |i| i.match(/^processor\s*:\s*/i) }
-    [ "unknown", proclines.size.to_s ]
-  rescue
+    loadav = `uptime`.strip
+    loadav.match(/averages:\s*([\d\.]+)/)
+    loadtxt = Regexp.last_match[1] || "unknown"
+    case CBRAIN::System_Uname
+    when /Linux/i
+      cpuinfo = `cat /proc/cpuinfo 2>&1`.split("\n")
+      proclines = cpuinfo.select { |i| i.match(/^processor\s*:\s*/i) }
+      return [ loadtxt , proclines.size.to_s ]
+    when /Darwin/i
+      hostinfo = `hostinfo 2>&1`.strip
+      hostinfo.match(/^(\d+) processors are/)
+      numproc = Regexp.last_match[1] || "unknown"
+      [ loadtxt, numproc ]
+    else
+      [ "unknown", "unknown" ]
+    end
+  rescue => e
     [ "exception", "exception" ]
   end
 
