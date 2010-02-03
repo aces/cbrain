@@ -27,24 +27,68 @@
       </div> <!-- End class="upper_form" -->
    <% end %>
    <br>
+   <div id="show_details_link" style="display:inline;">
+    <%= 
+        link_to_function 'Show Details', {:class  => 'action_link', :id => "show_details_link"} do |page|
+          page['bourreau_show_details'].show
+          page['bourreau_hide_details'].hide
+          page['hide_details_link'].show
+          page['show_details_link'].hide
+        end 
+        %>
+    </div>
+    <div id="hide_details_link" style="display:none;">
+        <%= 
+        link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
+          page['bourreau_show_details'].hide
+          page['bourreau_hide_details'].show        
+          page['show_details_link'].show
+          page['hide_details_link'].hide      
+        end 
+            %>
+    </div>
+    
+    <div id = "bourreau_info">
+   <div id = "bourreau_show_details" style="display:none">
+
+       <table class="resource_list" id="bourreau_table">
+            <tr>
+                <th>Server Class</th>
+                <th>Server Name</th>
+                <th>Owner</th>
+                <th>Group</th>
+                <th>Site</th>
+                <th>Online?</th>
+                <th>Alive?</th>
+                <th>Workers?</th>
+                <th>Load</th>
+                <th>Description</th>
+                <th colspan="4">Operations</th>
+            </tr>
+
+            <% for bour in @bourreaux %>
+                <%= render :partial => 'bourreau_table_row', :locals  => {:bour  => bour} %>
+            <% end %>
+        </table>
+   </div>
+   
+  <div id = "bourreau_hide_details">
   <table class="resource_list" id="bourreau_table">
      <tr>
          <th>Server Class</th>
          <th>Server Name</th>
-         <th>Owner</th>
-         <th>Group</th>
          <th>Site</th>
          <th>Online?</th>
          <th>Alive?</th>
          <th>Workers?</th>
          <th>Load</th>
-         <th>Description</th>
          <th colspan="4">Operations</th>
      </tr>
   
      <% for bour in @bourreaux %>
-         <%= render :partial => 'bourreau_table_row', :locals  => {:bour  => bour} %>
-     <% end %>
-  
-  </table>
+         <%= render :partial => 'bourreau_table_row_hide', :locals  => {:bour  => bour} %>
+     <% end %> 
+     </table>
+  </div>
+  </div>
 </div>  <!-- End class="generalcontent" -->

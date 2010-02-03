@@ -1,0 +1,46 @@
+<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="bourreau_<%= bour.id %>">
+  <% info        = bour.info            %>
+  <% worker_pids = info.worker_pids     %>
+  <% worker_pids = nil if worker_pids == "???" %>
+  <% tasks_tot   = info.tasks_tot %>
+  <% tasks_max   = info.tasks_max %>
+  <% tasks_max   = 'unlimited' if tasks_max.to_s == '0' %>
+  <% isbourreau  = bour.is_a?(Bourreau) %>
+  <td><%= isbourreau ? "Execution" : "Portal" %></td>
+  <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
+  <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
+  <td><%= bour.online          ? "Yes" : "<font color=\"red\">No</font>" %></td>
+  <td><%= info.name != "???"   ? "Yes" : "<font color=\"red\">No</font>" %></td>
+  <% if isbourreau %>
+    <td><%= ! worker_pids.blank? ? "Running" : "<font color=\"red\">Stopped</font>" %></td>
+    <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
+  <% else %>
+    <td>-</td>
+    <td>-</td>
+  <% end %>
+       
+  <% if bour.has_owner_access?(current_user) %>
+    <td><%= link_to 'Edit', edit_bourreau_path(bour), :class => 'action_link' %></td>
+    <td>
+      <% if RemoteResource.current_resource.id != bour.id %>
+      <%= 
+          link_to_remote  'Delete',
+                        {:url  => bourreau_path(bour),
+                         :method  => 'delete',
+                         :confirm => 'Are you sure?',
+                         :before  => "$('bourreau_#{bour.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                         },
+                        {:class => 'action_link'}
+        %>
+       <% end %>
+     </td>
+    <% if bour.has_remote_control_info? %>
+      <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link' %></td>
+      <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link' %></td>
+    <% else %>
+      <td colspan="2"></td>
+    <% end %>
+  <% else %>
+    <td colspan="4"></td>
+  <% end %>
+</tr>
