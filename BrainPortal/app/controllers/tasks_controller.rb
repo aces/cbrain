@@ -113,7 +113,8 @@ class TasksController < ApplicationController
     @files = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested  => :read)
     @data_providers = available_data_providers(current_user)
 
-    params[:user_id] = current_user.id
+    params[:bourreau_id] = Tool.find_by_drmaa_class(params[:task].to_s).select_random_bourreau_for(current_user) if params[:bourreau_id].blank?
+    params[:user_id]     = current_user.id
 
     # Simple case: the task has no parameter page, so submit
     # directly to 'create'

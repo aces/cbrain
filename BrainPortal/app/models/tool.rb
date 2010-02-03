@@ -34,9 +34,19 @@ class Tool < ActiveRecord::Base
   belongs_to :group
   has_and_belongs_to_many :bourreaux
   
-  validates_uniqueness_of :name, :select_menu_text
+  validates_uniqueness_of :name, :select_menu_text, :drmaa_class
   validates_presence_of   :name, :drmaa_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
+  
+  def select_random_bourreau_for(user)
+    available_group_ids = user.group_ids
+    bourreau_list = self.bourreaux.find(:all, :conditions => { :group_id => available_group_ids, :online => true }).select(&:is_alive?)
+    if bourreau_list.empty?
+      cb_error("Unable to find an execution server. Please notify your administrator of the problem.")
+    end
+    bourreau_list.slice(rand(bourreau_list.size)).id
+  end
+  
   private
   
   def set_default_attributes
