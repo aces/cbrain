@@ -466,17 +466,21 @@ class UserfilesController < ApplicationController
               flash[:error] += "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
               redirect_to :action => :index
               return
+          else
+            specified_filename = "#{specified_filename}.tar.gz"
           end
         else
+          is_blank = true
           timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
-          specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
+          specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}.tar.gz"
         end
         
         if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
           userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
           userfile.sync_to_cache
           fullpath = userfile.cache_full_path
-          send_file fullpath, :stream => true, :filename => fullpath.basename
+          specified_filename.sub!(/.tar.gz$/,"") unless specified_filename.blank?
+          send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename        
         else
           userfiles_list = filelist.collect do |id|
             u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
@@ -489,8 +493,8 @@ class UserfilesController < ApplicationController
             redirect_to :action => :index
             return
           end
-          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login, specified_filename)
-          send_file tarfile, :stream  => true, :filename => Pathname.new(tarfile).basename
+          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+          send_file tarfile, :stream  => true, :filename => specified_filename
           CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
             sleep 300
             File.unlink(tarfile)
@@ -818,11 +822,11 @@ class UserfilesController < ApplicationController
                          
   end
 
-  def create_relocatable_tar_for_userfiles(ulist,username, specified_filename)
+  def create_relocatable_tar_for_userfiles(ulist,username)
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
     tmpdir       = Pathname.new("/tmp/dl.#{$$}.#{timestamp}")
-    tarfilename  = Pathname.new("/tmp/#{specified_filename}.tar.gz") # must be outside the tmp work dir
-
+    tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
+    
     relpath_to_tar = []
     Dir.mkdir(tmpdir)
     Dir.chdir(tmpdir) do  # /tmpdir
