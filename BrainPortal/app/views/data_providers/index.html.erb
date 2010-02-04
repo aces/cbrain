@@ -25,38 +25,87 @@
           <div id="new_data_provider" style="display:none">
             <%= render :partial  => 'new' %>
           </div>
-    </div> <!-- End class="upper_form" -->
+    </div> <!-- End id="resource_list_upper_form" -->
 
-<br>
-   <table class="resource_list" id="data_provider_table">
-      <tr>
-          <th>Provider Name</th>
-          <th>Owner</th>
-          <th>Group</th>
-          <th>Site</th>
-          <th>Online?</th>
-          <th>Alive?</th>
-          <th>Mode</th>
-          <th>Description</th>
-          <th colspan="3">Operations</th>
-      </tr>
 
-      <% for prov in @providers %>
-          <%= render :partial => 'data_provider_table_row', :locals  => {:prov  => prov} %>
-      <% end %>
+    <br>    
+   <div id="show_details_link" style="display:inline">
+             <%= 
+             link_to_function 'Show Details', {:class  => 'action_link', :id =>'show_details_link'} do |page|
+               page['provider_hide_details'].hide      
+               page['provider_show_details'].show
+               page['provider_statistics'].show
+               page['show_details_link'].hide
+               page['hide_details_link'].show      
+             end 
+             %>
+    </div><!--End id="show_details_link"-->
+    
+    <div id="hide_details_link" style="display:none">
+            <%= 
+            link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
+              page['provider_show_details'].hide
+              page['provider_hide_details'].show        
+              page['provider_statistics'].show
+              page['show_details_link'].show
+              page['hide_details_link'].hide      
+            end 
+            %>
+    </div><!-- End id="hide_details_link" --> 
 
-      <% if @providers.nil? || @providers.empty? %>
-        <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
-      <% end %>
+   <div id ="provider_show_details" style="display:none">
 
-   </table>
+       <br>
+       <table class="resource_list" id="data_provider_table">
+          <tr>
+              <th>Provider Name</th>
+              <th>Owner</th>
+              <th>Group</th>
+              <th>Site</th>
+              <th>Online?</th>
+              <th>Alive?</th>
+              <th>Mode</th>
+              <th>Description</th>
+              <th colspan="3">Operations</th>
+          </tr>
 
-<P>
+          <% for prov in @providers %>
+              <%= render :partial => 'data_provider_table_row', :locals  => {:prov  => prov} %>
+          <% end %>
 
-   <!-- *********************************** -->
-   <!-- Disk usage summary -->
-   <!-- *********************************** -->
+          <% if @providers.nil? || @providers.empty? %>
+            <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
+          <% end %>
 
+       </table>
+   </div><!-- End id="provider_show_details" --> 
+       
+   <div id ="provider_hide_details" style="display:inline">
+             <table class="resource_list" id="data_provider_table">
+                <tr>
+                    <th>Provider Name</th>
+                    <th>Site</th>
+                    <th>Online?</th>
+                    <th>Alive?</th>
+                    <th>Mode</th>
+                    <th colspan="3">Operations</th>
+                </tr>
+
+                <% for prov in @providers %>
+                    <%= render :partial => 'data_provider_table_row_hide', :locals  => {:prov  => prov} %>
+                <% end %>
+
+                <% if @providers.nil? || @providers.empty? %>
+                  <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
+                <% end %>
+             </table>
+   </div> <!-- End id="provider_hide_details" --> 
+
+    <!-- *********************************** -->
+    <!-- Disk usage summary -->
+    <!-- *********************************** -->
+
+   <div id="provider_statistics" style="display:inline">
    <% form_tag(url_for(:controller => 'data_providers', :action => 'cleanup'), :method => :post) do %>
 
    <table id="data_provider_stats">
@@ -138,6 +187,5 @@
    <%= submit_tag 'Refresh' %>
 
    <% end %> <!-- form -->
-   
-
+   </div> <!-- End id="provider_statistics" --> 
 </div> <!-- End class="generalcontent" --> 
