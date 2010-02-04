@@ -8,8 +8,8 @@
   <% isbourreau  = bour.is_a?(Bourreau) %>
   <td><%= isbourreau ? "Execution" : "Portal" %></td>
   <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
-  <td><%= h(bour.user.login) %></td>
-  <td><%= h(bour.group.name) %></td>
+  <td class="resource_details" style="display:none"><%= h(bour.user.login) %></td>
+  <td class="resource_details" style="display:none"><%= h(bour.group.name) %></td>
   <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
   <td><%= bour.online          ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= info.name != "???"   ? "Yes" : "<font color=\"red\">No</font>" %></td>
@@ -20,7 +20,7 @@
     <td>-</td>
     <td>-</td>
   <% end %>
-  <td><%= h(bour.description) %></td>
+  <td class="resource_details" style="display:none"><%= h(bour.description) %></td>
   <% if bour.has_owner_access?(current_user) %>
     <td><%= link_to 'Edit', edit_bourreau_path(bour), :class => 'action_link' %></td>
     <td>
@@ -37,8 +37,8 @@
        <% end %>
      </td>
     <% if bour.has_remote_control_info? %>
-      <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link' %></td>
-      <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link' %></td>
+      <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link', :method  => :post %></td>
+      <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link', :method  => :post %></td>
     <% else %>
       <td colspan="2"></td>
     <% end %>
