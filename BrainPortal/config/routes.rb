@@ -1,6 +1,8 @@
 ActionController::Routing::Routes.draw do |map|
   map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post }
 
+  map.resources :statistics
+
   # Session
   map.resource  :session
 
@@ -42,8 +44,7 @@ ActionController::Routing::Routes.draw do |map|
   map.logout      '/logout',              :controller => 'sessions', :action => 'destroy'
   map.jiv         '/jiv',                 :controller => 'jiv',      :action => 'index'
   map.jiv_display '/jiv/show',            :controller => 'jiv',      :action => 'show'
-
-
+  
   # Individual maps
   map.connect 'tasks/:action',                  :controller => 'tasks'
   map.connect 'tasks/:action/:id',              :controller => 'tasks'
