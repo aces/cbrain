@@ -1,12 +1,12 @@
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= prov.id %>">
   <td><%= link_if_manager(prov.name, data_provider_path(prov)) %></td>
-  <td><%= h(prov.user.login) %></td>
-  <td><%= h(prov.group.name) %></td>
+  <td class="provider_details" style="display:none"><%= h(prov.user.login) %></td>
+  <td class="provider_details" style="display:none"><%= h(prov.group.name) %></td>
   <td><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
   <td><%= prov.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= prov.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
-  <td><%= h(prov.description) %></td>
+  <td class="provider_details" style="display:none"><%= h(prov.description) %></td>
   <td>
      <% if prov.has_owner_access?(current_user) %>
      <%= link_to 'Edit', edit_data_provider_path(prov), :class => 'action_link' %>

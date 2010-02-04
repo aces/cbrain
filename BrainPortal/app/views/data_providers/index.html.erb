@@ -32,8 +32,7 @@
    <div id="show_details_link" style="display:inline">
              <%= 
              link_to_function 'Show Details', {:class  => 'action_link', :id =>'show_details_link'} do |page|
-               page['provider_hide_details'].hide      
-               page['provider_show_details'].show
+               page.select('.provider_details').each{ |el| el.show  }
                page['provider_statistics'].show
                page['show_details_link'].hide
                page['hide_details_link'].show      
@@ -44,8 +43,7 @@
     <div id="hide_details_link" style="display:none">
             <%= 
             link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
-              page['provider_show_details'].hide
-              page['provider_hide_details'].show        
+              page.select('.provider_details').each{ |el| el.hide  }
               page['provider_statistics'].show
               page['show_details_link'].show
               page['hide_details_link'].hide      
@@ -53,54 +51,29 @@
             %>
     </div><!-- End id="hide_details_link" --> 
 
-   <div id ="provider_show_details" style="display:none">
 
-       <br>
-       <table class="resource_list" id="data_provider_table">
-          <tr>
-              <th>Provider Name</th>
-              <th>Owner</th>
-              <th>Group</th>
-              <th>Site</th>
-              <th>Online?</th>
-              <th>Alive?</th>
-              <th>Mode</th>
-              <th>Description</th>
-              <th colspan="3">Operations</th>
-          </tr>
+   <table class="resource_list" id="data_provider_table">
+      <tr>
+          <th>Provider Name</th>
+          <th class="provider_details" style="display:none">Owner</th>
+          <th class="provider_details" style="display:none">Group</th>
+          <th>Site</th>
+          <th>Online?</th>
+          <th>Alive?</th>
+          <th>Mode</th>
+          <th class="provider_details" style="display:none">Description</th>
+          <th colspan="3">Operations</th>
+      </tr>
 
-          <% for prov in @providers %>
-              <%= render :partial => 'data_provider_table_row', :locals  => {:prov  => prov} %>
-          <% end %>
+      <% for prov in @providers %>
+          <%= render :partial => 'data_provider_table_row', :locals  => {:prov  => prov} %>
+      <% end %>
 
-          <% if @providers.nil? || @providers.empty? %>
-            <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
-          <% end %>
-
-       </table>
-   </div><!-- End id="provider_show_details" --> 
-       
-   <div id ="provider_hide_details" style="display:inline">
-             <table class="resource_list" id="data_provider_table">
-                <tr>
-                    <th>Provider Name</th>
-                    <th>Site</th>
-                    <th>Online?</th>
-                    <th>Alive?</th>
-                    <th>Mode</th>
-                    <th colspan="3">Operations</th>
-                </tr>
-
-                <% for prov in @providers %>
-                    <%= render :partial => 'data_provider_table_row_hide', :locals  => {:prov  => prov} %>
-                <% end %>
-
-                <% if @providers.nil? || @providers.empty? %>
-                  <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
-                <% end %>
-             </table>
-   </div> <!-- End id="provider_hide_details" --> 
-
+      <% if @providers.nil? || @providers.empty? %>
+        <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
+      <% end %>
+   </table>
+   
     <!-- *********************************** -->
     <!-- Disk usage summary -->
     <!-- *********************************** -->
