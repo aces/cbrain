@@ -6,7 +6,7 @@
 #
 # Original author: Nicolas Kassis
 #
-# $Id: 
+# $Id$
 #
 
 

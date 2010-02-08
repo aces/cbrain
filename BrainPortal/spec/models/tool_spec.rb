@@ -5,7 +5,7 @@
 #
 # Original author: Nicolas Kassis
 #
-# $Id:
+# $Id$
 #
 
 require 'spec_helper'
