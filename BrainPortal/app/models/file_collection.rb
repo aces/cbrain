@@ -166,6 +166,20 @@ class FileCollection < Userfile
     end
   end
   
+  #mathieu desrosiers
+  #Returns an array of the relative paths to first level subdirectories contained in this collection.
+  #this function only for usage in spmbatch, feel free to contact me if you would like to remove it.
+  def list_first_level_dirs
+    return @dir_list if @dir_list
+    Dir.chdir(self.cache_full_path.parent) do
+      escaped_name = self.name.gsub("'", "'\\\\''")
+      IO.popen("find '#{escaped_name}' -type d -mindepth 1 -maxdepth 1 -print") do |fh|
+        @dir_list = fh.readlines.map(&:chomp)
+      end
+      @dir_list.sort! { |a,b| a <=> b }
+    end
+  end  
+  
   #Format size for display (make it more human-readable).
   # def format_size
   #   "#{self.size || "?"} files" 

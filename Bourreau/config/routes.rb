@@ -23,6 +23,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_cw5filters,    :controller => :tasks  
   map.resources :drmaa_matlabs,       :controller => :tasks
   map.resources :drmaa_cw5s,          :controller => :tasks  
+  map.resources :drmaa_spmbatches,     :controller => :tasks
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'

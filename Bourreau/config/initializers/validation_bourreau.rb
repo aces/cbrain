@@ -22,7 +22,7 @@ puts "C> Verifying configuration variables..."
 
 Needed_Constants = %w(
                        DataProviderCache_dir
-                       DRMAA_sharedir Quarantine_dir CIVET_dir
+                       DRMAA_sharedir Quarantine_dir CIVET_dir 
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
                        BOURREAU_WORKERS_INSTANCES
