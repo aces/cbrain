@@ -41,7 +41,7 @@ class PortalSystemCheck < Checker
     puts "C> Checking if the BrainPortal database needs a sanity check"
     #----------------------------------------------------------------------------
     unless PortalSanityCheck.done? 
-       puts "    - Error: You must check the sanity of the model. Pleasae run rake db:sanity:check" 
+       puts "C> - Error: You must check the sanity of the model. Pleasae run rake db:sanity:check" 
        Kernel.exit
     end
   end
@@ -60,7 +60,7 @@ class PortalSystemCheck < Checker
       
     else
       #----------------------------------------------------------------------------------------
-      puts "    - BrainPortal not registered in database, please run 'rake db:sanity:check"
+      puts "C> - BrainPortal not registered in database, please run 'rake db:sanity:check"
       #----------------------------------------------------------------------------------------
       Kernel.exit(1)
     end

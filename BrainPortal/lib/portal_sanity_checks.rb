@@ -41,66 +41,60 @@ class PortalSanityCheck < Checker
   #validates the model. Used in lib/task/cbrain_model_validation.rake
   def self.check(checks_to_run)
     #Run sanity checks  if it never has been run
-    unless self.done?
-      #-----------------------------------------------------------------------------
-      puts "C> CBRAIN BrainPortal database sanity check started, " + Time.now.to_s
-      #-----------------------------------------------------------------------------
-      
+    #-----------------------------------------------------------------------------
+    puts "C> CBRAIN BrainPortal database sanity check started, " + Time.now.to_s
+    #-----------------------------------------------------------------------------
     
+    
+    
+    begin
+      #Where the magic happens
+      #Run all methods in this class starting with ensure_
+      super #calling super to run the actual checks
+      puts "    - Adding new sanity check record" 
+      SanityCheck.new(:revision_info => RevisionInfo).save! #Adding new SanityCheck record
       
-      begin
-        #Where the magic happens
-        #Run all methods in this class starting with ensure_
-        super #calling super to run the actual checks
-        puts "    - Adding new sanity check record" 
-        SanityCheck.new(:revision_info => RevisionInfo).save! #Adding new SanityCheck record
-     
-        
-        
+      
+      
       
       
       #-----------------------------------------------------------------------------
       # :RESCUE: For the cases when the Rails application is started as part of
       # a DB migration.
       #-----------------------------------------------------------------------------
-      rescue => error
+    rescue => error
       
-        if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
-          puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-        elsif error.to_s.match(/Mysql::Error: Unknown column/i)
+      if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+        puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+      elsif error.to_s.match(/Mysql::Error: Unknown column/i)
           puts "Skipping validation:\n\t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
-        elsif error.to_s.match(/Unknown database/i)
-          puts "Skipping validation:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-        else
-          raise
-        end
-        
-        
+      elsif error.to_s.match(/Unknown database/i)
+        puts "Skipping validation:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+      else
+        raise
       end
-    else
-      #----------------------------------------------------------------------------
-      puts "C>   CBRAIN BrainPortal database Sanity checker has already been run"
-      #----------------------------------------------------------------------------
-    end
+      
+      
+      end
   end
-    
-  
-   
-    ####################################################
-    # Add new validations below                        #
-    #                                                  #
-    # example:                                         #
-    #                                                  #
-    # def ensure_that_something_is_true                #
-    #   Something.new()                                #
-    #   unless something.is_true? something.make_true! #
-    # end                                              #
-    #                                                  #
-    ####################################################
 
+
+   
+  ####################################################
+  # Add new validations below                        #
+  #                                                  #
+  # example:                                         #
+  #                                                  #
+  # def ensure_that_something_is_true                #
+  #   Something.new()                                #
+  #   unless something.is_true? something.make_true! #
+  # end                                              #
+  #                                                  #
+  ####################################################
+  
   #Creates the everyone group and adds the admin user if it does not exist
   def self.ensure_001_group_and_users_have_been_created
-
+    
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that required groups and users have been created..."
     #-----------------------------------------------------------------------------
