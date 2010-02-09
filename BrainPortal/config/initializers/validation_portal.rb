@@ -25,11 +25,10 @@ require 'lib/portal_sanity_checks.rb'
 require 'lib/portal_system_checks.rb'
 
 
-
-#checking to see if this command requires the validation or not
+# Checking to see if this command requires the validation or not
 if ARGV[0] == "db:sanity:check" or ARGV[0] == "db:migrate" or ARGV[0] == "migration"
   #------------------------------------------------------------------------------
-  puts "     - No validations needed. Skipping... "
+  puts "C> \t- No validations needed. Skipping."
   #------------------------------------------------------------------------------
 elsif ARGV[0].nil? #There might be no argument like when doing script/server or thin start
   PortalSystemCheck.check(:all)

@@ -51,7 +51,7 @@ class PortalSanityCheck < Checker
       #Where the magic happens
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
-      puts "    - Adding new sanity check record" 
+      puts "C> \t- Adding new sanity check record."
       SanityCheck.new(:revision_info => RevisionInfo).save! #Adding new SanityCheck record
       
       
@@ -65,17 +65,20 @@ class PortalSanityCheck < Checker
     rescue => error
       
       if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
-        puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+        puts "C> Skipping validation:"
+        puts "C> \t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
       elsif error.to_s.match(/Mysql::Error: Unknown column/i)
-          puts "Skipping validation:\n\t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
+        puts "C> Skipping validation:"
+        puts "C> \t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
       elsif error.to_s.match(/Unknown database/i)
-        puts "Skipping validation:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
+        puts "C> Skipping validation:"
+        puts "C> \t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
       else
         raise
       end
       
       
-      end
+    end
   end
 
 
@@ -101,10 +104,10 @@ class PortalSanityCheck < Checker
 
     everyone_group = Group.find_by_name("everyone")
     if ! everyone_group
-      puts "C> \t- 'everyone' system group does not exist. Creating it."
+      puts "C> \t- SystemGroup 'everyone' does not exist. Creating it."
       everyone_group = SystemGroup.create!(:name  => "everyone")
     elsif ! everyone_group.is_a?(SystemGroup)
-      puts "C> \t- 'everyone' group migrated to SystemGroup."
+      puts "C> \t- Group 'everyone' migrated to SystemGroup."
       everyone_group.type = 'SystemGroup'
       everyone_group.save!
     end
@@ -121,13 +124,11 @@ class PortalSanityCheck < Checker
                    :email                 => 'admin@here',
                    :role                  => 'admin'
                    )
-      puts("******************************************************")
-      puts("*  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
-      puts("* CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")
-      puts("******************************************************")
+      puts("C> ******************************************************")
+      puts("C> *  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
+      puts("C> * CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")
+      puts("C> ******************************************************")
     end
-
-
   end
   
   #adds everyone to the everyone group 

@@ -8,59 +8,56 @@
 # $Id$
 #
 
-
-
 require 'checker.rb'
 
 class PortalSystemCheck < Checker
   
   RevisionInfo="$Id$"
+
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.check_001_if_pending_database_migrations
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
     #-----------------------------------------------------------------------------
     
-
     if defined? ActiveRecord
       pending_migrations = ActiveRecord::Migrator.new(:up, 'db/migrate').pending_migrations
       if pending_migrations.any?
         puts "C> \t- You have #{pending_migrations.size} pending migrations:"
         pending_migrations.each do |pending_migration|
-        puts "C> \t\t- %4d %s" % [pending_migration.version, pending_migration.name]
+          puts "C> \t\t- %4d %s" % [pending_migration.version, pending_migration.name]
         end
         puts "C> \t- Please run \"rake db:migrate\" to update your database then try again."
         Kernel.exit
-        
       end
     end
   end
     
   def self.check_002_database_sanity
     #----------------------------------------------------------------------------
-    puts "C> Checking if the BrainPortal database needs a sanity check"
+    puts "C> Checking if the BrainPortal database needs a sanity check..."
     #----------------------------------------------------------------------------
+
     unless PortalSanityCheck.done? 
-       puts "C> - Error: You must check the sanity of the model. Pleasae run rake db:sanity:check" 
-       Kernel.exit
+       puts "C> \t- Error: You must check the sanity of the models. Please run 'rake db:sanity:check'." 
+       Kernel.exit(1)
     end
   end
 
   def self.ensure_003_portal_RemoteResourceId_constant_is_set
     #-----------------------------------------------------------------------------
-    puts "C> Ensure that the CBRAIN::RemoteResourceId constant is set"
+    puts "C> Ensuring that the CBRAIN::RemoteResourceId constant is set..."
     #-----------------------------------------------------------------------------
+
     #Assigning this constant here because constant cannot be assigned dynamically inside a method like run_validation 
     dp_cache_md5 = DataProvider.cache_md5
     brainportal  = BrainPortal.find(:first,
                                     :conditions => { :cache_md5 => dp_cache_md5 })
     if brainportal
-      
       CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
-      
     else
       #----------------------------------------------------------------------------------------
-      puts "C> - BrainPortal not registered in database, please run 'rake db:sanity:check"
+      puts "C> \t- BrainPortal not registered in database, please run 'rake db:sanity:check'."
       #----------------------------------------------------------------------------------------
       Kernel.exit(1)
     end
@@ -77,7 +74,7 @@ class PortalSystemCheck < Checker
     needed_Constants.each do |c|
       unless CBRAIN.const_defined?(c)
         raise "Configuration error: the CBRAIN constant '#{c}' is not defined!\n" +
-          "Check 'config_portal.rb' (and compare it to 'config_portal.rb.TEMPLATE')."
+              "Check 'config_portal.rb' (and compare it to 'config_portal.rb.TEMPLATE')."
       end
     end
     
@@ -85,13 +82,13 @@ class PortalSystemCheck < Checker
     unless File.directory?(CBRAIN::DataProviderCache_dir)
       raise "CBRAIN configuration error: Data Provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
     end
-    
   end
   
   def self.check_data_provider_cache
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
+
     dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
     dp_current_rev = DataProvider.revision_info.svn_id_rev
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
@@ -135,8 +132,6 @@ class PortalSystemCheck < Checker
         puts "C> \t- Data Provider '#{p.name}': no need."
       end
     end
-    
-    
   end
   
   def self.start_bourreau_ssh_tunnels
@@ -158,24 +153,5 @@ class PortalSystemCheck < Checker
       end
     end
   end  
-
-
-  #-----------------------------------------------------------------------------
-  # :RESCUE: For the cases when the Rails application is started as part of
-  # a DB migration.
-  #-----------------------------------------------------------------------------
-
-      
-  #   if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
-  #     puts "Skipping validation:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  #   elsif error.to_s.match(/Mysql::Error: Unknown column/i)
-  #     puts "Skipping validation:\n\t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
-  #   elsif error.to_s.match(/Unknown database/i)
-  #     puts "Skipping validation:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  #   else
-  #     raise
-  #   end
-
-  # end # :RESCUE:
 
 end 
