@@ -26,7 +26,6 @@ require 'lib/portal_system_checks.rb'
 
 
 
-
 #checking to see if this command requires the validation or not
 if ARGV[0] == "db:sanity:check" or ARGV[0] == "db:migrate" or ARGV[0] == "migration"
   #------------------------------------------------------------------------------
@@ -41,15 +40,3 @@ else
   PortalSystemCheck.check(:all)
 end
 
-#Assigning this constant here because constant cannot be assigned dynamically inside a method like run_validation 
-dp_cache_md5 = DataProvider.cache_md5
-brainportal  = BrainPortal.find(:first,
-                                :conditions => { :cache_md5 => dp_cache_md5 })
-if brainportal
-  
-  CBRAIN::SelfRemoteResourceId = brainportal.id
-else
-  #----------------------------------------------------------------------------------------
-   puts "    - BrainPortal not registered in database, please run 'rake db:sanity:check"
-  #----------------------------------------------------------------------------------------
-end

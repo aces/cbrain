@@ -46,6 +46,26 @@ class PortalSystemCheck < Checker
     end
   end
 
+  def self.ensure_003_portal_RemoteResourceId_constant_is_set
+    #-----------------------------------------------------------------------------
+    puts "C> Ensure that the CBRAIN::RemoteResourceId constant is set"
+    #-----------------------------------------------------------------------------
+    #Assigning this constant here because constant cannot be assigned dynamically inside a method like run_validation 
+    dp_cache_md5 = DataProvider.cache_md5
+    brainportal  = BrainPortal.find(:first,
+                                    :conditions => { :cache_md5 => dp_cache_md5 })
+    if brainportal
+      
+      CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
+      
+    else
+      #----------------------------------------------------------------------------------------
+      puts "    - BrainPortal not registered in database, please run 'rake db:sanity:check"
+      #----------------------------------------------------------------------------------------
+      Kernel.exit(1)
+    end
+  end
+
   def self.check_configuration_variables
     #-----------------------------------------------------------------------------
     puts "C> Verifying configuration variables..."
