@@ -105,10 +105,10 @@
 # 'myfile', does some processing on it using the methods 'shred' of the
 # data processing object 'myshred' (of class 'Shredder'), which returns a
 # new userfile 'resultfile'. The plain pseudo code looks like this (the
-# content of two ruby files 'worker.rb' and 'shredder.rb' are shown):
+# content of two ruby files 'processor.rb' and 'shredder.rb' are shown):
 # 
-#   class Worker
-#     Revision_info="SId: worker.rb 123 2009-07-30 16:55:47Z prioux S"
+#   class Processor
+#     Revision_info="SId: processor.rb 123 2009-07-30 16:55:47Z prioux S"
 #     def do_analysis(myfile,myshred)
 #       resultfile = myshred.shred(myfile)
 #       return resultfile
@@ -116,7 +116,7 @@
 #   end
 # 
 #   class Shredder
-#     Revision_info="SId: shredder.rb 124 2009-08-30 13:25:12Z prioux S"
+#     Revision_info="SId: shredder.rb 424 2009-08-30 13:25:12Z prioux S"
 #     def shred(file)
 #       resfile = Dosome.thing(file)
 #       return resfile
@@ -126,18 +126,18 @@
 # We want to improve the code to record the information about all these steps
 # and methods. Let's just sprinkle addlog() calls here and there:
 # 
-#   class Worker
-#     Revision_info="SId: worker.rb 123 2009-07-30 16:55:47Z prioux S"
+#   class Processor
+#     Revision_info="SId: processor.rb 123 2009-07-30 16:55:47Z prioux S"
 #     def do_analysis(myfile,myshred)
 #       myfile.addlog_context(self,"Sending to Shredder")     #1
 #       resultfile = myshred.shred(myfile)
-#       myfile.addlog_context(self,"Created by Shredder")     #2
+#       resultfile.addlog_context(self,"Created by Shredder") #2
 #       return resultfile
 #     end
 #   end
 # 
 #   class Shredder
-#     Revision_info="SId: shredder.rb 124 2009-08-30 13:25:12Z prioux S"
+#     Revision_info="SId: shredder.rb 424 2009-08-30 13:25:12Z prioux S"
 #     def shred(file)
 #       file.addlog_context(self)                             #3
 #       file.addlog_revinfo(Dosome)                           #4
@@ -154,16 +154,16 @@
 # indicate which line of code created which log entry.
 # 
 #   #1 [2009-08-03 17:32:19] SingleFile revision 322 tsherif 2009-07-13
-#   #1 [2009-08-03 17:32:19] Worker do_analysis() revision 123 prioux 2009-07-30 Sending to Shredder
-#   #3 [2009-08-03 17:32:19] Shredder shred() revision 124 prioux 2009-08-30
+#   #1 [2009-08-03 17:32:19] Processor do_analysis() revision 123 prioux 2009-07-30 Sending to Shredder
+#   #3 [2009-08-03 17:32:19] Shredder shred() revision 424 prioux 2009-08-30
 #   #4 [2009-08-03 17:32:19] Dosome revision 66 prioux 2009-04-21
 #   #5 [2009-08-03 17:32:19] Processed by method 'thing'
 # 
 # And here's the log for 'resultfile'.
 # 
 #   #6 [2009-08-03 17:32:19] SingleFile revision 322 tsherif 2009-07-13
-#   #6 [2009-08-03 17:32:19] Shredder shred() revision 124 prioux 2009-08-30
-#   #2 [2009-08-03 17:32:19] Worker do_analysis() revision 123 prioux 2009-07-30 Created by Shredder
+#   #6 [2009-08-03 17:32:19] Shredder shred() revision 424 prioux 2009-08-30
+#   #2 [2009-08-03 17:32:19] Processor do_analysis() revision 123 prioux 2009-07-30 Created by Shredder
 # 
 module ActRecLog
 
