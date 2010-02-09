@@ -564,10 +564,7 @@ class UserfilesController < ApplicationController
         collection = FileCollection.new(
             :user_id          => current_user.id,
             :group_id         => current_user.own_group.id,
-            :data_provider_id => (
-                 params[:data_provider_id] ||
-                 DataProvider.find_first_online_rw(current_user).id
-                 )
+            :data_provider    => DataProvider.find(params[:data_provider_id])
             )
 
         CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
@@ -591,14 +588,10 @@ class UserfilesController < ApplicationController
           word_moved = 'copied'
         end
 
-        unless params[:operation] =~ /^moveto_(\d+)$/
-          flash[:error] += "No data provider specified.\n"
-          redirect_to :action => :index
-          return
-        end
+    
 
-        data_provider_id = Regexp.last_match[1].to_i
-        new_provider = available_data_providers(current_user).detect { |dp| dp.id == data_provider_id }
+        data_provider_id = params[:data_provider_id]#Regexp.last_match[1].to_i
+        new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
 
         unless new_provider
           flash[:error] += "Data provider #{data_provider_id} not accessible.\n"
