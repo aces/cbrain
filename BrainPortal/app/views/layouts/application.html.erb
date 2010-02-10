@@ -48,6 +48,7 @@
                 <% end %>
          
                <ul>
+                 <li><a class="home" href="/home">Home</a></li>
                  <% if current_user %>
                    <li><%= link_to 'My Account', current_user %></li>
                  <% end %>
@@ -62,7 +63,6 @@
                  <div id="main-menu">
                     <% if current_user %>
                        <ul>      
-                          <li <%= set_selected(params[:controller], :portal) %>><a class="home" href="/home">Home</a></li>
                           <li <%= set_selected(params[:controller], :userfiles) %>><%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %></li>
                           <li <%= set_selected(params[:controller], :tasks) %>><%= link_to 'Tasks', :controller => :tasks, :action => :index %></li>
                           <li <%= set_selected(params[:controller], :data_providers) %>><%= link_to 'Data Providers', data_providers_path %></li>

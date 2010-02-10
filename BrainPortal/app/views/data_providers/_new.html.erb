@@ -24,14 +24,13 @@
       <% end -%>
    </div> <!-- End class="splitleft" -->
 
-   <div class="splitright">
+   <div class="ssh_keys">
       Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
-      <table>
+      <table id="provider_info_table">
         <% @ssh_keys.each do |pair| %>
           <tr><th><%= h(pair[0]) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE><%= h(pair[1]) %></PRE></SMALL></SMALL></th></tr>
+          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
         <% end %>
       </table>
-   </div> <!-- End class="splitright" -->
-
+   </div> <!-- End class = "ssh_keys" -->
 </div> <!-- End class="generalcontent" -->

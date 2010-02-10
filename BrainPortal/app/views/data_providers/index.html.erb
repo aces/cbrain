@@ -153,6 +153,8 @@
    <!-- Refresh form -->
    <!-- *********************************** -->
 
+   <div class ="generalcontent_data_provider">
+
    <% form_tag(url_for(:controller => 'data_providers', :action => 'index'), :method => :get) do %>
 
    Files reported under the <em>Caches</em> columns were last accessed
@@ -160,5 +162,6 @@
    <%= submit_tag 'Refresh' %>
 
    <% end %> <!-- form -->
+   </div>
    </div> <!-- End id="provider_statistics" --> 
 </div> <!-- End class="generalcontent" --> 

@@ -14,6 +14,7 @@
 
   <% title 'CBRAIN Messaging Center' %>
 
+  
       <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
         <div class="resource_list_upper_form">
                <%= 
@@ -22,6 +23,7 @@
                  end 
                  %>
                <div id="new_message" style="display:none">
+                   
                  <%= render :partial  => 'new' %>
                </div>
          </div>

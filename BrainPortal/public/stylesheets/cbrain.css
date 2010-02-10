@@ -50,7 +50,7 @@ h2  {
     padding-top: 10px; 
     padding-bottom: 10px; 
     padding-left: 15px; 
-    width: 100%; 
+    width: 993px; 
     margin-bottom: 15px; 
     margin-top: 10px; 
     margin-right: 0em; 
@@ -78,6 +78,10 @@ pre {
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
+#standard_out {
+    width: 600px;
+}
+
 /* ######################################################### */
 /* Layout View */
 /* ######################################################### */
@@ -92,6 +96,8 @@ pre {
     height:1.8em; 
     font-size: 0.9em; 
     padding: 2px 2px 0px 6px;
+    width: 1001px;
+    margin: 0px;
 }
 
 #top-menu ul {
@@ -134,10 +140,11 @@ pre {
 
 #header {
     height:7em;
-    margin:0;
+    margin:0px;
     background-color:#05A3D6;
     color:#f8f8f8; 
     position:relative;
+    width: 1009px;
 }
 
 
@@ -146,11 +153,13 @@ pre {
     bottom: 0px;  
     left:6px; 
     margin-right: -500px;
+    font-size: 10px;
 }
 
 #main-menu ul {
     margin: 0;  
     padding: 0;
+    font-size: 11px;
 }
 
 #main-menu li {
@@ -344,10 +353,11 @@ a:hover {
 /* ######################################################### */
 
 #content {
-    width: 100%; 
+    width: 1021px; 
     float: left;
     background-color: #ffffff; 
     height:100%; 
+    margin: 0px;
     padding-bottom: 4px; 
     padding-bottom:10px;
     height: 100%;
@@ -411,18 +421,39 @@ a:hover {
     margin-right: auto;
     margin-left: auto;
     display: table;
-    min-width: 50em;
+    width: 1000px;
+}
+
+.generalcontent_data_provider {
+    margin-right: 4px;
+    margin-left: 1-px;
+    display: table;
+    width: 1000px;
 }
 
 .groupentry {
     border: 1px solid black;
-    width: auto
+    width: auto;
     margin-left: 1em;
     margin-right: 1em;
     padding-left: 1em;
     padding-right: 1em;
     background-color: #E6E6E6;
     color: black;
+}
+
+
+/* ######################################################## */
+/* ssh_keys as part of the edit, show, _new data provider pages */
+/* ######################################################## */
+.ssh_keys{
+    float: left;
+    width: 74%;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    padding: 1em;
+    line-height: 1.5em;
 }
 
 /* ######################################################### */
@@ -477,6 +508,17 @@ a:hover {
     padding-left: 0.5em;
 }
 
+/* ######################################################### */
+/* Log table  */
+/* ######################################################### */
+
+#log_table {
+    width: 90%;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    padding: 1em;
+}
 
 
 /* ######################################################### */
@@ -561,6 +603,45 @@ tr.list-unavailable {
 }
 
 /* ######################################################### */
+/* Format the provider info table
+/* ######################################################### */
+#provider_info_table{
+    width: auto;
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+    float: left;
+}
+
+/* ######################################################### */
+/* Format the provider info table
+/* ######################################################### */
+#output_tasks_table{
+    width: 900px;
+    float: left;
+    margin: 11px;
+}
+
+
+/* ######################################################### */
+/* Format the feedback table
+/* ######################################################### */
+#feedback_table {
+    width: 600px;
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+#feedback_table p{
+    width: 500px;
+}
+
+/* ######################################################### */
 /* Show tasks table formatting */
 /* ######################################################### */
 
@@ -572,7 +653,7 @@ tr.list-unavailable {
 
 .showtasksdisplay {
     float: left;
-    width: 100%;
+    width: 70%;
     padding: 6px;
     margin-top: 0.5em; 
     margin-left: 1em;
@@ -605,9 +686,8 @@ tr.list-unavailable {
     border: 1px solid #e4e4e4;
 }
 
-
 /* ######################################################### */
-/* Tasks table formatting */
+/* Tags table formatting */
 /* ######################################################### */
 
 .edittagstable {
@@ -685,7 +765,7 @@ tr.list-unavailable {
 }
 
 td.info {
-    width: 30%;
+    width: 50px;
     text-align: left;
 }
 
@@ -704,12 +784,29 @@ td.taskinfo {
 }
 
 /* ######################################################### */
+/* Civet options table */
+/* ######################################################### */
+.civet_options{
+    width: 300px;
+}
+
+.civet_options td{
+    padding: 1px;
+    margin: 1px;
+}
+
+.civet_options th{
+    padding: 2px;
+    margin: 1px;
+}
+
+/* ######################################################### */
 /* Show tasks table formatting */
 /* ######################################################### */
 
 .showtaskstable {
     float: left;
-    width: 80%;
+    width: 995px;
     padding: 6px;
     margin-top: 2em; 
     margin-left: 1em;
@@ -776,17 +873,75 @@ td.taskinfo {
 /* ######################################################### */
 
 .filtertable {
-    margin: none;
     padding: 2px;
     border-spacing: 2px 2px;
     border: 2px solid #6699CC;
 }
 
-.resource_list {
+.indented
+   {
+   padding-left: 50px;
+   padding-right: 50px;
+   }
+
+.formatting_html{
+    border: 0px;
+    margin-left: 425px;
+}
+
+.formatting_html td{
+    border: 0px;
+}
+
+.stat_list {
     clear: both;
     margin-right: auto;
     margin-left: auto;
-    width: 100%;
+    width: 50%;
+}
+
+.stat_list th {
+    border: 0px;
+    background-color: #0471B4;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.stat_list th a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.stat_list th a:link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.stat_list td{
+    border: 0px;    
+    text-align: center;
+    padding-left: 2em;
+    padding-right: 2em;
+    white-space: nowrap;
+}
+
+.resource_list {
+    clear: both;
+    margin-right: auto;
+    margin-left: 11px;
+    width: 977px;
+}
+
+.resource_list_file {
+    clear: both;
+    margin-right: auto;
+    margin-left: 11px;
+    width: 977px;
 }
 
 .resource_list th {
@@ -817,6 +972,13 @@ td.taskinfo {
     padding-left: 2em;
     padding-right: 2em;
     white-space: nowrap;
+}
+
+.edit_file_table{
+    clear: both;
+    margin-right: auto;
+    margin-left: 11px;
+    width: 950px;
 }
 
 .edit_file_table td {
@@ -970,6 +1132,17 @@ td.right_align {
     border: 2px solid #6699CC;
     padding: 0.5em;
     margin-top: 1em;
+    width: 960px;
+    margin-left: 1em;
+    
+}
+
+#feedback_box{
+    border: 2px solid #6699CC;
+    padding: 0.5em;
+    margin-top: 1em;
+    width: 500px;
+    margin-left: 1em;
 }
 
 .upper_form {
@@ -980,8 +1153,9 @@ td.right_align {
 
 .resource_list_box {
     float:left; 
-    width: 88%;
+    width: 95%;
     margin-top: 1em;
+    margin-left: 12px;
     padding: 1em;
     background-color: #f6f6f6;
     color: #505050;
@@ -1038,7 +1212,7 @@ td.right_align {
 }
 
 #request_password{
-	padding-right: 12em;
+    padding-right: 12em;
 }
 
 
@@ -1088,6 +1262,8 @@ td.right_align {
     margin-left: 25px;
 }
 
+
+
 /* ######################################################### */
 /* Box for credits */
 /* ######################################################### */
@@ -1131,7 +1307,7 @@ td.right_align {
     margin-right: 4em;
     margin-bottom: 1em;
     line-height: 1.5em;
-		max-width: 45%;
+    max-width: 45%;
 }
 
 .splitright {
@@ -1141,6 +1317,42 @@ td.right_align {
     margin-left: 1em;
     padding: 1em;
     line-height: 1.5em;
+}
+
+
+/* ######################################################### */
+/* Formatting for show details link */
+/* ######################################################### */
+#show_details_link{
+    margin-left: 5px;
+}
+
+/* ######################################################### */
+/* Formatting for hid details link */
+/* ######################################################### */
+#hide_details_link{
+    margin-left: 6px;
+}
+
+/* ######################################################### */
+/* Formatting for show filters link */
+/* ######################################################### */
+#filter_option_show{
+    margin-left: 11px;
+}
+
+/* ######################################################### */
+/* Formatting for hid filters link */
+/* ######################################################### */
+#filter_option_hide{
+    margin-left: 11px;
+}
+
+/* ######################################################### */
+/* Formatting for data provider stats table */
+/* ######################################################### */
+#data_provider_stats{
+    margin-left:11px;
 }
 
 /* ######################################################### */
@@ -1202,9 +1414,9 @@ td.right_align {
 
 #main-content {
     min-height: 100%;
-    height:auto;
-    height: 100%;
-    margin: 0 auto -4em;
+    height: auto;
+    margin: 0px;
+    width: 1005px;
 }
 
 /* ######################################################### */
@@ -1220,6 +1432,7 @@ td.right_align {
     padding: 5px; 
     text-align: center; 
     background:#ffffff;
+    width: 1013px;
 }
 
 #bottomfooter {
@@ -1250,7 +1463,7 @@ td.right_align {
 
 #flash_notice {
     z-index: 0;
-    width: 90%;
+    width: 93%;
     margin-right: auto;
     margin-left: auto;
     border: 2px solid green;
@@ -1269,7 +1482,7 @@ td.right_align {
 
 #flash_system {
     z-index: 0;
-    width: 90%;
+    width: 93%;
     margin-right: auto;
     margin-left: auto;
     border: 2px solid #00ffff;
@@ -1289,7 +1502,7 @@ td.right_align {
 
 #flash_error {
     z-index: 0;
-    width: 90%;
+    width: 93%;
     margin-right: auto;
     margin-left: auto;
     border: 2px solid red;
@@ -1303,40 +1516,59 @@ td.right_align {
 }
 
 .fieldWithErrors {
-  padding: 2px;
-  background-color: red;
-  display: table;
+    padding: 2px;
+    background-color: red;
+    display: table;
 }
 
 #errorExplanation {
-  width: 400px;
-  border: 2px solid red;
-  padding: 7px;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
-  background-color: #f0f0f0;
+    width: 400px;
+    border: 2px solid red;
+    padding: 7px;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    background-color: #f0f0f0;
 }
 
 #errorExplanation h2 {
-  text-align: left;
-  font-weight: bold;
-  padding: 5px 5px 5px 15px;
-  font-size: 12px;
-  margin: -7px;
-  background-color: #c00;
-  color: #fff;
+    text-align: left;
+    font-weight: bold;
+    padding: 5px 5px 5px 15px;
+    font-size: 12px;
+    margin: -7px;
+    background-color: #c00;
+    color: #fff;
 }
 
 #errorExplanation p {
-  color: #333;
-  margin-bottom: 0;
-  padding: 5px;
+    color: #333;
+    margin-bottom: 0;
+    padding: 5px;
 }
 
 #errorExplanation ul li {
-  font-size: 12px;
-  list-style: square;
+    font-size: 12px;
+    list-style: square;
 }
+
+#message_table {
+    width: 974px;
+    margin-left: 12px;
+
+}
+
+#message_table td{
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
+#message_table th{
+    width: auto;
+    padding: 0px;
+    margin-left: 20px;
+    
+}
+
 
 /* ######################################################### */
 /* Format for message table */
@@ -1345,9 +1577,9 @@ td.right_align {
 #message_display_table {
     clear: both;
     border: 0;
-    margin-left:auto;
-    margin-right:auto;
-    width: 70%;
+    margin-left:10px;
+    margin-right:0;
+    width: 98%;
 }
 
 #message_display_table th {
@@ -1356,15 +1588,19 @@ td.right_align {
     font-size: 1.2em;
     padding-bottom: 0.4em;
     border: 0;
+    width: 20%;
+    margin: 0px;
 }
 
 #message_display_table td{
     font-size: 1em;
     padding: 0.2em 0.4em;
+    width: 20%;
 }
 
 #message_display_table tr {
     border: 0;
+    width: 20%;
 }
 
 
@@ -1372,6 +1608,7 @@ td.notice_display{
     border-style: solid;
     background-color: #ddffdd;
     border-color: green;
+
 }
 
 td.error_display{
@@ -1400,11 +1637,12 @@ td.left_side{
 td.middle{
     border-width: 0.2em 0em 0.2em;
     text-align: center;
+    padding: 0.25em;
 }
 
-/*
-    #Task summary page 
-*/
+/* ############################################## */
+/*    Task summary page */
+/* ############################################## */
 
 .task_summary{
     clear: both;
@@ -1500,13 +1738,13 @@ td.middle{
 }
 
 .warning{
-	color:red;
+    color:red;
 }
 
 h1.warning{
-	line-height: 1.1em;
-	padding: 0;
-	margin: 0;
+    line-height: 1.1em;
+    padding: 0;
+    margin: 0;
 }
 
 .xstooltip 
@@ -1516,10 +1754,9 @@ h1.warning{
     top: 0;  
     left: 0; 
     z-index: 2;
- 		
-		background-color: #FFFFCC;
+    background-color: #FFFFCC;
     font: normal 8pt sans-serif;
- 		color: black;
+    color: black;
     padding: 5px; 
-		border: 1px solid gray;
+    border: 1px solid gray;
 }

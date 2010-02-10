@@ -29,16 +29,16 @@
       <% end -%>
 
       <%= button_to 'Cancel', data_providers_path, :method => :get %>
-   </div>  <!-- End class="generalbox" -->
+  </div>  <!-- End class="generalbox" -->
 
    <div class="ssh_keys">
-      Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
-      <table>
+       <br>
+       Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
+      <table id="provider_info_table">          
         <% @ssh_keys.each do |pair| %>
-          <tr><th><%= h(pair[0]) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE><%= h(pair[1]) %></PRE></SMALL></SMALL></th></tr>
+          <tr><th><%= h(pretty_ssh_key(pair[0])) %></th></tr>
+          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= h(pretty_ssh_key(pair[1])) %></PRE></SMALL></SMALL></td></tr>
         <% end %>
       </table>
    </div> <!-- End class="ssh_keys" -->
-
 </div>  <!-- End class="generalcontent" -->

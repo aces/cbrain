@@ -18,6 +18,8 @@
 <div class = "generalcontent">
 
    <h2>Task Information</h2>
+   
+   <div class= "generalbox">
 
    <!-- HOLD & RELEASE -->
    <% if @task.status == 'Queued' %>
@@ -118,18 +120,19 @@
       prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
    %>
 
-   <table class = "showtaskstable">
+   <table id="output_tasks_table">
       <tr>
           <th>DRMAA stdout</th>
       </tr>
       <tr>
-          <td class="info"><pre><%= h(prettystdout) -%></pre></td>
+          <td class="info"><pre id="standard_out"><%= h(prettystdout) -%></pre></td>
       </tr>
       <tr>
           <th>DRMAA stderr</th>
       </tr>
       <tr>
-          <td class="info"><pre><%= h(prettystderr) -%></pre></td>
+          <td class="info"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>
       </tr>
    </table>
+</div>
 </div>

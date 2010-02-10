@@ -14,7 +14,7 @@
 <div class = "generalcontent">
 
 
-      <table>
+      <table id = "feedback_table">
          <tr>
            <th colspan="2"><%= h @feedback.summary %></th>
          </tr>
@@ -29,10 +29,12 @@
          </tr>
       </table>
 
+      <div class="generalcontent">
       <% if current_user.has_role?(:admin) || current_user.id == @feedback.user_id %>
           <%= link_to 'Edit', edit_feedback_path(@feedback) %> &nbsp;
           <%= link_to 'Destroy', @feedback, :confirm => 'Are you sure?', :method => :delete %>
       <% end %>
       <br>
       <br>
+      </div>
 </div>  <!-- End class="generalcontent" -->

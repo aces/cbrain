@@ -149,6 +149,7 @@ module ApplicationHelper
   # This method reformats a long SSH key text so that it
   # is folded on several lines.
   def pretty_ssh_key(ssh_key)
+     return ssh_key
      pretty = ""
      while ssh_key != ""
        pretty += ssh_key[0,200] + "\n"

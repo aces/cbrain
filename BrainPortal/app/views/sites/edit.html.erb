@@ -1,5 +1,6 @@
 <div class="generalcontent">
   <h2>Editing <%= @site.name %></h2>
+<div class="generalbox">
 
   <% form_for(@site) do |f| %>
     <%= f.error_messages %>
@@ -36,4 +37,5 @@
       <%= f.submit "Update" %>
     </p>
   <% end %>
+</div>
 </div>
