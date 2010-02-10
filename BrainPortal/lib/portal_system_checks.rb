@@ -15,7 +15,7 @@ class PortalSystemCheck < Checker
   RevisionInfo="$Id$"
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
-  def self.check_001_if_pending_database_migrations
+  def self.a001_check_if_pending_database_migrations
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
     #-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ class PortalSystemCheck < Checker
     end
   end
     
-  def self.check_002_database_sanity
+  def self.a002_check_database_sanity
     #----------------------------------------------------------------------------
     puts "C> Checking if the BrainPortal database needs a sanity check..."
     #----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class PortalSystemCheck < Checker
     end
   end
 
-  def self.ensure_003_portal_RemoteResourceId_constant_is_set
+  def self.a004_ensure_portal_RemoteResourceId_constant_is_set
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that the CBRAIN::RemoteResourceId constant is set..."
     #-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ class PortalSystemCheck < Checker
     end
   end
 
-  def self.check_configuration_variables
+  def self.a003_check_configuration_variables
     #-----------------------------------------------------------------------------
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
