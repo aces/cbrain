@@ -26,7 +26,7 @@ require 'lib/portal_system_checks.rb'
 
 
 # Checking to see if this command requires the validation or not
-if ARGV[0] == "db:sanity:check" or ARGV[0] == "db:migrate" or ARGV[0] == "migration"
+if ARGV[0] == "db:sanity:check" or ARGV[0] == "db:migrate" or ARGV[0] == "migration" or ARGV[0] == "db:schema:load"
   #------------------------------------------------------------------------------
   puts "C> \t- No validations needed. Skipping."
   #------------------------------------------------------------------------------
