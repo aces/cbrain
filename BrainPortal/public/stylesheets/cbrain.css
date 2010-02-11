@@ -14,7 +14,7 @@ body {
     color:#484848; 
     margin: 0; 
     padding: 0;
-    min-width: 87em;
+    min-width: 80em;
     max-height:100%;
     line-height: 18px;
 }
@@ -96,7 +96,6 @@ pre {
     height:1.8em; 
     font-size: 0.9em; 
     padding: 2px 2px 0px 6px;
-    width: 1001px;
     margin: 0px;
 }
 
@@ -144,7 +143,6 @@ pre {
     background-color:#05A3D6;
     color:#f8f8f8; 
     position:relative;
-    width: 1009px;
 }
 
 
@@ -1416,7 +1414,6 @@ td.right_align {
     min-height: 100%;
     height: auto;
     margin: 0px;
-    width: 1005px;
 }
 
 /* ######################################################### */
@@ -1432,7 +1429,6 @@ td.right_align {
     padding: 5px; 
     text-align: center; 
     background:#ffffff;
-    width: 1013px;
 }
 
 #bottomfooter {
