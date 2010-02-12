@@ -82,6 +82,10 @@ pre {
     width: 600px;
 }
 
+#format_ssh_key {
+    width: 600px;
+}
+
 /* ######################################################### */
 /* Layout View */
 /* ######################################################### */
@@ -407,12 +411,14 @@ a:hover {
 }
 
 #infobox {
-    float: right;
+    float: left;
     padding: 1em; 
     background-color: #F6F6F6;
     color: #505050;
     line-height: 1.5em;
     border: 1px solid #E4E4E4;  
+    width: 930px;
+    margin: 1px;
 }
 
 .generalcontent {
@@ -507,17 +513,40 @@ a:hover {
 }
 
 /* ######################################################### */
-/* Log table  */
+/* Bourreau Log table  */
 /* ######################################################### */
 
-#log_table {
-    width: 90%;
-    margin-left: 1em;
+#bourreau_log_table {
+    width: 95%;
+    margin-left: 0em;
     margin-right: 4em;
     margin-bottom: 1em;
     padding: 1em;
 }
 
+/* ######################################################### */
+/* Log table  */
+/* ######################################################### */
+
+#log_table {
+    width: 90%;
+    margin-left: 0em;
+    margin-right: 4em;
+    margin-bottom: 1em;
+    padding: 1em;
+}
+
+
+/* ######################################################### */
+/* Table for buttons  */
+/* ######################################################### */
+#button_table{
+    width: 100px;
+}
+
+#button_table td{
+    padding: 4px;
+}
 
 /* ######################################################### */
 /* General formatting for a table */
@@ -628,6 +657,7 @@ tr.list-unavailable {
 /* ######################################################### */
 #feedback_table {
     width: 600px;
+    margin-left: 10px;
     white-space: pre-wrap; /* css-3 */
     white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
     white-space: -pre-wrap; /* Opera 4-6 */
@@ -763,7 +793,7 @@ tr.list-unavailable {
 }
 
 td.info {
-    width: 50px;
+    width: 500px;
     text-align: left;
 }
 
@@ -1133,7 +1163,7 @@ td.right_align {
     padding: 0.5em;
     margin-top: 1em;
     width: 960px;
-    margin-left: 1em;
+    margin-left: 11px;
     
 }
 
@@ -1155,7 +1185,7 @@ td.right_align {
     float:left; 
     width: 95%;
     margin-top: 1em;
-    margin-left: 12px;
+    margin-left: 11px;
     padding: 1em;
     background-color: #f6f6f6;
     color: #505050;
@@ -1353,6 +1383,14 @@ td.right_align {
 /* ######################################################### */
 #data_provider_stats{
     margin-left:11px;
+    width: 50%;
+}
+
+/* ######################################################### */
+/* Formatting for data provider stats table */
+/* ######################################################### */
+#provider_statistics{
+    width: 50%;
 }
 
 /* ######################################################### */
@@ -1463,7 +1501,7 @@ td.right_align {
     z-index: 0;
     width: 93%;
     margin-right: auto;
-    margin-left: auto;
+    margin-left: 13px;
     border: 2px solid green;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -1550,8 +1588,8 @@ td.right_align {
 }
 
 #message_table {
-    width: 974px;
-    margin-left: 12px;
+    width: 976px;
+    margin-left: 9px;
 
 }
 
@@ -1567,6 +1605,31 @@ td.right_align {
     
 }
 
+
+/* ########################################################## */
+/* Bourreau table
+/* ########################################################## */
+#bourreau_list{
+    width: 960px;
+}
+
+.generalbox_modified{
+    width: 900px;
+}
+
+/* ########################################################## */
+/* Bourreau table
+/* ########################################################## */
+#bourreau_table{
+    width: 500px;
+    margin: 0px;
+    margin-left: 9px;
+    margin-top: 5px;
+}
+
+.Bourreau{
+    width: 903px;
+}
 
 /* ######################################################### */
 /* Format for message table */

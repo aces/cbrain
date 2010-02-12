@@ -26,7 +26,7 @@
         <p><label for="role">Site</label><br/>
          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>  
         <label for="users">Users in group:</label>
-        <table>
+        <table id="button_table">
            <% for user in @users %>
                <tr>
                  <td class="info"><%= check_box_tag("work_group[user_ids][]", user.id.to_s, @group.users.include?(user) ) %></td>

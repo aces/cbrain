@@ -22,9 +22,9 @@
 
 <div class = "generalcontent">
 
-   <div class = "generalbox">
-
-      <table id="bourreau_table">
+<div class= "generalbox">
+    
+      <table>
 
          <tr>
            <th colspan="2">Implementation information</th>
@@ -32,7 +32,7 @@
 
          <tr>
              <th>Name</th>
-             <td class="info"><%= h(@bourreau.name) %></h1>
+             <td class="info"><%= h(@bourreau.name) %></td>
          </tr>
 
          <tr>
@@ -71,70 +71,66 @@
 
          <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
-             <tr>
-                 <th colspan="2">ActiveResource Configuration</th>
-             </tr>
+         <tr>
+             <th colspan="2">ActiveResource Configuration</th>
+         </tr>
 
-             <tr>
-                 <th>Host</th>
-                 <td class="info"><%= h(@bourreau.actres_host) %></td>
-             </tr>
+         <tr>
+             <th>Host</th>
+             <td class="info"><%= h(@bourreau.actres_host) %></td>
+         </tr>
 
-             <tr>
-                 <th>Port</th>
-                 <td class="info"><%= h(@bourreau.actres_port) %></td>
-             </tr>
+         <tr>
+             <th>Port</th>
+             <td class="info"><%= h(@bourreau.actres_port) %></td>
+         </tr>
 
+         <tr>
+             <th colspan="2">SSH Remote Control Configuration</th>
+         </tr>
 
+         <tr>
+             <th>Host</th>
+             <td class="info"><%= h(@bourreau.ssh_control_host) %></td>
+         </tr>
 
-             <tr>
-                 <th colspan="2">SSH Remote Control Configuration</th>
-             </tr>
+         <tr>
+             <th>User</th>
+             <td class="info"><%= h(@bourreau.ssh_control_user) %></td>
+         </tr>
 
-             <tr>
-                 <th>Host</th>
-                 <td class="info"><%= h(@bourreau.ssh_control_host) %></td>
-             </tr>
+         <tr>
+             <th>Port</th>
+             <td class="info"><%= h(@bourreau.ssh_control_port) %></td>
+         </tr>
 
-             <tr>
-                 <th>User</th>
-                 <td class="info"><%= h(@bourreau.ssh_control_user) %></td>
-             </tr>
+         <tr>
+             <th>Execution Server Rails HOME</th>
+             <td class="info"><%= h(@bourreau.ssh_control_rails_dir) %></td>
+         </tr>
 
-             <tr>
-                 <th>Port</th>
-                 <td class="info"><%= h(@bourreau.ssh_control_port) %></td>
-             </tr>
+        <tr>
+             <th colspan="2">Tunneling Configuration</th>
+         </tr>
 
-             <tr>
-                 <th>Execution Server Rails HOME</th>
-                 <td class="info"><%= h(@bourreau.ssh_control_rails_dir) %></td>
-             </tr>
+         <tr>
+             <th>Database Server Remote Tunnel Port</th>
+             <td class="info"><%= h(@bourreau.tunnel_mysql_port) %></td>
+         </tr>
 
+         <tr>
+             <th>ActiveResource Remote Tunnel Port</th>
+             <td class="info"><%= h(@bourreau.tunnel_actres_port) %></td>
+         </tr>
 
+         <tr>
+             <th colspan="2">Cache Management Configuration</th>
+         </tr>
 
-             <tr>
-                 <th colspan="2">Tunneling Configuration</th>
-             </tr>
-
-             <tr>
-                 <th>Database Server Remote Tunnel Port</th>
-                 <td class="info"><%= h(@bourreau.tunnel_mysql_port) %></td>
-             </tr>
-
-             <tr>
-                 <th>ActiveResource Remote Tunnel Port</th>
-                 <td class="info"><%= h(@bourreau.tunnel_actres_port) %></td>
-             </tr>
-
-             <tr>
-                 <th colspan="2">Cache Management Configuration</th>
-             </tr>
-
-             <tr>
-                 <th>Cache Expiration Timeout (in seconds)</th>
-                 <td class="info"><%= h(@bourreau.cache_trust_expire) %></td>
-             </tr>
+         <tr>
+             <th>Cache Expiration Timeout (in seconds)</th>
+             <td class="info"><%= h(@bourreau.cache_trust_expire) %></td>
+         </tr>
 
          <% end %>
 
@@ -217,16 +213,18 @@
 
              <tr>
                  <th>Execution Server SSH Public Key</th>
-                 <td class="info"><SMALL><SMALL><PRE><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+                 <td class="info"><SMALL><SMALL><PRE id="format_ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
              </tr>
 
          <% end %>
+
+         </table>
 
          <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
             <tr class="Bourreau" style="display:none">
                <td class="info" align="center" colspan="2">
-                  <table>
+                  <table id ="button_table">
                     <tr>
                       <td class="info">
                         <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
@@ -240,8 +238,6 @@
             </tr>
 
          <% end %>
-
-      </table>
 
       <table class="Bourreau" style="display:none">
         <tr>
@@ -271,6 +267,6 @@
 
       <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
 
-   </div>  <!-- End class="generalbox" -->
+  </div>  <!-- End class="generalbox" -->
 
 </div>  <!-- End class="generalcontent" -->

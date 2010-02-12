@@ -19,7 +19,7 @@
     <%= f.text_field :name %>
   </p>
 	<label for="users">Users:</label>
-	<table>
+	<table id ="button_table">
 	   <tr>
 	     <td>Name</td>
 	     <td>Regular User</td>
@@ -34,7 +34,7 @@
 	   <% end %>
 	</table>
 	<label for="groups">Groups</label>
-	<table>
+	<table id="button_table">
 	   <% for group in WorkGroup.all %>
 	       <tr>
 	         <td class="info"><%= h(group.name) -%></td>
