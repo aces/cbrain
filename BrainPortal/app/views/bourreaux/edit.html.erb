@@ -10,7 +10,6 @@
 #
 
 -%>
-<div class = "generalcontent">
 
    <% pretty_type = @bourreau.is_a?(Bourreau) ? "Execution Server" : "Brain Portal" %>
    <% klass_sym   = @bourreau.is_a?(Bourreau) ? :bourreau          : :brain_portal  %>
@@ -18,6 +17,8 @@
    <% title "Edit #{pretty_type}" %>
 
    <h2>Edit <%= pretty_type %></h2>
+
+   <div class = "generalcontent">
 
    <div class = "generalbox">
 
