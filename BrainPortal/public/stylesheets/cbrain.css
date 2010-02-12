@@ -975,7 +975,7 @@ td.taskinfo {
 .edit_file_table{
     clear: both;
     margin-right: auto;
-    margin-left: 11px;
+    margin-left: 0px;
     width: 950px;
 }
 
@@ -1124,6 +1124,8 @@ td.right_align {
 #userfile_contents_display{
     border: 0.2em solid #6699CC;
     padding: 0.5em;
+    margin-top: 1em;
+    width: 938px;
 }
 
 .resource_list_upper_form {
