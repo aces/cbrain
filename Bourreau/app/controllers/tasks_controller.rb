@@ -17,11 +17,12 @@
 class TasksController < ApplicationController
 
   Revision_info="$Id$"
-
+  
+  before_filter :check_sender
   before_filter :find_or_initialize_task, :except => [ :index ]
   before_filter :start_workers
 
-  # Index method no longer avilable.
+  # Index method no longer available.
   def index
     respond_to do |format|
       format.html { head :method_not_allowed }
@@ -140,6 +141,13 @@ class TasksController < ApplicationController
   def start_workers
     myself = RemoteResource.current_resource
     myself.class.start_bourreau_workers
+  end
+  
+  def check_sender
+    token = request.headers["HTTP_CBRAIN_SENDER_TOKEN"]
+    unless token && RemoteResource.valid_token?(token)
+      head :bad_request
+    end
   end
 
 end

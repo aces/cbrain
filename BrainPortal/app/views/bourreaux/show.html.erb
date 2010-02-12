@@ -15,7 +15,10 @@
 
 <h2>Information for <%= @bourreau.name %></h2>
 
-<% isbourreau = @bourreau.is_a?(Bourreau) %>
+<%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
+
+
+<!-- <% isbourreau = @bourreau.is_a?(Bourreau) %> -->
 
 <div class = "generalcontent">
 
@@ -185,13 +188,13 @@
                  </td>
              </tr>
 
-             <% if isbourreau %>
+             
              <tr>
                  <th>Worker PIDs</th>
                  <td class="info"><%= @info.worker_pids %></td>
              </tr>
 
-             <tr>
+             <tr class="Bourreau" style="display:none">
                  <th>Worker Revision Info</th>
                  <td class="info">
                      <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
@@ -199,20 +202,18 @@
                      <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
                  </td>
              </tr>
-
-             <tr>
+             <tr class="Bourreau" style="display:none">
                  <th>Number of tasks (running/max)</th>
                  <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
              </tr>
 
-             <tr>
+             <tr class="Bourreau" style="display:none">
                  <th>Execution Server Cluster Management System</th>
                  <td class="info">
                    Type: <%= h(@info.bourreau_cms) %><br>
                    Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
                  </td>
              </tr>
-             <% end %>
 
              <tr>
                  <th>Execution Server SSH Public Key</th>
@@ -221,9 +222,9 @@
 
          <% end %>
 
-         <% if isbourreau && (check_role(:admin) || @bourreau.user_id == current_user.id) %>
+         <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
-            <tr>
+            <tr class="Bourreau" style="display:none">
                <td class="info" align="center" colspan="2">
                   <table>
                     <tr>
@@ -242,8 +243,7 @@
 
       </table>
 
-      <% if isbourreau %>
-      <table>
+      <table class="Bourreau" style="display:none">
         <tr>
           <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
         </tr>
@@ -268,9 +268,8 @@
             <% end %>
           <tr>
       </table>
-      <% end %>
 
-      <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => (isbourreau ? "Bourreau Log" : "BrainPortal Log") } %>
+      <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
 
    </div>  <!-- End class="generalbox" -->
 

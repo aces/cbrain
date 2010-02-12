@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100129193605) do
+ActiveRecord::Schema.define(:version => 20100202212250) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -146,6 +146,12 @@ ActiveRecord::Schema.define(:version => 20100129193605) do
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
+
+  create_table "sanity_checks", :force => true do |t|
+    t.string   "revision_info"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :null => false

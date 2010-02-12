@@ -9,7 +9,6 @@
 # $Id$
 #
 
-
 #Abstract model representing a job request made to an remote execution server (Bourreau) on a cluster.
 #
 #<b>DrmaaTask should not be instantiated directly.</b> Instead, subclasses of DrmaaTask should be created to 
@@ -78,6 +77,7 @@ class DrmaaTask < ActiveResource::Base
   # invalid URL; it will be replaced as needed by the
   # URL of a real bourreau ActiveResource later on.
   self.site = "http://invalid:0000/"
+  headers['CBRAIN-SENDER-TOKEN'] = RemoteResource.current_resource.auth_token
 
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
@@ -170,7 +170,8 @@ class DrmaaTask < ActiveResource::Base
 
   # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
-  def save #:nodoc:
+  def prepare_resources
+    self.class.headers['CBRAIN-SENDER-TOKEN'] = RemoteResource.current_resource.auth_token
     self.bourreau_id = select_bourreau if self.bourreau_id.blank?
     self.launch_time = DrmaaTask.launch_time
     adjust_site
@@ -180,21 +181,17 @@ class DrmaaTask < ActiveResource::Base
     end    
     @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
     @statistic.update_stats
+  end
+
+  # Prepare everything before a save.
+  def save #:nodoc:
+    prepare_resources
     super
   end
 
-  # If a bourreau has not been specified, choose one.
-  # Then, reconfigure the class' site to point to it properly.
+  # Prepare everything before a save.
   def save! #:nodoc:
-    self.bourreau_id = select_bourreau if self.bourreau_id.blank?
-    self.launch_time = DrmaaTask.launch_time
-    adjust_site
-    self.params ||= {}
-    if self.params.respond_to? :[]
-      self.params[:data_provider_id] = DrmaaTask.data_provider_id unless self.params[:data_provider_id]
-    end
-    @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
-    @statistic.update_stats
+    prepare_resources
     super
   end
 

@@ -11,12 +11,13 @@
 
 -%>
 
-   <% pretty_type = @bourreau.is_a?(Bourreau) ? "Execution Server" : "Brain Portal" %>
-   <% klass_sym   = @bourreau.is_a?(Bourreau) ? :bourreau          : :brain_portal  %>
+<%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
 
-   <% title "Edit #{pretty_type}" %>
+<div class = "generalcontent">
 
-   <h2>Edit <%= pretty_type %></h2>
+   <% title "Edit #{@bourreau.name}" %>
+
+   <h2>Edit <%= @bourreau.name %></h2>
 
    <div class = "generalcontent">
 
@@ -24,61 +25,65 @@
 
       <%= error_messages_for :bourreau %>
 
-      <% form_for klass_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+      <% form_for @bourreau.class.to_s.underscore.to_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
          <p><label for="name">Name</label><br/>
          <%= f.text_field :name %></p>
 
          <p><label for="description">Description</label><br/>
          <%= f.text_field :description %></p>
+         
+         <div class="Bourreau" style="display:none">
+           <p><label for="user_id">Owner</label><br/>
+           <%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
 
-         <p><label for="user_id">Owner</label><br/>
-         <%= f.select :user_id, @users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+           <p><label for="group_id">Group</label><br/>
+           <%= f.select :group_id, @groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
 
-         <p><label for="group_id">Group</label><br/>
-         <%= f.select :group_id, @groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>
+           <p><label for="online">Status</label><br/>
+           <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
-         <p><label for="online">Status</label><br/>
-         <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
+           <p><label>ActiveResource Configuration</label><br/>
+           <div class="groupentry">
 
-         <p><label>ActiveResource Configuration</label><br/>
-         <div class="groupentry">
+               <p><label for="actres_host">Hostname</label><br/>
+               <%= f.text_field :actres_host %></p>
 
-             <p><label for="actres_host">Hostname</label><br/>
-             <%= f.text_field :actres_host %></p>
+               <p><label for="actres_port">Port Number</label><br/>
+               <%= f.text_field :actres_port %></p>
 
-             <p><label for="actres_port">Port Number</label><br/>
-             <%= f.text_field :actres_port %></p>
+           </div>
 
+           <p><label>SSH Remote Control Configuration</label><br/>
+           <div class="groupentry">
+
+               <p><label for="ssh_control_host">Hostname</label><br/>
+               <%= f.text_field :ssh_control_host %></p>
+
+               <p><label for="ssh_control_user">Username</label><br/>
+               <%= f.text_field :ssh_control_user %></p>
+
+               <p><label for="ssh_control_port">Port Number</label><br/>
+               <%= f.text_field :ssh_control_port %></p>
+
+               <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
+               <%= f.text_field :ssh_control_rails_dir %></p>
+
+           </div>
+
+           <p><label>Tunneling Configuration</label><br/>
+           <div class="groupentry">
+
+               <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
+               <%= f.text_field :tunnel_mysql_port %></p>
+
+               <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
+               <%= f.text_field :tunnel_actres_port %></p>
+
+           </div>
          </div>
 
-         <p><label>SSH Remote Control Configuration</label><br/>
-         <div class="groupentry">
 
-             <p><label for="ssh_control_host">Hostname</label><br/>
-             <%= f.text_field :ssh_control_host %></p>
-
-             <p><label for="ssh_control_user">Username</label><br/>
-             <%= f.text_field :ssh_control_user %></p>
-
-             <p><label for="ssh_control_port">Port Number</label><br/>
-             <%= f.text_field :ssh_control_port %></p>
-
-             <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
-             <%= f.text_field :ssh_control_rails_dir %></p>
-
-         </div>
-
-         <p><label>Tunneling Configuration</label><br/>
-         <div class="groupentry">
-
-             <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
-             <%= f.text_field :tunnel_mysql_port %></p>
-
-             <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
-             <%= f.text_field :tunnel_actres_port %></p>
-
-         </div>
 
          <p><label>Cache Management Configuration</label><br/>
          <div class="groupentry">

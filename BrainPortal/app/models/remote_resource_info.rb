@@ -71,6 +71,11 @@ class RemoteResourceInfo < RestrictedHash
 
      dummy
    end
+   
+   #Default value for attributes.
+   def [](key)
+     super || "???"
+   end
 
 end
 
