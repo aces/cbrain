@@ -187,7 +187,7 @@ pre {
 }
 
 #main {
-    background-color:#EEEEEE;
+    background-color:#FFFFFF;
 }
 
 #selected a {
@@ -356,10 +356,10 @@ a:hover {
 
 #content {
     width: 1021px; 
-    float: left;
     background-color: #ffffff; 
     height:100%; 
-    margin: 0px;
+    margin-left:  auto;
+		margin-right: auto;
     padding-bottom: 4px; 
     padding-bottom:10px;
     height: 100%;
