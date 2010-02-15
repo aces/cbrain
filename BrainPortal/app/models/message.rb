@@ -160,16 +160,18 @@ class Message < ActiveRecord::Base
   # Sends an internal error message where the main context
   # is an exception object.
   def self.send_internal_error_message(destination, header, exception, request_params = {})
-    Message.send_message(destination,
-      :message_type  => :error,
-      :header  => "Internal error: #{header}",
+    if destination && !(destination.is_a?(User) && destination.has_role?(:admin))
+      Message.send_message(destination,
+        :message_type  => :error,
+        :header  => "Internal error: #{header}",
 
-      :description  => "An internal error occured inside the CBRAIN code.\n"     +
-                       "The CBRAIN admins have been alerted are working\n"       +
-                       "towards solving the problem.\n",
+        :description  => "An internal error occured inside the CBRAIN code.\n"     +
+                         "The CBRAIN admins have been alerted are working\n"       +
+                         "towards solving the problem.\n",
                        
-      :send_email   => true
-    ) unless destination.is_a?(User) && destination.has_role?(:admin)
+        :send_email   => true
+      ) 
+    end
     
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
@@ -232,10 +234,10 @@ class Message < ActiveRecord::Base
                 begin
                   (destination.map &:own_group) | []
                 rescue NoMethodError
-                  cb_error "Destination not acceptable for send_message."
+                  [] #cb_error "Destination not acceptable for send_message."
                 end
               else
-                cb_error "Destination not acceptable for send_message."
+                [] #cb_error "Destination not acceptable for send_message."
             end
 
     # Get a unique list of all users from all these groups
