@@ -77,7 +77,7 @@ class DrmaaTask < ActiveResource::Base
   # invalid URL; it will be replaced as needed by the
   # URL of a real bourreau ActiveResource later on.
   self.site = "http://invalid:0000/"
-  headers['CBRAIN-SENDER-TOKEN'] = RemoteResource.current_resource.auth_token
+  
 
   # This is an overidde of the ActiveResource method
   # used to instanciate objects received from the XML
