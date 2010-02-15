@@ -68,7 +68,7 @@ class PortalSystemCheck < Checker
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
   
-    needed_Constants = %w( DataProviderCache_dir )
+    needed_Constants = %w( DataProviderCache_dir Site_URL )
     
     # Constants
     needed_Constants.each do |c|

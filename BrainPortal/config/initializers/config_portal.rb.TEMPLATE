@@ -25,5 +25,6 @@ class CBRAIN
 
   # Data Providers constants
   DataProviderCache_dir    = "/your/local/portal/cache/here"
-  
+  Site_URL                 = "https://brainstorm.cbrain.mcgill.ca/"
+    
 end
