@@ -50,6 +50,11 @@ class DrmaaTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
+  # These basename might get modified with suffixes appended to them.
+  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{id}.sh"
+  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
+  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
+
   include DrmaaTaskCommon
 
   # The attribute 'params' is a serialized hash table
@@ -57,6 +62,41 @@ class DrmaaTask < ActiveRecord::Base
   # subclass of DrmaaTask to find/use/define its content
   # as necessary.
   serialize :params
+
+  # The attribute 'prerequisites' is a serialized has table
+  # containing the information about whether the current
+  # task depend on the states of other tasks. As an example,
+  # if the hash is this:
+  #
+  #     {
+  #        :for_setup           => { "T12" => "Queued", "T13" => "Completed" },
+  #        :for_post_processing => { "T66" => "Failed" },
+  #     }
+  #
+  # then the task will be setup by a Worker only when task #12 and #13 are
+  # in the indicated states or further, and the task will enter post_process() only
+  # when task #66 has failed. The only allowed keys right now are
+  # :for_setup and :for_post_processing, as these are the only two
+  # states triggered by Workers.
+  # 
+  # The task's ID are serialized with strings with a prefix consisting
+  # of the single character 'T'. This is needed so that the structure
+  # is properly serialized in XML during ActiveResource transport.
+  #
+  # The only allowed state values for the conditions are:
+  # 
+  #  - 'Queued' (which also covers ALL subsequent states up to 'Completed')
+  #  - 'Data Ready' (which also covers 'Completed')
+  #  - 'Completed'
+  #  - 'Failed' (which covers all failures)
+  #
+  # As an aide, note that in a way, a value 'n' in the DrmaaTask attribute
+  # :shared_wd_tid also implies this prerequisite:
+  # 
+  #     :for_setup => { "T#{n}" => "Queued" }
+  #
+  # unless a more restrictive prerequisite is already supplied for task 'n'.
+  serialize :prerequisites
 
   def initialize(arguments = {}) #:nodoc:
     super(arguments)
@@ -113,83 +153,83 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
-  # Main Controller Methods (mainly called by the tasks controller)
-  # start_all(), post_process(), update_status()
+  # Main control methods (mainly called by the BourreauWorker)
   ##################################################################
 
-  # This should be called only once when the object is new.
+  # This is called only by a BourreauWorker once when the object is new.
   # A temporary, grid-aware working directory is created
-  # for the job.
-  def start_all
-    cb_error "Task is not 'New'" if self.status && self.status != 'New'
-    self.addlog("Setting up.")
-    self.status = "Setting Up"
-    save_status = self.save
+  # for the job, and the task-specific setup() method is invoked in it.
+  # Then the task's BASH commands are submitted to the cluster.
+  def setup_and_submit_job
 
+    # We need to raise an exception if we cannot successfully
+    # transition ourselves, as this will tell the Worker
+    # responsible about this task.
+    status_transition!("New","Setting Up")
+    
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
-      begin
-        self.makeDRMAAworkdir
-        Dir.chdir(self.drmaa_workdir) do
-          if ! self.setup
-            self.addlog("Failed To Setup")
-            self.status = "Failed To Setup"
-          else
-            if ! self.run
-              self.addlog("Failed To Start")
-              self.status = "Failed To Start"
-              #self.removeDRMAAworkdir
-            end
-          end
+    begin
+      # Optional block to execute when we got the go ahead to execute.
+      yield self if block_given? # Mostly used for logging.
+      self.addlog("Setting Up.")
+      self.makeDRMAAworkdir
+      Dir.chdir(self.drmaa_workdir) do
+        if ! self.setup  # as defined by subclass
+          self.addlog("Failed to setup: 'false' returned by setup().")
+          self.status = "Failed To Setup"
+        elsif ! self.submit_cluster_job
+          self.addlog("Failed to start: 'false' returned by submit_cluster_job().")
+          self.status = "Failed To Start"
+        else
+          self.addlog("Setup and submit process successful.")
+          # the status is moving forward at its own pace now
         end
-      rescue => e
-        self.addlog("Exception raised while setting up: #{e.class.to_s}: #{e.message}")
-        e.backtrace.slice(0,10).each { |m| self.addlog(m) }
-        self.status = "Failed To Setup"
       end
+    rescue => e
+      self.addlog("Exception raised while setting up: #{e.class.to_s}: #{e.message}")
+      e.backtrace.slice(0,10).each { |m| self.addlog(m) }
+      self.status = "Failed To Setup"
+    end
 
     self.save
   end
 
-  # This is called
-  # manually to finish processing a job that has
+  # This is called by a Worker to finish processing a job that has
   # successfully run on the cluster. The main purpose
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
   def post_process
 
-    # Make sure job is ready.
-    if self.status != "Data Ready"
-      cb_error "post_process() called on a job that is not in Data Ready state"
-    end
+    # We need to raise an exception if we cannot successfully
+    # transition ourselves, as this will tell the Worker
+    # responsible about this task.
+    status_transition!('Data Ready','Post Processing')
 
-    self.addlog("Starting asynchronous postprocessing.")
-    self.status = "Post Processing"
-    self.save
-
-    # Processing.
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
-
-      begin
-        saveok = false
-        Dir.chdir(self.drmaa_workdir) do
-          # Call the subclass-provided save_results()
-          saveok = self.save_results
-        end
-        if ! saveok
-          self.status = "Failed To PostProcess"
-        else
-          self.addlog("Asynchronous postprocessing completed.")
-          self.status = "Completed"
-        end
-      rescue Exception => e
-        self.addlog("Exception raised while post processing results: #{e.class.to_s}: #{e.message}")
-        e.backtrace.slice(0,10).each { |m| self.addlog(m) }
-        self.status = "Failed To PostProcess"
+    begin
+      # Optional block to execute when we got the go ahead to execute.
+      yield self if block_given? # Mostly used for logging.
+      self.addlog("Starting asynchronous postprocessing.")
+      saveok = false
+      Dir.chdir(self.drmaa_workdir) do
+        # Call the subclass-provided save_results()
+        saveok = self.save_results
       end
+      if ! saveok
+        self.status = "Failed To PostProcess"
+      else
+        self.addlog("Asynchronous postprocessing completed.")
+        self.status = "Completed"
+      end
+    rescue Exception => e
+      self.addlog("Exception raised while post processing results: #{e.class.to_s}: #{e.message}")
+      e.backtrace.slice(0,10).each { |m| self.addlog(m) }
+      self.status = "Failed To PostProcess"
+    end
 
     self.save
   end
@@ -215,7 +255,7 @@ class DrmaaTask < ActiveRecord::Base
 
     ar_status = self.status
     if ar_status.blank?
-      cb_error "Unknown blank status obtained from Active Record"
+      cb_error "Unknown blank status obtained from DrmaaTask ActiveRecord #{self.id}."
     end
 
     # Final states that we can't get out of, except for:
@@ -225,24 +265,59 @@ class DrmaaTask < ActiveRecord::Base
     #    through the method call save_results()
     return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
 
+    # This is the expensive call, the one that queries the cluster.
     drmaastatus = self.drmaa_status
     #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")
 
-    # Steady states
+    # Steady states for cluster jobs
     if drmaastatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
-      self.status = drmaastatus
-      self.save if ar_status != drmaastatus
-      return drmaastatus
+      self.status_transition(self.status,drmaastatus) # try to update; ignore errors.
+      return self.status
     end
 
     # At this point here then, drmaastatus == "Does Not Exist"
     if ar_status.match(/^(On CPU|Suspended|On Hold|Queued)$/)
-      ar_status = self.status = "Data Ready"
-      self.save
-      return ar_status
+      self.status_transition(self.status,"Data Ready") # try to update; ignore errors.
+      return self.status
     end
 
     cb_error "DRMAA job finished with unknown Active Record status #{ar_status} and DRMAA status #{drmaastatus}"
+  end
+
+  # This method changes the status attribute
+  # in the current task object to +to_state+ but
+  # also makes sure the current value is +from_state+ .
+  # The change is performed in a transaction where
+  # the record is locked, to ensure the transition is
+  # not trashed by another process. The method returns
+  # true if the transition was successful, and false
+  # if anything went wrong.
+  def status_transition(from_state, to_state)
+    DrmaaTask.transaction do
+      self.lock!
+      return false if self.status != from_state 
+      return true  if from_state == to_state # NOOP
+      self.status = to_state
+      self.save!
+    end
+    true
+  end
+
+  # This method acts like status_transition(),
+  # but it raises a CbrainTransitionException
+  # on failures.
+  def status_transition!(from_state, to_state)
+    unless status_transition(from_state,to_state)
+      ohno = CbrainTransitionException.new(
+        "Task status was changed before lock was acquired for task '#{self.id}'.\n" +
+        "Expected: '#{from_state}' found: '#{self.status}'."
+      )
+      ohno.drmaa_task = self
+      ohno.from_state = from_state
+      ohno.to_state   = to_state
+      raise ohno
+    end
+    true
   end
 
 
@@ -498,13 +573,30 @@ class DrmaaTask < ActiveRecord::Base
   
 
   ##################################################################
+  # Task Rescheduling Methods (experimental, future)
+  ##################################################################
+
+  # Allows running the same
+  # task multiple times in the same work directory.
+  # Right now only returns the constant int '1'.
+  def run_number
+    super || 1
+  end
+
+  # A string, in format "#{task_id}-#{run_number}"
+  def run_id
+    "#{self.id}-#{self.run_number}"
+  end
+
+
+
+  ##################################################################
   # Cluster Task Creation Methods
   ##################################################################
 
   # Submit the actual job request to the cluster management software.
-  #---
   # Expects that the WD has already been changed.
-  def run
+  def submit_cluster_job
     self.addlog("Launching DRMAA job.")
 
     name     = self.name
@@ -523,22 +615,22 @@ class DrmaaTask < ActiveRecord::Base
     
     # Create a bash command script out of the text
     # lines supplied by the subclass
-    qsubfile = ".qsub.sh"   # also used in post_process() !
-    io = File.open(qsubfile,"w")
-
-    io.write(
-      "#!/bin/sh\n" +
-      "\n" +
-      "# Script created automatically by #{self.class.to_s}\n" +
-      "# #{Revision_info}\n" +
-      "\n" +
-      "# Global Bourreau initialization section\n" +
-      CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n") + "\n" +
-      "\n" +
-      "# User commands section\n" +
-      commands.join("\n") +
-      "\n" )
-    io.close
+    qsubfile = QSUB_SCRIPT_BASENAME + ".#{self.run_id}.sh"
+    File.open(qsubfile,"w") do |io|
+      io.write(
+        "#!/bin/sh\n" +
+        "\n" +
+        "# Script created automatically by #{self.class.to_s}\n" +
+        "# #{Revision_info}\n" +
+        "\n" +
+        "# Global Bourreau initialization section\n" +
+        CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n") + "\n" +
+        "\n" +
+        "# User commands section\n" +
+        commands.join("\n") +
+        "\n"
+      )
+    end
 
     # Create the DRMAA job object
     Scir::Session.session_cache   # Make sure it's loaded.
@@ -556,7 +648,7 @@ class DrmaaTask < ActiveRecord::Base
     drm     = Scir.drm_system
     version = Scir.version
     impl    = Scir.drmaa_implementation
-    self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'")
+    self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'.")
 
     impl_revinfo = Scir::Session.session_cache.revision_info
     impl_file    = impl_revinfo.svn_id_file
@@ -564,16 +656,15 @@ class DrmaaTask < ActiveRecord::Base
     impl_author  = impl_revinfo.svn_id_author
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
-    self.addlog("Implementation in file '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'")
+    self.addlog("Implementation in file '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
     jobid            = Scir::Session.session_cache.run(job)
-    #jobid            = jobid.to_s.sub(/\.krylov.*/,".krylov.clumeq.mcgill.ca") # TODO TOREMOVE
     self.drmaa_jobid = jobid
     self.status      = "Queued"
-    self.addlog("Queued as job ID '#{jobid}'")
+    self.addlog("Queued as job ID '#{jobid}'.")
     return true
 
   end
@@ -582,7 +673,7 @@ class DrmaaTask < ActiveRecord::Base
   def makeDRMAAworkdir
     name = self.name
     user = self.user.login
-    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + $$.to_s + "-I" + self.id.to_s)
+    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
     unless Dir.mkdir(self.drmaa_workdir,0700)
       cb_error "Cannot create directory '#{self.drmaa_workdir}': $!"
@@ -606,7 +697,11 @@ class DrmaaTask < ActiveRecord::Base
   def stdoutDRMAAfilename
     workdir = self.drmaa_workdir
     return nil unless workdir
-    stdoutfile = "#{workdir}/.qsub.sh.out"
+    if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
+    else
+      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id}" # New official convention
+    end
   end
 
   # Returns the filename for the job's captured STDERR
@@ -616,7 +711,11 @@ class DrmaaTask < ActiveRecord::Base
   def stderrDRMAAfilename
     workdir = self.drmaa_workdir
     return nil unless workdir
-    stderrfile = "#{workdir}/.qsub.sh.err"
+    if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
+    else
+      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id}" # New official convention
+    end
   end
 
   # Returns the captured STDOUT for the

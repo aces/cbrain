@@ -26,5 +26,6 @@ class ActRecTask < ActiveRecord::Base
   belongs_to  :user
 
   serialize :params
+  serialize :prerequisites
 
 end

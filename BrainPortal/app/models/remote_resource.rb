@@ -363,8 +363,10 @@ class RemoteResource < ActiveRecord::Base
         control_info = Control.find('info')
         info = RemoteResourceInfo.new(control_info.attributes)
       end
-    rescue
+    rescue => ex
       # oops, it's dead
+      #puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
+      #puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
     end
 
     # If we can't find the info, we return a
@@ -518,6 +520,12 @@ class RemoteResource < ActiveRecord::Base
     end
   end
 
+
+
+  ############################################################################
+  # Commands Implemented by all RemoteResources
+  ############################################################################
+
   protected
 
   # Clean the cached files of a list of users, for file
@@ -550,74 +558,6 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    true
-  end
-
-  # Starts Bourreau worker processes.
-  def self.process_command_start_workers(command)
-    myself = RemoteResource.current_resource
-    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
-      myself.is_a?(Bourreau)
-    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-    self.start_bourreau_workers
-  end
-  
-  # Stops Bourreau worker processes.
-  def self.process_command_stop_workers(command)
-    myself = RemoteResource.current_resource
-    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
-      myself.is_a?(Bourreau)
-    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-    BourreauWorker.stop_all
-  end
-  
-  # Wakes up Bourreau worker processes.
-  def self.process_command_wakeup_workers(command)
-    myself = RemoteResource.current_resource
-    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
-      myself.is_a?(Bourreau)
-    allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-    BourreauWorker.wake_all
-  end
-
-  # Starts, stops, or wakes up Bourreau worker processes.
-  # def self.process_command_worker_control(startstop)
-  #     myself = RemoteResource.current_resource
-  #     cb_error "Got worker control command #{startstop} but I'm not a Bourreau!" unless
-  #       myself.is_a?(Bourreau)
-  #     allworkers = BourreauWorker.rescan_workers # just to make sure it's up to date
-  #     case startstop
-  #       when 'start'
-  #         self.start_bourreau_workers
-  #       when 'stop'
-  #         BourreauWorker.stop_all
-  #       when 'wakeup'
-  #         BourreauWorker.wake_all
-  #     else
-  #         cb_error "Got unknown worker control command #{startstop}"
-  #     end
-  #   end
-
-  # This just makes sure some workers are available.
-  # It's unfortunate that due to technical reasons,
-  # such workers cannot be started when the application
-  # boots (CBRAIN.spawn_with_active_records() won't work
-  # properly until RAILS is fully booted).
-  def self.start_bourreau_workers
-    allworkers = BourreauWorker.all
-    return true if allworkers.size >= CBRAIN::BOURREAU_WORKERS_INSTANCES
-    while allworkers.size < CBRAIN::BOURREAU_WORKERS_INSTANCES
-      # For the moment we only start one worker, but
-      # in the future we may want to start more than one,
-      # once we're sure they don't interfere with each other.
-      worker = BourreauWorker.new
-      worker.check_interval = CBRAIN::BOURREAU_WORKERS_CHECK_INTERVAL # in seconds, default is 55
-      worker.bourreau       = self.current_resource                   # Optional, when logging to Bourreau's log
-      worker.log_to         = CBRAIN::BOURREAU_WORKERS_LOG_TO         # 'stdout,bourreau'
-      worker.verbose        = CBRAIN::BOURREAU_WORKERS_VERBOSE        # if we want each job action logged!
-      worker.launch
-      allworkers = BourreauWorker.all
-    end
     true
   end
 

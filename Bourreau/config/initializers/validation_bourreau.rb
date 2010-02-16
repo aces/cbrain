@@ -68,10 +68,6 @@ if ! CBRAIN::EXTRA_BASH_INIT_CMDS.is_a?(Array) || CBRAIN::EXTRA_BASH_INIT_CMDS.f
   raise "CBRAIN configuration error: the EXTRA_BASH_INIT_CMDS is not an array of strings!"
 end
 
-if CBRAIN::BOURREAU_WORKERS_INSTANCES > 1
-  raise "Error: right now we only support a SINGLE instance of a Bourreau Worker! Check your value for BOURREAU_WORKERS_INSTANCES."
-end
-
 
 
 #-----------------------------------------------------------------------------
@@ -193,16 +189,15 @@ puts "C> Reporting Bourreau Worker Processes (if any)..."
 # This will reconnect with any and all workers already
 # running, for instance if Bourreau was shut down and the workers
 # were still alive.
-allworkers = BourreauWorker.rescan_workers
+allworkers = WorkerPool.find_pool(BourreauWorker)
 allworkers.each do |worker|
-  puts "C> \t - Found worker already running: #{worker.pid.to_s} ..."
+  puts "C> \t - Found worker already running: #{worker.pretty_name} ..."
 end
 if allworkers.size == 0
   puts "C> \t - No worker process found. It's OK, they'll be started as needed."
 else
   puts "C> \t - Scheduling restart for all of them ..."
-  BourreauWorker.wake_all
-  BourreauWorker.signal_all('TERM')
+  allworkers.stop_workers
 end
 
 

@@ -38,7 +38,8 @@ class TasksController < ApplicationController
       
       @task.status = 'New'
       if @task.save
-        BourreauWorker.wake_all
+        worker_pool = WorkerPool.find_pool(BourreauWorker)
+        worker_pool.wake_up_workers
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
@@ -140,7 +141,7 @@ class TasksController < ApplicationController
 
   def start_workers
     myself = RemoteResource.current_resource
-    myself.class.start_bourreau_workers
+    myself.send_command_start_workers
   end
   
   def check_sender

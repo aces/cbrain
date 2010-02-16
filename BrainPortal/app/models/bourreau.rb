@@ -49,7 +49,7 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    captfile    = "/tmp/start.out.#{$$}"
+    captfile    = "/tmp/start.out.#{Process.pid}"
     ssh_options = self.ssh_master.ssh_shared_options
     startcmd    = "ruby #{bourreau_rails_home}/script/cbrain_remote_ctl " +
                   "start -e #{myrailsenv} -p #{port}"
@@ -91,8 +91,8 @@ class Bourreau < RemoteResource
     queue_tasks_tot     = queue_tasks_tot_max[0]
     queue_tasks_max     = queue_tasks_tot_max[1]
 
-    BourreauWorker.rescan_workers
-    workers = BourreauWorker.all
+    worker_pool  = WorkerPool.find_pool(BourreauWorker)
+    workers      = worker_pool.workers
     workers_pids = workers.map(&:pid).join(",")
 
     worker_revinfo    = BourreauWorker.revision_info
@@ -141,5 +141,89 @@ class Bourreau < RemoteResource
    
     yml
   end
+
+
+
+  ############################################################################
+  # Commands Implemented by Bourreaux
+  ############################################################################
+
+  protected
+
+  # Starts Bourreau worker processes.
+  def self.process_command_start_workers(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+
+    # Returns a logger object or the symbol :auto
+    logger = self.initialize_worker_logger()
+
+    # Workers are started when created
+    worker_pool = WorkerPool.create_or_find_pool(BourreauWorker,
+       CBRAIN::BOURREAU_WORKERS_INSTANCES,
+       { :check_interval => CBRAIN::BOURREAU_WORKERS_CHECK_INTERVAL,
+         :worker_log     => logger, # nil, a logger object, or :auto
+         :log_level      => CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO # for :auto
+       }
+    )
+  end
+  
+  # Stops Bourreau worker processes.
+  def self.process_command_stop_workers(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+    worker_pool = WorkerPool.find_pool(BourreauWorker)
+    worker_pool.stop_workers
+  end
+  
+  # Wakes up Bourreau worker processes.
+  def self.process_command_wakeup_workers(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+    worker_pool = WorkerPool.find_pool(BourreauWorker)
+    worker_pool.wake_up_workers
+  end
+
+  private
+
+  # Create the logger object for the workers.
+  # Returns nil, or a logger object, or the symbol :auto
+  def self.initialize_worker_logger
+
+    log_to = CBRAIN::BOURREAU_WORKERS_LOG_TO
+
+    # Option 1: the Worker class itself will set them up, one per worker.
+    return :auto if log_to == 'separate'
+
+    blogger = nil # means no logging.
+
+    # Option 2: log to stdout or stderr
+    if log_to =~ /stdout|stderr/i
+      blogger = Log4r::Logger['BourreauWorker'] || Log4r::Logger.new('BourreauWorker')
+      blogger.add(Log4r::Outputter.stdout) if log_to =~ /stdout/i
+      blogger.add(Log4r::Outputter.stderr) if log_to =~ /stderr/i
+      blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+
+    # Option 3: combined log a file
+    elsif log_to == 'combined'
+      blogger = Log4r::Logger['BourreauWorker'] || Log4r::Logger.new('BourreauWorker')
+      blogger.add(Log4r::RollingFileOutputter.new('bourreau_workers_outputter',
+                    :filename  => "#{RAILS_ROOT}/log/BourreauWorkers.combined..log",
+                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                    :maxsize   => 1000000, :trunc => 600000))
+      blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+
+    # Option 4: use RAIL's own logger
+    elsif log_to == 'bourreau'
+      blogger = logger # Rails app logger
+    end
+
+    blogger
+  end
+
+  # NOTE: 'private' in effect here.
 
 end
