@@ -76,13 +76,13 @@ class CBRAIN
 
         # Background untrapped exception handling
         rescue ActiveRecord::StatementInvalid => e
-          puts "#{taskname} PID #{$$}: Oh oh. The DB connection was closed! Nothing to do but exit!"
+          puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
           unless destination
             destination = User.find_by_login('admin')
             taskname += " (No Destination Provided!)"
           end
-          Message.send_internal_error_message(destination,"#{taskname} with PID #{$$}",itswrong)
+          Message.send_internal_error_message(destination,"#{taskname} with PID #{Process.pid}",itswrong)
         ensure
           ActiveRecord::Base.remove_connection
           Kernel.exit! # End of subchild.
@@ -120,7 +120,7 @@ class CBRAIN
       begin
         yield
       rescue => itswrong
-        Message.send_internal_error_message(destination,"#{taskname} with PID #{$$}",itswrong)
+        Message.send_internal_error_message(destination,"#{taskname} with PID #{Process.pid}",itswrong)
       end
     end
   end

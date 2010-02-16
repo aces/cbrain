@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100202212250) do
+ActiveRecord::Schema.define(:version => 20100209191826) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -67,6 +67,9 @@ ActiveRecord::Schema.define(:version => 20100202212250) do
     t.integer  "bourreau_id"
     t.text     "description"
     t.datetime "launch_time"
+    t.text     "prerequisites"
+    t.integer  "share_wd_tid"
+    t.integer  "run_number"
   end
 
   create_table "feedbacks", :force => true do |t|
