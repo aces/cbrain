@@ -58,7 +58,7 @@ class DrmaaDiagnostics < DrmaaTask
     user_id      = self.user_id
 
     files_hash    = params[:files_hash] || {}
-    file_ids      = files_hash.keys
+    file_ids      = files_hash.values
 
     # Note: 'commands' is an ARRAY of strings.
     commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
