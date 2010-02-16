@@ -42,7 +42,7 @@ class UserfilesController < ApplicationController
     #  sort_order = params[:sort_order]
     #  sort_dir   = params[:sort_dir]
     @userfiles = scope.scoped( 
-      :include  => [:tags, {:user => :site}, :data_provider, :group, :sync_status],
+      :include  => [:tags, {:user => :site}, :data_provider, :group, { :sync_status => :remote_resource } ],
       :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
     )
 
