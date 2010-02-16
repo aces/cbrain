@@ -33,6 +33,11 @@
 
 <br>
 
+<strong>Number of copies of this task to launch: </strong>
+<%= text_field_tag :num_copies, params[:num_copies] %> (for stress testing ONLY!)
+
+<br>
+
 <strong>Save report to:</strong>
 <%= select_tag "data_provider_id", options_for_select(data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
 
