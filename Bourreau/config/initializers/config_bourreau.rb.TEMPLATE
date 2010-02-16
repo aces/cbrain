@@ -65,9 +65,9 @@ class CBRAIN
   ]
 
   # Parameters for Bourreau Workers
-  BOURREAU_WORKERS_INSTANCES      = 1  # more than 1 NOT SUPPORTED!
+  BOURREAU_WORKERS_INSTANCES      = 1  # More workers => more monitoring processes on frontend.
   BOURREAU_WORKERS_CHECK_INTERVAL = 55 # in seconds
-  BOURREAU_WORKERS_LOG_TO         = 'stdout' # and/or 'bourreau'
+  BOURREAU_WORKERS_LOG_TO         = 'stdout' # 'none', 'stdout', 'stderr', 'separate', 'combined', 'bourreau'
   BOURREAU_WORKERS_VERBOSE        = false # prints info for each task updated!
 
 end
