@@ -55,7 +55,6 @@ class PortalSystemCheck < Checker
                                     :conditions => { :cache_md5 => dp_cache_md5 })
     if brainportal
       CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
-      DrmaaTask.headers['CBRAIN-SENDER-TOKEN'] = brainportal.auth_token
     else
       #----------------------------------------------------------------------------------------
       puts "C> \t- BrainPortal not registered in database, please run 'rake db:sanity:check'."

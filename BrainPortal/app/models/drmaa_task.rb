@@ -153,6 +153,11 @@ class DrmaaTask < ActiveResource::Base
     self.site = clustersite # class method call
     self
   end
+  
+  def self.connection(refresh = false)
+   headers['CBRAIN-SENDER-TOKEN'] = RemoteResource.current_resource.auth_token
+   super
+  end
 
   # A patch in the initialization process makes sure that
   # all new active record objects always have an attribute
@@ -171,7 +176,6 @@ class DrmaaTask < ActiveResource::Base
   # If a bourreau has not been specified, choose one.
   # Then, reconfigure the class' site to point to it properly.
   def prepare_resources
-    self.class.headers['CBRAIN-SENDER-TOKEN'] = RemoteResource.current_resource.auth_token
     self.bourreau_id = select_bourreau if self.bourreau_id.blank?
     self.launch_time = DrmaaTask.launch_time
     adjust_site
