@@ -39,7 +39,7 @@ server_status_file = ENV['CBRAIN_SERVER_STATUS_FILE']
 if server_status_file && server_status_file =~ /^\//
   wrapper_pid = Process.pid
   Kernel.at_exit do
-    Process.wait if $$ == wrapper_pid
+    Process.wait if Process.pid == wrapper_pid
     current_pid        = Process.pid
     current_parent_pid = Process.ppid
     if current_pid != wrapper_pid && current_parent_pid != wrapper_pid # this code is only for the forked subprocess

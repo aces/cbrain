@@ -253,7 +253,7 @@ class SshTunnel
     pid = Process.fork do
       (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
       subpid = Process.fork do
-        self.write_pidfile($$,:force)  # Overwrite
+        self.write_pidfile(Process.pid,:force)  # Overwrite
         Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
         Kernel.exit!  # should never reach here
       end
@@ -297,12 +297,12 @@ class SshTunnel
     
     shared_options = self.ssh_shared_options
     sshcmd = "ssh -x -n #{shared_options} " +
-             "echo OK-#{$$}"
+             "echo OK-#{Process.pid}"
 
     begin
       okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
-      return true if okout =~ /OK-#{$$}/
+      return true if okout =~ /OK-#{Process.pid}/
       return false
     rescue
       return false

@@ -184,7 +184,7 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
-    tmpcontentfile         = "/tmp/#{$$}-#{rand(10000).to_s}-#{basename}"
+    tmpcontentfile         = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}"
 
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
@@ -739,7 +739,7 @@ class UserfilesController < ApplicationController
     #max of 50 files can be added to the file list at a time.
     cb_error "Overflow: more than 50 files found in archive." if count > 50
 
-    workdir = "/tmp/filecollection.#{$$}"
+    workdir = "/tmp/filecollection.#{Process.pid}"
     Dir.mkdir(workdir)
     Dir.chdir(workdir) do
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
@@ -817,7 +817,7 @@ class UserfilesController < ApplicationController
 
   def create_relocatable_tar_for_userfiles(ulist,username)
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
-    tmpdir       = Pathname.new("/tmp/dl.#{$$}.#{timestamp}")
+    tmpdir       = Pathname.new("/tmp/dl.#{Process.pid}.#{timestamp}")
     tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
     
     relpath_to_tar = []

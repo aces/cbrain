@@ -53,7 +53,7 @@ class ControlsController < ApplicationController
     @@command_counter ||= 0
     @@command_counter += 1
     command = RemoteCommand.new(params[:control]) # a HASH
-    command.id = "#{@@command_counter}-#{$$}-#{Time.now.to_i}" # not useful right now.
+    command.id = "#{@@command_counter}-#{Process.pid}-#{Time.now.to_i}" # not useful right now.
     process_command(command)
     respond_to do |format|
       format.html { head :method_not_allowed }
