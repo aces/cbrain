@@ -1,6 +1,6 @@
 namespace :setup do 
   namespace :install do
-    desc "install sys-proctable gem for your platform"
+    desc "Install sys-proctable gem for your platform"
     task :proctable do 
       platform = `uname`  
       if  platform == "Linux\n"

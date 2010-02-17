@@ -1,1 +1,1 @@
-/home/nkassis/cbrain/trunk/BrainPortal/lib/tasks/setup.rake
+../../../BrainPortal/lib/tasks/setup.rake
