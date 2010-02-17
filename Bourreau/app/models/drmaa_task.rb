@@ -312,9 +312,10 @@ class DrmaaTask < ActiveRecord::Base
         "Task status was changed before lock was acquired for task '#{self.id}'.\n" +
         "Expected: '#{from_state}' found: '#{self.status}'."
       )
-      ohno.drmaa_task = self
-      ohno.from_state = from_state
-      ohno.to_state   = to_state
+      ohno.drmaa_task  = self
+      ohno.from_state  = from_state
+      ohno.to_state    = to_state
+      ohno.found_state = self.status
       raise ohno
     end
     true

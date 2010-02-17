@@ -12,7 +12,7 @@ class CbrainTransitionException < StandardError
 
    Revision_info="$Id$"
 
-   attr_accessor :drmaa_task, :from_state, :to_state
+   attr_accessor :drmaa_task, :from_state, :to_state, :found_state
 
 end
 

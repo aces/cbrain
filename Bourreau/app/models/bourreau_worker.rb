@@ -71,6 +71,7 @@ class BourreauWorker < Worker
         task.setup_and_submit_job do |thetask| # New -> Queued|Failed To Setup
           thetask.addlog_context(self,self.pretty_name)
         end
+        worker_log.info  "Submitted: #{task.bname_tid}"
         worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
       when 'Data Ready'
         task.addlog_context(self,"Post Processing, PID=#{mypid}")
@@ -78,6 +79,7 @@ class BourreauWorker < Worker
         task.post_process do |thetask| # Data Ready -> Completed|Failed To PostProcess
           thetask.addlog_context(self,self.pretty_name)
         end
+        worker_log.info  "PostProcess: #{task.bname_tid}"
         worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
     end
 
@@ -101,12 +103,12 @@ class BourreauWorker < Worker
   # setup_and_submit_job() or post_process(); it's allowed, it means
   # some other worker has beated us to the punch. So we just ignore it.
   rescue CbrainTransitionException => te
-    worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}"
+    worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state} FOUND=#{te.found_state}"
     return
 
   # Any other error is critical and fatal; we're already
   # trapping all exceptions in setup_and_submit_job() and post_process(),
-  # so if an exception went through anyway, it's a BUG.
+  # so if an exception went through anyway, it's a CODING BUG.
   rescue => e
     worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e

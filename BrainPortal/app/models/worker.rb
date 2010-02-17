@@ -192,23 +192,25 @@ class Worker
       begin
         # This sleep is needed unfortunately to give the time for the
         # proxy side to call its own create_pidfile() so that a quick
-        # succession of start() followed by is_alive?() returns true.:w
+        # succession of start() followed by is_alive?() returns true.
         sleep 5  # TODO: re-engineer this potential race_condition.
 
         # Initialize logger
         if self.worker_log && self.worker_log.is_a?(Symbol) && self.worker_log == :auto
-          log = Logger.new "#{self.class.to_s}[#{self.pid}]"
+          log = Logger.new self.pretty_name
           log.outputters = FileOutputter.new('log_file_outputter',
                              :filename  => "#{LOGFILES_DIR}/#{self.pretty_name}.log",
-                             :formatter => PatternFormatter.new(:pattern => "%d %l #{self.pretty_name}: %m"),
+                             :formatter => PatternFormatter.new(:pattern => "%d %l %m"),
                              :trunc     => false)
           log.level=self.log_level || Log4r::DEBUG
           self.worker_log = log
+          self.patch_logger # auto prefix messages in logger with pretty_name()
         elsif self.worker_log.blank?  # Null logger, ignores everything
           self.worker_log = Logger.root
         else # Using custom logger!
           cb_error "Logger object doesn't seem to support methods debug(), info() etc..." unless
             self.worker_log.respond_to?(:debug) && self.worker_log.respond_to?(:info)
+          self.patch_logger # auto prefix messages in logger with pretty_name()
         end
 
         # Initialize variables modified by signals
@@ -318,7 +320,7 @@ class Worker
   def main_loop #:nodoc:
     self.validate_I_am_a_worker
     self.worker_log.info "Starting main worker loop."
-    self.worker_log.info "#{self.pretty_name} revision " + self.revision_info.svn_id_pretty_rev_author_date
+    self.worker_log.info "Revision " + self.revision_info.svn_id_pretty_rev_author_date
 
     # Infinite worker loop start here
     until self.stop_received
@@ -412,6 +414,16 @@ class Worker
       break if Time.now >= time_to_wake_up	
     end
     self.worker_log.debug "Ready for next check."
+  end
+
+  # Patch logger through a transparent interface so that
+  # the worker's pretty_name is always prefixed to all messages.
+  def patch_logger #:nodoc:
+    self.validate_I_am_a_worker
+    prefixer = LoggerPrefixer.new
+    prefixer.true_logger = self.worker_log
+    prefixer.prefix      = self.pretty_name + ": "
+    self.worker_log      = prefixer
   end
 
 
@@ -578,6 +590,26 @@ class Worker
     self.role           = :proxy
   end
 
+end
+
+class LoggerPrefixer
+  attr_accessor :true_logger
+  attr_accessor :prefix
+  def debug(message)
+    true_logger.debug(prefix + message)
+  end
+  def info(message)
+    true_logger.info(prefix + message)
+  end
+  def warn(message)
+    true_logger.warn(prefix + message)
+  end
+  def error(message)
+    true_logger.error(prefix + message)
+  end
+  def fatal(message)
+    true_logger.fatal(prefix + message)
+  end
 end
 
 Log4r::Logger.new("dummy") && true # needed so that the constants Log4r::INFO, DEBUG etc appear!
