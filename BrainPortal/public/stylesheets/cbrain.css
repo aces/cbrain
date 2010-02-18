@@ -69,6 +69,10 @@ h2  {
     padding: 10px;
 }
 
+img {
+	max-width: 930px;
+}
+
 /* ######################################################### */
 /* For the <pre> formatting tags - allowing the page to resize properly */
 /* ######################################################### */
@@ -292,7 +296,6 @@ pre {
     padding: 1em;
     margin-top: 1em;
     border: 0.2em solid #0471B4;
-    width: auto;
 }
 
 #side_filter_menu_wrapper{

@@ -93,11 +93,11 @@
   <% end %>
   
   <% if @sync_status == "InSync" %>
+    <%= display_contents(@userfile) %>
     <% if @userfile.is_a?(FileCollection) %>
       <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
-    <% else %>
-        <%= display_contents(@userfile) %>
     <% end %>
+    
   <% elsif @sync_status =~ /^To/ %>
     <% if @userfile.is_a?(FileCollection) %>
       <p>This Collection is currently being synchronized,

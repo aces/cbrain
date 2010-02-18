@@ -93,25 +93,33 @@ module UserfilesHelper
   
   def display_contents(userfile)
     before_content = '<div id="userfile_contents_display">'
-    before_content += link_to_function '<strong>File Contents</strong>' do |page|
+    before_content += link_to_function '<strong>Contents</strong>' do |page|
       page[:userfile_contents_display_toggle].toggle
     end
     
     content = ""
     after_content = '</div>'
     
-    file_name = userfile.name
-    case file_name
-    when /(\.txt|\.xml)$/
-      content = '<PRE>' + h(File.read(userfile.cache_full_path)) + '</PRE>'
-    when /(\.jpe?g|\.gif|\.png)$/
-      content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
+    if userfile.is_a? CivetCollection
+       clasp_file  = userfile.list_files.find { |f| f =~ /clasp\.png$/ }
+       verify_file = userfile.list_files.find { |f| f =~ /verify\.png$/}
+       content =  "<h3>Clasp</h3>"
+       content += image_tag url_for(:action  => :content, :collection_file  => clasp_file)
+       content += "<br><h3>Verify</h3>"
+       content += image_tag url_for(:action  => :content, :collection_file  => verify_file)
     else
-      before_content = ""
-      content = ""
-      after_content = ""
+      file_name = userfile.name
+      case file_name
+      when /(\.txt|\.xml)$/
+        content = '<PRE>' + h(File.read(userfile.cache_full_path)) + '</PRE>'
+      when /(\.jpe?g|\.gif|\.png)$/
+        content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
+      else
+        before_content = ""
+        content = ""
+        after_content = ""
+      end
     end
-    
     content = '<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>' + content + '</div>'
     
     before_content + content + after_content

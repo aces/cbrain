@@ -103,7 +103,12 @@ class UserfilesController < ApplicationController
   def content
     userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     userfile.sync_to_cache
-    send_file userfile.cache_full_path
+    
+    if userfile.is_a?(FileCollection) && params[:collection_file]
+      send_file userfile.cache_full_path.parent + params[:collection_file]
+    else
+      send_file userfile.cache_full_path
+    end
   end
   
   # GET /userfiles/1/edit
