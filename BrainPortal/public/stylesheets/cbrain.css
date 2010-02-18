@@ -292,7 +292,7 @@ pre {
     padding: 1em;
     margin-top: 1em;
     border: 0.2em solid #0471B4;
-    width: 15%;
+    width: auto;
 }
 
 #side_filter_menu_wrapper{
