@@ -10,7 +10,7 @@
   <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
   <td class="resource_details" style="display:none"><%= h(bour.user.login) %></td>
   <td class="resource_details" style="display:none"><%= h(bour.group.name) %></td>
-  <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site)) rescue "(Unassigned)" %></td>
+  <td><%= (link_to h(bour.site_affiliation.name), site_path(bour.site_affiliation)) rescue "(Unassigned)" %></td>
   <td><%= bour.online          ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <td><%= info.name != "???"   ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <% if isbourreau %>
