@@ -427,6 +427,7 @@ a:hover {
     line-height: 1.5em;
     border: 1px solid #E4E4E4;  
     width: 930px;
+    max-width: 910px;
     margin: 1px;
 }
 
