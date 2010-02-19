@@ -455,14 +455,13 @@ a:hover {
     color: black;
 }
 
-
 /* ######################################################## */
 /* ssh_keys as part of the edit, show, _new data provider pages */
 /* ######################################################## */
 .ssh_keys{
     float: left;
     width: 74%;
-    margin-left: 1em;
+    margin-left: 0;
     margin-right: 4em;
     margin-bottom: 1em;
     padding: 1em;
@@ -971,6 +970,23 @@ td.taskinfo {
 #plain_file_list{
     max-width: 950px;
     margin-left: 0px;
+}
+
+
+.site_info_list {
+    clear: both;
+    margin-right: auto;
+    margin-left: 11px;
+    width: 977px;
+}
+
+.site_info_list td{
+    border: 1px solid #9CF;
+    border
+    text-align: center;
+    padding-left: 2em;
+    padding-right: 2em;
+    white-space: nowrap;
 }
 
 .resource_list {
