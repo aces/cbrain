@@ -9,6 +9,9 @@
                  <% if @userfile_count > @userfiles_per_page %>
                      <%= link_to_remote "Toggle Pagination", :url  => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method  => 'get' %>
                  <% end %><br>
+                 <%= link_to_remote  "Toggle Details", {:url  =>  {:action  => :index, :userfiles_details  => set_toggle(current_session[:userfiles_details])}, :method  => 'get'} %>
+
+                 <br>
                  <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
                    <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url  => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method  => 'get' %>
                  <% end %><br><br>
@@ -46,11 +49,11 @@
           Search: <%= text_field_tag :userfiles_search_term %>
         </div>
       </th>
-       <th class="userfiles_details" style="display:none">
+       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
-       <th class="userfiles_details" style="display:none">
+       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
         <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
@@ -70,7 +73,7 @@
         <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
-       <th class="userfiles_details" style="display:none">
+       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Provider", :url  =>  userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>

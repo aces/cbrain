@@ -37,6 +37,7 @@ class Session
     @session[:userfiles_custom_filters] ||= []
     @session[:userfiles_pagination] ||= 'on'
     @session[:userfiles_sort_order] ||= 'userfiles.lft'
+    @session[:userfiles_details] ||= 'off'
     
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
@@ -102,7 +103,11 @@ class Session
     if params[:userfiles_pagination]
       @session[:userfiles_pagination] = params[:userfiles_pagination]
     end
-        
+    
+    if params[:userfiles_details]
+      @session[:userfiles_details] = params[:userfiles_details]
+    end
+     
     if params[controller]
       if params[controller]["filter_off"]
         @session[controller.to_sym]["filters"] = {}

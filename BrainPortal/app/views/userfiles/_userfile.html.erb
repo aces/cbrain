@@ -30,8 +30,8 @@
         <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
       <% end %>
    </td>
-   <td class="userfiles_details" style="display:none"><%= h userfile.user.login  %></td>
-   <td class="userfiles_details" style="display:none">
+   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> ><%= h userfile.user.login  %></td>
+   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
       <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
          <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
       </span>
@@ -49,7 +49,7 @@
    <% else %>
      <td/><td/>
    <% end %>
-   <td class="userfiles_details" style="display:none">
+   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
       <%= userfile.data_provider.name %>
    </td>
 </tr>

@@ -52,27 +52,7 @@
 
   <br>
   <br>
-   <div id="show_details_link" style="display:inline">
-        <%= 
-        link_to_function 'Show Details', {:class  => 'action_link', :id =>'show_details_link'} do |page|
-          page.select('.userfiles_details').each{ |el| el.show  }
-          page['show_details_link'].hide
-          page['hide_details_link'].show      
-        end 
-        %>
-    </div><!--End id="show_details_link"-->
-
-    <div id="hide_details_link" style="display:none">
-           <%= 
-           link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
-             page.select('.userfiles_details').each{ |el| el.hide  }
-             page['show_details_link'].show
-             page['hide_details_link'].hide      
-           end 
-           %>
-    </div><!-- End id="hide_details_link" -->
-
-    <br>
+  
 
   <%= link_to_function "Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
         page['side_filter_menu_wrapper'].visual_effect(:blind_down, :duration  => 0.2)
