@@ -967,6 +967,12 @@ td.taskinfo {
     white-space: nowrap;
 }
 
+
+#plain_file_list{
+    max-width: 950px;
+    margin-left: 0px;
+}
+
 .resource_list {
     clear: both;
     margin-right: auto;
