@@ -132,7 +132,7 @@ class ScirMoabJobTemplate < Scir::JobTemplate
     raise "Error: stdin not supported" if self.stdin
 
     command  = "msub "
-    command += "-q #{shell_escape(self.queue)} "  if self.queue
+    command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
     command += "-S /bin/bash "                    # Always
     command += "-r n "                            # Always
     command += "-d #{shell_escape(self.wd)} "     if self.wd
