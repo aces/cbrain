@@ -15,7 +15,7 @@ class PortalSystemCheck < Checker
   RevisionInfo="$Id$"
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
-  def self.a001_check_if_pending_database_migrations
+  def self.a010_check_if_pending_database_migrations
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
     #-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ class PortalSystemCheck < Checker
     end
   end
     
-  def self.a002_check_database_sanity
+  def self.a020_check_database_sanity
     #----------------------------------------------------------------------------
     puts "C> Checking if the BrainPortal database needs a sanity check..."
     #----------------------------------------------------------------------------
@@ -44,26 +44,7 @@ class PortalSystemCheck < Checker
     end
   end
 
-  def self.a004_ensure_portal_RemoteResourceId_constant_is_set
-    #-----------------------------------------------------------------------------
-    puts "C> Ensuring that the CBRAIN::RemoteResourceId constant is set..."
-    #-----------------------------------------------------------------------------
-
-    #Assigning this constant here because constant cannot be assigned dynamically inside a method like run_validation 
-    dp_cache_md5 = DataProvider.cache_md5
-    brainportal  = BrainPortal.find(:first,
-                                    :conditions => { :cache_md5 => dp_cache_md5 })
-    if brainportal
-      CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
-    else
-      #----------------------------------------------------------------------------------------
-      puts "C> \t- BrainPortal not registered in database, please run 'rake db:sanity:check'."
-      #----------------------------------------------------------------------------------------
-      Kernel.exit(1)
-    end
-  end
-
-  def self.a003_check_configuration_variables
+  def self.a030_check_configuration_variables
     #-----------------------------------------------------------------------------
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
@@ -84,7 +65,26 @@ class PortalSystemCheck < Checker
     end
   end
   
-  def self.check_data_provider_cache
+  def self.a040_ensure_portal_RemoteResourceId_constant_is_set
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring that the CBRAIN::RemoteResourceId constant is set..."
+    #-----------------------------------------------------------------------------
+
+    #Assigning this constant here because constant cannot be assigned dynamically inside a method like run_validation 
+    dp_cache_md5 = DataProvider.cache_md5
+    brainportal  = BrainPortal.find(:first,
+                                    :conditions => { :cache_md5 => dp_cache_md5 })
+    if brainportal
+      CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
+    else
+      #----------------------------------------------------------------------------------------
+      puts "C> \t- BrainPortal not registered in database, please run 'rake db:sanity:check'."
+      #----------------------------------------------------------------------------------------
+      Kernel.exit(1)
+    end
+  end
+
+  def self.a050_check_data_provider_cache_wipe
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ class PortalSystemCheck < Checker
     end
   end
 
-  def self.check_data_provider_cache_subdirs
+  def self.a060_check_data_provider_cache_subdirs
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
     #-----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class PortalSystemCheck < Checker
     end
   end
   
-  def self.start_bourreau_ssh_tunnels
+  def self.a070_start_bourreau_ssh_tunnels
     #-----------------------------------------------------------------------------
     puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."
     #-----------------------------------------------------------------------------

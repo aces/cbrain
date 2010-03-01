@@ -69,9 +69,9 @@ class Bourreau < RemoteResource
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
     bourreau_rails_home = self.ssh_control_rails_dir
 
-    self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
+    return false unless self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
-    # SSH command to start it up
+    # SSH command to stop it
     ssh_options = self.ssh_master.ssh_shared_options
     stopcmd = "ruby #{bourreau_rails_home}/script/cbrain_remote_ctl stop"
     sshcmd  = "ssh -n -x #{ssh_options} #{stopcmd}"
