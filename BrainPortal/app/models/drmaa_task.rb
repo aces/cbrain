@@ -42,7 +42,7 @@ class DrmaaTask < ActiveResource::Base
 
   COMPLETED_STATUS = ["Completed"]
   RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready", "Setting Up"]
-  FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed To Start"]
+  FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed Prerequisites" ]
 
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
@@ -160,16 +160,20 @@ class DrmaaTask < ActiveResource::Base
   end
 
   # A patch in the initialization process makes sure that
-  # all new active record objects always have an attribute
-  # called 'bourreau_id', even a nil one. This is necessary
+  # all new active record objects always have their attributes
+  # initialized, even a nil one. This is necessary
   # so that just after initialization, we can call the instance
-  # method .bourreau_id and get an answer instead of raising
-  # an exception for method not found. This happens in .save
-  # where an unset bourreau ID is replaced by a (randomly?)
-  # chosen bourreau ID.
+  # methods for the attributes and get an answer instead of raising
+  # an exception for method not found.
   def initialize(options = {}) #:nodoc:
     returning super(options) do |obj|
-      obj.bourreau_id  = nil unless obj.attributes.has_key?('bourreau_id')
+      attrs = obj.attributes
+      obj.bourreau_id    = nil unless attrs.has_key?('bourreau_id')
+      obj.user_id        = nil unless attrs.has_key?('user_id')
+      obj.prerequisites  = nil unless attrs.has_key?('prerequisites')
+      obj.params         = {}  unless attrs.has_key?('params')
+      obj.status         = nil unless attrs.has_key?('status')
+      obj.description    = nil unless attrs.has_key?('description')
     end
   end
 

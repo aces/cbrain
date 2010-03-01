@@ -49,7 +49,7 @@ class SessionsController < ApplicationController
     portal = BrainPortal.current_resource
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
-    portal.addlog("User #{current_user.login} logged out")
+    portal.addlog("User #{current_user.login} logged out") if current_user
     self.current_user.forget_me if logged_in?
     cookies.delete :auth_token
     reset_session

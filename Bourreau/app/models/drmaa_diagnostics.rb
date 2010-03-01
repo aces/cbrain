@@ -25,8 +25,8 @@ class DrmaaDiagnostics < DrmaaTask
     params       = self.params
     user_id      = self.user_id
 
-    files_hash    = params[:files_hash] || {}
-    file_ids      = files_hash.values
+    files_hash   = params[:files_hash] || {}
+    file_ids     = files_hash.values
 
     self.addlog "Starting diagnostics on #{file_ids.size} files"
 
@@ -48,6 +48,14 @@ class DrmaaDiagnostics < DrmaaTask
         self.addlog "Failed Sync: ID=#{id} NAME='#{u.name}' SIZE=#{mysize} EXCEPT=#{ex.class} #{ex.message}"
       end
     end
+
+    setup_delay = params[:setup_delay] ? params[:setup_delay].to_i : 0
+    if setup_delay > 0
+      self.addlog "Sleeping for #{setup_delay} seconds."
+      sleep setup_delay
+    end
+
+    cb_error "This program crashed on purpose, as ordered." unless params[:setup_crash].blank?
 
     true
   end
@@ -99,12 +107,12 @@ class DrmaaDiagnostics < DrmaaTask
       commands << "echo \"End=`date`\""
     end
 
-    delay = params[:delay_seconds].to_i rescue nil
-    if delay && delay > 0
+    cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
+    if cluster_delay > 0
       commands << "\n"
       commands << "echo \"============================================================\""
-      commands << "echo \"Sleeping #{delay} seconds.\""
-      commands << "sleep #{delay}"
+      commands << "echo \"Sleeping #{cluster_delay} seconds.\""
+      commands << "sleep #{cluster_delay}"
       commands << "\n"
     end
 
@@ -149,6 +157,14 @@ class DrmaaDiagnostics < DrmaaTask
     else
       self.addlog("Could not save report?!?")
     end
+
+    postpro_delay = params[:postpro_delay] ? params[:postpro_delay].to_i : 0
+    if postpro_delay > 0
+      self.addlog "Sleeping for #{postpro_delay} seconds."
+      sleep postpro_delay
+    end
+
+    cb_error "This program crashed on purpose, as ordered." unless params[:postpro_crash].blank?
 
     true
   end

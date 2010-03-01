@@ -59,7 +59,6 @@ class BourreauWorker < Worker
 
     mypid = Process.pid
 
-    task.reload
     worker_log.debug "--- Got #{task.bname_tid} in state #{task.status}"
 
     task.update_status
@@ -67,20 +66,41 @@ class BourreauWorker < Worker
 
     case task.status
       when 'New'
-        worker_log.debug "Start   #{task.bname_tid}"
-        task.setup_and_submit_job do |thetask| # New -> Queued|Failed To Setup
-          thetask.addlog_context(self,self.pretty_name)
+        action = task.prerequisites_fulfilled?(:for_setup)
+        if action == :go
+          # We need to raise an exception if we cannot successfully
+          # transition ourselves.
+          task.status_transition!("New","Setting Up")
+          worker_log.debug "Start   #{task.bname_tid}"
+          task.setup_and_submit_job # New -> Queued|Failed To Setup
+          worker_log.info  "Submitted: #{task.bname_tid}"
+          worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
+        elsif action == :wait
+          worker_log.debug "     -> #{task.bname_tid} unfulfilled Setup prerequisites."
+        else # action == :fail
+          worker_log.debug "     -> #{task.bname_tid} failed Setup prerequisites."
+          task.status = "Failed Prerequisites"
+          task.addlog_context(self,"#{self.pretty_name} detected failed Setup prerequisites")
+          task.save
         end
-        worker_log.info  "Submitted: #{task.bname_tid}"
-        worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
       when 'Data Ready'
-        task.addlog_context(self,"Post Processing, PID=#{mypid}")
-        worker_log.debug "PostPro #{task.bname_tid}"
-        task.post_process do |thetask| # Data Ready -> Completed|Failed To PostProcess
-          thetask.addlog_context(self,self.pretty_name)
+        action = task.prerequisites_fulfilled?(:for_post_processing)
+        if action == :go
+          # We need to raise an exception if we cannot successfully
+          # transition ourselves.
+          task.status_transition!("Data Ready","Post Processing")
+          worker_log.debug "PostPro #{task.bname_tid}"
+          task.post_process # Data Ready -> Completed|Failed To PostProcess
+          worker_log.info  "PostProcess: #{task.bname_tid}"
+          worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
+        elsif action == :wait
+          worker_log.debug "     -> #{task.bname_tid} unfulfilled PostProcessing prerequisites."
+        else # action == :fail
+          worker_log.debug "     -> #{task.bname_tid} failed PostProcessing prerequisites."
+          task.status = "Failed Prerequisites"
+          task.addlog_context(self,"#{self.pretty_name} detected failed PostProcessing prerequisites")
+          task.save
         end
-        worker_log.info  "PostProcess: #{task.bname_tid}"
-        worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
     end
 
     if task.status == 'Completed'
@@ -99,11 +119,11 @@ class BourreauWorker < Worker
                           )
     end
 
-  # A CbrainTransitionException can occur at the very beginning of
+  # A CbrainTransitionException can occur just before we try
   # setup_and_submit_job() or post_process(); it's allowed, it means
   # some other worker has beated us to the punch. So we just ignore it.
   rescue CbrainTransitionException => te
-    worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state} FOUND=#{te.found_state}"
+    worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}' FOUND='#{te.found_state}'"
     return
 
   # Any other error is critical and fatal; we're already

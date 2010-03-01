@@ -592,7 +592,7 @@ class Worker
 
 end
 
-class LoggerPrefixer
+class LoggerPrefixer #:nodoc:
   attr_accessor :true_logger
   attr_accessor :prefix
   def debug(message)

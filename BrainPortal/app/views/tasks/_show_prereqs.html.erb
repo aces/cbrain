@@ -1,0 +1,17 @@
+
+<TR>
+  <TD><STRONG>These other tasks...</STRONG></TD>
+  <TD><STRONG>...must be in these states</STRONG></TD>
+</TR>
+
+<% for_this.keys.sort.each do |ttid|
+   next unless ttid =~ /^T(\d+)/
+   tid = Regexp.last_match[1]
+   state = for_this[ttid]
+%>
+  <TR>
+    <TD><%= link_to "DrmaaTask/#{tid}", "/tasks/show/#{tid}" %></TD>
+    <TD><%= h(state) %></TD>
+  </TR>
+<% end %>
+

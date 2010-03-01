@@ -74,12 +74,14 @@ class SshTunnel
   # Works like find, but expect a single key
   # in a format like "user@host:port".
   def self.find_by_key(key)
+    @@ssh_tunnels ||= {}
     @@ssh_tunnels[key]
   end
 
   # Returns all the configured SSH connections (not all
   # of them may be alive).
   def self.all
+    @@ssh_tunnels ||= {}
     @@ssh_tunnels.values
   end
 
@@ -87,6 +89,7 @@ class SshTunnel
   # configued master SSH connections (not all of them
   # may be alive). Keys are strings like "user@host:port".
   def self.all_keys
+    @@ssh_tunnels ||= {}
     @@ssh_tunnels.keys
   end
 

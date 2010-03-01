@@ -28,20 +28,45 @@
   <%= hidden_field_tag 'file_ids[]',  id %>
 <% end %>
 
-<strong>Optional task delay (in seconds):</strong>
-<%= text_field_tag :delay_seconds, params[:delay_seconds] %>
 
+
+
+<h3>Optional Delays</h3>
+
+<strong>Task Setup delay (in seconds):</strong>
+<%= text_field_tag :setup_delay, params[:setup_delay] %>
 <br>
+
+<strong>Task Cluster delay (in seconds):</strong>
+<%= text_field_tag :cluster_delay, params[:cluster_delay] %>
+<br>
+
+<strong>Task Post Processing delay (in seconds):</strong>
+<%= text_field_tag :postpro_delay, params[:postpro_delay] %>
+<br>
+
+
+
+<h3>Crashes</h3>
+
+<strong>Crash during Setup:</strong><%= check_box_tag :setup_crash, params[:setup_crash] %>
+<br>
+
+<strong>Crash during Post Processing:</strong><%= check_box_tag :postpro_crash, params[:postpro_crash] %>
+<br>
+
+
+
+<h3>Miscelleneous</h3>
 
 <strong>Number of copies of this task to launch: </strong>
 <%= text_field_tag :num_copies, params[:num_copies] %> (for stress testing ONLY!)
-
 <br>
 
 <strong>Save report to:</strong>
 <%= select_tag "data_provider_id", options_for_select(data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
 
-<br><br>
+<br>
 
 <%= submit_tag 'Start Diagnostics' %>
 

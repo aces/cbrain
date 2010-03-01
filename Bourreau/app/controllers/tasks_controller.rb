@@ -37,6 +37,7 @@ class TasksController < ApplicationController
       format.html { head :method_not_allowed }
       
       @task.status = 'New'
+      @task.adjust_prereqs_for_shared_tasks_wd
       if @task.save
         worker_pool = WorkerPool.find_pool(BourreauWorker)
         worker_pool.wake_up_workers

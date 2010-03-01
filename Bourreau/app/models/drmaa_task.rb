@@ -19,17 +19,26 @@ require 'cbrain_exception'
 #launching GridEngine/PBS jobs using Scir.
 #
 #=Attributes:
-#[<b>drmaa_jobid</b>] The job id of the running task.
-#[<b>drmaa_workdir</b>] The directory in which the task is running.
-#[<b>params</b>] A hash of the parameters sent in the job request from BrainPortal.
-#[<b>status</b>] The status of the current task.
-#[<b>log</b>] A log of tasks progress.
 #[<b>user_id</b>] The id of the user who requested this task.
 #[<b>bourreau_id</b>] The id of the Bourreau on which the task is running.
+#[<b>status</b>] The status of the current task.
+#[<b>params</b>] A hash of the parameters sent in the job request from BrainPortal.
+#[<b>drmaa_jobid</b>] The job id of the running task. This id is a string
+#                     specific to the cluster management system configured for the
+#                     bourreau, and has no meaning outside of there.
+#[<b>drmaa_workdir</b>] The work directory in which the task is running. Like the
+#                       *drmaa_jobid*, this directory has no meaning outside
+#                       of the context of the host where the Bourreau is running.
+#[<b>share_wd_tid</b>] The task id of another task; if set, the current task will
+#                      be configured to execute in the same +drmaa_workdir+.
+#[<b>prerequisites</b>] A hash table providing information about what other
+#                       tasks the current task depend on.
+#[<b>log</b>] A log of task's progress.
 #
-#<b>DrmaaTask should not be instantiated directly.</b> Instead, subclasses of DrmaaTask should be created to 
-#represent requests for specific processing tasks. 
-#These are *ActiveRecord* models, meaning they do access the database directly. 
+#<b>DrmaaTask should not be instantiated directly.</b> Instead, subclasses of DrmaaTask should be created to
+#represent requests for specific processing tasks.
+#Unlike the DrmaaTask model on the portal side, these here are *ActiveRecord* models, meaning
+#they do represent rows in the database directly.
 #
 #= Creating a DrmaaTask subclass
 #Subclasses of DrmaaTask will have to override the following methods to function properly:
@@ -38,7 +47,7 @@ require 'cbrain_exception'
 #[*save_results*] Perform any finalization steps after the job is run (e.g. saving result files).
 #
 #Note that all these methods can access request parameters through the hash in the +params+
-#attribute. 
+#attribute.
 #
 #A generator script has been written to simplify the creation of DrmaaTask subclasses. To
 #use it, simply go to the Bourreau application's base directory and run:
@@ -78,21 +87,21 @@ class DrmaaTask < ActiveRecord::Base
   # when task #66 has failed. The only allowed keys right now are
   # :for_setup and :for_post_processing, as these are the only two
   # states triggered by Workers.
-  # 
+  #
   # The task's ID are serialized with strings with a prefix consisting
   # of the single character 'T'. This is needed so that the structure
   # is properly serialized in XML during ActiveResource transport.
   #
   # The only allowed state values for the conditions are:
-  # 
+  #
   #  - 'Queued' (which also covers ALL subsequent states up to 'Completed')
   #  - 'Data Ready' (which also covers 'Completed')
   #  - 'Completed'
   #  - 'Failed' (which covers all failures)
   #
   # As an aide, note that in a way, a value 'n' in the DrmaaTask attribute
-  # :shared_wd_tid also implies this prerequisite:
-  # 
+  # :share_wd_tid also implies this prerequisite:
+  #
   #     :for_setup => { "T#{n}" => "Queued" }
   #
   # unless a more restrictive prerequisite is already supplied for task 'n'.
@@ -162,17 +171,13 @@ class DrmaaTask < ActiveRecord::Base
   # Then the task's BASH commands are submitted to the cluster.
   def setup_and_submit_job
 
-    # We need to raise an exception if we cannot successfully
-    # transition ourselves, as this will tell the Worker
-    # responsible about this task.
-    status_transition!("New","Setting Up")
-    
+    cb_error "Expected Task object to be in 'Setting Up' state." unless
+      self.status == 'Setting Up'
+
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
     begin
-      # Optional block to execute when we got the go ahead to execute.
-      yield self if block_given? # Mostly used for logging.
       self.addlog("Setting Up.")
       self.makeDRMAAworkdir
       Dir.chdir(self.drmaa_workdir) do
@@ -181,7 +186,7 @@ class DrmaaTask < ActiveRecord::Base
           self.status = "Failed To Setup"
         elsif ! self.submit_cluster_job
           self.addlog("Failed to start: 'false' returned by submit_cluster_job().")
-          self.status = "Failed To Start"
+          self.status = "Failed To Setup"
         else
           self.addlog("Setup and submit process successful.")
           # the status is moving forward at its own pace now
@@ -202,17 +207,13 @@ class DrmaaTask < ActiveRecord::Base
   # then cleanup the temporary grid-aware directory.
   def post_process
 
-    # We need to raise an exception if we cannot successfully
-    # transition ourselves, as this will tell the Worker
-    # responsible about this task.
-    status_transition!('Data Ready','Post Processing')
+    cb_error "Expected Task object to be in 'Post Processing' state." unless
+      self.status == 'Post Processing'
 
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
     begin
-      # Optional block to execute when we got the go ahead to execute.
-      yield self if block_given? # Mostly used for logging.
       self.addlog("Starting asynchronous postprocessing.")
       saveok = false
       Dir.chdir(self.drmaa_workdir) do
@@ -238,7 +239,7 @@ class DrmaaTask < ActiveRecord::Base
   # [<b>New</b>] The task is new and not yet set up.
   # [<b>Setting Up</b>] The task is in its asynchronous 'setup' state.
   # [<b>Failed To *</b>]  (To Start, to Setup, etc) The task failed at some stage.
-  # [<b>Queued</b>] The task is queued.   
+  # [<b>Queued</b>] The task is queued.
   # [<b>On CPU</b>] The task is underway.
   # [<b>Data Ready</b>] The task has been completed, but data has not been sent back to BrainPortal.
   # [<b>Post Processing</b>] The task is sending back its data to the BrainPortal.
@@ -295,7 +296,7 @@ class DrmaaTask < ActiveRecord::Base
   def status_transition(from_state, to_state)
     DrmaaTask.transaction do
       self.lock!
-      return false if self.status != from_state 
+      return false if self.status != from_state
       return true  if from_state == to_state # NOOP
       self.status = to_state
       self.save!
@@ -381,6 +382,76 @@ class DrmaaTask < ActiveRecord::Base
     rescue
       # nothing to do
     end
+  end
+
+
+
+  ##################################################################
+  # Prerequisites Fulfillment Evaluation Methods
+  ##################################################################
+
+  # Returns a keyword indicating how the task's prerequisites
+  # are satisfied; the argument +for_state+ indicates which of two
+  # possible future transitions to check for: :for_setup or
+  # :for_post_processing. This method is mostly used by the
+  # BourreauWorker code, for deciding whether or not the time
+  # as come to send the task to the cluster or to post process it.
+  # The method returns three possible keywords:
+  #
+  # [[:go]] All prerequisites are satisfied.
+  # [[:wait]] Some prerequisites are not yet satisfied.
+  # [[:fail]] Some prerequisites have failed and thus at
+  #           this point the task can never proceed.
+  def prerequisites_fulfilled?(for_state)
+    allprereqs = self.prerequisites    || {}
+    prereqs    = allprereqs[for_state] || {}
+    return :go if prereqs.empty?
+    final_action = :go
+    prereqs.keys.each do |t_taskid|  # taskid is a string like "T62"
+      cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /^T(\d+)$/
+      task_id = Regexp.last_match[1].to_i
+      cb_notice "Task depends on itself!" if task_id == self.id # Cannot depend on yourself!!!
+      task = DrmaaTask.find(task_id) rescue nil
+      cb_error "Could not find task '#{task_id}'" unless task
+      needed_state   = prereqs[t_taskid] # one of "Queued" "Data Ready" "Completed" or "Fail"
+      covered_states = PREREQS_STATES_COVERED_BY[needed_state]
+      cb_error "Could not found coverage list for '#{needed_state}'" unless covered_states
+      action = covered_states[task.status] || :fail
+      cb_notice "Task '#{task.bname_tid}' is in state '#{task.status}' " +
+                "while we wanted it in '#{needed_state}'." if action == :fail
+      cb_error "Unknown action entry '#{action}' in prereq table? " +
+               "Needed=#{needed_state} Task=#{task.bname_tid} in '#{task.status}'." unless action == :go || action == :wait
+      final_action = :wait if action == :wait
+      # we still need to check the rest of the tasks for :fail, so we loop back here.
+    end
+    return final_action # one of :go if ALL are :go, :wait if there is at least one :wait
+  rescue CbrainNotice => e
+    self.addlog("Prerequisite Check Failure: #{e.message}")
+    self.save
+    return :fail
+  rescue CbrainError => e
+    self.addlog("Prerequisite Check CBRAIN Error: #{e.message}")
+    self.save
+    return :fail
+  rescue => e
+    self.addlog("Prerequisite Check Exception: #{e.message}")
+    e.backtrace[0..15].each { |m| self.addlog(m) }
+    self.save
+    return :fail
+  end
+
+  # This method adjusts the prerequisites
+  # of the task if a another task ID's was supplied in :share_wd_tid
+  # and no prerequisites have been specified for that other task.
+  def adjust_prereqs_for_shared_tasks_wd
+    otask_id = self.share_wd_tid          # task ID of other task
+    return if otask_id.blank?             # nothing to do if there is no other task ID
+    prereqs  = self.prerequisites || {}   # The prereq structure
+    self.prerequisites = prereqs          # Make sure it's saved in the object
+    forsetup = prereqs[:for_setup] ||= {} # Make sure the :for_setup exists
+    t_otid   = "T#{otask_id}"             # Task IDs in prereqs are "Tnn"
+    forsetup[t_otid] ||= "Queued"         # If there is no prereq, create one.
+    true
   end
 
 
@@ -526,14 +597,10 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
-  # Protected Methods Start Here
+  # Cluster Task Status Update Methods
   ##################################################################
 
   protected
-
-  ##################################################################
-  # Cluster Task Status Update Methods
-  ##################################################################
 
   # The list of possible DRMAA states is larger than
   # the ones we need for CBRAIN, so here is a mapping
@@ -559,7 +626,7 @@ class DrmaaTask < ActiveRecord::Base
     Scir::STATE_FAILED                => "Does Not Exist"
   }
 
-  # Returns <b>On CPU</b>, <b>Queued</b>, <b>On Hold</b>, <b>Suspended</b> or 
+  # Returns <b>On CPU</b>, <b>Queued</b>, <b>On Hold</b>, <b>Suspended</b> or
   # <b>Does Not Exist</b>.
   # This set of states is *NOT* exactly the same as for status()
   # as a non-existing DRMAA job might mean a job not started,
@@ -570,8 +637,8 @@ class DrmaaTask < ActiveRecord::Base
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
     return status
   end
-  
-  
+
+
 
   ##################################################################
   # Task Rescheduling Methods (experimental, future)
@@ -613,7 +680,7 @@ class DrmaaTask < ActiveRecord::Base
       self.save
       return true
     end
-    
+
     # Create a bash command script out of the text
     # lines supplied by the subclass
     qsubfile = QSUB_SCRIPT_BASENAME + ".#{self.run_id}.sh"
@@ -671,7 +738,24 @@ class DrmaaTask < ActiveRecord::Base
   end
 
   # Create the directory in which to run the job.
+  # If the task contains the ID of another task in
+  # the attribute :share_wd_tid, then that other
+  # task's work directory will be used instead.
   def makeDRMAAworkdir
+    # Use the work directory of another task
+    otask_id = self.share_wd_tid
+    if ! otask_id.blank?
+      otask = DrmaaTask.find(otask_id)
+      cb_error "Cannot use the work directory of a task that belong to another Bourreau." if otask.bourreau_id != self.bourreau_id
+      owd   = otask.drmaa_workdir
+      cb_error "Cannot find the work directory of other task '#{otask_id}'."      if owd.blank?
+      cb_error "The work directory '#{owd} of task '#{otask_id}' does not exist." unless File.directory?(owd)
+      self.drmaa_workdir = owd
+      self.addlog("Using workdir '#{owd}' of task '#{otask.bname_tid}'.")
+      return
+    end
+
+    # Create our own work directory
     name = self.name
     user = self.user.login
     self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)

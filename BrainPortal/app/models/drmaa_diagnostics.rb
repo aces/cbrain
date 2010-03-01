@@ -20,7 +20,13 @@ class DrmaaDiagnostics < DrmaaTask
   end
 
   def self.get_default_args(params = {}, saved_args = {})
-    params[:delay_seconds] = 0
+    params[:setup_delay]   = 0
+    params[:cluster_delay] = 0
+    params[:postpro_delay] = 0
+
+    params[:setup_crash]   = false
+    params[:postpro_crash] = false
+
     params[:num_copies]    = 1
     params
   end
@@ -41,7 +47,15 @@ class DrmaaDiagnostics < DrmaaTask
       num_copies.times do |i|
         task             = DrmaaDiagnostics.new
         task.description = "Diagnostics with #{numfiles} files" + (num_copies > 1 ? ", copy #{i+1}." : ".")
-        task.params      = { :files_hash => files_hash, :delay_seconds => params[:delay_seconds], :copy_number => i }
+        task.params      = {
+                              :files_hash    => files_hash,
+                              :setup_delay   => params[:setup_delay],
+                              :cluster_delay => params[:cluster_delay],
+                              :postpro_delay => params[:postpro_delay],
+                              :setup_crash   => params[:setup_crash],
+                              :postpro_crash => params[:postpro_crash],
+                              :copy_number   => i
+                           }
         task.user_id     = user_id
         task.save
       end
