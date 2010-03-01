@@ -133,7 +133,8 @@ module DrmaaTaskCommon
     cb_error "Prerequisite argument needed_state='#{needed_state}' is not allowed." unless
       PREREQS_STATES_COVERED_BY[needed_state]
     task_id = task.is_a?(DrmaaTask) ? task.id : task.to_i
-    cb_error "Cannot add a prerequisite for a task that depends on itself!" if self.id == task_id
+    cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if task_id.blank?
+    cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == task_id
     ttid = "T#{task_id}"
     prereqs         = self.prerequisites || {}
     task_list       = prereqs[for_what]  ||= {}

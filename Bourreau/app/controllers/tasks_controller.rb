@@ -39,8 +39,7 @@ class TasksController < ApplicationController
       @task.status = 'New'
       @task.adjust_prereqs_for_shared_tasks_wd
       if @task.save
-        worker_pool = WorkerPool.find_pool(BourreauWorker)
-        worker_pool.wake_up_workers
+        WorkerPool.find_pool(BourreauWorker).wake_up_workers
         format.xml do
           headers['Location'] = url_for(:controller => "drmaa_tasks", :action => nil, :id => @task.id)
           render :xml => @task.to_xml, :status => :created
@@ -88,7 +87,7 @@ class TasksController < ApplicationController
       if !@task.changed?
         format.xml { render :xml => @task.to_xml }
       elsif @task.save
-        BourreauWorker.wake_all
+        WorkerPool.find_pool(BourreauWorker).wake_up_workers
         format.xml { render :xml => @task.to_xml }
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }
@@ -102,10 +101,10 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       
-      if @task.status =~ /Setting Up|Post Processing/
+      if @task.status =~ /Setting Up|Post Processing/ # TODO
         format.xml { head :ok }
       elsif @task.destroy
-        BourreauWorker.wake_all
+        WorkerPool.find_pool(BourreauWorker).wake_up_workers
         format.xml { head :ok }
       else
         format.xml { render :xml => @task.errors.to_xml, :status => :unprocessable_entity }
