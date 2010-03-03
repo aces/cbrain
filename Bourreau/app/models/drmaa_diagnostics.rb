@@ -123,18 +123,24 @@ class DrmaaDiagnostics < DrmaaTask
   def save_results
     params       = self.params
     user_id      = self.user_id
+    dp_id        = params[:data_provider_id]
 
-    myuser = User.find(user_id)
+    myuser  = User.find(user_id)
     mygroup = myuser.own_group
+    report  = nil
 
-    report = SingleFile.new( :name             => "Diagnostics-" + self.bname_tid_dashed + ".txt",
-                             :user_id          => myuser.id,
-                             :group_id         => mygroup.id,
-                             :data_provider_id => params[:data_provider_id],
-                             :task             => 'Bourreau Diagnostics'
-                           )
+    if dp_id  # creating the report is optional
+      report = SingleFile.new( :name             => "Diagnostics-" + self.bname_tid_dashed + ".txt",
+                               :user_id          => myuser.id,
+                               :group_id         => mygroup.id,
+                               :data_provider_id => dp_id,
+                               :task             => 'Bourreau Diagnostics'
+                             )
+    end
 
-    if report.save
+    if dp_id.blank?
+      self.addlog("No Data Provider ID provided, so no report created.")
+    elsif report.save
       report.cache_writehandle do |fh|
         stdout_text = File.read(self.stdoutDRMAAfilename) rescue "(Exception)"
         stderr_text = File.read(self.stderrDRMAAfilename) rescue "(Exception)"
