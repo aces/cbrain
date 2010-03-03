@@ -171,7 +171,7 @@ end
 # to wait a bit and delete it once the server has read
 # it.
 if ! blank_yml
-  File.unlink(db_file)
+  File.unlink(db_file) rescue true
 end
 
 # Return a message to indicate to our calling context
