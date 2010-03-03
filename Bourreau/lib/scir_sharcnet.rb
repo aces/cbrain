@@ -32,7 +32,7 @@ class ScirSharcnetSession < Scir::Session
 #2460 CPUs total, 837 idle, 1623 busy; 1251 jobs running; 0 suspended, 11515 queued.
 #0 reserved cpus
  
-        if line =~ /^(\d+)\s+CPUs.*(\d+)\s+jobs running/
+        if line =~ /^(\d+)\s+CPUs.*\D(\d+)\s+jobs running/
           @job_info_cache['!sharcnet_load!'] = [ Regexp.last_match[2], Regexp.last_match[1] ]  # tot, max
           next
         end
