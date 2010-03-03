@@ -469,4 +469,41 @@ class SyncStatus < ActiveRecord::Base
     stopnow
   end
 
+  # This method changes the status attribute
+  # in the current task object to +to_state+ but
+  # also makes sure the current value is +from_state+ .
+  # The change is performed in a transaction where
+  # the record is locked, to ensure the transition is
+  # not trashed by another process. The method returns
+  # true if the transition was successful, and false
+  # if anything went wrong.
+  def status_transition(from_state, to_state)
+    SyncStatus.transaction do
+      self.lock!
+      return false if self.status != from_state 
+      return true  if from_state == to_state # NOOP
+      self.status = to_state
+      self.save!
+    end
+    true
+  end
+
+  # This method acts like status_transition(),
+  # but it raises a CbrainTransitionException
+  # on failures.
+  def status_transition!(from_state, to_state)
+    unless status_transition(from_state,to_state)
+      ohno = CbrainTransitionException.new(
+        "Sync status was changed before lock was acquired for sync object '#{self.id}'.\n" +
+        "Expected: '#{from_state}' found: '#{self.status}'."
+      )
+      ohno.original_object = self
+      ohno.from_state      = from_state
+      ohno.to_state        = to_state
+      ohno.found_state     = self.status
+      raise ohno
+    end
+    true
+  end
+
 end
