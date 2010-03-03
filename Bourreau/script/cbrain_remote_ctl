@@ -78,6 +78,9 @@ pidfile    = "#{rails_home}/tmp/pids/mongrel.pid"
 # Check usage
 usage(basename) if ARGV.size !=1 && ARGV.size != 5    # 1 or 5 args!
 
+# To help diagnose problems, print Ruby's version.
+puts "You are using Ruby #{VERSION}"
+
 #############################################################
 # Stop
 #############################################################

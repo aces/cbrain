@@ -15,6 +15,8 @@ class Bourreau < RemoteResource
   
   has_many :user_preferences,  :dependent => :nullify
   has_and_belongs_to_many :tools
+
+  attr_accessor :operation_messages # no need to store in DB
   
   # Start a Bourreau remotely. As a requirement for this to work,
   # we need the following attributes set in the Bourreau
@@ -31,11 +33,16 @@ class Bourreau < RemoteResource
   # and the "-p port" option will be set to the value
   # of *tunnel_actres_port* instead of *actres_port*
   def start
+    self.operation_messages = "Not configured for remote control."
+
     return false unless self.has_remote_control_info?
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
     bourreau_rails_home = self.ssh_control_rails_dir
 
-    self.start_tunnels
+    unless self.start_tunnels
+      self.operation_messages = "Could not start the SSH master connection."
+      return false
+    end
 
     # If we tunnel the DB, we get a non-blank yml file here
     yml  = self.has_db_tunneling_info?     ? self.build_db_yml_for_tunnel : ""
@@ -59,6 +66,9 @@ class Bourreau < RemoteResource
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
     return true if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
+    self.operation_messages = "Remote control command failed\n" +
+                              "Command: #{sshcmd}\n" +
+                              "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
     false
   end
 

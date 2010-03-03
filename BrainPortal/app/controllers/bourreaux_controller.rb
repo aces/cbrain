@@ -205,14 +205,15 @@ class BourreauxController < ApplicationController
         flash[:notice] += "\nHowever, we couldn't start the workers."
       end
     else
-      flash[:error] = "Execution Server could not be started."
+      flash[:error] = "Execution Server could not be started. Diagnostics:\n" +
+                      @bourreau.operation_messages
     end
 
     redirect_to :action => :index
 
-    rescue => e
-       flash[:error] = e.message
-       redirect_to :action => :index
+  rescue => e
+    flash[:error] = e.message
+    redirect_to :action => :index
   end
 
   def stop

@@ -166,7 +166,7 @@ class SshTunnel
 
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
-    raise "'accept_port' must be a port number > 1024." unless
+    raise "'accept_port' must be a port number > 1024 and < 65535." unless
       accept_port.is_a?(Fixnum) && accept_port > 1024 && accept_port < 65535
     raise "'dest_port' must be a port number." unless
       dest_port.is_a?(Fixnum) && dest_port > 0 && dest_port < 65535
