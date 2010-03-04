@@ -17,6 +17,10 @@ class BourreauWorker < Worker
 
   Revision_info="$Id$"
 
+  def setup
+    ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
+  end
+
   def do_regular_work
 
     # Asks the DB for the list of tasks that need handling.

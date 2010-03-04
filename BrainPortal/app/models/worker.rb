@@ -19,8 +19,8 @@ require 'log4r'
 # Some methods apply only to the :proxy object, while other apply only to the :worker.
 #
 # A typical real world worker is created by defining a subclass of Worker and
-# providing one (or two) methods: do_regular_work() and finalize() (this last one
-# is optional).
+# providing an implementation to these methods: do_regular_work(), setup() and
+# finalize() (these last two are optional).
 #
 #   class MyWorker < Worker
 #    def do_regular_work
@@ -322,6 +322,9 @@ class Worker
     self.worker_log.info "Starting main worker loop."
     self.worker_log.info "Revision " + self.revision_info.svn_id_pretty_rev_author_date
 
+    # Custom initialization method supplied by subclass.
+    self.setup
+
     # Infinite worker loop start here
     until self.stop_received
 
@@ -336,7 +339,7 @@ class Worker
       self.do_regular_work
       break if self.stop_received
 
-      # We have two modes 'wait' modes.
+      # We have two 'wait' modes.
       #
       # The 'check_interval' mode is the rate at which the
       # worker's do_regular_work() method is invoke in normal
@@ -495,13 +498,11 @@ class Worker
 
   # Worker-side method.
   #
-  # Can be overriden to do some cleanup after a worker
-  # finishes. This method will not be invoked if the
-  # worker ended because of a raised exception, only
-  # after a normal 'stop' is performed.
-  def finalize
+  # Can be overriden to perform some initialization
+  # code one time only, after a worker is spawned in background.
+  def setup
     self.validate_I_am_a_worker
-    self.worker_log.debug "No finalization needed."
+    self.worker_log.debug "No setup code needed."
   end
 
   # Worker-side method.
@@ -515,6 +516,17 @@ class Worker
   def do_regular_work
     self.validate_I_am_a_worker
     cb_error "Worker implementation error: no method do_regular_work() implemented?"
+  end
+
+  # Worker-side method.
+  #
+  # Can be overriden to do some cleanup after a worker
+  # finishes. This method will not be invoked if the
+  # worker ended because of a raised exception, only
+  # after a normal 'stop' is performed.
+  def finalize
+    self.validate_I_am_a_worker
+    self.worker_log.debug "No finalization needed."
   end
 
 

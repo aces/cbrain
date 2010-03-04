@@ -192,7 +192,6 @@ class BourreauxController < ApplicationController
     cb_error "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
     @bourreau.start
 
-    sleep 5+rand(3)
     if @bourreau.is_alive?
       flash[:notice] = "Execution Server started."
       @bourreau.addlog("Rails application started by user #{current_user.login}.")

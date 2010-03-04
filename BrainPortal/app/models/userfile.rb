@@ -354,6 +354,11 @@ class Userfile < ActiveRecord::Base
       } )
   end
 
+  def is_locally_synced?
+    syncstat = self.local_sync_status
+    syncstat && syncstat.status == 'InSync'
+  end
+
   ##############################################
   # Data Provider easy access methods
   ##############################################

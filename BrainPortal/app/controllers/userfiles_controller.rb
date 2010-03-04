@@ -123,9 +123,7 @@ class UserfilesController < ApplicationController
 
     # This allows the user to manually trigger the syncing to the Portal's cache
     @sync_status = 'ProvNewer' # same terminology as in SyncStatus
-    state = SyncStatus.find(:first, :conditions =>
-            { :userfile_id        => @userfile.id,
-              :remote_resource_id => CBRAIN::SelfRemoteResourceId } )
+    state = @userfile.local_sync_status
     @sync_status = state.status if state
     start_sync = params[:start_sync] || "no"
     if start_sync.to_s == "yes" && @sync_status !~ /^To|InSync|Corrupted/
