@@ -27,9 +27,9 @@
 	   </tr>
 	   <% for user in User.all %>
 	       <tr>
-	         <td class="info"><%= h(user.full_name) -%></td>
-	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id) %></td>
-	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
+	         <td class="left_align"><%= h(user.full_name) -%></td>
+	         <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
+	         <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
 	       </tr>
 	   <% end %>
 	</table>
@@ -37,8 +37,8 @@
 	<table id="button_table">
 	   <% for group in WorkGroup.all %>
 	       <tr>
-	         <td class="info"><%= h(group.name) -%></td>
-	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
+	         <td class="left_align"><%= h(group.name) -%></td>
+	         <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
 	       </tr>
 	   <% end %>
 	</table>

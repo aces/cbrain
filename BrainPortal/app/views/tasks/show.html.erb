@@ -54,12 +54,12 @@
 
       <tr>
           <th>Task Name</th>
-          <td class="info"><%= h(@task.name) %></td>
+          <td class="left_align"><%= h(@task.name) %></td>
       </tr>
       
       <tr>
           <th>Task Description</th>
-          <td class="info"><%= simple_format(@task.description) %></td>
+          <td class="left_align"><%= simple_format(@task.description) %></td>
       </tr>
 
       <tr>
@@ -146,13 +146,13 @@
           <th>DRMAA stdout</th>
       </tr>
       <tr>
-          <td class="info"><pre id="standard_out"><%= h(prettystdout) -%></pre></td>
+          <td class="left_align"><pre id="standard_out"><%= h(prettystdout) -%></pre></td>
       </tr>
       <tr>
           <th>DRMAA stderr</th>
       </tr>
       <tr>
-          <td class="info"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>
+          <td class="left_align"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>
       </tr>
    </table>
 </div>

@@ -32,22 +32,22 @@
 
          <tr>
              <th>Name</th>
-             <td class="info"><%= h(@bourreau.name) %></td>
+             <td class="left_align"><%= h(@bourreau.name) %></td>
          </tr>
 
          <tr>
              <th>Class</th>
-             <td class="info"><%= h(@bourreau.class.to_s) %></td>
+             <td class="left_align"><%= h(@bourreau.class.to_s) %></td>
          </tr>
 
          <tr>
              <th>Revision Info (Client Side)</th>
-             <td class="info"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
+             <td class="left_align"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
          </tr>
 
          <tr>
              <th>Description</th>
-             <td class="info"><%= h(@bourreau.description) %></td>
+             <td class="left_align"><%= h(@bourreau.description) %></td>
          </tr>
 
          <tr>
@@ -56,17 +56,17 @@
 
          <tr>
              <th>Owner</th>
-             <td class="info"><%= h(@bourreau.user.login) %></td>
+             <td class="left_align"><%= h(@bourreau.user.login) %></td>
          </tr>
 
          <tr>
              <th>Group</th>
-             <td class="info"><%= h(@bourreau.group.name) %></td>
+             <td class="left_align"><%= h(@bourreau.group.name) %></td>
          </tr>
 
          <tr>
              <th>Status</th>
-             <td class="info"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
+             <td class="left_align"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
          </tr>
 
          <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
@@ -77,12 +77,12 @@
 
          <tr>
              <th>Host</th>
-             <td class="info"><%= h(@bourreau.actres_host) %></td>
+             <td class="left_align"><%= h(@bourreau.actres_host) %></td>
          </tr>
 
          <tr>
              <th>Port</th>
-             <td class="info"><%= h(@bourreau.actres_port) %></td>
+             <td class="left_align"><%= h(@bourreau.actres_port) %></td>
          </tr>
 
          <tr>
@@ -91,22 +91,22 @@
 
          <tr>
              <th>Host</th>
-             <td class="info"><%= h(@bourreau.ssh_control_host) %></td>
+             <td class="left_align"><%= h(@bourreau.ssh_control_host) %></td>
          </tr>
 
          <tr>
              <th>User</th>
-             <td class="info"><%= h(@bourreau.ssh_control_user) %></td>
+             <td class="left_align"><%= h(@bourreau.ssh_control_user) %></td>
          </tr>
 
          <tr>
              <th>Port</th>
-             <td class="info"><%= h(@bourreau.ssh_control_port) %></td>
+             <td class="left_align"><%= h(@bourreau.ssh_control_port) %></td>
          </tr>
 
          <tr>
              <th>Execution Server Rails HOME</th>
-             <td class="info"><%= h(@bourreau.ssh_control_rails_dir) %></td>
+             <td class="left_align"><%= h(@bourreau.ssh_control_rails_dir) %></td>
          </tr>
 
         <tr>
@@ -115,12 +115,12 @@
 
          <tr>
              <th>Database Server Remote Tunnel Port</th>
-             <td class="info"><%= h(@bourreau.tunnel_mysql_port) %></td>
+             <td class="left_align"><%= h(@bourreau.tunnel_mysql_port) %></td>
          </tr>
 
          <tr>
              <th>ActiveResource Remote Tunnel Port</th>
-             <td class="info"><%= h(@bourreau.tunnel_actres_port) %></td>
+             <td class="left_align"><%= h(@bourreau.tunnel_actres_port) %></td>
          </tr>
 
          <tr>
@@ -129,7 +129,7 @@
 
          <tr>
              <th>Cache Expiration Timeout (in seconds)</th>
-             <td class="info"><%= h(@bourreau.cache_trust_expire) %></td>
+             <td class="left_align"><%= h(@bourreau.cache_trust_expire) %></td>
          </tr>
 
          <% end %>
@@ -148,7 +148,7 @@
 
              <tr>
                  <th>Revision Info (Server Side)</th>
-                 <td class="info">
+                 <td class="left_align">
                      <strong>Subversion Revision: </strong><%= @info.revision %><br>
                      <strong>Last Change Author: </strong><%= @info.lc_author %><br>
                      <strong>Last Change Revision: </strong><%= @info.lc_rev %><br>
@@ -158,27 +158,27 @@
 
              <tr>
                  <th>Host name</th>
-                 <td class="info"><%= h(@info.host_name) %></td>
+                 <td class="left_align"><%= h(@info.host_name) %></td>
              </tr>
 
              <tr>
                  <th>Host IP address</th>
-                 <td class="info"><%= h(@info.host_ip) %></td>
+                 <td class="left_align"><%= h(@info.host_ip) %></td>
              </tr>
 
              <tr>
                  <th>Host OS type</th>
-                 <td class="info"><%= h(@info.host_uname) %></td>
+                 <td class="left_align"><%= h(@info.host_uname) %></td>
              </tr>
 
              <tr>
                  <th>Host uptime</th>
-                 <td class="info"><%= h(@info.host_uptime) %></td>
+                 <td class="left_align"><%= h(@info.host_uptime) %></td>
              </tr>
 
              <tr>
                  <th>Server uptime</th>
-                 <td class="info">
+                 <td class="left_align">
                    Up since: <%= h(@info.uptime.to_i.ago.to_s(:db)) %><br>
                    (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
                  </td>
@@ -187,12 +187,12 @@
              
              <tr>
                  <th>Worker PIDs</th>
-                 <td class="info"><%= @info.worker_pids %></td>
+                 <td class="left_align"><%= @info.worker_pids %></td>
              </tr>
 
              <tr class="Bourreau" style="display:none">
                  <th>Worker Revision Info</th>
-                 <td class="info">
+                 <td class="left_align">
                      <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
                      <strong>Last Change Revision: </strong><%= @info.worker_lc_rev %><br>
                      <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
@@ -200,12 +200,12 @@
              </tr>
              <tr class="Bourreau" style="display:none">
                  <th>Number of tasks (running/max)</th>
-                 <td class="info"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+                 <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
              </tr>
 
              <tr class="Bourreau" style="display:none">
                  <th>Execution Server Cluster Management System</th>
-                 <td class="info">
+                 <td class="left_align">
                    Type: <%= h(@info.bourreau_cms) %><br>
                    Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
                  </td>
@@ -213,7 +213,7 @@
 
              <tr>
                  <th>Execution Server SSH Public Key</th>
-                 <td class="info"><SMALL><SMALL><PRE id="format_ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+                 <td class="left_align"><SMALL><SMALL><PRE id="format_ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
              </tr>
 
          <% end %>
@@ -223,13 +223,13 @@
          <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
             <tr class="Bourreau" style="display:none">
-               <td class="info" align="center" colspan="2">
+               <td class="left_align" align="center" colspan="2">
                   <table id ="button_table">
                     <tr>
-                      <td class="info">
+                      <td class="left_align">
                         <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
                       </td>
-                      <td class="info">
+                      <td class="left_align">
                         <%= button_to 'Delete', bourreau_path(@bourreau), :confirm => 'Are you sure?', :method => :delete %>
                       </td>
                     </tr>
@@ -251,16 +251,16 @@
         </tr>
         <% @user_tasks_info.each do |user, statcnt| %>
           <tr>
-            <td class="info"><%= h(user) %></td>
+            <td class="left_align"><%= h(user) %></td>
             <% @statuses_list.each do |stat| %>
               <td><%= h(statcnt[stat]) %></td>
             <% end %>
           </tr>
         <% end %>
           <tr>
-            <td class="info">TOTAL</td>
+            <td class="left_align">TOTAL</td>
             <% @statuses_list.each do |stat| %>
-              <td><%= h(@statuses[stat]) %></td>
+		  <td><%= h(@statuses[stat]) %></td>
             <% end %>
           <tr>
       </table>

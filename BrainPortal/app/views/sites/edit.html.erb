@@ -22,9 +22,9 @@
   	   </tr>
   	   <% for user in User.all %>
   	       <tr>
-  	         <td class="info"><%= h(user.full_name) -%></td>
-  	         <td class="info"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
-  	         <td class="info"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+  	         <td class="left_align"><%= h(user.full_name) -%></td>
+  	         <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
+  	         <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
   	       </tr>
   	   <% end %>
   	</table>
@@ -32,8 +32,8 @@
   	<label for="groups">Groups</label>
   	<table id="button_table">
   	       <tr>
-  	         <td class="info"><%= h(group.name) -%></td>
-  	         <td class="info"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
+  	         <td class="left_align"><%= h(group.name) -%></td>
+  	         <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
   	       </tr>
     </table>
   	<% end %>
