@@ -1,0 +1,1 @@
+../../BrainPortal/lib/checker.rb
