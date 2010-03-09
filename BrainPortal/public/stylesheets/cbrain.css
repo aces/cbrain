@@ -420,7 +420,7 @@ a:hover {
 }
 
 #infobox {
-    float: left;
+    float: left
     padding: 1em; 
     background-color: #F6F6F6;
     color: #505050;
@@ -454,7 +454,9 @@ a:hover {
     padding-right: 1em;
     background-color: #E6E6E6;
     color: black;
-}
+} 
+
+
 
 /* ######################################################## */
 /* ssh_keys as part of the edit, show, _new data provider pages */
@@ -801,10 +803,7 @@ tr.list-unavailable {
     padding: 2px;
 }
 
-td.info {
-    width: 500px;
-    text-align: left;
-}
+
 
 td.taskinfo {
     border: 0px;
@@ -1059,18 +1058,13 @@ table.resource_list td.checkbox {
     clear: both;
 }
 
-td.left{
+.left_align{
     text-align: left;
 }
 
-th.right_align {
+.right_align {
    text-align: right;
 }
-
-td.right_align {
-   text-align: right;
-}
-
 .userfiles {
     border: 0px;
 }

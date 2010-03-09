@@ -248,5 +248,82 @@ module ApplicationHelper
     concat(content)
     concat("</span>")
   end
-  
+ 
+
+
+
+
+  ############################################################
+  #                                              
+  # This class is used to create a tabs          
+  # the TabBar.tab creates individual tabs       
+  # You can give TabBar.tab a partial or         
+  # simply a block to define the content         
+  #                                              
+  # To initialize, provide it with a                         
+  # reference to ActionView::Helpers::CaputreHelper::caputre 
+  # and ActionView::TamplateHelperHandler::render                                                         
+  #############################################################
+  class TabBar
+    
+    def initialize(capture,render)
+      @tab_titles = "<ul>\n"
+      @tab_divs = ""
+      @capture = capture #HACK ALERT:This is the the capture method given to the object on creation, 
+                         #since this class can't access 
+                         #Things from the enclosing module
+      @render = render   #HACK ALERT: same thing as the capture, it's the render from the surrounding module
+                         #horrible code, don't attempt at home
+    end
+
+    attr_reader :tab_titles, :tab_divs
+    attr_writer :tab_titles #Making this writable because I need to add a </ul> to it. 
+
+    
+    #This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
+    def tab(options, &block)
+      @tab_titles += "<li "
+      if options[:class]
+        @titles +="class='##{options[:class]}' "
+      end
+      @tab_titles +="><a href='##{options[:name]}'>#{options[:name]}</a></li>"
+      
+
+      #########################################
+      #tab content div.                       #
+      #                                       #
+      #This can be either a partial or a block#
+      #########################################
+      @tab_divs += "<div id=#{options[:name]}>\n" 
+      if options[:partial]
+       @tab_divs += @render.call( :partial => options[:partial])
+      end
+      if block
+        @tab_divs += @capture.call(&block)
+      end
+      @tab_divs += "</div>\n"      
+    end
+    
+  end
+
+
+
+  def tab_bar(&block)
+
+    foo="nothing" #can't have bar without foo (what's the point of comments if there's no jokes ;p)
+
+    #THIS LINE CONTAINS METAPROGRAMMING
+    #The TabBar class can't access the capture method and the render method so we are passing them
+    #in as a initialization variable
+    #This is obviously horrible coding practice 
+    bar=TabBar.new(method(:capture),method(:render))
+    
+
+    capture(bar,&block)
+    bar.tab_titles +="</ul>"
+    concat("<div class='tabs'>")
+    concat(bar.tab_titles)
+    concat(bar.tab_divs)
+    concat("</div>")
+  end
 end
