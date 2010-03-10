@@ -326,4 +326,37 @@ module ApplicationHelper
     concat(bar.tab_divs)
     concat("</div>")
   end
+  
+  def inplace_edit_field(options)
+    name = options[:name]
+    label = options[:label]
+    initial = options[:initial_value] || ""
+    "<div class=\"inline_edit_field\">"+
+      "<span>"+
+        "#{label}:  "+
+        "<span class=\"current_text\">#{initial}</span>"+
+        "<input name=\"#{name}\" />"+
+      "</span>" +
+      "<a class=\"inplace_edit_field_save\" >save</a>"+
+    "</div>" 
+    
+  end
+  def overlay_dialog_with_button(options,&block)
+    partial = options[:partial]
+    name = options[:name]
+    button_text = options[:button_text]
+    if partial
+      content = render partial
+    else
+      content = capture(&block)
+    end
+    concat("<div class=\"overlay_dialog\">")
+    concat("<div class=\"dialog\" id=\"#{name}\">")
+    concat(content)
+    concat("</div>")
+    concat("<a class=\"dialog_button\">#{button_text}</a>")
+    concat("</div>")
+  end
+ 
+
 end

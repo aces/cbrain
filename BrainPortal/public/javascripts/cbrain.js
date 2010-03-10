@@ -48,18 +48,26 @@ jQuery(
 
 
     jQuery(".inline_edit_field").each(function() {
-					var input_field = jQuery(this).children().filter("input").hide();
-					var text = jQuery(this).children().filter(".current_text");
-					input_field.change(function(event) {
-							     text.html(input_field.val());
-							     input_field.hide();
-							     text.show();
-							   });
-				        jQuery(this).click(function(event){
-						     input_field.val(text.html());
-						     text.hide();
-						     input_field.show();
-						   });
+					var input_field = jQuery(this).children().filter("span").children().filter("input").hide();
+					var save_link = jQuery(this).children().filter(".inplace_edit_field_save").hide();
+					var text = jQuery(this).children().filter("span").children().filter(".current_text");
+					var save_function = function(event) {
+					  text.html(input_field.val());
+					  input_field.hide();
+					  save_link.hide();
+					  text.show();
+					};
+					input_field.change(save_function);
+
+					jQuery(save_link).click(save_function);
+
+
+				        jQuery(this).children().filter("span").click(function(event){
+					               input_field.val(text.html());
+						       text.hide();
+						       input_field.show();
+						       save_link.show();
+					});
 
 				      });
 
