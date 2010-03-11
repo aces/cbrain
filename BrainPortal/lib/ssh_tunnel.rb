@@ -349,6 +349,50 @@ class SshTunnel
     true
   end
 
+  #
+  # Usage:
+  # remote_shell_command ("ruby -v", :stdout=>"tmp/result")
+  #
+  # remote_shell_command ("dc", :stdout=>"tmp/result") {
+  #   |remote_command| remote_command.write "2 2 + \n p"
+  # }
+  #
+  def remote_write_shell_command(shell_command, options={}, &block)   
+    options={:stdin  => "/dev/null",
+             :stdout => "/dev/null",
+             :stderr => "/dev/null"}.merge(options)
+
+    escaped_shell_commands = shell_escape(shell_command)
+
+    ssh_command = "ssh -x #{self.ssh_shared_options} #{escaped_shell_commands} 1>'#{options[:stdout]}' 2>'#{options[:stderr]}'"
+
+    if block_given? then
+      IO.popen(ssh_command,"w") { |io| yield(io) }
+    else
+      ssh_command += " 0<'#{options[:stdin]}'"
+      puts ssh_command
+      system(ssh_command)
+    end
+  end
+
+  def remote_read_shell_command(shell_command, options={}, &block)
+    options={:stdin  => "/dev/null",
+             :stdout => "/dev/null",
+             :stderr => "/dev/null"}.merge(options)
+
+    escaped_shell_commands = shell_escape(shell_command)
+
+    ssh_command = "ssh -x #{self.ssh_shared_options} #{escaped_shell_commands} 0<'#{options[:stdin]}' 2>'#{options[:stderr]}'"
+
+    if block_given? then
+      IO.popen(ssh_command,"r") { |io| yield(io) }
+    else
+      ssh_command += " 1>'#{options[:stdout]}'"
+      puts ssh_command
+      system(ssh_command)
+    end
+  end
+  
   protected
 
   # Returns the path to the SSH ControlPath socket.
@@ -417,6 +461,19 @@ class SshTunnel
     raise "This tunnel object does not match the object registered in the class!" if
       found.object_id != self.object_id
     true
+  end
+
+  # This utility method escapes properly any string such that
+  # it becomes a literal in a bash command; the string returned
+  # will include the surrounding single quotes.
+  #
+  #   shell_escape("Mike O'Connor")
+  #
+  # returns
+  #
+  #   'Mike O'\''Connor'
+  def shell_escape(s)
+    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
   end
   
 end
