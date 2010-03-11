@@ -10,6 +10,8 @@
 
 class Statistic < ActiveRecord::Base
   
+  Revision_info = "$Id$"
+  
   def update_stats
     entry = Statistic.find(:first, :conditions => { :bourreau_id => self.bourreau_id, :task_name => self.task_name, :user_id => self.user_id })
     if entry == nil

@@ -10,6 +10,7 @@
 class StatisticsController < ApplicationController
 
   Revision_info = "$Id$"
+  
   before_filter :login_required
 
   # GET /statistics
