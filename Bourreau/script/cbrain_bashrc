@@ -1,0 +1,8 @@
+   #
+   # CBRAIN Project
+   #
+   # Place special Bash shell initialization commands here.
+   # This is necessary if your machine doesn't source the
+   # user's $HOME/.bashrc for non-interactive commands
+   # launched through SSH.
+   #
