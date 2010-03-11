@@ -460,7 +460,27 @@ class RemoteResource < ActiveRecord::Base
 
   end
 
+  ############################################################################
+  # Remote Shell Command methods
+  #
+  # They prepend source cbrain_bashrc to specified shell command 
+  # and call corresponding ssh_master methods.
+  ############################################################################
+  # default options: :stdin => '/dev/null', :stdout => '/dev/null', :stderr => '/dev/null'
+  def remote_read_shell_command(shell_command, options={}, &block)
+    shell_commands = prepend_source_cbrain_bashrc(shell_command)
+    self.ssh_master.remote_read_shell_command(shell_commands, options, &block)
+  end
 
+  def remote_write_shell_command(shell_command, options={}, &block)    
+    shell_commands = prepend_source_cbrain_bashrc(shell_command)
+    self.ssh_master.remote_write_shell_command(shell_commands, options, &block)
+  end
+
+  def prepend_source_cbrain_bashrc(shell_command)
+    cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
+    return "source #{cbrain_bashrc_path}; #{shell_command}"
+  end
 
   ############################################################################
   # RemoteCommand Processing on local resource
