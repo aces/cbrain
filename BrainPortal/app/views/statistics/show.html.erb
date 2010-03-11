@@ -20,11 +20,13 @@
 	<th>Number of times used</th>
 	<th>Percent Used</th>
   </tr>
-	<% for stat in @task_stats %>
+	<% @task_stats.each do |key, value| %>
 		<tr>
-			<td><%=h stat.task_name %></td>
-			<td><%=h stats = Statistic.count_task_bourreau(stat.task_name, stat.bourreau_id) %></td>
-			<td><%=h ((stats.to_f*100)/(Statistic.total_task_bourreau(stat.bourreau_id)).to_f).round(2) %>%</tr>	
+		    <% if key != "total_count_bourreau"%>
+			    <td><%=key %></td>
+			    <td><%=value %></td>
+			    <td><%=h (value *100)/(@task_stats["total_count_bourreau"]) %></tr>	
+			<% end %>
 	<% end %>
 		
 </table>

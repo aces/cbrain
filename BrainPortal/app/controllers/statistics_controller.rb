@@ -29,9 +29,8 @@ class StatisticsController < ApplicationController
   # GET /statistics/1.xml
   def show
     @bourreau = Bourreau.find(params[:id])
-    @stats_bourreau = Statistic.find(:all, :conditions => {:bourreau_id => @bourreau.id})
-    @task_names = @stats_bourreau.map { |stat| stat.task_name } | []
-    @task_stats = Statistic.find(:all, :conditions => {:bourreau_id => @bourreau.id, :task_name => @task_names})
+    @task_stats = Statistic.bourreau_stats(@bourreau.id) 
+    @bourreau_total = @task_stats["total_count_bourreau"]
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @statistic }
