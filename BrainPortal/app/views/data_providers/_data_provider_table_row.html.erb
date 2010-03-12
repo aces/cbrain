@@ -26,7 +26,7 @@
      <% end %>
   </td>
   <td>
-     <% if prov.is_browsable? && prov.can_be_accessed_by?(current_user) %>
+     <% if prov.is_browsable? && prov.can_be_accessed_by?(current_user) && prov.online? %>
      <%= link_to 'Browse', browse_data_provider_path(prov), :class => 'action_link' %>
      <% end %>
   </td>
