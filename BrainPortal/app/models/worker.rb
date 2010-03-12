@@ -432,6 +432,39 @@ class Worker
 
 
   #####################################################################
+  # MAIN WORKER ABSTRACT IMPLEMENTATION METHODS
+  # These methods are meant to be overridden by subclasses.
+  #####################################################################
+
+  # Can be overriden to perform some initialization
+  # code one time only, after a worker is spawned in background.
+  def setup
+    self.validate_I_am_a_worker
+    self.worker_log.debug "No setup code needed."
+  end
+
+  # This is the main place where a worker's actual
+  # behavior is implemented. It will be called regularly
+  # every +check_interval+ seconds. This method should
+  # not loop-and-wait (the Worker class will take
+  # care of that) and should not busy-wait.
+  def do_regular_work
+    self.validate_I_am_a_worker
+    cb_error "Worker implementation error: no method do_regular_work() implemented?"
+  end
+
+  # Can be overriden to do some cleanup after a worker
+  # finishes. This method will not be invoked if the
+  # worker ended because of a raised exception, only
+  # after a normal 'stop' is performed.
+  def finalize
+    self.validate_I_am_a_worker
+    self.worker_log.debug "No finalization needed."
+  end
+
+
+
+  #####################################################################
   # These methods are meant to be used inside +do_regular_work+
   #####################################################################
 
@@ -494,39 +527,6 @@ class Worker
     self.validate_I_am_a_worker
     self.worker_log.debug "Cancelling own stopping."
     self.stop_received=false
-  end
-
-  # Worker-side method.
-  #
-  # Can be overriden to perform some initialization
-  # code one time only, after a worker is spawned in background.
-  def setup
-    self.validate_I_am_a_worker
-    self.worker_log.debug "No setup code needed."
-  end
-
-  # Worker-side method.
-  #
-  # Must be overriden in subclass.
-  # This is the main place where a worker's actual
-  # behavior is implemented. It will be called regularly
-  # every +check_interval+ seconds. This method should
-  # not loop-and-wait (the Worker class will take
-  # care of that) and should not busy-wait.
-  def do_regular_work
-    self.validate_I_am_a_worker
-    cb_error "Worker implementation error: no method do_regular_work() implemented?"
-  end
-
-  # Worker-side method.
-  #
-  # Can be overriden to do some cleanup after a worker
-  # finishes. This method will not be invoked if the
-  # worker ended because of a raised exception, only
-  # after a normal 'stop' is performed.
-  def finalize
-    self.validate_I_am_a_worker
-    self.worker_log.debug "No finalization needed."
   end
 
 

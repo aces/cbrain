@@ -342,13 +342,13 @@ class SshTunnel
   # Runs the specified +shell_command+ (a bash command) on
   # the remote end of the SSH connection. When given a block,
   # the block will receive a writable filehandle that can be
-  # used to send data to the remote command. The +options+
-  # can be used to provide local filenames for :stdin, :stdout
-  # and :stderr (note that :stdin is ignored if a block
-  # is provided).
-  # Appending to output files can be enabled
-  # by giving a true value to the options :stdout_append and
-  # :stderr_append.
+  # used to send data to the remote command.
+  #
+  # The +options+ hash can be used to provide local filenames
+  # for :stdin, :stdout and :stderr. Note that :stdin is ignored
+  # if a block is provided.
+  # Appending to output files can be enabled by giving a true value
+  # to the options :stdout_append and :stderr_append.
   def remote_shell_command_writer(shell_command, options={}, &block)
     pipe_for_remote_shell_command(shell_command, 'w', options, &block)
   end
@@ -356,28 +356,31 @@ class SshTunnel
   # Runs the specified +shell_command+ (a bash command) on
   # the remote end of the SSH connection. When given a block,
   # the block will receive a readable filehandle that can be
-  # used to read data from the remote command. The +options+
-  # can be used to provide local filenames for :stdin, :stdout
-  # and :stderr (note that :stdout is ignored if a block
-  # is provided).
-  # Appending to output files can be enabled
-  # by giving a true value to the options :stdout_append and
-  # :stderr_append.
+  # used to read data from the remote command.
+  #
+  # The +options+ hash can be used to provide local filenames
+  # for :stdin, :stdout and :stderr. Note that :stdout is ignored
+  # if a block is provided.
+  # Appending to output files can be enabled by giving a true value
+  # to the options :stdout_append and :stderr_append.
   def remote_shell_command_reader(shell_command, options={}, &block)
     pipe_for_remote_shell_command(shell_command, 'r', options, &block)
   end
 
   # Runs the specified +shell_command+ (a bash command) on
   # the remote end of the SSH connection. When given a block,
-  # the block will receive a readable or writable filehandle that can be
-  # used to read/write data from/to the remote command. +direction+ parameter
-  # could be set to 'r' for read and 'w' for write.
-  # The +options+ can be used to provide local filenames for :stdin, :stdout
-  # and :stderr (note that :stdout is ignored if a block
-  # is provided).
-  # Appending to output files can be enabled
-  # by giving a true value to the options :stdout_append and
-  # :stderr_append.
+  # the block will receive a readable or writable filehandle
+  # that can be used to read/write data from/to the remote command.
+  #
+  # The +direction+ parameter needs to be set to 'r' for read and
+  # 'w' for write.
+  #
+  # The +options+ hash can be used to provide local filenames
+  # for :stdin, :stdout and :stderr. Note that :stdout is ignored
+  # if a block is provided with a 'r' +direction+, and similarly
+  # :stdin is ignored if a block is provided in a 'w' +direction+.
+  # Appending to output files can be enabled by giving a true value
+  # to the options :stdout_append and :stderr_append.
   def pipe_for_remote_shell_command(shell_command, direction, options={})
 
     shared_opts = self.ssh_shared_options

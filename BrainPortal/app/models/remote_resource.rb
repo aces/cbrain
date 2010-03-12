@@ -212,6 +212,53 @@ class RemoteResource < ActiveRecord::Base
 
 
   ############################################################################
+  # Remote Shell Command methods
+  #
+  # These two methods prepend the constant shell statements
+  #   "source /path/to/cbrain_bashrc;"
+  # to the specified shell command and then call the corresponding command
+  # execution methods of the master ssh_tunnel for the RemoteResource.
+  ############################################################################
+
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a readable filehandle that can be
+  # used to read data from the remote command.
+  #
+  # The +options+ hash can be used to provide local filenames
+  # for :stdin, :stdout and :stderr. Note that :stdout is ignored
+  # if a block is provided.
+  # Appending to output files can be enabled by giving a true value
+  # to the options :stdout_append and :stderr_append.
+  def read_from_remote_shell_command(shell_command, options={}, &block)
+    cb_error "No proper SSH control info provided for RemoteResource." unless self.has_ssh_control_info?
+    master = self.ssh_master
+    cb_error "No SSH master connection yet established for RemoteResource." unless master.is_alive?
+    shell_commands = prepend_source_cbrain_bashrc(shell_command)
+    master.remote_shell_command_reader(shell_commands, options, &block)
+  end
+
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a writable filehandle that can be
+  # used to send data to the remote command.
+  #
+  # The +options+ hash can be used to provide local filenames
+  # for :stdin, :stdout and :stderr. Note that :stdin is ignored
+  # if a block is provided.
+  # Appending to output files can be enabled by giving a true value
+  # to the options :stdout_append and :stderr_append.
+  def write_to_remote_shell_command(shell_command, options={}, &block)    
+    cb_error "No proper SSH control info provided for RemoteResource." unless self.has_ssh_control_info?
+    master = self.ssh_master
+    cb_error "No SSH master connection yet established for RemoteResource." unless master.is_alive?
+    shell_commands = prepend_source_cbrain_bashrc(shell_command)
+    master.remote_shell_command_writer(shell_commands, options, &block)
+  end
+
+
+
+  ############################################################################
   # Authentication Token Methods
   ############################################################################
 
@@ -229,6 +276,8 @@ class RemoteResource < ActiveRecord::Base
   def auth_token
      cache_md5
   end
+
+
 
   ############################################################################
   # Network Control Protocol Methods
@@ -458,43 +507,6 @@ class RemoteResource < ActiveRecord::Base
     control = Control.new(command)
     control.save
 
-  end
-
-  ############################################################################
-  # Remote Shell Command methods
-  #
-  # They prepend source cbrain_bashrc to specified shell command 
-  # and call corresponding ssh_tunnel methods.
-  ############################################################################
-
-  # Runs the specified +shell_command+ (a bash command) on
-  # the remote end of the SSH connection. When given a block,
-  # the block will receive a readable filehandle that can be
-  # used to read data from the remote command. The +options+
-  # can be used to provide local filenames for :stdin, :stdout
-  # and :stderr (note that :stdout is ignored if a block
-  # is provided).
-  # Appending to output files can be enabled
-  # by giving a true value to the options :stdout_append and
-  # :stderr_append.
-  def read_from_remote_shell_command(shell_command, options={}, &block)
-    shell_commands = prepend_source_cbrain_bashrc(shell_command)
-    self.ssh_master.remote_shell_command_reader(shell_commands, options, &block)
-  end
-
-  # Runs the specified +shell_command+ (a bash command) on
-  # the remote end of the SSH connection. When given a block,
-  # the block will receive a writable filehandle that can be
-  # used to send data to the remote command. The +options+
-  # can be used to provide local filenames for :stdin, :stdout
-  # and :stderr (note that :stdin is ignored if a block
-  # is provided).
-  # Appending to output files can be enabled
-  # by giving a true value to the options :stdout_append and
-  # :stderr_append.
-  def write_to_remote_shell_command(shell_command, options={}, &block)    
-    shell_commands = prepend_source_cbrain_bashrc(shell_command)
-    self.ssh_master.remote_shell_command_writer(shell_commands, options, &block)
   end
 
   ############################################################################
