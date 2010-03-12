@@ -58,8 +58,8 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl"
-                  + " start -e #{myrailsenv} -p #{port}"
+    start_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl " +
+                    "start -e #{myrailsenv} -p #{port}"
     self.write_to_remote_shell_command(start_command, :stdout=>captfile) {|io| io.write(db_yml)}
 
     out = File.read(captfile) rescue ""
