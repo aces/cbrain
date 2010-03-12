@@ -464,22 +464,37 @@ class RemoteResource < ActiveRecord::Base
   # Remote Shell Command methods
   #
   # They prepend source cbrain_bashrc to specified shell command 
-  # and call corresponding ssh_master methods.
+  # and call corresponding ssh_tunnel methods.
   ############################################################################
-  # default options: :stdin => '/dev/null', :stdout => '/dev/null', :stderr => '/dev/null'
-  def remote_read_shell_command(shell_command, options={}, &block)
+
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a readable filehandle that can be
+  # used to read data from the remote command. The +options+
+  # can be used to provide local filenames for :stdin, :stdout
+  # and :stderr (note that :stdout is ignored if a block
+  # is provided).
+  # Appending to output files can be enabled
+  # by giving a true value to the options :stdout_append and
+  # :stderr_append.
+  def read_from_remote_shell_command(shell_command, options={}, &block)
     shell_commands = prepend_source_cbrain_bashrc(shell_command)
-    self.ssh_master.remote_read_shell_command(shell_commands, options, &block)
+    self.ssh_master.remote_shell_command_reader(shell_commands, options, &block)
   end
 
-  def remote_write_shell_command(shell_command, options={}, &block)    
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a writable filehandle that can be
+  # used to send data to the remote command. The +options+
+  # can be used to provide local filenames for :stdin, :stdout
+  # and :stderr (note that :stdin is ignored if a block
+  # is provided).
+  # Appending to output files can be enabled
+  # by giving a true value to the options :stdout_append and
+  # :stderr_append.
+  def write_to_remote_shell_command(shell_command, options={}, &block)    
     shell_commands = prepend_source_cbrain_bashrc(shell_command)
-    self.ssh_master.remote_write_shell_command(shell_commands, options, &block)
-  end
-
-  def prepend_source_cbrain_bashrc(shell_command)
-    cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
-    return "source #{cbrain_bashrc_path}; #{shell_command}"
+    self.ssh_master.remote_shell_command_writer(shell_commands, options, &block)
   end
 
   ############################################################################
@@ -579,6 +594,12 @@ class RemoteResource < ActiveRecord::Base
     end
 
     true
+  end
+
+  # Helper method to prepend 'source cbrain_bashrc;' to shell command.
+  def prepend_source_cbrain_bashrc(shell_command)
+    cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
+    return "source #{cbrain_bashrc_path}; #{shell_command}"
   end
 
 end

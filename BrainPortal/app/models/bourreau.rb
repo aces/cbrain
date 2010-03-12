@@ -37,7 +37,6 @@ class Bourreau < RemoteResource
 
     return false unless self.has_remote_control_info?
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
-    bourreau_rails_home = self.ssh_control_rails_dir
 
     unless self.start_tunnels
       self.operation_messages = "Could not start the SSH master connection."
@@ -45,31 +44,31 @@ class Bourreau < RemoteResource
     end
 
     # If we tunnel the DB, we get a non-blank yml file here
-    yml  = self.has_db_tunneling_info?     ? self.build_db_yml_for_tunnel : ""
+    db_yml  = self.has_db_tunneling_info?   ?   self.build_db_yml_for_tunnel : ""
 
     # What port the Rails Bourreau will listen to?
-    port = self.has_actres_tunneling_info? ? self.tunnel_actres_port : self.actres_port
+    port = self.has_actres_tunneling_info?  ?   self.tunnel_actres_port : self.actres_port
 
     # What environment will it run under?
     myrailsenv = ENV["RAILS_ENV"] || "production"
 
+    # File to capture command output.
+    captfile = "/tmp/start.out.#{Process.pid}"
+  
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    captfile    = "/tmp/start.out.#{Process.pid}"
-    ssh_options = self.ssh_master.ssh_shared_options
-    startcmd    = "ruby #{bourreau_rails_home}/script/cbrain_remote_ctl " +
-                  "start -e #{myrailsenv} -p #{port}"
-    dash_n      = yml.blank? ? "-n" : ""
-    sshcmd = "ssh -x #{dash_n} #{ssh_options} #{startcmd} >'#{captfile}' 2>&1"
-    IO.popen(sshcmd,"w") { |pipe| pipe.write(yml) }
+    start_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl"
+                  + " start -e #{myrailsenv} -p #{port}"
+    self.write_to_remote_shell_command(start_command, :stdout=>captfile) {|io| io.write(db_yml)}
+
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
     return true if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
     self.operation_messages = "Remote control command failed\n" +
-                              "Command: #{sshcmd}\n" +
+                              "Command: #{start_command}\n" +
                               "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
-    false
+    return false
   end
 
   # Stop a Bourreau remotely. The requirements for this to work are
@@ -77,18 +76,14 @@ class Bourreau < RemoteResource
   def stop
     return false unless self.has_remote_control_info?
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
-    bourreau_rails_home = self.ssh_control_rails_dir
-
     return false unless self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
-    # SSH command to stop it
-    ssh_options = self.ssh_master.ssh_shared_options
-    stopcmd = "ruby #{bourreau_rails_home}/script/cbrain_remote_ctl stop"
-    sshcmd  = "ssh -n -x #{ssh_options} #{stopcmd}"
-    confirm = ""
-    IO.popen(sshcmd,"r") { |pipe| confirm = pipe.read }
-    return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl'
-    false
+    stop_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl stop"
+    confirm=""
+    self.read_from_remote_shell_command(stop_command) {|io| confirm = io.read}   
+ 
+    return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl' 
+    return false
   end
 
   # This method adds Bourreau-specific information fields
