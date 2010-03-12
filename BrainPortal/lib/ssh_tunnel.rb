@@ -339,6 +339,64 @@ class SshTunnel
     " #{@user}@#{@host} "
   end
 
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a writable filehandle that can be
+  # used to send data to the remote command. The +options+
+  # can be used to provide local filenames for :stdin, :stdout
+  # and :stderr (note that :stdin is ignored if a block
+  # is provided).
+  # Appending to output files can be enabled
+  # by giving a true value to the options :stdout_append and
+  # :stderr_append.
+  def remote_write_shell_command(shell_command, options={})
+
+    shared_opts = self.ssh_shared_options
+    command     = shell_escape(shell_command)
+    stdout      = bash_redirection(options,1,">",:stdout)
+    stderr      = bash_redirection(options,2,">",:stderr)
+
+    ssh_command = "ssh -x #{shared_opts} #{command} #{stdout} #{stderr}"
+
+    if block_given? then
+      IO.popen(ssh_command,"w") { |io| yield(io) }
+    else
+      stdin        = bash_redirection(options,0,"<",:stdin)
+      ssh_command += " #{stdin}"
+      system(ssh_command)
+    end
+    true
+  end
+
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a readable filehandle that can be
+  # used to read data from the remote command. The +options+
+  # can be used to provide local filenames for :stdin, :stdout
+  # and :stderr (note that :stdout is ignored if a block
+  # is provided).
+  # Appending to output files can be enabled
+  # by giving a true value to the options :stdout_append and
+  # :stderr_append.
+  def remote_read_shell_command(shell_command, options={})
+
+    shared_opts = self.ssh_shared_options
+    command     = shell_escape(shell_command)
+    stdin       = bash_redirection(options,0,"<",:stdin)
+    stderr      = bash_redirection(options,2,">",:stderr)
+
+    ssh_command = "ssh -x #{shared_opts} #{command} #{stdout} #{stderr}"
+
+    if block_given? then
+      IO.popen(ssh_command,"r") { |io| yield(io) }
+    else
+      stdout       = bash_redirection(options,1,">",:stdout)
+      ssh_command += " #{stdout}"
+      system(ssh_command)
+    end
+    true
+  end
+  
   # This stops the master SSH connection if it is alive, and
   # de-register the object from the class. It's nice but not
   # really necessary.
@@ -349,50 +407,6 @@ class SshTunnel
     true
   end
 
-  #
-  # Usage:
-  # remote_shell_command ("ruby -v", :stdout=>"tmp/result")
-  #
-  # remote_shell_command ("dc", :stdout=>"tmp/result") {
-  #   |remote_command| remote_command.write "2 2 + \n p"
-  # }
-  #
-  def remote_write_shell_command(shell_command, options={}, &block)   
-    options={:stdin  => "/dev/null",
-             :stdout => "/dev/null",
-             :stderr => "/dev/null"}.merge(options)
-
-    escaped_shell_commands = shell_escape(shell_command)
-
-    ssh_command = "ssh -x #{self.ssh_shared_options} #{escaped_shell_commands} 1>'#{options[:stdout]}' 2>'#{options[:stderr]}'"
-
-    if block_given? then
-      IO.popen(ssh_command,"w") { |io| yield(io) }
-    else
-      ssh_command += " 0<'#{options[:stdin]}'"
-      puts ssh_command
-      system(ssh_command)
-    end
-  end
-
-  def remote_read_shell_command(shell_command, options={}, &block)
-    options={:stdin  => "/dev/null",
-             :stdout => "/dev/null",
-             :stderr => "/dev/null"}.merge(options)
-
-    escaped_shell_commands = shell_escape(shell_command)
-
-    ssh_command = "ssh -x #{self.ssh_shared_options} #{escaped_shell_commands} 0<'#{options[:stdin]}' 2>'#{options[:stderr]}'"
-
-    if block_given? then
-      IO.popen(ssh_command,"r") { |io| yield(io) }
-    else
-      ssh_command += " 1>'#{options[:stdout]}'"
-      puts ssh_command
-      system(ssh_command)
-    end
-  end
-  
   protected
 
   # Returns the path to the SSH ControlPath socket.
@@ -463,6 +477,8 @@ class SshTunnel
     true
   end
 
+  private
+
   # This utility method escapes properly any string such that
   # it becomes a literal in a bash command; the string returned
   # will include the surrounding single quotes.
@@ -476,4 +492,20 @@ class SshTunnel
     "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
   end
   
+  # Create a bash redirection operator (like "<infile"
+  # or "2>>err.txt"); +options+ is a hash containing the +key+
+  # whose value is the file to use for redirection; +fd+
+  # is the number of the file descriptor; +redir_op+ is one
+  # of '<' or '>'. If the +options+ also contain a true
+  # value for a key symbol named ":{key}_append", then
+  # output redirection will be done in append mode (>>).
+  def bash_redirection(options,fd,redir_op,key) #:nodoc:
+    file          = options[key]
+    return "" unless file # no redirection
+    do_append_key = (key.to_s + "_append").to_sym
+    append_op     = redir_op
+    append_op    += redir_op if options[do_append_key] && redir_op == '>'
+    "#{fd}#{append_op}#{shell_escape(file)}"
+  end
+
 end
