@@ -1847,3 +1847,21 @@ h1.warning{
     padding: 5px; 
     border: 1px solid gray;
 }
+
+
+
+/* ######################################################### */
+/* Z Toolkit element styling */
+/* ######################################################### */
+
+.button_with_drop_down {
+    float: left;
+}
+
+.button_with_drop_down > .drop_down_menu {
+    position: absolute;
+    border: solid;
+    border-width: 1px;
+    padding: 5px;
+    background: #f8f8f8;    
+}

@@ -358,5 +358,21 @@ module ApplicationHelper
     concat("</div>")
   end
  
+  def ajax_element(options,html_opts={},&block) 
+    url = options[:url]
+    partial = options[:partial]
+    element = options[:element] || "div"
+    
+    html_opts[:class] ||= ""
+    html_opts[:class] +=  " ajax_element"
+    
+    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "}
+
+    initial_content=capture(&block)+((render partial unless !partial) || "")
+    
+    concat("<#{element} href=\"#{url}\" #{atts}>") 
+    concat(initial_content)
+    concat("</#{element}>")
+  end
 
 end

@@ -71,7 +71,35 @@ jQuery(
 
 				      });
 
-}
 
-);
 
+
+
+    jQuery(".button").button();
+    jQuery(".button_with_drop_down").children(".button").button({
+					      icons: {
+                                                secondary: 'ui-icon-triangle-1-s'
+					      }
+
+
+
+						}).toggle(function(event){
+						            var menu = jQuery(this).siblings("div.drop_down_menu")
+							    jQuery(".drop_down_menu").hide();
+					            	    menu.show();
+							  },
+							  function(event){
+						            var menu = jQuery(this).siblings("div.drop_down_menu")
+					            	    menu.hide();
+							  });
+
+
+
+    jQuery(".button_with_drop_down > div.drop_down_menu").hide();
+
+
+    jQuery(".ajax_element").each(function (index,element){
+				    jQuery(element).load(jQuery(element).attr("href"));
+				  });
+
+});
