@@ -341,6 +341,8 @@ module ApplicationHelper
     "</div>" 
     
   end
+
+  #Create an overlay dialog box with a link as the button
   def overlay_dialog_with_button(options,&block)
     partial = options[:partial]
     name = options[:name]
@@ -358,6 +360,23 @@ module ApplicationHelper
     concat("</div>")
   end
  
+  ###############################################################
+  # Creates an html element which will have it's content updated 
+  # with a ajax call to the url specified in the options hash
+  #
+  # example:
+  #
+  # <% ajax_element( {:url =>"/data_providers", :element => "span"}, {:class => "left right center"})  do %>
+  #   loading...
+  # <% end %>
+  #
+  # This will ouput the following html
+  # <span href="/data_providers" class="left right center ajax_element" >
+  #   loading...
+  # </span>
+  # 
+  # and the body will be replaced with the content of the html at /data_providers
+  ###############################################################
   def ajax_element(options,html_opts={},&block) 
     url = options[:url]
     partial = options[:partial]
@@ -366,7 +385,8 @@ module ApplicationHelper
     html_opts[:class] ||= ""
     html_opts[:class] +=  " ajax_element"
     
-    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "}
+    #This builds an html attribute string from the html_opts hash
+    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
 
     initial_content=capture(&block)+((render partial unless !partial) || "")
     
