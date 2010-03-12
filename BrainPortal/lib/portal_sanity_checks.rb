@@ -25,7 +25,7 @@
 require 'socket'
 require 'checker.rb'
 
-class PortalSanityCheck < Checker
+class PortalSanityChecks < Checker
 
 
   #Checks to see if the validation was run since last change

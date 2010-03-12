@@ -10,7 +10,7 @@
 
 require 'checker.rb'
 
-class PortalSystemCheck < Checker
+class PortalSystemChecks < Checker
   
   RevisionInfo="$Id$"
 
@@ -38,7 +38,7 @@ class PortalSystemCheck < Checker
     puts "C> Checking if the BrainPortal database needs a sanity check..."
     #----------------------------------------------------------------------------
 
-    unless PortalSanityCheck.done? 
+    unless PortalSanityChecks.done? 
        puts "C> \t- Error: You must check the sanity of the models. Please run 'rake db:sanity:check'." 
        Kernel.exit(1)
     end
