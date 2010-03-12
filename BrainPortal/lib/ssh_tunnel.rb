@@ -349,23 +349,8 @@ class SshTunnel
   # Appending to output files can be enabled
   # by giving a true value to the options :stdout_append and
   # :stderr_append.
-  def remote_write_shell_command(shell_command, options={})
-
-    shared_opts = self.ssh_shared_options
-    command     = shell_escape(shell_command)
-    stdout      = bash_redirection(options,1,">",:stdout)
-    stderr      = bash_redirection(options,2,">",:stderr)
-
-    ssh_command = "ssh -x #{shared_opts} #{command} #{stdout} #{stderr}"
-
-    if block_given? then
-      IO.popen(ssh_command,"w") { |io| yield(io) }
-    else
-      stdin        = bash_redirection(options,0,"<",:stdin)
-      ssh_command += " #{stdin}"
-      system(ssh_command)
-    end
-    true
+  def remote_shell_command_writer(shell_command, options={}, &block)
+    pipe_for_remote_shell_command(shell_command, 'w', options, &block)
   end
 
   # Runs the specified +shell_command+ (a bash command) on
@@ -378,23 +363,41 @@ class SshTunnel
   # Appending to output files can be enabled
   # by giving a true value to the options :stdout_append and
   # :stderr_append.
-  def remote_read_shell_command(shell_command, options={})
+  def remote_shell_command_reader(shell_command, options={}, &block)
+    pipe_for_remote_shell_command(shell_command, 'r', options, &block)
+  end
+
+  # Runs the specified +shell_command+ (a bash command) on
+  # the remote end of the SSH connection. When given a block,
+  # the block will receive a readable or writable filehandle that can be
+  # used to read/write data from/to the remote command. +direction+ parameter
+  # could be set to 'r' for read and 'w' for write.
+  # The +options+ can be used to provide local filenames for :stdin, :stdout
+  # and :stderr (note that :stdout is ignored if a block
+  # is provided).
+  # Appending to output files can be enabled
+  # by giving a true value to the options :stdout_append and
+  # :stderr_append.
+  def pipe_for_remote_shell_command(shell_command, direction, options={})
 
     shared_opts = self.ssh_shared_options
     command     = shell_escape(shell_command)
     stdin       = bash_redirection(options,0,"<",:stdin)
+    stdout      = bash_redirection(options,1,">",:stdout)
     stderr      = bash_redirection(options,2,">",:stderr)
 
-    ssh_command = "ssh -x #{shared_opts} #{command} #{stdout} #{stderr}"
+    ssh_command =  "ssh -x #{shared_opts} #{command} #{stderr}"
+    ssh_command += " #{stdin}"  if direction == 'r'
+    ssh_command += " #{stdout}" if direction == 'w'
 
     if block_given? then
-      IO.popen(ssh_command,"r") { |io| yield(io) }
+      IO.popen(ssh_command, direction) { |io| yield(io) }
     else
-      stdout       = bash_redirection(options,1,">",:stdout)
-      ssh_command += " #{stdout}"
+      ssh_command += " #{stdout}" if direction == 'r'
+      ssh_command += " #{stdin}"  if direction == 'w'
       system(ssh_command)
     end
-    true
+    true    
   end
   
   # This stops the master SSH connection if it is alive, and
