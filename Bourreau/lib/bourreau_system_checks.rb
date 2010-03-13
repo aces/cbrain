@@ -14,7 +14,7 @@ require 'socket'
 
 class BourreauSystemChecks < Checker
 
-  def self.a005_ensure_configuration_variables_are_set
+  def self.a010_ensure_configuration_variables_are_set
     
     #-----------------------------------------------------------------------------
     puts "C> Verifying configuration variables..."
@@ -72,7 +72,7 @@ class BourreauSystemChecks < Checker
   end
   
 
-  def self.ensure_registered_as_remote_ressource
+  def self.a020_ensure_registered_as_remote_ressource
     
 
     #-----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ class BourreauSystemChecks < Checker
 
   end
 
-  def self.ensure_data_provider_caches_needs_wiping
+  def self.a030_ensure_data_provider_caches_needs_wiping
     
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
@@ -150,7 +150,7 @@ class BourreauSystemChecks < Checker
     end
   end
 
-  def self.ensure_all_dp_caches_have_proper_subdirs
+  def self.a040_ensure_all_dp_caches_have_proper_subdirs
     
     #-----------------------------------------------------------------------------
     puts "C> Making sure all providers have proper cache subdirectories..."
@@ -168,7 +168,7 @@ class BourreauSystemChecks < Checker
     end
   end
 
-  def self.ensure_proper_cluster_management_layer_is_loaded
+  def self.a050_ensure_proper_cluster_management_layer_is_loaded
     
 
     #-----------------------------------------------------------------------------
@@ -194,7 +194,7 @@ class BourreauSystemChecks < Checker
   end
 
 
-  def self.ensure_bourreau_worker_precess_are_reported
+  def self.a060_ensure_bourreau_worker_precess_are_reported
     
 
     #-----------------------------------------------------------------------------
