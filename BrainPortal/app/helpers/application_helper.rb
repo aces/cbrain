@@ -395,4 +395,22 @@ module ApplicationHelper
     concat("</#{element}>")
   end
 
+  def button_with_dropdown_menu(options={},html_opts={}, &block)
+    partial = options[:partial]
+    title = options[:title]
+    html_opts[:class] ||= ""
+    html_opts[:class] +=  " button"
+    
+    content=capture(&block)+((render partial unless !partial) || "") 
+
+    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    concat("<div class=\"button_with_drop_down\">")
+    concat("<a #{atts}>#{title}</a>")
+    concat("<div class=\"drop_down_menu\">")
+    concat(content)
+    concat("</div>")
+    concat("</div>")
+           
+  end
+
 end
