@@ -415,6 +415,9 @@ class DataProvidersController < ApplicationController
                                :group_id         => @provider.group_id,
                                :data_provider_id => provider_id )
       if userfile.save
+        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user,"FileCollection Extraction") do
+          userfile.set_size!
+        end
         num_registered += 1
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'\n"

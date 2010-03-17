@@ -39,67 +39,75 @@ class CbrainSmartDataProvider < DataProvider
   def is_alive? #:nodoc:
     @provider.is_alive?
   end
-
+    
   def is_alive! #:nodoc:
     @provider.is_alive!
   end
-
+    
   def sync_to_cache(userfile) #:nodoc:
     @provider.sync_to_cache(userfile)
   end
-
+    
   def sync_to_provider(userfile) #:nodoc:
     @provider.sync_to_provider(userfile)
   end
-
+    
   def cache_prepare(userfile) #:nodoc:
     @provider.cache_prepare(userfile)
   end
-
+    
   def cache_full_path(userfile) #:nodoc:
     @provider.cache_full_path(userfile)
   end
-
+    
   def cache_readhandle(userfile,&block) #:nodoc:
     @provider.cache_readhandle(userfile,&block)
   end
-
+    
   def cache_writehandle(userfile,&block) #:nodoc:
     @provider.cache_writehandle(userfile,&block)
   end
-
+    
   def cache_copy_from_local_file(userfile,localfilename) #:nodoc:
     @provider.cache_copy_from_local_file(userfile,localfilename)
   end
-
+    
   def cache_copy_to_local_file(userfile,localfilename) #:nodoc:
     @provider.cache_copy_to_local_file(userfile,localfilename)
   end
-
+    
   def cache_erase(userfile) #:nodoc:
     @provider.cache_erase(userfile)
   end
-
+  
+  def cache_collection_index(userfile) #:nodoc:
+    @provider.cache_collection_index(userfile)
+  end
+    
   def provider_erase(userfile) #:nodoc:
     @provider.provider_erase(userfile)
   end
-
+    
   def provider_rename(userfile,newname) #:nodoc:
     @provider.provider_rename(userfile,newname)
   end
-
-  def provider_move_to_otherprovider(userfile,otherprovider)
+    
+  def provider_move_to_otherprovider(userfile,otherprovider)  #:nodoc:
     @provider.provider_move_to_otherprovider(userfile,otherprovider)
   end
-
-  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil)
+    
+  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil) #:nodoc:
     @provider.provider_copy_to_otherprovider(userfile,otherprovider,newname)
   end
-
+    
   def provider_list_all #:nodoc:
     @provider.provider_list_all
   end
-
+  
+  def provider_collection_index(userfile) #:nodoc:
+    @provider.provider_collection_index(userfile)
+  end
+ 
   # ActiveRecord callbacks
 
   # This creates the PROVIDER's cache directory

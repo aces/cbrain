@@ -94,26 +94,28 @@
   
   <% if @sync_status == "InSync" %>
     <%= display_contents(@userfile) %>
-    <% if @userfile.is_a?(FileCollection) %>
-      <%= render :partial  => 'file_collection', :locals  => {:file => @userfile} %> 
-    <% end %>
-    
   <% elsif @sync_status =~ /^To/ %>
     <% if @userfile.is_a?(FileCollection) %>
-      <p>This Collection is currently being synchronized,
-         so the content is not listable yet.</p>
+      <p>This Collection is currently being synchronized.</p>
     <% else %>
       <p>This file is currently being synchronized.</p>
     <% end %>
   <% else %>
     <% if @userfile.is_a?(FileCollection) %>
-      <p>This Collection is not currently synchronized, so
-         the content is not listable yet.<BR>
+      <p>This Collection is not currently synchronized.<BR>
     <% else %>
       <p>This file is not currently synchronized.<BR>
     <% end %>
     Click <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
-    to start the synchronization process.</p>
+    to start the synchronization process (this will allow you to view displayable content).</p>
+  <% end %>
+  
+  <% if @userfile.is_a?(FileCollection) %>
+    <% ajax_element({:url  => content_userfile_path(@userfile)}, {:class  => "loading_message"}) do %>
+      <br>
+      Loading...
+      <br>
+    <% end %>
   <% end %>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>

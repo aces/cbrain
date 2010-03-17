@@ -33,19 +33,9 @@ class SingleFile < Userfile
   end
 
   # Calculates and sets the size attribute.
-  # Well return true if the size was set;
-  # will return false if the file is not synchronized
-  # and thus the size can't be obtained from the cache.
   def set_size!
-    local_sync = self.local_sync_status
-    unless local_sync && local_sync.status == "InSync"
-      return false
-    end
-    
-    Dir.chdir(self.cache_full_path.parent) do
-      self.size = File.size(self.name)
-      self.save!
-    end
+    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
+    self.save!
 
     true
   end

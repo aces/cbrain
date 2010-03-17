@@ -101,13 +101,19 @@ class UserfilesController < ApplicationController
   #The content action handles requests for file content
   #by URL. Used mainly by JIV at this point.
   def content
-    userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    userfile.sync_to_cache
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
-    if userfile.is_a?(FileCollection) && params[:collection_file]
-      send_file userfile.cache_full_path.parent + params[:collection_file]
+    if @userfile.is_a?(FileCollection)
+      if params[:collection_file]
+        @userfile.sync_to_cache
+        send_file @userfile.cache_full_path.parent + params[:collection_file]
+      else
+        render :partial  => 'file_collection'
+        return
+      end
     else
-      send_file userfile.cache_full_path
+      @userfile.sync_to_cache
+      send_file @userfile.cache_full_path
     end
   end
   

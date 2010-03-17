@@ -101,12 +101,12 @@ module UserfilesHelper
     after_content = '</div>'
     
     if userfile.is_a? CivetCollection
-       clasp_file  = userfile.list_files.find { |f| f =~ /clasp\.png$/ }
-       verify_file = userfile.list_files.find { |f| f =~ /verify\.png$/}
+       clasp_file  = userfile.list_files.find { |f| f.name =~ /clasp\.png$/ }
+       verify_file = userfile.list_files.find { |f| f.name =~ /verify\.png$/}
        content =  "<h3>Clasp</h3>"
-       content += image_tag url_for(:action  => :content, :collection_file  => clasp_file)
+       content += image_tag url_for(:action  => :content, :collection_file  => clasp_file.name)
        content += "<br><h3>Verify</h3>"
-       content += image_tag url_for(:action  => :content, :collection_file  => verify_file)
+       content += image_tag url_for(:action  => :content, :collection_file  => verify_file.name)
     else
       file_name = userfile.name
       case file_name

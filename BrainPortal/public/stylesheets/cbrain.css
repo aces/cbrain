@@ -1058,6 +1058,10 @@ table.resource_list td.checkbox {
     clear: both;
 }
 
+.left{
+    text-align: left!important;
+}
+
 .left_align{
     text-align: left;
 }
@@ -1812,7 +1816,7 @@ td.middle{
     text-align:left;
 }
 
-#data_provider_classes{
+#data_provider_classes {
     max-width: 60em;
     position: absolute;
     background-color: white;
@@ -1820,22 +1824,21 @@ td.middle{
     padding: 1em;
 }
 
-.batch_job_header{
+.batch_job_header {
     background-color: #A3D3F6;
 }
 
-.warning{
+.warning {
     color:red;
 }
 
-h1.warning{
+h1.warning {
     line-height: 1.1em;
     padding: 0;
     margin: 0;
 }
 
-.xstooltip 
-{
+.xstooltip {
     visibility: hidden; 
     position: absolute; 
     top: 0;  
@@ -1848,7 +1851,10 @@ h1.warning{
     border: 1px solid gray;
 }
 
-
+.loading_message {
+  text-align: center;
+  color: red;
+}
 
 /* ######################################################### */
 /* Z Toolkit element styling */

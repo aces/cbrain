@@ -56,7 +56,7 @@ class SingleFileTest < ActiveSupport::TestCase
   def test_file_list
     file = SingleFile.new(:name  => 'file')
     give_data_provider_id(file)
-    assert_equal file.list_files, [file.name]
+    assert_equal file.list_files.map(&:name), [file.name]
   end
 
   def give_data_provider_id(userfile)

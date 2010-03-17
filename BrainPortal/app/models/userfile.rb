@@ -321,7 +321,11 @@ class Userfile < ActiveRecord::Base
   #maintain compatibility with the overridden method in
   #FileCollection).
   def list_files
-    [self.name]
+    @file_list ||= if self.is_locally_cached?
+                     self.cache_collection_index
+                   else
+                     self.provider_collection_index
+                   end
   end
   
   #Checks whether the size attribute(s) have been set.
@@ -354,9 +358,31 @@ class Userfile < ActiveRecord::Base
       } )
   end
 
+  # Returns whether this userfile's contents has been
+  # synced to the local cache.
   def is_locally_synced?
+    if self.data_provider.is_fast_syncing?
+      self.sync_to_cache
+    end
     syncstat = self.local_sync_status
     syncstat && syncstat.status == 'InSync'
+  end
+  
+  # Returns whether this userfile's contents has been
+  # is in the local cache and valid.
+  #
+  # The difference between this method and is_locally_synced?
+  # is that this method will also return true if the contents
+  # are more up to date on the cache than on the provider
+  # (and thus are not officially "In Sync").
+  def is_locally_cached?
+    if is_locally_synced?
+      true
+    else
+      syncstat = self.local_sync_status
+      (syncstat && syncstat.status == 'CacheNewer') ||
+      (!syncstat && File.exists?(self.cache_full_path))
+    end
   end
 
   ##############################################
@@ -395,12 +421,21 @@ class Userfile < ActiveRecord::Base
 
   # See the description in class DataProvider
   def provider_rename(newname)
-    self.data_provider.provider_rename(self,newname)
+    self.data_provider.provider_rename(self, newname)
   end
 
   # See the description in class DataProvider
   def provider_move_to_otherprovider(otherprovider)
-    self.data_provider.provider_move_to_otherprovider(self,otherprovider)
+    self.data_provider.provider_move_to_otherprovider(self, otherprovider)
+  end
+  
+  # Returns an Array of FileInfo objects containing
+  # information about the files associated with this Userfile
+  # entry.
+  #
+  # Information is requested from the actual data provider (not the cache).
+  def provider_collection_index
+    self.data_provider.provider_collection_index(self)
   end
 
   # See the description in class DataProvider
@@ -410,30 +445,35 @@ class Userfile < ActiveRecord::Base
 
   # See the description in class DataProvider
   def cache_readhandle(&block)
-    self.data_provider.cache_readhandle(self,&block)
+    self.data_provider.cache_readhandle(self, &block)
   end
 
   # See the description in class DataProvider
   def cache_writehandle(&block)
     self.save
-    self.data_provider.cache_writehandle(self,&block)
+    self.data_provider.cache_writehandle(self, &block)
     self.set_size!
   end
 
   # See the description in class DataProvider
   def cache_copy_from_local_file(filename)
     self.save
-    self.data_provider.cache_copy_from_local_file(self,filename)
+    self.data_provider.cache_copy_from_local_file(self, filename)
     self.set_size!
   end
 
   # See the description in class DataProvider
   def cache_copy_to_local_file(filename)
     self.save
-    self.data_provider.cache_copy_to_local_file(self,filename)
+    self.data_provider.cache_copy_to_local_file(self, filename)
+  end
+  
+  def cache_collection_index
+    self.data_provider.cache_collection_index(self)
   end
   
   def available?
     self.data_provider.online
   end
+  
 end

@@ -39,7 +39,7 @@ Then /^"([^\"]*)" should be on the file system$/ do |file|
 end
 
 Then /^I should see all files for collection "([^\"]*)"$/ do |collection|
-  FileCollection.find_by_name(collection).list_files.each do |file|
+  FileCollection.find_by_name(collection).list_files.map(&:name).each do |file|
     response.should contain(file.split('/')[-1])
   end
 end

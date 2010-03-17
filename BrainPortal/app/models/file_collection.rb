@@ -54,11 +54,8 @@ class FileCollection < Userfile
     #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
 
     self.flatten
-    Dir.chdir(self.cache_full_path.parent) do
-      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
-    end
-    self.num_files = self.list_files.size 
     self.sync_to_provider
+    self.set_size!
     self.save
 
     true
@@ -80,17 +77,15 @@ class FileCollection < Userfile
 
   #Calculates and sets the size attribute (active recount forced)
   def set_size!
-    local_sync = self.local_sync_status
-    unless local_sync && local_sync.status == "InSync"
-      return false
-    end
+    # local_sync = self.local_sync_status
+    # unless local_sync && local_sync.status == "InSync"
+    #   return false
+    # end
     
-    Dir.chdir(self.cache_full_path.parent) do
-      #self.size = IO.popen("du -s #{self.name}","r") { |fh| fh.readline.split[0].to_i}
-      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
-      self.num_files = self.list_files.size
-      self.save!
-    end
+    #self.size = IO.popen("du -s #{self.name}","r") { |fh| fh.readline.split[0].to_i}
+    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
+    self.num_files = self.list_files.size
+    self.save!
     
     true
   end
@@ -102,7 +97,7 @@ class FileCollection < Userfile
   #[*collision*] if the collections share common file names (the merge is aborted in this case).
   #[*failure*] if the merge failed for some other reason.
   def merge_collections(userfiles)    
-    full_names = userfiles.inject([]){|list, file| list += file.list_files}    
+    full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}    
     raw_names = full_names.map{ |file| file.sub(/^.+\//, "") }
     
     unless raw_names.uniq.size == raw_names.size
@@ -129,10 +124,7 @@ class FileCollection < Userfile
 
     end
     
-    Dir.chdir(self.cache_full_path.parent) do
-      self.size = self.list_files.inject(0){ |total, file_name|  total += File.size(file_name) }
-    end
-    self.num_files = self.list_files.size
+    self.set_size!
     
     if self.save!
       self.sync_to_provider
@@ -142,29 +134,30 @@ class FileCollection < Userfile
     end
   end
   
+  
   #Returns an array of the relative paths to all files contained in this collection.
-  def list_files    
-    return @file_list if @file_list
-    Dir.chdir(self.cache_full_path.parent) do
-      escaped_name = self.name.gsub("'", "'\\\\''")
-      IO.popen("find '#{escaped_name}' -type f -print") do |fh|
-        @file_list = fh.readlines.map(&:chomp)
-      end
-      @file_list.sort! { |a,b| a <=> b }
-    end
-  end
+  # def list_files    
+  #   return @file_list if @file_list
+  #   Dir.chdir(self.cache_full_path.parent) do
+  #     escaped_name = self.name.gsub("'", "'\\\\''")
+  #     IO.popen("find '#{escaped_name}' -type f -print") do |fh|
+  #       @file_list = fh.readlines.map(&:chomp)
+  #     end
+  #     @file_list.sort! { |a,b| a <=> b }
+  #   end
+  # end
   
   #Returns an array of the relative paths to all subdirectories contained in this collection.
-  def list_dirs
-    return @dir_list if @dir_list
-    Dir.chdir(self.cache_full_path.parent) do
-      escaped_name = self.name.gsub("'", "'\\\\''")
-      IO.popen("find '#{escaped_name}' -type d -print") do |fh|
-        @dir_list = fh.readlines.map(&:chomp)
-      end
-      @dir_list.sort! { |a,b| a <=> b }
-    end
-  end
+  # def list_dirs
+  #     return @dir_list if @dir_list
+  #     Dir.chdir(self.cache_full_path.parent) do
+  #       escaped_name = self.name.gsub("'", "'\\\\''")
+  #       IO.popen("find '#{escaped_name}' -type d -print") do |fh|
+  #         @dir_list = fh.readlines.map(&:chomp)
+  #       end
+  #       @dir_list.sort! { |a,b| a <=> b }
+  #     end
+  #   end
   
   #mathieu desrosiers
   #Returns an array of the relative paths to first level subdirectories contained in this collection.

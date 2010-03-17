@@ -206,6 +206,15 @@ class DataProvider < ActiveRecord::Base
 
   before_destroy          :validate_destroy
 
+  # A class to represent a file accessible through SFTP or available locally.
+  # Most of the attributes here are compatible with
+  #   Net::SFTP::Protocol::V01::Attributes
+  class FileInfo
+    attr_accessor :name, :symbolic_type, :size, :permissions,
+                  :uid, :gid, :owner, :group,
+                  :atime, :mtime, :ctime
+                  
+  end
 
   #################################################################
   # Provider query/access methods
@@ -251,6 +260,15 @@ class DataProvider < ActiveRecord::Base
   # you can call provider_list_all() without fear of an exception.
   # Most data providers are not browsable.
   def is_browsable?
+    false
+  end
+  
+  # This predicate returns whether syncing from the current provider
+  # is considered a negligeable operation. e.g. if the provider is local to the portal.
+  #
+  # For the base DataProvider class this returns false. For subclasses, this method
+  # should be redefined to return +true+ if the given DataProvider is fast-syncing.
+  def is_fast_syncing?
     false
   end
 
@@ -348,7 +366,7 @@ class DataProvider < ActiveRecord::Base
   # content to an exact copy of +localfile+, a locally accessible file.
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
-  def cache_copy_from_local_file(userfile,localpath)
+  def cache_copy_from_local_file(userfile, localpath)
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
@@ -404,6 +422,52 @@ class DataProvider < ActiveRecord::Base
       end
     end
     true
+  end
+  
+  # Provides information about the files associated with a Userfile entry
+  # that has been synced to the cache. Returns an Array of FileInfo objects
+  # representing the individual files. 
+  #
+  # Though this method will function on SingleFile objects, it is primarily meant
+  # to be used on FileCollections to gather information about the individual files
+  # in the collection.
+  def cache_collection_index(userfile)
+    cb_error "Error: userfile is not cached." unless userfile.is_locally_cached?
+    list = []
+    if userfile.is_a? FileCollection
+      glob_pattern = "/**/*"
+    end
+    Dir.chdir(cache_full_path(userfile).parent) do
+      Dir.glob(userfile.name + "#{glob_pattern}") do |file_name|
+        entry = File.stat(file_name)
+        type = entry.ftype.to_sym
+        next if type != :file
+        next if file_name == "." || file_name == ".."
+
+        fileinfo               = FileInfo.new
+        fileinfo.name          = file_name
+
+        attlist = [ 'symbolic_type', 'size', 'permissions',
+                    'uid',  'gid',  'owner', 'group',
+                    'atime', 'ctime', 'mtime' ]
+        attlist.each do |meth|
+          begin
+            val = entry.send(meth)
+            fileinfo.send("#{meth}=", val)
+          rescue => e
+            puts "Method #{meth} not supported: #{e.message}"
+          end
+          # if entry.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
+          #      val = entry.send(meth)
+          #      fileinfo.send("#{meth}=", val)
+          #    end
+        end
+
+        list << fileinfo
+      end
+    end
+    list.sort! { |a,b| a.name <=> b.name }
+    list
   end
 
   # Deletes the content of +userfile+ on the provider side.
@@ -544,6 +608,21 @@ class DataProvider < ActiveRecord::Base
     impl_provider_list_all
   end
 
+  # Provides information about the files associated with a Userfile entry
+  # whose actual contents are still only located on a DataProvider (i.e. it has not
+  # been synced to the local cache yet). 
+  # Though this method will function on SingleFile objects, it is primarily meant
+  # to be used on FileCollections to gather information about the individual files
+  # in the collection.
+  #
+  # *NOTE*: this method should gather its information WITHOUT doing a local sync.
+  #
+  # When called, the method accesses the provider's side
+  # and returns an array of FileInfo objects. 
+  def provider_collection_index(userfile)
+    cb_error "Error: provider #{self.name} is offline." unless self.online
+    impl_provider_collection_index(userfile)
+  end
 
   #################################################################
   # Utility Non-API
@@ -628,6 +707,10 @@ class DataProvider < ActiveRecord::Base
   end
 
   def impl_provider_list_all #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+  
+  def impl_provider_collection_index(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
 

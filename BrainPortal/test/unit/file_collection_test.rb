@@ -91,7 +91,7 @@ class FileCollectionTest < ActiveSupport::TestCase
 
     assert File.directory?(col1.cache_full_path)
     
-    col1.list_files.each do |file|
+    col1.list_files.map(&:name).each do |file|
       assert file !~ /^one\//
     end
     

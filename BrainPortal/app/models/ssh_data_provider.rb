@@ -24,15 +24,6 @@ class SshDataProvider < DataProvider
 
   Revision_info="$Id$"
 
-  # A class to represent a remote file accessible through SFTP.
-  # Most of the attributes here are compatible with
-  #   Net::SFTP::Protocol::V01::Attributes
-  class FileInfo
-    attr_accessor :name, :symbolic_type, :size, :permissions,
-                  :uid, :gid, :owner, :group,
-                  :atime, :mtime, :ctime
-  end
-
   def impl_is_alive? #:nodoc:
     ssh_opts = self.ssh_shared_options
     ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
@@ -127,9 +118,52 @@ class SshDataProvider < DataProvider
                     'uid',  'gid',  'owner', 'group',
                     'atime', 'ctime', 'mtime' ]
         attlist.each do |meth|
+          # if attributes.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
+          #   val = attributes.send(meth)
+          #   fileinfo.send("#{meth}=", val)
+          # end
           begin
-            val = attributes.method(meth).call
-            fileinfo.method("#{meth}=").call(val)
+            val = attributes.send(meth)
+            fileinfo.send("#{meth}=", val)
+          rescue => e
+            puts "Method #{meth} not supported: #{e.message}"
+          end
+        end
+
+        list << fileinfo
+      end
+    end
+    list.sort! { |a,b| a.name <=> b.name }
+    list
+  end
+  
+  def impl_provider_collection_index(userfile) #:nodoc:
+    list = []
+    if userfile.is_a? FileCollection
+      glob_pattern = "/**/*"
+    end
+    
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+      sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "#{glob_pattern}") do |entry|
+        attributes = entry.attributes
+        type = attributes.symbolic_type
+        next if type != :regular
+        next if entry.name == "." || entry.name == ".."
+
+        fileinfo               = FileInfo.new
+        fileinfo.name          = entry.name
+
+        attlist = [ 'symbolic_type', 'size', 'permissions',
+                    'uid',  'gid',  'owner', 'group',
+                    'atime', 'ctime', 'mtime' ]
+        attlist.each do |meth|
+          # if attributes.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
+          #   val = attributes.send(meth)
+          #   fileinfo.send("#{meth}=", val)
+          # end
+          begin
+            val = attributes.send(meth)
+            fileinfo.send("#{meth}=", val)
           rescue => e
             puts "Method #{meth} not supported: #{e.message}"
           end

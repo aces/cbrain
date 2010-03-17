@@ -31,7 +31,7 @@
    <% for file in @userfile.list_files %>
       <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
          <td><%= check_box_tag("filelist[]", file, false, :class  => "collection_checkbox") %></td>
-         <td><%= h(File.basename(file)) %></td>
+         <td><%= h(file.name.sub(/^#{@userfile.name}\//, "")) %></td>
       </tr>
    <% end %>
 </table>
