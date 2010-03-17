@@ -33,7 +33,7 @@ class FileCollection < Userfile
     if archive_file_name !~ /^\//
       archive_file_name = Dir.pwd + "/" + archive_file_name
     end
-
+    
     Dir.chdir(directory) do
       escaped_tmparchivefile = archive_file_name.gsub("'", "'\\\\''")
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
@@ -48,7 +48,6 @@ class FileCollection < Userfile
     end
 
     self.remove_unwanted_files
-    
     
     #Get size
     #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
@@ -98,9 +97,8 @@ class FileCollection < Userfile
   #[*failure*] if the merge failed for some other reason.
   def merge_collections(userfiles)    
     full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}    
-    raw_names = full_names.map{ |file| file.sub(/^.+\//, "") }
     
-    unless raw_names.uniq.size == raw_names.size
+    unless full_names.uniq.size == full_names.size
       return :collision
     end
     
@@ -115,23 +113,29 @@ class FileCollection < Userfile
     destname = self.cache_full_path.to_s
     Dir.mkdir(destname) unless File.directory?(destname)
     
+    total_size = 0
+    total_num_files  = 0
+    
     userfiles.each do |file|
 
       file.sync_to_cache
       filename = file.cache_full_path.to_s
-      
+      total_size += file.size
+      if file.is_a? FileCollection
+        total_num_files += file.num_files
+      else
+        total_num_files += 1
+      end
+    
       FileUtils.cp_r(filename,destname) # file or dir INTO dir
+    end
+    
+    self.size      = total_size
+    self.num_files = total_num_files
 
-    end
-    
-    self.set_size!
-    
-    if self.save!
-      self.sync_to_provider
-      :success
-    else
-      :failure
-    end
+    self.save!
+    self.sync_to_provider
+    :success
   end
   
   

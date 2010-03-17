@@ -361,9 +361,7 @@ class Userfile < ActiveRecord::Base
   # Returns whether this userfile's contents has been
   # synced to the local cache.
   def is_locally_synced?
-    if self.data_provider.is_fast_syncing?
-      self.sync_to_cache
-    end
+    self.sync_to_cache if self.data_provider.is_fast_syncing?
     syncstat = self.local_sync_status
     syncstat && syncstat.status == 'InSync'
   end
@@ -376,13 +374,10 @@ class Userfile < ActiveRecord::Base
   # are more up to date on the cache than on the provider
   # (and thus are not officially "In Sync").
   def is_locally_cached?
-    if is_locally_synced?
-      true
-    else
-      syncstat = self.local_sync_status
-      (syncstat && syncstat.status == 'CacheNewer') ||
-      (!syncstat && File.exists?(self.cache_full_path))
-    end
+    return true if is_locally_synced?
+    
+    syncstat = self.local_sync_status
+    syncstat && syncstat.status == 'CacheNewer'
   end
 
   ##############################################

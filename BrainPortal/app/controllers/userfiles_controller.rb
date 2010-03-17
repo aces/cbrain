@@ -577,12 +577,20 @@ class UserfilesController < ApplicationController
             )
 
         CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-          collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
-          Message.send_message(current_user,
-                              :message_type  => 'notice', 
-                              :header  => "Collections Merged", 
-                              :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
-                              )
+          result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
+          if result == :success
+            Message.send_message(current_user,
+                                :message_type  => 'notice', 
+                                :header  => "Collections Merged", 
+                                :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
+                                )
+          else
+            Message.send_message(current_user,
+                                :message_type  => 'error', 
+                                :header  => "Collection could not be merged.", 
+                                :variable_text  => "There was a collision among the file names."
+                                )
+          end
         end # spawn
 
         flash[:notice] = "Collection #{collection.name} is being created in background."
