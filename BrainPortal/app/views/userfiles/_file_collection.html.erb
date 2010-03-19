@@ -20,6 +20,8 @@
      <%= render :partial => 'file_collection_plain_file_list' %>
   <% end %> <!-- End if   -->
 
-  <%= submit_tag "Extract Files from Collection" %>
+  <% if @userfile.is_locally_synced? %>
+    <%= submit_tag "Extract Files from Collection" %>
+  <% end %>
 
 <% end %>  <!-- End if   -->

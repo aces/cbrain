@@ -10,28 +10,34 @@
  
 <table id= "plain_file_list" class="resource_list">
    <tr class="list-odd">
-     <th>
-       &nbsp;
-       <%= link_to_function '&#10004;' do |page|
-           page.select(".collection_checkbox").each do |check_box|
-             check_box.checked=true
+     <% if @userfile.is_locally_synced? %>
+       <th>
+         &nbsp;
+         <%= link_to_function '&#10004;' do |page|
+             page.select(".collection_checkbox").each do |check_box|
+               check_box.checked=true
+             end
            end
-         end
-       %>
-       &nbsp;
-       <%= link_to_function '<big>&times;</big>' do |page|
-           page.select(".collection_checkbox").each do |check_box|
-             check_box.checked=false
+         %>
+         &nbsp;
+         <%= link_to_function '<big>&times;</big>' do |page|
+             page.select(".collection_checkbox").each do |check_box|
+               check_box.checked=false
+             end
            end
-         end
-       %>
-     </th>
+         %>
+       </th>
+     <% end %>
      <th>File</th>
+     <th>Size</th>
    </tr>
    <% for file in @userfile.list_files %>
       <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
-         <td><%= check_box_tag("filelist[]", file, false, :class  => "collection_checkbox") %></td>
+         <% if @userfile.is_locally_synced? %>
+          <td><%= check_box_tag("filelist[]", file.name, false, :class  => "collection_checkbox") %></td>
+         <% end %>
          <td><%= h(file.name.sub(/^#{@userfile.name}\//, "")) %></td>
+         <td><%= h(pretty_size(file.size)) %></td>
       </tr>
    <% end %>
 </table>

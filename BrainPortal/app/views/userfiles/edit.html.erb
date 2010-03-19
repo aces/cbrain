@@ -107,7 +107,9 @@
       <p>This file is not currently synchronized.<BR>
     <% end %>
     Click <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
-    to start the synchronization process (this will allow you to view displayable content).</p>
+    to start the synchronization process.<br>
+    Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+    </p>
   <% end %>
   
   <% if @userfile.is_a?(FileCollection) %>

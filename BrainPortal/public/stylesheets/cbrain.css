@@ -1053,22 +1053,6 @@ table.resource_list td.checkbox {
     text-align: center;
 }
 
-.alone_per_line {
-    display: block;
-    clear: both;
-}
-
-.left{
-    text-align: left!important;
-}
-
-.left_align{
-    text-align: left;
-}
-
-.right_align {
-   text-align: right;
-}
 .userfiles {
     border: 0px;
 }
@@ -1870,4 +1854,29 @@ h1.warning {
     border-width: 1px;
     padding: 5px;
     background: #f8f8f8;    
+}
+
+/* ######################################################### */
+/* Miscellaneous formatting classes */
+/* ######################################################### */
+
+.no_wrap {
+  white-space:nowrap!important;
+}
+
+.alone_per_line {
+    display: block;
+    clear: both;
+}
+
+.left{
+    text-align: left!important;
+}
+
+.left_align{
+    text-align: left;
+}
+
+.right_align {
+   text-align: right;
 }
