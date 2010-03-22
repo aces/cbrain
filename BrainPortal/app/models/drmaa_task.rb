@@ -56,6 +56,7 @@ class DrmaaTask < ActiveResource::Base
     "release"   => "Queued",
     "suspend"   => "Suspended",
     "resume"    => "On CPU",
+    "terminate" => "Terminated"
   }
 
   # In order to optimize the set of state transitions

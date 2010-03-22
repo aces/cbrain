@@ -16,7 +16,7 @@ class DrmaaDiagnostics < DrmaaTask
   Revision_info="$Id$"
 
   def addlog(message,options={})
-    puts "DIAGNOSTIC: #{message}"
+    puts "DIAGNOSTICS: #{self.bname_tid} #{message}"
     super(message,options.dup.merge( :caller_level => 1 ))
   end
 
@@ -28,7 +28,7 @@ class DrmaaDiagnostics < DrmaaTask
     files_hash   = params[:files_hash] || {}
     file_ids     = files_hash.values
 
-    self.addlog "Starting diagnostics on #{file_ids.size} files"
+    self.addlog "Starting diagnostics setup on #{file_ids.size} files."
 
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
@@ -128,6 +128,8 @@ class DrmaaDiagnostics < DrmaaTask
     myuser  = User.find(user_id)
     mygroup = myuser.own_group
     report  = nil
+
+    self.addlog "Starting diagnostics postprocessing."
 
     if dp_id  # creating the report is optional
       report = SingleFile.new( :name             => "Diagnostics-" + self.bname_tid_dashed + ".txt",

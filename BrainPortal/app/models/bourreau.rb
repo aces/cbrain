@@ -207,25 +207,40 @@ class Bourreau < RemoteResource
 
     # Option 2: log to stdout or stderr
     if log_to =~ /stdout|stderr/i
-      blogger = Log4r::Logger['BourreauWorker'] || Log4r::Logger.new('BourreauWorker')
-      blogger.add(Log4r::Outputter.stdout) if log_to =~ /stdout/i
-      blogger.add(Log4r::Outputter.stderr) if log_to =~ /stderr/i
-      blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+      blogger = Log4r::Logger['BourreauWorker']
+      unless blogger
+        blogger = Log4r::Logger.new('BourreauWorker')
+        if log_to =~ /stdout/i
+          stdout_op = Log4r::Outputter.stdout
+          stdout_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
+          blogger.add(stdout_op)
+        end
+        if log_to =~ /stderr/i
+          stderr_op = Log4r::Outputter.stderr
+          stderr_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
+          blogger.add(stderr_op)
+        end
+        blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+      end
 
     # Option 3: combined log a file
     elsif log_to == 'combined'
-      blogger = Log4r::Logger['BourreauWorker'] || Log4r::Logger.new('BourreauWorker')
-      blogger.add(Log4r::RollingFileOutputter.new('bourreau_workers_outputter',
-                    :filename  => "#{RAILS_ROOT}/log/BourreauWorkers.combined..log",
-                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                    :maxsize   => 1000000, :trunc => 600000))
-      blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+      blogger = Log4r::Logger['BourreauWorker']
+      unless blogger
+        blogger = Log4r::Logger.new('BourreauWorker')
+        blogger.add(Log4r::RollingFileOutputter.new('bourreau_workers_outputter',
+                      :filename  => "#{RAILS_ROOT}/log/BourreauWorkers.combined..log",
+                      :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                      :maxsize   => 1000000, :trunc => 600000))
+        blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+      end
 
     # Option 4: use RAIL's own logger
     elsif log_to == 'bourreau'
       blogger = logger # Rails app logger
     end
 
+    # Return the logger object for the workers
     blogger
   end
 
