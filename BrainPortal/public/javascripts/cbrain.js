@@ -106,15 +106,31 @@ jQuery(
 
 
     jQuery(".ajax_onclick_element").live("click", function(event) {
-					   onclick_elem = this
+					   onclick_elem = this;
 					   replace_selector = jQuery(onclick_elem).attr("data-replace");
+					   inplace_replace = jQuery(onclick_elem).attr("data-inplace");
 					   if(!replace_selector) {
 					     replace_elem = jQuery(onclick_elem);
 					   }
 					   else {
 					     replace_elem=jQuery(replace_selector);
 					   };
-					   jQuery(replace_elem).load(jQuery(onclick_elem).attr("data-url"));
-					   jQuery(onclick_elem).unbind('click');
+					   jQuery.ajax({ type: 'GET',
+							 url: jQuery(onclick_elem).attr("data-url"),
+							 dataType: 'html',
+						         success: function(data){
+							   if(inplace_replace) {
+							     jQuery(replace_elem).replaceWith(data);
+							   }
+							   else {
+							     jQuery(replace_elem).html(data);
+							   }
+							   jQuery(onclick_elem).unbind('click');
+							 },
+							 data: {},
+							 async: true
+							 }
+						         );
+
 					 });
     });
