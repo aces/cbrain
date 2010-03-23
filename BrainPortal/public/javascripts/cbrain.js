@@ -101,18 +101,19 @@ jQuery(
     jQuery(".ajax_element").each(function (index,element){
 				    jQuery(element).load(jQuery(element).attr("data-url"));
 				  });
-    jQuery(".ajax_onclick_element").each(function(index,element) {
-					   replace_selector = jQuery(element).attr("data-replace");
+
+
+
+
+    jQuery(".ajax_onclick_element").live("click", function(event) {
+					   onclick_elem = this
+					   replace_selector = jQuery(onclick_elem).attr("data-replace");
 					   if(!replace_selector) {
-					     replace_elem = jQuery(element);
+					     replace_elem = jQuery(onclick_elem);
 					   }
 					   else {
 					     replace_elem=jQuery(replace_selector);
 					   };
-					   jQuery(element).click(function(event){
-			                     jQuery(replace_elem).load(jQuery(element).attr("data-url"));
-							     });
-
-
-				          });
-});
+					   jQuery(replace_elem).load(jQuery(onclick_elem).attr("data-url"));
+					 });
+    });
