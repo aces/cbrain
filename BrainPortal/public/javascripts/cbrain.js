@@ -115,5 +115,6 @@ jQuery(
 					     replace_elem=jQuery(replace_selector);
 					   };
 					   jQuery(replace_elem).load(jQuery(onclick_elem).attr("data-url"));
+					   jQuery(onclick_elem).unbind('click');
 					 });
     });
