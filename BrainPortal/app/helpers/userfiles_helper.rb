@@ -103,10 +103,15 @@ module UserfilesHelper
     if userfile.is_a? CivetCollection
        clasp_file  = userfile.list_files.find { |f| f.name =~ /clasp\.png$/ }
        verify_file = userfile.list_files.find { |f| f.name =~ /verify\.png$/}
-       content =  "<h3>Clasp</h3>"
-       content += image_tag url_for(:action  => :content, :collection_file  => clasp_file.name)
-       content += "<br><h3>Verify</h3>"
-       content += image_tag url_for(:action  => :content, :collection_file  => verify_file.name)
+       if clasp_file
+         content =  "<h3>Clasp</h3>"
+         content += image_tag url_for(:action  => :content, :collection_file  => clasp_file.name)
+       end
+       
+       if verify_file
+         content += "<br><h3>Verify</h3>"
+         content += image_tag url_for(:action  => :content, :collection_file  => verify_file.name)
+       end
     else
       file_name = userfile.name
       case file_name
@@ -114,13 +119,16 @@ module UserfilesHelper
         content = '<PRE>' + h(File.read(userfile.cache_full_path)) + '</PRE>'
       when /(\.jpe?g|\.gif|\.png)$/
         content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
-      else
-        before_content = ""
-        content = ""
-        after_content = ""
       end
     end
-    content = '<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>' + content + '</div>'
+    
+    if content.blank? 
+      before_content = ""
+      content = ""
+      after_content = ""
+    else
+      content = '<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>' + content + '</div>'
+    end
     
     before_content + content + after_content
   end
