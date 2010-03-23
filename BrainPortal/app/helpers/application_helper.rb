@@ -249,9 +249,13 @@ module ApplicationHelper
     concat("</span>")
   end
  
-
-
-
+  def string_if(condition, content)
+    if condition
+      content
+    else
+      ""
+    end
+  end
 
   ############################################################
   #                                              
