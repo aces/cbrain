@@ -390,15 +390,59 @@ module ApplicationHelper
     html_opts[:class] +=  " ajax_element"
     
     #This builds an html attribute string from the html_opts hash
-    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
 
     initial_content=capture(&block)+((render partial unless !partial) || "")
     
-    concat("<#{element} href=\"#{url}\" #{atts}>") 
+    concat("<#{element} data-url=\"#{url}\" #{atts}>") 
     concat(initial_content)
     concat("</#{element}>")
   end
+ 
+  ###############################################################
+  # Creates an html element which will have it's or another elements 
+  # content updated when it is clicked on
+  #  with a ajax call to the url specified in the options hash
+  #
+  # example:
+  #
+  # <% on_click_ajax_element( {:url =>"/data_providers", :element => "span"}, {:class => "left right center"})  do %>
+  #   loading...
+  # <% end %>
+  #
+  # This will ouput the following html
+  # <span data-url="/data_providers" class="left right center ajax_onclick_element" >
+  #   loading...
+  # </span>
+  # 
+  # and the body will be replaced with the content of the html at /data_providers
+  # when you click on the span
+  # 
+  # replace can be used to specify a selector (jQuery) to find the element(s) 
+  # replace
+  ###############################################################
+  
+  def on_click_ajax_replace(options,html_opts={},&block)
+    url = options[:url]
+    partial = options[:partial]
+    element = options[:element] || "div"
+    replace = options[:replace] 
+    html_opts[:class] ||= ""
+    html_opts[:class] +=  " ajax_onclick_element"
+    if replace
+      html_opts["data-replace"] = replace
+    end
+    #This builds an html attribute string from the html_opts hash
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
 
+    
+    initial_content=capture(&block)+((render partial unless !partial) || "")
+    
+    concat("<#{element} data-url=\"#{url}\" #{atts}>") 
+    concat(initial_content)
+    concat("</#{element}>")
+    
+  end
   def button_with_dropdown_menu(options={},html_opts={}, &block)
     partial = options[:partial]
     title = options[:title]
@@ -407,7 +451,7 @@ module ApplicationHelper
     
     content=capture(&block)+((render partial unless !partial) || "") 
 
-    atts = html_opts.inject(""){|result, att| "#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
     concat("<div class=\"button_with_drop_down\">")
     concat("<a #{atts}>#{title}</a>")
     concat("<div class=\"drop_down_menu\">")
@@ -416,5 +460,8 @@ module ApplicationHelper
     concat("</div>")
            
   end
+
+
+ 
 
 end

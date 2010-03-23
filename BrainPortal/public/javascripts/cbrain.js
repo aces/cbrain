@@ -99,7 +99,20 @@ jQuery(
 
 
     jQuery(".ajax_element").each(function (index,element){
-				    jQuery(element).load(jQuery(element).attr("href"));
+				    jQuery(element).load(jQuery(element).attr("data-url"));
 				  });
+    jQuery(".ajax_onclick_element").each(function(index,element) {
+					   replace_selector = jQuery(element).attr("data-replace");
+					   if(!replace_selector) {
+					     replace_elem = jQuery(element);
+					   }
+					   else {
+					     replace_elem=jQuery(replace_selector);
+					   };
+					   jQuery(element).click(function(event){
+			                     jQuery(replace_elem).load(jQuery(element).attr("data-url"));
+							     });
 
+
+				          });
 });
