@@ -440,7 +440,7 @@ class DataProvider < ActiveRecord::Base
     end
     Dir.chdir(cache_full_path(userfile).parent) do
       Dir.glob(userfile.name + "#{glob_pattern}") do |file_name|
-        entry = File.stat(file_name)
+        entry = File.lstat(file_name)
         type = entry.ftype.to_sym
         next if type != :file
         next if file_name == "." || file_name == ".."
