@@ -39,11 +39,19 @@ class VaultSmartDataProvider < DataProvider
   def is_alive? #:nodoc:
     @provider.is_alive?
   end
-  
+
   def is_alive! #:nodoc:
     @provider.is_alive!
   end
-  
+
+  def is_browsable? #:nodoc:
+    @provider.is_browsable?
+  end
+
+  def is_fast_syncing? #:nodoc:
+    @provider.is_fast_syncing?
+  end
+
   def sync_to_cache(userfile) #:nodoc:
     @provider.sync_to_cache(userfile)
   end

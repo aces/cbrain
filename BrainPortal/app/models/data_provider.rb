@@ -97,6 +97,7 @@ require 'digest/md5'
 # * is_alive?
 # * is_alive!
 # * is_browsable?
+# * is_fast_syncing?
 #
 # == Access restriction methods:
 #
