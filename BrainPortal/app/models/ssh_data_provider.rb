@@ -41,7 +41,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_sync_to_cache(userfile) #:nodoc:
-    localfull   = cache_full_pathname(userfile)
+    localfull   = cache_full_path(userfile)
     remotefull  = remote_full_path(userfile)
     sourceslash = ""
 
@@ -59,7 +59,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
-    localfull   = cache_full_pathname(userfile)
+    localfull   = cache_full_path(userfile)
     remotefull  = remote_full_path(userfile)
     cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
@@ -206,9 +206,9 @@ class SshDataProvider < DataProvider
   # command running in the background (which will be started if
   # necessary).
   def ssh_shared_options
-    master = SshTunnel.find_or_create(remote_user,remote_host,remote_port)
-    master.start("DataProvider_#{self.name}") # does nothing is it's already started
-    master.ssh_shared_options("auto") # ControlMaster=auto
+    @master ||= SshTunnel.find_or_create(remote_user,remote_host,remote_port)
+    @master.start("DataProvider_#{self.name}") # does nothing is it's already started
+    @master.ssh_shared_options("auto") # ControlMaster=auto
   end
   
 end

@@ -22,6 +22,7 @@ class BourreauSystemChecks < Checker
 
     needed_Constants = %w(
                        DataProviderCache_dir
+                       DataProviderCache_RevNeeded
                        DRMAA_sharedir Quarantine_dir CIVET_dir 
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
@@ -41,16 +42,16 @@ class BourreauSystemChecks < Checker
     
     # Run-time checks
     unless File.directory?(CBRAIN::DataProviderCache_dir)
-      raise "CBRAIN configuration error: data provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
+      raise "CBRAIN configuration error: Data Provider cache directory '#{CBRAIN::DataProviderCache_dir}' does not exist!"
     end
     unless File.directory?(CBRAIN::DRMAA_sharedir)
       raise "CBRAIN configuration error: grid work directory '#{CBRAIN::DRMAA_sharedir}' does not exist!"
     end
     unless File.directory?(CBRAIN::Quarantine_dir)
-      raise "CBRAIN configuration error: quarantine dir '#{CBRAIN::Quarantine_dir}' does not exist!"
+      raise "CBRAIN configuration error: Quarantine directory '#{CBRAIN::Quarantine_dir}' does not exist!"
     end
     unless File.directory?(CBRAIN::CIVET_dir)
-      raise "CBRAIN configuration error: civet code dir '#{CBRAIN::CIVET_dir}' does not exist!"
+      raise "CBRAIN configuration error: CIVET code directory '#{CBRAIN::CIVET_dir}' does not exist!"
     end
 
     if CBRAIN::BOURREAU_CLUSTER_NAME.empty? || CBRAIN::BOURREAU_CLUSTER_NAME == "nameit"
@@ -128,7 +129,7 @@ class BourreauSystemChecks < Checker
     dp_current_rev = DataProvider.revision_info.svn_id_rev
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
       dp_current_rev && dp_current_rev =~ /^\d+/
-    if dp_init_rev.to_i <= 659 # Before Pierre's upgrade
+    if dp_init_rev.to_i <= CBRAIN::DataProviderCache_RevNeeded # Before Pierre's upgrade
       puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
       puts "C> \t- WARNING: This could take a long time so you should not"
       puts "C> \t  start another instance of this Rails application."
@@ -147,24 +148,6 @@ class BourreauSystemChecks < Checker
       puts "C> \t- Re-recording DataProvider revision number in cache."
       DataProvider.cache_revision_of_last_init(:force)
       puts "C> \t- Done."
-    end
-  end
-
-  def self.a040_ensure_all_dp_caches_have_proper_subdirs
-    
-    #-----------------------------------------------------------------------------
-    puts "C> Making sure all providers have proper cache subdirectories..."
-    #-----------------------------------------------------------------------------
-
-    # Creating cache dir for Data Providers
-    DataProvider.all.each do |p|
-      begin
-        p.mkdir_cache_providerdir
-      rescue => e
-        unless e.to_s.match(/No caching in this provider/i)
-          raise e
-        end
-      end
     end
   end
 

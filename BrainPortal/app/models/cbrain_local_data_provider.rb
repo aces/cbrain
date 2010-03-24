@@ -36,7 +36,7 @@ class CbrainLocalDataProvider < LocalDataProvider
     SyncStatus.ready_to_modify_cache(userfile) do
       basename  = userfile.name
       username  = userfile.user.login
-      twolevels = cache_subdirs(basename)
+      twolevels = cache_subdirs_from_name(basename)
       userdir = Pathname.new(remote_dir) + username
       level1  = userdir                  + twolevels[0]
       level2  = level1                   + twolevels[1]
@@ -50,7 +50,7 @@ class CbrainLocalDataProvider < LocalDataProvider
   def cache_full_path(userfile) #:nodoc:
     basename  = userfile.name
     username  = userfile.user.login
-    twolevels = cache_subdirs(basename)
+    twolevels = cache_subdirs_from_name(basename)
     Pathname.new(remote_dir) + username + twolevels[0] + twolevels[1] + basename
   end
 
@@ -63,12 +63,13 @@ class CbrainLocalDataProvider < LocalDataProvider
   def impl_provider_erase(userfile)  #:nodoc:
     basename  = userfile.name
     username  = userfile.user.login
-    twolevels = cache_subdirs(basename)
+    twolevels = cache_subdirs_from_name(basename)
     FileUtils.remove_entry(cache_full_path(userfile).to_s, true)
     begin
       Dir.rmdir(Pathname.new(remote_dir) + username + twolevels[0] + twolevels[1])
       Dir.rmdir(Pathname.new(remote_dir) + username + twolevels[0])
-    rescue
+    rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
+      # It's OK if any of the rmdir fails, and we simply ignore that.
     end
     true
   end
@@ -77,8 +78,8 @@ class CbrainLocalDataProvider < LocalDataProvider
     oldname   = userfile.name
     username  = userfile.user.login
     oldpath   = userfile.cache_full_path
-    old2levs  = cache_subdirs(oldname)
-    new2levs  = cache_subdirs(newname)
+    old2levs  = cache_subdirs_from_name(oldname)
+    new2levs  = cache_subdirs_from_name(newname)
     newlev1 = Pathname.new(remote_dir) + username + new2levs[0]
     newlev2 = newlev1 + new2levs[1]
     newpath = newlev2 + newname.to_s
@@ -95,6 +96,7 @@ class CbrainLocalDataProvider < LocalDataProvider
     rescue
     end
     return false unless FileUtils.move(oldpath,newpath)
+    #impl_provider_erase(userfile) # just to erase old subdirs paths
     userfile.name = newname
     true
   end

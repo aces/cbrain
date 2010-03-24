@@ -518,8 +518,11 @@ class DataProvidersController < ApplicationController
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
     if check_role(:admin) || check_role(:site_manager)
-      typelist += %w{ CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
-                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider }
+      typelist += %w{ 
+                      EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
+                      CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
+                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
+                    }
     end
     typelist
   end

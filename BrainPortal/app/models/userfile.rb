@@ -424,6 +424,11 @@ class Userfile < ActiveRecord::Base
     self.data_provider.provider_move_to_otherprovider(self, otherprovider)
   end
   
+  # See the description in class DataProvider
+  def provider_copy_to_otherprovider(otherprovider,newname = nil)
+    self.data_provider.provider_copy_to_otherprovider(self,otherprovider,newname)
+  end
+
   # Returns an Array of FileInfo objects containing
   # information about the files associated with this Userfile
   # entry.
@@ -431,11 +436,6 @@ class Userfile < ActiveRecord::Base
   # Information is requested from the actual data provider (not the cache).
   def provider_collection_index
     self.data_provider.provider_collection_index(self)
-  end
-
-  # See the description in class DataProvider
-  def provider_copy_to_otherprovider(otherprovider,newname = nil)
-    self.data_provider.provider_copy_to_otherprovider(self,otherprovider,newname)
   end
 
   # See the description in class DataProvider
@@ -463,12 +463,19 @@ class Userfile < ActiveRecord::Base
     self.data_provider.cache_copy_to_local_file(self, filename)
   end
   
+  # Returns an Array of FileInfo objects containing
+  # information about the files associated with this Userfile
+  # entry.
+  #
+  # Information is requested from the cache (not the actual data provider).
   def cache_collection_index
     self.data_provider.cache_collection_index(self)
   end
   
+  # Returns true if the data provider for the content of
+  # this file is online.
   def available?
-    self.data_provider.online
+    self.data_provider.online?
   end
   
 end

@@ -49,7 +49,7 @@ class PortalSystemChecks < Checker
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
   
-    needed_Constants = %w( DataProviderCache_dir Site_URL )
+    needed_Constants = %w( DataProviderCache_dir Site_URL DataProviderCache_RevNeeded )
     
     # Constants
     needed_Constants.each do |c|
@@ -61,7 +61,7 @@ class PortalSystemChecks < Checker
     
     # Run-time checks
     unless File.directory?(CBRAIN::DataProviderCache_dir)
-      raise "CBRAIN configuration error: Data Provider cache dir '#{CBRAIN::DataProviderCache_dir}' does not exist!"
+      raise "CBRAIN configuration error: Data Provider cache directory '#{CBRAIN::DataProviderCache_dir}' does not exist!"
     end
   end
   
@@ -93,7 +93,7 @@ class PortalSystemChecks < Checker
     dp_current_rev = DataProvider.revision_info.svn_id_rev
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
       dp_current_rev && dp_current_rev =~ /^\d+/
-    if dp_init_rev.to_i <= 659 # Before Pierre's upgrade
+    if dp_init_rev.to_i <= CBRAIN::DataProviderCache_RevNeeded # Before Pierre's upgrade
       puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
       puts "C> \t- WARNING: This could take a long time so you should not"
       puts "C> \t  start another instance of this Rails application."
@@ -115,25 +115,6 @@ class PortalSystemChecks < Checker
     end
   end
 
-  def self.a060_check_data_provider_cache_subdirs
-    #-----------------------------------------------------------------------------
-    puts "C> Ensuring that all Data Providers have proper cache subdirectories..."
-    #-----------------------------------------------------------------------------
-    
-    # Creating cache dir for Data Providers
-    DataProvider.all.each do |p|
-      begin
-        p.mkdir_cache_providerdir
-        puts "C> \t- Data Provider '#{p.name}': OK."
-      rescue => e
-        unless e.to_s.match(/No caching in this provider/i)
-          raise e
-        end
-        puts "C> \t- Data Provider '#{p.name}': no need."
-      end
-    end
-  end
-  
   def self.a070_start_bourreau_ssh_tunnels
     #-----------------------------------------------------------------------------
     puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."

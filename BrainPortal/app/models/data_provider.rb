@@ -217,6 +217,8 @@ class DataProvider < ActiveRecord::Base
                   
   end
 
+
+
   #################################################################
   # Provider query/access methods
   #################################################################
@@ -272,6 +274,8 @@ class DataProvider < ActiveRecord::Base
   def is_fast_syncing?
     false
   end
+
+
 
   #################################################################
   # Data API methods (work on userfiles)
@@ -371,11 +375,12 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
-    cache_erase(userfile)
-    cache_prepare(userfile)
     dest = cache_full_path(userfile)
+    cache_erase(userfile) if localpath.to_s != dest.to_s
+    cache_prepare(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
-      FileUtils.cp_r(localpath,dest)
+      FileUtils.cp_r(localpath.to_s,dest.to_s) if localpath.to_s != dest.to_s
+      true
     end
     sync_to_provider(userfile)
   end
@@ -388,9 +393,11 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     sync_to_cache(userfile)
-    FileUtils.remove_entry(localpath.to_s, true)
     source = cache_full_path(userfile)
-    FileUtils.cp_r(source,localpath)
+    if source.to_s != localpath.to_s
+      FileUtils.remove_entry(localpath.to_s, true)
+      FileUtils.cp_r(source.to_s,localpath.to_s)
+    end
     true
   end
 
@@ -417,7 +424,7 @@ class DataProvider < ActiveRecord::Base
         # 4- Remove the top level of the cache, "username", if possible
         level0 = level1.parent
         Dir.rmdir(level0)
-      rescue => e
+      rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
         # Nothing to do if we fail, as we are just trying to clean
         # up the cache structure from bottom to top
       end
@@ -625,6 +632,8 @@ class DataProvider < ActiveRecord::Base
     impl_provider_collection_index(userfile)
   end
 
+
+
   #################################################################
   # Utility Non-API
   #################################################################
@@ -642,34 +651,15 @@ class DataProvider < ActiveRecord::Base
     providers[0]
   end
 
-  # This method creates the provider's top-level cache subdirectory.
-  # It is not part of the 'user'-level API for Data Providers;
-  # it's basically used by management layers and initialization code.
-  # It only needs to be called once in the entire lifetime of the
-  # provider, usually in before_save.
-  def mkdir_cache_providerdir
-    providerdir = cache_providerdir
-    Dir.mkdir(providerdir) unless File.directory?(providerdir)
-  end
-
   def site
     @site ||= self.user.site
   end
 
 
+
   #################################################################
   # ActiveRecord callbacks
   #################################################################
-
-  # This creates the PROVIDER's cache directory
-  def before_save #:nodoc:
-    mkdir_cache_providerdir
-  end
-
-  # This destroys the PROVIDER's cache directory
-  def after_destroy #:nodoc:
-    FileUtils.remove_dir(cache_providerdir, true)  # recursive
-  end
 
   # Ensure that the system will be in a valid state if this data provider is destroyed.
   def validate_destroy
@@ -848,12 +838,6 @@ class DataProvider < ActiveRecord::Base
     Pathname.new(CBRAIN::DataProviderCache_dir)
   end
 
-  # Root directory for DataProvider's cache dir:
-  #     "/CbrainCacheDir/ProviderName"
-  def cache_providerdir #:nodoc:
-    Pathname.new(CBRAIN::DataProviderCache_dir) + self.name
-  end
-
   # Returns an array of two subdirectory levels where a file
   # is cached. These are two strings of two digits each. For
   # instance, for +hello+, the method returns [ "32", "98" ].
@@ -864,7 +848,9 @@ class DataProvider < ActiveRecord::Base
   # Note that unlike the other methods in the cache management
   # layer, this method only takes a basename, not a userfile,
   # in argument.
-  def cache_subdirs(basename)
+  #
+  # This method is mostly obsolete.
+  def cache_subdirs_from_name(basename)
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if basename.is_a?(Userfile)
     s=0    # sum of bytes
     e=0    # xor of bytes
@@ -872,45 +858,74 @@ class DataProvider < ActiveRecord::Base
     [ sprintf("%2.2d",s % 100), sprintf("%2.2d",e % 100) ]
   end
 
+  # Returns a relative directory path with three components
+  # based on the +number+; the path will be in format
+  #     "ab/cd/ef"
+  # where +ab+, +cd+ et +ef+ components are two digits
+  # long extracted directly from +number+. Examples:
+  #
+  #    Number      Path
+  #    ----------- --------
+  #    0           00/00/00
+  #    5           00/00/05
+  #    100         00/01/00
+  #    2345        00/23/45
+  #    462292      46/22/92
+  #    1462292    146/22/92
+  #
+  # The path is returned as an array of string
+  # components, as in
+  #
+  #    [ "146", "22","92" ]
+  def cache_subdirs_from_id(number)
+    cb_error "Did not get a proper numeric ID? Got: '#{number.inspect}'." unless number.is_a?(Integer)
+    sid = "000000" + number.to_s
+    unless sid =~ /^0*(\d*\d\d)(\d\d)(\d\d)$/
+      cb_error "Data Provider caching system error: can't create subpath for '#{number}'."
+    end
+    lower  = Regexp.last_match[1] # 123456 -> 12
+    middle = Regexp.last_match[2] # 123456 -> 34
+    upper  = Regexp.last_match[3] # 123456 -> 56
+    [ lower, middle, upper ]
+  end
+
   # Make, if needed, the three subdirectory levels for a cached file:
-  #     mkdir "/CbrainCacheDir/ProviderName/username"
-  #     mkdir "/CbrainCacheDir/ProviderName/username/34"
-  #     mkdir "/CbrainCacheDir/ProviderName/username/34/45"
+  #     mkdir "/CbrainCacheDir/34"
+  #     mkdir "/CbrainCacheDir/34/45"
+  #     mkdir "/CbrainCacheDir/34/45/77"
   def mkdir_cache_subdirs(userfile) #:nodoc:
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
-    basename = userfile.name
-    username = userfile.user.login
-    twolevels = cache_subdirs(basename)
-    level0 = Pathname.new(cache_providerdir) + username
+    uid = userfile.id
+    twolevels = cache_subdirs_from_id(uid)
+    level0 = self.class.cache_rootdir
     level1 = level0                          + twolevels[0]
     level2 = level1                          + twolevels[1]
-    mkdir_cache_providerdir
-    Dir.mkdir(level0) unless File.directory?(level0)
+    level3 = level2                          + twolevels[2]
     Dir.mkdir(level1) unless File.directory?(level1)
     Dir.mkdir(level2) unless File.directory?(level2)
+    Dir.mkdir(level3) unless File.directory?(level3)
     true
   end
 
   # Returns the relative path of the three subdirectory levels
   # where a file is cached:
-  #     "username/34/45"
-  def cache_subdir_path(userfile) #:nodoc:
+  #     "34/45/77"
+  def cache_subdirs_path(userfile) #:nodoc:
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
-    basename = userfile.name
-    username = userfile.user.login
-    dirs = cache_subdirs(basename)
-    Pathname.new(username) + dirs[0] + dirs[1]
+    uid  = userfile.id
+    dirs = cache_subdirs_from_id(uid)
+    Pathname.new(dirs[0]) + dirs[1] + dirs[2]
   end
 
-  # Returns the full path of the three subdirectory levels:
-  #     "/CbrainCacheDir/ProviderName/username/34/45"
+  # Returns the full path of the two subdirectory levels:
+  #     "/CbrainCacheDir/34/45/77"
   def cache_full_dirname(userfile) #:nodoc:
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
-    cache_providerdir + cache_subdir_path(userfile)
+    self.class.cache_rootdir + cache_subdirs_path(userfile)
   end
 
   # Returns the full path of the cached file:
-  #     "/CbrainCacheDir/ProviderName/username/34/45/basename"
+  #     "/CbrainCacheDir/34/45/77/basename"
   def cache_full_pathname(userfile) #:nodoc:
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     basename = userfile.name

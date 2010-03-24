@@ -32,68 +32,55 @@ class LocalDataProvider < DataProvider
   end
 
   def impl_is_alive? #:nodoc:
-     return true if File.directory?(remote_dir)
-     false
-   end
+    return true if File.directory?(remote_dir)
+    false
+  end
 
-   def impl_sync_to_cache(userfile) #:nodoc:
-     true
-   end
+  def impl_sync_to_cache(userfile) #:nodoc:
+    true
+  end
 
-   def impl_sync_to_provider(userfile) #:nodoc:
-     true
-   end
-   
-   def impl_provider_list_all #:nodoc:
-     cb_error "This data provider cannot be browsed."
-   end
-   
-   def impl_provider_collection_index(userfile) #:nodoc:
-     self.cache_collection_index(userfile)
-   end
+  def impl_sync_to_provider(userfile) #:nodoc:
+    true
+  end
 
-   def before_save #:nodoc:
-     true
-   end
+  def impl_provider_list_all #:nodoc:
+    cb_error "This data provider cannot be browsed."
+  end
 
-   def after_destroy #:nodoc:
-     true
-   end
-   
-   protected
+  def impl_provider_collection_index(userfile) #:nodoc:
+    self.cache_collection_index(userfile)
+  end
 
-   # Root directory for DataProvider's cache dir:
-   #     "/CbrainCacheDir/ProviderName"
-   def cache_providerdir #:nodoc:
-     cb_error "No caching in this provider!"
-   end
+  protected
 
-   # Make, if needed, the three subdirectory levels for a cached file:
-   #     mkdir "/CbrainCacheDir/ProviderName/username"
-   #     mkdir "/CbrainCacheDir/ProviderName/username/34"
-   #     mkdir "/CbrainCacheDir/ProviderName/username/34/45"
-   def mkdir_cache_subdirs(userfile) #:nodoc:
-     cb_error "No caching in this provider!"
-   end
+  # This method intercepts any attempts to use the protected
+  # method used by the caching system. Typically, this would
+  # be the result of a bad subclass implementation.
+  def mkdir_cache_subdirs(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
+  end
 
-   # Returns the relative path of the three subdirectory levels:
-   #     "username/34/45"
-   def cache_subdir_path(userfile) #:nodoc:
-     cb_error "No caching in this provider!"
-   end
+  # This method intercepts any attempts to use the protected
+  # method used by the caching system. Typically, this would
+  # be the result of a bad subclass implementation.
+  def cache_subdirs_path(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
+  end
 
-   # Returns the full path of the three subdirectory levels:
-   #     "/CbrainCacheDir/ProviderName/username/34/45"
-   def cache_full_dirname(userfile) #:nodoc:
-     cb_error "No caching in this provider!"
-   end
+  # This method intercepts any attempts to use the protected
+  # method used by the caching system. Typically, this would
+  # be the result of a bad subclass implementation.
+  def cache_full_dirname(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
+  end
 
-   # Returns the full path of the cached file:
-   #     "/CbrainCacheDir/ProviderName/username/34/45/basename"
-   def cache_full_pathname(userfile) #:nodoc:
-     cb_error "No caching in this provider!"
-   end
-   
+  # This method intercepts any attempts to use the protected
+  # method used by the caching system. Typically, this would
+  # be the result of a bad subclass implementation.
+  def cache_full_pathname(userfile) #:nodoc:
+    cb_error "No caching in this provider!"
+  end
 
 end
 

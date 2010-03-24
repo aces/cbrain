@@ -30,7 +30,7 @@ class CbrainSshDataProvider < SshDataProvider
   def impl_sync_to_provider(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login
-    twolevels = cache_subdirs(basename)
+    twolevels = cache_subdirs_from_name(basename)
     userdir = Pathname.new(remote_dir) + username
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
@@ -42,7 +42,7 @@ class CbrainSshDataProvider < SshDataProvider
   def impl_provider_erase(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login
-    twolevels = cache_subdirs(basename)
+    twolevels = cache_subdirs_from_name(basename)
     userdir = Pathname.new(remote_dir) + username
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
@@ -56,10 +56,10 @@ class CbrainSshDataProvider < SshDataProvider
     oldname   = userfile.name
     username  = userfile.user.login
 
-    old2levs  = cache_subdirs(oldname)
+    old2levs  = cache_subdirs_from_name(oldname)
     oldpath   = Pathname.new(remote_dir) + username + old2levs[0] + old2levs[1] + oldname
 
-    new2levs  = cache_subdirs(newname)
+    new2levs  = cache_subdirs_from_name(newname)
     newlev1   = Pathname.new(remote_dir) + username + new2levs[0]
     newlev2   = newlev1 + new2levs[1]
     newpath   = newlev2 + newname
@@ -99,8 +99,10 @@ class CbrainSshDataProvider < SshDataProvider
   # superclass SshDataProvider.
   def remote_full_path(userfile) #:nodoc:
     basename = userfile.name
-    Pathname.new(remote_dir) + cache_subdir_path(userfile) + basename
+    owner    = userfile.user.login
+    subdirs  = cache_subdirs_from_name(basename)
+    Pathname.new(remote_dir) + owner + subdirs[0] + subdirs[1] + basename
   end
-  
+
 end
 
