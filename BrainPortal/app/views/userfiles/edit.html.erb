@@ -84,6 +84,30 @@
       <td></td>
     </tr>
 
+    <% if current_user.has_role? :admin %>
+    <tr>
+      <th class="right_align">Data Provider:</th>
+      <td><%= link_to @userfile.data_provider.name, edit_data_provider_path(@userfile.data_provider) %>
+      ( <%= h(@userfile.data_provider.class.to_s) %> )
+      </td>
+      <td>
+          <% @userfile.sync_status.each do |syncstat| %>
+            <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+          <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th class="right_align">Local Data Provider (cache) path:</th>
+      <td colpath="2"><%= h(@userfile.cache_full_path) %></td>
+    </tr>
+      <% if @userfile.data_provider.respond_to?(:remote_full_path) %>
+        <tr>
+          <th class="right_align">Remote SSH Data Provider path:</th>
+          <td COLSPAN="2"><%= h(@userfile.data_provider.remote_full_path(@userfile)) %></td>
+        </tr>
+      <% end %>
+    <% end %>
+
   </table>
   
   <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
