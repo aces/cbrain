@@ -45,9 +45,8 @@ class EnCbrainSshDataProvider < SshDataProvider
     level1  = userdir                  + threelevels[0]
     level2  = level1                   + threelevels[1]
     level3  = level2                   + threelevels[2]
-    full    = level3                   + basename  # this should be === remote_full_path
     ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c '( rm -rf #{full} ; rmdir #{level3} #{level2} #{level1} ) >/dev/null 2>&1'\"")
+    bash_this("ssh -x -n #{ssh_opts} \"bash -c '( rm -rf #{level3} ; rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
     true
   end
 

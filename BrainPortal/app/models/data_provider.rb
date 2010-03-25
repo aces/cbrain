@@ -414,10 +414,10 @@ class DataProvider < ActiveRecord::Base
         # it must raise an exception when there is no caching in the provider!
         fullpath = cache_full_pathname(userfile)
         # 1- Remove the basename itself (it's a file or a subdir)
-        FileUtils.remove_entry(fullpath, true) rescue true
+        #FileUtils.remove_entry(fullpath, true) rescue true
         # 2- Remove the last level of the cache, "45", if possible
         level2 = fullpath.parent
-        Dir.rmdir(level2)
+        FileUtils.remove_entry(level2,true) rescue true
         # 3- Remove the medium level of the cache, "34", if possible
         level1 = level2.parent
         Dir.rmdir(level1)
@@ -482,7 +482,6 @@ class DataProvider < ActiveRecord::Base
   def provider_erase(userfile)
     cb_error "Error: provider is offline." unless self.online
     cb_error "Error: provider is read_only." if self.read_only
-    cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_erase(userfile)
     end
@@ -533,8 +532,13 @@ class DataProvider < ActiveRecord::Base
     # Erase on current provider
     userfile.data_provider = self  # temporarily set it back
     provider_erase(userfile)
+
+    # Record InSync on new provider.
     userfile.data_provider = otherprovider  # must return it to true value
-    userfile.sync_to_cache # dummy as it's already in cache, but adjusts the SyncStatus
+    userfile.save
+    SyncStatus.ready_to_modify_cache(userfile, 'InSync') do
+      true # dummy as it's already in cache, but adjusts the SyncStatus
+    end
 
     self
   end
@@ -703,35 +707,6 @@ class DataProvider < ActiveRecord::Base
   
   def impl_provider_collection_index(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
-  end
-
-
-
-  #################################################################
-  # Shell utility methods
-  #################################################################
-
-  # This utility method escapes properly any string such that
-  # it becomes a literal in a bash command; the string returned
-  # will include the surrounding single quotes.
-  #
-  #   shell_escape("Mike O'Connor")
-  #
-  # returns
-  #
-  #   'Mike O'\''Connor'
-  def shell_escape(s)
-    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
-  end
-
-  # This utility method runs a bash command, intercepts the output
-  # and returns it.
-  def bash_this(command)
-    #puts "BASH: #{command}"
-    fh = IO.popen(command,"r")
-    output = fh.read
-    fh.close
-    output
   end
 
 

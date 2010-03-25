@@ -49,6 +49,7 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     end
   end
 
+  # Returns the real path on the DP, since there is no caching here.
   def cache_full_path(userfile) #:nodoc:
     basename  = userfile.name
     threelevels = cache_subdirs_from_id(userfile.id)
@@ -62,12 +63,14 @@ class EnCbrainLocalDataProvider < LocalDataProvider
   end
 
   def impl_provider_erase(userfile)  #:nodoc:
-    threelevels = cache_subdirs_from_id(userfile.id)
-    FileUtils.remove_entry(cache_full_path(userfile).to_s, true)
+    fullpath = cache_full_path(userfile) # actually real path on DP
+    parent1  = fullpath.parent
+    parent2  = parent1.parent
+    parent3  = parent2.parent
     begin
-      Dir.rmdir(Pathname.new(remote_dir) + threelevels[0] + threelevels[1] + threelevels[2])
-      Dir.rmdir(Pathname.new(remote_dir) + threelevels[0] + threelevels[1])
-      Dir.rmdir(Pathname.new(remote_dir) + threelevels[0])
+      FileUtils.remove_entry(parent1.to_s, true)
+      Dir.rmdir(parent2.to_s)
+      Dir.rmdir(parent3.to_s)
     rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
       # It's OK if any of the rmdir fails, and we simply ignore that.
     end

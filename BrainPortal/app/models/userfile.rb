@@ -51,7 +51,7 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
 
-  before_destroy          :provider_erase
+  before_destroy          :cache_erase, :provider_erase
 
   def site
     @site ||= self.user.site

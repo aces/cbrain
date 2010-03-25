@@ -211,5 +211,32 @@ class SshDataProvider < DataProvider
     @master.ssh_shared_options("auto") # ControlMaster=auto
   end
   
+  #################################################################
+  # Shell utility methods
+  #################################################################
+
+  # This utility method escapes properly any string such that
+  # it becomes a literal in a bash command; the string returned
+  # will include the surrounding single quotes.
+  #
+  #   shell_escape("Mike O'Connor")
+  #
+  # returns
+  #
+  #   'Mike O'\''Connor'
+  def shell_escape(s)
+    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
+  end
+
+  # This utility method runs a bash command, intercepts the output
+  # and returns it.
+  def bash_this(command)
+puts "BASH: #{command}"
+    fh = IO.popen(command,"r")
+    output = fh.read
+    fh.close
+    output
+  end
+
 end
 
