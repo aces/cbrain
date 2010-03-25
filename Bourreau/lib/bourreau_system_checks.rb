@@ -121,10 +121,10 @@ class BourreauSystemChecks < Checker
   end
 
   def self.a030_ensure_data_provider_caches_needs_wiping
-    
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
+
     dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
     dp_current_rev = DataProvider.revision_info.svn_id_rev
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
@@ -135,9 +135,13 @@ class BourreauSystemChecks < Checker
       puts "C> \t  start another instance of this Rails application."
       Dir.chdir(DataProvider.cache_rootdir) do
         Dir.foreach(".") do |entry|
-          next unless File.directory?(entry) && entry !~ /^\./
-          puts "C> \t\t- Removing old cache subdirectory '#{entry}' ..."
-          FileUtils.remove_entry(entry, true) rescue true
+          next unless File.directory?(entry) && entry !~ /^\./ # ignore ., .. and .*_being_deleted.*
+          newname = ".#{entry}_being_deleted.#{$$}"
+          renamed_ok = File.rename(entry,newname) rescue false
+          if renamed_ok
+            puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
+            system("/bin/rm -rf '#{newname}' </dev/null &")
+          end
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."

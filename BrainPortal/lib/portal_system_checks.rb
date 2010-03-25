@@ -99,9 +99,13 @@ class PortalSystemChecks < Checker
       puts "C> \t  start another instance of this Rails application."
       Dir.chdir(DataProvider.cache_rootdir) do
         Dir.foreach(".") do |entry|
-          next unless File.directory?(entry) && entry !~ /^\./
-          puts "C> \t\t- Removing old cache subdirectory '#{entry}' ..."
-          FileUtils.remove_entry(entry, true) rescue true
+          next unless File.directory?(entry) && entry !~ /^\./ # ignore ., .. and .*_being_deleted.*
+          newname = ".#{entry}_being_deleted.#{$$}"
+          renamed_ok = File.rename(entry,newname) rescue false
+          if renamed_ok
+            puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
+            system("/bin/rm -rf '#{newname}' </dev/null &")
+          end
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."
