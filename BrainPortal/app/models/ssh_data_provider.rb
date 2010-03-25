@@ -231,7 +231,7 @@ class SshDataProvider < DataProvider
   # This utility method runs a bash command, intercepts the output
   # and returns it.
   def bash_this(command)
-puts "BASH: #{command}"
+    #puts "BASH: #{command}"
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close

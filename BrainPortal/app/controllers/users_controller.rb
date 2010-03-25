@@ -152,7 +152,9 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
     end
-        
+
+    myportal = RemoteResource.current_resource
+    myportal.addlog("Admin user '#{current_user.login}' switching to user '#{@user.login}'")
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
 
