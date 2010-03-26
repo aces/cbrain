@@ -137,17 +137,29 @@ class SshDataProvider < DataProvider
     list
   end
   
-  def impl_provider_collection_index(userfile) #:nodoc:
+  def impl_provider_collection_index(userfile, directory = "**", allowed_types = :file) #:nodoc:
     list = []
+    
+    if allowed_types.is_a? Array
+      types = allowed_types.dup
+    else
+      types = [allowed_types]
+    end
+      
+    types.map!(&:to_sym)
+    types << :regular if types.delete(:file)
+    
     if userfile.is_a? FileCollection
-      glob_pattern = "/**/*"
+      glob_pattern = "/" + directory + "/*"
+      glob_pattern.gsub!(/\/+/, "/")
+      glob_pattern.gsub!(/\/\.\//, "/")
     end
     
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
       sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "#{glob_pattern}") do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
-        next if type != :regular
+        next unless types.include?(type)
         next if entry.name == "." || entry.name == ".."
 
         fileinfo               = FileInfo.new

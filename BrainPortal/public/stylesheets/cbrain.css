@@ -1880,3 +1880,7 @@ h1.warning {
 .right_align {
    text-align: right;
 }
+
+.small {
+  font-size: 0.8em;
+}

@@ -1,0 +1,16 @@
+<% if @userfile.is_locally_synced? %>
+    <td><%= string_if(file.file_type == :file, check_box_tag("filelist[]", file.name, false, :class  => "collection_checkbox")) %></td>
+<% end %>
+<td class="left">
+    <%= "&nbsp" * 6 * file.depth %>
+    <% if file.file_type == :directory %>
+      <%= image_tag "/images/folder_icon_solid.png" %>
+    <% else %>
+      <%= image_tag "/images/file_icon.png" %>
+    <% end %>
+    <%= h(Pathname.new(file.name).basename) %> 
+    <% if file.file_type == :directory %>
+      <span class="ajax_onclick_show_child small warning">Expand</span><span class="ajax_onclick_hide_child small warning" style="display:none">Hide</span>
+    <% end %>
+</td>
+<td><%= h(pretty_size(file.size)) %></td>

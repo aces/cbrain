@@ -108,7 +108,11 @@ class UserfilesController < ApplicationController
         @userfile.sync_to_cache
         send_file @userfile.cache_full_path.parent + params[:collection_file]
       else
-        render :partial  => 'file_collection'
+        if params[:collection_dir].blank?
+          render :partial  => 'file_collection'
+        else
+          render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:file, :directory])}
+        end
         return
       end
     else

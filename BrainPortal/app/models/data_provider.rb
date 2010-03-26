@@ -211,10 +211,24 @@ class DataProvider < ActiveRecord::Base
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
   class FileInfo
-    attr_accessor :name, :symbolic_type, :size, :permissions,
+    attr_accessor :name, :symbolic_type, :ftype, :size, :permissions,
                   :uid, :gid, :owner, :group,
                   :atime, :mtime, :ctime
-                  
+    def file_type
+      file_type = (self.symbolic_type || self.ftype).to_sym
+      file_type = :file if file_type == :regular
+      
+      file_type 
+    end 
+    
+    def depth
+      return @depth if @depth
+      cb_error "File doesn't have a name." if self.name.blank?
+      count = -1
+      Pathname.new(self.name).cleanpath.descend{ count += 1}
+      @depth = count
+      @depth
+    end             
   end
 
 
@@ -231,7 +245,7 @@ class DataProvider < ActiveRecord::Base
     #set time of death or set to offline is past 1 hour
     alive_flag = impl_is_alive?
 
-    if alive_flag == false
+    unless alive_flag
       self.time_of_death ||= Time.now
       if self.time_of_death < 2.minutes.ago
         self.time_of_death = Time.now
@@ -243,10 +257,10 @@ class DataProvider < ActiveRecord::Base
     end
 
     #reset time of death 
-    if alive_flag == true
-     self.time_of_death = nil 
-     self.save
-     return true
+    if alive_flag
+      self.time_of_death = nil 
+      self.save
+      return true
     end
 
     cb_error "Error: is_alive? is returning a non truth that is true" 
@@ -439,23 +453,34 @@ class DataProvider < ActiveRecord::Base
   # Though this method will function on SingleFile objects, it is primarily meant
   # to be used on FileCollections to gather information about the individual files
   # in the collection.
-  def cache_collection_index(userfile)
+  def cache_collection_index(userfile, directory = "**", allowed_types = :file)
     cb_error "Error: userfile is not cached." unless userfile.is_locally_cached?
     list = []
+    
+    if allowed_types.is_a? Array
+      types = allowed_types.dup
+    else
+      types = [allowed_types]
+    end
+    
+    types.map!(&:to_sym)
+    
     if userfile.is_a? FileCollection
-      glob_pattern = "/**/*"
+      glob_pattern = "/" + directory + "/*"
+      glob_pattern.gsub!(/\/+/, "/")
+      glob_pattern.gsub!(/\/\.\//, "/")
     end
     Dir.chdir(cache_full_path(userfile).parent) do
       Dir.glob(userfile.name + "#{glob_pattern}") do |file_name|
         entry = File.lstat(file_name)
         type = entry.ftype.to_sym
-        next if type != :file
+        next unless types.include?(type)
         next if file_name == "." || file_name == ".."
 
         fileinfo               = FileInfo.new
         fileinfo.name          = file_name
 
-        attlist = [ 'symbolic_type', 'size', 'permissions',
+        attlist = [ 'ftype', 'size', 'permissions',
                     'uid',  'gid',  'owner', 'group',
                     'atime', 'ctime', 'mtime' ]
         attlist.each do |meth|
@@ -631,9 +656,9 @@ class DataProvider < ActiveRecord::Base
   #
   # When called, the method accesses the provider's side
   # and returns an array of FileInfo objects. 
-  def provider_collection_index(userfile)
+  def provider_collection_index(userfile, *args)
     cb_error "Error: provider #{self.name} is offline." unless self.online
-    impl_provider_collection_index(userfile)
+    impl_provider_collection_index(userfile, *args)
   end
 
 
@@ -705,7 +730,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: method not yet implemented in subclass."
   end
   
-  def impl_provider_collection_index(userfile) #:nodoc:
+  def impl_provider_collection_index(userfile, *args) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
 

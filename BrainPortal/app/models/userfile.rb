@@ -320,12 +320,14 @@ class Userfile < ActiveRecord::Base
   #Returns the name of the Userfile in an array (only here to
   #maintain compatibility with the overridden method in
   #FileCollection).
-  def list_files
-    @file_list ||= if self.is_locally_cached?
-                     self.cache_collection_index
-                   else
-                     self.provider_collection_index
-                   end
+  def list_files(*args)
+    @file_list ||= {}
+   
+    @file_list[args.dup] ||= if self.is_locally_cached?
+                            self.cache_collection_index(*args)
+                         else
+                           self.provider_collection_index(*args)
+                         end
   end
   
   #Checks whether the size attribute(s) have been set.
@@ -434,8 +436,8 @@ class Userfile < ActiveRecord::Base
   # entry.
   #
   # Information is requested from the actual data provider (not the cache).
-  def provider_collection_index
-    self.data_provider.provider_collection_index(self)
+  def provider_collection_index(*args)
+    self.data_provider.provider_collection_index(self, *args)
   end
 
   # See the description in class DataProvider
@@ -468,8 +470,8 @@ class Userfile < ActiveRecord::Base
   # entry.
   #
   # Information is requested from the cache (not the actual data provider).
-  def cache_collection_index
-    self.data_provider.cache_collection_index(self)
+  def cache_collection_index(*args)
+    self.data_provider.cache_collection_index(self, *args)
   end
   
   # Returns true if the data provider for the content of

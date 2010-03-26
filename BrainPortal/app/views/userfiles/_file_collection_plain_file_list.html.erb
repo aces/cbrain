@@ -31,13 +31,6 @@
      <th>File</th>
      <th>Size</th>
    </tr>
-   <% for file in @userfile.list_files %>
-      <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
-         <% if @userfile.is_locally_synced? %>
-          <td><%= check_box_tag("filelist[]", file.name, false, :class  => "collection_checkbox") %></td>
-         <% end %>
-         <td><%= h(file.name.sub(/^#{@userfile.name}\//, "")) %></td>
-         <td><%= h(pretty_size(file.size)) %></td>
-      </tr>
-   <% end %>
+   <%= render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(".", [:file, :directory])} %>
+
 </table>

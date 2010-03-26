@@ -427,14 +427,19 @@ module ApplicationHelper
     partial = options[:partial]
     element = options[:element] || "div"
     replace = options[:replace] 
-    inplace = options[:inplace]
+    position = options[:position]
+    before  = options[:before]
     html_opts[:class] ||= ""
-    html_opts[:class] +=  " ajax_onclick_element"
+    html_opts[:class] +=  " ajax_onclick_show_element"
+    html_opts[:id] ||= "#{Time.now.to_f}"
     if replace
       html_opts["data-replace"] = replace
     end
-    if inplace
-      html_opts["data-inplace"] = true
+    if position
+      html_opts["data-position"] = position
+    end
+    if before
+      html_opts["data-before"] = before
     end
     #This builds an html attribute string from the html_opts hash
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 

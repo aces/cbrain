@@ -24,6 +24,11 @@
    
    <td class="left">
       <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if userfile.level > 0 -%>
+      <% if userfile.is_a? FileCollection %>
+        <%= image_tag "/images/folder_icon_solid.png" %>
+      <% else %>
+        <%= image_tag "/images/file_icon.png" %>
+      <% end %>
       <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
       <%= userfile.pretty_type %>      
       <% userfile.sync_status.each do |syncstat| %>
