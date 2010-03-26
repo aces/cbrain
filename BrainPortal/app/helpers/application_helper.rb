@@ -464,6 +464,27 @@ module ApplicationHelper
     concat("</div>")
            
   end
+  
+  ##################################################################
+  # Creates a submit button with the value specified in the helper
+  #
+  # ex: <%= submit_button({:value => "Move Files"})%>
+  #
+  #
+  # This generates: 
+  #
+  # <input type="submit" value="Move Files" class="button"/>
+  #
+  ###################################################################
+
+  def submit_button(options={},html_opts={})
+    value = options[:value] 
+    html_opts[:class] ||= ""
+    html_opts[:class] +=  " button"
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+
+    return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
+  end
 
 
  
