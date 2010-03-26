@@ -290,7 +290,7 @@ module ApplicationHelper
       if options[:class]
         @titles +="class='##{options[:class]}' "
       end
-      @tab_titles +="><a href='##{options[:name]}'>#{options[:name]}</a></li>"
+      @tab_titles +="><a href='##{options[:name].gsub(' ','_')}'>#{options[:name]}</a></li>"
       
 
       #########################################
@@ -298,7 +298,7 @@ module ApplicationHelper
       #                                       #
       #This can be either a partial or a block#
       #########################################
-      @tab_divs += "<div id=#{options[:name]}>\n" 
+      @tab_divs += "<div id=#{options[:name].gsub(' ','_')}>\n" 
       if options[:partial]
        @tab_divs += @render.call( :partial => options[:partial])
       end
