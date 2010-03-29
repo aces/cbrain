@@ -211,15 +211,9 @@ class DataProvider < ActiveRecord::Base
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
   class FileInfo
-    attr_accessor :name, :symbolic_type, :ftype, :size, :permissions,
+    attr_accessor :name, :symbolic_type, :size, :permissions,
                   :uid, :gid, :owner, :group,
                   :atime, :mtime, :ctime
-    def file_type
-      file_type = (self.symbolic_type || self.ftype).to_sym
-      file_type = :file if file_type == :regular
-      
-      file_type 
-    end 
     
     def depth
       return @depth if @depth
@@ -453,7 +447,7 @@ class DataProvider < ActiveRecord::Base
   # Though this method will function on SingleFile objects, it is primarily meant
   # to be used on FileCollections to gather information about the individual files
   # in the collection.
-  def cache_collection_index(userfile, directory = "**", allowed_types = :file)
+  def cache_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: userfile is not cached." unless userfile.is_locally_cached?
     list = []
     
@@ -464,29 +458,42 @@ class DataProvider < ActiveRecord::Base
     end
     
     types.map!(&:to_sym)
+    types << :file if types.delete(:regular)
     
-    if userfile.is_a? FileCollection
-      glob_pattern = "/" + directory + "/*"
-      glob_pattern.gsub!(/\/+/, "/")
-      glob_pattern.gsub!(/\/\.\//, "/")
-    end
     Dir.chdir(cache_full_path(userfile).parent) do
-      Dir.glob(userfile.name + "#{glob_pattern}") do |file_name|
+      if userfile.is_a? FileCollection
+        if directory == :all
+          entries = Dir.glob(userfile.name + "/**/*")
+        else
+          base_dir = "/" + directory + "/"
+          base_dir.gsub!(/\/+/, "/")
+          base_dir.gsub!(/\/\.\//, "/")
+          entries = Dir.entries(userfile.name + base_dir ).reject{ |e| e =~ /^\./ }.inject([]){ |result, e| result << userfile.name + base_dir + e }
+        end
+      else
+        entries = [userfile.name]
+      end 
+      entries.each do |file_name|
         entry = File.lstat(file_name)
         type = entry.ftype.to_sym
         next unless types.include?(type)
-        next if file_name == "." || file_name == ".."
+        #next if file_name == "." || file_name == ".."
 
         fileinfo               = FileInfo.new
         fileinfo.name          = file_name
 
-        attlist = [ 'ftype', 'size', 'permissions',
+        attlist = [ 'symbolic_type', 'size', 'permissions',
                     'uid',  'gid',  'owner', 'group',
                     'atime', 'ctime', 'mtime' ]
         attlist.each do |meth|
           begin
-            val = entry.send(meth)
-            fileinfo.send("#{meth}=", val)
+            if meth == 'symbolic_type'
+              fileinfo.symbolic_type = entry.ftype.to_sym
+              fileinfo.symbolic_type = :regular if fileinfo.symbolic_type == :file
+            else  
+              val = entry.send(meth)
+              fileinfo.send("#{meth}=", val)
+            end
           rescue => e
             puts "Method #{meth} not supported: #{e.message}"
           end

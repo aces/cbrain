@@ -137,7 +137,7 @@ class SshDataProvider < DataProvider
     list
   end
   
-  def impl_provider_collection_index(userfile, directory = "**", allowed_types = :file) #:nodoc:
+  def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     list = []
     
     if allowed_types.is_a? Array
@@ -147,24 +147,33 @@ class SshDataProvider < DataProvider
     end
       
     types.map!(&:to_sym)
-    types << :regular if types.delete(:file)
     
-    if userfile.is_a? FileCollection
-      glob_pattern = "/" + directory + "/*"
-      glob_pattern.gsub!(/\/+/, "/")
-      glob_pattern.gsub!(/\/\.\//, "/")
-    end
     
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
-      sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "#{glob_pattern}") do |entry|
+       if userfile.is_a? FileCollection
+         if directory == :all
+           entries = sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "/**/*")
+         else
+           base_dir = "/" + directory + "/"
+           base_dir.gsub!(/\/+/, "/")
+           base_dir.gsub!(/\/\.\//, "/")
+           entries = sftp.dir.entries(remote_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
+         end
+       else
+         entries = sftp.dir.entries(remote_full_path(userfile).parent.to_s).select{ |e| e.name == userfile.name}
+       end
+       entries.each do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
         next unless types.include?(type)
-        next if entry.name == "." || entry.name == ".."
+        #next if entry.name == "." || entry.name == ".."
 
         fileinfo               = FileInfo.new
-        fileinfo.name          = entry.name
-
+        if entry.name =~ /^#{userfile.name}/
+          fileinfo.name          = entry.name
+        else
+          fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
+        end 
         attlist = [ 'symbolic_type', 'size', 'permissions',
                     'uid',  'gid',  'owner', 'group',
                     'atime', 'ctime', 'mtime' ]

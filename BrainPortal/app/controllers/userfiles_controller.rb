@@ -111,7 +111,7 @@ class UserfilesController < ApplicationController
         if params[:collection_dir].blank?
           render :partial  => 'file_collection'
         else
-          render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:file, :directory])}
+          render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:regular, :directory])}
         end
         return
       end
