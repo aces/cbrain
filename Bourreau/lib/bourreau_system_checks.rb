@@ -9,10 +9,9 @@
 # $Id$
 #
 
-require 'checker'
 require 'socket'
 
-class BourreauSystemChecks < Checker
+class BourreauSystemChecks < CbrainChecker
 
   def self.a010_ensure_configuration_variables_are_set
     

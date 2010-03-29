@@ -25,9 +25,10 @@
 # One can except a test 
 # 
 
-class Checker 
+class CbrainChecker 
   include Singleton
   RevisionInfo="$Id$"
+
   #Collects all the checks and start methods defined in the class 
   #Puts them in an array to be used by the run_checks command. 
   def self.all
@@ -44,22 +45,21 @@ class Checker
   #Runs the checks that are in the check_to_run array
   def self.check(checks_to_run)
     
-    if checks_to_run == :all
-      checks=self.all
-      checks.each do |check|
+    checks = checks_to_run == :all ? self.all : checks_to_run
 
-        self.send(check) #This line is a metaprogramming technique. 
-                         #it asks the class to run the methods named after the symbol 
-                         #stored in check   
-      end
-    
-    else
-    checks_to_run.each do |check| #run each test requested
+    checks.each do |check|
+      begin
         self.send(check)
+      rescue => failed_check
+        puts "\n"
+        puts "CBRAIN initial check failed: #{check}"
+        puts failed_check.message
+        raise SystemExit.new("CBRAIN process failed initial checks.")
       end
     end
-    
+
   end
+
 end
 
 

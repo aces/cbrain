@@ -23,9 +23,8 @@
 
 
 require 'socket'
-require 'checker.rb'
 
-class PortalSanityChecks < Checker
+class PortalSanityChecks < CbrainChecker
 
 
   #Checks to see if the validation was run since last change
@@ -309,22 +308,6 @@ class PortalSanityChecks < Checker
     
   end
 
-  #def ensure_userfile_size_is_properly_set
-  ##-----------------------------------------------------------------------------
-  #puts "C> Checking that size variables for userfiles are properly set... "
-  ##-----------------------------------------------------------------------------
-  ## The following line is just to trigger an exception for "Unknown column"
-  ## if we've not yet migrated userfiles to contain 'num_files'
-  #Userfile.find(:first, :conditions => { :num_files => 123456 })
-  #Userfile.all.each do |u|
-  #  unless u.size_set?
-  #    puts "C> \t- #{u.type} #{u.name} (id: #{u.id}) does not have its size properly set. Updating..."
-  #    u.set_size
-  #  end
-  #end
-  #end
-
-  
 end
 
 

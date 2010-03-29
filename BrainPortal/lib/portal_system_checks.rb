@@ -8,9 +8,7 @@
 # $Id$
 #
 
-require 'checker.rb'
-
-class PortalSystemChecks < Checker
+class PortalSystemChecks < CbrainChecker
   
   RevisionInfo="$Id$"
 
