@@ -162,8 +162,8 @@ class Message < ActiveRecord::Base
   def self.send_internal_error_message(destination, header, exception, request_params = {})
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin))
       Message.send_message(destination,
-        :message_type  => :error,
-        :header  => "Internal error: #{header}",
+        :message_type => :error,
+        :header       => "Internal error: #{header}",
 
         :description  => "An internal error occured inside the CBRAIN code.\n"     +
                          "The CBRAIN admins have been alerted are working\n"       +
@@ -175,21 +175,23 @@ class Message < ActiveRecord::Base
     
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
-      :header  => "Internal error: #{header}",
+      :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}: #{exception.message}\n",
 
-      :description  => "An internal error occured inside the CBRAIN code.\n"     +
-                       "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n" +
-                       "\n" +
-                       "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
-                       "Hostname: #{Socket.gethostname}\n" +
-                       "Process ID: #{Process.pid}\n" +
-                       "Process Name: #{$0}\n" +
-                       "Params: #{request_params.inspect}\n" +
-                       "\n" +
-                       "Exception: #{exception.class.to_s}: #{exception.message}\n" +
-                       exception.backtrace[0..30].join("\n") + "\n",
+      :description   => "An internal error occured inside the CBRAIN code.\n"     +
+                        "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n",
+
+      :variable_text => "=======================================================\n" +
+                        "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
+                        "Hostname: #{Socket.gethostname}\n" +
+                        "Process ID: #{Process.pid}\n" +
+                        "Process Name: #{$0}\n" +
+                        "Params: #{request_params.inspect}\n" +
+                        "Exception: #{exception.class.to_s}: #{exception.message}\n" +
+                        "\n" +
+                        exception.backtrace[0..30].join("\n") +
+                        "\n",
                        
-      :send_email   => true
+      :send_email    => true
     )
   end
 
