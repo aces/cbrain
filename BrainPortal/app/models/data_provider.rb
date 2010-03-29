@@ -466,13 +466,16 @@ class DataProvider < ActiveRecord::Base
           entries = Dir.glob(userfile.name + "/**/*")
         else
           base_dir = "/" + directory + "/"
-          base_dir.gsub!(/\/+/, "/")
+          base_dir.gsub!(/\/\/+/, "/")
           base_dir.gsub!(/\/\.\//, "/")
           entries = Dir.entries(userfile.name + base_dir ).reject{ |e| e =~ /^\./ }.inject([]){ |result, e| result << userfile.name + base_dir + e }
         end
       else
         entries = [userfile.name]
       end 
+      attlist = [ 'symbolic_type', 'size', 'permissions',
+                  'uid',  'gid',  'owner', 'group',
+                  'atime', 'ctime', 'mtime' ]
       entries.each do |file_name|
         entry = File.lstat(file_name)
         type = entry.ftype.to_sym
@@ -482,9 +485,7 @@ class DataProvider < ActiveRecord::Base
         fileinfo               = FileInfo.new
         fileinfo.name          = file_name
 
-        attlist = [ 'symbolic_type', 'size', 'permissions',
-                    'uid',  'gid',  'owner', 'group',
-                    'atime', 'ctime', 'mtime' ]
+        bad_attributes = []
         attlist.each do |meth|
           begin
             if meth == 'symbolic_type'
@@ -496,12 +497,10 @@ class DataProvider < ActiveRecord::Base
             end
           rescue => e
             puts "Method #{meth} not supported: #{e.message}"
+            bad_attributes << meth
           end
-          # if entry.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
-          #      val = entry.send(meth)
-          #      fileinfo.send("#{meth}=", val)
-          #    end
         end
+        attlist -= bad_attributes unless bad_attributes.empty?
 
         list << fileinfo
       end

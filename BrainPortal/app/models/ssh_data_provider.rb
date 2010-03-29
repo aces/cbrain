@@ -104,6 +104,9 @@ class SshDataProvider < DataProvider
 
   def impl_provider_list_all #:nodoc:
     list = []
+    attlist = [ 'symbolic_type', 'size', 'permissions',
+                'uid',  'gid',  'owner', 'group',
+                'atime', 'ctime', 'mtime' ]
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
       sftp.dir.foreach(remote_dir) do |entry|
         attributes = entry.attributes
@@ -114,21 +117,17 @@ class SshDataProvider < DataProvider
         fileinfo               = FileInfo.new
         fileinfo.name          = entry.name
 
-        attlist = [ 'symbolic_type', 'size', 'permissions',
-                    'uid',  'gid',  'owner', 'group',
-                    'atime', 'ctime', 'mtime' ]
+        bad_attributes = []
         attlist.each do |meth|
-          # if attributes.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
-          #   val = attributes.send(meth)
-          #   fileinfo.send("#{meth}=", val)
-          # end
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
           rescue => e
             puts "Method #{meth} not supported: #{e.message}"
+            bad_attributes << meth
           end
         end
+        attlist -= bad_attributes unless bad_attributes.empty?
 
         list << fileinfo
       end
@@ -155,13 +154,16 @@ class SshDataProvider < DataProvider
            entries = sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "/**/*")
          else
            base_dir = "/" + directory + "/"
-           base_dir.gsub!(/\/+/, "/")
+           base_dir.gsub!(/\/\/+/, "/")
            base_dir.gsub!(/\/\.\//, "/")
            entries = sftp.dir.entries(remote_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
          end
        else
          entries = sftp.dir.entries(remote_full_path(userfile).parent.to_s).select{ |e| e.name == userfile.name}
        end
+       attlist = [ 'symbolic_type', 'size', 'permissions',
+                   'uid',  'gid',  'owner', 'group',
+                   'atime', 'ctime', 'mtime' ]
        entries.each do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
@@ -174,21 +176,18 @@ class SshDataProvider < DataProvider
         else
           fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
         end 
-        attlist = [ 'symbolic_type', 'size', 'permissions',
-                    'uid',  'gid',  'owner', 'group',
-                    'atime', 'ctime', 'mtime' ]
+
+        bad_attributes = []
         attlist.each do |meth|
-          # if attributes.respond_to?(meth) && fileinfo.respond_to?("#{meth}=") 
-          #   val = attributes.send(meth)
-          #   fileinfo.send("#{meth}=", val)
-          # end
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
           rescue => e
             puts "Method #{meth} not supported: #{e.message}"
+            bad_attributes << meth
           end
         end
+        attlist -= bad_attributes unless bad_attributes.empty?
 
         list << fileinfo
       end
