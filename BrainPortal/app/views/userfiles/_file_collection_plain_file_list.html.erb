@@ -10,24 +10,24 @@
  
 <table id= "plain_file_list" class="resource_list">
    <tr class="list-odd">
-     <% if @userfile.is_locally_synced? %>
-       <th>
-         &nbsp;
-         <%= link_to_function '&#10004;' do |page|
-             page.select(".collection_checkbox").each do |check_box|
-               check_box.checked=true
+     <th>
+       <% if @userfile.is_locally_synced? %>
+           &nbsp;
+           <%= link_to_function '&#10004;' do |page|
+               page.select(".collection_checkbox").each do |check_box|
+                 check_box.checked=true
+               end
              end
-           end
-         %>
-         &nbsp;
-         <%= link_to_function '<big>&times;</big>' do |page|
-             page.select(".collection_checkbox").each do |check_box|
-               check_box.checked=false
+           %>
+           &nbsp;
+           <%= link_to_function '<big>&times;</big>' do |page|
+               page.select(".collection_checkbox").each do |check_box|
+                 check_box.checked=false
+               end
              end
-           end
-         %>
-       </th>
-     <% end %>
+           %>
+       <% end %>
+     </th>
      <th>File</th>
      <th>Size</th>
    </tr>
