@@ -33,14 +33,16 @@ jQuery(
       jQuery(".tabs").tabs();
 
       //Overlay dialogs
-      jQuery(".overlay_dialog").each(function(){
-        var dialog = jQuery(this).children().filter(".dialog").dialog({ autoOpen: false,
+    jQuery(".overlay_dialog").each( function(index,element){
+      var content_width =parseInt(jQuery(element).children('.dialog').attr('data-width'));
+      var dialog = jQuery(this).children(".dialog").dialog({ autoOpen: false,
           modal: true,
           position: "center",
-          resizable: false,
-          show: "puff"});
+	  resizable: false,
+	  width: content_width
+	 });
 
-          var button = jQuery(this).children().filter(".dialog_button").click(function(){dialog.dialog('open')});
+          var button = jQuery(this).children(".dialog_button").click(function(){dialog.dialog('open')});
 
 
 
@@ -85,13 +87,13 @@ jQuery(
 
 
         }).toggle(function(event){
-          var menu = jQuery(this).siblings("div.drop_down_menu")
+	  var menu = jQuery(this).siblings("div.drop_down_menu");
           jQuery(".drop_down_menu").hide();
           menu.show();
         },
         function(event){
-          var menu = jQuery(this).siblings("div.drop_down_menu")
-          menu.hide();
+	  var menu = jQuery(this).siblings("div.drop_down_menu");
+	  menu.hide();
         });
 
 

@@ -351,6 +351,7 @@ module ApplicationHelper
     partial = options[:partial]
     name = options[:name]
     button_text = options[:button_text]
+    width = options[:width] || ""
     if partial
       content = render partial
     else
@@ -360,7 +361,9 @@ module ApplicationHelper
     
     html_opts[:class] ||= ""
     html_opts[:class] +=  " dialog"
-
+    if width
+      html_opts["data-width"] = width
+    end
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
     
 
