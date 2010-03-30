@@ -347,7 +347,7 @@ module ApplicationHelper
   end
 
   #Create an overlay dialog box with a link as the button
-  def overlay_dialog_with_button(options,&block)
+  def overlay_dialog_with_button(options,html_opts={},&block)
     partial = options[:partial]
     name = options[:name]
     button_text = options[:button_text]
@@ -356,8 +356,16 @@ module ApplicationHelper
     else
       content = capture(&block)
     end
+    
+    
+    html_opts[:class] ||= ""
+    html_opts[:class] +=  " dialog"
+
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    
+
     concat("<div class=\"overlay_dialog\">")
-    concat("<div class=\"dialog\" id=\"#{name}\">")
+    concat("<div id=\"#{name}\" #{atts}>")
     concat(content)
     concat("</div>")
     concat("<a class=\"dialog_button\">#{button_text}</a>")
