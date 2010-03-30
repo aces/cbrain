@@ -65,7 +65,9 @@
          </tr>
 
          <% for bour in @bourreaux %>
-             <%= render :partial => 'bourreau_table_row', :locals  => {:bour  => bour} %>
+          <% ajax_element({:element  => "tr", :url => url_for(:action => :row_data, :id => bour.id)}, {:class  => "#{cycle('list-odd', 'list-even')} row_highlight", :id  => "bourreau_#{bour.id}"}) do %>
+            <td colspan="11" class="loading_message">Loading <%= bour.name %>...</td>
+          <% end %>
          <% end %>
      </table>
   

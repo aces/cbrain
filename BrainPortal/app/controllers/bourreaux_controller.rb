@@ -173,6 +173,11 @@ class BourreauxController < ApplicationController
     end
 
   end
+  
+  def row_data
+    @bourreau = RemoteResource.find_accessible_by_user(params[:id], current_user)
+    render :partial => 'bourreau_row_elements', :locals  => {:bour  => @bourreau}
+  end
 
   def start
     @bourreau = Bourreau.find(params[:id])

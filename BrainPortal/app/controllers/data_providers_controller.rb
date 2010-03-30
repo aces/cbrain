@@ -20,69 +20,6 @@ class DataProvidersController < ApplicationController
     @providers = DataProvider.find_all_accessible_by_user(current_user)
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
-
-    # List of cache update offsets we support
-    @offset_times = [
-      [ "Anytime",           0.seconds.to_i ],
-      [ "One hour ago",      1.hour.to_i    ],
-      [ "Six hours ago",     6.hour.to_i    ],
-      [ "One day ago",       6.day.to_i     ],
-      [ "One week ago",      1.week.to_i    ],
-      [ "Two weeks ago",     2.week.to_i    ],
-      [ "One month ago",     1.month.to_i   ],
-      [ "Two months ago",    2.months.to_i  ],
-      [ "Three months ago",  3.months.to_i  ],
-      [ "Four months ago",   4.months.to_i  ],
-      [ "Six months ago",    6.months.to_i  ],
-      [ "Nine months ago",   9.months.to_i  ],
-      [ "Over one year ago", 1.year.to_i    ]
-    ]
-
-    # Restrict cache info stats to files 'older' than
-    # a certain number of seconds (by access time).
-    accessed_before = nil
-    accessed_after  = nil # not used right now
-    @cache_older     = params[:cache_older] || 0
-    if @cache_older.to_s =~ /^\d+/
-      @cache_older = @cache_older.to_i
-      @offset_times.reverse_each do |pair|
-        if @cache_older >= pair[1]
-          @cache_older = pair[1]
-          break
-        end
-      end
-      accessed_before = @cache_older.seconds.ago # this is a Time
-    else
-      @cache_older = 0
-    end
-
-    # Users in statistics table
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
-
-    # Create statistics table
-    stats_options = { :users            => userlist,
-                      :providers        => @providers,
-                      :remote_resources => rrlist,
-                      :accessed_before  => accessed_before
-                    }
-    @report_stats    = gather_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_col_objects = @report_stats['!col_objects!']  # DPs+   + 'all'? + RRs+
-    @report_row_objects = @report_stats['!row_objects!']  # users+ + 'all'?
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-
   end
 
   # GET /data_providers/1
@@ -229,6 +166,84 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.js
     end
+  end
+  
+  def is_alive
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
+    if @provider.is_alive?
+      render :text  => "Yes"
+    else
+      render :text  => "<font color=\"red\">No</font>"
+    end
+    return
+  end
+  
+  def disk_usage
+    @providers = DataProvider.find_all_accessible_by_user(current_user)
+
+    # List of cache update offsets we support
+    @offset_times = [
+      [ "Anytime",           0.seconds.to_i ],
+      [ "One hour ago",      1.hour.to_i    ],
+      [ "Six hours ago",     6.hour.to_i    ],
+      [ "One day ago",       6.day.to_i     ],
+      [ "One week ago",      1.week.to_i    ],
+      [ "Two weeks ago",     2.week.to_i    ],
+      [ "One month ago",     1.month.to_i   ],
+      [ "Two months ago",    2.months.to_i  ],
+      [ "Three months ago",  3.months.to_i  ],
+      [ "Four months ago",   4.months.to_i  ],
+      [ "Six months ago",    6.months.to_i  ],
+      [ "Nine months ago",   9.months.to_i  ],
+      [ "Over one year ago", 1.year.to_i    ]
+    ]
+
+    # Restrict cache info stats to files 'older' than
+    # a certain number of seconds (by access time).
+    accessed_before = nil
+    accessed_after  = nil # not used right now
+    @cache_older     = params[:cache_older] || 0
+    if @cache_older.to_s =~ /^\d+/
+      @cache_older = @cache_older.to_i
+      @offset_times.reverse_each do |pair|
+        if @cache_older >= pair[1]
+          @cache_older = pair[1]
+          break
+        end
+      end
+      accessed_before = @cache_older.seconds.ago # this is a Time
+    else
+      @cache_older = 0
+    end
+
+    # Users in statistics table
+    userlist         = if check_role(:admin)
+                         User.all
+                       elsif check_role(:site_manager)
+                         current_user.site.users
+                       else
+                         [ current_user ]
+                       end
+
+    # Remote resources in statistics table
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+
+    # Create statistics table
+    stats_options = { :users            => userlist,
+                      :providers        => @providers,
+                      :remote_resources => rrlist,
+                      :accessed_before  => accessed_before
+                    }
+    @report_stats    = gather_usage_statistics(stats_options)
+
+    # Keys and arrays into statistics tables, for HTML output
+    @report_col_objects = @report_stats['!col_objects!']  # DPs+   + 'all'? + RRs+
+    @report_row_objects = @report_stats['!row_objects!']  # users+ + 'all'?
+    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
+    @report_rrs         = @report_stats['!rrs!']
+    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
+    
+    render :partial  => "disk_usage"
   end
 
   #Browse the files of a data provider.
@@ -510,7 +525,7 @@ class DataProvidersController < ApplicationController
       end
     end
 
-    redirect_to :action => :index, :cache_older => cleanup_before
+    redirect_to :action => :disk_usage, :cache_older => cleanup_before
   end
   
   private 

@@ -4,7 +4,9 @@
   <td><%= h(prov.group.name) %></td>
   <td class="provider_details" style="display:none"><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
   <td><%= prov.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
-  <td><%= prov.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %></td>
+  <% ajax_element({:element  => "td", :url  => url_for(:action  => :is_alive, :id  => prov.id)}) do %>
+    <span class="loading_message">Loading...</span>
+  <% end %>
   <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
   <td class="provider_details" style="display:none"><%= h(prov.description) %></td>
   <td>
