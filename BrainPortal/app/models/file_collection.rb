@@ -139,30 +139,6 @@ class FileCollection < Userfile
   end
   
   
-  #Returns an array of the relative paths to all files contained in this collection.
-  # def list_files    
-  #   return @file_list if @file_list
-  #   Dir.chdir(self.cache_full_path.parent) do
-  #     escaped_name = self.name.gsub("'", "'\\\\''")
-  #     IO.popen("find '#{escaped_name}' -type f -print") do |fh|
-  #       @file_list = fh.readlines.map(&:chomp)
-  #     end
-  #     @file_list.sort! { |a,b| a <=> b }
-  #   end
-  # end
-  
-  #Returns an array of the relative paths to all subdirectories contained in this collection.
-  # def list_dirs
-  #     return @dir_list if @dir_list
-  #     Dir.chdir(self.cache_full_path.parent) do
-  #       escaped_name = self.name.gsub("'", "'\\\\''")
-  #       IO.popen("find '#{escaped_name}' -type d -print") do |fh|
-  #         @dir_list = fh.readlines.map(&:chomp)
-  #       end
-  #       @dir_list.sort! { |a,b| a <=> b }
-  #     end
-  #   end
-  
   #mathieu desrosiers
   #Returns an array of the relative paths to first level subdirectories contained in this collection.
   #this function only for usage in spmbatch, feel free to contact me if you would like to remove it.
@@ -235,6 +211,17 @@ class FileCollection < Userfile
     end
 
   end
+
+  # Interceptor for unsupported operation
+  def cache_readhandle(&block) #:nodoc:
+    cb_error "Method not supported on FileCollections."
+  end
+
+  # Interceptor for unsupported operation
+  def cache_writehandle(&block) #:nodoc:
+    cb_error "Method not supported on FileCollections."
+  end
+
 end
 
 
