@@ -234,7 +234,7 @@ class UserfilesController < ApplicationController
           end
         else
           userfile.cache_copy_from_local_file(localpath)
-          userfile.size = File.size(localpath) rescue 0
+          userfile.size = File.size(userfile.cache_full_path) rescue 0
         end
         userfile.save
         userfile.addlog_context(self,"Uploaded by #{current_user.login}")
