@@ -9,7 +9,7 @@
 -%>
 <br>
 Group Update: 
-<%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+<%= group_select("userfile[group_id]") %>
 <%= submit_tag("Update Groups") %> 
 <br>
 Group permission update: 

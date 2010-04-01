@@ -9,6 +9,41 @@ module ApplicationHelper
   def title(page_title)
     content_for(:title)  { ' - ' + page_title}
   end
+  
+  def grouped_options_for_select(grouped_options, selected_key = nil, prompt = nil)
+    body = ''
+    body << content_tag(:option, prompt, :value => "") if prompt
+  
+    grouped_options = grouped_options.sort if grouped_options.is_a?(Hash)
+  
+    grouped_options.each do |group|
+      body << content_tag(:optgroup, options_for_select(group[1], selected_key), :label => group[0])
+    end
+  
+    body
+  end
+  
+  def user_select(parameter_name = "user_id", selector = nil, users = current_user.available_users)
+    if selector.respond_to?(:user_id)
+      sel = selector.user_id
+    elsif selector.is_a?(User)
+      sel = selector.id
+    else
+      sel = selector
+    end 
+    render :partial => 'layouts/user_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :users  => users}
+  end
+  
+  def group_select(parameter_name = "group_id", selector = nil, groups = current_user.available_groups)
+    if selector.respond_to?(:group_id)
+      sel = selector.group_id
+    elsif selector.is_a?(Group)
+      sel = selector.id
+    else
+      sel = selector
+    end 
+    render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups}
+  end
 
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime, what = :date)

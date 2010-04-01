@@ -119,12 +119,14 @@
 
 <span title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
   <p><label for="user_id">Owner</label><br/>
-  <%= f.select :user_id, current_user.available_users.collect { |u| [ u.login, u.id ] }, :prompt => "Select owner" %></p>
+    <%= user_select("data_provider[user_id]", @provider) %>
+  </p>
 </span>
 
 <span title="Group ownership of this data provider. Group members will have access to the provider, but will not be able configure it.">
   <p><label for="group_id">Group</label><br/>
-  <%= f.select :group_id, current_user.available_groups.collect { |g| [ g.name, g.id ] }, :prompt => "Select group" %></p>  
+    <%= group_select("data_provider[group_id]", @provider) %>
+  </p>  
 </span>
 
 <span title="Is this data provider currently available for use?">

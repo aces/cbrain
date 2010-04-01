@@ -31,7 +31,7 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create
     @message = Message.new(params[:message])
-    @message.send_me_to(Group.find(params[:groups][:group_id]))
+    @message.send_me_to(Group.find(params[:group_id]))
     prepare_messages
 
     respond_to do |format|

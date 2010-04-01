@@ -3,7 +3,7 @@
     <%= f.error_messages %>
     
     <p>
-      To: <%= collection_select(:groups, :group_id, current_user.available_groups.reject { |g|  g.name == 'everyone' if current_user.has_role? :site_manager}, :id, :name, {}) %>
+      To: <%= group_select("group_id", nil, current_user.available_groups.reject{ |g|  g.name == 'everyone' if current_user.has_role? :site_manager}.sort_by(&:name)) %>
     </p>
     <p>
       <%= f.label :critical %>
