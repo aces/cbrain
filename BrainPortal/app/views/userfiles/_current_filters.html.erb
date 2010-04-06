@@ -1,4 +1,4 @@
-<ul>
+<ul id = "filter_menu">
     <% session[:userfiles_basic_filters].each do |filter|%>
        <li>
          <%= crop_text_to(20, filter) %><%= link_to_remote "&nbsp;x", :url  => userfiles_path(:userfiles_remove_basic_filter  => filter), :method  => 'get' %>

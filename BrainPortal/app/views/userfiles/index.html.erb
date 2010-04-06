@@ -14,129 +14,53 @@
 
 <% title 'Files' %><% #Side bar stuff goes here -%>
 
-<%= javascript_tag "var current_options;" %>
-<div class="generalcontent">
-  <div id="main_userfiles_content"  style="width: 90%">
-  <div id="userfiles_top_menu">
-    <%= userfiles_menu_option('Tags', 'tag_option', 'tag_table') %>
-    <%= userfiles_menu_option('Groups', 'group_option', 'groups_table') %>
-    <%= userfiles_menu_option('Management', 'management_option', 'file_management') %>
-    <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
-    <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
+  <div class="generalcontent">
     
-    <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%>
-    <%= userfiles_menu_option('Jiv Viewer', 'jiv_option', 'jiv/index') %>
-  </div>
-
-  <br>
-  <div class="userfiles_upper_form">
-    <div id="upload_option_div" class="upper_form" style="display:none">
-    </div>
-    <div id="jiv_option_div" class="upper_form" style="display:none">
-    </div>
-  </div>
-  
-  <% form_tag(operation_userfiles_path(:method => :post)) do %>
-  <div class="userfiles_upper_form">
-    <div id="tag_option_div" class="upper_form" style="display:none">
-    </div>
-    <div id="group_option_div" class="upper_form" style="display:none">
-    </div>
-    <div id="management_option_div" class="upper_form" style="display:none">
-    </div>
-    <div id="conversion_tool_option_div" class="upper_form" style="display:none">
-    </div>
-    <div id="scientific_tool_option_div" class="upper_form" style="display:none">
-    </div>
-  </div>
-
-  <br>
-  <br>
-  
-
-  <%= link_to_function "Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
-        page['side_filter_menu_wrapper'].visual_effect(:blind_down, :duration  => 0.2)
-        page['filter_option_show'].hide
-        page['filter_option_hide'].show
-      end
-  %>
-
-  <%= link_to_function "Hide Filters",  {:class  => 'action_link', :id => 'filter_option_hide', :style  => 'display:none;'} do |page|
-        page['side_filter_menu_wrapper'].visual_effect(:blind_up, :duration  => 0.2)
-        page['filter_option_hide'].hide
-        page['filter_option_show'].show
-      end
-  %>
-
-
-  <div id="side_filter_menu_wrapper" style="display:none;">
-    <div id="side_filter_menu">
-     <h3>
-        Filters<br> 
-        <small><small><small><%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %></small></small></small><br>
-     </h3>
-     <ul>
-     <li>
-          <%= link_to_remote 'All Files', :url  => {:action  => :index, :userfiles_search_type  => :unfilter}, 
-                                         :method  => 'get',
-                                         :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-          %> 
-     </li> 
-     <li><%= link_to_remote 'MINC Files', :url  => {:action  => :index, :userfiles_search_type => :minc}, 
-                                    :method  => 'get',
-                                    :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-     %> 
-   </li>
-     <li><%= link_to_remote 'JIV Files', :url  => {:action  => :index, :userfiles_search_type => :jiv},
-                                    :method  => 'get',
-                                    :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-     %> 
-    </li>
-     <% UserfileCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
-     <li>
-     <%= link_to_remote crop_text_to(15, filter.name), :url  => {:action  => :index, :userfiles_custom_filter  => filter.id},
-                                     :method  => 'get',
-                                     :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-      %>
-      <br>
-     <small><small>
-        <%= link_to 'Edit', edit_custom_filter_path(filter) %> 
-        <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>  
-     </small></small>
-     </li>
-     <% end %>
-     </ul>
-     <br>
-     <h3>
-        Filter Tags<br> 
-        <small><small><small><%= link_to 'Manage Tags', tags_path %></small></small></small>
-     </h3>
-     <ul>
-     <% current_user.tags.collect(&:name).each do |tag| %> 
-      <li>
-       <%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :userfiles_tag_filter => tag},
-                                       :method  => 'get',
-                                       :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-        %>
-      </li>
-     <% end %> 
-     </ul>
-    </div>
-  </div>   <!-- End id="side_filter_menu_wrapper" -->
-
-      <table id="userfilesdisplay" class="resource_list">
-          <%= render :partial => 'userfiles_table' %>
-      </table>
+   <%= javascript_tag "var current_options;" %> 
+       
+        <div id="main_userfiles_content"  style="width: 90%">
+        <div id="userfiles_top_menu">
+            <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
+            <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
+            <%= userfiles_menu_option('Jiv Viewer', 'jiv_option', 'jiv/index') %>
+        <br>
+        </div>
+        <br>
+        <div class="userfiles_upper_form">
+        <div id="jiv_option_div" class="upper_form" style="display:none">
+        </div>
+        </div>
+        
+        <div id="upload_option_div" class="upper_form" style="display:none">
+        </div>
+          
+    <% form_tag(operation_userfiles_path(:method => :post)) do %>
+         
+        <div class="userfiles_upper_form">
+        <div id="conversion_tool_option_div" class="upper_file_menu" style="display:none">
+        </div>
+        <div id="scientific_tool_option_div" class="upper_file_menu" style="display:none">
+        </div>
+        <div id="jiv_option_div" class="upper_form" style="display:none">
+        </div>
+        </div>
+    
+        <div id = "file_menu">
+          <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%> 
+          <%= render :partial => "file_menu" %>
+        </div>
+        
+        <table id="userfilesdisplay" class="resource_list">
+              <%= render :partial => 'userfiles_table' %>
+        </table>
+        
+        <center>
+           Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+           <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+           <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+         <% end %>
+        </center>
       
-      <center>
-        Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-        <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-          <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
         <% end %>
-      </center>
-
-  <% end %>
-  </div>
 </div>
-
-
+</div>

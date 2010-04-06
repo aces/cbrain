@@ -9,36 +9,37 @@
 # $Id$
 #
 -%>
-<br>
    <%
    form_tag( "/userfiles", :multipart => true, :method => :post) do
    %>
-              Select file to upload:
+            <br>
+            <br>
+            Select file to upload:
   
-              <%= file_field_tag("upload_file") %>
-              <br><br>
+            <%= file_field_tag("upload_file") %>
+            <br><br>
 
             Select tags for file:
             <select name="tags[]" multiple="multiple" style="width:200px">
-               <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
+               <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil}      %>
             </select>
             <br><br>
 
             Group for uploaded file:
                   <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
-
                   <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
             <br><br>
 
             Archive options (for zip or tar files): 
-               <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
+                  <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
             <br><br>
 
             Data provider for uploaded file:
-              <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
+                  <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
             <br><br><br>
-              <%= submit_tag("Upload file") %>
-   <%end%>
-</div>
- <%= userfiles_menu_close_button %>
+                  <%= submit_tag("Upload file") %>
+            
+   <% end %>
+<%= userfiles_menu_close_button %>
 <br>
+

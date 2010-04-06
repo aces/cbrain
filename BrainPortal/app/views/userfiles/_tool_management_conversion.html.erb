@@ -22,23 +22,23 @@
     ) 
     %>
    
-
    <span id="bourreau_select">
    </span>
-    <br>
-    <br>
-    <%= submit_tag("Apply Operation") %>
-    <br><br>
+   <br>
+   <br>
+   <%= submit_tag("Apply Operation") %>
+   <br><br>
     
-<% else %>
-<br>
-  <% if current_user.has_role? :admin %>
-    <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
-  <% else %>
-    <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>
-  <% end %>
-  <br>
+   <% else %>
+    <br>
+   <% if current_user.has_role? :admin %>
+       <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
+   <% else %>
+       <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>
+   <% end %>
+   <br>
 <% end %>
-<%= userfiles_menu_close_button %>
+<%= userfiles_menu_close_button %>                                                                                                                          
 <br>
+
 

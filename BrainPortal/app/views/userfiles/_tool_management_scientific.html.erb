@@ -8,8 +8,9 @@
 
 -%>
 <% unless current_user.available_scientific_tools.blank? %>
-   <br>
-   
+
+<br>
+ 
    <%= select_tag(
       "operation", 
       ' <option value="">Select a Scientific Operation</option>' +
@@ -17,28 +18,29 @@
          :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
                                        :with  => "'drmaa_class='+value",
                                        :method  => :get,
-                                       :before => "$('bourreau_select').update('<span class=\\'warning\\'>Loading...</span>');",
-                                       :update => "bourreau_select"
+                                       :before => "$('bourreau_select2').update('<span class=\\'warning\\'>Loading...</span>');",
+                                       :update => "bourreau_select2"
                                        )
      ) 
      %>
 
 
-    <span id="bourreau_select">
-    </span>
-   <br>
-   <br>
-   <%= submit_tag("Apply Operation") %>
-   <br><br>
-<% else %>
-  <br>
-  <% if current_user.has_role? :admin %>
-    <h1 class="warning">No scientific tools available. New tools may be registered from the Tools index.</h1>
-  <% else %>
-    <h1 class="warning">No scientific tools available. Contact your admin to have them registered.</h1>
-  <% end %>
+     <span id="bourreau_select2">
+     </span>
+    
+     <br>
+     <br>
+     <%= submit_tag("Apply Operation") %>
+     <br><br>
+     <% else %>
+     <br>
+     <% if current_user.has_role? :admin %>
+        <h1 class="warning">No scientific tools available. New tools may be registered from the Tools index.</h1>
+     <% else %>
+        <h1 class="warning">No scientific tools available. Contact your admin to have them registered.</h1>
+     <% end %>
   <br>
 <% end %>
-<%= userfiles_menu_close_button %>
+<%= userfiles_menu_close_button %>                                                                                                                         
 <br>
 

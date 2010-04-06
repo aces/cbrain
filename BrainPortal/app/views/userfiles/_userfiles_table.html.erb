@@ -1,38 +1,40 @@
 <thead>
+    <tr>   
    <tr>
-      <td colspan="10" class="left">
-  
-           <div id="pages">
-                <% if session[:userfiles_pagination] == 'on' %>
-                   <%= will_paginate %>
-                 <% end %>
-                 <% if @userfile_count > @userfiles_per_page %>
-                     <%= link_to_remote "Toggle Pagination", :url  => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method  => 'get' %>
-                 <% end %><br>
-                 <%= link_to_remote  "Toggle Details", {:url  =>  {:action  => :index, :userfiles_details  => set_toggle(current_session[:userfiles_details])}, :method  => 'get'} %>
-
-                 <br>
-                 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-                   <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url  => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method  => 'get' %>
-                 <% end %><br><br>
-                 <%= link_to_remote  "Tree view", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.lft'}, :method  => 'get'  %>
-                 <%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
-           </div>
+       <td colspan = 5>  
+           <div id="pages">     
            
-           <div id="filter_div">
-             Active Filters 
-             <small>
-                <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
-             </small>
+            <%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %>
+            <br>
+            <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
+            	<%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %>
+            	<% end %><br><br>
+             	<%= link_to_remote "Tree view", :url => {:action => :index, :userfiles_sort_order => 'userfiles.lft'}, :method => 'get' %>
+         	<%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
+         	<% if @userfile_count > @userfiles_per_page %>
+                 <%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %>
+                <% end %><br>
+                <% if session[:userfiles_pagination] == 'on' %>
+                    <%= will_paginate %>
+                <% end %>
+            </div>
+        </td>
+        
+        <td>
+        <div id="filter_div">
+            Active Filters 
+            <small>
+            <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
+            </small>
              <div id="current_filters">
-               <%= render :partial => 'current_filters' %>
+                 <%= render :partial => 'current_filters' %>
              </div>
-           </div>
+        </div>
       </td>
    </tr>
   
     <tr>
-      <th
+      <th>
 	<input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
             $$('.checkbox').each(function(value, index) {
                value.checked = $('header_checkbox').checked;
