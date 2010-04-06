@@ -28,7 +28,7 @@ module UserfilesHelper
   end
   
   def userfiles_menu_option(name, option_name, partial)
-    link_to_function name, {:class => "userfile_menu", :id  => option_name}  do |page|
+    link_to_function name, {:class => " button userfile_menu", :id  => option_name}  do |page|
       page << "if(current_options != '#{option_name}'){"
       page << "var local_var = current_options;"
       page[option_name].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)

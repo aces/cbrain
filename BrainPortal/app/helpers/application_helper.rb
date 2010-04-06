@@ -406,9 +406,9 @@ module ApplicationHelper
     concat("<div id=\"#{name}\" #{atts}>")
     concat(content)
     concat("</div>")
-    concat("<a class=\"dialog_button\">#{button_text}</a>")
-    concat("</div>")
+    concat("<a class=\"dialog_button button\">#{button_text}</a>")
   end
+  
  
   ###############################################################
   # Creates an html element which will have it's content updated 
@@ -516,6 +516,7 @@ module ApplicationHelper
            
   end
   
+
   ##################################################################
   # Creates a submit button with the value specified in the helper
   #
@@ -535,6 +536,12 @@ module ApplicationHelper
     return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
   end
   
+  def delete_button(value, html_opts={})
+    html_opts[:class] ||= ""
+    html_opts[:class] += " button"
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
+  end
   
  
 

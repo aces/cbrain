@@ -408,7 +408,7 @@ class UserfilesController < ApplicationController
       operation = 'delete'
     elsif params[:commit] == 'Update Tags'
       operation = 'tag_update'
-    elsif params[:commit] == 'Merge Files into Collection'
+    elsif params[:commit] == 'Create Collection'
       operation = 'merge_collections'
     elsif params[:commit] == 'Update Groups'
       operation = 'group_update'
