@@ -212,6 +212,13 @@ pre {
     display: inline;
 }
 
+/* ######################################################### */
+/* File Operations Menu */
+/* ######################################################### */
+
+#tools_menu{
+    margin-left: 271px;
+}
 
 /* ######################################################### */
 /* Sidebar View */
@@ -265,6 +272,24 @@ pre {
 
 .userfiles_option_close{
     text-align:center;
+}
+
+
+/* ######################################################### */
+/* Filter menu
+/* ########################################################  */
+#filter_menu { 
+    padding:0; 
+    margin:0; 
+    text-align: center;
+}
+ 
+#filter_menu li { 
+    list-style-type:none; 
+}
+
+#custom_filter li{
+    font-weight: bold;
 }
 
 /* ######################################################### */
@@ -1125,6 +1150,7 @@ table.resource_list td.checkbox {
     padding: 0.25em;
     background-color: #ffffff;
     color: #505050;
+    text-align: left;
     border: none;
     float: left;
     /*border: 1px solid #e4e4e4;*/
@@ -1149,8 +1175,8 @@ table.resource_list td.checkbox {
 
 #userfiles_top_menu {
     padding: 1em 0 0;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 290px;
+    margin-right: 0px;
     width: 50em;
 }
 
@@ -1159,10 +1185,11 @@ table.resource_list td.checkbox {
 }
 
 .userfiles_upper_form {
-    margin-top: 1em;
+    margin-top: 3em;
     width: 45em;
-    margin-left: auto;
+    margin-left: 185px;
     margin-right: auto;
+    margin-bottom: 40px;
 }
 
 #userfile_contents_display{
@@ -1189,9 +1216,34 @@ table.resource_list td.checkbox {
     margin-left: 1em;
 }
 
+#file_menu{
+    margin-left:40px;
+    margin-right: 0px;
+    min-width: 1060px;
+}
+
+
+.upper_file_menu{
+    border: 2px solid #6699CC;
+    padding: 0em 1em;
+    width: 343px;
+    margin-left: 85px;
+}
+
 .upper_form {
     border: 2px solid #6699CC;
     padding: 0em 1em;
+    margin-left: 185px;
+}
+
+#upload_option_div{
+    margin-left: 290px;
+    width: 300px;
+}
+
+#jiv_option_div{
+   margin-left: 65px;
+   width: 415px; 
 }
 
 
@@ -1845,11 +1897,14 @@ h1.warning {
 /* ######################################################### */
 
 .button_with_drop_down {
+    z-index: 500;
     float: left;
+    z-index: 1;
 }
 
 .button_with_drop_down > .drop_down_menu {
     position: absolute;
+    z-index: 500;
     border: solid;
     border-width: 1px;
     padding: 5px;
