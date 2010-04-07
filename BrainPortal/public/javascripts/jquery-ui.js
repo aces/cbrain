@@ -1,1 +1,1 @@
-jquery-ui-1.8rc3.custom.min.js
+jquery-ui-1.8.custom.min.js
