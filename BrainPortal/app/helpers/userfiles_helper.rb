@@ -31,9 +31,9 @@ module UserfilesHelper
     link_to_function name, {:class => " button userfile_menu", :id  => option_name}  do |page|
       page << "if(current_options != '#{option_name}'){"
       page << "var local_var = current_options;"
-      page[option_name].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: #000000', :duration  => 0.4)
+      page[option_name].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: ##0073ea', :duration  => 0.4)
       page << "if(local_var){Element.hide(local_var + '_div');"
-      page << "new Effect.Morph(local_var, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+      page << "new Effect.Morph(local_var, {style: 'background-color: #ffffff; #0073ea;', duration: 0.2});"
       page << "Element.update(local_var + '_div', '');"
       page << "}"
       page << "current_options = '#{option_name}';"
@@ -64,7 +64,7 @@ module UserfilesHelper
   def userfiles_menu_close_button
     '<div class="userfiles_option_close">' +
     link_to_function('close', :class  => 'action_link') do |page|
-      page << "new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});"
+      page << "new Effect.Morph(current_options, {style: 'background-color: #ffffff; #0073ea', duration: 0.2});"
       page << "Element.hide(current_options + '_div');"
       page << "Element.update(current_options + '_div', '');"
       page << "current_options = null;"
