@@ -573,7 +573,6 @@ a:hover {
     padding: 1em;
 }
 
-
 /* ######################################################### */
 /* Table for buttons  */
 /* ######################################################### */
@@ -584,6 +583,7 @@ a:hover {
 #button_table td{
     padding: 4px;
 }
+
 
 /* ######################################################### */
 /* General formatting for a table */
@@ -1218,9 +1218,9 @@ table.resource_list td.checkbox {
 }
 
 #file_menu{
-    margin-left:40px;
+    margin-left: -25px;
     margin-right: 0px;
-    min-width: 1060px;
+    min-width: 1097px;
 }
 
 
@@ -1228,7 +1228,7 @@ table.resource_list td.checkbox {
     border: 2px solid #6699CC;
     padding: 0em 1em;
     width: 343px;
-    margin-left: 85px;
+    margin-left: 107px;
 }
 
 .upper_form {
@@ -1238,8 +1238,8 @@ table.resource_list td.checkbox {
 }
 
 #upload_option_div{
-    margin-left: 290px;
-    width: 300px;
+    margin-left: 306px;
+    width: 310px;
 }
 
 #jiv_option_div{
