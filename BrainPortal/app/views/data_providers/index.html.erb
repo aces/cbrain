@@ -33,7 +33,6 @@
              <%= 
              link_to_function 'Show Details', {:class  => 'action_link', :id =>'show_details_link'} do |page|
                page.select('.provider_details').each{ |el| el.show  }
-               page['provider_statistics'].show
                page['show_details_link'].hide
                page['hide_details_link'].show      
              end 
@@ -44,7 +43,6 @@
             <%= 
             link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
               page.select('.provider_details').each{ |el| el.hide  }
-              page['provider_statistics'].show
               page['show_details_link'].show
               page['hide_details_link'].hide      
             end 
