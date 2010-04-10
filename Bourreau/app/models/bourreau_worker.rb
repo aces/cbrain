@@ -19,6 +19,7 @@ class BourreauWorker < Worker
 
   def setup
     ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
+    sleep 1+rand(15) # to prevent several workers from colliding
   end
 
   def do_regular_work
@@ -44,10 +45,23 @@ class BourreauWorker < Worker
     end
 
     # Processes each task in the active list
-    tasks_todo.each do |task|
-      process_task(task) # this can take a long time...
+    by_user = tasks_todo.group_by { |t| t.user_id }
+    user_ids = by_user.keys.shuffle # go through users in random order
+    while user_ids.size > 0
+      user_id    = user_ids.pop
+      task_group = by_user[user_id].shuffle # go through tasks in random order
+      while task_group.size > 0
+        task               = task_group.pop
+        process_task(task) # this can take a long time...
+        break if stop_signal_received?
+      end # each task
       break if stop_signal_received?
-    end
+    end # each user
+
+    #tasks_todo.each do |task|
+    #  process_task(task) # this can take a long time...
+    #  break if stop_signal_received?
+    #end
 
   end
 
