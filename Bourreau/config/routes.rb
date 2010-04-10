@@ -1,7 +1,7 @@
 ActionController::Routing::Routes.draw do |map|
 
   # Control channel
-  map.resources :controls,            :controller => :controls
+  map.resources :controls,               :controller => :controls
 
   # All our task subclasses map to the same controller.
   map.resources :drmaa_tasks,            :controller => :tasks
@@ -15,15 +15,15 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_mincmaths,        :controller => :tasks
   map.resources :drmaa_mincresamples,    :controller => :tasks
   map.resources :drmaa_civet_combiners,  :controller => :tasks
-  map.resources :drmaa_mincpiks,          :controller => :tasks
+  map.resources :drmaa_mincpiks,         :controller => :tasks
   map.resources :drmaa_diagnostics,      :controller => :tasks
-  #map.resources :drmaa_civet_qc_reports, :controller => :tasks
+  map.resources :drmaa_civet_qcs,        :controller => :tasks
   
   # UNF resources
-  map.resources :drmaa_cw5filters,    :controller => :tasks  
-  map.resources :drmaa_matlabs,       :controller => :tasks
-  map.resources :drmaa_cw5s,          :controller => :tasks  
-  map.resources :drmaa_spmbatches,     :controller => :tasks
+  map.resources :drmaa_cw5filters,       :controller => :tasks  
+  map.resources :drmaa_matlabs,          :controller => :tasks
+  map.resources :drmaa_cw5s,             :controller => :tasks  
+  map.resources :drmaa_spmbatches,       :controller => :tasks
 
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'

@@ -153,6 +153,7 @@ class SshDataProvider < DataProvider
          if directory == :all
            entries = sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "/**/*")
          else
+           directory = "." if directory == :top
            base_dir = "/" + directory + "/"
            base_dir.gsub!(/\/\/+/, "/")
            base_dir.gsub!(/\/\.\//, "/")

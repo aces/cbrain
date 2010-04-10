@@ -362,14 +362,31 @@ class DataProvider < ActiveRecord::Base
   #   provider.cache_writehandle(u) do |fh|
   #     fh.write(content)
   #   end
+  #
+  # In the case where +userfile+ is not a simple file
+  # but is instead a directory (e.g. it's a FileCollection),
+  # no filehandle is provided to the block, but the rest
+  # of the behavior is identical. Note that brand new
+  # FileCollections will NOT have a directory yet created
+  # for them, only the path leading TO the FileCollection will
+  # be there.
+  #
+  #   provider.cache_writehandle(filecollection) do
+  #     system("mkdir #{filecollection.fullpath}");      # ugly eh?
+  #     system("touch #{filecollection.fullpath}/abcd"); # ugly eh?
+  #   end
   def cache_writehandle(userfile)
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
-      File.open(localpath,"w") do |fh|
-        yield(fh)
+      if userfile.is_a?(FileCollection)
+        yield
+      else # a normal file, just crush it
+        File.open(localpath,"w") do |fh|
+          yield(fh)
+        end
       end
     end
     sync_to_provider(userfile)
@@ -465,6 +482,7 @@ class DataProvider < ActiveRecord::Base
         if directory == :all
           entries = Dir.glob(userfile.name + "/**/*")
         else
+          directory = "." if directory == :top
           base_dir = "/" + directory + "/"
           base_dir.gsub!(/\/\/+/, "/")
           base_dir.gsub!(/\/\.\//, "/")
