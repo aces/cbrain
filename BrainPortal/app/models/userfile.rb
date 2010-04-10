@@ -348,6 +348,36 @@ class Userfile < ActiveRecord::Base
     "(???)"
   end
 
+
+
+  ##############################################
+  # Synchronization Status Access Methods
+  ##############################################
+
+  # Forces the userfile to be marked
+  # as 'newer' on the provider side compared
+  # to whatever is in the local cache for the
+  # current Rails application. Not often used.
+  # Results in the destruction of the local
+  # sync status object.
+  def provider_is_newer
+    SyncStatus.ready_to_modify_dp(self) do
+      true
+    end
+  end
+
+  # Forces the userfile to be marked
+  # as 'newer' on the cache side of the current
+  # Rails application compared to whatever is in
+  # the official data provider.
+  # Results in the the local sync status object
+  # to be marked as 'CacheNewer'.
+  def cache_is_newer
+    SyncStatus.ready_to_modify_cache(self) do
+      true
+    end
+  end
+
   # This method returns, if it exists, the SyncStatus
   # object that represents the syncronization state of
   # the content of this userfile on the local RAILS
