@@ -131,7 +131,7 @@ class BourreauWorker < Worker
     elsif task.status =~ /^Failed/
       Message.send_message(task.user,
                            :message_type  => :error,
-                           :header        => "Task #{task.name} Failed",
+                           :header        => "Task #{task.name} #{task.status}",
                            :description   => "Sorry about that. Check the task's log.",
                            :variable_text => "[[#{task.bname_tid}][/tasks/show/#{task.id}]]"
                           )
