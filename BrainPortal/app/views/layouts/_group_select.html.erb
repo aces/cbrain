@@ -1,5 +1,6 @@
 <%= 
     select_tag parameter_name, 
-               grouped_options_for_select(groups.group_by{ |gr| gr.class.to_s.underscore.humanize}.collect {|entry| [entry.first, entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id]}] },
-               selected || current_user.own_group.id)
+               grouped_options_for_select(groups.group_by{ |gr| gr.class.to_s.underscore.humanize}.collect {|entry| [entry.first, entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id]}] }, 
+                                          selected || current_user.own_group.id),
+               select_tag_options
  %>

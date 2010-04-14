@@ -206,6 +206,10 @@ class DataProvider < ActiveRecord::Base
     :allow_blank => true
 
   before_destroy          :validate_destroy
+  
+  # These DataProvider subclasses don't use the owner's login in their organizational structures, so 
+  # changing the owner of a Userfile stored on them won't cause any problems.
+  ALLOW_FILE_OWNER_CHANGE = ["SshDataProvider", "EnCbrainSmartDataProvider", "EnCbrainLocalDataProvider", "EnCbrainSshDataProvider"]
 
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
@@ -282,8 +286,10 @@ class DataProvider < ActiveRecord::Base
   def is_fast_syncing?
     false
   end
-
-
+  
+  def allow_file_owner_change?
+    ALLOW_FILE_OWNER_CHANGE.include? self.class.name
+  end
 
   #################################################################
   # Data API methods (work on userfiles)

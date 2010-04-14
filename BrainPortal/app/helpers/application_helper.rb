@@ -23,7 +23,18 @@ module ApplicationHelper
     body
   end
   
-  def user_select(parameter_name = "user_id", selector = nil, users = current_user.available_users)
+  #Create a standard user select box for selecting a user id for a form.
+  #The <pre>parameter_name</pre> argument will be the name of the parameter 
+  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
+  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +options+ hash can contain contain either or both of the following:
+  #[selector] used for default selection. This can be a User object, a user id (String or Fixnum),
+  #           or any model that has a user_id attribute.
+  #[users] the array of User objects used to build the select box. Defaults to <pre>current_user.available_users</pre>.
+  def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
+    selector = options[:selector]
+    users    = options[:user] || current_user.available_users
+    
     if selector.respond_to?(:user_id)
       sel = selector.user_id
     elsif selector.is_a?(User)
@@ -31,10 +42,21 @@ module ApplicationHelper
     else
       sel = selector
     end 
-    render :partial => 'layouts/user_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :users  => users}
+    render :partial => 'layouts/user_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :users  => users, :select_tag_options => select_tag_options}
   end
   
-  def group_select(parameter_name = "group_id", selector = nil, groups = current_user.available_groups)
+  #Create a standard groups select box for selecting a group id for a form.
+  #The <pre>parameter_name</pre> argument will be the name of the parameter 
+  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
+  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +options+ hash can contain contain either or both of the following:
+  #[selector] used for default selection. This can be a Group object, a group id (String or Fixnum),
+  #           or any model that has a group_id attribute.
+  #[groups] the array of Group objects used to build the select box. Defaults to <pre>current_user.available_groups</pre>.
+  def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
+    selector = options[:selector]
+    groups    = options[:groups] || current_user.available_groups
+    
     if selector.respond_to?(:group_id)
       sel = selector.group_id
     elsif selector.is_a?(Group)
@@ -42,7 +64,7 @@ module ApplicationHelper
     else
       sel = selector
     end 
-    render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups}
+    render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups, :select_tag_options => select_tag_options}
   end
 
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.

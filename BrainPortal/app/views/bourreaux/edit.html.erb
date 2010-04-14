@@ -35,10 +35,10 @@
          
          <div class="Bourreau" style="display:none">
            <p><label for="user_id">Owner</label><br/>
-           <%= user_select("bourreau[user_id]", @bourreau) %></p>
+           <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
 
            <p><label for="group_id">Group</label><br/>
-           <%= group_select("bourreau[group_id]", @bourreau) %></p>
+           <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
 
            <p><label for="online">Status</label><br/>
            <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>

@@ -119,13 +119,13 @@
 
 <span title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
   <p><label for="user_id">Owner</label><br/>
-    <%= user_select("data_provider[user_id]", @provider) %>
+    <%= user_select("data_provider[user_id]", :selector => @provider) %>
   </p>
 </span>
 
 <span title="Group ownership of this data provider. Group members will have access to the provider, but will not be able configure it.">
   <p><label for="group_id">Group</label><br/>
-    <%= group_select("data_provider[group_id]", @provider) %>
+    <%= group_select("data_provider[group_id]", :selector => @provider) %>
   </p>  
 </span>
 

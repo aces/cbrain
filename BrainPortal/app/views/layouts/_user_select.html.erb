@@ -1,6 +1,6 @@
 <%= 
     select_tag parameter_name, 
-               options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id ] },
-               selected || current_user.id)
+               options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id ] }, selected || current_user.id),
+               select_tag_options
  %>
  
