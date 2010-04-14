@@ -7,7 +7,7 @@ if @provider.errors.empty?
     page << "}"
     flash[:notice] = nil
   end
-  page.insert_html :bottom, 'data_provider_table', :partial => 'data_provider_table_row', :locals  => {:prov  => @provider}
+  page.insert_html :bottom, "#{@provider.is_browsable? ? "user" : "cbrain" }_data_provider_table", :partial => 'data_provider_table_row', :locals  => {:prov  => @provider}
   @provider = DataProvider.new
   page['new_data_provider'].replace_html(:partial  => 'new').hide
 else

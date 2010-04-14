@@ -66,6 +66,29 @@ module ApplicationHelper
     end 
     render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups, :select_tag_options => select_tag_options}
   end
+  
+  #Create a standard data provider select box for selecting a group id for a form.
+  #The <pre>parameter_name</pre> argument will be the name of the parameter 
+  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
+  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +options+ hash can contain contain either or both of the following:
+  #[selector] used for default selection. This can be a DataProvider object, a data provider id (String or Fixnum),
+  #           or any model that has a data_provider_id attribute.
+  #[data_providers] the array of DataProvider objects used to build the select box. Defaults to all data providers
+  #                 accessible by this user.
+  def data_provider_select(parameter_name = "data_provider_id", options = {}, select_tag_options = {} )
+    selector = options[:selector]
+    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
+    
+    if selector.respond_to?(:data_provider_id)
+      sel = selector.group_id
+    elsif selector.is_a?(DataProvider)
+      sel = selector.id
+    else
+      sel = selector
+    end 
+    render :partial => 'layouts/data_provider_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :data_providers  => data_providers, :select_tag_options => select_tag_options}
+  end
 
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime, what = :date)

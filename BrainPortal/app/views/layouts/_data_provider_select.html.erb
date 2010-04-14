@@ -1,0 +1,6 @@
+<%= 
+    select_tag parameter_name, 
+               grouped_options_for_select(data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }.collect {|entry| [entry.first, entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id]}] }, 
+                                          selected || current_user.user_preference.data_provider_id),
+               select_tag_options
+ %>

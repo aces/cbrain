@@ -17,7 +17,7 @@ class DataProvidersController < ApplicationController
   before_filter :login_required
    
   def index #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user)
+    @providers = DataProvider.find_all_accessible_by_user(current_user).group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
   end

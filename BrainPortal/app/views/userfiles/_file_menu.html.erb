@@ -1,45 +1,44 @@
-  
-        <% button_with_dropdown_menu(:title => "Download Files") do %>
-          Specify Download File Name (optional):
-          <%= text_field_tag :specified_filename %>
-          <%= submit_tag("Download Files") %>
-        <% end %>
-  
-        <% button_with_dropdown_menu(:title => "Filter Files") do %>
-           <%= render :partial => "filters"%>
-        <% end %>
+<% button_with_dropdown_menu(:title => "Download Files") do %>
+  Specify Download File Name (optional):
+  <%= text_field_tag :specified_filename %>
+  <%= submit_tag("Download Files") %>
+<% end %>
 
-        <% button_with_dropdown_menu(:title => "Tag Files")  do %>
-            <center>
-            <%= render :partial => 'tag_table'%>
-            <%= link_to 'Manage Tags', tags_path %>
-            </center>
-        <% end %>
-     
-        <% button_with_dropdown_menu(:title => "Update Groups") do %>
-           <br>
-           Group Update: 
-           <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
-           <%= submit_tag("Update Groups") %> 
-           <br>
-           Group permission update: 
-           <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-           <%= submit_tag("Update Permissions") %> 
-        <% end %>
+<% button_with_dropdown_menu(:title => "Filter Files") do %>
+   <%= render :partial => "filters"%>
+<% end %>
 
-        <% button_with_dropdown_menu(:title => "Move Files")  do %>
-            <%= select_tag("data_provider_id", options_for_select(@data_providers.map { |dp| [ dp.name, dp.id ] })) %>
-            <%= submit_tag("Move Files") %>
-        <% end %>
+<% button_with_dropdown_menu(:title => "Tag Files")  do %>
+    <center>
+    <%= render :partial => 'tag_table'%>
+    <%= link_to 'Manage Tags', tags_path %>
+    </center>
+<% end %>
 
-        <% button_with_dropdown_menu(:title => "Copy Files") do %>
-          <%= select_tag("data_provider_id", options_for_select(@data_providers.map { |dp| [ dp.name, dp.id ] })) %>
-          <%= submit_tag("Copy Files") %>
-        <% end %>  
-           
-        <%= submit_button("Create Collection", {:name => "commit"}) %>
+<% button_with_dropdown_menu(:title => "Update Groups") do %>
+   <br>
+   Group Update: 
+   <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+   <%= submit_tag("Update Groups") %> 
+   <br>
+   Group permission update: 
+   <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+   <%= submit_tag("Update Permissions") %> 
+<% end %>
 
-        <%= submit_button("Delete Files", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected files?');"}) %>  
+<% button_with_dropdown_menu(:title => "Move Files")  do %>
+    <%= data_provider_select("data_provider_id") %>
+    <%= submit_tag("Move Files") %>
+<% end %>
+
+<% button_with_dropdown_menu(:title => "Copy Files") do %>
+  <%= data_provider_select("data_provider_id") %>
+  <%= submit_tag("Copy Files") %>
+<% end %>  
+   
+<%= submit_button("Create Collection", {:name => "commit"}) %>
+
+<%= submit_button("Delete Files", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected files?');"}) %>  
         
       
         
