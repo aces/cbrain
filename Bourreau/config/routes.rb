@@ -18,6 +18,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :drmaa_mincpiks,         :controller => :tasks
   map.resources :drmaa_diagnostics,      :controller => :tasks
   map.resources :drmaa_civet_qcs,        :controller => :tasks
+  map.resources :drmaa_rpms,  		 :controller => :tasks
   
   # UNF resources
   map.resources :drmaa_cw5filters,       :controller => :tasks  
