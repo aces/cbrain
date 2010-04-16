@@ -1197,8 +1197,9 @@ table.resource_list td.checkbox {
     border: 0.2em solid #6699CC;
     padding: 0.5em;
     margin-top: 1em;
-    width: 938px;
-}
+    margin-left: 11px;
+/*    width: 938px;
+*/}
 
 .resource_list_upper_form {
     border: 2px solid #6699CC;

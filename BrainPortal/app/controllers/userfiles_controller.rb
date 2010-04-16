@@ -104,6 +104,26 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
     if @userfile.is_a?(FileCollection)
+      if @userfile.is_a?(CivetStudy)
+        if params[:study_subject]
+          render :partial  => "file_collection_civet_file_list", :locals  => { :subject  => @userfile.get_full_subdir_listing(params[:study_subject]) }
+          return
+        elsif params[:qc_file]
+          if params[:qc_file] == "base"
+            qc_file = @userfile.list_files("QC", :file).find{ |qc| qc.name =~ /\.html$/ && !@userfile.subject_ids.include?(Pathname.new(qc.name).basename.to_s.sub(/\.html$/, "")) }.name
+          else
+            qc_file = @userfile.name + "/QC/" + params[:qc_file]
+          end
+          doc = Nokogiri::HTML(File.open(@userfile.cache_full_path.parent + qc_file))
+          body = doc.search('body')
+          body.search("a").each {|link| link['href'] = "/userfiles/#{@userfile.id}/content?qc_file=#{link['href']}" }
+          body.search("img").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
+          body.search("image").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
+          render :text  => body.inner_html 
+          return
+        end
+      end
+      
       if params[:collection_file]
         @userfile.sync_to_cache
         send_file @userfile.cache_full_path.parent + params[:collection_file]

@@ -60,6 +60,11 @@ class FileCollection < Userfile
     true
   end
   
+  def get_full_subdir_listing(directory)
+    full_dir = Pathname.new(self.name) + directory
+    self.list_files.select{ |file_entry| file_entry.name =~ /^#{full_dir}\//}
+  end
+  
   def format_size
     super + " (#{self.num_files} files)"
   end

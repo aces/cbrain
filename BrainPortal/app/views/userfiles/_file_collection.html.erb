@@ -12,9 +12,12 @@
 
   <% if @userfile.is_a?(CivetCollection) && session[:full_civet_display] == 'on' %>
      <P><CENTER><%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off'), :class => 'action_link' %></CENTER>
-     <%= render :partial => 'file_collection_civet_file_list' %>
+     <%= render :partial => 'file_collection_civet_file_list', :locals  => {:subject  => @userfile.list_files} %>
+  <% elsif @userfile.is_a?(CivetStudy) && session[:full_civet_display] == 'on' %>
+        <P><CENTER><%= link_to "Display full file list", edit_userfile_path(@userfile, :full_civet_display => 'off'), :class => 'action_link' %></CENTER>
+        <%= render :partial => 'file_collection_civet_study_file_list', :locals  => {:userfile  => @userfile} %>
   <% else %>
-     <% if @userfile.is_a?(CivetCollection) %>
+     <% if @userfile.is_a?(CivetCollection) || @userfile.is_a?(CivetStudy) %>
        <P><CENTER><%= link_to "Display CIVET file list", edit_userfile_path(@userfile, :full_civet_display => 'on'), :class => 'action_link' %></CENTER>
      <% end %>
      <%= render :partial => 'file_collection_plain_file_list' %>

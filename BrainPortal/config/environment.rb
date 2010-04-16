@@ -35,6 +35,7 @@ Rails::Initializer.run do |config|
   config.gem "mongrel"
   config.gem "log4r"
   config.gem "sys-proctable", :lib => "sys/proctable"
+  config.gem "nokogiri"
   
   if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*sqlite3/m
     config.gem "sqlite3-ruby", :lib => "sqlite3"

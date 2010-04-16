@@ -119,7 +119,7 @@ jQuery(
           if(!replace_selector) {
             replace_elem = onclick_elem;
           } else {
-            replace_elem=jQuery(replace_selector);
+            replace_elem=jQuery("#" + replace_selector);
           };
           if(!before_content) {
             before_content = "<span class='loading_message'>Loading...</span>";

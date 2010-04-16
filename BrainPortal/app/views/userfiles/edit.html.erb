@@ -118,6 +118,23 @@
   
   <% if @sync_status == "InSync" %>
     <%= display_contents(@userfile) %>
+    <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).map(&:name).include?("QC")%>
+        <div id="userfile_contents_display" class="loading_message">
+          <strong>QC</strong><br><br>
+          <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action  => :content, :qc_file  => "base"), :replace => "qc_data", :before  => "<span class='loading_message'>Loading...</span>", :class  => "action_link"} ) do %>
+            Overview
+          <% end %>
+          <br>
+          <% @userfile.subject_ids.each do |subject_id| %>
+            <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action  => :content, :qc_file  => "#{subject_id}.html"), :replace => "qc_data", :before  => "<span class='loading_message'>Loading...</span>", :class  => "action_link"} ) do %>
+              <%= subject_id %>
+            <% end %>
+            <br>
+          <% end %>
+          <div id="qc_data">
+          </div>
+        </div>
+    <% end %>
   <% elsif @sync_status =~ /^To/ %>
     <% if @userfile.is_a?(FileCollection) %>
       <p>This Collection is currently being synchronized.</p>
