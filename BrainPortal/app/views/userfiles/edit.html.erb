@@ -118,7 +118,7 @@
   
   <% if @sync_status == "InSync" %>
     <%= display_contents(@userfile) %>
-    <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).map(&:name).include?("QC")%>
+    <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
         <div id="userfile_contents_display" class="loading_message">
           <strong>QC</strong><br><br>
           <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action  => :content, :qc_file  => "base"), :replace => "qc_data", :before  => "<span class='loading_message'>Loading...</span>", :class  => "action_link"} ) do %>
