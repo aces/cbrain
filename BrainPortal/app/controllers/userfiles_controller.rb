@@ -114,12 +114,11 @@ class UserfilesController < ApplicationController
           else
             qc_file = @userfile.name + "/QC/" + params[:qc_file]
           end
-          doc = Nokogiri::HTML(File.open(@userfile.cache_full_path.parent + qc_file))
-          body = doc.search('body')
-          body.search("a").each {|link| link['href'] = "/userfiles/#{@userfile.id}/content?qc_file=#{link['href']}" }
-          body.search("img").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
-          body.search("image").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
-          render :text  => body.inner_html 
+          doc = Nokogiri::HTML.fragment(File.read(@userfile.cache_full_path.parent + qc_file))
+          doc.search("a").each {|link| link['href'] = "/userfiles/#{@userfile.id}/content?qc_file=#{link['href']}" }
+          doc.search("img").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
+          doc.search("image").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
+          render :text  => doc.to_html
           return
         end
       end
