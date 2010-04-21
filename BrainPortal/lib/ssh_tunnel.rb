@@ -11,6 +11,7 @@
 #
 
 require 'fcntl'
+require 'sys/proctable'
 
 # = SSH Tunnel Utility Class 
 #
@@ -46,6 +47,8 @@ require 'fcntl'
 # ControlPath options in SSH's manual (in particular, for
 # the man page ssh_config, and for the '-o' option of 'ssh').
 class SshTunnel
+
+  include Sys  # for ProcTable
 
   Revision_info="$Id$"
   # Kernel.at_exit { SshTunnel.destroy_all } # BAD when multiple instances!
@@ -464,10 +467,22 @@ class SshTunnel
       return nil unless line && line.match(/^\d+/)
       @pid = line.to_i
       @pid = nil if @pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
+      @pid = nil unless self.process_ok?(@pid)
       return @pid
     rescue
       return nil
     end
+  end
+
+  # Makes sure that a process owned by us runs for this pid.
+  def process_ok?(mypid) #:nodoc:
+    return false unless mypid
+    process_info = ProcTable.ps(mypid.to_i)
+    return false unless process_info
+    procuid   = process_info.ruid rescue nil
+    procuid ||= process_info.uid rescue nil
+    return true if procuid && (Process.uid == procuid || Process.euid == procuid)
+    false
   end
 
   def delete_pidfile #:nodoc:
