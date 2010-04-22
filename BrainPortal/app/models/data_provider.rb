@@ -378,8 +378,10 @@ class DataProvider < ActiveRecord::Base
   # be there.
   #
   #   provider.cache_writehandle(filecollection) do
-  #     system("mkdir #{filecollection.fullpath}");      # ugly eh?
-  #     system("touch #{filecollection.fullpath}/abcd"); # ugly eh?
+  #     Dir.mkdir(filecollection.cache_full_path)
+  #     File.open("#{filecollection.cache_full_path}/abcd","w") do |fh|
+  #       fh.write "data"
+  #     end
   #   end
   def cache_writehandle(userfile)
     cb_error "Error: provider is offline."   unless self.online
@@ -556,14 +558,14 @@ class DataProvider < ActiveRecord::Base
     return false if target_exists
     cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do
-      impl_provider_rename(userfile,newname.to_s)
+      impl_provider_rename(userfile,newname.to_s) && userfile.save
     end
   end
 
   # Move a +userfile+ from the current provider to
   # +otherprovider+ ; note that this method will
-  # update the +userfile+'s data_provider_id but it
-  # will NOT save it back to the DB!
+  # update the +userfile+'s data_provider_id and
+  # save it back to the DB!
   def provider_move_to_otherprovider(userfile,otherprovider)
     cb_error "Error: provider #{self.name} is offline."            unless self.online
     cb_error "Error: provider #{self.name} is read_only."          if self.read_only
@@ -594,8 +596,6 @@ class DataProvider < ActiveRecord::Base
     SyncStatus.ready_to_modify_cache(userfile, 'InSync') do
       true # dummy as it's already in cache, but adjusts the SyncStatus
     end
-
-    self
   end
 
   # Copy a +userfile+ from the current provider to
