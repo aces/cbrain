@@ -102,24 +102,44 @@ jQuery(
 
 
         jQuery(".ajax_element").each(function (index,element){
-          jQuery(element).load(jQuery(element).attr("data-url"));
+	  //jQuery(element).load(jQuery(element).attr("data-url"));
+	  var url = jQuery(element).attr("data-url");
+	  var error_message = jQuery(element).attr("data-error");
+	  jQuery.ajax({
+	    type: 'GET',
+	    url: url,
+	    dataType: 'html',
+	    success: function(data) {
+	      jQuery(element).html(data);
+	    },
+	    error: function(e) {
+	      if(!error_message){
+		error_message = "Error loading element";
+	      }
+	      jQuery(element).html("<span>"+ error_message +"</span>");
+	    },
+	    timeout: 20000
+
+
+	  });
+
         });
 
 
         function ajax_onclick_show(event) {
-          onclick_elem = jQuery(this);
-          before_content = onclick_elem.attr("data-before");
-          replace_selector = onclick_elem.attr("data-replace");
-          replace_position = onclick_elem.attr("data-position");
-          parents = onclick_elem.attr("data-parents");
+          var onclick_elem = jQuery(this);
+          var before_content = onclick_elem.attr("data-before");
+          var replace_selector = onclick_elem.attr("data-replace");
+          var replace_position = onclick_elem.attr("data-position");
+          var parents = onclick_elem.attr("data-parents");
           if(!parents){
             parents = ""
           };
           parents += " __cbrain_parent_" + onclick_elem.attr("id");
           if(!replace_selector) {
-            replace_elem = onclick_elem;
+            var replace_elem = onclick_elem;
           } else {
-            replace_elem=jQuery("#" + replace_selector);
+            var replace_elem=jQuery("#" + replace_selector);
           };
           if(!before_content) {
             before_content = "<span class='loading_message'>Loading...</span>";
@@ -140,22 +160,32 @@ jQuery(
           url: jQuery(onclick_elem).attr("data-url"),
           dataType: 'html',
           success: function(data){
-            new_data = jQuery(data);
+            var new_data = jQuery(data);
             new_data.attr("data-parents", parents);
             new_data.addClass(parents);
             before_content.replaceWith(new_data);
             onclick_elem.find(".ajax_onclick_show_child").hide();
             onclick_elem.find(".ajax_onclick_hide_child").show();
           },
+	  error:function(e) {
+	    var new_data = jQuery("Error occured while processing this request");
+            new_data.attr("data-parents", parents);
+            new_data.addClass(parents);
+            before_content.replaceWith(new_data);
+            onclick_elem.find(".ajax_onclick_show_child").hide();
+            onclick_elem.find(".ajax_onclick_hide_child").show();
+	  },
           data: {},
-          async: true
+	  async: true,
+	  timeout: 5000
+
         });
 
       };
 
       function ajax_onclick_hide(event){
-        onclick_elem = jQuery(this);
-        parental_id = "__cbrain_parent_" + onclick_elem.attr("id");
+        var onclick_elem = jQuery(this);
+        var parental_id = "__cbrain_parent_" + onclick_elem.attr("id");
         jQuery("." + parental_id).remove();
         onclick_elem.removeClass("ajax_onclick_hide_element");
         onclick_elem.unbind('click');
