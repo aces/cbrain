@@ -408,12 +408,26 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
+    cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile." if
+        userfile.is_a?(SingleFile)     && File.directory?(localpath)
+    cb_error "Error: incompatible normal file '#{localpath}' given for a FileCollection." if
+        userfile.is_a?(FileCollection) && File.file?(localpath)
     dest = cache_full_path(userfile)
-    cache_erase(userfile) if localpath.to_s != dest.to_s
     cache_prepare(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
-      FileUtils.cp_r(localpath.to_s,dest.to_s) if localpath.to_s != dest.to_s
-      true
+      needslash=""
+      if File.directory?(localpath)
+        FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && ! File.directory?(dest.to_s)
+        Dir.mkdir(dest.to_s) unless File.directory?(dest.to_s)
+        needslash="/"
+      else
+        FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && File.directory?(dest.to_s)
+      end
+      rsyncout = ""
+      IO.popen("rsync -a -l --delete '#{localpath}#{needslash}' '#{dest}' 2>&1","r") do |fh|
+        rsyncout=fh.read
+      end
+      cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
   end
@@ -422,15 +436,32 @@ class DataProvider < ActiveRecord::Base
   # to an exact copy +localfile+, a locally accessible file.
   # The syncronization method +sync_to_cache+ will automatically
   # be called before the copy is performed.
+  #
+  # Note that if +localpath+ is a path to an existing filesystem
+  # entry, it will be crushed and replaced; this is true even if
+  # +localpath+ if of a different type than the +userfile+, e.g.
+  # if +userfile+ is a SingleFile and +localpath+ is a path to
+  # a existing subdirectory /a/b/c/, then 'c' will be erased and
+  # replaced by a file.
   def cache_copy_to_local_file(userfile,localpath)
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
     sync_to_cache(userfile)
     source = cache_full_path(userfile)
-    if source.to_s != localpath.to_s
-      FileUtils.remove_entry(localpath.to_s, true)
-      FileUtils.cp_r(source.to_s,localpath.to_s)
+    return true if source.to_s == localpath.to_s
+    needslash=""
+    if File.directory?(source.to_s)
+      FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && ! File.directory?(localpath.to_s)
+      Dir.mkdir(localpath.to_s) unless File.directory?(localpath.to_s)
+      needslash="/"
+    else
+      FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && File.directory?(localpath.to_s)
     end
+    rsyncout = ""
+    IO.popen("rsync -a -l --delete '#{source}#{needslash}' '#{localpath}' 2>&1","r") do |fh|
+      rsyncout=fh.read
+    end
+    cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
     true
   end
 
