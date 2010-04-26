@@ -156,6 +156,10 @@ class Site < ActiveRecord::Base
     @unset_user_ids = @old_user_ids - current_user_ids
     site_group = SystemGroup.find_by_name(self.name)
     
+    unless self.groups.exists? site_group
+      self.groups << site_group
+    end
+    
     User.find(@new_user_ids).each do |user|
       SystemGroup.find_by_name(user.login).update_attributes!(:site  => self)
       unless user.groups.exists? site_group
