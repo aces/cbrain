@@ -26,9 +26,9 @@ require 'socket'
 
 class PortalSanityChecks < CbrainChecker
 
+  Revision_info="$Id$"
 
   #Checks to see if the validation was run since last change
-  RevisionInfo="$Id$"
   def self.done?
     if SanityCheck.find_by_revision_info(RevisionInfo)
       true

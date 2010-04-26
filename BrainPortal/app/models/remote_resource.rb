@@ -66,7 +66,7 @@ class RemoteResource < ActiveRecord::Base
 
 
   ############################################################################
-  # Access Control Methods
+  # Current Rails Resource information
   ############################################################################
 
   # Returns the RemoteResource object representing
@@ -76,11 +76,29 @@ class RemoteResource < ActiveRecord::Base
     self.find(CBRAIN::SelfRemoteResourceId)
   end
 
+  # Returns a copy of the Rails DB configuration hash currently
+  # being used. This is a hash representing one DB config in
+  # database.yml.
+  def self.current_resource_db_config
+    myrailsenv = ENV["RAILS_ENV"] || "production"
+    myconfigs  = ActiveRecord::Base.configurations
+    myconfig   = myconfigs[myrailsenv].dup
+    myconfig
+  end
+
+
+
+  ############################################################################
+  # Access Control Methods
+  ############################################################################
+
   # Returns the site associated with the owner of this
   # remote resource.
   def site_affiliation
     @site_affiliation ||= self.user.site
   end
+
+
 
   ############################################################################
   # ActiveRecord callbacks
@@ -430,7 +448,6 @@ class RemoteResource < ActiveRecord::Base
   # This method automatically calls update_info if the information has
   # not been cached yet.
   def info
-
     return @info if @info
     @info = RemoteResourceInfo.dummy_record unless is_alive? 
     @info

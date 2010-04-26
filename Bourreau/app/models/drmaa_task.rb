@@ -59,7 +59,7 @@ class DrmaaTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  # These basename might get modified with suffixes appended to them.
+  # These basenames might get modified with suffixes appended to them.
   QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{id}.sh"
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
   QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
@@ -72,7 +72,7 @@ class DrmaaTask < ActiveRecord::Base
   # as necessary.
   serialize :params
 
-  # The attribute 'prerequisites' is a serialized has table
+  # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current
   # task depend on the states of other tasks. As an example,
   # if the hash is this:

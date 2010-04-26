@@ -431,7 +431,7 @@ class DataProvidersController < ApplicationController
                                :group_id         => @provider.group_id,
                                :data_provider_id => provider_id )
       if userfile.save
-        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user,"FileCollection Extraction") do
+        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user,"FileCollection Set Size") do
           userfile.set_size!
         end
         num_registered += 1

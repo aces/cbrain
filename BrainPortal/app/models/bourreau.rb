@@ -124,9 +124,7 @@ class Bourreau < RemoteResource
   protected
 
   def build_db_yml_for_tunnel #:nodoc:
-    myrailsenv = ENV["RAILS_ENV"] || "production"
-    myconfigs  = ActiveRecord::Base.configurations
-    myconfig   = myconfigs[myrailsenv].dup
+    myconfig = self.class.current_resource_db_config # a copy of the active config
 
     myconfig["host"]   = "127.0.0.1"
     myconfig["port"]   = self.tunnel_mysql_port

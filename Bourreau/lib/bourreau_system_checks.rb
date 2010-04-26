@@ -13,6 +13,8 @@ require 'socket'
 
 class BourreauSystemChecks < CbrainChecker
 
+  Revision_info="$Id$"
+
   def self.a010_ensure_configuration_variables_are_set
     
     #-----------------------------------------------------------------------------

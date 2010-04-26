@@ -92,7 +92,7 @@ class CBRAIN
             destination = User.find_by_login('admin')
             taskname += " (No Destination Provided!)"
           end
-          Message.send_internal_error_message(destination,"#{taskname} with PID #{Process.pid}",itswrong)
+          Message.send_internal_error_message(destination,taskname,itswrong)
         ensure
           ActiveRecord::Base.remove_connection
           Kernel.exit! # End of subchild.

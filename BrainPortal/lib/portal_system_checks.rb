@@ -10,7 +10,7 @@
 
 class PortalSystemChecks < CbrainChecker
   
-  RevisionInfo="$Id$"
+  Revision_info="$Id$"
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations
