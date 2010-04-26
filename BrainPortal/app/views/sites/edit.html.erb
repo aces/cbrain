@@ -28,15 +28,15 @@
   	       </tr>
   	   <% end %>
   	</table>
-  	<% for group in WorkGroup.all %>
   	<label for="groups">Groups</label>
-  	<table id="button_table">
-  	       <tr>
-  	         <td class="left_align"><%= h(group.name) -%></td>
-  	         <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
-  	       </tr>
-    </table>
+    <table id="button_table">
+  	<% for group in WorkGroup.all %>
+  	  <tr>
+  	    <td class="left_align"><%= h(group.name) -%></td>
+  	    <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
+  	  </tr>
   	<% end %>
+  	</table>
     <p>
       <%= f.submit "Update" %>
     </p>
