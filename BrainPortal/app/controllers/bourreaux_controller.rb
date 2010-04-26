@@ -16,7 +16,7 @@ class BourreauxController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :show]
+  before_filter :manager_role_required, :except  => [:index, :show, :row_data]
    
   def index #:nodoc:
     if current_user.has_role?(:admin)
