@@ -79,10 +79,10 @@ class RemoteResource < ActiveRecord::Base
   # Returns a copy of the Rails DB configuration hash currently
   # being used. This is a hash representing one DB config in
   # database.yml.
-  def self.current_resource_db_config
-    myrailsenv = ENV["RAILS_ENV"] || "production"
+  def self.current_resource_db_config(railsenv = nil)
+    railsenv ||= (ENV["RAILS_ENV"] || 'production')
     myconfigs  = ActiveRecord::Base.configurations
-    myconfig   = myconfigs[myrailsenv].dup
+    myconfig   = myconfigs[railsenv].dup
     myconfig
   end
 
@@ -160,9 +160,7 @@ class RemoteResource < ActiveRecord::Base
     # Setup DB tunnel
     if self.has_db_tunneling_info?
       remote_db_port  = self.tunnel_mysql_port
-      myconfigs       = ActiveRecord::Base.configurations
-      myrailsenv      = ENV["RAILS_ENV"] || "production"
-      myconfig        = myconfigs[myrailsenv]
+      myconfig        = self.class.current_resource_db_config
       local_db_host   = myconfig["host"]  || "localhost"
       local_db_port   = (myconfig["port"] || "3306").to_i
       master.add_tunnel(:reverse, remote_db_port, local_db_host, local_db_port)

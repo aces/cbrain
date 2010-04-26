@@ -30,7 +30,7 @@ class PortalSanityChecks < CbrainChecker
 
   #Checks to see if the validation was run since last change
   def self.done?
-    if SanityCheck.find_by_revision_info(RevisionInfo)
+    if SanityCheck.find_by_revision_info(Revision_info)
       true
     else
       false
@@ -51,7 +51,7 @@ class PortalSanityChecks < CbrainChecker
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
       puts "C> \t- Adding new sanity check record."
-      SanityCheck.new(:revision_info => RevisionInfo).save! #Adding new SanityCheck record
+      SanityCheck.new(:revision_info => Revision_info).save! #Adding new SanityCheck record
       
       
       

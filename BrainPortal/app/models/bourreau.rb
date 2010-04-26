@@ -43,14 +43,14 @@ class Bourreau < RemoteResource
       return false
     end
 
+    # What environment will it run under?
+    myrailsenv = ENV["RAILS_ENV"] || "production"
+
     # If we tunnel the DB, we get a non-blank yml file here
-    db_yml  = self.has_db_tunneling_info?   ?   self.build_db_yml_for_tunnel : ""
+    db_yml  = self.has_db_tunneling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
 
     # What port the Rails Bourreau will listen to?
     port = self.has_actres_tunneling_info?  ?   self.tunnel_actres_port : self.actres_port
-
-    # What environment will it run under?
-    myrailsenv = ENV["RAILS_ENV"] || "production"
 
     # File to capture command output.
     captfile = "/tmp/start.out.#{Process.pid}"
@@ -123,8 +123,8 @@ class Bourreau < RemoteResource
 
   protected
 
-  def build_db_yml_for_tunnel #:nodoc:
-    myconfig = self.class.current_resource_db_config # a copy of the active config
+  def build_db_yml_for_tunnel(railsenv) #:nodoc:
+    myconfig = self.class.current_resource_db_config(railsenv) # a copy of the active config
 
     myconfig["host"]   = "127.0.0.1"
     myconfig["port"]   = self.tunnel_mysql_port
@@ -136,7 +136,7 @@ class Bourreau < RemoteResource
           "# by " + self.revision_info.svn_id_pretty_file_rev_author_date + "\n" +
           "#\n" +
           "\n" +
-          "#{myrailsenv}:\n"
+          "#{railsenv}:\n"
     myconfig.each do |field,val|
        yml += "  #{field}: #{val.to_s}\n"
     end
