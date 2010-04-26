@@ -118,7 +118,7 @@ jQuery(
 	      }
 	      jQuery(element).html("<span>"+ error_message +"</span>");
 	    },
-	    timeout: 20000
+	    timeout: 50000
 
 
 	  });
@@ -177,7 +177,7 @@ jQuery(
 	  },
           data: {},
 	  async: true,
-	  timeout: 5000
+	  timeout: 50000
 
         });
 
