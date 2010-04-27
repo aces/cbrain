@@ -43,6 +43,7 @@ require 'log4r'
 #   stop_signal_received?()
 #   stop_me()
 #   cancel_stop_me()
+#   is_proxy_alive?()
 #
 # The :proxy side can interact with the :worker side with
 # these methods:
@@ -102,6 +103,10 @@ class Worker
   attr_accessor :sleep_mode
   # Sleep interval: in sleep mode, how long we sleep.
   attr_accessor :sleep_interval
+  # Process id of the proxy process (that is, the controller)
+  # If we're a proxy it's ourselves, so it's the same as
+  # Process.pid and worker.pid
+  attr_accessor :proxy_pid
 
   # Return to public context
   public
@@ -131,6 +136,7 @@ class Worker
     self.pidfile        = ""
     self.pid            = nil
     self.role           = :proxy
+    self.proxy_pid      = Process.pid
     self.check_interval = 10
     self.sleep_interval = nil
     self.stop_received  = nil
@@ -178,13 +184,14 @@ class Worker
     return true if self.is_alive?
 
     # Default name
-    self.name = self.class.to_s unless self.name
+    self.name      = self.class.to_s unless self.name
+    self.proxy_pid = Process.pid
 
     # We are saving pid in the worker 'proxy' instance that stays on rails app side.
     self.pid = CBRAIN.spawn_with_active_records(self.message_notifiee,self.name) do
 
       # This block is excecuted by the newly created worker process.
-      self.pid = Process.pid # the worker's PID now
+      self.pid  = Process.pid # the worker's PID now
       self.role = :worker
       @pretty_name = nil # need to be reset as it is cached inside pretty_name()
       Kernel.at_exit { self.delete_pidfile }
@@ -302,18 +309,20 @@ class Worker
   # Makes sure that a process runs for this worker-proxy.
   def process_ok? #:nodoc:
     self.validate_I_am_a_proxy
-    unless self.pid.blank?
-      process_info = ProcTable.ps(self.pid)
-      if process_info
-        procuid   = process_info.ruid rescue nil
-        procuid ||= process_info.uid rescue nil
-        if procuid && (Process.uid == procuid || Process.euid == procuid)
-          return true
-        end
-      end
-    end
+    return true if ! self.pid.blank? && self.process_running?(self.pid)
     self.delete_pidfile
     return false
+  end
+
+  # Returns true if process identified by +pid+ exists and
+  # belongs to us.
+  def process_running?(somepid) #:nodoc:
+    process_info = ProcTable.ps(somepid)
+    return false unless process_info
+    procuid   = process_info.ruid rescue nil
+    procuid ||= process_info.uid  rescue nil
+    return process_info if procuid && (Process.uid == procuid || Process.euid == procuid)
+    false
   end
 
   # Main worker loop. +do_regular_work+ and +finalize+ are provided by subclasses.
@@ -527,6 +536,16 @@ class Worker
     self.validate_I_am_a_worker
     self.worker_log.debug "Cancelling own stopping."
     self.stop_received=false
+  end
+
+  # Worker-side method.
+  #
+  # Returns true if the proxy side process that launched us
+  # is still running.
+  def is_proxy_alive?
+    self.validate_I_am_a_worker
+    return true if self.process_running?(self.proxy_pid)
+    false
   end
 
 

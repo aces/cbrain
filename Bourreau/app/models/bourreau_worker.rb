@@ -24,6 +24,13 @@ class BourreauWorker < Worker
 
   def do_regular_work
 
+    # Exit if the Bourreau is dead
+    unless is_proxy_alive?
+      worker_log.info "Bourreau has exited, so I'm quitting too. So long!"
+      self.stop_me
+      return false
+    end
+
     # Asks the DB for the list of tasks that need handling.
     worker_log.debug "Finding list of active tasks."
     tasks_todo = DrmaaTask.find(:all,
