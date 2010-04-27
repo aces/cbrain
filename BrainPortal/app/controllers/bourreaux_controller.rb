@@ -148,7 +148,7 @@ class BourreauxController < ApplicationController
 
   def destroy #:nodoc:
     id        = params[:id]
-    @bourreau = Bourreau.find(id)
+    @bourreau = RemoteResource.find(id)
     @destroyed = false
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
@@ -176,8 +176,8 @@ class BourreauxController < ApplicationController
   end
   
   def row_data
-    @bourreau = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    render :partial => 'bourreau_row_elements', :locals  => {:bour  => @bourreau}
+    @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
+    render :partial => 'bourreau_row_elements', :locals  => {:bour  => @remote_resource}
   end
 
   def start
