@@ -70,7 +70,7 @@ class ScirLocalSession < Scir::Session
 
   def queue_tasks_tot_max
     loadav = `uptime`.strip
-    loadav.match(/averages:\s*([\d\.]+)/)
+    loadav.match(/averages?:\s*([\d\.]+)/i)
     loadtxt = Regexp.last_match[1] || "unknown"
     case CBRAIN::System_Uname
     when /Linux/i
