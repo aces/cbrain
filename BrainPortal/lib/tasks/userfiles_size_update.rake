@@ -6,7 +6,11 @@ namespace :db do
     min_size = args.min_size.to_i
     Userfile.all(:conditions  => ["size > ?", min_size]).each do |u|
       puts "Recalculating size for #{u.name}."
-      u.set_size!
+      begin
+        u.set_size!
+      rescue => e
+        puts "Could not recalculate size for #{u.name}: #{e.message}"
+      end
     end
     puts "\nDone!"
   end
