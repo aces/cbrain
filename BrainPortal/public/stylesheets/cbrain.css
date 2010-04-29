@@ -1210,6 +1210,15 @@ table.resource_list td.checkbox {
     
 }
 
+.menu_bar {
+    padding: 0.5em;
+    margin-top: 1em;
+    width: 960px;
+    margin-left: 5px;
+    
+}
+
+
 #feedback_box{
     border: 2px solid #6699CC;
     padding: 0.5em;
@@ -1640,6 +1649,7 @@ table.resource_list td.checkbox {
     padding: 5px 5px 5px 15px;
     font-size: 12px;
     margin: -7px;
+    width: auto;
     background-color: #c00;
     color: #fff;
 }
