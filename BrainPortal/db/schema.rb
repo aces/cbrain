@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100209191826) do
+ActiveRecord::Schema.define(:version => 20100428153428) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -236,7 +236,7 @@ ActiveRecord::Schema.define(:version => 20100209191826) do
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"
-    t.integer  "size"
+    t.integer  "size",             :limit => 24, :precision => 24, :scale => 0
     t.integer  "user_id"
     t.integer  "parent_id"
     t.integer  "lft"
@@ -247,7 +247,7 @@ ActiveRecord::Schema.define(:version => 20100209191826) do
     t.string   "task"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",   :default => false
+    t.boolean  "group_writable",                                                :default => false
     t.integer  "num_files"
   end
 
