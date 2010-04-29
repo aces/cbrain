@@ -582,13 +582,4 @@ module ApplicationHelper
     return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
   end
   
-  def delete_button(value, html_opts={})
-    html_opts[:class] ||= ""
-    html_opts[:class] += " button"
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
-    return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
-  end
-  
- 
-
 end
