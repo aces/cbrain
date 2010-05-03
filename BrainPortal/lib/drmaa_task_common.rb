@@ -34,6 +34,12 @@ module DrmaaTaskCommon
     @bourreau ||= Bourreau.find(self.bourreau_id)
   end
 
+
+
+  ##################################################################
+  # Useful ID Generators
+  ##################################################################
+
   # Returns an ID string containing both the bourreau_id +bid+
   # and the task ID +tid+ in format "bid/tid". Example:
   #     "3/4"   # Bourreau #3, task #4
@@ -56,71 +62,130 @@ module DrmaaTaskCommon
     @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
+
+
+  ##################################################################
+  # Run Number ID Methods
+  ##################################################################
+
+  # Returns the 'run_number' of a task; this allows running the same
+  # task multiple times in the same work directory. The run number
+  # is increased after each succesful 'restart' operation, but it
+  # stays the same in error recovery modes.
+  def run_number
+    super || 1
+  end
+
+  # A string, in format "#{task_id}-#{run_number}"
+  def run_id
+    "#{self.id}-#{self.run_number}"
+  end
+
+
+
+  ##################################################################
+  # Prerequisites Methods And State Tables
+  ##################################################################
+
   # List of prerequisites states and the set of states that
   # fulfill them.
   PREREQS_STATES_COVERED_BY = {
  
     'Queued' => {
-                  'New'                   => :wait,
-                  'Setting Up'            => :wait,
-                  'Queued'                => :go,
-                  'On Hold'               => :go,
-                  'On CPU'                => :go,
-                  'Suspended'             => :go,
-                  'Data Ready'            => :go,
-                  'Post Processing'       => :go,
-                  'Completed'             => :go,
-                  'Failed To Setup'       => :fail,
-                  'Failed To PostProcess' => :fail,
-                  'Failed Prerequisites'  => :fail
+                  'New'                              => :wait,
+                  'Setting Up'                       => :wait,
+                  'Queued'                           => :go,
+                  'On Hold'                          => :go,
+                  'On CPU'                           => :go,
+                  'Suspended'                        => :go,
+                  'Data Ready'                       => :go,
+                  'Post Processing'                  => :go,
+                  'Completed'                        => :go,
+                  'Terminated'                       => :fail,
+                  'Failed To Setup'                  => :fail,
+                  'Failed To PostProcess'            => :fail,
+                  'Failed On Cluster'                => :fail,
+                  'Failed Setup Prerequisites'       => :fail,
+                  'Failed PostProcess Prerequisites' => :fail,
                 },
 
     'Data Ready' => {
-                  'New'                   => :wait,
-                  'Setting Up'            => :wait,
-                  'Queued'                => :wait,
-                  'On Hold'               => :wait,
-                  'On CPU'                => :wait,
-                  'Suspended'             => :wait,
-                  'Data Ready'            => :go,
-                  'Post Processing'       => :go,
-                  'Completed'             => :go,
-                  'Failed To Setup'       => :fail,
-                  'Failed To PostProcess' => :fail,
-                  'Failed Prerequisites'  => :fail
+                  'New'                              => :wait,
+                  'Setting Up'                       => :wait,
+                  'Queued'                           => :wait,
+                  'On Hold'                          => :wait,
+                  'On CPU'                           => :wait,
+                  'Suspended'                        => :wait,
+                  'Data Ready'                       => :go,
+                  'Post Processing'                  => :go,
+                  'Completed'                        => :go,
+                  'Terminated'                       => :fail,
+                  'Failed To Setup'                  => :fail,
+                  'Failed To PostProcess'            => :fail,
+                  'Failed On Cluster'                => :fail,
+                  'Failed Setup Prerequisites'       => :fail,
+                  'Failed PostProcess Prerequisites' => :fail
                 },
 
     'Completed' => {
-                  'New'                   => :wait,
-                  'Setting Up'            => :wait,
-                  'Queued'                => :wait,
-                  'On Hold'               => :wait,
-                  'On CPU'                => :wait,
-                  'Suspended'             => :wait,
-                  'Data Ready'            => :wait,
-                  'Post Processing'       => :wait,
-                  'Completed'             => :go,
-                  'Failed To Setup'       => :fail,
-                  'Failed To PostProcess' => :fail,
-                  'Failed Prerequisites'  => :fail
+                  'New'                              => :wait,
+                  'Setting Up'                       => :wait,
+                  'Queued'                           => :wait,
+                  'On Hold'                          => :wait,
+                  'On CPU'                           => :wait,
+                  'Suspended'                        => :wait,
+                  'Data Ready'                       => :wait,
+                  'Post Processing'                  => :wait,
+                  'Completed'                        => :go,
+                  'Terminated'                       => :fail,
+                  'Failed To Setup'                  => :fail,
+                  'Failed To PostProcess'            => :fail,
+                  'Failed On Cluster'                => :fail,
+                  'Failed Setup Prerequisites'       => :fail,
+                  'Failed PostProcess Prerequisites' => :fail
                 },
 
     'Failed' => {
-                  'New'                   => :wait,
-                  'Setting Up'            => :wait,
-                  'Queued'                => :wait,
-                  'On Hold'               => :wait,
-                  'On CPU'                => :wait,
-                  'Suspended'             => :wait,
-                  'Data Ready'            => :wait,
-                  'Post Processing'       => :wait,
-                  'Completed'             => :fail,
-                  'Failed To Setup'       => :go,
-                  'Failed To PostProcess' => :go,
-                  'Failed Prerequisites'  => :fail
+                  'New'                              => :wait,
+                  'Setting Up'                       => :wait,
+                  'Queued'                           => :wait,
+                  'On Hold'                          => :wait,
+                  'On CPU'                           => :wait,
+                  'Suspended'                        => :wait,
+                  'Data Ready'                       => :wait,
+                  'Post Processing'                  => :wait,
+                  'Completed'                        => :fail,
+                  'Terminated'                       => :fail, # a terminated task is not 'failed'
+                  'Failed To Setup'                  => :go,
+                  'Failed To PostProcess'            => :go,
+                  'Failed On Cluster'                => :go,
+                  'Failed Setup Prerequisites'       => :go,
+                  'Failed PostProcess Prerequisites' => :go
                 }
 
   }
+
+  # The previous table is missing lots of entries that are common
+  # to all prereq states; we add them here.
+  PREREQS_STATES_COVERED_BY.each_value do |states_go_wait_fail|
+    states_go_wait_fail.merge!(
+        {
+          'Recover Setup'          => :wait,
+          'Recover Cluster'        => :wait,
+          'Recover PostProcess'    => :wait,
+          'Recovering Setup'       => :wait,
+          'Recovering Cluster'     => :wait,
+          'Recovering PostProcess' => :wait,
+          'Restart Setup'          => :wait,
+          'Restart Cluster'        => :wait,
+          'Restart PostProcess'    => :wait,
+          'Restarting Setup'       => :wait,
+          'Restarting Cluster'     => :wait,
+          'Restarting PostProcess' => :wait
+        }
+    )
+  end
+   
 
   # This method adds a prerequisite entry in the task's object;
   # the prerequisite will indicate that in order for the task to

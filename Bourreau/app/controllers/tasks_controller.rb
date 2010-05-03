@@ -84,6 +84,27 @@ class TasksController < ApplicationController
       @task.release      if newstatus == "Queued"
       @task.terminate    if newstatus == "Terminated"
 
+      # These actions trigger special handling code in the workers
+      @task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
+      @task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' tasks only
+
+      # The 'Duplicate' operation copies the task object into a brand new task.
+      # As a side effect, the task can be reassigned to another Bourreau too
+      # (Note that the task will fail at Setup if the :share_wd_id attribute specify
+      # a task that is now on the original Bourreau).
+      # Duplicating a task could also be performed on the client side (BrainPortal).
+      if (newstatus == 'Duplicate')
+        new_bourreau_id = newparams['bourreau_id'] || @task.bourreau_id || RemoteResource.current_resource.id
+        @new_task = @task.class.new(@task.attributes) # a kind of DUP!
+        @new_task.bourreau_id   = new_bourreau_id
+        @new_task.drmaa_jobid   = nil
+        @new_task.drmaa_workdir = nil
+        @new_task.run_number    = 1
+        @new_task.status        = "New"
+        @new_task.addlog_context(self,"Duplicated from task '#{@task.bname_tid}'.")
+        @task=@new_task
+      end
+
       if !@task.changed?
         format.xml { render :xml => @task.to_xml }
       elsif @task.save
@@ -117,7 +138,8 @@ class TasksController < ApplicationController
   def find_or_initialize_task
     if params[:id]
       if @task = DrmaaTask.find_by_id(params[:id], :conditions => { :bourreau_id => CBRAIN::BOURREAU_ID } )
-        @task.update_status
+        # No need to update the status anymore, the Workers do it.
+        #@task.update_status
       else
         render_optional_error_file :not_found
       end

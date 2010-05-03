@@ -129,10 +129,10 @@ class DrmaaTask < ActiveRecord::Base
   #
   # The method has of course access to all the
   # fields of ActiveRecord, but the only
-  # two that are of use are self.params and
-  # self.drmaa_workdir (and, graciously, when
-  # this method is called, it's already the current
-  # working directory).
+  # two that are of used are self.params and
+  # self.drmaa_workdir (which graciously when is
+  # already the current working directory when
+  # this method is called).
   def setup
     true
   end
@@ -157,6 +157,74 @@ class DrmaaTask < ActiveRecord::Base
   # self.drmaa_workdir.
   def save_results
     true
+  end
+
+
+
+  ##################################################################
+  # Main User API Methods
+  # Error recovery and restarts
+  ##################################################################
+
+  # This needs to be redefined in a subclass.
+  # This method must do what is necessary to figure out
+  # why a task was in 'Failed To Setup' and fix things.
+  # If it returns true, the task will be sent back to the
+  # 'New' state. The run_number will stay the same.
+  def recover_from_setup_failure
+    false
+  end
+
+  # This needs to be redefined in a subclass.
+  # This method must do what is necessary to figure out
+  # why a task was in 'Failed On Cluser' and fix things.
+  # If it returns true, the task will be restarted on
+  # the cluster (with a new job ID) and returned to
+  # stated 'Queued'. The run_number will stay the same.
+  def recover_from_cluster_failure
+    false
+  end
+
+  # This needs to be redefined in a subclass.
+  # This method must do what is necessary to figure out
+  # why a task was in 'Failed To PostProcess' and fix things.
+  # If it returns true, the task will be sent back to the
+  # 'Data Ready' state. The run_number will stay the same.
+  def recover_from_post_processing_failure
+    false
+  end
+
+  # This needs to be redefined in a subclass.
+  # This method must prepare the task's work directory
+  # such that it can be restarted anew from the 'Setting
+  # Up' state. If the method returns false, the task
+  # cannot be restarted in this way. Note that the
+  # run_number will be increased by one if a restart is
+  # attempted.
+  def restart_at_setup
+    false
+  end
+
+  # This needs to be redefined in a subclass.
+  # This method must prepare the task's work directory
+  # such that it can be restarted anew from the 'Queued'
+  # state. If the method returns false, the task
+  # cannot be restarted in this way. Note that the
+  # run_number will be increased by one if a restart is
+  # attempted.
+  def restart_at_cluster
+    false
+  end
+
+  # This needs to be redefined in a subclass.
+  # This method must prepare the task's work directory
+  # such that it can be restarted anew from the 'Post'
+  # Processing' state. If the method returns false, the task
+  # cannot be restarted in this way. Note that the
+  # run_number will be increased by one if a restart is
+  # attempted.
+  def restart_at_post_processing
+    false
   end
 
 
@@ -193,8 +261,7 @@ class DrmaaTask < ActiveRecord::Base
         end
       end
     rescue => e
-      self.addlog("Exception raised while setting up: #{e.class.to_s}: #{e.message}")
-      e.backtrace.slice(0,10).each { |m| self.addlog(m) }
+      self.addlog_exception(e,"Exception raised while setting up:")
       self.status = "Failed To Setup"
     end
 
@@ -221,14 +288,14 @@ class DrmaaTask < ActiveRecord::Base
         saveok = self.save_results
       end
       if ! saveok
-        self.status = "Failed To PostProcess"
+        self.status = "Failed On Cluster"
+        self.addlog("Data processing failed on the cluster.")
       else
         self.addlog("Asynchronous postprocessing completed.")
         self.status = "Completed"
       end
     rescue Exception => e
-      self.addlog("Exception raised while post processing results: #{e.class.to_s}: #{e.message}")
-      e.backtrace.slice(0,10).each { |m| self.addlog(m) }
+      self.addlog_exception(e,"Exception raised while post processing results:")
       self.status = "Failed To PostProcess"
     end
 
@@ -238,7 +305,7 @@ class DrmaaTask < ActiveRecord::Base
   # Possible returned status values:
   # [<b>New</b>] The task is new and not yet set up.
   # [<b>Setting Up</b>] The task is in its asynchronous 'setup' state.
-  # [<b>Failed To *</b>]  (To Start, to Setup, etc) The task failed at some stage.
+  # [<b>Failed *</b>]  (To Setup, On Cluster, etc) The task failed at some stage.
   # [<b>Queued</b>] The task is queued.
   # [<b>On CPU</b>] The task is underway.
   # [<b>Data Ready</b>] The task has been completed, but data has not been sent back to BrainPortal.
@@ -264,7 +331,7 @@ class DrmaaTask < ActiveRecord::Base
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing)$/)
+    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart)$/)
 
     # This is the expensive call, the one that queries the cluster.
     drmaastatus = self.drmaa_status
@@ -387,6 +454,51 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
+  # Methods For Recovering From Failed Tasks
+  # Methods For Restarting Completed Tasks
+  ##################################################################
+
+  # This triggers the recovery mechanism for all Failed tasks.
+  # This simply sets a special value in the 'status' field
+  # that will be handled by the Bourreau Worker.
+  def recover
+    curstat = self.status
+    if curstat =~ /^Failed (Setup|PostProcess) Prerequisites$/
+      failed_where = Regexp.last_match[1]
+      self.addlog("Resetting prerequisites checking for '#{failed_where}'.")
+      self.status = "New"        if failed_where == "Setup"
+      self.status = "Data Ready" if failed_where == "PostProcess"
+      return
+    end
+    begin
+      return unless curstat =~ /^Failed (To Setup|On Cluster|To PostProcess)$/
+      failedwhen = Regexp.last_match[1]
+      self.addlog("Scheduling recovery from '#{curstat}'.")
+      self.status = "Recover Setup"       if failedwhen == "To Setup"
+      self.status = "Recover Cluster"     if failedwhen == "On Cluster"
+      self.status = "Recover PostProcess" if failedwhen == "To PostProcess"
+    rescue
+      # nothing to do
+    end
+  end
+
+  # This triggers the restart mechanism for all Completed tasks.
+  # This simply sets a special value in the 'status' field
+  # that will be handled by the Bourreau Worker.
+  def restart(atwhat)
+    begin
+      return unless self.status == 'Completed'
+      return unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
+      self.addlog("Scheduling restart at '#{atwhat}'.")
+      self.status="Restart #{atwhat}" # will be handled by worker
+    rescue
+      # nothing to do
+    end
+  end
+
+
+
+  ##################################################################
   # Prerequisites Fulfillment Evaluation Methods
   ##################################################################
 
@@ -434,8 +546,7 @@ class DrmaaTask < ActiveRecord::Base
     self.save
     return :fail
   rescue => e
-    self.addlog("Prerequisite Check Exception: #{e.message}")
-    e.backtrace[0..15].each { |m| self.addlog(m) }
+    self.addlog_exception(e,"Prerequisite Check Exception:")
     self.save
     return :fail
   end
@@ -524,6 +635,21 @@ class DrmaaTask < ActiveRecord::Base
     full_message   = "#{class_name} revision #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
     self.addlog(full_message, :no_caller => true )
+  end
+
+  # Records in the task's log the info about an exception.
+  # This happens frequently not only in this code here
+  # but also in subclasses, in the Bourreau controller and in
+  # the BourreauWorkers, so it's worth having this utility.
+  # The method can also be called by DrmaaTask programmers.
+  def addlog_exception(exception,message="Exception raised:",backtrace_lines=15) #:nodoc:
+    message = "Exception raised:" if message.blank?
+    message.sub!(/[\s:]*$/,":")
+    self.addlog("#{message} #{exception.class}: #{exception.message}")
+    if backtrace_lines > 0
+      backtrace_lines = exception.backtrace.size - 1 if backtrace_lines >= exception.backtrace.size
+      exception.backtrace[1..backtrace_lines].each { |m| self.addlog(m) }
+    end
   end
 
 
@@ -641,24 +767,6 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
-  # Task Rescheduling Methods (experimental, future)
-  ##################################################################
-
-  # Allows running the same
-  # task multiple times in the same work directory.
-  # Right now only returns the constant int '1'.
-  def run_number
-    super || 1
-  end
-
-  # A string, in format "#{task_id}-#{run_number}"
-  def run_id
-    "#{self.id}-#{self.run_number}"
-  end
-
-
-
-  ##################################################################
   # Cluster Task Creation Methods
   ##################################################################
 
@@ -737,6 +845,12 @@ class DrmaaTask < ActiveRecord::Base
 
   end
 
+
+
+  ##################################################################
+  # Cluster Job Shared Work Directory Methods
+  ##################################################################
+
   # Create the directory in which to run the job.
   # If the task contains the ID of another task in
   # the attribute :share_wd_tid, then that other
@@ -760,9 +874,7 @@ class DrmaaTask < ActiveRecord::Base
     user = self.user.login
     self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
-    unless Dir.mkdir(self.drmaa_workdir,0700)
-      cb_error "Cannot create directory '#{self.drmaa_workdir}': $!"
-    end
+    Dir.mkdir(self.drmaa_workdir,0700) unless File.directory?(self.drmaa_workdir)
   end
 
   # Remove the directory created to run the job.
@@ -774,6 +886,12 @@ class DrmaaTask < ActiveRecord::Base
       self.drmaa_workdir = nil
     end
   end
+
+
+
+  ##################################################################
+  # Cluster Job's STDOUT And STDERR Files Methods
+  ##################################################################
 
   # Returns the filename for the job's captured STDOUT
   # Returns nil if the work directory has not yet been

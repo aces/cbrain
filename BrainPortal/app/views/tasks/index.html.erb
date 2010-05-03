@@ -21,9 +21,9 @@
       <div id="main_task_content">
           <div class = "resource_list_upper_form">
           <br>        
-                 <%= select_tag(
-                    "operation",
-                    '
+                 <%= select_tag( "operation",
+
+                    <<-"OPTIONS_FOR_TASKS"
                     <option value="">Operations on selected tasks:</option>
                   
                     <optgroup label="Operations for queued tasks">
@@ -34,10 +34,20 @@
                     <option value="suspend">Suspend running tasks</option>
                     <option value="resume">Resume suspended tasks</option>
                   
+                    <optgroup label="Operations for failed tasks">
+                    <option value="recover">Trigger recovery and restart code</option>
+
+                    <optgroup label="Operations for completed tasks">
+                    <option value="restart_setup">Restart tasks at "Setup" stage</option>
+                    <option value="restart_cluster">Restart tasks at "Cluster" stage</option>
+                    <option value="restart_postprocess">Restart tasks at "Post Processing" stage</option>
+
                     <optgroup label="Operations for all tasks">
+                    <option value="duplicate">Duplicate selected tasks and start them anew</option>
                     <option value="terminate">Terminate selected tasks</option>
                     <option value="delete">Remove selected tasks</option>
-                    '
+                    OPTIONS_FOR_TASKS
+
                     ) %>
             
                     <%= submit_tag("Apply Operation") %>

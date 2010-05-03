@@ -41,37 +41,58 @@ class DrmaaTask < ActiveResource::Base
   include DrmaaTaskCommon
 
   COMPLETED_STATUS = ["Completed"]
-  RUNNING_STATUS   = ["On CPU", "Queued", "New", "Data Ready", "Setting Up"]
-  FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed Prerequisites" ]
+  RUNNING_STATUS   = ["New", "Setting Up", "Queued", "On CPU", "Suspended", "On Hold", "Data Ready", "Post Processing"]
+  FAILED_STATUS    = ["Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
+                      "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
+                      "Terminated" ]
+  RECOVER_STATUS   = ["Recover Setup",    "Recover Cluster",    "Recover PostProcess",
+                      "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
+  RESTART_STATUS   = ["Restart Setup",    "Restart Cluster",    "Restart PostProcess",
+                      "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
 
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
   # simply setting the task's status to the value modifies the
   # task's state). This is used in the tasks controller.
   OperationToNewStatus = {
-    # HTML page
-    # op keyw   =>  New status
-    #----------    ------------
-    "hold"      => "On Hold",
-    "release"   => "Queued",
-    "suspend"   => "Suspended",
-    "resume"    => "On CPU",
-    "terminate" => "Terminated"
+    # HTML page keyword   =>  New status
+    #------------------   -----------------
+    "hold"                => "On Hold",
+    "release"             => "Queued",
+    "suspend"             => "Suspended",
+    "resume"              => "On CPU",
+    "terminate"           => "Terminated",
+    "recover"             => "Recover",
+    "restart_setup"       => "Restart Setup",
+    "restart_cluster"     => "Restart Cluster",
+    "restart_postprocess" => "Restart PostProcess",
+    "duplicate"           => "Duplicate"
   }
 
   # In order to optimize the set of state transitions
   # allowed in the tasks, this hash list when we can
-  # attempt to change the tasks states. This is also
-  # used by the tasks controller.
-  AllowedOperations = { # destroy is handled differently
-    # Current   =>   List of states we can change to
-    #----------    ------------------------------
-    "Queued"    => [ "Terminated", "On Hold"   ],
-    "On Hold"   => [ "Terminated", "Queued"    ],
-    "On CPU"    => [ "Terminated", "Suspended" ],
-    "Suspended" => [ "Terminated", "On CPU"    ]
-    # Other transitions not used by the interface,
-    # as they cannot be triggered by the user.
+  # attempt to change the tasks states. This is
+  # used by the tasks controller so as not to send
+  # messages to Bourreaux to do stuff on tasks that
+  # are not ready for it anyway.
+  AllowedOperations = { # destroy is handled differently and separately
+    # Current                          =>   List of states we can change to
+    #--------------------------------  ------------------------------
+    "Queued"                           => [ "Duplicate", "Terminated", "On Hold"   ],
+    "On Hold"                          => [ "Duplicate", "Terminated", "Queued"    ],
+    "On CPU"                           => [ "Duplicate", "Terminated", "Suspended" ],
+    "Suspended"                        => [ "Duplicate", "Terminated", "On CPU"    ],
+    "Failed To Setup"                  => [ "Duplicate", "Recover" ],
+    "Failed On Cluster"                => [ "Duplicate", "Recover" ],
+    "Failed To PostProcess"            => [ "Duplicate", "Recover" ],
+    "Failed Setup Prerequisites"       => [ "Duplicate", "Recover" ],
+    "Failed PostProcess Prerequisites" => [ "Duplicate", "Recover" ],
+    "Terminated"                       => [ "Duplicate" ],
+    "Completed"                        => [ "Duplicate", "Restart Setup", "Restart Cluster", "Restart PostProcess" ]
+    # Other transitions are not used by the interface,
+    # as they cannot be triggered by the user. For
+    # instance, "On CPU" to "Data Ready", which is
+    # handled by the Bourreau Workers.
   }
 
   # This sets the default resource address to an
@@ -174,6 +195,7 @@ class DrmaaTask < ActiveResource::Base
       obj.prerequisites  = nil unless attrs.has_key?('prerequisites')
       obj.params         = {}  unless attrs.has_key?('params')
       obj.status         = nil unless attrs.has_key?('status')
+      obj.run_number     = 1   unless attrs.has_key?('run_number')
       obj.description    = nil unless attrs.has_key?('description')
     end
   end

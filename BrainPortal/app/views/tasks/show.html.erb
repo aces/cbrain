@@ -13,43 +13,58 @@
 -%>
 
 <% title 'Task Info' %>
+
 <h2>Task Information</h2>
 
-
 <div class = "generalcontent">
+<div class = "generalbox">
 
-   
-   <div class= "generalbox">
+<table border="0">
+<tr><th>Operations:</th>
 
    <!-- HOLD & RELEASE -->
    <% if @task.status == 'Queued' %>
-     <%= button_to 'Hold Task',    :action => 'operation', :params => { 'operation' => 'hold', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Hold Task',    :action => 'operation', :params => { 'operation' => 'hold', 'tasklist[]' => @task.id } %></td>
    <% end %>
    <% if @task.status == 'On Hold' %>
-     <%= button_to 'Release Task', :action => 'operation', :params => { 'operation' => 'release', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Release Task', :action => 'operation', :params => { 'operation' => 'release', 'tasklist[]' => @task.id } %></td>
    <% end %>
 
    <!-- SUSPEND & RESUME -->
    <% if @task.status == 'On CPU' %>
-     <%= button_to 'Suspend Task', :action => 'operation', :params => { 'operation' => 'suspend', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Suspend Task', :action => 'operation', :params => { 'operation' => 'suspend', 'tasklist[]' => @task.id } %></td>
    <% end %>
    <% if @task.status == 'Suspended' %>
-     <%= button_to 'Resume Task',  :action => 'operation', :params => { 'operation' => 'resume', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Resume Task',  :action => 'operation', :params => { 'operation' => 'resume', 'tasklist[]' => @task.id } %></td>
    <% end %>
 
    <!-- TERMINATE & REMOVE -->
    <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
-     <%= button_to 'Terminate Task', :action => 'operation', :params => { 'operation' => 'terminate', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Terminate Task', :action => 'operation', :params => { 'operation' => 'terminate', 'tasklist[]' => @task.id } %></td>
    <% end %>
    <% if @task.status =~ /New|Queued|On Hold|On CPU|Suspended|Failed.*|Completed/ %>
-     <%= button_to 'Remove Task',  :action => 'operation', :params => { 'operation' => 'delete', 'tasklist[]' => @task.id } %>
+     <td><%= button_to 'Remove Task',  :action => 'operation', :params => { 'operation' => 'delete', 'tasklist[]' => @task.id } %></td>
+   <% end %>
+
+   <!-- FAILURE RECOVERY -->
+   <% if @task.status =~ /^Failed*/ %>
+     <td><%= button_to 'Recover From Failure', :action => 'operation', :params => { 'operation' => 'recover', 'tasklist[]' => @task.id } %></td>
+   <% end %>
+
+   <!-- RESTART -->
+   <% if @task.status == 'Completed' %>
+     <td><%= button_to 'Restart At Setup', :action => 'operation', :params => { 'operation' => 'restart_setup', 'tasklist[]' => @task.id } %></td>
+     <td><%= button_to 'Restart On Cluster', :action => 'operation', :params => { 'operation' => 'restart_cluster', 'tasklist[]' => @task.id } %></td>
+     <td><%= button_to 'Restart At PostProcessing', :action => 'operation', :params => { 'operation' => 'restart_postprocess', 'tasklist[]' => @task.id } %></td>
    <% end %>
 
    <!-- REFRESH -->
    <% if @task.status =~ /Setting Up|Post Processing/ %>
-     <%= button_to 'Refresh',      :action => 'show', :id => @task.id %>
+     <td><%= button_to 'Refresh',      :action => 'show', :id => @task.id %></td>
    <% end %>
-   
+</tr></table>
+
+
    <table class ="showtasksdisplay">
 
       <tr>
@@ -155,5 +170,6 @@
           <td class="left_align"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>
       </tr>
    </table>
+
 </div>
 </div>
