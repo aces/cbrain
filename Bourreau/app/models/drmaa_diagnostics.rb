@@ -15,12 +15,15 @@ class DrmaaDiagnostics < DrmaaTask
 
   Revision_info="$Id$"
 
+  # Overrides the default addlog() method such that each
+  # log entry is also sent to STDOUT.
   def addlog(message,options={})
     puts "DIAGNOSTICS: #{self.bname_tid} #{message}"
     super(message,options.dup.merge( :caller_level => 1 ))
   end
 
-  #See DrmaaTask.
+  # Synchronize the userfiles given in argument, measuring
+  # the performance (and success or failure).
   def setup
     params       = self.params
     user_id      = self.user_id
@@ -29,6 +32,7 @@ class DrmaaDiagnostics < DrmaaTask
     file_ids     = files_hash.values
 
     self.addlog "Starting diagnostics setup on #{file_ids.size} files."
+    self.addlog "This task is copy #{params[:copy_number]} of #{params[:copy_total]}."
 
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
@@ -55,12 +59,18 @@ class DrmaaDiagnostics < DrmaaTask
       sleep setup_delay
     end
 
-    cb_error "This program crashed on purpose, as ordered." unless params[:setup_crash].blank?
+    unless params[:setup_crash].blank?
+      params[:setup_crash]=nil unless params[:crash_will_reset].blank?
+      cb_error "This program crashed on purpose, as ordered."
+    end
 
     true
   end
 
-  #See DrmaaTask.
+  # Creates a series of bash commands that will be run on the cluster.
+  # The bash commands runs the 'wc' command on the SingleFiles given
+  # in argument and the 'du' command on FileCollections. It also reports
+  # several parameters about the environment.
   def drmaa_commands
     params       = self.params
     user_id      = self.user_id
@@ -119,25 +129,36 @@ class DrmaaDiagnostics < DrmaaTask
     commands
   end
   
-  #See DrmaaTask.
+  # Creates a report about the diagnostics generated and saves it
+  # back to the CBRAIN DB. The report is mostly a concatenation
+  # of the cluster job's STDOUT and STDERR.
   def save_results
     params       = self.params
     user_id      = self.user_id
-    dp_id        = params[:data_provider_id]
 
+    self.addlog "Starting diagnostics postprocessing."
+
+    unless params[:cluster_crash].blank?
+      params[:cluster_crash]=nil unless params[:crash_will_reset].blank?
+      self.addlog "Pretending that the cluster job failed."
+      return false
+    end
+
+    # Stuff needed for report
+    dp_id   = params[:data_provider_id]
     myuser  = User.find(user_id)
     mygroup = myuser.own_group
     report  = nil
 
-    self.addlog "Starting diagnostics postprocessing."
-
     if dp_id  # creating the report is optional
-      report = SingleFile.new( :name             => "Diagnostics-" + self.bname_tid_dashed + ".txt",
+      report_attributes = {
+                               :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
                                :user_id          => myuser.id,
                                :group_id         => mygroup.id,
                                :data_provider_id => dp_id,
                                :task             => 'Bourreau Diagnostics'
-                             )
+                          }
+      report = SingleFile.find(:first, :conditions => report_attributes) || SingleFile.new(report_attributes)
     end
 
     if dp_id.blank?
@@ -172,8 +193,71 @@ class DrmaaDiagnostics < DrmaaTask
       sleep postpro_delay
     end
 
-    cb_error "This program crashed on purpose, as ordered." unless params[:postpro_crash].blank?
+    unless params[:postpro_crash].blank?
+      params[:postpro_crash]=nil unless params[:crash_will_reset].blank?
+      cb_error "This program crashed on purpose, as ordered."
+    end
 
+    true
+  end
+
+
+
+  #########################################
+  # Recover/restart capabilities
+  #########################################
+
+  def recover_from_setup_failure
+    params = self.params
+    return false if params[:recover_setup].blank?
+    unless params[:recover_setup_delay].blank? 
+      sleep params[:recover_setup_delay].to_i
+    end
+    true
+  end
+
+  def recover_from_cluster_failure
+    params = self.params
+    return false if params[:recover_cluster].blank?
+    unless params[:recover_cluster_delay].blank? 
+      sleep params[:recover_cluster_delay].to_i
+    end
+    true
+  end
+
+  def recover_from_post_processing_failure
+    params = self.params
+    return false if params[:recover_postpro].blank?
+    unless params[:recover_postpro_delay].blank? 
+      sleep params[:recover_postpro_delay].to_i
+    end
+    true
+  end
+
+  def restart_at_setup
+    params = self.params
+    return false if params[:restart_setup].blank?
+    unless params[:restart_setup_delay].blank? 
+      sleep params[:restart_setup_delay].to_i
+    end
+    true
+  end
+
+  def restart_at_cluster
+    params = self.params
+    return false if params[:restart_cluster].blank?
+    unless params[:restart_cluster_delay].blank? 
+      sleep params[:restart_cluster_delay].to_i
+    end
+    true
+  end
+
+  def restart_at_post_processing
+    params = self.params
+    return false if params[:restart_postpro].blank?
+    unless params[:restart_postpro_delay].blank? 
+      sleep params[:restart_postpro_delay].to_i
+    end
     true
   end
 

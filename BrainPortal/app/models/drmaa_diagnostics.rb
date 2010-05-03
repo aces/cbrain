@@ -25,9 +25,26 @@ class DrmaaDiagnostics < DrmaaTask
     params[:postpro_delay] = 0
 
     params[:setup_crash]   = false
+    params[:cluster_crash] = false
     params[:postpro_crash] = false
 
-    params[:num_copies]    = 1
+    params[:recover_setup]         = true
+    params[:recover_cluster]       = true
+    params[:recover_postpro]       = true
+    params[:recover_setup_delay]   = 10
+    params[:recover_cluster_delay] = 10
+    params[:recover_postpro_delay] = 10
+
+    params[:restart_setup]         = true
+    params[:restart_cluster]       = true
+    params[:restart_postpro]       = true
+    params[:restart_setup_delay]   = 10
+    params[:restart_cluster_delay] = 10
+    params[:restart_postpro_delay] = 10
+
+    params[:num_copies]       = 1
+    params[:crash_will_reset] = true
+
     params
   end
 
@@ -49,13 +66,19 @@ class DrmaaDiagnostics < DrmaaTask
         task.description = "Diagnostics with #{numfiles} files" + (num_copies > 1 ? ", copy #{i+1}." : ".")
         task.params      = {
                               :files_hash    => files_hash,
-                              :setup_delay   => params[:setup_delay],
-                              :cluster_delay => params[:cluster_delay],
-                              :postpro_delay => params[:postpro_delay],
-                              :setup_crash   => params[:setup_crash],
-                              :postpro_crash => params[:postpro_crash],
-                              :copy_number   => i
+                              :copy_number   => (i + 1),
+                              :copy_total    => num_copies
                            }
+        [
+          :setup_crash,         :cluster_crash,         :postpro_crash,
+          :setup_delay,         :cluster_delay,         :postpro_delay,
+          :recover_setup,       :recover_cluster,       :recover_postpro,
+          :recover_setup_delay, :recover_cluster_delay, :recover_postpro_delay,
+          :restart_setup,       :restart_cluster,       :restart_postpro,
+          :restart_setup_delay, :restart_cluster_delay, :restart_postpro_delay,
+
+          :crash_will_reset
+        ].each { |key| task.params[key] = params[key] }
         task.user_id     = user_id
         task.save
       end

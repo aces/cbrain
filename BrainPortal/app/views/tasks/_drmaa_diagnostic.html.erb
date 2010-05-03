@@ -28,47 +28,67 @@
   <%= hidden_field_tag 'file_ids[]',  id %>
 <% end %>
 
+<h3>Life Cycle, Recovery and Restarting Capabilities</h3>
 
+<table>
 
+<tr>
+  <th></th>
+    <th COLSPAN="2">Normal Cycle</th>
+    <th COLSPAN="2">Error Recovery</th>
+    <th COLSPAN="2">Restart Capabilities</th>
+</tr>
 
-<h3>Optional Delays</h3>
+<tr>
+  <th>Setup</th>
+    <TD>Crash?  <%= check_box_tag :setup_crash,           1, params[:setup_crash] %></TD>
+    <TD>Delay: <%= text_field_tag :setup_delay,              params[:setup_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :recover_setup,         1, params[:recover_setup] %></TD>
+    <TD>Delay: <%= text_field_tag :recover_setup_delay,      params[:recover_setup_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :restart_setup,         1, params[:restart_setup] %></TD>
+    <TD>Delay: <%= text_field_tag :restart_setup_delay,      params[:restart_setup_delay], :size => 4 %></TD>
+</tr>
 
-<strong>Task Setup delay (in seconds):</strong>
-<%= text_field_tag :setup_delay, params[:setup_delay] %>
-<br>
+<tr>
+  <th>Cluster</th>
+    <TD>Crash?  <%= check_box_tag :cluster_crash,         1, params[:cluster_crash] %></TD>
+    <TD>Delay: <%= text_field_tag :cluster_delay,            params[:cluster_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :recover_cluster,       1, params[:recover_cluster] %></TD>
+    <TD>Delay: <%= text_field_tag :recover_cluster_delay,    params[:recover_cluster_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :restart_cluster,       1, params[:restart_cluster] %></TD>
+    <TD>Delay: <%= text_field_tag :restart_cluster_delay,    params[:restart_cluster_delay], :size => 4 %></TD>
+</tr>
 
-<strong>Task Cluster delay (in seconds):</strong>
-<%= text_field_tag :cluster_delay, params[:cluster_delay] %>
-<br>
+<tr>
+  <th>PostProcess</th>
+    <TD>Crash?  <%= check_box_tag :postpro_crash,         1, params[:postpro_crash] %></TD>
+    <TD>Delay: <%= text_field_tag :postpro_delay,            params[:postpro_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :recover_postpro,       1, params[:recover_postpro] %></TD>
+    <TD>Delay: <%= text_field_tag :recover_postpro_delay,    params[:recover_postpro_delay], :size => 4 %></TD>
+    <TD>Enable? <%= check_box_tag :restart_postpro,       1, params[:restart_postpro] %></TD>
+    <TD>Delay: <%= text_field_tag :restart_postpro_delay,    params[:restart_postpro_delay], :size => 4 %></TD>
+</tr>
 
-<strong>Task Post Processing delay (in seconds):</strong>
-<%= text_field_tag :postpro_delay, params[:postpro_delay] %>
-<br>
-
-
-
-<h3>Crashes</h3>
-
-<strong>Crash during Setup:</strong><%= check_box_tag :setup_crash, params[:setup_crash] %>
-<br>
-
-<strong>Crash during Post Processing:</strong><%= check_box_tag :postpro_crash, params[:postpro_crash] %>
-<br>
+</table>
 
 
 
 <h3>Miscellaneous</h3>
 
 <strong>Number of copies of this task to launch: </strong>
-<%= text_field_tag :num_copies, params[:num_copies] %> (for stress testing ONLY!)
-<br>
+<%= text_field_tag :num_copies, params[:num_copies], :size => 4 %> (for stress testing ONLY!)
+<P>
+
+<strong>Crashes will reset to false after they are first triggered: </strong>
+<%= check_box_tag :crash_will_reset, 1, params[:crash_will_reset] %>
+<P>
 
 <strong>Save report to:</strong>
 <%= select_tag "data_provider_id", options_for_select(data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
 
-<br>
+<P>
 
-<%= submit_tag 'Start Diagnostics' %>
+<%= submit_tag 'Start Diagnostics!' %>
 
 <% end %>
 

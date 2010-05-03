@@ -37,7 +37,7 @@ class PortalSystemChecks < CbrainChecker
     #----------------------------------------------------------------------------
 
     unless PortalSanityChecks.done? 
-       puts "C> \t- Error: You must check the sanity of the models. Please run 'rake db:sanity:check'." 
+       puts "C> \t- Error: You must check the sanity of the models. Please run 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'." 
        Kernel.exit(1)
     end
   end
