@@ -17,7 +17,7 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:   
-    @bourreaux = available_bourreaux(current_user)
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     scope = ActRecTask.scoped({})
     if current_user.has_role? :admin
       unless @filter_params["filters"]["user_id"].blank?
