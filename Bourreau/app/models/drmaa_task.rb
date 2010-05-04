@@ -230,6 +230,69 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
+  # Utility Methods For DrmaaTask Developers
+  ##################################################################
+
+  # Utility method for developers to use while writing
+  # a DrmaaTask's setup() or save_results() methods.
+  # This method creates a subdirectory in your work directory.
+  # To make it partical when writing restartable or recoverable
+  # code, it will not complain of the directory already exists,
+  # unlike Dir.mkdir() which raises an exception.
+  # The +relpath+ MUST be relative and the current directory MUST
+  # be the task's work directory.
+  def safe_mkdir(relpath,mode=0700)
+    cb_error "Current directory is not the DrmaaTask's work directory?" unless
+      ! self.drmaa_workdir.blank? && Dir.getwd == self.drmaa_workdir
+    cb_error "New directory argument must be a relative path." if
+      relpath.blank? || relpath =~ /^\//
+    Dir.mkdir(relpath,mode) unless File.directory?(relpath)
+  end
+
+  # Utility method for developers to use while writing
+  # a DrmaaTask's setup() or save_results() methods.
+  # This method creates a symbolic link in your work directory.
+  # To make it partical when writing restartable or recoverable
+  # code, it will silently replace a symbolic link that already
+  # exists instead of raising an exception like File.symlink().
+  # The +relpath+ MUST be relative and the current directory MUST
+  # be the task's work directory. The +original_entry+ can be any
+  # string, whether it matches an existing path or not.
+  def safe_symlink(original_entry,relpath)
+    cb_error "Current directory is not the DrmaaTask's work directory?" unless
+      ! self.drmaa_workdir.blank? && Dir.getwd == self.drmaa_workdir
+    cb_error "New directory argument must be a relative path." if
+      relpath.blank? || relpath =~ /^\//
+    File.unlink(relpath) if File.symlink?(relpath)
+    File.symlink(original_entry,relpath)
+  end
+
+  # Utility method for developers to use while writing
+  # a DrmaaTask's setup() or save_results() methods.
+  # This method acts like the new() method of Userfile,
+  # but if the attribute list match a file already
+  # existing then it will return that file instead
+  # if a new() entry. This is useful when writing
+  # recoverable or restartable code that creates a
+  # report or a result file, for instance.
+  # +klass+ must be a class that is a subclass of
+  # Userfile, and +attlist+ must be an attribute list
+  # containing at the minimum :name, :data_provider_id,
+  # :user_id and :group_id.
+  def safe_userfile_find_or_new(klass,attlist)
+    cb_error "Class for file must be a subclass of Userfile." unless
+      klass < Userfile
+    cb_error "Attribute list missing a required attribute." unless
+      [ :name, :data_provider_id, :user_id, :group_id ].all? { |i| attlist.has_key?(i) }
+    results = klass.find(:all, :conditions => attlist)
+    return results[0] if results.size == 1
+    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if size > 1
+    klass.new(attlist)
+  end
+
+
+
+  ##################################################################
   # Main control methods (mainly called by the BourreauWorker)
   ##################################################################
 
