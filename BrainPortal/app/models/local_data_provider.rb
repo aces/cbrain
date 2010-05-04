@@ -47,6 +47,10 @@ class LocalDataProvider < DataProvider
   def impl_provider_list_all #:nodoc:
     cb_error "This data provider cannot be browsed."
   end
+  
+  def provider_readhandle(userfile, *args)
+    self.cache_readhandle(userfile, *args)
+  end
 
   def impl_provider_collection_index(userfile, *args) #:nodoc:
     self.cache_collection_index(userfile, *args)

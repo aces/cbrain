@@ -470,9 +470,13 @@ class Userfile < ActiveRecord::Base
     self.data_provider.provider_collection_index(self, *args)
   end
 
+  def provider_readhandle(*args, &block)
+    self.data_provider.provider_readhandle(self, *args,  &block)
+  end
+
   # See the description in class DataProvider
-  def cache_readhandle(&block)
-    self.data_provider.cache_readhandle(self, &block)
+  def cache_readhandle(*args, &block)
+    self.data_provider.cache_readhandle(self, *args,  &block)
   end
 
   # See the description in class DataProvider

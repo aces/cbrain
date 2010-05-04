@@ -84,9 +84,13 @@ module SmartDataProviderInterface
   def cache_full_path(userfile) #:nodoc:
     @provider.cache_full_path(userfile)
   end
+  
+  def provider_readhandle(userfile, *args, &block) #:nodoc:
+    @provider.provider_readhandle(userfile, *args, &block)
+  end
 
-  def cache_readhandle(userfile,&block) #:nodoc:
-    @provider.cache_readhandle(userfile,&block)
+  def cache_readhandle(userfile, *args, &block) #:nodoc:
+    @provider.cache_readhandle(userfile, *args, &block)
   end
 
   def cache_writehandle(userfile,&block) #:nodoc:

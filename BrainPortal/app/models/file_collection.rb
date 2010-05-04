@@ -217,15 +217,15 @@ class FileCollection < Userfile
 
   end
 
-  # Interceptor for unsupported operation
-  def cache_readhandle(&block) #:nodoc:
-    cb_error "Method not supported on FileCollections."
-  end
-
-  # Interceptor for unsupported operation
-  def cache_writehandle(&block) #:nodoc:
-    cb_error "Method not supported on FileCollections."
-  end
+  # # Interceptor for unsupported operation
+  # def cache_readhandle(&block) #:nodoc:
+  #   cb_error "Method not supported on FileCollections."
+  # end
+  # 
+  # # Interceptor for unsupported operation
+  # def cache_writehandle(&block) #:nodoc:
+  #   cb_error "Method not supported on FileCollections."
+  # end
 
 end
 

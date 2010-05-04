@@ -337,6 +337,15 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider is offline."   unless self.online
     cache_full_pathname(userfile)
   end
+  
+  def provider_readhandle(userfile, *args, &block)
+    cb_error "Error: provider #{self.name} is offline." unless self.online
+    if userfile.is_locally_synced?
+      cache_readhandle(userfile, *args, &block)
+    else
+      impl_provider_readhandle(userfile, *args, &block)
+    end
+  end
 
   # Executes a block on a filehandle open in +read+ mode for the
   # cached copy of the content of +userfile+; note
@@ -348,10 +357,12 @@ class DataProvider < ActiveRecord::Base
   #   provider.cache_readhandle(u) do |fh|
   #     content = fh.read
   #   end
-  def cache_readhandle(userfile)
+  def cache_readhandle(userfile, rel_path = ".")
     cb_error "Error: provider is offline."   unless self.online
     sync_to_cache(userfile)
-    File.open(cache_full_path(userfile),"r") do |fh|
+    full_path = cache_full_path(userfile) + rel_path
+    cb_error "Error: read handle cannot be provided for non-file." unless File.file? full_path
+    File.open(full_path,"r") do |fh|
       yield(fh)
     end
   end
@@ -504,6 +515,7 @@ class DataProvider < ActiveRecord::Base
   # to be used on FileCollections to gather information about the individual files
   # in the collection.
   def cache_collection_index(userfile, directory = :all, allowed_types = :regular)
+    cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: userfile is not cached." unless userfile.is_locally_cached?
     list = []
     

@@ -101,6 +101,14 @@ class SshDataProvider < DataProvider
     end
     false
   end
+  
+  def impl_provider_readhandle(userfile, rel_path = ".", &block)
+    full_path = remote_full_path(userfile) + rel_path
+    IO.popen("ssh #{ssh_shared_options} cat #{shell_escape(full_path)}","r") do |fh|
+      cb_error "Error: read handle cannot be provided for non-file." if fh.eof?
+      yield(fh)
+    end
+  end
 
   def impl_provider_list_all #:nodoc:
     list = []
