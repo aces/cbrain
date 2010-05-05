@@ -823,7 +823,7 @@ class DrmaaTask < ActiveRecord::Base
   # a killed job or a job that's exited properly, and we can't determine
   # which of the three from the DRMAA::Session#job_ps()
   def drmaa_status
-    state = Scir::Session.session_cache.job_ps(self.drmaa_jobid)
+    state = Scir::Session.session_cache.job_ps(self.drmaa_jobid,self.updated_at)
     status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
     return status
   end
