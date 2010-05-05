@@ -9,7 +9,8 @@ if @provider.errors.empty?
   end
   page.insert_html :bottom, "#{@provider.is_browsable? ? "user" : "cbrain" }_data_provider_table", :partial => 'data_provider_table_row', :locals  => {:prov  => @provider}
   @provider = DataProvider.new
-  page['new_data_provider'].replace_html(:partial  => 'new').hide
+  page['new_data_provider'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_dp_button").click();'
 else
   page['new_data_provider'].replace_html :partial  => 'new'
 end

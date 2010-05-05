@@ -16,18 +16,10 @@
    
 <div class = "generalcontent">
    
-    <div class="resource_list_upper_form">
-          <%= 
-            link_to_function 'Create New Data Provider', :class  => 'action_link' do |page|
-            page['new_data_provider'].toggle
-            end 
-            %>
-          <div id="new_data_provider" style="display:none">
-            <%= render :partial  => 'new' %>
-          </div>
-    </div> <!-- End id="resource_list_upper_form" -->
-
-
+    <div class = "menu_bar">  
+         <% button_with_dropdown_menu({:title => 'Create New Data Provider', :partial => 'new'}, {:id => "new_dp_button"}) %>
+    </div>    
+      
     <br>    
    <div id="cbrain_show_details_link" style="display:inline">
              <%= 
