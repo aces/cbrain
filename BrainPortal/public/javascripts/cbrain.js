@@ -34,7 +34,7 @@ jQuery(
 
       //Overlay dialogs
     jQuery(".overlay_dialog").each( function(index,element){
-      var content_width =parseInt(jQuery(element).children('.dialog').attr('data-width'));
+      var content_width = parseInt(jQuery(element).children('.dialog').attr('data-width'));
       var dialog = jQuery(this).children(".dialog").dialog({ autoOpen: false,
           modal: true,
           position: "center",
@@ -198,5 +198,28 @@ jQuery(
       jQuery(".ajax_onclick_hide_element").live("click", ajax_onclick_hide);
 
       jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
-      jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5')});
+      jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
+
+      jQuery(".o3d_link").live('click',O3DOverlay);
+
+
+
+    var brainbrowser;
+    function O3DOverlay(event) {
+      var dialog = jQuery("<div id=\"o3d\"></div>").appendTo(jQuery("body")).dialog({
+	show: "puff",
+	modal: true,
+	width: 800,
+	height: 600,
+	close: function(){
+	  brainbrowser.uninit();
+	  jQuery("#o3d").remove();
+	}
+      });
+      brainbrowser = new BrainBrowser(jQuery(this).attr('data-content-url'));
+    }
+
+
 });
+
+
