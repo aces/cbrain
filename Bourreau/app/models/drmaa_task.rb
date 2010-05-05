@@ -171,6 +171,11 @@ class DrmaaTask < ActiveRecord::Base
   # why a task was in 'Failed To Setup' and fix things.
   # If it returns true, the task will be sent back to the
   # 'New' state. The run_number will stay the same.
+  #
+  # Note that including the module RecoverableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your setup()
+  # method is naturally recoverable.
   def recover_from_setup_failure
     false
   end
@@ -181,6 +186,11 @@ class DrmaaTask < ActiveRecord::Base
   # If it returns true, the task will be restarted on
   # the cluster (with a new job ID) and returned to
   # stated 'Queued'. The run_number will stay the same.
+  #
+  # Note that including the module RecoverableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your bash commands
+  # returned by drmaa_commands() are naturally recoverable.
   def recover_from_cluster_failure
     false
   end
@@ -190,6 +200,11 @@ class DrmaaTask < ActiveRecord::Base
   # why a task was in 'Failed To PostProcess' and fix things.
   # If it returns true, the task will be sent back to the
   # 'Data Ready' state. The run_number will stay the same.
+  #
+  # Note that including the module RecoverableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your save_results()
+  # method is naturally recoverable.
   def recover_from_post_processing_failure
     false
   end
@@ -201,6 +216,11 @@ class DrmaaTask < ActiveRecord::Base
   # cannot be restarted in this way. Note that the
   # run_number will be increased by one if a restart is
   # attempted.
+  #
+  # Note that including the module RestartableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your setup()
+  # method is naturally restartable.
   def restart_at_setup
     false
   end
@@ -212,6 +232,11 @@ class DrmaaTask < ActiveRecord::Base
   # cannot be restarted in this way. Note that the
   # run_number will be increased by one if a restart is
   # attempted.
+  #
+  # Note that including the module RestartableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your bash commands
+  # returned by drmaa_commands() are naturally restartable.
   def restart_at_cluster
     false
   end
@@ -223,6 +248,11 @@ class DrmaaTask < ActiveRecord::Base
   # cannot be restarted in this way. Note that the
   # run_number will be increased by one if a restart is
   # attempted.
+  #
+  # Note that including the module RestartableTask
+  # will provide a copy of this method that simply
+  # returns true; this is useful if your save_results()
+  # method is naturally restartable.
   def restart_at_post_processing
     false
   end
