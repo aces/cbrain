@@ -9,7 +9,8 @@ if @group.errors.empty?
   end
   page.insert_html :bottom, 'group_table', :partial => 'group_table_row', :locals  => {:group  => @group}
   @group = WorkGroup.new()
-  page['new_group'].replace_html(:partial  => 'new').hide
+  page['new_group'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_group_button").click();'
 else
   page['new_group'].replace_html :partial  => 'new'
 end

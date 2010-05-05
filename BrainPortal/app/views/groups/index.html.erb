@@ -15,17 +15,9 @@
 
    <% title 'Groups' %>
   
-   <div class="resource_list_upper_form">
-         <%= 
-           link_to_function 'Create New Group', :class  => 'action_link' do |page|
-             page['new_group'].toggle
-           end 
-           %>
-         <div id="new_group" style="display:none">
-           <%= render :partial  => 'new' %>
-         </div>
-   </div> <!-- End class="upper_form" -->
-
+   <div class="menu_bar">
+          <% button_with_dropdown_menu({:title => 'Create Group', :partial => 'new'}, {:id => "new_group_button"}) %>
+   </div>
 
       <table class="resource_list" id="group_table">
         <tr>

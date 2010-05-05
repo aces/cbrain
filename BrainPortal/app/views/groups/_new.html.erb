@@ -12,6 +12,9 @@
 -%>
 <div class = "generalcontent">
 <br>
+
+    <div id = "new_group">
+
       <% remote_form_for :group, @group, :url => { :action => "create" } do |f| -%>
         <%= f.error_messages %>
 
@@ -35,4 +38,5 @@
           <%= f.submit "Create" %>
         </p>
       <% end %>
+      </div>
 </div>   <!-- End class="generalcontent" -->
