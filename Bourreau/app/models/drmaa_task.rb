@@ -286,7 +286,7 @@ class DrmaaTask < ActiveRecord::Base
       [ :name, :data_provider_id, :user_id, :group_id ].all? { |i| attlist.has_key?(i) }
     results = klass.find(:all, :conditions => attlist)
     return results[0] if results.size == 1
-    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if size > 1
+    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
     klass.new(attlist)
   end
 
