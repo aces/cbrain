@@ -9,7 +9,9 @@ if @bourreau.errors.empty?
   end
   page.insert_html :bottom, 'bourreau_table', :partial => 'bourreau_table_row', :locals  => {:bour  => @bourreau}
   @bourreau = Bourreau.new
-  page['new_bourreau'].replace_html(:partial  => 'new').hide
+  page['new_bourreau'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_bourreau_button").click();'
+  
 else
   page['new_bourreau'].replace_html :partial  => 'new'
 end
