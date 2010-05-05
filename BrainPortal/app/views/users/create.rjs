@@ -9,7 +9,8 @@ if @user.errors.empty?
   end
   page.insert_html :bottom, 'user_table', :partial => 'user_table_row', :locals  => {:user  => @user}
   @user = User.new(:site_id => current_user.site_id)
-  page['new_user'].replace_html(:partial  => 'new').hide
+  page['new_user'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_user_button").click();'
 else
   page['new_user'].replace_html :partial  => 'new'
 end

@@ -14,16 +14,9 @@
 
 <% title "Users"%>
 
-<div class="resource_list_upper_form">
-      <%= 
-        link_to_function 'Create New User', :class  => 'action_link' do |page|
-          page['new_user'].toggle
-        end 
-        %>
-      <div id="new_user" style="display:none">
-        <%= render :partial  => 'new' %>
-      </div>
-</div> <!-- End class="upper_form" -->
+    <div class="menu_bar">
+       <% button_with_dropdown_menu({:title => 'Create User', :partial => 'new'}, {:id => "new_user_button"}) %>
+    </div>
 
 <table class="resource_list" id="user_table">
   <tr>

@@ -12,6 +12,9 @@
 -%>
 <div class = "generalcontent">
 <br>
+
+<div id = "new_user">
+
 <%= error_messages_for :user %>
 
 <% remote_form_for :user, @user, :url => { :action => "create" } do |f| -%>
@@ -55,4 +58,5 @@
   </table>
 </div>
 <% end -%>
+</div>
 </div>
