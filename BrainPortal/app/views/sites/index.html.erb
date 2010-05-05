@@ -1,18 +1,13 @@
 <div class="generalcontent">
 
-  <% title 'Sites' %>
+   <% title 'Sites' %>
   
-   <div class="resource_list_upper_form">
-         <%= 
-           link_to_function 'Create New Site', :class  => 'action_link' do |page|
-             page['new_site'].toggle
-           end 
-           %>
-         <div id="new_site" style="display:none">
-           <%= render :partial  => 'new' %>
-         </div>
-   </div> <!-- End class="upper_form" -->
+   <%= javascript_tag "var current_options;" %> 
 
+   <div class = "menu_bar">
+          <% button_with_dropdown_menu({:title => 'Create New Site', :partial => 'new'}, {:id => "new_site_button"}) %>
+    </div>
+      
   <table class="resource_list" id="site_table">
     <tr>
       <th>Name</th>
@@ -26,5 +21,6 @@
       <%= render :partial => 'site_table_row', :locals  => {:site  => site} %>
     <% end %>
   </table>
+  
   
 </div>

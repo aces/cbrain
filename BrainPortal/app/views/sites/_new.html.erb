@@ -11,13 +11,19 @@
 -%>
 <div class = "generalcontent">
 <br>
+
+<div id = "new_site">
+
 <% remote_form_for :site, @site, :url => { :action => "create" } do |f| -%>
   <%= f.error_messages %>
 
-  <p>
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </p>
+ 
+  <div class = "splitleft">
+    <p>
+     <%= f.label :name %><br />
+     <%= f.text_field :name %>
+    </p>
+      
 	<label for="users">Users:</label>
 	<table id ="button_table">
 	   <tr>
@@ -33,8 +39,19 @@
 	       </tr>
 	   <% end %>
 	</table>
+	<p>
+       <%= f.submit "Create" %>
+       <br>
+     </p>
+  </div>
+  
+  <div class="splitright">
+    <br>
+  	<br>
+  	<br>
 	<label for="groups">Groups</label>
 	<table id="button_table">
+	   
 	   <% for group in WorkGroup.all %>
 	       <tr>
 	         <td class="left_align"><%= h(group.name) -%></td>
@@ -42,8 +59,8 @@
 	       </tr>
 	   <% end %>
 	</table>
-  <p>
-    <%= f.submit "Create" %>
-  </p>
+ 
+  </div>
 <% end %>
+</div>
 </div>
