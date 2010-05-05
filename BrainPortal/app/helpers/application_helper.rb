@@ -550,7 +550,13 @@ module ApplicationHelper
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button"
     
-    content=capture(&block)+((render partial unless !partial) || "") 
+    content=""
+    if block_given?
+      content += capture(&block)
+    end
+    if partial
+      content += render :partial => partial
+    end
 
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
     concat("<div class=\"button_with_drop_down\">")
