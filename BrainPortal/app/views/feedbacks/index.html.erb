@@ -12,18 +12,12 @@
 <div class = "generalcontent">
 
    <% title 'Feedback' %>
-
-   <div class="resource_list_upper_form">
-         <%= 
-           link_to_function 'Give Feedback', :class  => 'action_link' do |page|
-             page['new_feedback'].toggle
-           end 
-           %>
-         <div id="new_feedback" style="display:none">
-           <%= render :partial  => 'new' %>
-         </div>
-   </div> <!-- End class="upper_form" -->
-
+       
+   <div class="menu_bar">
+        <% button_with_dropdown_menu({:title => 'Leave Feedback', :partial => 'new'}, {:id => "new_feedback_button"}) %>
+                
+   </div>
+       
       <table class="resource_list" id="feedback_table">
          <tr>
             <th>Summary</th>

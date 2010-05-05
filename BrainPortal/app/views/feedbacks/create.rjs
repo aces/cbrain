@@ -9,7 +9,8 @@ if @feedback.errors.empty?
   end
   page.insert_html :bottom, 'feedback_table', :partial => 'feedback_table_row', :locals  => {:feedback  => @feedback}
   @feedback = Feedback.new
-  page['new_feedback'].replace_html(:partial  => 'new').hide
+  page['new_feedback'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_feedback_button").click();'
 else
   page['new_feedback'].replace_html :partial  => 'new'
 end

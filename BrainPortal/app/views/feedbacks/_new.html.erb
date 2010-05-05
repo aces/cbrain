@@ -10,6 +10,9 @@
 -%>
 
 <div class = "generalcontent">
+    
+    <div id = "new_feedback">
+    
       <% remote_form_for :feedback, @feedback, :url => { :action => "create" } do |f| -%>
         <%= f.error_messages %>
         <p>
@@ -24,4 +27,7 @@
           <%= f.submit "Create" %>
         </p>
       <% end %>
+    
+    </div>
+    
 </div>  <!-- End class="generalcontent" -->
