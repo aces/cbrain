@@ -127,10 +127,18 @@ class UserfilesController < ApplicationController
         @userfile.sync_to_cache
         send_file @userfile.cache_full_path.parent + params[:collection_file]
       else
-        if params[:collection_dir].blank?
-          render :partial  => 'file_collection'
-        else
-          render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:regular, :directory])}
+        begin
+          if params[:collection_dir].blank?
+            render :partial  => 'file_collection'
+          else
+            render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:regular, :directory])}
+          end
+        rescue  => e
+          if e.is_a?(Net::SFTP::Exception) || e.message =~ /Net::SFTP::Exception/
+            render :text => "<span class='loading_message'>Error loading file list. Please sync your collection and try again.</span>"
+          else
+            raise
+          end
         end
         return
       end
