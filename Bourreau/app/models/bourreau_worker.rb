@@ -32,6 +32,7 @@ class BourreauWorker < Worker
     end
 
     # Asks the DB for the list of tasks that need handling.
+    sleep 1+rand(3)
     worker_log.debug "Finding list of active tasks."
     tasks_todo = DrmaaTask.find(:all,
       :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready',

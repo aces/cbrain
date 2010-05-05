@@ -18,7 +18,7 @@ class DrmaaDiagnostics < DrmaaTask
   # Overrides the default addlog() method such that each
   # log entry is also sent to STDOUT.
   def addlog(message,options={})
-    puts "DIAGNOSTICS: #{self.bname_tid} #{message}"
+    puts "DIAGNOSTICS: #{self.bname_tid} #{message}" unless self.bourreau_id.blank?
     super(message,options.dup.merge( :caller_level => 1 ))
   end
 

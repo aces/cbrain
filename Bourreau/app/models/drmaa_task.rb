@@ -287,7 +287,7 @@ class DrmaaTask < ActiveRecord::Base
     results = klass.find(:all, :conditions => attlist)
     return results[0] if results.size == 1
     cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
-    klass.new(attlist)
+    return klass.new(attlist)
   end
 
 
@@ -753,7 +753,8 @@ class DrmaaTask < ActiveRecord::Base
   # vary with the class name, so DrmaaAbc is stored in
   # drmaa_abc)
   def uncamelize #:nodoc:
-    self.class.to_s.downcase.sub(/^drmaa_?/i,"drmaa_")
+    #self.class.to_s.downcase.sub(/^drmaa_?/i,"drmaa_")
+    self.class.to_s.underscore
   end
 
   # Read back the STDOUT and STDERR files for the job, and

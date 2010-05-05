@@ -216,7 +216,7 @@ class TasksController < ApplicationController
 
       tasklist.each do |task_id|
 
-        begin 
+        begin  # This will all be replaced by a better control mechanism using ControlsController one day
           actrectask  = ActRecTask.find(task_id) # Fetch once...
           bourreau_id = actrectask.bourreau_id
           DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
@@ -237,10 +237,13 @@ class TasksController < ApplicationController
             sent_ok += 1
           else
             cur_status  = task.status
+            new_status  = DrmaaTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
             allowed_new = DrmaaTask::AllowedOperations[cur_status] || []
-            new_status  = DrmaaTask::OperationToNewStatus[operation]
             if new_status && allowed_new.include?(new_status)
               task.status = new_status
+              task.capt_stdout_b64="" # zap to lighten the load when sending back
+              task.capt_stderr_b64="" # zap to lighten the load when sending back
+              task.log=""             # zap to lighten the load when sending back
               if task.save
                 sent_ok += 1
               else
