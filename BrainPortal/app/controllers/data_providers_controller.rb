@@ -18,6 +18,8 @@ class DataProvidersController < ApplicationController
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
+    @providers["CBRAIN Official Storage"] ||= []
+    @providers["User Storage"] ||= []
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
   end
