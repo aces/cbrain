@@ -50,7 +50,8 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
-
+  validate                :validate_associations
+  
   before_destroy          :cache_erase, :provider_erase
 
   def site
@@ -514,4 +515,18 @@ class Userfile < ActiveRecord::Base
     self.data_provider.online?
   end
   
+  private
+  
+  def validate_associations
+    unless DataProvider.find(:first, :conditions => {:id => self.data_provider_id})
+      errors.add(:data_provider, "does not exist.")
+    end
+    unless User.find(:first, :conditions => {:id => self.user_id})
+      errors.add(:user, "does not exist.")
+    end
+    unless Group.find(:first, :conditions => {:id => self.group_id})
+      errors.add(:group, "does not exist.")
+    end
+  end 
+   
 end
