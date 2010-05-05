@@ -102,7 +102,7 @@ public
   end
 
   def job_ps(jid,caller_updated_at = nil)
-    caller_updated_at ||= (5*@job_ps_cache_delay).ago
+    caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
     if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
       update_job_info_cache
       @cache_last_updated = Time.now

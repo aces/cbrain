@@ -101,6 +101,7 @@ class BourreauWorker < Worker
           # transition ourselves.
           task.status_transition!("New","Setting Up")
           worker_log.debug "Start   #{task.bname_tid}"
+          task.addlog_context(self,"#{self.pretty_name}")
           task.setup_and_submit_job # New -> Queued|Failed To Setup
           worker_log.info  "Submitted: #{task.bname_tid}"
           worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
@@ -121,6 +122,7 @@ class BourreauWorker < Worker
           # transition ourselves.
           task.status_transition!("Data Ready","Post Processing")
           worker_log.debug "PostPro #{task.bname_tid}"
+          task.addlog_context(self,"#{self.pretty_name}")
           task.post_process # Data Ready -> Completed|Failed To PostProcess|Failed On Cluster
           worker_log.info  "PostProcess: #{task.bname_tid}"
           worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"

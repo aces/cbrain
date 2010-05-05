@@ -28,7 +28,7 @@ class ScirMoabSession < Scir::Session
     if xmltext =~ /(<cluster.*?<\/cluster>)/
       @job_info_cache["!moab_cluster_info!"] = Regexp.last_match[1]
     end
-    jobs = xmltext.split(/(<job\s.*?<\/job>)/i) # odd elements are our stuff
+    jobs = xmltext.split(/(<job\s[\S\s]*?<\/job>)/i) # odd elements are our stuff
     1.step(jobs.size,2) do |i|
       jobxml = jobs[i]
       # <job AWDuration="3832" Class="single" DRMJID="165577.krylov.clumeq.mcgill.ca"
