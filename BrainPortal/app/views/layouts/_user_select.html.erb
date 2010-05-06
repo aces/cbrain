@@ -1,6 +1,10 @@
 <%= 
-    select_tag parameter_name, 
-               options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id ] }, selected || current_user.id),
-               select_tag_options
+    grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id.to_s ] }, selected || current_user.id.to_s)
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+    end
+    select_tag parameter_name, grouped_options, select_tag_options
  %>
  

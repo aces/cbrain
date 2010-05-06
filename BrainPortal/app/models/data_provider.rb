@@ -226,13 +226,14 @@ class DataProvider < ActiveRecord::Base
       Pathname.new(self.name).cleanpath.descend{ count += 1}
       @depth = count
       @depth
-    end             
+    end
   end
 
 
 
   #################################################################
-  # Provider query/access methods
+  # Official Data API methods (work on userfiles)
+  #      - Provider query/access methods -
   #################################################################
   
   # This method must not block, and must respond quickly.
@@ -287,12 +288,15 @@ class DataProvider < ActiveRecord::Base
     false
   end
   
-  def allow_file_owner_change?
+  def allow_file_owner_change? #:nodoc:
     ALLOW_FILE_OWNER_CHANGE.include? self.class.name
   end
 
+
+
   #################################################################
-  # Data API methods (work on userfiles)
+  # Official Data API methods (work on userfiles)
+  #            - Synchronization -
   #################################################################
   
   # Synchronizes the content of +userfile+ as stored
@@ -314,6 +318,13 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
+
+
+  #################################################################
+  # Official Data API methods (work on userfiles)
+  #            - Cache Side Methods -
+  #################################################################
+  
   # Makes sure the local cache is properly configured
   # to receive the content for +userfile+; usually
   # this method is called before writing the content
@@ -338,15 +349,6 @@ class DataProvider < ActiveRecord::Base
     cache_full_pathname(userfile)
   end
   
-  def provider_readhandle(userfile, *args, &block)
-    cb_error "Error: provider #{self.name} is offline." unless self.online
-    if userfile.is_locally_synced?
-      cache_readhandle(userfile, *args, &block)
-    else
-      impl_provider_readhandle(userfile, *args, &block)
-    end
-  end
-
   # Executes a block on a filehandle open in +read+ mode for the
   # cached copy of the content of +userfile+; note
   # that this method automatically calls the synchronization
@@ -578,6 +580,13 @@ class DataProvider < ActiveRecord::Base
     list
   end
 
+
+
+  #################################################################
+  # Official Data API methods (work on userfiles)
+  #            - Provider Side Methods -
+  #################################################################
+
   # Deletes the content of +userfile+ on the provider side.
   def provider_erase(userfile)
     cb_error "Error: provider is offline." unless self.online
@@ -734,6 +743,27 @@ class DataProvider < ActiveRecord::Base
     impl_provider_collection_index(userfile, *args)
   end
 
+  # Opens a filehandle to the remote data file and supplies
+  # it to the given block. THIS METHOD IS TO BE AVOIDED;
+  # the proper methodology is to cache a file before accessing
+  # it locally. This method is meant as a workaround for
+  # exceptional situations when syncing is not welcome.
+  def provider_readhandle(userfile, *args, &block)
+    cb_error "Error: provider #{self.name} is offline." unless self.online
+    if userfile.is_locally_synced?
+      cache_readhandle(userfile, *args, &block)
+    else
+      impl_provider_readhandle(userfile, *args, &block)
+    end
+  end
+
+  # This method is NOT part of the sanctionned API, it
+  # is here only FYI. It should be redefined properly
+  # in subclasses.
+  def provider_full_path(userfile) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
 
 
   #################################################################
@@ -744,7 +774,7 @@ class DataProvider < ActiveRecord::Base
   # any provider that's read/write for the user. The method
   # is used by interface pages not yet modified to ask the
   # user where files nead to be stored. The hope is that
-  # it will return the main Vault provider by default.
+  # it will return the main provider by default.
   def self.find_first_online_rw(user)
     providers = self.find(:all, :conditions => { :online => true, :read_only => false })
     providers = providers.select { |p| p.can_be_accessed_by?(user) }

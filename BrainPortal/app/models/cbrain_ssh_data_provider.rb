@@ -97,7 +97,7 @@ class CbrainSshDataProvider < SshDataProvider
 
   # This method overrides the method in the immediate
   # superclass SshDataProvider.
-  def remote_full_path(userfile) #:nodoc:
+  def provider_full_path(userfile) #:nodoc:
     basename = userfile.name
     owner    = userfile.user.login
     subdirs  = cache_subdirs_from_name(basename)

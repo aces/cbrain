@@ -39,7 +39,7 @@ class VaultSshDataProvider < SshDataProvider
 
   # This method overrides the method in the immediate
   # superclass SshDataProvider
-  def remote_full_path(userfile) #:nodoc:
+  def provider_full_path(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login
     Pathname.new(remote_dir) + username + basename

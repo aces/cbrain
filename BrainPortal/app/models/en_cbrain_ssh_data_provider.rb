@@ -51,7 +51,7 @@ class EnCbrainSshDataProvider < SshDataProvider
   end
 
   def impl_provider_rename(userfile,newname)  #:nodoc:
-    oldpath   = remote_full_path(userfile)
+    oldpath   = provider_full_path(userfile)
     oldparent = oldpath.parent
     newpath   = oldparent + newname
 
@@ -80,7 +80,7 @@ class EnCbrainSshDataProvider < SshDataProvider
 
   # This method overrides the method in the immediate
   # superclass SshDataProvider.
-  def remote_full_path(userfile) #:nodoc:
+  def provider_full_path(userfile) #:nodoc:
     basename = userfile.name
     subdirs  = cache_subdirs_from_id(userfile.id)
     Pathname.new(remote_dir) + subdirs[0] + subdirs[1] + subdirs[2] + basename

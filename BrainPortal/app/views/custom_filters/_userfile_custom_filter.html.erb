@@ -23,21 +23,21 @@
 <p>
    Owner:<br>
 
-      <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["user_id"]  %>
+      <%= user_select("data[user_id]", { :selector => @custom_filter.data["user_id"] }, { :include_blank => true })  %>
 
 </p>
 
 <p>
    Group:<br>
  
-      <%= select :data, :group_id, current_user.available_groups.map{ |g| [g.name, g.id.to_s] }, :class => :group, :include_blank  => true, :selected  => @custom_filter.data["group_id"]  %>
+       <%= group_select("data[group_id]", { :selector => @custom_filter.data["group_id"] }, { :include_blank => true })  %>
  
 </p>
 
 <p>
     Data Provider:<br>
 
-       <%= select :data, :data_provider_id, DataProvider.find_all_accessible_by_user(current_user).map{ |dp| [dp.name, dp.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["data_provider_id"]  %>
+       <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data["data_provider_id"] }, { :include_blank => true })  %>
 
 </p> 
 

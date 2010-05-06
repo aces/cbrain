@@ -420,7 +420,10 @@ class SshTunnel
 
   # Returns the path to the SSH ControlPath socket.
   def control_path #:nodoc:
-    "/tmp/ssh_master.#{@user}@#{@host}:#{@port}"
+    base  = "ssh_master.#{@user}@#{@host}:#{@port}"
+    local = "#{RAILS_ROOT}/tmp/sockets/#{base}" # prefered location
+    return local if local.size < 100 # limitation in control path length in ssh
+    "/tmp/#{base}" # alternative, hopefully shorter than 100!
   end
 
   def pidfile_path #:nodoc:

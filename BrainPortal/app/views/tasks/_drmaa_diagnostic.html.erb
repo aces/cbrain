@@ -84,7 +84,7 @@
 <P>
 
 <strong>Save report to:</strong>
-<%= select_tag "data_provider_id", options_for_select(data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
+<%= data_provider_select "data_provider_id", params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
 
 <P>
 

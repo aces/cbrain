@@ -42,7 +42,7 @@ class SshDataProvider < DataProvider
 
   def impl_sync_to_cache(userfile) #:nodoc:
     localfull   = cache_full_path(userfile)
-    remotefull  = remote_full_path(userfile)
+    remotefull  = provider_full_path(userfile)
     sourceslash = ""
 
     mkdir_cache_subdirs(userfile)
@@ -60,7 +60,7 @@ class SshDataProvider < DataProvider
 
   def impl_sync_to_provider(userfile) #:nodoc:
     localfull   = cache_full_path(userfile)
-    remotefull  = remote_full_path(userfile)
+    remotefull  = provider_full_path(userfile)
     cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
@@ -72,14 +72,14 @@ class SshDataProvider < DataProvider
   end
 
   def impl_provider_erase(userfile) #:nodoc:
-    full     = remote_full_path(userfile)
+    full     = provider_full_path(userfile)
     ssh_opts = self.ssh_shared_options
     bash_this("ssh -x -n #{ssh_opts} \"bash -c '/bin/rm -rf #{full} >/dev/null 2>&1'\"")
     true
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
-    oldpath   = remote_full_path(userfile)
+    oldpath   = provider_full_path(userfile)
     remotedir = oldpath.parent
     newpath   = remotedir + newname
 
@@ -103,7 +103,7 @@ class SshDataProvider < DataProvider
   end
   
   def impl_provider_readhandle(userfile, rel_path = ".", &block)
-    full_path = remote_full_path(userfile) + rel_path
+    full_path = provider_full_path(userfile) + rel_path
     IO.popen("ssh #{ssh_shared_options} cat #{shell_escape(full_path)}","r") do |fh|
       cb_error "Error: read handle cannot be provided for non-file." if fh.eof?
       yield(fh)
@@ -159,16 +159,16 @@ class SshDataProvider < DataProvider
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
        if userfile.is_a? FileCollection
          if directory == :all
-           entries = sftp.dir.glob(remote_full_path(userfile).parent.to_s, userfile.name + "/**/*")
+           entries = sftp.dir.glob(provider_full_path(userfile).parent.to_s, userfile.name + "/**/*")
          else
            directory = "." if directory == :top
            base_dir = "/" + directory + "/"
            base_dir.gsub!(/\/\/+/, "/")
            base_dir.gsub!(/\/\.\//, "/")
-           entries = sftp.dir.entries(remote_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
+           entries = sftp.dir.entries(provider_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
          end
        else
-         entries = sftp.dir.entries(remote_full_path(userfile).parent.to_s).select{ |e| e.name == userfile.name}
+         entries = sftp.dir.entries(provider_full_path(userfile).parent.to_s).select{ |e| e.name == userfile.name}
        end
        attlist = [ 'symbolic_type', 'size', 'permissions',
                    'uid',  'gid',  'owner', 'group',
@@ -209,7 +209,7 @@ class SshDataProvider < DataProvider
   # the data provider's side. This is to be overriden
   # by subclasses where files are stored differently
   # on the provider's side.
-  def remote_full_path(userfile)
+  def provider_full_path(userfile)
     basename = userfile.name
     Pathname.new(remote_dir) + basename
   end

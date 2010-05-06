@@ -19,11 +19,7 @@
 puts "C> CBRAIN BrainPortal validation starting, " + Time.now.to_s
 #-----------------------------------------------------------------------------
 
-require 'socket'
-
-
-
-# Checking to see if this command requires the validation or not
+# Checking to see if this command requires validation or not
 
 program_name = $PROGRAM_NAME || $0    # script/console will set it to 'irb'
 first_arg    = ARGV[0]

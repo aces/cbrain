@@ -100,10 +100,10 @@
       <th class="right_align">Local Data Provider (cache) path:</th>
       <td colpath="2"><%= h(@userfile.cache_full_path) %></td>
     </tr>
-      <% if @userfile.data_provider.respond_to?(:remote_full_path) %>
+      <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
         <tr>
           <th class="right_align">Remote SSH Data Provider path:</th>
-          <td COLSPAN="2"><%= h(@userfile.data_provider.remote_full_path(@userfile)) %></td>
+          <td COLSPAN="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
         </tr>
       <% end %>
     <% end %>

@@ -21,7 +21,7 @@
     Default execution server: <%= f.select :bourreau_id, available_bourreaux(@user).collect{|b| [b.name, b.id]}, :include_blank => true  %>
   </p>
   <p>
-    Default data provider: <%= f.collection_select :data_provider_id, available_data_providers(@user), :id, :name, :include_blank => true %>
+    Default data provider:  <%= data_provider_select("user_preference[data_provider_id]", user_preference.data_provider_id, { :include_blank => true }) %>
   </p>
   <p>
    Options saved for tasks:

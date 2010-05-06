@@ -11,11 +11,11 @@
 </p>
 <p>
  Belongs to:
- <%= collection_select(:tool, :user_id, current_user.available_users, :id, :full_name, {}, :class => :user) %>
+ <%= user_select "tool[user_id]", @tool %>
 </p>
 <p>
  Belongs to group:
- <%= collection_select(:tool, :group_id, current_user.available_groups, :id, :name, {}, :class => :group)%>
+ <%= group_select "tool[group_id]", @tool %>
 </p>
 <p>
   Installed on the following execution servers: <br/>

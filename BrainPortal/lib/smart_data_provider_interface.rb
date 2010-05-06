@@ -41,9 +41,9 @@ module SmartDataProviderInterface
   # class, even when the current smart provider is actually
   # configured to be local. This is not an official DP
   # API method.
-  def remote_full_path(userfile)
-    if @network_provider.respond_to?(:remote_full_path) # this is not an official API method
-      @network_provider.remote_full_path(userfile)
+  def provider_full_path(userfile)
+    if @network_provider.respond_to?(:provider_full_path) # this is not an official API method
+      @network_provider.provider_full_path(userfile)
     else
       "(unknown remote path)"
     end

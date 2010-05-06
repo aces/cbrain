@@ -21,7 +21,6 @@ require 'fileutils'
 # to be instantiated directly.
 #
 # For the list of API methods, see the DataProvider superclass.
-#
 class LocalDataProvider < DataProvider
 
   Revision_info="$Id$"
@@ -29,6 +28,10 @@ class LocalDataProvider < DataProvider
   # Local data providers are considered fast syncing.
   def is_fast_syncing?
     true
+  end
+
+  def provider_full_path(userfile) #:nodoc:
+    self.cache_full_path(userfile)
   end
 
   def impl_is_alive? #:nodoc:
