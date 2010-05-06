@@ -9,7 +9,8 @@ if @tool.errors.empty?
   end
   page.insert_html :bottom, 'tool_table', :partial => 'tool_table_row', :locals  => {:tool  => @tool}
   @tool = Tool.new
-  page['new_tool'].replace_html(:partial  => 'new').hide
+  page['new_tool'].replace_html(:partial  => 'new')
+  page << 'jQuery("#new_tool_button").click();'
 else
   page['new_tool'].replace_html :partial  => 'new'
 end

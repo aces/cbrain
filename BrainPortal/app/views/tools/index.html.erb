@@ -11,22 +11,19 @@
 <div class = "generalcontent">
 
 <% if current_user.has_role?(:admin) %>
-  <div class="resource_list_upper_form">  
     <span title="Registers all subclasses of DrmaaTask as Tools">
-      <%= link_to 'Autoload Tools', {:action  => :create, :autoload  => true}, :method  => :post, :class  => "action_link" %>
-    </span> <br/>
-    <%= link_to 'Tool Management', {:controller => "tools",  :action => "tool_management"}, :class => "action_link" %>
-    <br/><br/>
-    <%= 
-      link_to_function 'Create New Tool', :class  => 'action_link' do |page|
-        page['new_tool'].toggle
-      end 
-    %>
-    <div id="new_tool" style="display:none">
-      <br>
-      <%= render :partial  => 'new' %>
-    </div>
-  </div> <!-- End class="upper_form" -->
+      
+        <%= javascript_tag "var current_options;" %> 
+
+        <div class = "menu_bar">
+             <% button_with_dropdown_menu({:title => 'Create New Tool', :partial => 'new'}, {:id => "new_tool_button"}) %>
+       
+                <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
+            
+            <%= link_to 'Tool Management', {:controller => "tools",  :action => "tool_management"}, :class => " button" %>
+      
+        </div> 
+        
 <% end %>
 
 <table class="resource_list" id="tool_table">
