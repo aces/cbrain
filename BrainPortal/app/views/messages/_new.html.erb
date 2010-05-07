@@ -1,4 +1,7 @@
 <div class="generalcontent">
+
+<div id= "new_message">
+
   <% remote_form_for :message, @message, :url => { :action => "create" } do |f| %>
     <%= f.error_messages %>
     
@@ -38,4 +41,5 @@
       <%= f.submit "Create" %>
     </p>
   <% end %>
+</div>
 </div>

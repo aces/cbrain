@@ -11,6 +11,10 @@
 
 <div class = "generalcontent">
      
+    <div class = "menu_bar">
+          <% button_with_dropdown_menu({:title => 'Create New Tag', :partial => 'new'}, {:id => "new_tag_button"}) %>
+     </div>
+        
      <div class="resource_list_upper_form">
             <%= 
               link_to_function 'Create New Tag', :class  => 'action_link' do |page|

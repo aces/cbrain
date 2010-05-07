@@ -10,6 +10,8 @@
 -%>
 
 <div class = "generalcontent">
+    
+    <div id = "new_tag">
       <br>
       <% remote_form_for :tag, @tag, :url => { :action => "create" } do |f| -%>
         <%= f.error_messages %>
@@ -18,4 +20,5 @@
           <%= f.submit "Create" %>
       <% end %>
       <br>
+     </div>
 </div>   <!-- End class="generalcontent" -->

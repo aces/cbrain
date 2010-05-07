@@ -16,19 +16,10 @@
 
   
       <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-        <div class="resource_list_upper_form">
-               <%= 
-                 link_to_function 'Create New Message', :class  => 'action_link' do |page|
-                   page['new_message'].toggle
-                 end 
-                 %>
-               <div id="new_message" style="display:none">
-                   
-                 <%= render :partial  => 'new' %>
-               </div>
-         </div>
+            <div class="menu_bar">
+                 <% button_with_dropdown_menu({:title => 'Leave Message', :partial => 'new'}, {:id => "new_message_button"}) %>
+            </div>
       <% end %>
-
    <br>
 
 <!--   <H2>Message Center Note: this page is just a draft, work is in progress!</H2>
