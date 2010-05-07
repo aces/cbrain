@@ -393,8 +393,8 @@ a:hover {
     width: 1021px; 
     background-color: #ffffff; 
     height:100%; 
-    margin-left:  auto;
-		margin-right: auto;
+    margin-left: 20px;
+	margin-right: auto;
     padding-bottom: 4px; 
     padding-bottom:10px;
     height: 100%;
@@ -705,6 +705,7 @@ tr.list-unavailable {
 #feedback_table p{
     width: 500px;
 }
+
 
 /* ######################################################### */
 /* Show tasks table formatting */
@@ -1181,10 +1182,6 @@ table.resource_list td.checkbox {
     width: 50em;
 }
 
-#userfiles_top_menu a {
-    text-decoration: none;
-}
-
 .userfiles_upper_form {
     margin-top: 3em;
     width: 45em;
@@ -1207,17 +1204,22 @@ table.resource_list td.checkbox {
     margin-top: 1em;
     width: 960px;
     margin-left: 11px;
-    
+    margin-bottom: 25px;  
 }
 
 .menu_bar {
     padding: 0.5em;
     margin-top: 1em;
+    margin-bottom: 3em;
     width: 960px;
     margin-left: 5px;
     
 }
 
+#new_feedback{
+    width: 400px;
+    padding-left: 30px;
+}
 
 #feedback_box{
     border: 2px solid #6699CC;
@@ -1228,11 +1230,10 @@ table.resource_list td.checkbox {
 }
 
 #file_menu{
-    margin-left: -25px;
-    margin-right: 0px;
+    margin-left: 10px;
+    margin-right: auto;
     min-width: 1097px;
 }
-
 
 .upper_file_menu{
     border: 2px solid #6699CC;
@@ -1256,7 +1257,6 @@ table.resource_list td.checkbox {
    margin-left: 65px;
    width: 415px; 
 }
-
 
 .resource_list_box {
     float:left; 
@@ -1641,6 +1641,7 @@ table.resource_list td.checkbox {
     padding-bottom: 12px;
     margin-bottom: 20px;
     background-color: #f0f0f0;
+    color: #000;
 }
 
 #errorExplanation h2 {
@@ -1655,7 +1656,7 @@ table.resource_list td.checkbox {
 }
 
 #errorExplanation p {
-    color: #333;
+    color: #000;
     margin-bottom: 0;
     padding: 5px;
 }
@@ -1663,6 +1664,7 @@ table.resource_list td.checkbox {
 #errorExplanation ul li {
     font-size: 12px;
     list-style: square;
+    color: #000;
 }
 
 #message_table {
@@ -1707,6 +1709,48 @@ table.resource_list td.checkbox {
 
 .Bourreau{
     width: 903px;
+}
+
+
+/* ######################################################### */
+/* Format for new tool  */
+/* ######################################################### */
+
+#new_tool{
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* ######################################################### */
+/* Format for new site  */
+/* ######################################################### */
+
+#new_site{
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* ######################################################### */
+/* Format for new servers  */
+/* ######################################################### */
+
+#new_bourreau{
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+/* ######################################################### */
+/* Format for new group  */
+/* ######################################################### */
+
+#new_group{
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 /* ######################################################### */
@@ -1780,7 +1824,7 @@ td.middle{
 }
 
 /* ############################################## */
-/*    Task summary page */
+/*    Task summary page                           */
 /* ############################################## */
 
 .task_summary{
@@ -1951,3 +1995,15 @@ h1.warning {
 .small {
   font-size: 0.8em;
 }
+
+.ajax_form{
+    text-align: left;
+    background-color: #FFF;
+    color: #000;
+}
+
+.menu_options{
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
