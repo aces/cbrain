@@ -14,7 +14,18 @@ require 'lib/bourreau_system_checks.rb'
 #-----------------------------------------------------------------------------
 puts "C> CBRAIN Bourreau validation starting, " + Time.now.to_s
 #-----------------------------------------------------------------------------
-BourreauSystemChecks.check(:all)
+
+# Checking to see if this command requires validation or not
+
+program_name = $PROGRAM_NAME || $0    # script/console will set it to 'irb'
+first_arg    = ARGV[0]
+
+if program_name =~ /about$/ # script/about
+  puts "C> \t- What's this all ABOUT?"
+else
+  BourreauSystemChecks.check(:all)
+end
+
 
 
 #-----------------------------------------------------------------------------

@@ -39,6 +39,8 @@ elsif first_arg.nil? #There might be no argument like when doing script/server o
     else
       PortalSystemChecks.check(PortalSystemChecks.all - [:a070_start_bourreau_ssh_tunnels])
     end
+  elsif program_name =~ /about$/ # script/about
+    puts "C> \t- What's this all ABOUT?"
   else
     PortalSystemChecks.check(:all) # mostly for script/server
   end
