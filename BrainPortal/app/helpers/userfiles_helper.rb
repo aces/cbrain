@@ -20,7 +20,7 @@ module UserfilesHelper
   #the current user has a role of *admin*. Otherwise, +name+ will be 
   #displayed as static text.
   def link_if_accessible(name, path, userfile, user)
-    if userfile.can_be_accessed_by?(user) || true
+    if userfile.available? && userfile.can_be_accessed_by?(user)
       link_to(name, path)
     else
       name
