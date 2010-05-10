@@ -90,8 +90,8 @@ jQuery(
 
         }).toggle(function(event){
 	        var menu = jQuery(this).siblings("div.drop_down_menu");
-          jQuery(".drop_down_menu").hide();
-          menu.show();
+	  jQuery(".drop_down_menu:visible").siblings(".button").click();
+	  menu.show();
         },
         function(event){
       	  var menu = jQuery(this).siblings("div.drop_down_menu");
