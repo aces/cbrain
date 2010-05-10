@@ -13,7 +13,7 @@
     
     <div id = "new_tag">
       <br>
-      <% remote_form_for :tag, @tag, :url => { :action => "create" } do |f| -%>
+      <% form_for :tag, @tag, {:url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"}}  do |f| -%>
         <%= f.error_messages %>
           <%= f.label :name %><br />
           <%= f.text_field :name %>

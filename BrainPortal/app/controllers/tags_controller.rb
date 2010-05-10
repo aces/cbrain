@@ -53,10 +53,10 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
     end

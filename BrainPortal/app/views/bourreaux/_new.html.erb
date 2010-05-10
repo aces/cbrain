@@ -14,7 +14,7 @@
 
       <%= error_messages_for :bourreau %>
 
-      <% remote_form_for :bourreau, @bourreau, :url => { :action => "create" } do |f| -%>
+      <% form_for :bourreau, @bourreau, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
          <div class = "splitleft">
            <p><label for="name">Name</label><br/>
            <%= f.text_field :name %></p>

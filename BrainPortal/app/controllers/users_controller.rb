@@ -90,7 +90,7 @@ class UsersController < ApplicationController
     end
     
     respond_to do |format|
-      format.js
+      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'user' }}
     end
   end
 

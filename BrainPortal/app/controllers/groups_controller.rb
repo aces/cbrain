@@ -69,10 +69,10 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Group was successfully created.'
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'group' }}
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'group' }}
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
     end

@@ -58,10 +58,10 @@ class FeedbacksController < ApplicationController
                               :variable_text  => "#{current_user.full_name} : [[View][/feedbacks/#{@feedback.id}]]"
                               }
                             )
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'feedback' }}
         format.xml  { render :xml => @feedback, :status => :created, :location => @feedback }
       else
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'feedback' }}
         format.xml  { render :xml => @feedback.errors, :status => :unprocessable_entity }
       end
     end

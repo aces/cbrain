@@ -1,35 +1,35 @@
-<tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= prov.id %>">
-  <td><%= link_if_manager(prov.name, data_provider_path(prov)) %></td>
-  <td class="provider_details" style="display:none"><%= h(prov.user.login) %></td>
-  <td><%= h(prov.group.name) %></td>
-  <td class="provider_details" style="display:none"><%= (link_to h(prov.site.name), site_path(prov.site)) rescue "(Unassigned)" %></td>
-  <td><%= prov.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
-  <% ajax_element({:element  => "td", :url  => url_for(:action  => :is_alive, :id  => prov.id)}) do %>
+<tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= data_provider.id %>">
+  <td><%= link_if_manager(data_provider.name, data_provider_path(data_provider)) %></td>
+  <td class="provider_details" style="display:none"><%= h(data_provider.user.login) %></td>
+  <td><%= h(data_provider.group.name) %></td>
+  <td class="provider_details" style="display:none"><%= (link_to h(data_provider.site.name), site_path(data_provider.site)) rescue "(Unassigned)" %></td>
+  <td><%= data_provider.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
+  <% ajax_element({:element  => "td", :url  => url_for(:action  => :is_alive, :id  => data_provider.id)}) do %>
     <span class="loading_message">Loading...</span>
   <% end %>
-  <td><%= h(prov.read_only ? "Read Only" : "Read/Write") %></td>
-  <td class="provider_details" style="display:none"><%= h(prov.description) %></td>
+  <td><%= h(data_provider.read_only ? "Read Only" : "Read/Write") %></td>
+  <td class="provider_details" style="display:none"><%= h(data_provider.description) %></td>
   <td>
-     <% if prov.has_owner_access?(current_user) %>
-     <%= link_to 'Edit', edit_data_provider_path(prov), :class => 'action_link' %>
+     <% if data_provider.has_owner_access?(current_user) %>
+     <%= link_to 'Edit', edit_data_provider_path(data_provider), :class => 'action_link' %>
      <% end %>
   </td>
   <td>
-     <% if prov.has_owner_access?(current_user) %>
+     <% if data_provider.has_owner_access?(current_user) %>
      <%= 
         link_to_remote  'Delete',
-                      {:url  => data_provider_path(prov),
+                      {:url  => data_provider_path(data_provider),
                        :method  => 'delete',
                        :confirm => 'Are you sure?',
-                       :before  => "$('data_provider_#{prov.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                       :before  => "$('data_provider_#{data_provider.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
                        },
                       {:class => 'action_link'}
       %>
      <% end %>
   </td>
   <td>
-     <% if prov.is_browsable? && prov.can_be_accessed_by?(current_user) && prov.online? %>
-     <%= link_to 'Browse', browse_data_provider_path(prov), :class => 'action_link' %>
+     <% if data_provider.is_browsable? && data_provider.can_be_accessed_by?(current_user) && data_provider.online? %>
+     <%= link_to 'Browse', browse_data_provider_path(data_provider), :class => 'action_link' %>
      <% end %>
   </td>
 </tr>

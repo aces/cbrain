@@ -10,7 +10,7 @@
 
 
 <div id = "new_tool">
-    <% remote_form_for :tool, @tool, :url => { :action => "create" } do |f| -%>
+    <% form_for :tool, @tool, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
       <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
     <p>
       <%= f.submit "Create new tool" %>

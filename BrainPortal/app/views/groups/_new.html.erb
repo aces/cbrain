@@ -10,10 +10,13 @@
 #
 
 -%>
+
 <br>
 
-<div id = "new_group">
-      <% remote_form_for :group, @group, :url => { :action => "create" } do |f| -%>
+
+<div id="new_group">
+      <% form_for :group, @group, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
+
         <%= f.error_messages %>
 
         <p>

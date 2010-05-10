@@ -1,5 +1,7 @@
 jQuery(
   function() {
+    
+    
     //All elements with the accordion class will be changed to accordions.
     jQuery(".accordion").accordion({
       active: false,
@@ -87,38 +89,50 @@ jQuery(
 
 
         }).toggle(function(event){
-	  var menu = jQuery(this).siblings("div.drop_down_menu");
+	        var menu = jQuery(this).siblings("div.drop_down_menu");
           jQuery(".drop_down_menu").hide();
           menu.show();
         },
         function(event){
-	  var menu = jQuery(this).siblings("div.drop_down_menu");
-	  menu.hide();
+      	  var menu = jQuery(this).siblings("div.drop_down_menu");
+      	  menu.hide();
         });
 
 
 
         jQuery(".button_with_drop_down > div.drop_down_menu").hide();
 
-
+        jQuery(".ajax_form").live("submit", function(){
+          var data_type = jQuery(this).attr("data-datatype");
+          var target = jQuery(this).attr("data-target");
+          if(!data_type) data_type = "html";
+          jQuery(this).ajaxSubmit({
+            type: "POST",
+            dataType: data_type,
+            target: target,
+            resetForm: true
+          });
+          return false;
+        });
+        
         jQuery(".ajax_element").each(function (index,element){
-	  //jQuery(element).load(jQuery(element).attr("data-url"));
-	  var url = jQuery(element).attr("data-url");
-	  var error_message = jQuery(element).attr("data-error");
-	  jQuery.ajax({
-	    type: 'GET',
-	    url: url,
-	    dataType: 'html',
-	    success: function(data) {
-	      jQuery(element).html(data);
-	    },
-	    error: function(e) {
-	      if(!error_message){
-		error_message = "Error loading element";
-	      }
-	      jQuery(element).html("<span>"+ error_message +"</span>");
-	    },
-	    timeout: 50000
+    	  //jQuery(element).load(jQuery(element).attr("data-url"));
+    	  var url = jQuery(element).attr("data-url");
+    	  var error_message = jQuery(element).attr("data-error");
+    	  jQuery.ajax({
+    	    type: 'GET',
+    	    url: url,
+    	    dataType: 'html',
+    	    success: function(data) {
+    	      jQuery(element).html(data);
+    	    },
+    	    error: function(e) {
+    	      if(!error_message){
+    		error_message = "Error loading element";
+    	      }
+    	      jQuery(element).html("<span>"+ error_message +"</span>");
+    	    },
+    	    timeout: 50000
 
 
 	  });
@@ -207,14 +221,14 @@ jQuery(
     var brainbrowser;
     function O3DOverlay(event) {
       var dialog = jQuery("<div id=\"o3d\"></div>").appendTo(jQuery("body")).dialog({
-	show: "puff",
-	modal: true,
-	width: 800,
-	height: 600,
-	close: function(){
-	  brainbrowser.uninit();
-	  jQuery("#o3d").remove();
-	}
+      	show: "puff",
+      	modal: true,
+      	width: 800,
+      	height: 600,
+      	close: function(){
+      	  brainbrowser.uninit();
+      	  jQuery("#o3d").remove();
+      	}
       });
       brainbrowser = new BrainBrowser(jQuery(this).attr('data-content-url'));
     }

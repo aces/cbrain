@@ -111,7 +111,7 @@ class BourreauxController < ApplicationController
     end
    
     respond_to do |format|
-      format.js
+      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'bourreau' }}
     end
   end
 

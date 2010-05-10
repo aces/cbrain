@@ -51,10 +51,10 @@ class SitesController < ApplicationController
     respond_to do |format|
       if @site.save
         flash[:notice] = 'Site was successfully created.'
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'site' }}
         format.xml  { render :xml => @site, :status => :created, :location => @site }
       else
-        format.js
+        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'site' }}
         format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
       end
     end

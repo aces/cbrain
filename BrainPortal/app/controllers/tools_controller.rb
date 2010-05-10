@@ -86,10 +86,10 @@ class ToolsController < ApplicationController
       respond_to do |format|
         if @tool.save
           flash[:notice] = 'Tool was successfully created.'
-          format.js
+          format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tool' }}
           format.xml  { render :xml => @tool, :status => :created, :location => @tool }
         else
-          format.js
+          format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tool' }}
           format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
         end
       end

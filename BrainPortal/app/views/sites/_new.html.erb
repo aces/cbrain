@@ -12,7 +12,7 @@
 
 <div id = "new_site">
 
-<% remote_form_for :site, @site, :url => { :action => "create" } do |f| -%>
+<% form_for :site, @site, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
   <%= f.error_messages %>
 
  

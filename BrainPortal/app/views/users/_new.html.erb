@@ -16,7 +16,7 @@
 
 <%= error_messages_for :user %>
 
-<% remote_form_for :user, @user, :url => { :action => "create" } do |f| -%>
+<% form_for :user, @user, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
 <div class="splitleft">
   <p><label for="full_name">Full Name</label><br/>
