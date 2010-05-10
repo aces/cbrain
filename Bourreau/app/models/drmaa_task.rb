@@ -272,8 +272,6 @@ class DrmaaTask < ActiveRecord::Base
   # The +relpath+ MUST be relative and the current directory MUST
   # be the task's work directory.
   def safe_mkdir(relpath,mode=0700)
-    cb_error "Current directory is not the DrmaaTask's work directory?" unless
-      ! self.drmaa_workdir.blank? && Dir.getwd == self.drmaa_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
     Dir.mkdir(relpath,mode) unless File.directory?(relpath)
@@ -289,8 +287,6 @@ class DrmaaTask < ActiveRecord::Base
   # be the task's work directory. The +original_entry+ can be any
   # string, whether it matches an existing path or not.
   def safe_symlink(original_entry,relpath)
-    cb_error "Current directory is not the DrmaaTask's work directory?" unless
-      ! self.drmaa_workdir.blank? && Dir.getwd == self.drmaa_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
     File.unlink(relpath) if File.symlink?(relpath)
