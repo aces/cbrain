@@ -719,7 +719,7 @@ tr.list-unavailable {
 
 .showtasksdisplay {
     float: left;
-    width: 70%;
+    width: 97%;
     padding: 6px;
     margin-top: 0.5em; 
     margin-left: 1em;
@@ -1747,11 +1747,22 @@ table.resource_list td.checkbox {
 /* Format for new group  */
 /* ######################################################### */
 
+#new_data_provider{
+    width: 750px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* ######################################################### */
+/* Format for new data provider  */
+/* ######################################################### */
+
 #new_group{
     width: auto;
     padding-left: 20px;
     padding-right: 20px;
 }
+
 
 /* ######################################################### */
 /* Format for message table */
