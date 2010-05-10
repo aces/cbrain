@@ -1742,6 +1742,15 @@ table.resource_list td.checkbox {
     padding-right: 20px;
 }
 
+/* ######################################################### */
+/* Format for new user  */
+/* ######################################################### */
+
+#new_user{
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
 
 /* ######################################################### */
 /* Format for new group  */
