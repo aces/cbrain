@@ -116,7 +116,7 @@
     <%= submit_tag "Update Fields" %>
   <% end %>
   
-  <% if @sync_status == "InSync" %>
+  <% if @userfile.is_locally_synced? %>
     <%= display_contents(@userfile) %>
     <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
         <div id="userfile_contents_display" class="loading_message">
