@@ -1195,16 +1195,15 @@ table.resource_list td.checkbox {
     padding: 0.5em;
     margin-top: 1em;
     margin-left: 11px;
-/*    width: 938px;
-*/}
+}
 
 .resource_list_upper_form {
-    border: 2px solid #6699CC;
+    border: 0px;
     padding: 0.5em;
-    margin-top: 1em;
-    width: 960px;
+    margin-top: 0em;
+    width: auto;
     margin-left: 11px;
-    margin-bottom: 25px;  
+    margin-bottom: 0px;  
 }
 
 .menu_bar {
