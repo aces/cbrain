@@ -32,7 +32,9 @@ class DrmaaDiagnostics < DrmaaTask
     file_ids     = files_hash.values
 
     self.addlog "Starting diagnostics setup on #{file_ids.size} files."
-    self.addlog "This task is copy #{params[:copy_number]} of #{params[:copy_total]}."
+    if params[:copy_number] && params[:copy_total]
+      self.addlog "This task is copy #{params[:copy_number]} of #{params[:copy_total]}."
+    end
 
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
