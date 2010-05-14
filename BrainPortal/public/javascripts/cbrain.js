@@ -1,7 +1,7 @@
 jQuery(
   function() {
-    
-    
+
+
     //All elements with the accordion class will be changed to accordions.
     jQuery(".accordion").accordion({
       active: false,
@@ -114,7 +114,7 @@ jQuery(
           });
           return false;
         });
-        
+
         jQuery(".ajax_element").each(function (index,element){
     	  //jQuery(element).load(jQuery(element).attr("data-url"));
     	  var url = jQuery(element).attr("data-url");
@@ -223,6 +223,7 @@ jQuery(
       var dialog = jQuery("<div id=\"o3d\"></div>").appendTo(jQuery("body")).dialog({
       	show: "puff",
       	modal: true,
+	position: 'center',
       	width: 800,
       	height: 600,
       	close: function(){
@@ -231,6 +232,7 @@ jQuery(
       	}
       });
       brainbrowser = new BrainBrowser(jQuery(this).attr('data-content-url'));
+      return false;
     }
 
 
