@@ -424,7 +424,7 @@ class RemoteResource < ActiveRecord::Base
     begin
       if !self.has_ssh_control_info? || self.start_tunnels
         Control.site    = self.site
-        Control.timeout = 10
+        Control.timeout = 30
         control_info = Control.find('info')
         info = RemoteResourceInfo.new(control_info.attributes)
       end
