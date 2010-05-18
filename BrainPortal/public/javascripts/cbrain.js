@@ -51,6 +51,19 @@ jQuery(
         });
 
 
+    jQuery(".overlay_link").click( function() {
+      var url=jQuery(this).attr('data-url');
+      var dialog = jQuery("<div></div>").load(url).appendTo(jQuery("body")).dialog({
+      	show: "puff",
+      	modal: true,
+	position: 'center',
+      	width: 800,
+      	height: 600
+      });
+
+    });
+
+
 
         jQuery(".inline_edit_field").each(function() {
           var input_field = jQuery(this).children().filter("span").children().filter("input").hide();
