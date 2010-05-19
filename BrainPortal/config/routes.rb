@@ -20,7 +20,7 @@ ActionController::Routing::Routes.draw do |map|
 
   # Standard CRUD resources, with extra methods
   map.resources :users,          :member => { :switch  => :get }, :collection  => {:request_password  => :get, :send_password  => :post}
-  map.resources :bourreaux,      :member => { :start   => :post, :stop => :post, :row_data  => :get }
+  map.resources :bourreaux,      :member => { :start   => :post, :stop => :post, :row_data  => :get }, :collection  => { :refresh_ssh_keys  => :post } 
   map.resources :data_providers, :member => { :browse  => :get, :register => :post, :is_alive  => :get }, :collection => { :cleanup => :post, :disk_usage  => :get }
   map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }
 

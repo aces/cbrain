@@ -179,6 +179,20 @@ class BourreauxController < ApplicationController
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     render :partial => 'bourreau_row_elements', :locals  => {:bour  => @remote_resource}
   end
+  
+  def refresh_ssh_keys
+    RemoteResource.find_all_accessible_by_user(current_user).each do |b|
+      if b.is_alive?
+        info = b.info
+        ssh_key = info.ssh_public_key
+      end
+      b.ssh_public_key = ssh_key
+      b.save
+    end
+    
+    flash[:notice] = "Server ssh public keys have been refreshed."
+    redirect_to :action  => :index
+  end
 
   def start
     @bourreau = Bourreau.find(params[:id])

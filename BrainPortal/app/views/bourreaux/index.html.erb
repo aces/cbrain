@@ -22,6 +22,7 @@
   <% if check_role(:admin) || check_role(:site_manager)%>
       <div class="menu_bar">
           <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new'}, {:id => "new_bourreau_button"}) %>
+          <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text-icon" } %>
       </div> <!-- End class="menu_bar" -->
 
    <% end %>

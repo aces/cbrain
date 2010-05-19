@@ -31,7 +31,7 @@
       <table id="provider_info_table">
         <% @ssh_keys.each do |pair| %>
           <tr><th><%= h(pair[0]) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
+          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= pretty_ssh_key(pair[1] || "This Execution Server is DOWN!") %></PRE></SMALL></SMALL></td></tr>
         <% end %>
       </table>
    </div> <!-- End class = "ssh_keys" -->
