@@ -12,10 +12,13 @@
 <div class = "generalcontent">
 
    <% title 'Feedback' %>
-       
+    
+   <div class = 'help_button'>
+       <a class = "overlay_link" data-url = "/doc/feedback/feedback.html">Help</a>
+   </div>
+   
    <div class="menu_bar">
-        <% button_with_dropdown_menu({:title => 'Leave Feedback', :partial => 'new'}, {:id => "new_feedback_button"}) %>
-                
+        <% button_with_dropdown_menu({:title => 'Leave Feedback', :partial => 'new'}, {:id => "new_feedback_button"}) %>              
    </div>
        
       <table class="resource_list" id="feedback_table">
