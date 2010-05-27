@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# DRMAA Job Wrapper Class
+# Bourreau CbrainTask Wrapper Class
 #
 # Original author: Pierre Rioux
 #
@@ -16,46 +16,46 @@ require 'fileutils'
 require 'cbrain_exception'
 
 #Abstract model representing a job running on a cluster. This is the core class for
-#launching GridEngine/PBS jobs using Scir.
+#launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
+#
+#See the document CbrainTask.txt for a complete introduction.
 #
 #=Attributes:
 #[<b>user_id</b>] The id of the user who requested this task.
 #[<b>bourreau_id</b>] The id of the Bourreau on which the task is running.
 #[<b>status</b>] The status of the current task.
 #[<b>params</b>] A hash of the parameters sent in the job request from BrainPortal.
-#[<b>drmaa_jobid</b>] The job id of the running task. This id is a string
-#                     specific to the cluster management system configured for the
-#                     bourreau, and has no meaning outside of there.
-#[<b>drmaa_workdir</b>] The work directory in which the task is running. Like the
-#                       *drmaa_jobid*, this directory has no meaning outside
-#                       of the context of the host where the Bourreau is running.
+#[<b>cluster_jobid</b>] The job id of the running task. This id is a string
+#                       specific to the cluster management system configured for the
+#                       bourreau, and has no meaning outside of there.
+#[<b>cluster_workdir</b>] The work directory in which the task is running. Like the
+#                         *cluster_jobid*, this directory has no meaning outside
+#                         of the context of the host where the Bourreau is running.
 #[<b>share_wd_tid</b>] The task id of another task; if set, the current task will
-#                      be configured to execute in the same +drmaa_workdir+.
+#                      be configured to execute in the same +cluster_workdir+.
 #[<b>prerequisites</b>] A hash table providing information about what other
 #                       tasks the current task depend on.
 #[<b>log</b>] A log of task's progress.
 #
-#<b>DrmaaTask should not be instantiated directly.</b> Instead, subclasses of DrmaaTask should be created to
+#<b>CbrainTask::ClusterTask should not be instantiated directly.</b> Instead, subclasses of CbrainTask should be created to
 #represent requests for specific processing tasks.
-#Unlike the DrmaaTask model on the portal side, these here are *ActiveRecord* models, meaning
-#they do represent rows in the database directly.
 #
-#= Creating a DrmaaTask subclass
-#Subclasses of DrmaaTask will have to override the following methods to function properly:
+#= Creating a CbrainTask::ClusterTask subclass
+#Subclasses of CbrainTask::ClusterTask will have to override the following methods to function properly:
 #[<b>setup</b>] Perform any preparatory steps before launching the job (e.g. syncing files).
-#[*drmaa_commands*] Returns an array of the bash commands to be run by the job.
+#[*cluster_commands*] Returns an array of the bash commands to be run by the job.
 #[*save_results*] Perform any finalization steps after the job is run (e.g. saving result files).
 #
 #Note that all these methods can access request parameters through the hash in the +params+
 #attribute.
 #
-#A generator script has been written to simplify the creation of DrmaaTask subclasses. To
+#A generator script has been written to simplify the creation of CbrainTask::ClusterTask subclasses. To
 #use it, simply go to the Bourreau application's base directory and run:
 #  script/generate cluster_task <your_task_name>
 #This will create a template for your task.
 #
 #Instructions in the files themselves will indicate how to integrate your task into the system.
-class DrmaaTask < ActiveRecord::Base
+class CbrainTask::ClusterTask < CbrainTask
 
   Revision_info="$Id$"
 
@@ -64,49 +64,9 @@ class DrmaaTask < ActiveRecord::Base
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
   QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
 
-  include DrmaaTaskCommon
+  include CbrainTaskLogging
 
-  # The attribute 'params' is a serialized hash table
-  # containing job-specific parameters; it's up to each
-  # subclass of DrmaaTask to find/use/define its content
-  # as necessary.
-  serialize :params
-
-  # The attribute 'prerequisites' is a serialized hash table
-  # containing the information about whether the current
-  # task depend on the states of other tasks. As an example,
-  # if the hash is this:
-  #
-  #     {
-  #        :for_setup           => { "T12" => "Queued", "T13" => "Completed" },
-  #        :for_post_processing => { "T66" => "Failed" },
-  #     }
-  #
-  # then the task will be setup by a Worker only when task #12 and #13 are
-  # in the indicated states or further, and the task will enter post_process() only
-  # when task #66 has failed. The only allowed keys right now are
-  # :for_setup and :for_post_processing, as these are the only two
-  # states triggered by Workers.
-  #
-  # The task's ID are serialized with strings with a prefix consisting
-  # of the single character 'T'. This is needed so that the structure
-  # is properly serialized in XML during ActiveResource transport.
-  #
-  # The only allowed state values for the conditions are:
-  #
-  #  - 'Queued' (which also covers ALL subsequent states up to 'Completed')
-  #  - 'Data Ready' (which also covers 'Completed')
-  #  - 'Completed'
-  #  - 'Failed' (which covers all failures)
-  #
-  # As an aide, note that in a way, a value 'n' in the DrmaaTask attribute
-  # :share_wd_tid also implies this prerequisite:
-  #
-  #     :for_setup => { "T#{n}" => "Queued" }
-  #
-  # unless a more restrictive prerequisite is already supplied for task 'n'.
-  serialize :prerequisites
-
+  # Automatically register the task's version when new() is invoked.
   def initialize(arguments = {}) #:nodoc:
     super(arguments)
     baserev = Revision_info
@@ -119,20 +79,14 @@ class DrmaaTask < ActiveRecord::Base
 
   ##################################################################
   # Main User API Methods
-  # setup(), drmaa_commands() and save_results()
+  # setup(), cluster_commands() and save_results()
   ##################################################################
 
   # This needs to be redefined in a subclass.
   # Returning true means that everything went fine
-  # during setup. Returning false will mark the
-  # job with a final status "Failed To Setup".
-  #
-  # The method has of course access to all the
-  # fields of ActiveRecord, but the only
-  # two that are of used are self.params and
-  # self.drmaa_workdir (which graciously when is
-  # already the current working directory when
-  # this method is called).
+  # during setup. Returning false or raising an
+  # exception will mark the job with a final
+  # status "Failed To Setup".
   def setup
     true
   end
@@ -141,20 +95,16 @@ class DrmaaTask < ActiveRecord::Base
   # It should return an array of bash commands,
   # each array element being one line of the bash
   # script.
-  #
-  # Like setup(), it has access to self.params and
-  # self.drmaa_workdir
-  def drmaa_commands
+  def cluster_commands
     [ "true >/dev/null" ]
   end
 
   # This needs to be redefined in a subclass.
   # Returning true means that everything went fine
   # during result gathering. Returning false will mark
-  # the job with a final status "Failed To PostProcess".
-  #
-  # Like setup(), it has access to self.params and
-  # self.drmaa_workdir.
+  # the job with a final status "Failed On Cluster".
+  # Raising an exception will mark the job with
+  # a final status "Failed To PostProcess".
   def save_results
     true
   end
@@ -190,7 +140,7 @@ class DrmaaTask < ActiveRecord::Base
   # Note that including the module RecoverableTask
   # will provide a copy of this method that simply
   # returns true; this is useful if your bash commands
-  # returned by drmaa_commands() are naturally recoverable.
+  # returned by cluster_commands() are naturally recoverable.
   def recover_from_cluster_failure
     false
   end
@@ -236,7 +186,7 @@ class DrmaaTask < ActiveRecord::Base
   # Note that including the module RestartableTask
   # will provide a copy of this method that simply
   # returns true; this is useful if your bash commands
-  # returned by drmaa_commands() are naturally restartable.
+  # returned by cluster_commands() are naturally restartable.
   def restart_at_cluster
     false
   end
@@ -260,11 +210,11 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
-  # Utility Methods For DrmaaTask Developers
+  # Utility Methods For CbrainTask:ClusterTask Developers
   ##################################################################
 
   # Utility method for developers to use while writing
-  # a DrmaaTask's setup() or save_results() methods.
+  # a task's setup() or save_results() methods.
   # This method creates a subdirectory in your work directory.
   # To make it partical when writing restartable or recoverable
   # code, it will not complain of the directory already exists,
@@ -272,13 +222,14 @@ class DrmaaTask < ActiveRecord::Base
   # The +relpath+ MUST be relative and the current directory MUST
   # be the task's work directory.
   def safe_mkdir(relpath,mode=0700)
+    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
     Dir.mkdir(relpath,mode) unless File.directory?(relpath)
   end
 
   # Utility method for developers to use while writing
-  # a DrmaaTask's setup() or save_results() methods.
+  # a task's setup() or save_results() methods.
   # This method creates a symbolic link in your work directory.
   # To make it partical when writing restartable or recoverable
   # code, it will silently replace a symbolic link that already
@@ -287,6 +238,7 @@ class DrmaaTask < ActiveRecord::Base
   # be the task's work directory. The +original_entry+ can be any
   # string, whether it matches an existing path or not.
   def safe_symlink(original_entry,relpath)
+    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
     File.unlink(relpath) if File.symlink?(relpath)
@@ -294,7 +246,7 @@ class DrmaaTask < ActiveRecord::Base
   end
 
   # Utility method for developers to use while writing
-  # a DrmaaTask's setup() or save_results() methods.
+  # a task's setup() or save_results() methods.
   # This method acts like the new() method of Userfile,
   # but if the attribute list match a file already
   # existing then it will return that file instead
@@ -314,6 +266,15 @@ class DrmaaTask < ActiveRecord::Base
     return results[0] if results.size == 1
     cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
     return klass.new(attlist)
+  end
+
+  def we_are_in_workdir #:nodoc:
+    return false if self.cluster_workdir.blank?
+    cur_dir = Dir.getwd
+    Dir.chdir(self.cluster_workdir) do  # We need to do this in case the workdir goes through symlinks...
+      return false if cur_dir != Dir.getwd
+    end
+    true
   end
 
 
@@ -336,8 +297,8 @@ class DrmaaTask < ActiveRecord::Base
     # to have a spawn occur here.
     begin
       self.addlog("Setting Up.")
-      self.makeDRMAAworkdir
-      Dir.chdir(self.drmaa_workdir) do
+      self.make_cluster_workdir
+      Dir.chdir(self.cluster_workdir) do
         if ! self.setup  # as defined by subclass
           self.addlog("Failed to setup: 'false' returned by setup().")
           self.status = "Failed To Setup"
@@ -372,7 +333,7 @@ class DrmaaTask < ActiveRecord::Base
     begin
       self.addlog("Starting asynchronous postprocessing.")
       saveok = false
-      Dir.chdir(self.drmaa_workdir) do
+      Dir.chdir(self.cluster_workdir) do
         # Call the subclass-provided save_results()
         saveok = self.save_results
       end
@@ -412,7 +373,7 @@ class DrmaaTask < ActiveRecord::Base
 
     ar_status = self.status
     if ar_status.blank?
-      cb_error "Unknown blank status obtained from DrmaaTask ActiveRecord #{self.id}."
+      cb_error "Unknown blank status obtained from CbrainTask ActiveRecord #{self.id}."
     end
 
     # Final states that we can't get out of, except for:
@@ -420,25 +381,25 @@ class DrmaaTask < ActiveRecord::Base
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart)$/)
+    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart|Preset)$/)
 
     # This is the expensive call, the one that queries the cluster.
-    drmaastatus = self.drmaa_status
-    #self.addlog("ar_status is #{ar_status} ; drmaa stat is #{drmaastatus}")
+    clusterstatus = self.cluster_status
+    #self.addlog("ar_status is #{ar_status} ; cluster stat is #{clusterstatus}")
 
     # Steady states for cluster jobs
-    if drmaastatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
-      self.status_transition(self.status,drmaastatus) # try to update; ignore errors.
+    if clusterstatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
+      self.status_transition(self.status,clusterstatus) # try to update; ignore errors.
       return self.status
     end
 
-    # At this point here then, drmaastatus == "Does Not Exist"
+    # At this point here then, clusterstatus == "Does Not Exist"
     if ar_status.match(/^(On CPU|Suspended|On Hold|Queued)$/)
       self.status_transition(self.status,"Data Ready") # try to update; ignore errors.
       return self.status
     end
 
-    cb_error "DRMAA job finished with unknown Active Record status #{ar_status} and DRMAA status #{drmaastatus}"
+    cb_error "Cluster job finished with unknown Active Record status #{ar_status} and Cluster status #{clusterstatus}"
   end
 
   # This method changes the status attribute
@@ -450,7 +411,7 @@ class DrmaaTask < ActiveRecord::Base
   # true if the transition was successful, and false
   # if anything went wrong.
   def status_transition(from_state, to_state)
-    DrmaaTask.transaction do
+    CbrainTask.transaction do
       self.lock!
       return false if self.status != from_state
       return true  if from_state == to_state # NOOP
@@ -489,7 +450,7 @@ class DrmaaTask < ActiveRecord::Base
   def terminate
     return unless self.status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
     begin
-      Scir::Session.session_cache.terminate(self.drmaa_jobid)
+      Scir::Session.session_cache.terminate(self.cluster_jobid)
       self.status = "Terminated"
     rescue
       # nothing to do
@@ -500,7 +461,7 @@ class DrmaaTask < ActiveRecord::Base
   def suspend
     return unless self.status == "On CPU"
     begin
-      Scir::Session.session_cache.suspend(self.drmaa_jobid)
+      Scir::Session.session_cache.suspend(self.cluster_jobid)
       self.status = "Suspended"
     rescue
       # nothing to do
@@ -511,7 +472,7 @@ class DrmaaTask < ActiveRecord::Base
   def resume
     begin
       return unless self.status == "Suspended"
-      Scir::Session.session_cache.resume(self.drmaa_jobid)
+      Scir::Session.session_cache.resume(self.cluster_jobid)
       self.status = "On CPU"
     rescue
       # nothing to do
@@ -522,7 +483,7 @@ class DrmaaTask < ActiveRecord::Base
   def hold
     return unless self.status == "Queued"
     begin
-      Scir::Session.session_cache.hold(self.drmaa_jobid)
+      Scir::Session.session_cache.hold(self.cluster_jobid)
       self.status = "On Hold"
     rescue
       # nothing to do
@@ -533,7 +494,7 @@ class DrmaaTask < ActiveRecord::Base
   def release
     begin
       return unless self.status == "Suspended"
-      Scir::Session.session_cache.release(self.drmaa_jobid)
+      Scir::Session.session_cache.release(self.cluster_jobid)
       self.status = "Queued"
     rescue
       # nothing to do
@@ -612,7 +573,7 @@ class DrmaaTask < ActiveRecord::Base
       cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /^T(\d+)$/
       task_id = Regexp.last_match[1].to_i
       cb_notice "Task depends on itself!" if task_id == self.id # Cannot depend on yourself!!!
-      task = DrmaaTask.find(task_id) rescue nil
+      task = CbrainTask.find(task_id) rescue nil
       cb_error "Could not find task '#{task_id}'" unless task
       needed_state   = prereqs[t_taskid] # one of "Queued" "Data Ready" "Completed" or "Fail"
       covered_states = PREREQS_STATES_COVERED_BY[needed_state]
@@ -657,130 +618,47 @@ class DrmaaTask < ActiveRecord::Base
 
 
   ##################################################################
-  # Internal Logging Methods
-  ##################################################################
-
-  #Record a +message+ in this task's log.
-  def addlog(message, options = {})
-    log = self.log
-    log = "" if log.nil? || log.empty?
-    callerlevel    = options[:caller_level] || 0
-    calling_info   = caller[callerlevel]
-    calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
-    calling_method = "" if options[:no_caller]
-    lines = message.split(/\s*\n/)
-    lines.pop while lines.size > 0 && lines[-1] == ""
-    message = lines.join("\n") + "\n"
-    log +=
-      Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + calling_method + message
-    self.log = log
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because DrmaaTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def getlog
-    self.log
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because DrmaaTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def addlog_context(context,message="") #:nodoc:
-    prev_level     = caller[0]
-    calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
-
-    class_name     = context.class.to_s
-    class_name     = context.to_s if class_name == "Class"
-    rev_info       = context.revision_info
-    pretty_info    = rev_info.svn_id_pretty_rev_author_date
-
-    full_message   = "#{class_name} #{calling_method} revision #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :no_caller => true )
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because DrmaaTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def addlog_revinfo(anobject,message="") #:nodoc:
-    class_name     = anobject.class.to_s
-    class_name     = anobject.to_s if class_name == "Class"
-    rev_info       = anobject.revision_info
-    pretty_info    = rev_info.svn_id_pretty_rev_author_date
-
-    full_message   = "#{class_name} revision #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :no_caller => true )
-  end
-
-  # Records in the task's log the info about an exception.
-  # This happens frequently not only in this code here
-  # but also in subclasses, in the Bourreau controller and in
-  # the BourreauWorkers, so it's worth having this utility.
-  # The method can also be called by DrmaaTask programmers.
-  def addlog_exception(exception,message="Exception raised:",backtrace_lines=15) #:nodoc:
-    message = "Exception raised:" if message.blank?
-    message.sub!(/[\s:]*$/,":")
-    self.addlog("#{message} #{exception.class}: #{exception.message}")
-    if backtrace_lines > 0
-      backtrace_lines = exception.backtrace.size - 1 if backtrace_lines >= exception.backtrace.size
-      exception.backtrace[1..backtrace_lines].each { |m| self.addlog(m) }
-    end
-  end
-
-
-
-  ##################################################################
   # ActiveRecord Lifecycle methods
   ##################################################################
 
   # All object destruction also implies termination!
   def before_destroy #:nodoc:
     self.terminate
-    self.removeDRMAAworkdir
+    self.remove_cluster_workdir
   end
 
 
 
   ##################################################################
-  # XML Serialization Methods
+  # Cluster Job's STDOUT And STDERR Files Methods
   ##################################################################
 
-  # It is VERY important to add a pseudo-attribute 'type'
-  # to the XML records created for the Drmaa* objects, as
-  # this is used on the other end of an ActiveResource
-  # connection to properly re-instanciate the object
-  # with the proper type (see the patch to instantiate_record()
-  # in the ActiveResource model for DrmaaTask on BrainPortal)
-  def to_xml(options = {}) #:nodoc:
-    options[:methods] ||= []
-    options[:methods] << :type            unless options[:methods].include?(:type)
-    options[:methods] << :capt_stdout_b64 unless options[:methods].include?(:capt_stdout_b64)
-    options[:methods] << :capt_stderr_b64 unless options[:methods].include?(:capt_stderr_b64)
-    super options
+  # Returns the filename for the job's captured STDOUT
+  # Returns nil if the work directory has not yet been
+  # created, or no longer exists. The file itself is not
+  # garanteed to exist, either.
+  def stdout_cluster_filename
+    workdir = self.cluster_workdir
+    return nil unless workdir
+    if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
+    else
+      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id}" # New official convention
+    end
   end
 
-  # This is needed by the ActiveResource controller on
-  # Bourreau to figure out which key of the update()
-  # request contains the updated attributes (the key
-  # vary with the class name, so DrmaaAbc is stored in
-  # drmaa_abc)
-  def uncamelize #:nodoc:
-    #self.class.to_s.downcase.sub(/^drmaa_?/i,"drmaa_")
-    self.class.to_s.underscore
+  # Returns the filename for the job's captured STDERR
+  # Returns nil if the work directory has not yet been
+  # created, or no longer exists. The file itself is not
+  # garanteed to exist, either.
+  def stderr_cluster_filename
+    workdir = self.cluster_workdir
+    return nil unless workdir
+    if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
+    else
+      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id}" # New official convention
+    end
   end
 
   # Read back the STDOUT and STDERR files for the job, and
@@ -788,24 +666,20 @@ class DrmaaTask < ActiveRecord::Base
   # this is called explicitely only in the case when the
   # portal performs a 'show' request on a single task
   # otherise it's too expensive to do it every time. The
-  # pseudo attributes @capt_stdout_b64 and @capt_stderr_b64
-  # are not really part of the DrmaaTask model.
+  # pseudo attributes :cluster_stdout and :cluster_stderr
+  # are not really part of the task's ActiveRecord model.
   def capture_job_out_err
      return if self.new_record?
-     stdoutfile = self.stdoutDRMAAfilename
-     stderrfile = self.stderrDRMAAfilename
-     #@capt_stdout_b64 = Base64.encode64(File.read(stdoutfile)) if File.exist?(stdoutfile)
-     #@capt_stderr_b64 = Base64.encode64(File.read(stderrfile)) if File.exist?(stderrfile)
+     stdoutfile = self.stdout_cluster_filename
+     stderrfile = self.stderr_cluster_filename
      if stdoutfile && File.exist?(stdoutfile)
-        #io = IO.popen("tail -30 #{stdoutfile} | fold -b -w 200 | tail -100","r")
         io = IO.popen("tail -100 #{stdoutfile}","r")
-        @capt_stdout_b64 = Base64.encode64(io.read)
+        self.cluster_stdout = io.read
         io.close
      end
      if stderrfile && File.exist?(stderrfile)
-        #io = IO.popen("tail -30 #{stderrfile} | fold -b -w 200 | tail -100","r")
         io = IO.popen("tail -100 #{stderrfile}","r")
-        @capt_stderr_b64 = Base64.encode64(io.read)
+        self.cluster_stderr = io.read
         io.close
      end
   end
@@ -818,7 +692,7 @@ class DrmaaTask < ActiveRecord::Base
 
   protected
 
-  # The list of possible DRMAA states is larger than
+  # The list of possible cluster states is larger than
   # the ones we need for CBRAIN, so here is a mapping
   # to our shorter list. Note that when a job finishes
   # on the cluster, we cannot tell whether it was all
@@ -826,7 +700,7 @@ class DrmaaTask < ActiveRecord::Base
   # as a state. It's up to the subclass' save_results()
   # to figure out if the processing was successfull or
   # not.
-  @@DRMAA_States_To_Status ||= {
+  @@Cluster_States_To_Status ||= {
                                # The textual strings are important
                                # ---------------------------------
     Scir::STATE_UNDETERMINED          => "Does Not Exist",
@@ -845,12 +719,12 @@ class DrmaaTask < ActiveRecord::Base
   # Returns <b>On CPU</b>, <b>Queued</b>, <b>On Hold</b>, <b>Suspended</b> or
   # <b>Does Not Exist</b>.
   # This set of states is *NOT* exactly the same as for status()
-  # as a non-existing DRMAA job might mean a job not started,
+  # as a non-existing cluster job might mean a job not started,
   # a killed job or a job that's exited properly, and we can't determine
-  # which of the three from the DRMAA::Session#job_ps()
-  def drmaa_status
-    state = Scir::Session.session_cache.job_ps(self.drmaa_jobid,self.updated_at)
-    status = @@DRMAA_States_To_Status[state] || "Does Not Exist"
+  # which of the three from the job_ps()
+  def cluster_status
+    state = Scir::Session.session_cache.job_ps(self.cluster_jobid,self.updated_at)
+    status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   end
 
@@ -863,11 +737,11 @@ class DrmaaTask < ActiveRecord::Base
   # Submit the actual job request to the cluster management software.
   # Expects that the WD has already been changed.
   def submit_cluster_job
-    self.addlog("Launching DRMAA job.")
+    self.addlog("Launching job on cluster.")
 
     name     = self.name
-    commands = self.drmaa_commands  # Supplied by subclass; can use self.params
-    workdir  = self.drmaa_workdir
+    commands = self.cluster_commands  # Supplied by subclass; can use self.params
+    workdir  = self.cluster_workdir
 
     # Special case of RUBY-only jobs (jobs that have no cluster-side).
     # In this case, only the 'Setting Up' and 'Post Processing' states
@@ -898,19 +772,18 @@ class DrmaaTask < ActiveRecord::Base
       )
     end
 
-    # Create the DRMAA job object
+    # Create the cluster job object
     Scir::Session.session_cache   # Make sure it's loaded.
     job = Scir::JobTemplate.new_jobtemplate
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
-    job.stdout  = ":" + self.stdoutDRMAAfilename
-    job.stderr  = ":" + self.stderrDRMAAfilename
+    job.stdout  = ":" + self.stdout_cluster_filename
+    job.stderr  = ":" + self.stderr_cluster_filename
     job.join    = false
     job.wd      = workdir
     job.name    = name
 
-    # Log version of DRMAA lib, e.g.
-    # Using Scir for 'PBS/Torque' version '1.0' implementation 'PBS DRMAA v. 1.0 <http://sourceforge.net/projects/pbspro-drmaa/>'
+    # Log version of Scir lib
     drm     = Scir.drm_system
     version = Scir.version
     impl    = Scir.drmaa_implementation
@@ -927,9 +800,9 @@ class DrmaaTask < ActiveRecord::Base
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
-    jobid            = Scir::Session.session_cache.run(job)
-    self.drmaa_jobid = jobid
-    self.status      = "Queued"
+    jobid              = Scir::Session.session_cache.run(job)
+    self.cluster_jobid = jobid
+    self.status        = "Queued"
     self.addlog("Queued as job ID '#{jobid}'.")
     return true
 
@@ -945,16 +818,16 @@ class DrmaaTask < ActiveRecord::Base
   # If the task contains the ID of another task in
   # the attribute :share_wd_tid, then that other
   # task's work directory will be used instead.
-  def makeDRMAAworkdir
+  def make_cluster_workdir
     # Use the work directory of another task
     otask_id = self.share_wd_tid
     if ! otask_id.blank?
-      otask = DrmaaTask.find(otask_id)
+      otask = CbrainTask.find(otask_id)
       cb_error "Cannot use the work directory of a task that belong to another Bourreau." if otask.bourreau_id != self.bourreau_id
-      owd   = otask.drmaa_workdir
+      owd   = otask.cluster_workdir
       cb_error "Cannot find the work directory of other task '#{otask_id}'."      if owd.blank?
       cb_error "The work directory '#{owd} of task '#{otask_id}' does not exist." unless File.directory?(owd)
-      self.drmaa_workdir = owd
+      self.cluster_workdir = owd
       self.addlog("Using workdir '#{owd}' of task '#{otask.bname_tid}'.")
       return
     end
@@ -962,69 +835,20 @@ class DrmaaTask < ActiveRecord::Base
     # Create our own work directory
     name = self.name
     user = self.user.login
-    self.drmaa_workdir = (CBRAIN::DRMAA_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
-    self.addlog("Trying to create workdir '#{self.drmaa_workdir}'.")
-    Dir.mkdir(self.drmaa_workdir,0700) unless File.directory?(self.drmaa_workdir)
+    self.cluster_workdir = (CBRAIN::CLUSTER_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
+    self.addlog("Trying to create workdir '#{self.cluster_workdir}'.")
+    Dir.mkdir(self.cluster_workdir,0700) unless File.directory?(self.cluster_workdir)
   end
 
   # Remove the directory created to run the job.
-  def removeDRMAAworkdir
-    unless self.drmaa_workdir.blank?
-      self.addlog("Removing workdir '#{self.drmaa_workdir}'.")
-      FileUtils.remove_dir(self.drmaa_workdir, true)
-      #system("/bin/rm -rf \"#{self.drmaa_workdir}\" >/dev/null 2>/dev/null")
-      self.drmaa_workdir = nil
+  def remove_cluster_workdir
+    unless self.cluster_workdir.blank?
+      self.addlog("Removing workdir '#{self.cluster_workdir}'.")
+      FileUtils.remove_dir(self.cluster_workdir, true)
+      #system("/bin/rm -rf \"#{self.cluster_workdir}\" >/dev/null 2>/dev/null")
+      self.cluster_workdir = nil
     end
   end
 
-
-
-  ##################################################################
-  # Cluster Job's STDOUT And STDERR Files Methods
-  ##################################################################
-
-  # Returns the filename for the job's captured STDOUT
-  # Returns nil if the work directory has not yet been
-  # created, or no longer exists. The file itself is not
-  # garanteed to exist, either.
-  def stdoutDRMAAfilename
-    workdir = self.drmaa_workdir
-    return nil unless workdir
-    if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
-    else
-      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id}" # New official convention
-    end
-  end
-
-  # Returns the filename for the job's captured STDERR
-  # Returns nil if the work directory has not yet been
-  # created, or no longer exists. The file itself is not
-  # garanteed to exist, either.
-  def stderrDRMAAfilename
-    workdir = self.drmaa_workdir
-    return nil unless workdir
-    if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
-    else
-      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id}" # New official convention
-    end
-  end
-
-  # Returns the captured STDOUT for the
-  # task; this pseudo-attribute is only
-  # filled in after explicitely calling
-  # the method capture_job_out_err()
-  def capt_stdout_b64
-    @capt_stdout_b64
-  end
-
-  # Returns the captured STDERR for the
-  # task; this pseudo-attribute is only
-  # filled in after explicitely calling
-  # the method capture_job_out_err()
-  def capt_stderr_b64
-    @capt_stderr_b64
-  end
 
 end

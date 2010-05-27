@@ -24,14 +24,6 @@
     Default data provider:  <%= data_provider_select("user_preference[data_provider_id]", user_preference.data_provider_id, { :include_blank => true }) %>
   </p>
   <p>
-   Options saved for tasks:
-   <ul>
-      <% user_preference.other_options.keys.select{ |item| item =~ /^Drmaa/ }.each do |task| %>
-      <li><%= task %></li>
-      <% end %>
-   </ul>
-  </p>
-  <p>
     <%= f.submit "Save" %>
   </p>
 <% end %>  <!-- End form -->

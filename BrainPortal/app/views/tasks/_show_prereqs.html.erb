@@ -8,9 +8,11 @@
    next unless ttid =~ /^T(\d+)/
    tid = Regexp.last_match[1]
    state = for_this[ttid]
+   otask = CbrainTask.find(tid) rescue nil
+   otaskname = otask ? "#{otask.name}@#{otask.bname_tid}" : "(DestroyedTask)/#{tid}"
 %>
   <TR>
-    <TD><%= link_to "DrmaaTask/#{tid}", "/tasks/show/#{tid}" %></TD>
+    <TD><%= otask ? (link_to otaskname, "/tasks/show/#{tid}") : h(otaskname) %></TD>
     <TD><%= h(state) %></TD>
   </TR>
 <% end %>

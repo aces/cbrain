@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# DrmaaDiagnostics subclass for running diagnostics
+# CbrainTask subclass for running diagnostics
 #
 # Original author:
 # Template author: Pierre Rioux
@@ -10,26 +10,25 @@
 # $Id$
 #
 
-#A subclass of DrmaaTask to run diagnostics.
-class DrmaaDiagnostics < DrmaaTask
+#A subclass of CbrainTask::ClusterTask to run diagnostics.
+class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
   # Overrides the default addlog() method such that each
   # log entry is also sent to STDOUT.
-  def addlog(message,options={})
+  def addlog(message,options={}) #:nodoc:
     puts "DIAGNOSTICS: #{self.bname_tid} #{message}" unless self.bourreau_id.blank?
     super(message,options.dup.merge( :caller_level => 1 ))
   end
 
   # Synchronize the userfiles given in argument, measuring
   # the performance (and success or failure).
-  def setup
+  def setup #:nodoc:
     params       = self.params
     user_id      = self.user_id
 
-    files_hash   = params[:files_hash] || {}
-    file_ids     = files_hash.values
+    file_ids     = params[:interface_userfile_ids]
 
     self.addlog "Starting diagnostics setup on #{file_ids.size} files."
     if params[:copy_number] && params[:copy_total]
@@ -73,12 +72,11 @@ class DrmaaDiagnostics < DrmaaTask
   # The bash commands runs the 'wc' command on the SingleFiles given
   # in argument and the 'du' command on FileCollections. It also reports
   # several parameters about the environment.
-  def drmaa_commands
+  def cluster_commands #:nodoc:
     params       = self.params
     user_id      = self.user_id
 
-    files_hash    = params[:files_hash] || {}
-    file_ids      = files_hash.values
+    file_ids      = params[:interface_userfile_ids]
 
     # Note: 'commands' is an ARRAY of strings.
     commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
@@ -134,7 +132,7 @@ class DrmaaDiagnostics < DrmaaTask
   # Creates a report about the diagnostics generated and saves it
   # back to the CBRAIN DB. The report is mostly a concatenation
   # of the cluster job's STDOUT and STDERR.
-  def save_results
+  def save_results #:nodoc:
     params       = self.params
     user_id      = self.user_id
 
@@ -167,8 +165,8 @@ class DrmaaDiagnostics < DrmaaTask
       self.addlog("No Data Provider ID provided, so no report created.")
     elsif report.save
       report.cache_writehandle do |fh|
-        stdout_text = File.read(self.stdoutDRMAAfilename) rescue "(Exception)"
-        stderr_text = File.read(self.stderrDRMAAfilename) rescue "(Exception)"
+        stdout_text = File.read(self.stdout_cluster_filename) rescue "(Exception)"
+        stderr_text = File.read(self.stderr_cluster_filename) rescue "(Exception)"
         fh.write( <<-"REPORT_DIAGNOSTICS" )
 
 ######################
@@ -209,7 +207,7 @@ class DrmaaDiagnostics < DrmaaTask
   # Recover/restart capabilities
   #########################################
 
-  def recover_from_setup_failure
+  def recover_from_setup_failure #:nodoc:
     params = self.params
     return false if params[:recover_setup].blank?
     unless params[:recover_setup_delay].blank? 
@@ -218,7 +216,7 @@ class DrmaaDiagnostics < DrmaaTask
     true
   end
 
-  def recover_from_cluster_failure
+  def recover_from_cluster_failure #:nodoc:
     params = self.params
     return false if params[:recover_cluster].blank?
     unless params[:recover_cluster_delay].blank? 
@@ -227,7 +225,7 @@ class DrmaaDiagnostics < DrmaaTask
     true
   end
 
-  def recover_from_post_processing_failure
+  def recover_from_post_processing_failure #:nodoc:
     params = self.params
     return false if params[:recover_postpro].blank?
     unless params[:recover_postpro_delay].blank? 
@@ -236,7 +234,7 @@ class DrmaaDiagnostics < DrmaaTask
     true
   end
 
-  def restart_at_setup
+  def restart_at_setup #:nodoc:
     params = self.params
     return false if params[:restart_setup].blank?
     unless params[:restart_setup_delay].blank? 
@@ -245,7 +243,7 @@ class DrmaaDiagnostics < DrmaaTask
     true
   end
 
-  def restart_at_cluster
+  def restart_at_cluster #:nodoc:
     params = self.params
     return false if params[:restart_cluster].blank?
     unless params[:restart_cluster_delay].blank? 
@@ -254,7 +252,7 @@ class DrmaaDiagnostics < DrmaaTask
     true
   end
 
-  def restart_at_post_processing
+  def restart_at_post_processing #:nodoc:
     params = self.params
     return false if params[:restart_postpro].blank?
     unless params[:restart_postpro_delay].blank? 

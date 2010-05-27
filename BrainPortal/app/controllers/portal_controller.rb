@@ -43,17 +43,17 @@ class PortalController < ApplicationController
     end
     
     bourreau_ids = available_bourreaux(current_user).collect(&:id)
-    @tasks = ActRecTask.find(:all, :conditions => {
+    @tasks = CbrainTask.find(:all, :conditions => {
                                        :user_id     => current_user.id,
                                        :bourreau_id => bourreau_ids
                                      } )
     @tasks_by_status = @tasks.group_by do |task|
       case task.status
-      when /((#{DrmaaTask::COMPLETED_STATUS.join('|')}))/
+      when /((#{CbrainTask::COMPLETED_STATUS.join('|')}))/o
         :completed
-      when /(#{DrmaaTask::RUNNING_STATUS.join('|')})/
+      when /(#{CbrainTask::RUNNING_STATUS.join('|')})/o
         :running
-      when /(#{DrmaaTask::FAILED_STATUS.join('|')})/
+      when /(#{CbrainTask::FAILED_STATUS.join('|')})/o
         :failed
       else
         :other

@@ -451,6 +451,13 @@ class RemoteResource < ActiveRecord::Base
     @info
   end
 
+
+
+
+  ############################################################################
+  # Utility Shortcuts To Send Commands
+  ############################################################################
+
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
   def send_command_clean_cache(userlist,older_than)
@@ -473,6 +480,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a +start_workers+ command to a
   # RemoteResource, whether local or not.
+  # Maybe this should be more specific to Bourreaux.
   def send_command_start_workers
     command = RemoteCommand.new(
       :command     => 'start_workers'
@@ -482,6 +490,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a +stop_workers+ command to a
   # RemoteResource, whether local or not.
+  # Maybe this should be more specific to Bourreaux.
   def send_command_stop_workers
     command = RemoteCommand.new(
       :command     => 'stop_workers'
@@ -492,6 +501,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a +wakeup_workers+ command to a
   # RemoteResource, whether local or not.
+  # Maybe this should be more specific to Bourreaux.
   def send_command_wakeup_workers
     command = RemoteCommand.new(
       :command     => 'wakeup_workers'
@@ -522,6 +532,8 @@ class RemoteResource < ActiveRecord::Base
     control = Control.new(command)
     control.save
 
+    returned_command = RemoteCommand.new(control.attributes)
+    return returned_command
   end
 
   ############################################################################

@@ -382,8 +382,10 @@ class Worker
   rescue => itswrong
 
     self.worker_log.fatal "Exception raised: #{itswrong.class} : #{itswrong.message}"
-    itswrong.backtrace.each do |line|
-      self.worker_log.fatal line
+    unless itswrong.is_a?(ActiveRecord::StatementInvalid) && itswrong.message =~ /server has gone away/
+      itswrong.backtrace.each do |line|
+        self.worker_log.fatal line
+      end
     end
     self.worker_log.fatal "Worker shutting down."
 

@@ -25,8 +25,11 @@ class PortalSystemChecks < CbrainChecker
         pending_migrations.each do |pending_migration|
           puts "C> \t\t- %4d %s" % [pending_migration.version, pending_migration.name]
         end
-        puts "C> \t- Please run \"rake db:migrate\" to update your database then try again."
-        Kernel.exit
+        puts "C> \t- Please run \"rake db:migrate RAILS_ENV=#{ENV['RAILS_ENV']}\" to update"
+        puts "C> \t  your database then try again."
+        puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+        puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+        Kernel.exit(1)
       end
     end
   end
@@ -37,8 +40,11 @@ class PortalSystemChecks < CbrainChecker
     #----------------------------------------------------------------------------
 
     unless PortalSanityChecks.done? 
-       puts "C> \t- Error: You must check the sanity of the models. Please run 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'." 
-       Kernel.exit(1)
+      puts "C> \t- Error: You must check the sanity of the models. Please run this\n"
+      puts "C> \t         command: 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'." 
+      puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+      puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+      Kernel.exit(1)
     end
   end
 
@@ -76,8 +82,11 @@ class PortalSystemChecks < CbrainChecker
       CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
     else
       #----------------------------------------------------------------------------------------
-      puts "C> \t- BrainPortal not registered in database, please run 'rake db:sanity:check'."
+      puts "C> \t- BrainPortal not registered in database, please run this"
+      puts "C> \t  command: 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'."
       #----------------------------------------------------------------------------------------
+      puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+      puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
       Kernel.exit(1)
     end
   end

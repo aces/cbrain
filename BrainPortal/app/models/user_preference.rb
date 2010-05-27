@@ -12,7 +12,7 @@
 #
 #=Attributes:
 #[*other_options*] A hash used for any preferences not handled as an association
-#                  (e.g. preferred arguments to launch a DrmaaTask).
+#                  (e.g. preferred arguments to launch a CbrainTask).
 #= Associations:
 #*Belongs* *to*:
 #* User

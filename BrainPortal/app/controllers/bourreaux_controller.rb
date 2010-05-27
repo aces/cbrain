@@ -39,7 +39,7 @@ class BourreauxController < ApplicationController
     
     @user_tasks_info = {}
     begin
-       tasks = ActRecTask.find(:all, :conditions => { :bourreau_id => @bourreau.id })
+       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id })
     rescue
        tasks = []
     end
@@ -153,12 +153,7 @@ class BourreauxController < ApplicationController
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    tasks_left = 0
-    begin
-      DrmaaTask.adjust_site(@bourreau.id)
-      tasks_left = DrmaaTask.find(:all).size
-    rescue
-    end
+    tasks_left = CbrainTask.find(:all, :conditions => { :bourreau_id => id }).count
     cb_notice "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy

@@ -412,7 +412,7 @@ class UserfilesController < ApplicationController
   #
   #Potential operations are:
   #[<b>Cluster task</b>] Send userfile to be processed on a cluster by some
-  #                      some analytical tool (see DrmaaTask). These requests
+  #                      some analytical tool (see CbrainTask). These requests
   #                      are forwarded to the TasksController.
   #[<b>Download files</b>] Download a set of selected files.
   #[<b>Update tags</b>] Update the tagging of selected files which a set
@@ -449,7 +449,7 @@ class UserfilesController < ApplicationController
       task      = 'copy'
     else
       operation   = 'cluster_task'
-      task = params[:operation]
+      task = params[:operation].sub(/^CbrainTask::/,"")
     end
     
     filelist    = params[:filelist] || []
@@ -473,7 +473,7 @@ class UserfilesController < ApplicationController
     case operation
 
       when "cluster_task"
-        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :task => task, :bourreau_id => params[:bourreau_id]
+        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :toolname => task, :bourreau_id => params[:bourreau_id]
         return
 
       when "delete"
@@ -734,6 +734,7 @@ class UserfilesController < ApplicationController
       )
       Dir.chdir(collection_path.parent) do
         if userfile.save
+          userfile.addlog("Extracted from collection '#{collection.name}'.")
           userfile.cache_copy_from_local_file(file)
           success += 1
         else

@@ -8,15 +8,15 @@
 # $Id$
 #
 
-#Subclass of CustomFilter representing custom filters for the DrmaaTask resource
+#Subclass of CustomFilter representing custom filters for the CbrainTask resource
 #(which are controlled by the tasks contoller).
 #
 #=Parameters filtered:
-#[*type*] The DrmaaTask subclass to filter.
-#[*description*] The DrmaaTask description to filter.
+#[*type*] The CbrainTask subclass to filter.
+#[*description*] The CbrainTask description to filter.
 #[*created_date_type*] The type of filtering done on the creation date (+before+, +on+ or +after+).
 #[*created_date_term*] The date to filter against.
-#[*user_id*] The user_id of the DrmaaTask owner to filter against.
+#[*user_id*] The user_id of the CbrainTask owner to filter against.
 #[*bourreau_id*] The bourreau_id of the bourreau to filter against.
 class TaskCustomFilter < CustomFilter
                           
@@ -44,14 +44,14 @@ class TaskCustomFilter < CustomFilter
   
   private
   
-  #Return +scope+ modified to filter the DrmaaTask entry's type.
+  #Return +scope+ modified to filter the CbrainTask entry's type.
   def scope_type(scope)
     scope.scoped(:conditions  => {:type  =>  self.data["type"]})
   end
   
-  #Return +scope+ modified to filter the DrmaaTask entry's description.
+  #Return +scope+ modified to filter the CbrainTask entry's description.
   def scope_description(scope)
-    query = 'drmaa_tasks.description'
+    query = 'cbrain_tasks.description'
     term = self.data["description_term"]
     if self.data["description_type"] == 'match'
       query += ' = ?'
@@ -70,18 +70,18 @@ class TaskCustomFilter < CustomFilter
     scope.scoped(:conditions  => ["#{query}", term])
   end
   
-  #Return +scope+ modified to filter the DrmaaTask entry's owner.
+  #Return +scope+ modified to filter the CbrainTask entry's owner.
   def scope_user(scope)
-    scope.scoped(:conditions  => ["drmaa_tasks.user_id = ?", self.data["user_id"]])
+    scope.scoped(:conditions  => ["cbrain_tasks.user_id = ?", self.data["user_id"]])
   end
   
-  #Return +scope+ modified to filter the DrmaaTask entry's bourreau.
+  #Return +scope+ modified to filter the CbrainTask entry's bourreau.
   def scope_bourreau(scope)
-    scope.scoped(:conditions  => ["drmaa_tasks.bourreau_id = ?", self.data["bourreau_id"]])
+    scope.scoped(:conditions  => ["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
   end
   
-  #Return +scope+ modified to filter the DrmaaTask entry's created_at date.
+  #Return +scope+ modified to filter the CbrainTask entry's created_at date.
   def scope_created_date(scope)
-    scope.scoped(:conditions  => ["DATE(drmaa_tasks.created_at) #{self.data["created_date_type"]} ?", self.data["created_date_term"]])
+    scope.scoped(:conditions  => ["DATE(cbrain_tasks.created_at) #{self.data["created_date_type"]} ?", self.data["created_date_term"]])
   end
 end

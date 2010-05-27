@@ -20,7 +20,7 @@ require 'set'
 #=Attributes:
 #[*name*] The name of the file.
 #[*size*] The size of the file.
-#[*task*] The DrmaaTask (if any) that produced this file.
+#[*task*] The CbrainTask (if any) that produced this file.
 #=Acts as:
 #[*nested_set*] The nested set module allows for the creation of
 #               a tree structure of userfiles. Userfiles created

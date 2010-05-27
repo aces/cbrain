@@ -28,7 +28,7 @@ class CBRAIN
   DataProviderCache_dir    = "/your/local/bourreau/cache/here"
 
   # Local bourreau constants 
-  DRMAA_sharedir           = "/your/drmaa/shared/dir" # a writable directory also visible from all cluster nodes
+  CLUSTER_sharedir         = "/your/cluster/shared/dir" # a writable directory also visible from all cluster nodes
 
   # Software installation paths (must be visible from the cluster nodes)
   Quarantine_dir           = "/your/civet/quarantine/dir"

@@ -14,6 +14,7 @@ class Bourreau < RemoteResource
   Revision_info="$Id$"
   
   has_many :user_preferences,  :dependent => :nullify
+  has_many :cbrain_tasks
   has_and_belongs_to_many :tools
 
   attr_accessor :operation_messages # no need to store in DB
@@ -148,6 +149,43 @@ class Bourreau < RemoteResource
 
 
   ############################################################################
+  # Utility Shortcuts To Send Commands
+  ############################################################################
+
+  public
+
+  # Utility method to send a +get_task_outputs+ command to a
+  # Bourreau RemoteResource, whether local or not.
+  def send_command_get_task_outputs(task_id)
+    command = RemoteCommand.new(
+      :command     => 'get_task_outputs',
+      :task_ids    => task_id.to_s
+    )
+    send_command(command) # will return a command object with stdout and stderr
+  end
+
+  # Utility method to send a +alter_tasks+ command to a
+  # Bourreau RemoteResource, whether local or not.
+  # +tasks+ must be a single task ID or an array of such,
+  # or a single CbrainTask object or an array of such.
+  # +new_task_status+ is one of the keywords recognized by
+  # process_command_alter_tasks(); in the case where operation
+  # is 'Duplicate', then a +new_bourreau_id+ can be supplied too.
+  def send_command_alter_tasks(tasks,new_task_status,new_bourreau_id=nil)
+    tasks    = [ tasks ] unless tasks.is_a?(Array)
+    task_ids = tasks.map { |t| t.is_a?(CbrainTask) ? t.id : t.to_i }
+    command  = RemoteCommand.new(
+      :command         => 'alter_tasks',
+      :task_ids        => task_ids.join(","),
+      :new_task_status => new_task_status,
+      :new_bourreau_id => new_bourreau_id
+    )
+    send_command(command)
+  end
+
+
+
+  ############################################################################
   # Commands Implemented by Bourreaux
   ############################################################################
 
@@ -188,6 +226,90 @@ class Bourreau < RemoteResource
       myself.is_a?(Bourreau)
     worker_pool = WorkerPool.find_pool(BourreauWorker)
     worker_pool.wake_up_workers
+  end
+
+  # Modifies a task's state.
+  def self.process_command_alter_tasks(command)
+    myself = RemoteResource.current_resource
+    cb_error "Got control command #{command.command} but I'm not a Bourreau!" unless
+      myself.is_a?(Bourreau)
+    taskids   = command.task_ids.split(/,/)
+    newstatus = command.new_task_status
+
+    tasks_affected = 0
+
+    taskids.each do |task_id|
+      begin
+        task       = CbrainTask.find(task_id.to_i)
+        old_status = task.status # so we can detect if the operation did anything.
+
+        # The method we'll now call are defined in the Bourreau side's CbrainTask model.
+        # These methods trigger task control actions on the cluster.
+        # They will update the "status" field depending on the action's result;
+        # if the action is invalid it will silently be ignored and the task
+        # will stay unchanged.
+        task.suspend      if newstatus == "Suspended"
+        task.resume       if newstatus == "On CPU"
+        task.hold         if newstatus == "On Hold"
+        task.release      if newstatus == "Queued"
+        task.terminate    if newstatus == "Terminated"
+
+        # 'Destroy' is different, it terminates (if allowed) then
+        # removes all traces of the task from the DB.
+        if newstatus == "Destroy"  # verb instead of adjective
+          task.destroy
+          next
+        end
+
+        # These actions trigger special handling code in the workers
+        task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
+        task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' tasks only
+
+        # The 'Duplicate' operation copies the task object into a brand new task.
+        # As a side effect, the task can be reassigned to another Bourreau too
+        # (Note that the task will fail at Setup if the :share_wd_id attribute specify
+        # a task that is now on the original Bourreau).
+        # Duplicating a task could also be performed on the client side (BrainPortal).
+        if (newstatus == 'Duplicate')
+          new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
+          new_task = task.class.new(task.attributes) # a kind of DUP!
+          new_task.bourreau_id     = new_bourreau_id
+          new_task.cluster_jobid   = nil
+          new_task.cluster_workdir = nil
+          new_task.run_number      = 1
+          new_task.status          = "New"
+          new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
+          task=new_task
+        end
+
+        # OK now, if something has changed (based on status), we proceed we the update.
+        next unless task.status != old_status
+        task.save
+        tasks_affected += 1 if task.bourreau_id == myself.id
+      rescue
+        puts "Something has gone wrong altering task '#{task_id}' with new status '#{newstatus}'."
+      end
+    end
+
+    # Artifically trigger a 'wakeup workers' commmand if any task was
+    # affected locally. Unfortunately we can't wake up workers on
+    # a different Bourreaux yet.
+    if tasks_affected > 0
+      myself.send_command_wakeup_workers
+    end
+
+  end
+
+  # Returns the STDOUT and STDERR of a task.
+  def self.process_command_get_task_outputs(command)
+    task_id = command.task_ids.to_i # expects only one
+    task = CbrainTask.find(task_id)
+    task.capture_job_out_err
+    command.cluster_stdout=task.cluster_stdout
+    command.cluster_stderr=task.cluster_stderr
+  rescue => e
+    command.cluster_stdout="Bourreau Exception: #{e.class} #{e.message}\n"
+    command.cluster_stderr="Bourreau Exception:\n#{e.backtrace.join("\n")}\n"
   end
 
   private

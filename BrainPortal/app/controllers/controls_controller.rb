@@ -41,9 +41,12 @@ class ControlsController < ApplicationController
   end
 
   # The 'create' action receives a Control object
-  # encapsulating a RemoteCommand object. It always
-  # returns 'true'. It also assigns an arbitrary, unique,
+  # encapsulating a RemoteCommand object.
+  # It assigns an arbitrary, unique,
   # transient ID to the command object.
+  # After the object's command is executed, the
+  # command object is returned to the sender,
+  # so that information can be sent back.
   #
   # The command object is validated for proper sender/
   # receiver credentials, and then it is passed on
@@ -54,7 +57,11 @@ class ControlsController < ApplicationController
     @@command_counter += 1
     command = RemoteCommand.new(params[:control]) # a HASH
     command.id = "#{@@command_counter}-#{Process.pid}-#{Time.now.to_i}" # not useful right now.
-    process_command(command)
+    if process_command(command)
+      command.command_execution_status = "OK"
+    else
+      command.command_execution_status = "FAILED"
+    end
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml do
@@ -110,12 +117,15 @@ class ControlsController < ApplicationController
     myself = RemoteResource.current_resource
     myself.class.process_command(command)
 
+    return true
+
   rescue => exception
     Message.send_internal_error_message(User.find_by_login('admin'),
       "RemoteResource #{myself.name} raised exception processing a message.", # header
       exception,
       command
     )
+    return false
   end
 
 end

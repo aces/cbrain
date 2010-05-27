@@ -331,10 +331,10 @@ class SshTunnel
     socket = self.control_path
     " -p #{@port}"                        +
     " -o ConnectTimeout=10"               +
-    " -o StrictHostKeyChecking=false"     +
-    " -o PasswordAuthentication=false"    +
+    " -o StrictHostKeyChecking=no"        +
+    " -o PasswordAuthentication=no"       +
     " -o KbdInteractiveAuthentication=no" +
-    " -o KbdInteractiveDevices=false"     +
+    " -o KbdInteractiveDevices=none"      +
     " -o ServerAliveInterval=180"         +
     " -o ServerAliveCountMax=5"           +
     " -o ControlMaster=#{control_master}" +

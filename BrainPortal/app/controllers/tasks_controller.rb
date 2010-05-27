@@ -9,7 +9,7 @@
 # $Id$
 #
 
-#Restful controller for the DrmaaTask resource.
+#Restful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
   Revision_info="$Id$"
@@ -18,7 +18,7 @@ class TasksController < ApplicationController
 
   def index #:nodoc:   
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
-    scope = ActRecTask.scoped({})
+    scope = CbrainTask.scoped({})
     if current_user.has_role? :admin
       unless @filter_params["filters"]["user_id"].blank?
         scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
@@ -47,11 +47,11 @@ class TasksController < ApplicationController
       when :status
         case value.to_sym
         when :completed
-          value = DrmaaTask::COMPLETED_STATUS
+          value = CbrainTask::COMPLETED_STATUS
         when :running
-          value = DrmaaTask::RUNNING_STATUS
+          value = CbrainTask::RUNNING_STATUS
         when :failed
-          value = DrmaaTask::FAILED_STATUS
+          value = CbrainTask::FAILED_STATUS
         end 
       end
       if att == :custom_filter
@@ -67,7 +67,7 @@ class TasksController < ApplicationController
     end
 
     # Set sort order and make it persistent.
-    @filter_params["sort"]["order"] ||= 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
+    @filter_params["sort"]["order"] ||= 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
     @filter_params["sort"]["dir"]   ||= 'DESC'
 
     scope = scope.scoped(:joins  => [:bourreau, :user], 
@@ -76,7 +76,7 @@ class TasksController < ApplicationController
 
     @tasks = scope
     
-    if @filter_params["sort"]["order"] == 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
+    if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       @tasks = @tasks.group_by(&:launch_time)
     end
 
@@ -90,16 +90,18 @@ class TasksController < ApplicationController
   # GET /tasks/1.xml
   def show #:nodoc:
     task_id     = params[:id]
-    actrectask  = ActRecTask.find(task_id) # Fetch once...
-    bourreau_id = actrectask.bourreau_id
-    DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
+
+    @task              = CbrainTask.find(task_id)
 
     begin
-      @task = DrmaaTask.find(task_id)        # Fetch twice... :-(
+      bourreau           = @task.bourreau
+      control            = bourreau.send_command_get_task_outputs(task_id)
+      @task.cluster_stdout = control.cluster_stdout
+      @task.cluster_stderr = control.cluster_stderr
     rescue Errno::ECONNREFUSED, EOFError
-      flash[:error] = "The Execution Server for this task is not available right now."
-      redirect_to :action => :index
-      return
+      flash[:notice] = "Warning: the Execution Server for this task is not available right now"
+      @task.cluster_stdout = "Execution Server is DOWN!"
+      @task.cluster_stderr = "Execution Server is DOWN!"
     end
 
     respond_to do |format|
@@ -109,69 +111,143 @@ class TasksController < ApplicationController
   end
   
   def new #:nodoc:
-    @task_class = Class.const_get(params[:task].to_s)
-    @files = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested  => :read)
-    @data_providers = available_data_providers(current_user)
 
-    params[:bourreau_id] = Tool.find_by_drmaa_class(params[:task].to_s).select_random_bourreau_for(current_user) if params[:bourreau_id].blank?
-    params[:user_id]     = current_user.id
+    # Brand new task object for the form
+    @toolname         = params[:toolname]
+    @task             = CbrainTask.const_get(@toolname).new
 
-    # Simple case: the task has no parameter page, so submit
-    # directly to 'create'
-    if ! @task_class.has_args?
-      redirect_to :action  => :create, :task  => params[:task], :file_ids  => params[:file_ids], :bourreau_id  => params[:bourreau_id]
-      return
+    # Some useful variables for the view
+    @data_providers   = available_data_providers(current_user)
+
+    # Tarek modify this please. Also see the same code in new(), edit() and create()
+    @bourreaux        = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
+    @tool_bourreaux   = Tool.find_by_cbrain_task_class(@task.class.to_s).bourreaux
+    @bourreaux        = @bourreaux & @tool_bourreaux
+
+    # Our new task object needs some initializing
+    @task.params      = @task.class.wrapper_default_launch_args.dup
+    @task.bourreau_id = params[:bourreau_id]
+    @task.user_id     = current_user.id
+
+    # Filter list of files as provided by the get request
+    @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write)
+    @task.params[:interface_userfile_ids] = @files.map &:id
+
+    # Custom initializing
+    message = @task.wrapper_before_form
+    unless message.blank?
+      if message =~ /error/i
+        flash[:error] = message
+      else
+        flash[:notice] = message
+      end
     end
 
-    # The page has a parameter page, so get the default values....
-    begin
-      @default_args  = @task_class.get_default_args(params, current_user.user_preference.other_options[params[:task]])
-    rescue CbrainError => e
-      flash[:error] = e.to_s
-      redirect_to e.redirect || userfiles_path
-      return
-    end
-    
-    # ... then generate the form.
+    # Generate the form.
     respond_to do |format|
       format.html # new.html.erb
     end
 
   end
 
-  def create #:nodoc:
-    @task_class = params[:task].constantize
-    @task_class.preferred_bourreau_id = params[:bourreau_id]
-    
-    @task_class.data_provider_id     = params[:data_provider_id]                       ||
-                                       current_user.user_preference.data_provider      ||
-                                       available_data_providers(current_user).first.id
-    @task_class.launch_time          = Time.now
-    
-    if params[:save_as_defaults]
-      current_user.user_preference.update_options(params[:task]  => @task_class.save_options(params))
-      current_user.user_preference.save
-    end
-        
-    begin
-      params[:user_id] = current_user.id
-      flash[:notice] ||= ""
-      flash[:notice] += @task_class.launch(params)
-      current_user.addlog_context(self,"Launched #{@task_class.to_s}")
-      current_user.addlog_revinfo(@task_class)
-    rescue CbrainError => e
-      flash[:error] = e.to_s
-      if e.redirect
-        redirect_to e.redirect
-      elsif @task_class.has_args?
-        redirect_to :action  => :new, :file_ids => params[:file_ids], :task  => params[:task]
-      else
-        redirect_to userfiles_path
-      end
+  def edit #:nodoc:
+    @task       = current_user.cbrain_tasks.find(params[:id])
+    @toolname   = @task.name
+
+    if @task.status !~ /Completed|Failed/
+      flash[:error] = "You cannot edit the parameters of an active task.\n";
+      redirect_to :action => :show, :id => params[:id]
       return
     end
+
+    # Some useful variables for the view
+    @data_providers   = available_data_providers(current_user)
+
+    # In order to edit older tasks that don't have :interface_userfile_ids
+    # set, we initalize an empty one.
+    params = @task.params
+    params[:interface_userfile_ids] ||= []
+
+    # Custom initializing
+    message = @task.wrapper_before_form
+    unless message.blank?
+      if message =~ /error/i
+        flash[:error] = message
+      else
+        flash[:notice] = message
+      end
+    end
+
+    # Generate the form.
+    respond_to do |format|
+      format.html # edit.html.erb
+    end
+
+  end
+
+  def create #:nodoc:
+
+    flash[:notice] ||= ""
+    flash[:error]  ||= ""
+
+    @toolname         = params[:toolname]
+    @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
+    @task.user_id     = current_user.id
+
+    unless @task.bourreau_id
+      # Tarek modify this please. Also see the same code in new() and create()
+      @bourreaux        = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
+      @tool_bourreaux   = Tool.find_by_cbrain_task_class(@task.class.to_s).bourreaux
+      @bourreaux        = @bourreaux & @tool_bourreaux
+      if @bourreaux.size == 0
+        flash[:error] = "No Execution Server available right now for this task?"
+        redirect_to :action  => :new, :file_ids => @task.file_ids, :toolname => @toolname
+        return
+      else
+        @task.bourreau_id = @bourreaux[0].id
+      end
+    end
+
+    # TODO @task validation here !
+
+    # Custom initializing
+    messages = ""
+    messages += @task.wrapper_after_form
+
+    tasklist = @task.wrapper_final_task_list
+
+    @task.launch_time = Time.now # so grouping will work
     
+    tasklist.each do |task|
+      if task.new_record? && task.status.blank?
+        task.status = "New"
+        task.save!  # TODO check
+      else
+        messages += "Task seems invalid: #{task.inspect}"
+      end
+    end
+
+    messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check
+
+    flash[:notice] += messages if messages
+    if tasklist.size == 1
+      flash[:notice] += "Launched a #{@task.name} task."
+    else
+      flash[:notice] += "Launched #{tasklist.size} #{@task.name} tasks."
+    end
+
     redirect_to :controller => :tasks, :action => :index
+  end
+
+  def update #:nodoc:
+    id = params[:id]
+    @task = CbrainTask.find(id)  # the original one
+    new_att = params[:cbrain_task] || {}
+    new_params = new_att.delete(:params)
+    @task.update_attributes(new_att)
+    @task.params.merge!(new_params) # this is not perfect but it will have to do
+    @task.save
+    redirect_to :action => :show, :id => @task.id
   end
 
   #This action handles requests to modify the status of a given task.
@@ -182,7 +258,7 @@ class TasksController < ApplicationController
   #[*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
   #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database. 
-  def operation
+  def operation #:nodoc:
     operation   = params[:operation]
     tasklist    = params[:tasklist] || []
 
@@ -214,13 +290,11 @@ class TasksController < ApplicationController
     # on do_in_spawn
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to a list of tasks") do
 
+      tasks = []
       tasklist.each do |task_id|
 
-        begin  # This will all be replaced by a better control mechanism using ControlsController one day
-          actrectask  = ActRecTask.find(task_id) # Fetch once...
-          bourreau_id = actrectask.bourreau_id
-          DrmaaTask.adjust_site(bourreau_id)     # ... to adjust this
-          task = DrmaaTask.find(task_id.to_i)    # Fetch twice... :-(
+        begin
+          task = CbrainTask.find(task_id)
         rescue
           sent_failed += 1
           next
@@ -228,36 +302,40 @@ class TasksController < ApplicationController
 
         if task.user_id != current_user.id && current_user.role != 'admin'
           sent_skipped += 1
-          continue 
+          next 
         end
 
+        tasks << task
+      end
+
+      grouped_tasks = tasks.group_by &:bourreau_id
+
+      grouped_tasks.each do |pair_bid_tasklist|
+        bid      = pair_bid_tasklist[0]
+        tasklist = pair_bid_tasklist[1]
+        bourreau = Bourreau.find(bid)
         begin
           if operation == 'delete'
-            task.destroy
-            sent_ok += 1
-          else
-            cur_status  = task.status
-            new_status  = DrmaaTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
-            allowed_new = DrmaaTask::AllowedOperations[cur_status] || []
-            if new_status && allowed_new.include?(new_status)
-              task.status = new_status
-              task.capt_stdout_b64="" # zap to lighten the load when sending back
-              task.capt_stderr_b64="" # zap to lighten the load when sending back
-              task.log=""             # zap to lighten the load when sending back
-              if task.save
-                sent_ok += 1
-              else
-                sent_failed += 1
-              end
-            else
-              sent_skipped += 1
-            end
+            bourreau.send_command_alter_tasks(tasklist,'Destroy') # TODO parse returned command object?
+            sent_ok += tasklist.size
+            next
           end
+          new_status  = CbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
+          oktasks = tasklist.select do |t|
+            cur_status  = t.status
+            allowed_new = CbrainTask::PortalTask::AllowedOperations[cur_status] || []
+            new_status && allowed_new.include?(new_status)
+          end
+          skippedtasks = tasklist - oktasks
+          if oktasks.size > 0
+            bourreau.send_command_alter_tasks(oktasks,new_status) # TODO parse returned command object?
+            sent_ok += oktasks.size
+          end
+          sent_skipped += skippedtasks.size
         rescue => e # TODO record what error occured to inform user?
-          sent_failed += 1
+          sent_failed += tasklist.size
         end
-
-      end # foreach task ID
+      end # foreach bourreaux' tasklist
 
       if do_in_spawn
         Message.send_message(current_user, {
@@ -271,9 +349,9 @@ class TasksController < ApplicationController
     end # End of spawn_if block
 
     if do_in_spawn
-      flash[:notice] = "The tasks are being notified in background."
+      flash[:notice] += "The tasks are being notified in background."
     else
-      flash[:notice] = "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
+      flash[:notice] += "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
     end
 
     current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")

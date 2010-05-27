@@ -2,36 +2,101 @@
 #
 # CBRAIN Project
 #
-# Module containing common methods for the DrmaaTask classes
-# used on the BrainPortal and Bourreau side; it's important
-# to realize that on the BrainPortal side, DrmaaTasks are
-# ActiveResource objects, while on the Bourreau side they
-# are ActiveRecords. Still, many methods are common, so they've
-# been extracted here.
+# CbrainTask models
 #
 # Original author: Pierre Rioux
 #
 # $Id$
 #
 
-
-module DrmaaTaskCommon
+# Model representing a job request made to an remote execution server (Bourreau) on a cluster.
+# Typically this class is not used directly, instead intermediate subclasses are
+# used on the Portal side and on the Bourreau side:
+#
+#   CbrainTask::PortalTask  < CbrainTask
+#   CbrainTask::ClusterTask < CbrainTask
+#
+class CbrainTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  # Returns the task's User object.
-  def user
-    @user ||= User.find(self.user_id)
-  end
+  include CbrainTaskLogging
 
-  # Returns a simple name for the task (without the Drmaa prefix).
+  belongs_to            :bourreau
+  belongs_to            :user
+
+  validates_presence_of :user_id
+  validates_presence_of :bourreau_id
+  validates_presence_of :status
+
+  # Pseudo Attributes (not saved in DB)
+  attr_accessor :cluster_stdout, :cluster_stderr
+
+  # The attribute 'params' is a serialized hash table
+  # containing job-specific parameters; it's up to each
+  # subclass of CbrainTask to find/use/define its content
+  # as necessary.
+  serialize :params
+
+  # The attribute 'prerequisites' is a serialized hash table
+  # containing the information about whether the current
+  # task depend on the states of other tasks. As an example,
+  # if the hash is this:
+  #
+  #     {
+  #        :for_setup           => { "T12" => "Queued", "T13" => "Completed" },
+  #        :for_post_processing => { "T66" => "Failed" },
+  #     }
+  #
+  # then the task will be setup by a Worker only when task #12 and #13 are
+  # in the indicated states or further, and the task will enter post_process() only
+  # when task #66 has failed. The only allowed keys right now are
+  # :for_setup and :for_post_processing, as these are the only two
+  # states triggered by Workers.
+  #
+  # The task's ID are serialized with strings with a prefix consisting
+  # of the single character 'T'. This is needed so that the structure
+  # is properly serialized in XML during ActiveResource transport.
+  #
+  # The only allowed state values for the conditions are:
+  #
+  #  - 'Queued' (which also covers ALL subsequent states up to 'Completed')
+  #  - 'Data Ready' (which also covers 'Completed')
+  #  - 'Completed'
+  #  - 'Failed' (which covers all failures)
+  #
+  # As an aide, note that in a way, a task ID 'n' in the CbrainTask attribute
+  # :share_wd_tid also implies this prerequisite:
+  #
+  #     :for_setup => { "T#{n}" => "Queued" }
+  #
+  # unless a more restrictive prerequisite is already supplied for task 'n'.
+  serialize :prerequisites
+
+  ##################################################################
+  # Status Lists
+  ##################################################################
+
+  COMPLETED_STATUS = [ "Completed" ]
+  RUNNING_STATUS   = [ "New", "Setting Up", "Queued", "On CPU", "Suspended", "On Hold", "Data Ready", "Post Processing"]
+  FAILED_STATUS    = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
+                       "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
+                       "Terminated" ]
+  RECOVER_STATUS   = [ "Recover Setup",    "Recover Cluster",    "Recover PostProcess",
+                       "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
+  RESTART_STATUS   = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
+                       "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
+  OTHER_STATUS     = [ "Preset" ]
+
+
+  ##################################################################
+  # Utility Methods
+  ##################################################################
+
+  # Returns a simple name for the task (without the Cbrain prefix stuff).
+  # Example: from 'CbrainTask::Civet' we get 'Civet'
   def name
-    @name ||= self.class.to_s.gsub(/^Drmaa/,"")
-  end
-
-  # Returns the Bourreau object associated with the task.
-  def bourreau
-    @bourreau ||= Bourreau.find(self.bourreau_id)
+    @name ||= self.class.to_s.sub(/^CbrainTask::/,"")
   end
 
 
@@ -197,7 +262,7 @@ module DrmaaTaskCommon
       for_what.is_a?(Symbol) && (for_what == :for_setup || for_what == :for_post_processing)
     cb_error "Prerequisite argument needed_state='#{needed_state}' is not allowed." unless
       PREREQS_STATES_COVERED_BY[needed_state]
-    task_id = task.is_a?(DrmaaTask) ? task.id : task.to_i
+    task_id = task.is_a?(CbrainTask) ? task.id : task.to_i
     cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if task_id.blank?
     cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == task_id
     ttid = "T#{task_id}"

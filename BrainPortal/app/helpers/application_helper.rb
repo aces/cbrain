@@ -97,6 +97,33 @@ module ApplicationHelper
     render :partial => 'layouts/data_provider_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :data_providers  => data_providers, :select_tag_options => select_tag_options}
   end
 
+  #Create a standard bourreau select box for selecting a bourreau id for a form.
+  #The <pre>parameter_name</pre> argument will be the name of the parameter 
+  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
+  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +options+ hash can contain contain either or both of the following:
+  #[selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Fixnum),
+  #           or any model that has a bourreau_id attribute.
+  #[bourreaux] the array of Bourreau objects used to build the select box. Defaults to all bourreaux
+  #            accessible by this user.
+  def bourreau_select(parameter_name = "bourreau_id", options = {}, select_tag_options = {} )
+    options  = { :selector => options } unless options.is_a?(Hash)
+    selector = options[:selector]
+    if selector.blank? && current_user.user_preference
+      selector = current_user.user_preference.bourreau_id
+    end
+    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
+    
+    if selector.respond_to?(:bourreau_id)
+      sel = selector.bourreau_id.to_s
+    elsif selector.is_a?(Bourreau)
+      sel = selector.id.to_s
+    else
+      sel = selector.to_s
+    end 
+    render :partial => 'layouts/bourreau_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :bourreaux  => bourreaux, :select_tag_options => select_tag_options}
+  end
+
   #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime, what = :date)
      loctime = Time.parse(stringtime.to_s).localtime
@@ -289,7 +316,7 @@ module ApplicationHelper
     
     return unless location == current_order
     
-    if location == 'userfiles.lft' || location == 'drmaa_tasks.launch_time DESC, drmaa_tasks.created_at'
+    if location == 'userfiles.lft' || location == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       icon = '<font color="Red">&nbsp;&bull;</font>'
     else
       icon = '<font color="Red">&nbsp;&dArr;</font>'

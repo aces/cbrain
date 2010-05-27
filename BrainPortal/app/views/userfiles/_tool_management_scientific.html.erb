@@ -14,9 +14,9 @@
    <%= select_tag(
       "operation", 
       ' <option value="">Select a Scientific Operation</option>' +
-        current_user.available_scientific_tools.inject("") { |options, tool| options += "<option value='#{tool.drmaa_class}'>#{tool.select_menu_text}</option>"},
+        current_user.available_scientific_tools.inject("") { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
          :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
-                                       :with  => "'drmaa_class='+value",
+                                       :with  => "'cbrain_task_class='+value",
                                        :method  => :get,
                                        :before => "$('bourreau_select2').update('<span class=\\'warning\\'>Loading...</span>');",
                                        :update => "bourreau_select2"

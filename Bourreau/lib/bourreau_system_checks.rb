@@ -24,7 +24,7 @@ class BourreauSystemChecks < CbrainChecker
     needed_Constants = %w(
                        DataProviderCache_dir
                        DataProviderCache_RevNeeded
-                       DRMAA_sharedir Quarantine_dir CIVET_dir 
+                       CLUSTER_sharedir Quarantine_dir CIVET_dir 
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
                        BOURREAU_WORKERS_INSTANCES
@@ -45,8 +45,8 @@ class BourreauSystemChecks < CbrainChecker
     unless File.directory?(CBRAIN::DataProviderCache_dir)
       raise "CBRAIN configuration error: Data Provider cache directory '#{CBRAIN::DataProviderCache_dir}' does not exist!"
     end
-    unless File.directory?(CBRAIN::DRMAA_sharedir)
-      raise "CBRAIN configuration error: grid work directory '#{CBRAIN::DRMAA_sharedir}' does not exist!"
+    unless File.directory?(CBRAIN::CLUSTER_sharedir)
+      raise "CBRAIN configuration error: grid work directory '#{CBRAIN::CLUSTER_sharedir}' does not exist!"
     end
     unless File.directory?(CBRAIN::Quarantine_dir)
       raise "CBRAIN configuration error: Quarantine directory '#{CBRAIN::Quarantine_dir}' does not exist!"

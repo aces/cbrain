@@ -58,7 +58,7 @@ class PortalSanityChecks < CbrainChecker
       
       
       #-----------------------------------------------------------------------------
-      # :RESCUE: For the cases when the Rails application is started as part of
+      # Rescue: for the cases when the Rails application is started as part of
       # a DB migration.
       #-----------------------------------------------------------------------------
     rescue => error

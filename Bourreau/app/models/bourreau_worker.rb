@@ -20,6 +20,7 @@ class BourreauWorker < Worker
   def setup
     ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
+    @zero_task_found = 0 # count the normal scan cycles with no tasks
   end
 
   def do_regular_work
@@ -34,7 +35,7 @@ class BourreauWorker < Worker
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
     worker_log.debug "Finding list of active tasks."
-    tasks_todo = DrmaaTask.find(:all,
+    tasks_todo = CbrainTask.find(:all,
       :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready',
                                          'Recover Setup', 'Recover Cluster', 'Recover PostProcess',
                                          'Restart Setup', 'Restart Cluster', 'Restart PostProcess',
@@ -49,11 +50,18 @@ class BourreauWorker < Worker
     # This mode is reset to normal 'scan' mode when receiving a USR1 signal.
     # After one hour a normal scan is performed again so that there is at least
     # some kind of DB activity; some DB servers close their socket otherwise.
+    # We enter sleep mode once we find no task to process for three normal
+    # scan cycles in a row.
     if tasks_todo.size == 0
-      worker_log.info "No tasks need handling, going to sleep for one hour."
-      request_sleep_mode(1.hour)
+      @zero_task_found += 1 # count the normal scan cycles with no tasks
+      if @zero_task_found >= 3 # three in a row?
+        @zero_task_found = 0
+        worker_log.info "No tasks need handling, going to sleep for one hour."
+        request_sleep_mode(1.hour + rand(15).seconds)
+      end
       return
     end
+    @zero_task_found = 0
 
     # Processes each task in the active list
     by_user = tasks_todo.group_by { |t| t.user_id }
@@ -63,7 +71,7 @@ class BourreauWorker < Worker
       task_group = by_user[user_id].shuffle # go through tasks in random order
       while task_group.size > 0
         task               = task_group.pop
-        process_task(task) # this can take a long time...
+        process_task(task) unless task.updated_at > 20.seconds.ago # this can take a long time...
         break if stop_signal_received?
       end # each task
       break if stop_signal_received?
@@ -162,7 +170,7 @@ class BourreauWorker < Worker
           task.addlog("Successful recovery from '#{fromwhat}' failure, now we retry it.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
-              Dir.chdir(task.drmaa_workdir) do
+              Dir.chdir(task.cluster_workdir) do
                 task.instance_eval { submit_cluster_job } # will set status to 'Queued' or 'Data Ready'
                 # Line above: the eval is needed because it's a protected method, and I want to keep it so.
               end
@@ -204,7 +212,7 @@ class BourreauWorker < Worker
           task.addlog("This task's Run Number was increased to '#{task.run_number}'.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
-              Dir.chdir(task.drmaa_workdir) do
+              Dir.chdir(task.cluster_workdir) do
                 task.instance_eval { submit_cluster_job } # will set status to 'Queued' or 'Data Ready'
                 # Line above: the eval is needed because it's a protected method, and I want to keep it so.
               end

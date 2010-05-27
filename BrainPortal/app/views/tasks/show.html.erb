@@ -62,6 +62,12 @@
    <% if @task.status =~ /Setting Up|Post Processing/ %>
      <td><%= button_to 'Refresh',      :action => 'show', :id => @task.id %></td>
    <% end %>
+
+   <!-- EDIT -->
+   <% if @task.status =~ /Completed|Failed/ %>
+     <td><%= button_to 'Edit Parameters', :action => 'edit', :id => @task.id %></td>
+   <% end %>
+
 </tr></table>
 
 
@@ -103,13 +109,13 @@
       </tr>
    
       <tr>
-          <th>DRMAA Job ID</th>
-          <td><%= h(@task.drmaa_jobid) -%></td>
+          <th>Cluster Job's ID</th>
+          <td><%= h(@task.cluster_jobid) -%></td>
       </tr>
    
       <tr>
-          <th>DRMAA Work Directory</th>
-          <td><%= h(@task.drmaa_workdir || "(Not yet created or erased)") -%></td>
+          <th>Cluster Job's Work Directory</th>
+          <td><%= h(@task.cluster_workdir || "(Not yet created or erased)") -%></td>
       </tr>
    
       <tr>
@@ -117,15 +123,15 @@
       </tr>
     
       <tr>
-         <td colspan="2"><pre><%= h(@task.params.to_xml :root => "Params") -%></pre></td>
+         <td colspan="2"><pre><%= h(@task.params.to_yaml :root => "Params") -%></pre></td>
       </tr>
 
       <%
          prereqs     = @task.prerequisites || {}
          prereqs     = prereqs.attributes unless prereqs.is_a?(Hash)
-         for_setup   = prereqs["for_setup"] || {}
+         for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
          for_setup   = for_setup.attributes unless for_setup.is_a?(Hash)
-         for_postpro = prereqs["for_post_processing"] || {}
+         for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
          for_postpro = for_postpro.attributes unless for_postpro.is_a?(Hash)
       %>
       <% if for_setup.size > 0 %>
@@ -151,20 +157,20 @@
    
    </table>
 
-   <% prettystdout="(None)" ; prettystderr="(None)"
-      prettystdout = Base64.decode64(@task.capt_stdout_b64) if @task.capt_stdout_b64
-      prettystderr = Base64.decode64(@task.capt_stderr_b64) if @task.capt_stderr_b64
+   <%
+      prettystdout = @task.cluster_stdout || "(None)"
+      prettystderr = @task.cluster_stderr || "(None)"
    %>
 
    <table id="output_tasks_table">
       <tr>
-          <th>DRMAA stdout</th>
+          <th>Cluster Job's Standard Output</th>
       </tr>
       <tr>
           <td class="left_align"><pre id="standard_out"><%= h(prettystdout) -%></pre></td>
       </tr>
       <tr>
-          <th>DRMAA stderr</th>
+          <th>Cluster Job's Standard Error</th>
       </tr>
       <tr>
           <td class="left_align"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>

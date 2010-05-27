@@ -1,16 +1,39 @@
 
+<h2>Launch <%= @task.name %> Task</h2>
+
 <%
-
-#
-# CBRAIN Project
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
+     form_for(:cbrain_task, @task, :url => '/tasks/create' ) do |form|
 -%>
 
-<%= render :partial => @task_class.name.tableize.singularize, :locals  => {:default_args  => @default_args, :files  => @files, :data_providers  => @data_providers} %>
+<% # Hidden fields -%>
+<%= hidden_field_tag :toolname, @task.name %>
+<% @task.params[:interface_userfile_ids].each do |id| %>
+  <%= hidden_field_tag "cbrain_task[params][interface_userfile_ids][]",  id %>
+<% end %>
 
+<strong>Execution server:</strong>
+<%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available" } %>
+<P>
 
+<strong>Description:</strong>
+<%= text_field_tag "cbrain_task[description]", @task.description, :size => 20 %>
+<P>
+
+<div class = "generalbox" style="float: none;">
+
+<%= render :partial => "tasks/cbrain_task/#{@task.name.tableize.singularize}",
+           :locals  => { :params  => @task.params, :form => form }
+ %>
+
+</div>
+
+<br>
+
+<strong>Save results to:</strong>
+<%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
+
+<% unless @task.class.properties[:no_submit_button] %>
+<%= submit_tag "Start #{@task.name}" %>
+<% end %>
+
+<% end %>

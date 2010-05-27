@@ -13,7 +13,7 @@
 #
 #=Attributes:
 #[*name*] The name of the tool.
-#[*drmaa_class*] DrmaaTask subclass associated with this tool.
+#[*cbrain_task_class*] CbrainTask subclass associated with this tool.
 #[*user_id*] The owner of the tool.
 #[*group_id*] The group that the tool belongs to.
 #[*category*]  The category that the tool belongs to.
@@ -34,8 +34,8 @@ class Tool < ActiveRecord::Base
   belongs_to :group
   has_and_belongs_to_many :bourreaux
   
-  validates_uniqueness_of :name, :select_menu_text, :drmaa_class
-  validates_presence_of   :name, :drmaa_class, :user_id, :group_id, :category, :select_menu_text, :description
+  validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
+  validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
   
   def select_random_bourreau_for(user)

@@ -28,7 +28,7 @@ class ToolsController < ApplicationController
   end
   
   def bourreau_select
-    @tool = current_user.available_tools.find_by_drmaa_class(params[:drmaa_class])
+    @tool = current_user.available_tools.find_by_cbrain_task_class(params[:cbrain_task_class])
     @bourreaux = @tool.bourreaux.all(:conditions  => {:id  => available_bourreaux})
     
     respond_to do |format|
@@ -51,15 +51,15 @@ class ToolsController < ApplicationController
     if params[:autoload]
       successes = 0
       failures  = ""
-      DrmaaTask.subclasses.sort.each do |tool|
-        unless current_user.available_tools.find_by_drmaa_class(tool)
+      CbrainTask::PortalTask.subclasses.sort.each do |tool|
+        unless current_user.available_tools.find_by_cbrain_task_class(tool)
           @tool = Tool.new(
-                      :name    => tool.sub(/^Drmaa/, ""),
-                      :drmaa_class  => tool,
-                      :bourreau_ids => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
-                      :user_id      => User.find_by_login("admin").id,
-                      :group_id     => Group.find_by_name("everyone").id,
-                      :category     => "scientific tool" 
+                      :name               => tool.sub(/^CbrainTask::/, ""),
+                      :cbrain_task_class  => tool,
+                      :bourreau_ids       => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
+                      :user_id            => User.find_by_login("admin").id,
+                      :group_id           => Group.find_by_name("everyone").id,
+                      :category           => "scientific tool" 
                     )
           success = @tool.save
           if success

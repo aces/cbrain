@@ -26,6 +26,24 @@ ActiveRecord::Schema.define(:version => 20100519152319) do
     t.integer "bourreau_id"
   end
 
+  create_table "cbrain_tasks", :force => true do |t|
+    t.string   "type"
+    t.string   "cluster_jobid"
+    t.string   "cluster_workdir"
+    t.text     "params"
+    t.string   "status"
+    t.text     "log"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+    t.integer  "bourreau_id"
+    t.text     "description"
+    t.datetime "launch_time"
+    t.text     "prerequisites"
+    t.integer  "share_wd_tid"
+    t.integer  "run_number"
+  end
+
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -52,24 +70,6 @@ ActiveRecord::Schema.define(:version => 20100519152319) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
-  end
-
-  create_table "drmaa_tasks", :force => true do |t|
-    t.string   "type"
-    t.string   "drmaa_jobid"
-    t.string   "drmaa_workdir"
-    t.text     "params"
-    t.string   "status"
-    t.text     "log"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-    t.integer  "bourreau_id"
-    t.text     "description"
-    t.datetime "launch_time"
-    t.text     "prerequisites"
-    t.integer  "share_wd_tid"
-    t.integer  "run_number"
   end
 
   create_table "feedbacks", :force => true do |t|
@@ -219,7 +219,7 @@ ActiveRecord::Schema.define(:version => 20100519152319) do
     t.string   "category"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "drmaa_class"
+    t.string   "cbrain_task_class"
     t.string   "select_menu_text"
     t.text     "description"
   end

@@ -226,6 +226,7 @@ end
 #
 # CBRAIN patches to Mongrel.
 #
+
 module Mongrel
 
   #
@@ -274,4 +275,36 @@ module Mongrel
     end
   
   end
+end
+
+#
+# Extensions to core types
+#
+
+class Symbol
+
+  # Used by views for CbrainTasks to transform a
+  # symbol sych as :abc into a path to a variable
+  # inside the params[] hash, as "cbrain_task[params][abc]".
+  def to_la
+    "cbrain_task[params][#{self}]"
+  end
+
+end
+
+class String
+
+  # Used by views for CbrainTasks to transform a
+  # string sych as "abc" or "abc[def]" into a path to a
+  # variable inside the params[] hash, as in
+  # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]"
+  def to_la
+    key = self
+    if key =~ /^(\w+)/
+      newcomp = "[" + Regexp.last_match[1] + "]"
+      key.sub!(/^(\w+)/,newcomp)
+    end
+    "cbrain_task[params]#{key}"
+  end
+
 end

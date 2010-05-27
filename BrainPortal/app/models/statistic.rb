@@ -42,7 +42,7 @@ class Statistic < ActiveRecord::Base
   #Search through the bourreau of interest to get a list of tasks
   def self.bourreau_stats(bourreau)
     extracted_stats = Hash.new
-    list_tools = Bourreau.find(bourreau).tools.map{|tool| tool.drmaa_class}
+    list_tools = Bourreau.find(bourreau).tools.map{|tool| tool.cbrain_task_class}
     total_count_bourreau =0 
     list_tools.each do |tool|
       total_count_tool =0

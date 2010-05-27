@@ -28,14 +28,16 @@ if first_arg == "db:sanity:check"
   #------------------------------------------------------------------------------
   puts "C> \t- No more validations needed. Skipping."
   #------------------------------------------------------------------------------
-elsif first_arg == "db:migrate" or first_arg == "migration" or first_arg == "db:schema:load"
+elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema:load/
   #------------------------------------------------------------------------------
   puts "C> \t- No validations needed for DB migrations. Skipping."
   #------------------------------------------------------------------------------
 elsif first_arg.nil? #There might be no argument like when doing script/server or thin start
   if program_name == 'irb' # for script/console
     if ENV['CBRAIN_SKIP_VALIDATIONS']
-      PortalSystemChecks.check([:a030_check_configuration_variables])
+      puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
+      puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
+      #PortalSystemChecks.check([:a030_check_configuration_variables])
     else
       PortalSystemChecks.check(PortalSystemChecks.all - [:a070_start_bourreau_ssh_tunnels])
     end

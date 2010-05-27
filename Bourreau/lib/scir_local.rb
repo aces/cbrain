@@ -57,10 +57,12 @@ class ScirLocalSession < Scir::Session
   end
 
   def suspend(jid)
-    Process.kill("STOP",jid.to_i) rescue true
+    Process.kill("STOP", 0 - jid.to_i) rescue true
+    Process.kill("STOP", jid.to_i) rescue true
   end
 
   def resume(jid)
+    Process.kill("CONT", 0 - jid.to_i) rescue true
     Process.kill("CONT",jid.to_i) rescue true
   end
 

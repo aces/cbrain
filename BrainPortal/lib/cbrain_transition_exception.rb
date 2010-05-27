@@ -3,7 +3,8 @@
 # CBRAIN Project
 #
 # This class provides an exception class for
-# representing a DrmaaTask state transition error.
+# representing a state transition error. Currently
+# used on CbrainTask objects.
 #
 # $Id$
 #
