@@ -242,11 +242,14 @@ class TasksController < ApplicationController
   def update #:nodoc:
     id = params[:id]
     @task = CbrainTask.find(id)  # the original one
-    new_att = params[:cbrain_task] || {}
-    new_params = new_att.delete(:params)
+    old_params = @task.params
+    new_att    = params[:cbrain_task] || {}
     @task.update_attributes(new_att)
-    @task.params.merge!(new_params) # this is not perfect but it will have to do
+    messages = @task.wrapper_after_form
+    new_params = @task.params
+    @task.log_params_changes(old_params,new_params)
     @task.save
+    flash[:notice] = messages if messages
     redirect_to :action => :show, :id => @task.id
   end
 

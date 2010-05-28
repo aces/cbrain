@@ -13,11 +13,11 @@ class BrainPortal < RemoteResource
 
   Revision_info="$Id$"
   
-  def lock!
+  def lock! #:nodoc:
     self.update_attributes!(:portal_locked => true)
   end
   
-  def unlock!
+  def unlock! #:nodoc:
     self.update_attributes!(:portal_locked => false)
   end
 

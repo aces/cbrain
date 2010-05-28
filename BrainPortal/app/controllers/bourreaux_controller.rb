@@ -170,12 +170,12 @@ class BourreauxController < ApplicationController
 
   end
   
-  def row_data
+  def row_data #:nodoc:
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     render :partial => 'bourreau_row_elements', :locals  => {:bour  => @remote_resource}
   end
   
-  def refresh_ssh_keys
+  def refresh_ssh_keys #:nodoc:
     RemoteResource.find_all_accessible_by_user(current_user).each do |b|
       if b.is_alive?
         info = b.info
@@ -189,7 +189,7 @@ class BourreauxController < ApplicationController
     redirect_to :action  => :index
   end
 
-  def start
+  def start #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
     cb_notice "This Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
@@ -230,7 +230,7 @@ class BourreauxController < ApplicationController
     redirect_to :action => :index
   end
 
-  def stop
+  def stop #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)

@@ -149,6 +149,35 @@ class CbrainTask < ActiveRecord::Base
 
 
   ##################################################################
+  # Data Tracking Utility Methods
+  ##################################################################
+
+  # This method compares a params hash table +old_params+ with
+  # a +new_params+ hash provided, and log all the
+  # differences. The task object itself is not changed.
+  def log_params_changes(old_params = {}, new_params = {})
+    old_params.each do |ck,cv|
+      if new_params.has_key?(ck)
+        nv = new_params[ck]
+        begin
+          next if cv == nv
+          self.addlog("Changed key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
+        rescue
+          self.addlog("Uncomparable key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
+        end
+        next
+      end
+      self.addlog("Deleted key '#{ck.inspect}' with value '#{cv.inspect}'")
+    end
+    new_params.each do |nk,nv|
+      next if old_params.has_key?(nk)
+      self.addlog("Added key '#{nk.inspect}' with value '#{nv.inspect}'")
+    end
+  end
+
+
+
+  ##################################################################
   # Prerequisites Methods And State Tables
   ##################################################################
 

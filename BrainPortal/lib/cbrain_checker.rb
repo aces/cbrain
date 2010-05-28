@@ -6,7 +6,7 @@
 # Original author: Nicolas Kassis
 #
 # $Id$
-#
+
 # This class implements 2 core methods to the runtime and database check system
 # The check command is used to run all methods of a class (defined in subclasses) 
 # which start with ensure_, check_ or start_. In addion, these methods can be 
@@ -21,10 +21,7 @@
 #    end
 #  end
 #
-# There is also a self.all method which returns a sorted list of all the tests as an array.\
-# One can except a test 
-# 
-
+# There is also a self.all method which returns a sorted list of all the tests as an array.
 class CbrainChecker 
 
   include Singleton

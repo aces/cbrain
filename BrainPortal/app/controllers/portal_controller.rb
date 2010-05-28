@@ -15,7 +15,7 @@ class PortalController < ApplicationController
   Revision_info="$Id$"
   
   #Display a user's home page with information about their account.
-  def welcome
+  def welcome #:nodoc:
     unless current_user
       redirect_to login_path 
       return
@@ -68,12 +68,12 @@ class PortalController < ApplicationController
   end
   
   #Display general information about the CBRAIN project.
-  def credits
+  def credits #:nodoc:
     # Nothing to do, just let the view show itself.
   end
   
   #Displays more detailed info about the CBRAIN project.
-  def about_us
+  def about_us #:nodoc:
     myself = RemoteResource.current_resource
     info   = myself.info
 
