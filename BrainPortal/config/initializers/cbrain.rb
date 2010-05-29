@@ -29,11 +29,11 @@ class CBRAIN
   # This value is used to trigger DP cache wipes
   # in the validation code (see PortalSystemChecks)
   # Instructions: when the caching system changes,
-  # increase this numebr to the highest SVN rev
+  # increase this number to the highest SVN rev
   # BEFORE the commit that implements the change,
   # then commit this file with the new caching system.
   # It's important that this value be less than
-  # the rev of new data_provider.rb.
+  # the revision number of new 'models/data_provider.rb'.
   DataProviderCache_RevNeeded = 959
 
   # Some environment variables MUST be set for some subsystems to work.

@@ -55,7 +55,7 @@ module CbrainTaskLogging
   # have their very own internal embedded log
   # and do NOT use the methods defined by the
   # ActRecLog module.
-  def addlog_context(context,message="") #:nodoc:
+  def addlog_context(context,message="")
     prev_level     = caller[0]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
 
@@ -76,7 +76,7 @@ module CbrainTaskLogging
   # have their very own internal embedded log
   # and do NOT use the methods defined by the
   # ActRecLog module.
-  def addlog_revinfo(anobject,message="") #:nodoc:
+  def addlog_revinfo(anobject,message="")
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
     rev_info       = anobject.revision_info
@@ -92,7 +92,7 @@ module CbrainTaskLogging
   # but also in subclasses, in the Bourreau controller and in
   # the BourreauWorkers, so it's worth having this utility.
   # The method can also be called by CbrainTask programmers.
-  def addlog_exception(exception,message="Exception raised:",backtrace_lines=15) #:nodoc:
+  def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
     message.sub!(/[\s:]*$/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}")

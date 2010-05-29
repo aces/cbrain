@@ -82,19 +82,19 @@ class ControlsController < ApplicationController
   # Unimplemented/disabled REST CRUD methods
   #######################################################################
 
-  def destroy
+  def destroy #:nodoc:
     not_allowed
   end
 
-  def new
+  def new #:nodoc:
     not_allowed
   end
 
-  def update
+  def update #:nodoc:
     not_allowed
   end
 
-  def index
+  def index #:nodoc:
     not_allowed
   end
 
@@ -111,7 +111,7 @@ class ControlsController < ApplicationController
 
   private
 
-  def process_command(command)
+  def process_command(command) #:nodoc:
     puts "Received COMMAND: #{command.inspect}"
 
     myself = RemoteResource.current_resource

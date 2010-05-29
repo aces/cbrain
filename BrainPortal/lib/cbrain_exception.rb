@@ -36,12 +36,12 @@ class CbrainException < StandardError
 end
 
 # Use this exception class for notification
-# of problems withing CBRAIN code.
+# of problems within CBRAIN code.
 class CbrainNotice < CbrainException
 end
 
 # Use this exception class for notification
-# of serious errors withing CBRAIN code.
+# of serious errors within CBRAIN code.
 class CbrainError < CbrainException
 end
 

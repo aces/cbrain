@@ -344,8 +344,8 @@ class DataProvidersController < ApplicationController
 
   end
 
-  #Register a given file into the system.
-  #The file's meta data will be saved as a Userfile resource.
+  #Register a list of files into the system.
+  #The files' meta data will be saved as Userfile resources.
   def register
     unless params[:redirect_to_browse].blank?
       params[:action] = :browse
