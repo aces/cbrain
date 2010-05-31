@@ -1,5 +1,5 @@
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= data_provider.id %>">
-  <td><%= link_if_manager(data_provider.name, data_provider_path(data_provider)) %></td>
+  <td><%= link_to data_provider.name, data_provider_path(data_provider) %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.user.login) %></td>
   <td><%= h(data_provider.group.name) %></td>
   <td class="provider_details" style="display:none"><%= (link_to h(data_provider.site.name), site_path(data_provider.site)) rescue "(Unassigned)" %></td>

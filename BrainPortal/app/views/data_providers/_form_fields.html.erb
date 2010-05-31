@@ -85,7 +85,6 @@
       attribute and the user's login name. The file "hello"
       of user "myuser" is thus stored into a path like this:
       <pre>    /remote_dir/myuser/hello</pre>
-      For the list of API methods, see the DataProvider superclass.
       <p>
 
       <strong>VaultLocalDataProvider:</strong> This class provides an implementation for a data provider
@@ -113,6 +112,13 @@
       runs on the same machine as the data provider, the faster
       and more efficient VaultLocalDataProvider will be used.
       <p>
+
+      <strong>IncomingVaultSshDataProvider:</strong> This class behaves like the
+      VaultSshDataProvider, except that it is browsable. When browsing, only
+      the subdirectory named like the login name of the current user will
+      be visible. It is perfect for accessing
+      a jailed remote_dir for incoming content, where users
+      can upload files to these subdirectories on other channels.
     <% end %>
   </div>
 </span>

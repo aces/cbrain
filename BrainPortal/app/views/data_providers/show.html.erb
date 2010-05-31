@@ -40,6 +40,8 @@
              <td class="info"><%= h(@provider.name) %></h1>
          </tr>
 
+         <% if check_role(:admin) || @provider.user_id == current_user.id %>
+
          <tr>
              <th>Class</th>
              <td class="info"><%= h(@provider.class.to_s) %></td>
@@ -54,6 +56,8 @@
              <th>Revision Info (<%= @provider.class.to_s %>)</th>
              <td class="info"><%= h(@provider.revision_info.svn_id_pretty_rev_author_date) %></td>
          </tr>
+
+         <% end %>
 
          <tr>
              <th>Description</th>
@@ -84,6 +88,8 @@
              <td class="info"><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
          </tr>
 
+         <% if check_role(:admin) || @provider.user_id == current_user.id %>
+
          <tr>
            <th colspan="2">Network Parameters</th>
          </tr>
@@ -107,6 +113,8 @@
              <th>Remote Port</th>
              <td class="info"><%= h(@provider.remote_port) %></td>
          </tr>
+
+         <% end %>
 
 
          <% if check_role(:admin) || @provider.user_id == current_user.id %>
@@ -153,6 +161,7 @@
       </table>
    </div> <!-- End class="generalbox" -->
 
+   <% if check_role(:admin) || @provider.user_id == current_user.id %>
    <div class="ssh_keys">
       Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
       <table id="provider_info_table">          
@@ -162,5 +171,6 @@
         <% end %>
       </table>
    </div> <!-- End class="ssh_keys" -->
+   <% end %>
 
 </div>  <!-- End class="generalcontent" -->
