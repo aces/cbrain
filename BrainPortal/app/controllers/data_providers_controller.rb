@@ -574,7 +574,7 @@ class DataProvidersController < ApplicationController
     refresh = false if refresh.blank? || refresh.to_s == 'false'
 
     # Check to see if we can simply reload the cached copy
-    cache_file = "/tmp/dp_cache_list_all.#{@provider.id}"
+    cache_file = "/tmp/dp_cache_list_all_#{current_user.id}.#{@provider.id}"
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
        fileinfolist = YAML::load(filelisttext)
