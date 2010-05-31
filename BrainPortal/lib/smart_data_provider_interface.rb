@@ -129,8 +129,8 @@ module SmartDataProviderInterface
     @provider.provider_copy_to_otherprovider(userfile,otherprovider,newname)
   end
 
-  def provider_list_all #:nodoc:
-    @provider.provider_list_all
+  def provider_list_all(user=nil) #:nodoc:
+    @provider.provider_list_all(user)
   end
 
   def provider_collection_index(userfile, *args) #:nodoc:

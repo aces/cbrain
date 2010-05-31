@@ -129,7 +129,7 @@ require 'digest/md5'
 # * provider_rename(userfile,newname)
 # * provider_move_to_otherprovider(userfile,otherprovider)
 # * provider_copy_to_otherprovider(userfile,otherprovider)
-# * provider_list_all
+# * provider_list_all(user=nil)
 #
 # Note that all of these except for provider_list_all() are
 # also present in the Userfile model.
@@ -156,7 +156,7 @@ require 'digest/md5'
 # * impl_sync_to_provider(userfile)
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
-# * impl_provider_list_all()
+# * impl_provider_list_all(user=nil)
 #
 # =Attributes:
 # [*name*] A string representing a the name of the data provider.
@@ -720,11 +720,16 @@ class DataProvider < ActiveRecord::Base
   # is often acceptable for some of them. The bare minimum
   # is probably the set 'name', 'type' and 'size' and 'mtime'.
   #
+  # The option user object passed in argument can be used
+  # to restrict the list of files returned to only those
+  # that match one of the user's properties (e.g. ownership
+  # or file location).
+  #
   # Note that not all data providers are meant to be browsable.
-  def provider_list_all
+  def provider_list_all(user=nil)
     cb_error "Error: provider is offline."       unless self.online
     cb_error "Error: provider is not browsable." unless self.is_browsable?
-    impl_provider_list_all
+    impl_provider_list_all(user)
   end
 
   # Provides information about the files associated with a Userfile entry
@@ -829,7 +834,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: method not yet implemented in subclass."
   end
 
-  def impl_provider_list_all #:nodoc:
+  def impl_provider_list_all(user=nil) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
   

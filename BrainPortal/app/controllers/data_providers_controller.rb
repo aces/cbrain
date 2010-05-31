@@ -268,7 +268,7 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = get_recent_provider_list_all(params[:refresh])
     rescue => e
-      flash[:error] = "Cannot get list of files: #{e.to_s}"
+      flash[:error] = "Cannot get list of files. Maybe the remote directory doesn't exist or is locked?"
       redirect_to :action => :index
       return
     end
@@ -540,6 +540,7 @@ class DataProvidersController < ApplicationController
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
                       CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
+                      IncomingVaultSshDataProvider
                     }
     end
     typelist
@@ -581,7 +582,7 @@ class DataProvidersController < ApplicationController
     end
 
     # Get info from provider
-    fileinfolist = @provider.provider_list_all
+    fileinfolist = @provider.provider_list_all(current_user)
 
     # Write a new cached copy
     File.open(cache_file + ".tmp","w") do |fh|

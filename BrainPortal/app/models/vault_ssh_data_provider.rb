@@ -33,8 +33,9 @@ class VaultSshDataProvider < SshDataProvider
     super(userfile)
   end
 
-  def impl_provider_list_all #:nodoc:
-    cb_error "This data provider cannot be browsed."
+  def impl_provider_list_all(user=nil) #:nodoc:
+    cb_error "This data provider cannot be browsed." unless self.is_browsable?
+    super(user)
   end
 
   # This method overrides the method in the immediate

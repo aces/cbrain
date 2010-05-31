@@ -110,13 +110,13 @@ class SshDataProvider < DataProvider
     end
   end
 
-  def impl_provider_list_all #:nodoc:
+  def impl_provider_list_all(user=nil) #:nodoc:
     list = []
     attlist = [ 'symbolic_type', 'size', 'permissions',
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
-      sftp.dir.foreach(remote_dir) do |entry|
+      sftp.dir.foreach(self.browse_remote_dir(user)) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
         next if type != :regular && type != :directory && type != :symlink
@@ -142,6 +142,11 @@ class SshDataProvider < DataProvider
     end
     list.sort! { |a,b| a.name <=> b.name }
     list
+  end
+
+  # Allows us to browse a remote directory that changes based on the user.
+  def browse_remote_dir(user=nil) #:nodoc:
+    self.remote_dir
   end
   
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:

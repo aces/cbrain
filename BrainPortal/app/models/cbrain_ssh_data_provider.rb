@@ -91,7 +91,7 @@ class CbrainSshDataProvider < SshDataProvider
     end
   end
 
-  def impl_provider_list_all #:nodoc:
+  def impl_provider_list_all(user=nil) #:nodoc:
     cb_error "This data provider cannot be browsed."
   end
 
