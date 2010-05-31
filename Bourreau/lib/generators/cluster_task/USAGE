@@ -1,9 +1,15 @@
 Description:
-    Stubs out a model for a new cluster task. Pass the task name as the 
-    first argument.
-    
+    Stubs out a model for a new cluster 
+    task. Pass the task name as the first argument.
+
+Usage:
+     script/generate cluster_task TaskName
+
 Example:
-    ./script/generate cluster_task mincinfo
-    
-    The following file will be generated:
-    app/models/drmaa_mincinfo.rb
+
+     script/generate cluster_task UniversalTranslator
+
+will create these templates:
+
+     app/models/cbrain_task/universal_translator.rb
+

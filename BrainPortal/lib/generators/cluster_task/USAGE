@@ -1,19 +1,21 @@
 Description:
-    Stubs out a model and (optionally) a view for a new cluster 
+    Stubs out a model and a view for a new cluster 
     task. Pass the task name as the first argument.
-    
-    The view created is a form where the user may input arguments 
-    for tasks that require them.
-    
-Examples:
-    ./script/generate cluster_task civet
-    
-    The following files will be generated:
-    app/models/drmaa_civet.rb
-    app/views/tasks/_drmaa_civet.html.erb
 
+Usage:
+     script/generate cluster_task TaskName [--advanced]
 
-    ./script/generate cluster_task mincinfo --no-view
-    
-    The following file will be generated:
-    app/models/drmaa_mincinfo.rb
+Options:
+     --advanced : will include templates for the advanced
+                  CbrainTask::Portal API methods in the
+                  Ruby code template for the task.
+
+Example:
+
+     script/generate cluster_task UniversalTranslator
+
+will create these templates:
+
+     app/models/cbrain_task/universal_translator.rb
+     app/views/tasks/cbrain_task/_universal_translator.html.erb
+
