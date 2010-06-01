@@ -720,7 +720,7 @@ class DataProvider < ActiveRecord::Base
   # is often acceptable for some of them. The bare minimum
   # is probably the set 'name', 'type' and 'size' and 'mtime'.
   #
-  # The option user object passed in argument can be used
+  # The optional user object passed in argument can be used
   # to restrict the list of files returned to only those
   # that match one of the user's properties (e.g. ownership
   # or file location).

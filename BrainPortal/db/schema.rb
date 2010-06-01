@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100519152319) do
+ActiveRecord::Schema.define(:version => 20100601180528) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -43,6 +43,12 @@ ActiveRecord::Schema.define(:version => 20100519152319) do
     t.integer  "share_wd_tid"
     t.integer  "run_number"
   end
+
+  add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
+  add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
+  add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
+  add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
+  add_index "cbrain_tasks", ["user_id"], :name => "index_cbrain_tasks_on_user_id"
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
