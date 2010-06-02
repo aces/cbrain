@@ -430,7 +430,7 @@ class DataProvidersController < ApplicationController
       userfile = subclass.new( :name             => basename, 
                                :size             => size,
                                :user_id          => user_id,
-                               :group_id         => @provider.group_id,
+                               :group_id         => current_user.own_group.id,
                                :data_provider_id => provider_id )
       if userfile.save
         CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user,"FileCollection Set Size") do
