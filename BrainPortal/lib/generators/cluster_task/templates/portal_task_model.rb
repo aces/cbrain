@@ -192,7 +192,10 @@ class <%= "CbrainTask::#{class_name}" %> < CbrainTask::PortalTask
   # The method should return an array of the cloned task
   # objects that the framework should finally save, or
   # raise an exception for any fatal errors. The
-  # defauld behavior 
+  # default behavior is tu return an array containing
+  # the single element +self+, which means the current
+  # task object IS the only object to save (as described
+  # in the behavior of the basic API).
   #
   # You must not save the current task object, nor the
   # list of cloned task objects here.
