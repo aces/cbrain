@@ -291,7 +291,7 @@ class CbrainTask < ActiveRecord::Base
       for_what.is_a?(Symbol) && (for_what == :for_setup || for_what == :for_post_processing)
     cb_error "Prerequisite argument needed_state='#{needed_state}' is not allowed." unless
       PREREQS_STATES_COVERED_BY[needed_state]
-    otask_id = othertask.is_a?(CbrainTask) ? othertask.id : task.to_i
+    otask_id = othertask.is_a?(CbrainTask) ? othertask.id : othertask.to_i
     cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if otask_id.blank?
     cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == otask_id
     ttid = "T#{otask_id}"
