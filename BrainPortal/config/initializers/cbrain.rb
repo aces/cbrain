@@ -56,8 +56,8 @@ class CBRAIN
   #
   # In case of an untrapped exception being raised in the background code,
   # a CBRAIN Message will be sent to +destination+ (which can be a Group,
-  # a User, or a Site) with +taskname+ being reported in the header of
-  # the Message.
+  # a User, a Site, or the keywords :nobody or :admin) with +taskname+ being
+  # reported in the header of the Message.
   #
   # This method won't work if used inside the RAILS initialization
   # code in 'config/initializers'.
@@ -88,11 +88,8 @@ class CBRAIN
         rescue ActiveRecord::StatementInvalid => e
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
-          unless destination
-            destination = User.find_by_login('admin')
-            taskname += " (No Destination Provided!)"
-          end
-          Message.send_internal_error_message(destination,taskname,itswrong)
+          destination = User.find_by_login('admin') if destination.blank? || destination == :admin
+          Message.send_internal_error_message(destination,taskname,itswrong) unless destination == :nobody
         ensure
           ActiveRecord::Base.remove_connection
           Kernel.exit! # End of subchild.

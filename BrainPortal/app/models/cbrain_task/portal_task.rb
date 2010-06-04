@@ -71,7 +71,6 @@ class CbrainTask::PortalTask < CbrainTask
       @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
       @statistic.update_stats
     end
-    self.bourreau.send_command_wakeup_workers rescue true
     res
   end
 
@@ -83,7 +82,6 @@ class CbrainTask::PortalTask < CbrainTask
       @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
       @statistic.update_stats
     end
-    self.bourreau.send_command_wakeup_workers rescue true
     res
   end
 

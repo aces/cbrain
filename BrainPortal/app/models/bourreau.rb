@@ -192,6 +192,8 @@ class Bourreau < RemoteResource
   protected
 
   # Starts Bourreau worker processes.
+  # This also triggers a 'wakeup' command if they are already
+  # started.
   def self.process_command_start_workers(command)
     myself = RemoteResource.current_resource
     cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
@@ -208,6 +210,7 @@ class Bourreau < RemoteResource
          :log_level      => CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO # for :auto
        }
     )
+    worker_pool.wake_up_workers
   end
   
   # Stops Bourreau worker processes.
@@ -295,7 +298,7 @@ class Bourreau < RemoteResource
     # affected locally. Unfortunately we can't wake up workers on
     # a different Bourreaux yet.
     if tasks_affected > 0
-      myself.send_command_wakeup_workers
+      myself.send_command_start_workers
     end
 
   end

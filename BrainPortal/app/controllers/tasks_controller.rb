@@ -235,6 +235,13 @@ class TasksController < ApplicationController
       flash[:notice] += "Launched #{tasklist.size} #{@task.name} tasks."
     end
 
+    CBRAIN.spawn_with_active_records(:nobody,"Trigger workers") do
+      bourreau_ids = tasklist.map &:bourreau_id
+      bourreau_ids.uniq.each do |bourreau_id|
+        Bourreau.find(bourreau_id).send_command_start_workers  rescue true
+      end
+    end
+
     redirect_to :controller => :tasks, :action => :index
   end
 
