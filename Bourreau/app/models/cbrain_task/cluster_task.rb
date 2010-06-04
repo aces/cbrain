@@ -601,20 +601,6 @@ class CbrainTask::ClusterTask < CbrainTask
     return :fail
   end
 
-  # This method adjusts the prerequisites
-  # of the task if a another task ID's was supplied in :share_wd_tid
-  # and no prerequisites have been specified for that other task.
-  def adjust_prereqs_for_shared_tasks_wd
-    otask_id = self.share_wd_tid          # task ID of other task
-    return if otask_id.blank?             # nothing to do if there is no other task ID
-    prereqs  = self.prerequisites || {}   # The prereq structure
-    self.prerequisites = prereqs          # Make sure it's saved in the object
-    forsetup = prereqs[:for_setup] ||= {} # Make sure the :for_setup exists
-    t_otid   = "T#{otask_id}"             # Task IDs in prereqs are "Tnn"
-    forsetup[t_otid] ||= "Queued"         # If there is no prereq, create one.
-    true
-  end
-
 
 
   ##################################################################

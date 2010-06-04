@@ -285,16 +285,16 @@ class CbrainTask < ActiveRecord::Base
   # the prerequisite will indicate that in order for the task to
   # be set up (when +for_what+ is :for_setup) or to enter post
   # processing (when +for_what+ is :for_post_processing), the
-  # +task+ must be in +needed_state+ .
-  def add_prerequisites(for_what, task, needed_state = "Completed") #:nodoc:
+  # +othertask+ must be in +needed_state+ .
+  def add_prerequisites(for_what, othertask, needed_state = "Completed") #:nodoc:
     cb_error "Prerequisite argument 'for_what' must be :for_setup or :for_post_processing" unless
       for_what.is_a?(Symbol) && (for_what == :for_setup || for_what == :for_post_processing)
     cb_error "Prerequisite argument needed_state='#{needed_state}' is not allowed." unless
       PREREQS_STATES_COVERED_BY[needed_state]
-    task_id = task.is_a?(CbrainTask) ? task.id : task.to_i
-    cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if task_id.blank?
-    cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == task_id
-    ttid = "T#{task_id}"
+    otask_id = othertask.is_a?(CbrainTask) ? othertask.id : task.to_i
+    cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if otask_id.blank?
+    cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == otask_id
+    ttid = "T#{otask_id}"
     prereqs         = self.prerequisites || {}
     task_list       = prereqs[for_what]  ||= {}
     task_list[ttid] = needed_state
@@ -303,18 +303,30 @@ class CbrainTask < ActiveRecord::Base
 
   # This method adds a prerequisite entry in the task's object;
   # the prerequisite will indicate that in order for the task to
-  # be set up, the other +task+ must be in +needed_state+ .
-  # The argument +task+ can be a task object, or its id.
-  def add_prerequisites_for_setup(task, needed_state = "Completed")
-    add_prerequisites(:for_setup, task, needed_state)
+  # be set up, the +othertask+ must be in +needed_state+ .
+  # The argument +othertask+ can be a task object, or its ID.
+  def add_prerequisites_for_setup(othertask, needed_state = "Completed")
+    add_prerequisites(:for_setup, othertask, needed_state)
   end
 
   # This method adds a prerequisite entry in the task's object;
   # the prerequisite will indicate that in order for the task to
-  # be enter post processing, the other +task+ must be in +needed_state+ .
-  # The argument +task+ can be a task object, or its id.
-  def add_prerequisites_for_post_processing(task, needed_state = "Completed")
-    add_prerequisites(:for_post_processing, task, needed_state)
+  # be enter post processing, the +othertask+ must be in +needed_state+ .
+  # The argument +othertask+ can be a task object, or its ID.
+  def add_prerequisites_for_post_processing(othertask, needed_state = "Completed")
+    add_prerequisites(:for_post_processing, othertask, needed_state)
+  end
+
+  # This method sets the attribute :share_wd_tid to the
+  # ID of the task +othertask+; it also sets up a prerequisite
+  # rule such that the current task will not start (setup) until
+  # +othertask+ is in state +needed_state+ (by default, "Completed",
+  # but other legal values are "Data Ready" and "Queued").
+  def share_workdir_with(othertask, needed_state = "Completed")
+    otask_id = othertask.is_a?(CbrainTask) ? othertask.id : othertask.to_i
+    cb_error "No task or task ID provided?" if otask_id.blank?
+    self.share_wd_tid = otask_id
+    add_prerequisites_for_setup(otask_id, needed_state)
   end
 
 end

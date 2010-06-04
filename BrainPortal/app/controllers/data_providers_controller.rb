@@ -433,8 +433,8 @@ class DataProvidersController < ApplicationController
                                :group_id         => current_user.own_group.id,
                                :data_provider_id => provider_id )
       if userfile.save
-        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user,"FileCollection Set Size") do
-          userfile.set_size!
+        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user, "FileCollection Set Size") do
+          userfile.set_size! rescue true
         end
         num_registered += 1
       else
@@ -450,8 +450,10 @@ class DataProvidersController < ApplicationController
 
     if num_registered > 0
       flash[:notice] += "Registered #{num_registered} files.\n"
+      clear_browse_provider_local_cache_file(current_user,@provider) rescue true
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
+      clear_browse_provider_local_cache_file(current_user,@provider) rescue true
     else
       flash[:notice] += "No files affected.\n"
     end
@@ -569,12 +571,12 @@ class DataProvidersController < ApplicationController
     keys
   end
 
-  def get_recent_provider_list_all(refresh = false)
+  def get_recent_provider_list_all(refresh = false) #:nodoc:
 
     refresh = false if refresh.blank? || refresh.to_s == 'false'
 
     # Check to see if we can simply reload the cached copy
-    cache_file = "/tmp/dp_cache_list_all_#{current_user.id}.#{@provider.id}"
+    cache_file = browse_provider_local_cache_file(current_user, @provider)
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
        fileinfolist = YAML::load(filelisttext)
@@ -592,6 +594,16 @@ class DataProvidersController < ApplicationController
 
     # Return it
     fileinfolist
+  end
+
+  def browse_provider_local_cache_file(user, provider) #:nodoc:
+    cache_file = "/tmp/dp_cache_list_all_#{user.id}.#{provider.id}"
+    cache_file
+  end
+
+  def clear_browse_provider_local_cache_file(user, provider) #:nodoc:
+    cache_file = browse_provider_local_cache_file(user,provider)
+    File.unkink(cache_file) rescue true
   end
 
   # Creates and returns a table with statistics for disk usage on a
