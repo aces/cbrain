@@ -218,11 +218,11 @@ class TasksController < ApplicationController
     tasklist = @task.wrapper_final_task_list
     
     tasklist.each do |task|
-      if task.new_record? && task.status.blank?
-        task.status = "New"
-        task.save!  # TODO check
-      else
-        messages += "Task seems invalid: #{task.inspect}"
+      task.status = "New" if task.status.blank?
+      begin
+        task.save!
+      rescue => ex
+        messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
       end
     end
 
