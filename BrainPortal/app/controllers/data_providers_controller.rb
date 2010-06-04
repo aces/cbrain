@@ -347,7 +347,7 @@ class DataProvidersController < ApplicationController
   #Register a list of files into the system.
   #The files' meta data will be saved as Userfile resources.
   def register
-    unless params[:redirect_to_browse].blank?
+    if ! params[:redirect_to_browse].blank? && params[:redirect_to_browse].to_s == "true"
       params[:action] = :browse
       redirect_to :action => :browse, :search  => params[:search], :pagination  => params[:pagination]
       return
