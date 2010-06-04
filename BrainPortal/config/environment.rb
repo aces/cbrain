@@ -37,15 +37,7 @@ Rails::Initializer.run do |config|
   config.gem "sys-proctable", :lib => "sys/proctable"
   config.gem "nokogiri"
   
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*sqlite3/m
-    config.gem "sqlite3-ruby", :lib => "sqlite3"
-  end
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*mysql/m
-    config.gem "mysql", :lib => "mysql"
-  end
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*postgres/m
-    config.gem "postgres"
-  end
+
 
   # Only load the plugins named here, in the order given. By default, all plugins 
   # in vendor/plugins are loaded in alphabetical order.
