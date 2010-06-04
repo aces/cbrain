@@ -32,7 +32,6 @@ Rails::Initializer.run do |config|
   config.gem "net-ssh",  :lib => 'net/ssh'
   config.gem "net-sftp", :lib => 'net/sftp'
   config.gem "will_paginate"
-  config.gem "mongrel"
   config.gem "log4r"
   config.gem "sys-proctable", :lib => "sys/proctable"
   config.gem "nokogiri"

@@ -27,19 +27,10 @@ Rails::Initializer.run do |config|
   # config.gem "aws-s3", :lib => "aws/s3"
   config.gem "net-ssh",  :lib => 'net/ssh'
   config.gem "net-sftp", :lib => 'net/sftp'
-  config.gem "mongrel"
   config.gem "log4r"
   config.gem "sys-proctable", :lib => "sys/proctable"
 
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*sqlite3/m
-    config.gem "sqlite3-ruby", :lib => "sqlite3"
-  end
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*mysql/m
-    config.gem "mysql", :lib => "mysql"
-  end
-  if IO.read(config.database_configuration_file) =~ /^\s*adapter:[^\n]*postgres/m
-    config.gem "postgres"
-  end
+
   
   config.action_mailer.delivery_method       = :test
 
