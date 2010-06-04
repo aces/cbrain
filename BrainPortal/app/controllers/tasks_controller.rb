@@ -214,9 +214,8 @@ class TasksController < ApplicationController
     messages = ""
     messages += @task.wrapper_after_form
 
-    tasklist = @task.wrapper_final_task_list
-
     @task.launch_time = Time.now # so grouping will work
+    tasklist = @task.wrapper_final_task_list
     
     tasklist.each do |task|
       if task.new_record? && task.status.blank?

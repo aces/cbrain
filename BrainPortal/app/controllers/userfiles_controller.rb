@@ -608,7 +608,7 @@ class UserfilesController < ApplicationController
             )
 
         CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-          result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :write))
+          result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
           if result == :success
             Message.send_message(current_user,
                                 :message_type  => 'notice', 

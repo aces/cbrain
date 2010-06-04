@@ -434,6 +434,7 @@ class Userfile < ActiveRecord::Base
 
   # See the description in class DataProvider
   def cache_prepare
+    self.save! if self.id.blank? # we need an ID to prepare the cache
     self.data_provider.cache_prepare(self)
   end
 
