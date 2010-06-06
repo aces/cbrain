@@ -97,8 +97,8 @@ module CbrainTaskLogging
     message.sub!(/[\s:]*$/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}")
     if backtrace_lines > 0
-      backtrace_lines = exception.backtrace.size - 1 if backtrace_lines >= exception.backtrace.size
-      exception.backtrace[1..backtrace_lines].each { |m| self.addlog(m) }
+      backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size
+      exception.backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :nocaller => true) }
     end
   end
 

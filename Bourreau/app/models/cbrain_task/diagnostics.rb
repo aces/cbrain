@@ -25,10 +25,10 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
   # Synchronize the userfiles given in argument, measuring
   # the performance (and success or failure).
   def setup #:nodoc:
-    params       = self.params
+    params       = self.params || {}
     user_id      = self.user_id
 
-    file_ids     = params[:interface_userfile_ids]
+    file_ids     = params[:interface_userfile_ids] || []
 
     self.addlog "Starting diagnostics setup on #{file_ids.size} files."
     if params[:copy_number] && params[:copy_total]
@@ -73,10 +73,10 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
   # in argument and the 'du' command on FileCollections. It also reports
   # several parameters about the environment.
   def cluster_commands #:nodoc:
-    params       = self.params
+    params       = self.params || {}
     user_id      = self.user_id
 
-    file_ids      = params[:interface_userfile_ids]
+    file_ids      = params[:interface_userfile_ids] || []
 
     # Note: 'commands' is an ARRAY of strings.
     commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
@@ -133,7 +133,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
   # back to the CBRAIN DB. The report is mostly a concatenation
   # of the cluster job's STDOUT and STDERR.
   def save_results #:nodoc:
-    params       = self.params
+    params       = self.params || {}
     user_id      = self.user_id
 
     self.addlog "Starting diagnostics postprocessing."

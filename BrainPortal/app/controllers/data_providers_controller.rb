@@ -403,7 +403,7 @@ class DataProvidersController < ApplicationController
           num_skipped += 1
           next
         end
-        num_unregistered += Userfile.delete(userfile.id)
+        num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
         userfile.destroy_log rescue true
         next
       end
@@ -450,10 +450,8 @@ class DataProvidersController < ApplicationController
 
     if num_registered > 0
       flash[:notice] += "Registered #{num_registered} files.\n"
-      clear_browse_provider_local_cache_file(current_user,@provider) rescue true
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
-      clear_browse_provider_local_cache_file(current_user,@provider) rescue true
     else
       flash[:notice] += "No files affected.\n"
     end
