@@ -58,7 +58,7 @@ class RemoteCommand < RestrictedHash
      # Only some statuses are valid on these only when the tasks
      # are already in some other states. See process_command_alter_tasks().
      :new_task_status,
-     :new_bourreau_id,  # for Duplicate new_task_status
+     :new_bourreau_id,  # for when new_task_status is 'Duplicate'
 
      # -------- GET TASK OUTPUTS PARAMETERS --------
      # Uses :task_ids with a single ID expected in it

@@ -72,7 +72,8 @@ class RemoteResourceInfo < RestrictedHash
      dummy
    end
    
-   #Default value for attributes.
+   # Returns a default value of '???' for any attributes
+   # not set.
    def [](key)
      super || "???"
    end

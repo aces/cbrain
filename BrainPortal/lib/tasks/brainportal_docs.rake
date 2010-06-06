@@ -4,6 +4,7 @@ namespace :doc do
      rdoc.rdoc_dir = 'doc/brainportal'
      rdoc.title    = "CBRAIN BrainPortal API Documentation"
      rdoc.options << '-a'
+     rdoc.options << '-W https://cbrain.mcgill.ca/viewvc/CBRAIN/trunk/BrainPortal/%s'
      rdoc.main = 'doc/README_FOR_APP'
      rdoc.rdoc_files.include('doc/README_FOR_APP')
      rdoc.rdoc_files.include('app/*/*.rb')
