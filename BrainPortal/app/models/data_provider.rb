@@ -219,7 +219,7 @@ class DataProvider < ActiveRecord::Base
                   :uid, :gid, :owner, :group,
                   :atime, :mtime, :ctime
     
-    def depth
+    def depth #:nodoc:
       return @depth if @depth
       cb_error "File doesn't have a name." if self.name.blank?
       count = -1

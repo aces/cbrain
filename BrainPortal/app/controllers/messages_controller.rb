@@ -18,7 +18,7 @@ class MessagesController < ApplicationController
   before_filter :manager_role_required, :only  => :create
   # GET /messages
   # GET /messages.xml
-  def index
+  def index #:nodoc:
     @messages = current_user.messages.all(:order  => "last_sent DESC")
     
     respond_to do |format|
@@ -29,7 +29,7 @@ class MessagesController < ApplicationController
 
   # POST /messages
   # POST /messages.xml
-  def create
+  def create #:nodoc:
     @message = Message.new(params[:message])
     @message.send_me_to(Group.find(params[:group_id]))
     prepare_messages
@@ -53,7 +53,7 @@ class MessagesController < ApplicationController
 
   # PUT /messages/1
   # PUT /messages/1.xml
-  def update
+  def update #:nodoc:
     @message = current_user.messages.find(params[:id])
 
     respond_to do |format|
@@ -80,7 +80,7 @@ class MessagesController < ApplicationController
 
   # DELETE /messages/1
   # DELETE /messages/1.xml
-  def destroy
+  def destroy #:nodoc:
     @message = current_user.messages.find(params[:id])
     unless @message.destroy
       flash.now[:error] = "Could not delete message."

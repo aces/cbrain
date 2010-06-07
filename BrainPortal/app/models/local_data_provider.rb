@@ -5,8 +5,6 @@
 # $Id$
 #
 
-require 'fileutils'
-
 #
 # This this is an abstract class which represents data providers
 # where the remote files are not even remote, they are local
@@ -25,7 +23,7 @@ class LocalDataProvider < DataProvider
 
   Revision_info="$Id$"
 
-  # Local data providers are considered fast syncing.
+  # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true
   end
@@ -51,7 +49,8 @@ class LocalDataProvider < DataProvider
     cb_error "This data provider cannot be browsed."
   end
   
-  def provider_readhandle(userfile, *args)
+  # Redirects the call to cache_readhandle()
+  def provider_readhandle(userfile, *args) #:nodoc:
     self.cache_readhandle(userfile, *args)
   end
 

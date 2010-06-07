@@ -146,7 +146,7 @@ class UsersController < ApplicationController
     end
   end
 
-  def switch
+  def switch #:nodoc:
     if current_user.has_role? :admin
       @user = User.find(params[:id])
     elsif current_user.has_role? :site_manager
@@ -165,10 +165,10 @@ class UsersController < ApplicationController
     redirect_to home_path
   end
   
-  def request_password
+  def request_password #:nodoc:
   end
   
-  def send_password
+  def send_password #:nodoc:
     @user = User.find(:first, :conditions  => {:login  => params[:login], :email  => params[:email]})
     
     if @user

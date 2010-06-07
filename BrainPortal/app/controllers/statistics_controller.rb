@@ -15,7 +15,7 @@ class StatisticsController < ApplicationController
 
   # GET /statistics
   # GET /statistics.xml
-  def index
+  def index #:nodoc:
     @stats_user = Statistic.find(:all, :conditions => {:user_id => current_user.id})
     @task_names = @stats_user.map { |stat| stat.task_name } | []
     @stats_total_user = Statistic.total_task_user(current_user.id)
@@ -28,7 +28,7 @@ class StatisticsController < ApplicationController
 
   # GET /statistics/1
   # GET /statistics/1.xml
-  def show
+  def show #:nodoc:
     @bourreau = Bourreau.find(params[:id])
     @task_stats = Statistic.bourreau_stats(@bourreau.id) 
     @bourreau_total = @task_stats["total_count_bourreau"]

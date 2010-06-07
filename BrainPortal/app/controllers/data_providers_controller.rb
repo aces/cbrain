@@ -171,7 +171,7 @@ class DataProvidersController < ApplicationController
     end
   end
   
-  def is_alive
+  def is_alive #:nodoc:
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     if @provider.is_alive?
       render :text  => "Yes"
@@ -181,7 +181,7 @@ class DataProvidersController < ApplicationController
     return
   end
   
-  def disk_usage
+  def disk_usage #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user)
 
     # List of cache update offsets we support
@@ -252,7 +252,6 @@ class DataProvidersController < ApplicationController
   #Browse the files of a data provider.
   #This action is only available for data providers that are browsable.
   #Both registered and unregistered files will appear in the list. 
-  #Unregistered files can be registered here.
   def browse
     @user     = current_user
     id        = params[:id]

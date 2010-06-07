@@ -864,7 +864,16 @@ class UserfilesController < ApplicationController
                          
   end
 
-  def create_relocatable_tar_for_userfiles(ulist,username)
+  # This method creates a tar file of the userfiles listed
+  # in +ulist+ (and array of Userfiles) such that
+  # the tar structure is independent of the DP path
+  # and owners. Each userfile basename 'x' will be
+  # stored as a relative path 'user/dpname/x'. This
+  # is needed when downloading a file, as a user is
+  # allowed to have several files with the same names
+  # on different DPs, and several users are allowed to
+  # files with the same names on the same DP.
+  def create_relocatable_tar_for_userfiles(ulist,username) #:nodoc:
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
     tmpdir       = Pathname.new("/tmp/dl.#{Process.pid}.#{timestamp}")
     tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir

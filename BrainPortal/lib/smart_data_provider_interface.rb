@@ -13,12 +13,12 @@ module SmartDataProviderInterface
   Revision_info="$Id$"
 
   # This method initialize an instance variable containing
-  # the true data provider object we use to access the
+  # the real data provider object we use to access the
   # data provider's files. The decision as to which class
   # it will belong to is based on the value of the
   # attribute +remote_host+ being the same as the current
-  # system's hostname: if it is the case, we use a local
-  # class, otherwise we use a network class.
+  # system's hostname: if it is the case, we use the +localclass+,
+  # otherwise we use the +networkclass+.
   def select_local_or_network_provider(localclass,networkclass)
     @local_provider   = localclass.new(   self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id } )
     @network_provider = networkclass.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id } )
@@ -37,10 +37,11 @@ module SmartDataProviderInterface
   end
 
   # This method is a utility method allowing access to
-  # the remote path of userfiles as know by the network
+  # the remote path of userfiles as known by the network
   # class, even when the current smart provider is actually
-  # configured to be local. This is not an official DP
-  # API method.
+  # configured to be local. This is not an official DataProvider
+  # API method, but you can often find it implemented in
+  # SSH-based Data Providers.
   def provider_full_path(userfile)
     if @network_provider.respond_to?(:provider_full_path) # this is not an official API method
       @network_provider.provider_full_path(userfile)

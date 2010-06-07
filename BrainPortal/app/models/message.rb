@@ -226,7 +226,7 @@ class Message < ActiveRecord::Base
 
   private
 
-  def self.find_users_for_destination(destination)
+  def self.find_users_for_destination(destination) #:nodoc:
 
     # Find the group(s) associated with the destination
     groups = case destination

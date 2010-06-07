@@ -602,9 +602,9 @@ class RemoteResource < ActiveRecord::Base
 
   protected
 
-  # Clean the cached files of a list of users, for file
+  # Clean the cached files of a list of users, for files
   # last accessed before the +before_date+ ; the task
-  # is start in background, as it can be long.
+  # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
     user_ids     = command.user_ids
     before_date = command.before_date || Time.now
@@ -636,6 +636,9 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Helper method to prepend 'source cbrain_bashrc;' to shell command.
+  # The 'cbrain_bashrc' script is the one located in
+  # the "/script" subdirectory under the remote resource's
+  # RAILS root directory. Normally it's empty.
   def prepend_source_cbrain_bashrc(shell_command)
     cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
     return "source #{cbrain_bashrc_path}; #{shell_command}"

@@ -67,6 +67,11 @@ class SyncStatus < ActiveRecord::Base
   validates_uniqueness_of :remote_resource_id, :scope => :userfile_id
 
 
+
+  #################################################
+  # Attribute Wrappers
+  #################################################
+
   # This method normally returns the value of
   # the attribute +accessed_at+ but if it's not
   # yet set, it uses the value of +updated_at+ .
@@ -86,9 +91,19 @@ class SyncStatus < ActiveRecord::Base
     val
   end
 
+
+
+  #################################################
+  # Main API; these are all class methods.
+  #################################################
+
   # This method will block until the content of the
   # file on the data provider is available to be copied
   # to the local cache.
+  #
+  # Once ready, the block will be executed
+  # and the status of the local cache will be
+  # marked as 'InSync'.
   def self.ready_to_copy_to_cache(userfile)
 
     # For brand new files, the userfile_id is nil,
@@ -170,6 +185,10 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file in the cache is available to be copied
   # to the data provider.
+  #
+  # Once ready, the block will be executed
+  # and the status of the local cache will be
+  # marked as 'InSync'.
   def self.ready_to_copy_to_dp(userfile)
 
     # For brand new files, the userfile_id is nil,
@@ -251,6 +270,11 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file in the cache is available to be modified.
   # It doesn't care about the status of the provider.
+  #
+  # Once ready, the block will be executed
+  # and the status of the local cache will be
+  # marked as 'CacheNewer' (but another status can
+  # also be specified in +final_status+).
   def self.ready_to_modify_cache(userfile, final_status = 'CacheNewer')
 
     # For brand new files, the userfile_id is nil,
@@ -311,6 +335,10 @@ class SyncStatus < ActiveRecord::Base
   # This method will block until the content of the
   # file on the data provider is available to be modified.
   # It doesn't care about the status of the cache.
+  #
+  # Once ready, the block will be executed
+  # and the status of the local cache will be
+  # marked as 'ProvNewer'.
   def self.ready_to_modify_dp(userfile)
 
     # For brand new files, the userfile_id is nil,
@@ -378,15 +406,24 @@ class SyncStatus < ActiveRecord::Base
     end
   end
 
+
+
+  #################################################
+  # Utility Methods
+  #################################################
+
   # This method does two things:
   #
-  # Changes an object's InSync status if this state has been
+  # It changes an object's InSync status if this state has been
   # recorded too long ago according to the current
   # RemoteResource's configuration for cache_trust_expire.
+  # The new status is set to 'ProvNewer'.
   #
-  # Changes an object's status if it's been too long since
+  # It changes an object's status if it's been too long since
   # it has been updated, when the status was an action operation
-  # that was aborted.
+  # that was aborted. In that case, the new status will
+  # be 'Corrupted' if the aborted operation was 'ToProvider'
+  # and it will be 'ProvNewer' if the operation was 'ToCache'.
   def invalidate_old_status
 
     # "InSync" state is too old for current RemoteResource
@@ -441,8 +478,8 @@ class SyncStatus < ActiveRecord::Base
 
   # Fetch the list of all SyncStatus objects that track the
   # sync states associated with +userfile_id+ on caches
-  # OTHER than the one for +res_id+; you can pass
-  # +nil+ to +res_id+ to get them all.
+  # OTHER than the one for +res_id+; you can set
+  # +res_id+ to +nil+ to get them all.
   def self.get_status_of_other_caches(userfile_id,res_id = CBRAIN::SelfRemoteResourceId)
     states = self.find(:all, :conditions => { :userfile_id => userfile_id } )
     if res_id

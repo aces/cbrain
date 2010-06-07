@@ -82,6 +82,11 @@ module UserfilesHelper
     '</div>'
   end 
 
+  # Return the HTML code that represent a symbol
+  # for +statkeyword+, which is a SyncStatus 'status'
+  # keyword. E.g. for "InSync", the
+  # HTML returned is a green checkmark, and for
+  # "Corrupted" it's a red 'x'.
   def status_html_symbol(statkeyword)
     case statkeyword
       when "InSync"

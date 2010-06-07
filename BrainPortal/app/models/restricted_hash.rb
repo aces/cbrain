@@ -38,7 +38,7 @@ class RestrictedHash < Hash
    end
 
    # Returns the list of allowed keys for your hash,
-   # as you supplied to to allowed_keys=() (but not
+   # as you supplied to allowed_keys=() (but not
    # necessarily in the same order).
    def self.allowed_keys
      @allowed_keys.keys

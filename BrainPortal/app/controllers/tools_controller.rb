@@ -18,7 +18,7 @@ class ToolsController < ApplicationController
  
   # GET /tools
   # GET /tools.xml
-  def index
+  def index #:nodoc:
     @tools = current_user.available_tools.find(:all, :include  => [:bourreaux, :user, :group], :order  => "tools.name")
     
     respond_to do |format|
@@ -27,7 +27,7 @@ class ToolsController < ApplicationController
     end
   end
   
-  def bourreau_select
+  def bourreau_select #:nodoc:
     @tool = current_user.available_tools.find_by_cbrain_task_class(params[:cbrain_task_class])
     @bourreaux = @tool.bourreaux.all(:conditions  => {:id  => available_bourreaux})
     
@@ -41,13 +41,13 @@ class ToolsController < ApplicationController
   end
 
   # GET /tools/1/edit
-  def edit
+  def edit #:nodoc:
     @tool = current_user.available_tools.find(params[:id])
   end
 
   # POST /tools
   # POST /tools.xml
-  def create
+  def create #:nodoc:
     if params[:autoload]
       successes = 0
       failures  = ""
@@ -98,7 +98,7 @@ class ToolsController < ApplicationController
 
   # PUT /tools/1
   # PUT /tools/1.xml
-  def update
+  def update #:nodoc:
     params[:tool][:bourreau_ids] ||= []
     @tool = current_user.available_tools.find(params[:id])
     respond_to do |format|
@@ -115,7 +115,7 @@ class ToolsController < ApplicationController
 
   # DELETE /tools/1
   # DELETE /tools/1.xml
-  def destroy
+  def destroy #:nodoc:
     @tool = current_user.available_tools.find(params[:id])
     @tool.destroy
     
@@ -129,7 +129,7 @@ class ToolsController < ApplicationController
     end
   end
   
-  def tool_management
+  def tool_management #:nodoc:
       @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
       @bourreaux = Bourreau.find(:all)
   end

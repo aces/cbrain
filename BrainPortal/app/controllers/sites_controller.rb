@@ -18,7 +18,7 @@ class SitesController < ApplicationController
   
   # GET /sites
   # GET /sites.xml
-  def index
+  def index #:nodoc:
     @sites = Site.find(:all, :include  => [:users, :groups])
 
     respond_to do |format|
@@ -29,7 +29,7 @@ class SitesController < ApplicationController
 
   # GET /sites/1
   # GET /sites/1.xml
-  def show
+  def show #:nodoc:
     @site = Site.find(params[:id])
 
     respond_to do |format|
@@ -39,13 +39,13 @@ class SitesController < ApplicationController
   end
  
   # GET /sites/1/edit
-  def edit
+  def edit #:nodoc:
     @site = Site.find(params[:id])
   end
 
   # POST /sites
   # POST /sites.xml
-  def create
+  def create #:nodoc:
     @site = Site.new(params[:site])
 
     respond_to do |format|
@@ -62,7 +62,7 @@ class SitesController < ApplicationController
 
   # PUT /sites/1
   # PUT /sites/1.xml
-  def update
+  def update #:nodoc:
     @site = Site.find(params[:id])
     params[:site][:user_ids] ||= []
     params[:site][:manager_ids] ||= []
@@ -83,7 +83,7 @@ class SitesController < ApplicationController
 
   # DELETE /sites/1
   # DELETE /sites/1.xml
-  def destroy
+  def destroy #:nodoc:
     @site = Site.find(params[:id])
     @destroyed = @site.destroy
 
