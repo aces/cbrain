@@ -133,12 +133,9 @@ class UserfilesController < ApplicationController
           else
             render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:regular, :directory])}
           end
-        rescue  => e
-          if e.is_a?(Net::SFTP::Exception) || e.message =~ /Net::SFTP/
-            render :text => "<span class='loading_message'>Error loading file list. Please sync your collection and try again.</span>"
-          else
-            raise
-          end
+        rescue => e
+           render :text => "<span class='loading_message'>Error loading file list.</span>"
+           Message.send_internal_error_message(current_user, "Exception Caught", e, params)
         end
         return
       end
