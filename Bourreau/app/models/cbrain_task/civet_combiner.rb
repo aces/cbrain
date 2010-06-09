@@ -67,7 +67,7 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
     self.addlog("Synchronization finished.")
 
     # Choose a DP id if none was supplied; we pick the first collections' DP.
-    params[:data_provider_id] ||= cols[0].data_provider_id
+    params[:data_provider_id] = cols[0].data_provider_id if params[:data_provider_id].blank?
     data_provider_id = params[:data_provider_id]
 
     # Check that all CIVET outputs have

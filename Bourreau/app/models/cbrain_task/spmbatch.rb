@@ -36,7 +36,7 @@ class CbrainTask::Spmbatch < CbrainTask::ClusterTask
        return false
      end
 
-     params[:data_provider_id] ||= collection.data_provider_id
+     params[:data_provider_id] = collection.data_provider_id if params[:data_provider_id].blank?
      
      collection.sync_to_cache
      self.addlog("Study full path: #{collection.cache_full_path.to_s}")

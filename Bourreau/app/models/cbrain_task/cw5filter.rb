@@ -30,7 +30,7 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
     input_file.sync_to_cache
     cachename    = input_file.cache_full_path.to_s
 
-    params[:data_provider_id] ||= input_file.data_provider.id
+    params[:data_provider_id] = input_file.data_provider.id if params[:data_provider_id].blank?
     
     File.symlink(cachename, input_file.name)
     

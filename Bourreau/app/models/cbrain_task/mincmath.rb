@@ -27,7 +27,7 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
       mincfile.sync_to_cache
       cachename    = mincfile.cache_full_path.to_s
       File.symlink(cachename, mincfile.name)
-      params[:data_provider_id] ||= mincfile.data_provider.id  # first mincfile decides destination?
+      params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank? # first mincfile decides destination?
     end 
     true
   end

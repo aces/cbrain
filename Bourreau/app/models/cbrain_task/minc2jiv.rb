@@ -25,7 +25,7 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     unless mincfile.name =~ /\.mnc(\.gz|\.Z)?$/i
       raise "Error: unknown extension for file '#{mincfile.name}' (expected .mnc, .mnc.gz or .mnc.Z)"
     end
-    params[:data_provider_id] ||= mincfile.data_provider.id
+    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
     mincfile.sync_to_cache
     cachename    = mincfile.cache_full_path.to_s
     if cachename =~ /\.mnc$/i

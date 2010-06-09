@@ -28,7 +28,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     cachename = minc_col.cache_full_path
     File.symlink(cachename,"minc_col.mnc")
     minc_col.sync_to_cache
-    params[:data_provider_id] ||= mincfile.data_provider.id
+    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
 
 #    unless minc_col.class.to_s == "FileCollection"
 #      self.addlog("Error: ActiveRecord entry #{minc_colid} is not a file collection.")

@@ -29,7 +29,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
       return false
     end
 
-    params[:data_provider_id] ||= dicom_col.data_provider.id
+    params[:data_provider_id] = dicom_col.data_provider.id if params[:data_provider_id].blank?
 
     dicom_col.sync_to_cache
     cachename = dicom_col.cache_full_path.to_s

@@ -26,7 +26,7 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
     mincfile.sync_to_cache
     File.symlink(mincfile.cache_full_path.to_s, mincfile.name)
 
-    params[:data_provider_id] ||= mincfile.data_provider.id
+    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
 
     if(params[:transformation_id])
       process_input_files(params[:transformation_id])

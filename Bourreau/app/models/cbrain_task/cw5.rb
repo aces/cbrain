@@ -34,7 +34,7 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
     cachename = optic_col.cache_full_path.to_s
     File.symlink(cachename,"optic_col")
 
-    params[:data_provider_id] ||= optic_col.data_provider.id
+    params[:data_provider_id] = optic_col.data_provider.id if params[:data_provider_id].blank?
 
     config_colid = params[:configuration_col_id]  # the ID of a FileCollection
     config_col   = Userfile.find(config_colid)

@@ -16,7 +16,7 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
 
   def setup #:nodoc:
     begin
-      params[:data_provider_id] ||= collection.data_provider.id
+      params[:data_provider_id] = collection.data_provider.id if params[:data_provider_id].blank?
     
       collection_id = self.params[:dicom_collection_id]
       collection    = Userfile.find(collection_id)
