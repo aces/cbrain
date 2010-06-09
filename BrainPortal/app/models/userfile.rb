@@ -516,6 +516,11 @@ class Userfile < ActiveRecord::Base
     self.data_provider.online?
   end
   
+  def content(options)
+    false
+  end
+
+
   private
   
   def validate_associations

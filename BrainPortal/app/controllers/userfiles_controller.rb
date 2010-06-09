@@ -97,52 +97,25 @@ class UserfilesController < ApplicationController
       format.xml  { render :xml => @userfiles }
     end
   end
-
   #The content action handles requests for file content
   #by URL. Used mainly by JIV at this point.
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
-    if @userfile.is_a?(FileCollection)
-      if @userfile.is_a?(CivetStudy)
-        if params[:study_subject]
-          render :partial  => "file_collection_civet_file_list", :locals  => { :subject  => @userfile.get_full_subdir_listing(params[:study_subject]) }
-          return
-        elsif params[:qc_file]
-          if params[:qc_file] == "base"
-            qc_file = @userfile.list_files("QC", :file).find{ |qc| qc.name =~ /\.html$/ && !@userfile.subject_ids.include?(Pathname.new(qc.name).basename.to_s.sub(/\.html$/, "")) }.name
-          else
-            qc_file = @userfile.name + "/QC/" + params[:qc_file]
-          end
-          doc = Nokogiri::HTML.fragment(File.read(@userfile.cache_full_path.parent + qc_file))
-          doc.search("a").each {|link| link['href'] = "/userfiles/#{@userfile.id}/content?qc_file=#{link['href']}" }
-          doc.search("img").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
-          doc.search("image").each {|img| img['src'] = "/userfiles/#{@userfile.id}/content?collection_file=#{@userfile.list_files.map(&:name).find{ |file| file =~ /#{img['src'].sub(/^\.+\//, "")}$/ }}" }
-          render :text  => doc.to_html
-          return
-        end
-      end
-      
-      if params[:collection_file]
-        @userfile.sync_to_cache
-        send_file @userfile.cache_full_path.parent + params[:collection_file]
-      else
-        begin
-          if params[:collection_dir].blank?
-            render :partial  => 'file_collection'
-          else
-            render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(params[:collection_dir], [:regular, :directory])}
-          end
-        rescue => e
-           render :text => "<span class='loading_message'>Error loading file list.</span>"
-           Message.send_internal_error_message(current_user, "Exception Caught", e, params)
-        end
+    content = @userfile.content(params)
+
+    
+    if content
+      if content[:sendfile]
+        send_file content[:sendfile]
         return
       end
+      render content
     else
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path
     end
+  
   end
   
   # GET /userfiles/1/edit

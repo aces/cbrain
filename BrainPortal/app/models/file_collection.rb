@@ -21,6 +21,28 @@ class FileCollection < Userfile
   
   Revision_info="$Id$"
   
+  def content(options) #:nodoc
+    begin
+      if options[:collection_file]
+        path = self.cache_full_path.parent + options[:collection_file]
+        
+        {:sendfile => path}
+   
+      elsif options[:collection_dir].blank?
+        return { :partial  => 'file_collection'}
+      else
+        return {:partial => 'directory_contents', :locals  => {:file_list  => self.list_files(options[:collection_dir], [:regular, :directory])}}
+      end
+    rescue  => e
+      if e.is_a?(Net::SFTP::Exception) || e.message =~ /Net::SFTP/
+        return {:text => "<span class='loading_message'>Error loading file list. Please sync your collection and try again.</span>"}
+      else
+        raise
+      end
+    end
+  end
+
+
   # Extract a collection from an archive.
   # The user_id, provider_id and name attributes must already be
   # set at this point.
