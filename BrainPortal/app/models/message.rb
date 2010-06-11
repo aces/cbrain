@@ -169,7 +169,7 @@ class Message < ActiveRecord::Base
                          "The CBRAIN admins have been alerted are working\n"       +
                          "towards solving the problem.\n",
                        
-        :send_email   => true
+        :send_email   => false
       ) 
     end
     
