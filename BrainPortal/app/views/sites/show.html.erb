@@ -1,6 +1,14 @@
 <div class="generalcontent">
     
+  <div class = 'help_button'>
+       <a class = "overlay_link" data-url =
+         "/doc/site_information/site_information.html">Help</a>
+  </div>
+    
   <div class="resource_list_box">
+      
+      
+            
     <strong>Managers:</strong>                   <%= @site.managers.collect(&:login).join(", ") %><br>
     <strong>Number of users:</strong>            <%= @site.users.count %><br>
     <strong>Number of groups:</strong>           <%= @site.groups.count %><br>
