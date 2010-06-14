@@ -1199,11 +1199,16 @@ table.resource_list td.checkbox {
 
 .resource_list_upper_form {
     border: 0px;
-    padding: 0.5em;
-    margin-top: 0em;
+    padding: 2em;
+    margin-top: 10px;
     width: auto;
     margin-left: 11px;
     margin-bottom: 0px;  
+}
+
+.show_hide_details {
+    padding: 2em;
+    margin: 30em;
 }
 
 .menu_bar {
@@ -1212,7 +1217,17 @@ table.resource_list td.checkbox {
     margin-bottom: 3em;
     width: 960px;
     margin-left: 5px;
-    
+}
+
+.help_button{
+    margin-left: 80em;
+    margin-top: 0.5em;
+}
+
+.help_button_userfiles{
+    margin-left: 76em;
+    margin-top: 1em;
+    margin-right: 1em;
 }
 
 #new_feedback{
