@@ -1,0 +1,38 @@
+<h1>Available Minc Tools</h1><br>
+
+<b>Civet</b>
+<br>
+    CIVET is a program with both a command line interface (CLI) and a JAVA-based GUI, composed of a set of Perl-language scripts that use the Perl-based PMP framework to invoke a large number of command-line processes that are dependent on one-another, as well as a number of high-level C/C++ programs.. This framework allows for the establishment of a 'pipeline' that manages and tracks dependencies, output, log files, and file & directory creation and naming according to a specified convention. CIVET allows the user the freedom to modify and specify which stages are to be performed.
+<br>
+<br>
+    By default, CIVET will run on multispectral (T1, T2 and Proton Density weighted) data. Symmetry tools can be invoked optionally. Running on T1 images only, running without ANIMAL, and adding custom registration models (e.g. for registering pediatric data) are other main options. CIVET will calculate Cortical Thickness at each vertex using the t_link metric (in both registered and native spaces) on hemispheric surfaces that have been non-linearly registered. The default surfaces are made of 81,920 polygons and 40,962 vertices each. CIVET will also produce regional thickness maps as well as surface areas based on the intersection of ANIMAL with the surfaces of the cortex.
+<br>
+<br>
+    A recent area of development is the introduction of automated quality control steps as optional post-processing procedures to run after data had been processed in CIVET. Since CIVET is now composed of 'modules' that are controlled by a 'shell', and each module consists of a group of related stages, quality control becomes potentially possible at the module-level. Modularization was introduced in order to better manage CIVET, which would otherwise be a relatively huge script.
+<br>
+<br>
+  
+<b>Mincmath</b>
+<br>
+    Mincmath will perform simple, voxel-by-voxel math operations, on one or more minc files of the same shape and having the same coordinate sampling, producing a single output file. Operations can be unary (operate on one file), binary (two input files) or cumulative (operate on two or more input files). Cumulative operations can also be performed across a specified dimension of the input files.
+<br>
+<br>
+
+<b>Mincaverage</b>
+<br>
+    Mincaverage averages minc files together. A range of optional behaviour is permitted as well: pre-normalizing volumes, creating a standard deviation volume, averaging over a specified dimension of the input files.
+<br>
+<br>
+
+<b>Mincpik</b>
+<br>
+    Mincpik generates image files from MINC volumes using the Imagemagick convert utility. 
+<br>
+<br>
+
+<b>Mincresample</b>
+<br>
+    Mincresample will resample a minc file along new spatial dimensions with new voxel positions. Each volume in the input file (given by the spatial dimensions xspace, yspace and zspace) is resampled according to the command-line options. Non-spatial dimensions are preserved in their original order, but spatial dimensions can be re-ordered to give transverse, sagittal or coronal images. The new voxel values are calculated using tri-linear, tri-cubic or nearest-neighbour interpolation.
+<br>
+<br>
+<br>

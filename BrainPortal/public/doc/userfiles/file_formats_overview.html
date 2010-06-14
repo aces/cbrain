@@ -1,0 +1,66 @@
+<h1>Medical Imaging File Formats</h1>
+
+<br>
+<br>
+<b>MINC 1 and MINC 2</b>
+<br>
+MINC is a software system for storing and manipulating medical images, originally developed in 1993 by Peter Neelin at the McConnell Brain Imaging Centre. The name MINC is an acronym for Medical Imaging NetCDF. MINC was conceived as a means to allow researchers to use a common set of tools and files to work with medical images in a variety of modalities. The file format was originally defined as a specialisation of the NetCDF (Network Common Data Form) file format created by the Unidata Program Center at UCAR (University Corporation for Atmospheric Research). The NetCDF format, libraries, and tools were created to store generic datasets of arbitrary dimensionality. NetCDF was chosen because it implements many of the functions that were envisioned for the MINC system.
+<br>
+<br>
+Like most other medical imaging data formats, MINC allows medical image data to take on a wide range of data types or ranges, and defines a set of standard supporting data describing the image acquisition parameters or patient details.
+<br>
+<br>
+However, MINC is different from most other medical imaging formats in several respects:
+<br>
+<ul>
+   <li>MINC is inherently N-dimensional. MINC data can be structured with any number of spatial, temporal, or other dimensions, and these dimensions may be organised an an arbitrary order. Actually, NetCDF limits data to at most 100 dimensions, but this has not proven to be a meaningful restriction.</li>
+   <li>MINC is multi-modal. MINC has been used to store CT, MRI, PET, EEG, and other medical imaging data.</li>
+   <li>MINC is extensible. MINC file may contain an arbitrary collection of supporting attributes and data. If your study requires that you keep track of a patient's blood pressure or psychiatric history, this information can be added to the header of your MINC files without having to concern yourself with.</li>
+   <li>MINC is self-describing. Most of the attributes and variables used in MINC have descriptive names and values which can be easily interpreted by a user.</li>
+   <li>MINC permits scaling of voxel data on either a per-image or per-slice basis.</li>
+   <li>MINC defines both a voxel and a world coordinate system. A MINC file effectively stores a linear transform which defines the relationship between the logical layout of the voxels in the file and some reference physical coordinate system. The physical coordinate system could be the scanner's native coordinates, or it could be a more universal coordinate space such as the Talairach system.</li>
+</ul>
+
+Like many specialised computing terms, the term 'MINC' has been used in several different ways over the years. It may refer to the file format itself, that is, the definition of the physical and logical layout of data within a MINC file. It is also applied to the programming environment which exists to provide access to MINC format files. Lastly, the term sometimes refers to the rapidly evolving set of programs and scripts which analyse, modify, or display MINC files.
+<br>
+<br>
+The 'core' MINC system can be considered to include the following:
+<br>
+<ul>
+   <li>The file format itself</li>
+   <li>The 'libminc' programming interface, which allows programmers full access to the format.</li>
+   <li>The 'volume_io' programming interface, which provides a simplified but restricted programming interface to the MINC format.</li>
+   <li>A set of tools written using these libraries.</li>
+</ul>
+In addition to the core MINC tools, a large set of additional application programs exist which perform more sophisticated operations on MINC files. These include programs for visualisation, image enhancement or correction, automatic tissue classification, and image registration.
+<br>
+<br>
+
+<b>Versions</b>
+<br>
+MINC 2 has been designed to address a few specific problems that had been identified in MINC 1.
+<br>
+<ul>
+    <li>Limited file size. The NetCDF file format used 32-bit pointers to address objects within the file. This effectively restricted files to a maximum size of 2 gigabytes. With the advent of very high resolution brain atlas data (from macrotome or other sources) and large fMRI datasets, it became clear that this restriction might become a serious problem.
+    </li>
+    <li>Restricted data types. The NetCDF format defines a small fixed set of data types - integers, floating point, and ASCII strings. Neither aggregate data (arrays or structures) nor labeled (enumerated) data are supported as fundamental data types in NetCDF. </li>
+    <li>Limited storage options. NetCDF files store data in a continguous array. This inhibits the addition of either block addressible data or internal data compression to the NetCDF format.</li>
+</ul>
+
+Since most of these problems were inherent in the MINC 1 file format, it was clear that the design of MINC 2 would require a major revision of the file format. The team developing MINC 2 chose to replace NetCDF with the HDF5 library to form the basis of the MINC 2 format. HDF5 provides a number of advanced features which are not available in NetCDF.
+<br>
+<br>
+
+
+<b>Other File Formats Available</b>
+<ul>
+    <li>hrtt</li>
+    <li>analyze</li>
+    <li>asipro</li>
+    <li>dicom</li>
+    <li>nii</li>
+    <li>cw5</li>
+</ul>
+
+<br>
+<br>
