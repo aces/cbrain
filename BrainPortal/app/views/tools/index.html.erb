@@ -10,9 +10,13 @@
 
 <div class = "generalcontent">
 
+    <div class = 'help_button'>
+        <a class = "overlay_link" data-url = "/doc/tool/tool_info.html">Help</a>
+    </div>
+
 <% if current_user.has_role?(:admin) %>
     <span title="Registers all subclasses of CbrainTask::PortalTask as Tools">
-      
+            
         <%= javascript_tag "var current_options;" %> 
 
         <div class = "menu_bar">
