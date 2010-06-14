@@ -753,6 +753,7 @@ class CbrainTask::ClusterTask < CbrainTask
         CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n") + "\n" +
         "\n" +
         "# User commands section\n" +
+        "export PATH=\"#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH\"\n" +
         commands.join("\n") +
         "\n"
       )
