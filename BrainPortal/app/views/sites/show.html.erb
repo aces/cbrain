@@ -1,13 +1,12 @@
 <div class="generalcontent">
     
-  <div class = 'help_button'>
-       <a class = "overlay_link" data-url =
-         "/doc/site_information/site_information.html">Help</a>
-  </div>
+   <div class = 'help_button_drop_down'>
+         <% button_with_dropdown_menu(:title => "Help") do %>
+            <a class = "overlay_link" data-url ="/doc/site_information/site_information.html">Site Information</a>                            
+         <% end %>     
+   </div>
     
-  <div class="resource_list_box">
-      
-      
+  <div class="resource_list_box">   
             
     <strong>Managers:</strong>                   <%= @site.managers.collect(&:login).join(", ") %><br>
     <strong>Number of users:</strong>            <%= @site.users.count %><br>

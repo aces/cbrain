@@ -14,11 +14,12 @@
 
   <% title 'Execution Servers' %>
 
-  <div class = 'help_button'>
-         <a class = "overlay_link" data-url =
-           "/doc/server/view_server.html">Help</a>
+  <div class = 'help_button_drop_down'>
+           <% button_with_dropdown_menu(:title => "Help") do %>
+             <a class = "overlay_link" data-url ="/doc/server/view_server.html">Execution Servers</a>
+           <% end %>     
   </div>
-
+  
   <% if check_role(:admin) || check_role(:site_manager)%>
       <div class="menu_bar">
           <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new'}, {:id => "new_bourreau_button"}) %>

@@ -13,16 +13,14 @@
 
 <% title 'Tasks' %>
 
- <div class = "generalcontent">
- <div class = 'help_button_drop_down'>
-      <% button_with_dropdown_menu(:title => "Help") do %>
-        <a class = "overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
-      <% end %>     
- </div>
+<div class = "generalcontent">
+     <div class = 'help_button_drop_down'>
+         <% button_with_dropdown_menu(:title => "Help") do %>
+            <a class = "overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
+         <% end %>     
+     </div>
   
-
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
-
   
       <div id="main_task_content">
           <div class = "resource_list_upper_form">
@@ -57,9 +55,9 @@
                     ) %>
             
                     <%= submit_tag("Apply Operation") %>
-              <br><br>
+              <br>
         </div>  <!-- End class="resource_list_box" -->
-        <br><br>
+
         <%= link_to_function "Show Filters",  {:class  => 'action_link', :id => 'filter_option_show'} do |page|
               page['side_filter_menu_wrapper'].visual_effect(:blind_down, :duration  => 0.2)
               page['filter_option_show'].hide

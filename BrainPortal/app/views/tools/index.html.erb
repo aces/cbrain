@@ -10,8 +10,10 @@
 
 <div class = "generalcontent">
 
-    <div class = 'help_button'>
-        <a class = "overlay_link" data-url = "/doc/tool/tool_info.html">Help</a>
+    <div class = 'help_button_drop_down'>
+          <% button_with_dropdown_menu(:title => "Help") do %>
+            <a class = "overlay_link" data-url = "/doc/tool/tool_info.html">Tool Information</a>
+          <% end %>     
     </div>
 
 <% if current_user.has_role?(:admin) %>
