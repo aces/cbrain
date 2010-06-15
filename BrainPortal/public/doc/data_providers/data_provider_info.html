@@ -1,11 +1,11 @@
 <h1>Registering Files on CBRAIN</h1>
 
-<p>A Data Provider is local or remote data storage that CBRAIN is aware of.   The interface for data providers is under the Data Providers tab.  Groups facilitate access to Data Providers.  Only users belonging to a particular group associated with a given Data Provider will have access to it.  In the figure below, you can see that the user has access to MainStore, MindStore and DemoProvider. Files are stored in a cache (temporary storage centre) on the servers on the cluster in order to enable processing.  These files can be removed by selecting the data provider cache and the button Cleanup Selected Caches.  Disk usage statistics for data providers and data provider caches are also listed.</p>
+<p>A Data Provider is local or remote data storage that CBRAIN is aware of.  To avoid having to upload very large files, you can access your files from a local or remote computer by setting up a data provider.  The interface for data providers is under the Data Providers tab.  Groups facilitate access to Data Providers.  Only users belonging to a particular group associated with a given Data Provider will have access to it.  In the figure below, you can see that the user has access to MainStore, MindStore, Incoming and DemoProvider. Files are stored in a cache (temporary storage centre) on the servers on the cluster in order to enable processing.  These files can be removed by selecting the data provider cache and the button Cleanup Selected Caches.  Disk usage statistics for data providers and data provider caches are also listed.</p>
 
 <img src="/doc/data_providers/data_provider_index.png">
 
 <p>
-To avoid having to upload very large files, you can access your files from a local or remote computer by setting up a data provider.  The type of data provider is called a SShDataProvider (Secure Shell Data Provider), this provider will allow you to browse the directory of your choice on a computer that has been configured.  In order to create a data provider, a select Create New Data Provider on the main Data Provider interface.  The interface to create a new data provider is shown below.  
+  In order to access your files from a local or remote computer, a SShDataProvider (Secure Shell Data Provider) must be configured.  In order to create a data provider, a select Create New Data Provider on the main Data Provider interface.  The interface to create a new data provider is shown below.  
 </p>
 
 <img src="/doc/data_providers/create_new_provider.png">
@@ -26,7 +26,7 @@ The following fields are required:</p>
     </ul>
     <li><b>Type</b></li>
     <ul>
-        <li>Select the Secure Shell data provider (SshDataProvider) to ensure secure transmission of data.</li>
+        <li>Select the Secure Shell data provider (SShDataProvider) to ensure secure transmission of data.</li>
     </ul>
     <li><b>Owner</b></li>
     <ul>
@@ -81,7 +81,7 @@ If you go back to the main Data Provider page you will now see your new data pro
 <img src="/doc/data_providers/browse_data_provider.png">
 <br>
 
-If you Browse the data provider, you are able to see the files available on the data provider (see figure below).  These files maybe selected and registered.  Registering a file makes it available on the Files tab page making it accessible for processing by the tools available to you without having to upload it.   As shown in the figure below, study1 is a directory to register the directory it must be encapsulated into a FileCollection or CivetCollection.  They can be extracted once they are registered.
+If you Browse the data provider, you are able to see the files available on the data provider (see figure below).  These files maybe selected and registered.  Registering a file makes it available on the Files tab page making it accessible for processing by the tools available to you without having to upload it.  As shown in the figure below, study1 is a directory.  To register the directory it must be encapsulated into a FileCollection or CivetCollection.  Files can be extracted once they are registered as a FileCollection or a CivetCollection.
 
 <br>
 <br>
@@ -89,7 +89,7 @@ If you Browse the data provider, you are able to see the files available on the 
 <br>
 <br>
 
-After you register a directory as, for example, a FileCollection it is then included in the list of files in the Files tab.  You can open the details of the file by clicking on the filename.  The file details for study1 are shown below.   In order to view the displayable contents and extract files from this collection you must synchronize the collection (see the bottom of the figure below).
+After you register a directory as, for example, a FileCollection it is then included in the list of files in the Files tab.  You can open the details of the file by clicking on the filename.  The file details for study1 are shown below.  In order to view the displayable contents and extract files from this collection you must synchronize the collection (see the bottom of the figure below).
 
 <br>
 <br>
