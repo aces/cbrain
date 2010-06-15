@@ -1,0 +1,93 @@
+<h1>Files</h1>
+<br>
+<b>Viewing Files</b><br>
+
+<p>The <b>Files</b> tab is a link to an interface that displays a list of files, file details and a file management menu bar at the top of the page.  The file management menu bar consists of seven tabs.  More details can be displayed for each file by selecting the <b>Toogle Details</b> button.  Files highlighted in pink are unavailable.  Additionally, each individual file has a details page that can be accessed by clicking on that particular file.</p>
+
+The synchronization symbols, which list the status of a file, are shown at the bottom of the files page and include:
+
+<ul>
+<li><b>ProvNewer</b>
+    <ul>
+        <li>Indicates that no known files on cache side or files on data provider side are known to be newer (default when there are no SyncStatus object at all).</li>
+    </ul>
+
+<li><b>CacheNewer</b>
+    <ul>
+	    <li>Indicates that the file on cache side are known to be newer than on data provider.</li>
+	</ul>
+</li>	
+	
+<li><b>InSync</b><br>
+    <ul>
+        <li>Indicates that the file contains a synched version of the data provider’s content.</li>
+    </ul>
+</li>
+
+<li>
+    <b>ToCache</b><br>
+    <ul>
+	    <li>Indicates that the data provider's file is being copied to cache.</li>
+	</ul>    
+</li>
+
+<li><b>ToProvider</b><br>
+	<ul>
+	    <li>Indicates that the cached file is being copied to data provider.</li>
+	</ul>
+</li>
+
+<li><b>Corrupted</b><br>
+    <ul>
+	    <li>Indicates that a transfer to a provider was never completed.</li>
+	</ul>
+</li>
+</ul>
+
+<b>Organizing Files</b>
+
+    <p>The tags feature shown below provides the ability to organize files.  It allows you to apply customized tags to files in order to organize them and make them easily searchable.  Just select the file, the tag and click on the button <b>Update Tags</b>.</p><br>
+
+<img src="/doc/userfiles/tag_dropdown.png"><br>
+    
+    <p>The <b>Manage Tags</b> button provides the ability to create new tags and delete tags as shown below.</p><br>
+    
+<img src="/doc/userfiles/manage_tags.png"><br>
+    
+    <p>The filter files drop down allows a user to filter their files by type or tags.  A user can also create their own custom filter (shown below).  This allows a user to filter by filename, creation date, size, owner, group, data provider and tags.</p><br>
+    
+<img src="/doc/userfiles/filter_files.png"><br><br>
+
+<b>Setting File Permissions</b><br>
+
+    File permissions are managed through Groups.  Groups allow sharing of files between members of a group.  Users can be members of any group that either the site manager or the CBRAIN administrator assigned to them.  Every user on CBRAIN is a member of the group everyone and each user is the only member of the group specified by the login name.  By selecting the <b>Groups</b> drop down menu, you have the ability to update group membership and permissions for selected files that you own.  A file can only belong to one group but a user can belong to many groups.<br><br>
+
+<b>Creating a Collection</b><br>
+    
+   The <b>Create Collection</b> button on the files menu allows a user to select files and create a collection.<br>
+
+<br><b>Moving and Copying Files</b><br>
+
+    Files can be selected and moved or copied from one data provider to another using the <b>Move/Copy Files</b> button on the files menu.<br><br>
+
+<b>Using Tools</b><br>
+    
+    The <b>Conversion Tool</b> and <b>Scientific Tool</b> drop downs on the file management menu provide a drop down selection of conversion tools and scientific tools that can be applied to files as tasks. When a tool is selected from the drop down menu, another select box appears to specify an execution server to complete the task.  Execution servers that have that particular tool available and that you have sufficient privileges to access will be presented as possible selections along with an option to select a cluster to execute the task randomly.  For some tools, you must select files and the desired tool to be brought to an option selection page.  An example tool option page is shown below.<br><br>
+    
+<img src="/doc/userfiles/civet_tool_options.png"><br>
+    
+    <p>Once a task has completed, the resulting files are placed in the files list on the <b>Files</b> tab page.   For example, once a Civet task has been run using the <b>Civet Tool</b> a <b>Civet Collection</b> is returned.  Clicking on that particular resulting Civet Collection from a Civet task brings you to the file details page (see below).  Through this page you can see the details of the file collection, change the group, group permissions and update the tags associated with a file.  The <b>Contents</b> link displays the Civet output image file.  Also the link <b>Display full file list</b> displays all the files in the Civet Collection, which can be extracted individually.</p>
+
+<img src="/doc/userfiles/civet_collection_details.png"><br>
+
+<br><b>Jiv Viewer</b><br>
+
+    Jiv Viewer is another tool available in the file management menu under <b>Jiv Viewer</b>.  This drop down menu provides a list of the Jiv files in the files list, which can be selected and viewed using the <b>Jiv Viewer</b> in a Java Applet window.<br><br>
+    
+<b>Uploading Files to CBRAIN</b><br>
+
+    A data provider allows you to register your files with the CBRAIN portal directly from the local or remote computer where the files are stored.  These registered files do not have to be uploaded. This is the preferred method of accessing large data sets to be processed using the CBRAIN portal.   However, there is an <b>Upload File</b> drop down in the file management menu, which allows a user to upload individual files and compressed files with sizes up to 250MB.  The interface is shown below.  You can browse for these files on your local computer, assign tags to the uploaded file, groups and group file permissions, archive options (for zip and tar files) and CBRAIN will store the file.  Note that the compressed files cannot have folders within it.  Compressed files have the option to be saved as it is, extracted or a file collection of the compressed files can be generated.<br>
+    
+<img src="/doc/userfiles/upload_file.png">
+
+    
