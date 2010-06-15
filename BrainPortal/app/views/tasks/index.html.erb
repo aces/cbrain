@@ -13,14 +13,17 @@
 
 <% title 'Tasks' %>
 
-<div class = 'help_button'>
-     <a class = "overlay_link" data-url = "/doc/tasks/task_info.html">Help</a>
-</div>
+ <div class = "generalcontent">
+ <div class = 'help_button_drop_down'>
+      <% button_with_dropdown_menu(:title => "Help") do %>
+        <a class = "overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
+      <% end %>     
+ </div>
+  
 
- 
 <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
 
-   <div class = "generalcontent">
+  
       <div id="main_task_content">
           <div class = "resource_list_upper_form">
           <br>        

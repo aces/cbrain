@@ -14,17 +14,18 @@
 
 <% title 'Files' %><% #Side bar stuff goes here -%>
 
-
-<div class = 'help_button_userfiles'>
-       <a class = "overlay_link" data-url ="/doc/userfiles/viewing_files.html">Help</a>
-       <br>
-       <a class = "overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
-        <br>
-        <a class = "overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
-   </div>
-   
   <div class="generalcontent">
-   
+
+      <div class = 'help_button_drop_down'>
+          <% button_with_dropdown_menu(:title => "Help") do %>
+            <a class = "overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
+              <br>
+              <a class = "overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
+              <br>
+              <a class = "overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
+          <% end %>     
+      </div>
+
    <%= javascript_tag "var current_options;" %> 
        
         <div id="main_userfiles_content"  style="width: 90%">
@@ -69,7 +70,6 @@
            <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
          <% end %>
         </center>
-      
         <% end %>
 </div>
 </div>
