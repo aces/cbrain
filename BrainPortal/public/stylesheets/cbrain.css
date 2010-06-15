@@ -1230,6 +1230,11 @@ table.resource_list td.checkbox {
     margin-right: 1em;
 }
 
+.help_button_drop_down{
+    margin-left: 76em;
+    margin-top: 1em;
+}
+
 #new_feedback{
     width: 400px;
     padding-left: 30px;
