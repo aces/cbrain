@@ -4,10 +4,15 @@
   
    <%= javascript_tag "var current_options;" %> 
 
+   <div class = 'help_button'>
+        <a class = "overlay_link" data-url =
+          "/doc/site_information/site_information.html">Help</a>
+   </div>
+     
    <div class = "menu_bar">
           <% button_with_dropdown_menu({:title => 'Create New Site', :partial => 'new'}, {:id => "new_site_button"}) %>
-    </div>
-      
+   </div>
+   
   <table class="resource_list" id="site_table">
     <tr>
       <th>Name</th>
