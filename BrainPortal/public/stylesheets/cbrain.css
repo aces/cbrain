@@ -1224,6 +1224,11 @@ table.resource_list td.checkbox {
     margin-top: 0.5em;
 }
 
+.help_button_tools{
+    margin-left: 65em;
+    margin-top: 0.5em;
+}
+
 .help_button_userfiles{
     margin-left: 76em;
     margin-top: 1em;
