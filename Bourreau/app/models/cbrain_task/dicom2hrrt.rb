@@ -14,10 +14,11 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     begin
-      params[:data_provider_id] = collection.data_provider.id if params[:data_provider_id].blank?
-    
       collection_id = self.params[:dicom_collection_id]
       collection    = Userfile.find(collection_id)
 
@@ -26,13 +27,15 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
         return false
       end
 
-      collection.sync_to_cache
-      File.symlink(collection.cache_full_path.to_s,"input")
+      params[:data_provider_id] = collection.data_provider_id if params[:data_provider_id].blank?
 
-      Dir.mkdir("output",0700)
+      collection.sync_to_cache
+      safe_symlink(collection.cache_full_path.to_s,"input")
+
+      safe_mkdir("output",0700)
     rescue => e
       self.addlog("An exception was raised during setup of DicomToHRRT task: #{e.message}")
-      false
+      return false
     end
     true
   end
@@ -48,7 +51,7 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
       dicom_collection_id = self.params[:dicom_collection_id]
       dicom_collection    = Userfile.find(dicom_collection_id)
 
-      hrrt_collection = FileCollection.new(
+      hrrt_collection = safe_userfile_find_or_new(FileCollection,
           :name             => "#{dicom_collection.name}_#{Time.now.to_i}_HRRT",
           :user_id          => self.user_id,
           :group_id         => dicom_collection.group_id,
@@ -62,7 +65,7 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
     rescue => e
       # e.backtrace?
       self.addlog("An exception was raised during save_results stage of DicomToHRRT task: #{e.message}")
-      false      
+      return false      
     end
     true
   end

@@ -15,6 +15,9 @@ class CbrainTask::Mincpik < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
      params = self.params
      mincfile_id = params[:mincfile_id] 
@@ -24,12 +27,11 @@ class CbrainTask::Mincpik < CbrainTask::ClusterTask
         return false
      end
      mincfile.sync_to_cache
-     File.symlink(mincfile.cache_full_path.to_s, mincfile.name)
+     safe_symlink(mincfile.cache_full_path.to_s, mincfile.name)
 
-     params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
+     params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
      
      true
-
   end
 
   def cluster_commands #:nodoc:
@@ -43,7 +45,7 @@ class CbrainTask::Mincpik < CbrainTask::ClusterTask
         scale = params[:scale] ? "-scale #{params[:scale]}" : ""
         width = params[:width] ? "-width #{params[:width]}" : ""
         depth = params[:depth] ? "-depth #{params[:depth]}" : ""
-        image_range = (params[:image_range_1] && params[:image_range_2])? "-image_range #{params[:image_range_1]} #{params[:image_range_2]}" : ""
+        image_range = (! params[:image_range_1].blank? && ! params[:image_range_2].blank?) ? "-image_range #{params[:image_range_1]} #{params[:image_range_2]}" : ""
         image_color = params[:image_color]? "-lookup -#{params[:image_color]}" : ""
         slicing_options = params[:slicing_options]? "-#{params[:slicing_options]}" : ""
 
@@ -70,7 +72,7 @@ class CbrainTask::Mincpik < CbrainTask::ClusterTask
         return false
       end
 
-      outfile = SingleFile.new(
+      outfile = safe_userfile_find_or_new(SingleFile,
         :name             => out_name,
         :user_id          => user_id,
         :group_id         => group_id,

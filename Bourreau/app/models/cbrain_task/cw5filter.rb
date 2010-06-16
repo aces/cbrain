@@ -15,6 +15,9 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params       = self.params
     user_id      = self.user_id
@@ -30,9 +33,9 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
     input_file.sync_to_cache
     cachename    = input_file.cache_full_path.to_s
 
-    params[:data_provider_id] = input_file.data_provider.id if params[:data_provider_id].blank?
+    params[:data_provider_id] = input_file.data_provider_id if params[:data_provider_id].blank?
     
-    File.symlink(cachename, input_file.name)
+    safe_symlink(cachename, input_file.name)
     
     #filter and probe prabably dont need all those extra overhead, need I discussion with pierre.
 
@@ -44,7 +47,7 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
     end
     probe_file.sync_to_cache
     cachename    = probe_file.cache_full_path.to_s
-    File.symlink(cachename, "probe.mls") #I What the name in a variable instead 
+    safe_symlink(cachename, "probe.mls") #I What the name in a variable instead 
      
     filter_id  = params[:filter_id]
     filter_file = Userfile.find(filter_id)
@@ -54,7 +57,7 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
     end
     filter_file.sync_to_cache
     cachename    = filter_file.cache_full_path.to_s
-    File.symlink(cachename, "filter.flt") #I What the name in a variable instead 
+    safe_symlink(cachename, "filter.flt") #I What the name in a variable instead 
     
     true
   end
@@ -94,7 +97,7 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
       return false
     end
 
-    outfile = SingleFile.new(
+    outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
       :user_id          => user_id,
       :group_id         => input_file.group_id, 

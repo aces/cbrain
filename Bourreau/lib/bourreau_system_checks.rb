@@ -197,7 +197,7 @@ class BourreauSystemChecks < CbrainChecker
       puts "C> \t - Found worker already running: #{worker.pretty_name} ..."
     end
     if allworkers.size == 0
-      puts "C> \t - No worker process found. It's OK, they'll be started as needed."
+      puts "C> \t - No worker processes found. It's OK, they'll be started as needed."
     else
       puts "C> \t - Scheduling restart for all of them ..."
       allworkers.stop_workers

@@ -158,7 +158,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
                                :data_provider_id => dp_id,
                                :task             => 'Bourreau Diagnostics'
                           }
-      report = SingleFile.find(:first, :conditions => report_attributes) || SingleFile.new(report_attributes)
+      report = safe_userfile_find_or_new(SingleFile, report_attributes)
     end
 
     if dp_id.blank?

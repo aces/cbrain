@@ -14,6 +14,9 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params      = self.params
     minc_colid = params[:mincfile_id]  # the ID of a FileCollection
@@ -26,23 +29,9 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
     minc_col.sync_to_cache
     cachename = minc_col.cache_full_path
-    File.symlink(cachename,"minc_col.mnc")
-    minc_col.sync_to_cache
-    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
+    safe_symlink(cachename,"minc_col.mnc")
 
-#    unless minc_col.class.to_s == "FileCollection"
-#      self.addlog("Error: ActiveRecord entry #{minc_colid} is not a file collection.")
-#      return false
-#    end
-
-
-
-
-    vaultname = minc_col.vaultname
-    File.symlink(vaultname,"minc_col.mnc")
-    pre_synchronize_userfile(minc_col)
-
-    params[:data_provider_id] ||= mincfile.data_provider.id
+    params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
 
     true
   end
@@ -78,7 +67,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
     out_files.each do |file|
       self.addlog(file)
-      niifile = SingleFile.new(
+      niifile = safe_userfile_find_or_new(SingleFile,
         :name             => File.basename(minc_col.cache_full_path,".mnc")+File.extname(file),
         :user_id          => user_id,
         :group_id         => group_id,
@@ -90,9 +79,10 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
         niifile.move_to_child_of(minc_col)
         self.addlog("Saved new Nifti file ")
       else
-        self.addlog("Could not save back result file .")
+        self.addlog("Could not save back result file.")
       end
     end
+    true
   end
 
 end

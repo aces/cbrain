@@ -20,13 +20,14 @@ class <%= "CbrainTask::#{class_name}" %> < CbrainTask::PortalTask
   #
   # The basic API consists in three methods that you need to
   # override:
-  #   self.default_launch_args(), before_form() and after_form()
+  #   self.default_launch_args(), before_form() and after_form().
   #
-  # The advanced API consists in three more methods, needed only
+  # The advanced API consists in four more methods, needed only
   # for more complex cases:
   #
   # self.properties(), final_task_list(),
-  # and after_final_task_list_saved(tasklist)
+  # after_final_task_list_saved(tasklist)
+  # and untouchable_params_attributes().
 <% unless options[:advanced] -%>
   #
   # The advanced API is not included in this template since
@@ -241,6 +242,26 @@ class <%= "CbrainTask::#{class_name}" %> < CbrainTask::PortalTask
   # is created with #:nodoc: in this template.
   def after_final_task_list_saved(tasklist) #:nodoc:
     ""
+  end
+
+  ################################################################
+  # METHOD: untouchable_params_attributes
+  ################################################################
+  # This method is part of the advanced API.
+  #
+  # This method needs to be customized to return a hash table
+  # whose keys are the attributes of params that are NOT to
+  # be modified by the edit task mechanism. This is useful
+  # so that attributes that encode fixed data objects that
+  # are created by after_form() or final_task_list() but not
+  # present in the task's form are not lost when the user edits
+  # the task.
+  ################################################################
+  
+  # RDOC comments here, if you want, although the method
+  # is created with #:nodoc: in this template.
+  def untouchable_params_attributes #:nodoc:
+    { :interface_userfile_ids => true }
   end
 
 <% end %>

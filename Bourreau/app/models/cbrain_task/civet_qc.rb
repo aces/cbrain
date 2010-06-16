@@ -52,16 +52,18 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
     dsid_dirs.each do |dir|
       ymltext        = File.read("#{study_path}/#{dir}/CBRAIN.params.yml")
       civet_params   = YAML::load(ymltext)
+      file_args      = civet_params[:file_args] || { "0" => {} }
+      file0          = file_args["0"] || {}
 
       # Check that the DSID matches the dir name
-      civet_dsid     = civet_params[:dsid] || "(unset)"
+      civet_dsid     = file0[:dsid] || civet_params[:dsid] || "(unset)"  # NEW || OLD || unset
       if civet_dsid.to_s != dir
         self.addlog("Error: CivetCollection '#{dir}' is for subject id (DSID) '#{civet_dsid}'.")
         return false
       end
 
       # Check that all prefixes are the same
-      civet_prefix   = civet_params[:prefix] || "(unset)"
+      civet_prefix   = file0[:prefix] || civet_params[:prefix] || "(unset)"   # NEW || OLD || unset
       prefix       ||= civet_prefix
       if prefix != civet_prefix
         self.addlog("Error: CivetCollection '#{dir}' is for prefix '#{civet_prefix}' while we found others with '#{prefix}'.")
@@ -104,9 +106,9 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
     dsid_names = params[:dsid_names] # hash, keys are meaningless
     dsids      = dsid_names.values.sort.join(" ")
 
-    civet_command = "CIVET_QC_Pipeline -sourcedir mincfiles -targetdir '#{study_path}' -prefix #{prefix} #{dsids}"
+    civetqc_command = "CIVET_QC_Pipeline -sourcedir mincfiles -targetdir '#{study_path}' -prefix #{prefix} #{dsids}"
 
-    self.addlog("Full CIVET QC command:\n  #{civet_command.gsub(/ -/, "\n  -")}")
+    self.addlog("Full CIVET QC command:\n  #{civetqc_command.gsub(/ -/, "\n  -")}")
 
     return [
       "source #{CBRAIN::Quarantine_dir}/init.sh",
@@ -114,8 +116,8 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
       "echo \"\";echo Showing ENVIRONMENT",
       "env | sort",
       "echo \"\";echo Starting CIVET QC",
-      "echo Command: #{civet_command}",
-      "#{civet_command}"
+      "echo Command: #{civetqc_command}",
+      "#{civetqc_command}"
     ]
 
   end
@@ -147,7 +149,7 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
     self.addlog("Syncing study with QC reports back to data provider.")
     study.addlog_context(self,"QC pipeline performed with prefix '#{prefix}' and subjects '#{dsids}'")
     study.sync_to_provider
-
+    true
   end
 
 end

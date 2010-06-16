@@ -17,14 +17,20 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     begin
       collection_id = self.params[:analyze_collection_id]
       collection = Userfile.find(collection_id)      # RecordNotFound will be raised if nothing found?
       collection.sync_to_cache
-      File.symlink(collection.cache_full_path.to_s, "input")
+
+      params[:data_provider_id] = collection.data_provider_id if params[:data_provider_id].blank?
+
+      safe_symlink(collection.cache_full_path.to_s, "input")
   
-      Dir.mkdir("output", 0700)
+      safe_mkdir("output", 0700)
       
       file_names = collection.list_files.map(&:name)
       # Use first file of a collection since the script itself will construct filename for a file with frame_0.
@@ -33,7 +39,7 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
       self.params[:file_base] = file_base
     rescue => e
       self.addlog("An error occured during AnalyzeToHRRT setup: #{e.message}")
-      false
+      return false
     end
     true
   end
@@ -72,15 +78,15 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
   end
 
   # Create new collection from files in ./output
-  def save_results
+  def save_results #:nodoc:
     begin
       analyze_collection_id = self.params[:analyze_collection_id]
       analyze_collection    = Userfile.find(analyze_collection_id)
 
       # Move results files into output directory.
-      FileUtils.mv Dir.glob('*.{i,i.hdr}'), './output'
+      FileUtils.mv(Dir.glob('*.{i,i.hdr}'), './output')
 
-      file_collection = FileCollection.new(
+      file_collection = safe_userfile_find_or_new(FileCollection,
         :name             => params[:output_collection_name],
         :user_id          => self.user_id,
         :group_id         => get_user_group_id,
@@ -93,7 +99,7 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
       self.addlog("Saved new collection #{params[:output_collection_name]}")
     rescue => e
       self.addlog("An exception was raised during save_results step of Analyze2HRRT task: #{e.message}")
-      false
+      return false
     end
     true
   end

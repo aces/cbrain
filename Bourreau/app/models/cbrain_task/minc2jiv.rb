@@ -14,6 +14,9 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params       = self.params
     mincfile_id  = params[:mincfile_id]
@@ -25,11 +28,11 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     unless mincfile.name =~ /\.mnc(\.gz|\.Z)?$/i
       raise "Error: unknown extension for file '#{mincfile.name}' (expected .mnc, .mnc.gz or .mnc.Z)"
     end
-    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
+    params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
     mincfile.sync_to_cache
     cachename    = mincfile.cache_full_path.to_s
     if cachename =~ /\.mnc$/i
-      File.symlink(cachename,"in.mnc")
+      safe_symlink(cachename,"in.mnc")
     else
       system("gunzip -c <'#{cachename}' >in.mnc")
     end
@@ -65,7 +68,7 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
     numsaves = 0
 
-    headerfile = SingleFile.new(
+    headerfile = safe_userfile_find_or_new(SingleFile,
       :name             => orig_plainbasename + ".header",
       :user_id          => user_id,
       :group_id         => group_id,
@@ -82,7 +85,7 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
       self.addlog("Could not save back result file '#{headerfile.name}'.")
     end
 
-    rawbytefile = SingleFile.new(
+    rawbytefile = safe_userfile_find_or_new(SingleFile,
       :name             => orig_plainbasename + ".raw_byte.gz",
       :user_id          => user_id,
       :group_id         => group_id,

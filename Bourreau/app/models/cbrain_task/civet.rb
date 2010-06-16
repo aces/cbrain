@@ -21,9 +21,10 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
 
   def setup #:nodoc:
     params       = self.params
+    file0        = params[:file_args]["0"] # we require this single entry for info on the data files
 
-    prefix       = params[:prefix] || "unkpref1"
-    dsid         = params[:dsid]   || "unkdsid1"
+    prefix       = file0[:prefix] || "unkpref1"
+    dsid         = file0[:dsid]   || "unkdsid1"
 
     # Main location of symlinks for all input files
     safe_mkdir("mincfiles",0700)
@@ -49,21 +50,21 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
         return false
       end
       collection.sync_to_cache
-      t1_name = params[:t1_name]  # cannot be nil
-      t2_name = params[:t2_name]  # can be nil
-      pd_name = params[:pd_name]  # can be nil
-      mk_name = params[:mk_name]  # can be nil
+      t1_name = file0[:t1_name]  # cannot be nil
+      t2_name = file0[:t2_name]  # can be nil
+      pd_name = file0[:pd_name]  # can be nil
+      mk_name = file0[:mk_name]  # can be nil
     else # MODE B: singlefiles
-      t1_id  = params[:t1_id]  # cannot be nil
+      t1_id  = file0[:t1_id]  # cannot be nil
       t1 = Userfile.find(t1_id)
       unless t1
         self.addlog("Could not find active record entry for singlefile '#{t1_id}'.")
         return false
       end
       t1.sync_to_cache
-      t2_id  = params[:t2_id]  # can be nil
-      pd_id  = params[:pd_id]  # can be nil
-      mk_id  = params[:mk_id]  # can be nil
+      t2_id  = file0[:t2_id]  # can be nil
+      pd_id  = file0[:pd_id]  # can be nil
+      mk_id  = file0[:mk_id]  # can be nil
     end
 
     # Setting the data_provider_id here means it persists
@@ -80,7 +81,7 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
       t1ext   = t1_name.match(/.gz$/i) ? ".gz" : ""
       safe_symlink("#{colpath}/#{t1_name}","mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}")
 
-      if params[:multispectral] || params[:spectral_mask]
+      if file0[:multispectral] || file0[:spectral_mask]
         if t2_name
           t2ext = t2_name.match(/.gz$/i) ? ".gz" : ""
           safe_symlink("#{colpath}/#{t2_name}","mincfiles/#{prefix}_#{dsid}_t2.mnc#{t2ext}")
@@ -102,7 +103,7 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
       t1ext       = t1_name.match(/.gz$/i) ? ".gz" : ""
       safe_symlink(t1cachename,"mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}")
 
-      if params[:multispectral] || params[:spectral_mask]
+      if file0[:multispectral] || file0[:spectral_mask]
         if t2_id
           t2cachefile = Userfile.find(t2_id)
           t2cachefile.sync_to_cache
@@ -134,9 +135,10 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
 
   def cluster_commands #:nodoc:
     params = self.params
+    file0  = params[:file_args]["0"] # we require this single entry for info on the data files
 
-    prefix = params[:prefix] || "unkpref2"
-    dsid   = params[:dsid]   || "unkdsid2"
+    prefix = file0[:prefix] || "unkpref2"
+    dsid   = file0[:dsid]   || "unkdsid2"
 
     # Cheating mode (for debugging/development)
     fake_id = params[:fake_run_civetcollection_id]
@@ -161,11 +163,12 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
     args += "-N3-distance #{params[:N3_distance]} " if params[:N3_distance]
     args += "-lsq#{params[:lsq]} "                  if params[:lsq] && params[:lsq].to_i != 9 # there is NO -lsq9 option!
     args += "-no-surfaces "                         if params[:no_surfaces]
-    args += "-multispectral "                       if params[:multispectral]
-    args += "-spectral_mask "                       if params[:spectral_mask]
     args += "-correct-pve "                         if params[:correct_pve]
     args += "-resample-surfaces "                   if params[:resample_surfaces]
     args += "-combine-surfaces "                    if params[:combine_surfaces]
+
+    args += "-multispectral "                       if file0[:multispectral]
+    args += "-spectral_mask "                       if file0[:spectral_mask]
 
     if params[:thickness_method] && params[:thickness_kernel]
         args += "-thickness #{params[:thickness_method]} #{params[:thickness_kernel]} "
@@ -196,10 +199,12 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
 
   def save_results #:nodoc:
     params       = self.params
+    file0        = params[:file_args]["0"] # we require this single entry for info on the data files
+
     user_id      = self.user_id
 
-    prefix           = params[:prefix] || "unkpref2"
-    dsid             = params[:dsid]   || "unkdsid2"
+    prefix           = file0[:prefix] || "unkpref2"
+    dsid             = file0[:dsid]   || "unkdsid2"
     data_provider_id = params[:data_provider_id]
 
     # Unique identifier for this run
@@ -213,7 +218,7 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
     if collection_id  # MODE A FileCollection
       source_userfile = FileCollection.find(collection_id)
     else              # MODE B SingleFile
-      t1_id           = params[:t1_id]
+      t1_id           = file0[:t1_id]
       source_userfile = SingleFile.find(t1_id)
     end
 

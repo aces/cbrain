@@ -86,8 +86,10 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
         return false
       end
       civet_params = YAML::load(ymltext)
-      prefix = civet_params[:prefix] || civet_params['prefix']
-      dsid   = civet_params[:dsid]   || civet_params['dsid']
+      file_args = civet_params[:file_args] || { "0" => {} }
+      file0     = file_args["0"]           || {}
+      prefix = file_0[:prefix] || civet_params[:prefix]  # change in struct: NEW || OLD
+      dsid   = file_0[:dsid]   || civet_params[:dsid]    # change in struct: NEW || OLD
       if prefix.blank?
         self.addlog("Could not find PREFIX for CivetCollection '#{col.name}'.")
         return false
@@ -144,8 +146,8 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
     newstudy = safe_userfile_find_or_new(CivetStudy,
       :name             => newname,
       :user_id          => user_id,
-      :data_provider_id => provid,
-      :group_id         => user.own_group.id
+      :group_id         => user.own_group.id,
+      :data_provider_id => provid
     )
 
     # Save the new CivetStudy object

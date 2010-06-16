@@ -100,6 +100,7 @@ class CbrainTask::PortalTask < CbrainTask
        :no_submit_button                   => false, # view will not automatically have a submit button
        :i_save_my_task_in_after_form       => false, # used by validation code for detected coding errors
        :i_save_my_tasks_in_final_task_list => false, # used by validation code for detected coding errors
+       :no_presets                         => false  # view will not contain the preset load/save panel
     }
   end
 
@@ -154,6 +155,27 @@ class CbrainTask::PortalTask < CbrainTask
   def after_final_task_list_saved(task_list)
     ""
   end
+
+  # This method should identify which attributes
+  # in params are not to be modified during
+  # a task edit session. The returned value of the method
+  # should simply be a hash table where the keys are
+  # the untouchable attributes and the values are true.
+  # By default the content of the hash is
+  #
+  #    { :interface_userfile_ids => true }
+  #
+  # The values in this default hash WILL be
+  # added to whatever other values are returned
+  # by overriden versions of this method (in other
+  # words, even if you don't explicitely include
+  # :interface_userfile_ids in the hash, it will
+  # be considered).
+  def untouchable_params_attributes
+    { :interface_userfile_ids => true }
+  end
+
+
 
   ######################################################
   # Wrappers around official API
@@ -248,6 +270,15 @@ class CbrainTask::PortalTask < CbrainTask
       cber.set_backtrace(other.backtrace.dup)
       raise cber
     end
+  end
+
+  # Used internally to add ALWAYS PRESENT attributes.
+  def wrapper_untouchable_params_attributes #:nodoc:
+    att = self.untouchable_params_attributes || {}
+    ext = att.merge(
+      :interface_userfile_ids => true
+    )
+    return ext
   end
 
 end

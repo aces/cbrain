@@ -15,9 +15,12 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params       = self.params
-    filelist  = params[:filelist].values
+    filelist  = params[:interface_userfile_ids]
     filelist.each do |mincfile_id|
       mincfile     = Userfile.find(mincfile_id)
       unless mincfile
@@ -26,22 +29,25 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
       end
       mincfile.sync_to_cache
       cachename    = mincfile.cache_full_path.to_s
-      File.symlink(cachename, mincfile.name)  
-      params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank? # first mincfile decides destination?
+      safe_symlink(cachename, mincfile.name)  
+      params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank? # first mincfile decides destination?
     end
+
+    params[:out_name] ||= "average_#{Time.now.to_i}.mnc"
+
     true
   end
 
   def cluster_commands #:nodoc:
     params       = self.params
-    file_names  = Userfile.find(params[:filelist].values).map(&:name).join(" ")
+    file_names  = Userfile.find(params[:interface_userfile_ids]).map(&:name).join(" ")
     
     out_name = params[:out_name]
     normalize = params[:normalize].blank? ? "-nonormalize" : "-normalize"
     copy_header = params[:copy_header].blank? ? "-nocopy_header" : "-copy_header"
     avg_dim = params[:avg_dim].blank? ? "" : "-avgdim #{params[:avg_dim]}"
     sdfile = params[:sdfile].blank? ? "" : "-sdfile sd_#{out_name}"
-    weights = params[:weights].blank? ? "" : "-weights #{params[:filelist].values.map{|id| params[:weights][id]}.join(",")}"
+    weights = params[:weights].blank? ? "" : "-weights #{params[:interface_userfile_ids].map{|id| params[:weights][id.to_s]}.join(",")}"
             
     [
       "source #{CBRAIN::Quarantine_dir}/init.sh",
@@ -54,7 +60,7 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
     user_id      = self.user_id
     user         = User.find(user_id)
     group_id     = SystemGroup.find_by_name(user.login).id
-    out_name = params[:out_name]
+    out_name     = params[:out_name]
     
 
     unless (File.exists?(out_name))
@@ -63,7 +69,7 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
     end
 
 
-    outfile = SingleFile.new(
+    outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
       :user_id          => user_id,
       :group_id         => group_id,
@@ -79,7 +85,7 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
     end
     
     if params[:sdfile]
-      sdfile = SingleFile.new(
+      sdfile = safe_userfile_find_or_new(SingleFile,
         :name             => "sd_#{out_name}",
         :user_id          => user_id,
         :group_id         => group_id,

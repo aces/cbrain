@@ -14,6 +14,9 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
 
     params      = self.params
@@ -32,9 +35,9 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
 
     optic_col.sync_to_cache
     cachename = optic_col.cache_full_path.to_s
-    File.symlink(cachename,"optic_col")
+    safe_symlink(cachename,"optic_col")
 
-    params[:data_provider_id] = optic_col.data_provider.id if params[:data_provider_id].blank?
+    params[:data_provider_id] = optic_col.data_provider_id if params[:data_provider_id].blank?
 
     config_colid = params[:configuration_col_id]  # the ID of a FileCollection
     config_col   = Userfile.find(config_colid)
@@ -51,7 +54,7 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
 
     config_col.sync_to_cache
     cachename = config_col.cache_full_path.to_s
-    File.symlink(cachename,"config_col")
+    safe_symlink(cachename,"config_col")
 
     probe_id  = params[:probe_id]
     probe_file = Userfile.find(probe_id)
@@ -62,7 +65,7 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
 
     probe_file.sync_to_cache
     cachename    = probe_file.cache_full_path.to_s
-    File.symlink(cachename, "probe.mls") #I What the name in a variable instead
+    safe_symlink(cachename, "probe.mls") #I What the name in a variable instead
 
     filter_id  = params[:filter_id]
     filter_file = Userfile.find(filter_id)
@@ -73,9 +76,9 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
 
     filter_file.sync_to_cache
     cachename    = filter_file.cache_full_path.to_s
-    File.symlink(cachename, "filter.flt") #I What the name in a variable instead
+    safe_symlink(cachename, "filter.flt") #I What the name in a variable instead
 
-    Dir.mkdir("result",0700)
+    safe_mkdir("result",0700)
 
     true
   end
@@ -126,7 +129,7 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
     optic_tarresult = "cw5#{self.object_id}.tar"
     system("tar -cpf #{optic_tarresult} result/*.mat")
 
-    opticresult = SingleFile.new(
+    opticresult = safe_userfile_find_or_new(SingleFile,
       :name             => optic_tarresult,
       :user_id          => user_id,
       :group_id         => optic_col.group_id,

@@ -15,9 +15,12 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params    = self.params
-    filelist  = params[:filelist].values
+    filelist  = params[:interface_userfile_ids]
     filelist.each do |mincfile_id|
       mincfile     = Userfile.find(mincfile_id)
       unless mincfile
@@ -26,16 +29,20 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
       end
       mincfile.sync_to_cache
       cachename    = mincfile.cache_full_path.to_s
-      File.symlink(cachename, mincfile.name)
-      params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank? # first mincfile decides destination?
+      safe_symlink(cachename, mincfile.name)
+      params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank? # first mincfile decides destination?
     end 
+
+    params[:out_name] ||= "mincmath_#{Time.now.to_i}.mnc"
+
     true
   end
 
   def cluster_commands #:nodoc:
     params       = self.params
+    out_name     = params[:out_name]
 
-    file_names  = Userfile.find(params[:filelist].values).map(&:name).join(" ")
+    file_names  = Userfile.find(params[:interface_userfile_ids]).map(&:name).join(" ")
     
     mincmath_args= {}
     add =""
@@ -44,7 +51,6 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
     add = params[:add] ? "-add" : ""
     no_check_d = params[:nocheck_dimensions] ? "-nocheck_dimensions" : ""
     
-    out_name = params[:out_name]
     self.addlog("Here we go mincmath #{add} #{params[:nocheck_dimensions]} #{file_names} #{out_name}")
 
     [
@@ -55,11 +61,11 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
   end
 
   def save_results #:nodoc:
-  params       = self.params
+    params       = self.params
     user_id      = self.user_id
     user         = User.find(user_id)
     group_id     = SystemGroup.find_by_name(user.login).id
-    out_name = params[:out_name]
+    out_name     = params[:out_name]
     
 
     unless (File.exists?(out_name))
@@ -67,7 +73,7 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
       return false
     end
 
-    outfile = SingleFile.new(
+    outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
       :user_id          => user_id,
       :group_id         => group_id,

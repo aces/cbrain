@@ -14,14 +14,17 @@ class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     begin
       collection_id = self.params[:minc_collection_id]
       collection = Userfile.find(collection_id)      # RecordNotFound will be raised if nothing found?
       collection.sync_to_cache
-      File.symlink(collection.cache_full_path.to_s, "input")
+      safe_symlink(collection.cache_full_path.to_s, "input")
   
-      Dir.mkdir("output", 0700)
+      safe_mkdir("output", 0700)
       
       file_names = collection.list_files.map(&:name)
       # Use first file of a collection since the script itself will construct filename for file with frame_0.
@@ -31,7 +34,7 @@ class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
 
     rescue => e     
       self.addlog("An error occured during AnalyzeToHRRT setup: #{e.message}")
-      false
+      return false
     end
     true
   end
@@ -62,9 +65,9 @@ class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
       minc_collection    = Userfile.find(minc_collection_id)
 
       # Move results files into output directory.
-      FileUtils.mv Dir.glob('*.{img,hdr}'), './output'
+      FileUtils.mv(Dir.glob('*.{img,hdr}'), './output')
 
-      file_collection = FileCollection.new(
+      file_collection = safe_userfile_find_or_new(FileCollection,
         :name             => params[:output_collection_name],
         :user_id          => self.user_id,
         :group_id         => get_user_group_id,
@@ -77,7 +80,7 @@ class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
       self.addlog("Saved new collection #{params[:output_collection_name]}")
     rescue => e
       self.addlog("An exception was raised during save_results step of MincToAnalyze task: #{e.message}")
-      false
+      return false
     end
     true
   end

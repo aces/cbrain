@@ -160,6 +160,13 @@ class Message < ActiveRecord::Base
   # Sends an internal error message where the main context
   # is an exception object.
   def self.send_internal_error_message(destination, header, exception, request_params = {})
+
+    # Params cleanup
+    request_params = request_params.clone
+    request_params[:password]  = "********" if request_params.has_key?(:password)
+    request_params["password"] = "********" if request_params.has_key?("password")
+
+    # Message for normal users
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin))
       Message.send_message(destination,
         :message_type => :error,
@@ -173,6 +180,7 @@ class Message < ActiveRecord::Base
       ) 
     end
     
+    # Message for developers/admin
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}: #{exception.message}\n",

@@ -98,7 +98,7 @@ class TasksController < ApplicationController
       control            = bourreau.send_command_get_task_outputs(task_id)
       @task.cluster_stdout = control.cluster_stdout
       @task.cluster_stderr = control.cluster_stderr
-    rescue Errno::ECONNREFUSED, EOFError
+    rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError
       flash[:notice] = "Warning: the Execution Server for this task is not available right now"
       @task.cluster_stdout = "Execution Server is DOWN!"
       @task.cluster_stderr = "Execution Server is DOWN!"
@@ -116,22 +116,17 @@ class TasksController < ApplicationController
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new
 
-    # Some useful variables for the view
-    @data_providers   = available_data_providers(current_user)
-
-    # Tarek modify this please. Also see the same code in new(), edit() and create()
-    @bourreaux        = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
-    @tool_bourreaux   = Tool.find_by_cbrain_task_class(@task.class.to_s).bourreaux
-    @bourreaux        = @bourreaux & @tool_bourreaux
-
     # Our new task object needs some initializing
-    @task.params      = @task.class.wrapper_default_launch_args.dup
+    @task.params      = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id = params[:bourreau_id]
     @task.user_id     = current_user.id
 
     # Filter list of files as provided by the get request
     @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write)
     @task.params[:interface_userfile_ids] = @files.map &:id
+
+    # Other common instance variables, such as @data_providers and @bourreaux
+    initialize_common_form_values
 
     # Custom initializing
     message = @task.wrapper_before_form
@@ -148,6 +143,12 @@ class TasksController < ApplicationController
       format.html # new.html.erb
     end
 
+  # Catch any exception and re-raise them with a proper redirect.
+  rescue => ex
+    if ex.is_a?(CbrainException) && ex.redirect.nil?
+      ex.redirect = { :controller => :userfiles, :action => :index }
+    end
+    raise ex
   end
 
   def edit #:nodoc:
@@ -160,13 +161,14 @@ class TasksController < ApplicationController
       return
     end
 
-    # Some useful variables for the view
-    @data_providers   = available_data_providers(current_user)
-
     # In order to edit older tasks that don't have :interface_userfile_ids
     # set, we initalize an empty one.
     params = @task.params
     params[:interface_userfile_ids] ||= []
+
+    # Other common instance variables, such as @data_providers and @bourreaux
+    initialize_common_form_values
+    @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
 
     # Custom initializing
     message = @task.wrapper_before_form
@@ -187,20 +189,31 @@ class TasksController < ApplicationController
 
   def create #:nodoc:
 
-    flash[:notice] ||= ""
-    flash[:error]  ||= ""
+    flash[:notice] = ""
+    flash[:error]  = ""
 
+    # A brand new task object!
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id     = current_user.id
 
+    # Handle preset loads/saves
+    unless @task.class.properties[:no_presets]
+      commit_button = params[:commit] || "Start" # default
+      if commit_button =~ /(load|delete|save) preset/i
+        handle_preset_actions
+        initialize_common_form_values
+        flash[:notice] += @task.wrapper_before_form
+        render :action => :new
+        return
+      end
+    end
+
+    # Choose a Bourreau if none selected
     unless @task.bourreau_id
-      # Tarek modify this please. Also see the same code in new() and create()
-      @bourreaux        = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
-      @tool_bourreaux   = Tool.find_by_cbrain_task_class(@task.class.to_s).bourreaux
-      @bourreaux        = @bourreaux & @tool_bourreaux
+      initialize_common_form_values  # We call this just for getting @bourreaux
       if @bourreaux.size == 0
-        flash[:error] = "No Execution Server available right now for this task?"
+        flash[:error] += "No Execution Server available right now for this task?"
         redirect_to :action  => :new, :file_ids => @task.file_ids, :toolname => @toolname
         return
       else
@@ -235,10 +248,11 @@ class TasksController < ApplicationController
       flash[:notice] += "Launched #{tasklist.size} #{@task.name} tasks."
     end
 
+    # Send a start worker command to each affected bourreau
     CBRAIN.spawn_with_active_records(:nobody,"Trigger workers") do
       bourreau_ids = tasklist.map &:bourreau_id
       bourreau_ids.uniq.each do |bourreau_id|
-        Bourreau.find(bourreau_id).send_command_start_workers  rescue true
+        Bourreau.find(bourreau_id).send_command_start_workers # rescue true
       end
     end
 
@@ -246,15 +260,38 @@ class TasksController < ApplicationController
   end
 
   def update #:nodoc:
+
+    flash[:notice] = ""
+    flash[:error]  = ""
+
     id = params[:id]
-    @task = CbrainTask.find(id)  # the original one
-    old_params = @task.params
-    new_att    = params[:cbrain_task] || {}
-    @task.update_attributes(new_att)
-    messages = @task.wrapper_after_form
-    new_params = @task.params
-    @task.log_params_changes(old_params,new_params)
-    @task.save
+    @task = current_user.cbrain_tasks.find(id)
+
+    # Save old params and update the current task to reflect
+    # the form's content.
+    old_params   = @task.params.clone
+    new_att      = params[:cbrain_task] || {}
+    @task.attributes = new_att # just updates without saving
+    restore_untouchable_attributes(@task,old_params)
+
+    # Handle preset loads/saves
+    unless @task.class.properties[:no_presets]
+      commit_button = params[:commit] || "Update" # default
+      if commit_button =~ /(load|delete|save) preset/i
+        handle_preset_actions
+        initialize_common_form_values
+        @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
+        flash[:notice] += @task.wrapper_before_form
+        render :action => :edit
+        return
+      end
+    end
+
+    # Final update to the task object, this time we save it.
+    messages     = @task.wrapper_after_form
+    @task.log_params_changes(old_params,@task.params)
+    @task.save!
+
     flash[:notice] = messages if messages
     redirect_to :action => :show, :id => @task.id
   end
@@ -320,29 +357,29 @@ class TasksController < ApplicationController
       grouped_tasks = tasks.group_by &:bourreau_id
 
       grouped_tasks.each do |pair_bid_tasklist|
-        bid      = pair_bid_tasklist[0]
-        tasklist = pair_bid_tasklist[1]
-        bourreau = Bourreau.find(bid)
+        bid       = pair_bid_tasklist[0]
+        btasklist = pair_bid_tasklist[1]
+        bourreau  = Bourreau.find(bid)
         begin
           if operation == 'delete'
-            bourreau.send_command_alter_tasks(tasklist,'Destroy') # TODO parse returned command object?
-            sent_ok += tasklist.size
+            bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?
+            sent_ok += btasklist.size
             next
           end
-          new_status  = CbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
-          oktasks = tasklist.select do |t|
+          new_status  = CbbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
+          oktasks = btasklist.select do |t|
             cur_status  = t.status
             allowed_new = CbrainTask::PortalTask::AllowedOperations[cur_status] || []
             new_status && allowed_new.include?(new_status)
           end
-          skippedtasks = tasklist - oktasks
+          skippedtasks = btasklist - oktasks
           if oktasks.size > 0
             bourreau.send_command_alter_tasks(oktasks,new_status) # TODO parse returned command object?
             sent_ok += oktasks.size
           end
           sent_skipped += skippedtasks.size
         rescue => e # TODO record what error occured to inform user?
-          sent_failed += tasklist.size
+          sent_failed += btasklist.size
         end
       end # foreach bourreaux' tasklist
 
@@ -367,5 +404,110 @@ class TasksController < ApplicationController
     redirect_to :action => :index
 
   end # method 'operation'
+
+
+
+  #####################################################################
+  # Private Methods For Form Support
+  #####################################################################
+
+  private
+
+  # Some useful variables for the views for 'new' and 'edit'
+  def initialize_common_form_values #:nodoc:
+
+    @data_providers   = available_data_providers(current_user)
+
+    # Tarek modify this please.
+    @bourreaux        = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
+    @tool_bourreaux   = Tool.find_by_cbrain_task_class(@task.class.to_s).bourreaux
+    @bourreaux        = @bourreaux & @tool_bourreaux
+
+    # Presets
+    unless @task.class.properties[:no_presets]
+      site_preset_tasks = []
+      unless current_user.site.blank?
+        manager_ids = current_user.site.managers.map &:id
+        site_preset_tasks = CbrainTask.find(:all, :conditions => { :status => 'SitePreset', :user_id => manager_ids })
+      end
+      own_preset_tasks = current_user.cbrain_tasks.find(:all, :conditions => { :type => @task.class.to_s, :status => 'Preset' })
+      @own_presets  = own_preset_tasks.collect  { |t| [ t.description, t.id ] }
+      @site_presets = site_preset_tasks.collect { |t| [ "#{t.description} (by #{t.user.login})", t.id ] }
+      @all_presets = []
+      @all_presets << [ "Site Presets",     @site_presets ] if @site_presets.size > 0
+      @all_presets << [ "Personal Presets", @own_presets  ] if @own_presets.size > 0
+      @offer_site_preset = current_user.has_role? :site_manager
+      #@own_presets = [ [ "Personal1", "1" ], [ "Personal2", "2" ] ]
+      #@all_presets = [ [ "Site Presets", [ [ "Dummy1", "1" ], [ "Dummy2", "2" ] ] ], [ "Personal Presets", @own_presets ] ]
+    end
+
+  end
+
+  # This method handle the logic of loading and saving presets.
+  def handle_preset_actions #:nodoc:
+    commit_button = params[:commit] || "Whatever"
+
+    if commit_button =~ /load preset/i
+      preset_id = params[:load_preset_id] # used for delete too
+      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+        old_params = @task.params.clone
+        @task.params = preset.params
+        restore_untouchable_attributes(@task,old_params)
+        flash[:notice] += "Loaded preset '#{preset.description}'.\n"
+      else
+        flash[:notice] += "No preset selected, so parameters are unchanged.\n"
+      end
+    end
+
+    if commit_button =~ /delete preset/i
+      preset_id = params[:load_preset_id] # used for delete too
+      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+        if preset.user_id == current_user.id
+          preset.delete
+          flash[:notice] += "Deleted preset '#{preset.description}'.\n"
+        else
+          flash[:notice] += "Cannot delete a preset that doesn't belong to you.\n"
+        end
+      else
+        flash[:notice] += "No preset selected, so parameters are unchanged.\n"
+      end
+    end
+
+    if commit_button =~ /save preset/i
+      preset_name = params[:save_preset_name]
+      preset = nil
+      if ! preset_name.blank?
+        preset = @task.clone
+        preset.description = preset_name
+      else
+        preset_id = params[:save_preset_id]
+        preset    = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+        cb_error "No such preset ID '#{preset_id}'" unless preset
+        if preset.user_id != current_user.id
+          flash[:error] += "Cannot update a preset that does not belong to you.\n"
+          return
+        end
+        preset.params = @task.params.clone
+      end
+      preset.bourreau_id = 0
+      preset.status = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
+      preset.wrapper_untouchable_params_attributes.each_key do |untouch|
+        preset.params.delete(untouch) # no need to save these eh?
+      end
+      preset.save!
+      flash[:notice] += "Saved preset '#{preset.description}'.\n"
+    end
+  end
+
+  # TODO: maybe this should be in the task model
+  def restore_untouchable_attributes(task,old_params) #:nodoc:
+    cur_params = task.params
+    untouchables = task.wrapper_untouchable_params_attributes
+    untouchables.each_key do |untouch|
+      cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
+    end
+  end
+
+  # Warning: private context in effect here.
 
 end

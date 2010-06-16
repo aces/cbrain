@@ -71,5 +71,9 @@ class CbrainTask::Diagnostics < CbrainTask::PortalTask
     task_list
   end
 
+  def untouchable_params_attributes #:nodoc:
+    { :copy_number => true }
+  end
+
 end
 

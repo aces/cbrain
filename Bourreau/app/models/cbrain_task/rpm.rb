@@ -13,6 +13,9 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
 
    Revision_info="$Id$"
 
+   include RestartableTask # This task is naturally restartable
+   include RecoverableTask # This task is naturally recoverable
+
    # Workdir structure:
    # - ./ref.cpt
    # - ./inputImage/   -- collection of hrrt frames and headers
@@ -20,21 +23,23 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
    def setup #:nodoc:
       task_type = self.params[:rpm_task_type]
 
+      cpt_ref_file    = Userfile.find(cpt_ref_file_id)
+      img_collection  = Userfile.find(img_collection_id)
+
       if task_type == 'subtask' and params[:subtask_id] == 0
          cpt_ref_file_id   = self.params[:cpt_ref_file_id]
          img_collection_id = self.params[:img_collection_id]
 
-         cpt_ref_file    = Userfile.find(cpt_ref_file_id)
-         img_collection  = Userfile.find(img_collection_id)
-
          cpt_ref_file.sync_to_cache
          img_collection.sync_to_cache
 
-         File.symlink(cpt_ref_file.cache_full_path.to_s, "ref.cpt")
-         File.symlink(img_collection.cache_full_path.to_s, "inputImage")
+         safe_symlink(cpt_ref_file.cache_full_path.to_s, "ref.cpt")
+         safe_symlink(img_collection.cache_full_path.to_s, "inputImage")
 
-         Dir.mkdir("output", 0700)
+         safe_mkdir("output", 0700)
       end
+
+      params[:data_provider_id] = cpt_ref_file.data_provider_id if params[:data_provider_id].blank?
 
       true
    end
@@ -72,57 +77,49 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
          command_line += "$RPM_DIR/RPM_SUBTASK #{subtask_id} #{number_of_subtasks} 'ref.cpt' './inputImage/#{image_filename}'"
          self.addlog("RPM task command line: #{command_line}")
          return ["#{command_line}"]
-#TODO: Remove this!
-#        return ["sleep 5","date > part_#{subtask_id}_RPM_BP.i"]
       end
-   end
-
-   def recover_from_cluster_failure()
-      true
    end
 
    def save_results #:nodoc:
-      task_type = self.params[:rpm_task_type]
 
-      if task_type == 'combiner'
-         user_id = self.user_id
-         data_provider_id = self.params[:data_provider_id]
+     # Nothing to save if we're a worker
+     task_type = self.params[:rpm_task_type]
+     return true if task_type != 'combiner'
 
-         # Use group id of one of the input files.
-         cpt_ref_file_id = self.params[:cpt_ref_file_id]
-         cpt_ref_file    = SingleFile.find(cpt_ref_file_id)
-         group_id        = cpt_ref_file.group_id
+     user_id = self.user_id
+     data_provider_id = self.params[:data_provider_id]
 
-         unless (  File.exists?("./output/rpm_out_bp.i") ||
-                   File.exists?("./output/rpm_out_r1.i") ||
-                   File.exists?("./output/rpm_out_k2.i")
-                )
-            self.addlog("Could not find result file(s).")
-            return false
-         end
+     # Use group id of one of the input files.
+     cpt_ref_file_id = self.params[:cpt_ref_file_id]
+     cpt_ref_file    = SingleFile.find(cpt_ref_file_id)
+     group_id        = cpt_ref_file.group_id
 
-         results_collection = FileCollection.new(
-            :name             => self.params[:output_filename],
-            :user_id          => user_id,
-            :group_id         => group_id,
-            :data_provider_id => self.params[:data_provider_id],
-            :task             => "RPM"
-         )
+     unless (  File.exists?("./output/rpm_out_bp.i") ||
+               File.exists?("./output/rpm_out_r1.i") ||
+               File.exists?("./output/rpm_out_k2.i")
+            )
+       self.addlog("Could not find result file(s).")
+       return false
+     end
 
-         unless results_collection.save
-            self.addlog("Could not save result files '#{results_collection.name}'.")
-            return false
-         end
+     results_collection = safe_userfile_find_or_new(FileCollection,
+        :name             => self.params[:output_filename],
+        :user_id          => user_id,
+        :group_id         => group_id,
+        :data_provider_id => self.params[:data_provider_id],
+        :task             => "RPM"
+     )
 
-         results_collection.cache_copy_from_local_file("./output")
-         results_collection.move_to_child_of(cpt_ref_file)
+     unless results_collection.save
+        self.addlog("Could not save result files '#{results_collection.name}'.")
+        return false
+     end
 
-         return true
-      else
-         # Nothing to save.
-         return true
-      end
-  end
+     results_collection.cache_copy_from_local_file("output")
+     results_collection.move_to_child_of(cpt_ref_file)
+
+     return true
+   end
 
 end
 

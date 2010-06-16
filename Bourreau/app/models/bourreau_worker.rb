@@ -17,12 +17,14 @@ class BourreauWorker < Worker
 
   Revision_info="$Id$"
 
+  # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
   def setup
     ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
   end
 
+  # Calls process_task() regularly on any task that is active.
   def do_regular_work
 
     # Exit if the Bourreau is dead

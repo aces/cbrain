@@ -53,7 +53,7 @@ class ApplicationController < ActionController::Base
     begin
       yield
     rescue ActiveRecord::RecordNotFound => e
-      flash[:error] = "The record you requested does not exist."
+      flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice

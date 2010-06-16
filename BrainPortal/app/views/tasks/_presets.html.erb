@@ -1,0 +1,31 @@
+
+<h2>Preset Management:</h2>
+
+<table class="userfiles">
+
+<tr>
+  <td><strong>Load a preset configuration:</strong></td>
+  <td><%= select_tag :load_preset_id, 
+    "<option value=\"\">(Select a preset to load)</option>" +
+    grouped_options_for_select(@all_presets)
+      %>
+  </td>
+  <td><%= submit_tag "Load Preset" %><%= submit_tag "Delete Preset" %></td>
+</tr>
+
+<tr>
+  <td><strong>Save as a preset configuration:</strong></td>
+  <td><%= select_tag :save_preset_id,
+          "<option value=\"\">(Select a preset to save)</option>" +
+          options_for_select(@own_presets)
+      %><strong> or as new name:</strong>
+      <%= text_field_tag :save_preset_name, "", :size => 20 %>
+      <% if @offer_site_preset %>
+        (Save as site preset: <%= check_box_tag :save_as_site_preset, 1 %>)
+      <% end %>
+  </td>
+  <td><%= submit_tag "Save Preset" %></td>
+</tr>
+
+</table>
+

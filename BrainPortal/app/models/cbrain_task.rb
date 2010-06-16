@@ -156,22 +156,32 @@ class CbrainTask < ActiveRecord::Base
   # a +new_params+ hash provided, and log all the
   # differences. The task object itself is not changed.
   def log_params_changes(old_params = {}, new_params = {})
+    numchanges = 0
     old_params.each do |ck,cv|
       if new_params.has_key?(ck)
         nv = new_params[ck]
         begin
           next if cv == nv
           self.addlog("Changed key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
+          numchanges += 1
         rescue
           self.addlog("Uncomparable key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
+          numchanges += 1
         end
         next
       end
       self.addlog("Deleted key '#{ck.inspect}' with value '#{cv.inspect}'")
+      numchanges += 1
     end
     new_params.each do |nk,nv|
       next if old_params.has_key?(nk)
       self.addlog("Added key '#{nk.inspect}' with value '#{nv.inspect}'")
+      numchanges += 1
+    end
+    if numchanges > 0
+      self.addlog("Total of #{numchanges} changes observed.")
+    else
+      self.addlog("No changes to params observed.")
     end
   end
 

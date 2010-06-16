@@ -15,6 +15,9 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params = self.params
     mincfile_id = params[:mincfile_id] 
@@ -24,9 +27,9 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
       return false
     end
     mincfile.sync_to_cache
-    File.symlink(mincfile.cache_full_path.to_s, mincfile.name)
+    safe_symlink(mincfile.cache_full_path.to_s, mincfile.name)
 
-    params[:data_provider_id] = mincfile.data_provider.id if params[:data_provider_id].blank?
+    params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
 
     if(params[:transformation_id])
       process_input_files(params[:transformation_id])
@@ -48,7 +51,7 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
       return false
     end
     filename.sync_to_cache
-    File.symlink(filename.cache_full_path.to_s, filename.name)
+    safe_symlink(filename.cache_full_path.to_s, filename.name)
   end
 
   def cluster_commands #:nodoc:
@@ -56,34 +59,33 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
     user_id      = self.user_id
     
     mincfile_name  = Userfile.find(params[:mincfile_id]).name
-    like_file  = params[:like_id]
+    like_file      = params[:like_id]
     transformation_file = params[:transformation_id]
 
     resample_tid =""
     resample_like =""
     
-    
     resample_sinc = params[:sinc] ? "-sinc" : ""
    
     resample_t = params[:transformation] ? " -tfm_input_sampling" : ""
     
-    if (params[:transformation_id])
+    unless transformation_file.blank?
       transformation_name = Userfile.find(transformation_file).name
       resample_tid = "-transformation #{transformation_name}"
     end
 
-    if(params[:like_id])
+    unless like_file.blank?
       like_name = Userfile.find(like_file).name
       resample_like = "-like #{like_name}"
     end
 
     out_name = params[:out_name]
+
     self.addlog("mincresample #{resample_sinc} #{resample_tid} #{resample_like} #{resample_t} #{mincfile_name} #{out_name}")
     [
       "source #{CBRAIN::Quarantine_dir}/init.sh",
       "mincresample #{resample_sinc} #{resample_tid} #{resample_like} #{resample_t} #{mincfile_name} #{out_name}",
       "true"
-      
     ]
   end
 
@@ -101,7 +103,7 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
       return false
     end
 
-    outfile = SingleFile.new(
+    outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
       :user_id          => user_id,
       :group_id         => group_id,

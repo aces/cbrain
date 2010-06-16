@@ -14,6 +14,9 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
 
   Revision_info="$Id$"
 
+  include RestartableTask # This task is naturally restartable
+  include RecoverableTask # This task is naturally recoverable
+
   def setup #:nodoc:
     params      = self.params
     dicom_colid = params[:dicom_colid]  # the ID of a FileCollection
@@ -29,7 +32,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
       return false
     end
 
-    params[:data_provider_id] = dicom_col.data_provider.id if params[:data_provider_id].blank?
+    params[:data_provider_id] = dicom_col.data_provider_id if params[:data_provider_id].blank?
 
     dicom_col.sync_to_cache
     cachename = dicom_col.cache_full_path.to_s
@@ -62,7 +65,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
       next unless file.match(/\.mnc\s*$/)
       file = file.sub(/\n$/,"")
       basename = File.basename(file)
-      mincfile = SingleFile.new(
+      mincfile = safe_userfile_find_or_new(SingleFile,
         :name             => basename,
         :user_id          => user_id,
         :group_id         => dicom_col.group_id,
@@ -81,6 +84,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
     end
 
     io.close
+
     return true if numok > 0 && numfail == 0
     false
   end
