@@ -24,10 +24,13 @@ class FileCollection < Userfile
   def content(options) #:nodoc
     begin
       if options[:collection_file]
-        path = self.cache_full_path.parent + options[:collection_file]
         
-        {:sendfile => path}
-   
+        path = self.cache_full_path.parent + options[:collection_file]
+        if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) || File.zero?(path))
+          {:sendfile => path}
+        else
+          {:text => ""}
+        end
       elsif options[:collection_dir].blank?
         return { :partial  => 'file_collection'}
       else
