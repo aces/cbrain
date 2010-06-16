@@ -23,9 +23,11 @@
      </div>
     
    
-    <div class = "menu_bar">  
+    <% if check_role(:admin) || check_role(:site_manager)%>
+      <div class = "menu_bar">  
          <% button_with_dropdown_menu({:title => 'Create New Data Provider', :partial => 'new'}, {:id => "new_data_provider_button"}) %>
-    </div>    
+      </div>
+    <% end %>    
       
     <br>    
     <br>

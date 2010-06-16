@@ -15,6 +15,7 @@ class DataProvidersController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
+  before_filter :manager_role_required, :only  => [:new, :create]
    
   def index #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
