@@ -22,14 +22,25 @@ class FileCollection < Userfile
   Revision_info="$Id$"
   
   def content(options) #:nodoc
+    
     begin
       if options[:collection_file]
         
-        path = self.cache_full_path.parent + options[:collection_file]
-        if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) || File.zero?(path))
+        path_string = options[:collection_file]
+        
+        #so ../ doesn't work 
+        #(this will prevent files 
+        #like abc..efg but that's bad 
+        #naming anyway
+        if path_string.include?("..") 
+          path_string = ""
+        end  
+        
+        path = self.cache_full_path.parent + path_string
+        if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )
           {:sendfile => path}
         else
-          {:text => ""}
+          { :file => "public/404.html", :status => "404" }
         end
       elsif options[:collection_dir].blank?
         return { :partial  => 'file_collection'}

@@ -252,7 +252,7 @@ class DataProvidersController < ApplicationController
 
   #Browse the files of a data provider.
   #This action is only available for data providers that are browsable.
-  #Both registered and unregistered files will appear in the list. 
+  #Both regidstered and unregistered files will appear in the list. 
   def browse
     @user     = current_user
     id        = params[:id]
@@ -268,7 +268,8 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = get_recent_provider_list_all(params[:refresh])
     rescue => e
-      flash[:error] = "Cannot get list of files. Maybe the remote directory doesn't exist or is locked?"
+      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist ot is locked?' #emacs fails to parse this properly so I switched to single quotes. 
+
       redirect_to :action => :index
       return
     end
