@@ -210,14 +210,14 @@ class TasksController < ApplicationController
     end
 
     # Choose a Bourreau if none selected
-    unless @task.bourreau_id
+    if @task.bourreau_id.blank?
       initialize_common_form_values  # We call this just for getting @bourreaux
       if @bourreaux.size == 0
         flash[:error] += "No Execution Server available right now for this task?"
         redirect_to :action  => :new, :file_ids => @task.file_ids, :toolname => @toolname
         return
       else
-        @task.bourreau_id = @bourreaux[0].id
+        @task.bourreau_id = @bourreaux[rand(@bourreaux.size)].id
       end
     end
 
@@ -366,7 +366,7 @@ class TasksController < ApplicationController
             sent_ok += btasklist.size
             next
           end
-          new_status  = CbbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
+          new_status  = CbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
             cur_status  = t.status
             allowed_new = CbrainTask::PortalTask::AllowedOperations[cur_status] || []
