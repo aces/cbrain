@@ -174,7 +174,8 @@ module ActRecLog
   # information about the current ActiveRecord class
   # will be added to the top of the log.
   def addlog(message)
-    return true if self.is_a?(ActiveRecordLog)
+    return true  if self.is_a?(ActiveRecordLog)
+    return false if self.id.blank?
     begin
       arl = active_record_log_find_or_create
       return false unless arl
@@ -200,18 +201,23 @@ module ActRecLog
   # will be extracted for the final message. Optionally,
   # you can add some more text to the end of the log entry.
   #
-  # Using this method on an ActiveRecord
-  # +obj+ from the method xyz() of class +Abcd+,
-  # like this:
+  # Using this method on an ActiveRecord +obj+ from the
+  # method xyz() of class +Abcd+, like this:
   #
   #     obj.addlog_context(self,"hello")
   #
   # results is a log entry like this one:
   #
   #     "Abcd xyz() revision 123 prioux 2009-05-23 hello"
-  def addlog_context(context,message=nil)
-    return true if self.is_a?(ActiveRecordLog)
-    prev_level     = caller[0]
+  #
+  # A third optional argument +caller_back_level+ indicates
+  # how many levels of calling context to go back to find the method
+  # name to display (the default is 0, which means the method
+  # where you call addlog_context() itself).
+  def addlog_context(context,message=nil,caller_back_level=0)
+    return true  if self.is_a?(ActiveRecordLog)
+    return false if self.id.blank?
+    prev_level     = caller[caller_back_level]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
 
     class_name     = context.class.to_s
@@ -240,7 +246,8 @@ module ActRecLog
   #
   #     "Abcd revision 123 prioux 2009-05-23 hello"
   def addlog_revinfo(anobject,message=nil)
-    return true if self.is_a?(ActiveRecordLog)
+    return true  if self.is_a?(ActiveRecordLog)
+    return false if self.id.blank?
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
     rev_info       = anobject.revision_info
@@ -255,6 +262,7 @@ module ActRecLog
   # this is a single long string with embedded newlines.
   def getlog
     return nil if self.is_a?(ActiveRecordLog)
+    return nil if self.id.blank?
     arl = active_record_log
     return nil unless arl
     arl.log
@@ -266,6 +274,7 @@ module ActRecLog
   # is rarely used in normal situations.
   def raw_append_log(text)
     return false if self.is_a?(ActiveRecordLog)
+    return false if self.id.blank?
     arl = active_record_log_find_or_create
     log = arl.log + text
     while log.size > 65500 && log =~ /\n/   # TODO: archive ?
@@ -280,7 +289,7 @@ module ActRecLog
     return nil if self.is_a?(ActiveRecordLog)
     myid    = self.id
     myclass = self.class.to_s
-    return nil unless myid
+    return nil if myid.blank?
     ActiveRecordLog.find(
        :first,
        :conditions => { :ar_id => myid, :ar_class => myclass }

@@ -17,6 +17,9 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
   include RestartableTask # This task is naturally restartable
   include RecoverableTask # This task is naturally recoverable
 
+  Tmpheader_file  = "in.header"
+  Tmprawbyte_file = "in.raw_byte.gz"
+
   def setup #:nodoc:
     params       = self.params
     mincfile_id  = params[:mincfile_id]
@@ -57,11 +60,9 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     mincfile_id     = params[:mincfile_id]
     mincfile        = Userfile.find(mincfile_id)
     group_id        = mincfile.group_id
-    tmpheader_file  = "in.header"
-    tmprawbyte_file = "in.raw_byte.gz"
 
-    unless (File.exists?(tmpheader_file) && File.exists?(tmprawbyte_file))
-      self.addlog("Could not find resultfiles #{tmpheader_file} && #{tmprawbyte_file}.")
+    unless (File.exists?(Tmpheader_file) && File.exists?(Tmprawbyte_file))
+      self.addlog("Could not find resultfiles #{Tmpheader_file} && #{Tmprawbyte_file}.")
       return false
     end
 
@@ -75,12 +76,14 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
       :data_provider_id => params[:data_provider_id],
       :task             => "Minc2jiv"
     )
-    headerfile.cache_copy_from_local_file(tmpheader_file)
+    headerfile.cache_copy_from_local_file(Tmpheader_file)
     if headerfile.save
       numsaves += 1
       headerfile.move_to_child_of(mincfile)
       headerfile.addlog_context(self)
       self.addlog("Saved new header file #{headerfile.name}")
+      #self.addlog_to_userfiles_created(headerfile)
+      params[:header_id] = headerfile.id
     else
       self.addlog("Could not save back result file '#{headerfile.name}'.")
     end
@@ -92,17 +95,46 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
       :data_provider_id => params[:data_provider_id],
       :task             => "Minc2jiv"
     )
-    rawbytefile.cache_copy_from_local_file(tmprawbyte_file)
+    rawbytefile.cache_copy_from_local_file(Tmprawbyte_file)
     if rawbytefile.save
       numsaves += 1
       rawbytefile.move_to_child_of(mincfile)
       rawbytefile.addlog_context(self)
       self.addlog("Saved new rawbyte file #{rawbytefile.name}")
+      #self.addlog_to_userfiles_created(rawbytefile)
+      params[:raw_byte_id] = rawbytefile.id
     else
       self.addlog("Could not save back result file '#{rawbytefile.name}'.")
     end
 
+    if numsaves > 0
+      #self.addlog_to_userfiles_processed(mincfile)
+      self.addlog_to_userfiles_these_created_these([ mincfile ], [ headerfile, rawbytefile ])
+    end
+
     return(numsaves == 2 ? true : false)
+  end
+
+  # Cleans output files because minc2jiv.pl doesn't clobber
+  def clean_outputs #:nodoc:
+    params = self.params
+    File.unlink(Tmpheader_file)  rescue true
+    File.unlink(Tmprawbyte_file) rescue true
+    params.delete(:header_id)
+    params.delete(:raw_byte_id)
+    true
+  end
+
+  def restart_at_setup #:nodoc:
+    clean_outputs
+  end
+
+  def restart_at_cluster #:nodoc:
+    clean_outputs
+  end
+
+  def recover_from_cluster_failure #:nodoc:
+    clean_outputs
   end
 
 end

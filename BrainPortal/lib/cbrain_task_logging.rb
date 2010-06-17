@@ -55,8 +55,8 @@ module CbrainTaskLogging
   # have their very own internal embedded log
   # and do NOT use the methods defined by the
   # ActRecLog module.
-  def addlog_context(context,message="")
-    prev_level     = caller[0]
+  def addlog_context(context,message="",caller_back_levels=0)
+    prev_level     = caller[caller_back_levels]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
 
     class_name     = context.class.to_s

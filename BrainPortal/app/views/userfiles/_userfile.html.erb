@@ -29,7 +29,7 @@
       <% else %>
         <%= image_tag "/images/file_icon.png" %>
       <% end %>
-      <%= link_if_accessible h(userfile.name), edit_userfile_path(userfile), userfile, current_user %>
+      <%= link_to_userfile_if_accessible userfile %>
       <%= userfile.pretty_type %>      
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>

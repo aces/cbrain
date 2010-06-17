@@ -4,13 +4,13 @@
   # It requires two args, the 'log' and a 'title'
 %>
 
-<% if log %>
-  <table id="log_table" style="clear:both">
+<% unless log.blank? %>
+  <table id="log_table" style="clear:both;">
   <tr class="list-odd">
-    <th><%= title %></th>
+    <th><%= title.blank? ? "Processing Log" : h(title) %></th>
   </tr>
   <tr class="list-even">
-    <td><pre><%= h(log) %></pre></td>
+    <td><pre><%= parse_message(h(log)) %></pre></td>
   </tr>
   </table>
 <% end %>

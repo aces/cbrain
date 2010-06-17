@@ -277,6 +277,59 @@ class CbrainTask::ClusterTask < CbrainTask
     true
   end
 
+  # This method takes an array of +userfiles+ (or a single one)
+  # and add a log entry to each userfile identifying that
+  # it was processed by the current task. An optional
+  # comment can be appended to the message.
+  def addlog_to_userfiles_processed(userfiles,comment = "")
+    userfiles = [ userfiles ] unless userfiles.is_a?(Array)
+    myname   = self.bname_tid
+    mylink   = "/tasks/show/#{self.id}"  # can't use show_task_path() on Bourreau side
+    mymarkup = "[[#{myname}][#{mylink}]]"
+    userfiles.each do |u|
+      next unless u.is_a?(Userfile) && u.id
+      u.addlog_context(self,"Processed by task #{mymarkup} #{comment}",3)
+    end
+  end
+
+  # This method takes an array of +userfiles+ (or a single one)
+  # and add a log entry to each userfile identifying that
+  # it was created by the current task. An optional
+  # comment can be appended to the message.
+  def addlog_to_userfiles_created(userfiles,comment = "")
+    userfiles = [ userfiles ] unless userfiles.is_a?(Array)
+    myname   = self.bname_tid
+    mylink   = "/tasks/show/#{self.id}" # can't use show_task_path() on Bourreau side
+    mymarkup = "[[#{myname}][#{mylink}]]"
+    userfiles.each do |u|
+      next unless u.is_a?(Userfile) && u.id
+      u.addlog_context(self,"Created/updated by #{mymarkup} #{comment}",3)
+    end
+  end
+
+  # This method takes an array of userfiles +creatorlist+ (or a single one),
+  # another array of userfiles +createdlist+ (or a single one)
+  # and records for each created file what were the creators, and for
+  # each creator file what files were created, along with a link
+  # to the task itself. An optional comment can be appended to all the messages.
+  def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment = "")
+    creatorlist = [ creatorlist ] unless creatorlist.is_a?(Array)
+    createdlist = [ createdlist ] unless createdlist.is_a?(Array)
+    myname   = self.bname_tid
+    mylink   = "/tasks/show/#{self.id}"  # can't use show_task_path() on Bourreau side
+    mymarkup = "[[#{myname}][#{mylink}]]"
+    creatorlist.each do |creator|
+      next unless creator.is_a?(Userfile) && creator.id
+      creatormarkup = "[[#{creator.name}][/userfiles/#{creator.id}/edit]]" # can't use edit_userfile_path() on Bourreau side
+      createdlist.each do |created|
+        next unless created.is_a?(Userfile) && created.id
+        createdmarkup = "[[#{created.name}][/userfiles/#{created.id}/edit]]" # can't use edit_userfile_path() on Bourreau side
+        creator.addlog_context(self,"Used by task #{mymarkup} to create #{createdmarkup} #{comment}",5)
+        created.addlog_context(self,"Created by task #{mymarkup} from #{creatormarkup} #{comment}",5)
+      end
+    end
+  end
+
 
 
   ##################################################################

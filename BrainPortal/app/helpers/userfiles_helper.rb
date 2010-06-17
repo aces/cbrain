@@ -16,10 +16,31 @@ module UserfilesHelper
     end
   end
   
-  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-  #the current user has a role of *admin*. Otherwise, +name+ will be 
-  #displayed as static text.
-  def link_if_accessible(name, path, userfile, user)
+  # Creates a link to the edit page of a +userfile+, as long
+  # as the +user+ has access to it. By default, +user+ is
+  # current_user.
+  #
+  # +userfile+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing file)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the userfile's name) and a
+  # :path (the default is the edit path).
+  def link_to_userfile_if_accessible(userfile, user = current_user, options = {})
+    return "(None)" if userfile.blank?
+    unless userfile.is_a?(Userfile)
+      userfile = Userfile.find(userfile) rescue nil
+      return "(Deleted/Non-existing file)" if userfile.blank?
+    end
+    name = options[:name] || userfile.name
+    path = options[:path] || edit_userfile_path(userfile)
     if userfile.available? && userfile.can_be_accessed_by?(user)
       link_to(name, path)
     else

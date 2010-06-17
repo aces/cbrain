@@ -119,11 +119,17 @@
       </tr>
    
       <tr>
-        <th colspan="2">Parameters</td>
+        <th colspan="2">Parameters</th>
       </tr>
     
       <tr>
-         <td colspan="2"><pre><%= h(@task.params.to_yaml :root => "Params") -%></pre></td>
+         <td colspan="2">
+         <% begin %>
+           <%= render :partial => "tasks/show_params/#{@task.name.tableize.singularize}", :locals => { :params => @task.params } %>
+         <% rescue %>
+           <pre><%= h(@task.params.to_yaml :root => "Params") -%></pre>
+         <% end %>
+         </td>
       </tr>
 
       <%

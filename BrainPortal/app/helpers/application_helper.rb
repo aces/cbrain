@@ -250,15 +250,15 @@ module ApplicationHelper
   end
   
   #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-   #the current user has access to +resource+. Otherwise, +name+ will be 
-   #displayed as static text.
-   def link_if_has_access(resource, name, path)
-     if resource.can_be_accessed_by?(current_user)
-       link_to(name, path)
-     else
-       name
-     end
-   end
+  #the current user has access to +resource+. Otherwise, +name+ will be 
+  #displayed as static text.
+  def link_if_has_access(resource, name, path)
+    if resource.can_be_accessed_by?(current_user)
+      link_to(name, path)
+    else
+      name
+    end
+  end
 
   # This method reformats a long SSH key text so that it
   # is folded on several lines.
@@ -338,14 +338,15 @@ module ApplicationHelper
     end
   end
   
+  # Parses a string a replaces special markup with HTML links:
+  #    "abcde [[name][/my/path]] def"
+  # will return
+  #    "abcde <a href="/my/path" class="action_link">name</a>"
   def parse_message(message)
     arr = message.split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
-      if i % 2 == 0
-        arr[i] = arr[i]
-      else
-        arr[i].sub! /\[\[(.+?)\]\[(.+?)\]\]/, "<a href='\\2' class='action_link'>\\1</a>"
-      end
+      next if i % 2 == 0 # nothing to do to outside context
+      arr[i].sub! /\[\[(.+?)\]\[(.+?)\]\]/, "<a href=\"\\2\" class=\"action_link\">\\1</a>" # parse markup
     end   
     
     arr.join
