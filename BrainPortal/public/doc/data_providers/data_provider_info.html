@@ -1,6 +1,60 @@
 <h1>Registering Files on CBRAIN</h1>
 <br>
-<p>A user has access to MainStore, MindStore and Incoming.  Data files can also be uploaded to CBRAIN using SFTP (Secure File Transfer Protocol).  Connect using any SFTP client for UNIX, Mac or Windows on host mindstorm.cbrain.mcgill.ca using the port number 7500.  Your username and password are those of the CBRAIN website.  Upload your files as needed.  Then go to the Data Providers tab, find the Data Provider named 'Incoming' and click on it's "Browse" link.  Register your files, and they will appear in the file manager.  You should MOVE these files to one of the official CBRAIN Data Providers. There is a button at the top of the file manager that will allow you to move files.</p>
+<p>A Data Provider is a data storage center that CBRAIN is aware of.  A user has access to MainStore, MindStore and Incoming data providers.  Data files can also be uploaded to CBRAIN using SFTP (Secure File Transfer Protocol).  You may connect using any SFTP client for UNIX, Mac or Windows on host mindstorm.cbrain.mcgill.ca using the port number 7500.  Your username and password are those of the CBRAIN website.  
+    
+<br>
+<br>
+<b>Recommended SFTP Clients:</b>
+<br>
+
+<ul>
+    <li><b>Command Line SFTP on Unix:</b></li>    
+        <ul>
+            <li>sftp -o port=7500 username@mindstorm.cbrain.mcgill.ca</li>
+            <li>Options can be displayed by entering help into the command line</li>
+        </ul>
+    <li><b>SFTP client available for Mac and Windows:</b></li>
+            Setting up FileZilla
+            <ul>
+                <li>Select File -> Site Manager</li>
+                <li>Select New Site</li>
+                <li>Under the General Tab in the Site Manager</li>
+                <ul>
+                    <li>Enter the hostname: mindstorm.cbrain.mcgill.ca</li>
+                    <li>Enter the port number: 7500</li>
+                    <li>Select the Server Type: SFTP - SSH File Transfer Protocol</li>
+                    <li>Select the Logon Type: Normal</li>
+                    <li>Enter the username for your CBRAIN account</li>
+                    <li>Enter the password for your CBRAIN account</li>
+                </ul>
+                <li>Under the Advanced Tab</li>
+                <ul>
+                    <li>Select the Server Type as Unix</li>
+                    <li>Select Bypass proxy</li>
+                </ul> 
+                <li>Click connect</li>
+                <li>Files on your local computer are listed on the left.</li>
+                <li>File on the remote computer are listed on the right.</li>
+                <ul>
+                    <li>Files may be dragged to move them to and from the remote and local computers.</li>
+                    <li>Options for managing files are displayed by selecting the file and right clicking on that file.</li>
+                </ul>    
+    </ul>
+        <li><b>SFTP Client available on Mac: Cyberduck:</b></li>
+        <ul>
+            <li>Select Open Connection</li>
+            <li>Select SFTP as the file transfer protocol.</li>
+            <li>List the server as mindstorm.cbrain.mcgill.ca with your username and password for CBRAIN and list the port as 7500.</li>
+            <li>Files displayed in the drawer that appears are those files on the remote computer</ili>
+            <li>Right click in the drawer that appears and select Upload to upload files from your local computer to the remote computer</li>
+            <li>Select a file and right click to download the file to your local computer</li>
+        </ul>
+    
+    </ul>
+</ul>
+<br>
+    
+Upload and download your files as needed.  Then go to the Data Providers tab, find the Data Provider named 'Incoming' and click on it's "Browse" link.  Register your files, and they will appear in the file manager.  You should MOVE these files to one of the official CBRAIN Data Providers. There is a button at the top of the file manager that will allow you to move files.</p>
 
 <br>
 <br>
