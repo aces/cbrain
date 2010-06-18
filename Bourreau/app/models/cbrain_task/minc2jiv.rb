@@ -80,9 +80,7 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     if headerfile.save
       numsaves += 1
       headerfile.move_to_child_of(mincfile)
-      headerfile.addlog_context(self)
       self.addlog("Saved new header file #{headerfile.name}")
-      #self.addlog_to_userfiles_created(headerfile)
       params[:header_id] = headerfile.id
     else
       self.addlog("Could not save back result file '#{headerfile.name}'.")
@@ -99,16 +97,14 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     if rawbytefile.save
       numsaves += 1
       rawbytefile.move_to_child_of(mincfile)
-      rawbytefile.addlog_context(self)
       self.addlog("Saved new rawbyte file #{rawbytefile.name}")
-      #self.addlog_to_userfiles_created(rawbytefile)
       params[:raw_byte_id] = rawbytefile.id
     else
       self.addlog("Could not save back result file '#{rawbytefile.name}'.")
     end
 
     if numsaves > 0
-      #self.addlog_to_userfiles_processed(mincfile)
+      # This method wll silently ignore the userfiles that are not saved.
       self.addlog_to_userfiles_these_created_these([ mincfile ], [ headerfile, rawbytefile ])
     end
 
