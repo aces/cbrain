@@ -28,11 +28,12 @@ class SingleFile < Userfile
     ! self.size.blank?
   end
   
+  # Calculates and sets the size attribute.
   def set_size
     self.set_size! unless self.size_set?
   end
 
-  # Calculates and sets the size attribute.
+  # Forces calculation and setting of the size attribute.
   def set_size!
     self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
     self.save!

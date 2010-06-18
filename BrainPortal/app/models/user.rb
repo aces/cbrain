@@ -156,11 +156,12 @@ class User < ActiveRecord::Base
                          Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
                        end
   end
-  
+  #Find the scientific tools that this user has access to.
   def available_scientific_tools
     @available_scientific_tools = self.available_tools.scoped(:conditions  => {:category  => "scientific tool"})
   end
   
+  #Find the conversion tools that this user has access to.
   def available_conversion_tools
     @available_conversion_tools = self.available_tools.scoped(:conditions  => {:category  => "conversion tool"})
   end
@@ -237,7 +238,7 @@ class User < ActiveRecord::Base
     self.build_user_preference
   end
   
-  def immutable_login
+  def immutable_login #:nodoc:
     if self.changed.include? "login"
       errors.add(:login, "is immutable.")
     end
@@ -260,7 +261,7 @@ class User < ActiveRecord::Base
     destroy_system_group
   end
   
-  def system_group_site_update
+  def system_group_site_update  #:nodoc:
     SystemGroup.find_by_name(self.login).update_attributes(:site_id => self.site_id)
     
     if self.changed.include?("site_id")
@@ -275,7 +276,7 @@ class User < ActiveRecord::Base
     end
   end
   
-  def site_manager_check
+  def site_manager_check  #:nodoc:
     if self.role == "site_manager" && self.site_id.blank?
       errors.add(:site_id, "manager role must be associated with a site.")
     end
@@ -286,7 +287,7 @@ class User < ActiveRecord::Base
     system_group.destroy if system_group
   end
   
-  def add_system_groups
+  def add_system_groups #:nodoc:
     newGroup = UserGroup.new(:name => self.login, :site  => self.site)
     newGroup.save!
     

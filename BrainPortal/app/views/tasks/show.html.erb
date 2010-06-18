@@ -125,7 +125,7 @@
       <tr>
          <td colspan="2">
          <% begin %>
-           <%= render :partial => "tasks/show_params/#{@task.name.tableize.singularize}", :locals => { :params => @task.params } %>
+           <%= render :partial => "tasks/show_params/#{@task.name.underscore}", :locals => { :params => @task.params } %>
          <% rescue %>
            <pre><%= h(@task.params.to_yaml :root => "Params") -%></pre>
          <% end %>

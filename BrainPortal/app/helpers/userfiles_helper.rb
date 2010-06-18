@@ -48,6 +48,7 @@ module UserfilesHelper
     end
   end
   
+  #Create a link for object files in a civet collection
   def obj_link(file_name, userfile)
     display_name = file_name.sub(/^.+\/surfaces\//, "")
     if userfile.is_locally_synced? && file_name[-4, 4] == ".obj"
@@ -58,7 +59,7 @@ module UserfilesHelper
     end
   end
   
-  def userfiles_menu_option(name, option_name, partial)
+  def userfiles_menu_option(name, option_name, partial) #:nodoc:ß
     link_to_function name, {:class => " button userfile_menu", :id  => option_name}  do |page|
       page << "if(current_options != '#{option_name}'){"
       page << "var local_var = current_options;"
@@ -127,6 +128,8 @@ module UserfilesHelper
     end
   end
   
+  #Display the contents o.f a file to a view (meaning of contents depends on the type of file,
+  #e.g. images, text, xml)
   def display_contents(userfile)
     before_content = '<div id="userfile_contents_display">'
     before_content += link_to_function '<strong>Contents</strong>' do |page|

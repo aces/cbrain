@@ -51,7 +51,7 @@ class Group < ActiveRecord::Base
 
   private
   
-  def assign_userfile_to_owner_group
+  def assign_userfile_to_owner_group #:nodoc:
     user_group = {}
     self.userfiles.each do |file|
       user = file.user
@@ -61,7 +61,7 @@ class Group < ActiveRecord::Base
     end
   end
   
-  def assign_remote_resource_to_owner_group
+  def assign_remote_resource_to_owner_group #:nodoc:
     user_group = {}
     self.remote_resources.each do |rr|
       user = rr.user
@@ -71,7 +71,7 @@ class Group < ActiveRecord::Base
     end
   end
   
-  def assign_data_provider_to_owner_group
+  def assign_data_provider_to_owner_group #:nodoc:
     user_group = {}
     self.data_providers.each do |dp|
       user = dp.user

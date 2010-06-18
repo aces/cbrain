@@ -788,6 +788,7 @@ class DataProvider < ActiveRecord::Base
     providers[0]
   end
 
+  # Returns the site this data provider belongs to.
   def site
     @site ||= self.user.site
   end

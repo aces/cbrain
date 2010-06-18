@@ -42,8 +42,15 @@ class Userfile < ActiveRecord::Base
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
+  belongs_to              :format_source,
+                          :class_name   => "Userfile",
+                          :foreign_key  => "format_source_id"
+                          
   has_and_belongs_to_many :tags
   has_many                :sync_status
+  has_many                :formats,
+                          :class_name   => "Userfile",
+                          :foreign_key  => "format_source_id"
 
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
@@ -52,7 +59,7 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :group_id
   validate                :validate_associations
   
-  before_destroy          :cache_erase, :provider_erase
+  before_destroy          :erase_or_unregister, :format_tree_update
 
   def site
     @site ||= self.user.site
@@ -72,6 +79,26 @@ class Userfile < ActiveRecord::Base
     else
       sprintf "%d bytes", size
     end
+  end
+  
+  def add_format(userfile)
+    source_file = self.format_source || self
+    source_file.formats << userfile
+  end
+  
+  def format_name
+    nil
+  end
+  
+  def format_names
+    source_file = self.format_source || self
+    @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact 
+  end
+  
+  def get_format(f)
+    return self if self.format_name.to_s.downcase == f.to_s.downcase || self.class.name == f
+    
+    self.formats.all.find { |fmt| fmt.format_name.to_s.downcase == f.to_s.downcase || fmt.class.name == f }
   end
 
   #Return an array of the tags associated with this file
@@ -131,7 +158,7 @@ class Userfile < ActiveRecord::Base
     when 'tag_search'
       'tag:' + term
     when 'jiv'
-      'file:jiv'
+      'format:jiv'
     when 'minc'
       'file:minc'
     when 'cw5'
@@ -160,8 +187,6 @@ class Userfile < ActiveRecord::Base
         scope = custom_filter.filter_scope(scope)
       when 'file'
         case term
-        when 'jiv'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"])
         when 'minc'
           scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)",  "%.mnc"])
         when 'cw5'
@@ -533,6 +558,26 @@ class Userfile < ActiveRecord::Base
     unless Group.find(:first, :conditions => {:id => self.group_id})
       errors.add(:group, "does not exist.")
     end
-  end 
+  end
+  
+  def erase_or_unregister
+    unless self.data_provider.is_browsable?
+      self.provider_erase
+    end
+    self.cache_erase
+  end
+  
+  def format_tree_update
+    return true if self.format_source
+    
+    format_children = self.formats
+    return true if format_children.empty?
+    
+    new_source = format_children.shift
+    new_source.update_attributes!(:format_source_id  => nil)
+    format_children.each do |fmt|
+      fmt.update_attributes!(:format_source_id  => new_source.id)
+    end
+  end
    
 end

@@ -42,7 +42,8 @@
             } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
           />
       </th>
-      <th onMouseOver="$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
+      <th onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" 
+          onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
         <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
         <div id="name_search_filter" class="filter_list" style="display:none;">

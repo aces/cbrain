@@ -85,10 +85,6 @@ class FileCollection < Userfile
 
     self.remove_unwanted_files
     
-    #Get size
-    #total_size = IO.popen("du -s #{directory}","r") { |fh| fh.readline.split[0].to_i}
-
-    self.flatten
     self.sync_to_provider
     self.set_size!
     self.save
@@ -101,6 +97,7 @@ class FileCollection < Userfile
     self.list_files.select{ |file_entry| file_entry.name =~ /^#{full_dir}\//}
   end
   
+  # Returns a string to be displayed as the size in views.
   def format_size
     super + " (#{self.num_files} files)"
   end
@@ -220,48 +217,6 @@ class FileCollection < Userfile
       }
     end
   end
-
-  #Remove the common root (if there is one) from the directory structure of this collection.
-  def flatten
-    dir_name = self.cache_full_path
-
-    Dir.chdir(dir_name) do      
-      files = []
-      IO.popen("find . -type f -print") do |fh|
-        files = fh.readlines.map(&:chomp)
-      end
-      base = ""
-      source = files[0].split('/')
-      source.each do |dir|
-        break unless files.all? {|d| d =~ /^#{base + dir + '/'}/}
-        base += dir + '/'
-      end
-      
-      Dir.entries(base).each do |entry|
-        unless entry == "." || entry == ".."
-          File.move(base + entry, "./")
-        end
-      end
-
-      base_dirs = base.split('/')
-      base_dirs.shift               #remove the .
-      while !base_dirs.empty?
-        Dir.rmdir(base_dirs.join('/'))
-        base_dirs.pop
-      end
-    end
-
-  end
-
-  # # Interceptor for unsupported operation
-  # def cache_readhandle(&block) #:nodoc:
-  #   cb_error "Method not supported on FileCollections."
-  # end
-  # 
-  # # Interceptor for unsupported operation
-  # def cache_writehandle(&block) #:nodoc:
-  #   cb_error "Method not supported on FileCollections."
-  # end
 
 end
 

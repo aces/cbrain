@@ -38,6 +38,7 @@ class Tool < ActiveRecord::Base
   validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
   
+  #Find a random bourreau on which this tool is available and to which +user+ has access.
   def select_random_bourreau_for(user)
     available_group_ids = user.group_ids
     bourreau_list = self.bourreaux.find(:all, :conditions => { :group_id => available_group_ids, :online => true }).select(&:is_alive?)
@@ -49,7 +50,7 @@ class Tool < ActiveRecord::Base
   
   private
   
-  def set_default_attributes
+  def set_default_attributes #:nodoc:
     self.select_menu_text ||= "Launch #{self.name}"
     self.description ||= "#{self.name}"
   end

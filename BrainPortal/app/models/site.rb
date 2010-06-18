@@ -32,6 +32,7 @@ class Site < ActiveRecord::Base
   
   attr_accessor           :manager_ids
   
+  #Returns users that have manager access to this site (site managers or admins).
   def managers
     self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end

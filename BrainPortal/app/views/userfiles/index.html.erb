@@ -32,16 +32,12 @@
         <div id="userfiles_top_menu">
             <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
             <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
-            <%= userfiles_menu_option('Jiv Viewer', 'jiv_option', 'jiv/index') %>
         <br>
         </div>
         <br>
-        <div class="userfiles_upper_form">
-        <div id="jiv_option_div" class="upper_form" style="display:none">
-        </div>
-        </div>
-        
-        <div id="upload_option_div" class="upper_form" style="display:none">
+        <div class="userfiles_upper_form">  
+          <div id="upload_option_div" class="upper_form" style="display:none">
+          </div>
         </div>
           
     <% form_tag(operation_userfiles_path(:method => :post)) do %>
@@ -50,8 +46,6 @@
         <div id="conversion_tool_option_div" class="upper_file_menu" style="display:none">
         </div>
         <div id="scientific_tool_option_div" class="upper_file_menu" style="display:none">
-        </div>
-        <div id="jiv_option_div" class="upper_form" style="display:none">
         </div>
         </div>
     

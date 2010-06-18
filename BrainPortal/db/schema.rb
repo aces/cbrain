@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100601180528) do
+ActiveRecord::Schema.define(:version => 20100609155029) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -256,6 +256,7 @@ ActiveRecord::Schema.define(:version => 20100601180528) do
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                                :default => false
     t.integer  "num_files"
+    t.integer  "format_source_id"
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"

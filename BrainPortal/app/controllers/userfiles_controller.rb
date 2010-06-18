@@ -26,9 +26,11 @@ class UserfilesController < ApplicationController
     custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
 
     name_filters = current_session.userfiles_basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
+    format_filters, name_filters = name_filters.partition{|f| f =~ /^format:/} 
     tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
 
     scope = Userfile.convert_filters_to_scope(name_filters)
+    scope = scope.scoped(:conditions  => {:format_source_id  => nil})
 
     if current_session.view_all?
       if current_user.has_role? :site_manager
@@ -50,6 +52,10 @@ class UserfilesController < ApplicationController
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
 
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
+
+    format_filters.each do |fmt|
+      @userfiles = @userfiles.select{ |file| file.get_format fmt.sub(/^format:/, "") }
+    end
 
     if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
@@ -74,23 +80,9 @@ class UserfilesController < ApplicationController
     
     #For the 'new' panel
     @userfile = Userfile.new(
-        :group_id => SystemGroup.find_by_name(current_user.login).id
+      :group_id => SystemGroup.find_by_name(current_user.login).id
     )
     
-    #jiv stuff
-    jiv_files = Userfile.find_all_accessible_by_user(current_user, 
-                                                :conditions  => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.raw_byte", "%.raw_byte.gz", "%.header"], 
-                                                :access_requested => :read
-                                                ).map(&:name)   
-    @subjects = Jiv.filter_subjects(jiv_files)
-    @combos = []
-    
-    @subjects.each_with_index do |s1, i|
-      @subjects[(i+1)..-1].each do |s2|
-        @combos << s1 + " " + s2
-      end
-    end
-
     respond_to do |format|
       format.html # index.html.erb
       format.js
@@ -417,6 +409,9 @@ class UserfilesController < ApplicationController
     elsif params[:commit] == 'Copy Files'
       operation = 'move_to_other_provider'
       task      = 'copy'
+    elsif params[:commit] == 'Jiv Viewer'
+      redirect_to :controller  => :jiv, :action => :index
+      return
     else
       operation   = 'cluster_task'
       task = params[:operation].sub(/^CbrainTask::/,"")
@@ -453,13 +448,11 @@ class UserfilesController < ApplicationController
         Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
           basename = userfile.name
           if userfile.data_provider.is_browsable?
-            userfile.destroy_log rescue true
-            Userfile.delete(userfile.id)
             unregistered_count += 1
           else
-            userfile.destroy
             deleted_count += 1
           end
+          userfile.destroy
         end
         
         if deleted_count > 0

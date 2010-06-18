@@ -30,9 +30,13 @@
         <%= image_tag "/images/file_icon.png" %>
       <% end %>
       <%= link_to_userfile_if_accessible userfile %>
-      <%= userfile.pretty_type %>      
+      <%= userfile.pretty_type %>    
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+      <% end %>
+      <% unless userfile.format_names.blank? %>
+        <br>
+        Formats: <%= userfile.format_names.map{|f| "<span style='color:blue'>#{f}</span>" }.join(", ") %>
       <% end %>
    </td>
    <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> ><%= h userfile.user.login  %></td>

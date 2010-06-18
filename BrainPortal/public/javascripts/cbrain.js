@@ -56,7 +56,7 @@ jQuery(
       var dialog = jQuery("<div></div>").load(url).appendTo(jQuery("body")).dialog({
       	show: "puff",
       	modal: true,
-	position: 'center',
+	      position: 'center',
       	width: 800,
       	height: 600
       });
@@ -103,8 +103,8 @@ jQuery(
 
         }).toggle(function(event){
 	        var menu = jQuery(this).siblings("div.drop_down_menu");
-	  jQuery(".drop_down_menu:visible").siblings(".button").click();
-	  menu.show();
+	        jQuery(".drop_down_menu:visible").siblings(".button").click();
+      	  menu.show();
         },
         function(event){
       	  var menu = jQuery(this).siblings("div.drop_down_menu");
@@ -122,8 +122,33 @@ jQuery(
           jQuery(this).ajaxSubmit({
             type: "POST",
             dataType: data_type,
-            target: target,
+            target: jQuery(target),
+            success: function(data){
+              jQuery(target).html(data);
+            },
             resetForm: true
+          });
+          return false;
+        });
+        
+        jQuery("#jiv_submit").click(function(){
+          var data_type = jQuery(this).attr("data-datatype");
+          jQuery(this).closest("form").ajaxSubmit({
+            url: "/jiv",
+            type: "GET",
+            resetForm: false,
+            success: function(data){
+              jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
+              	show: "puff",
+              	modal: true,
+        	      position: 'center',
+              	width: 400,
+              	height: 300,
+              	close: function(){
+              	  jQuery(this).remove();
+              	}
+              });
+            }
           });
           return false;
         });
@@ -184,29 +209,28 @@ jQuery(
           onclick_elem.unbind('click');
           onclick_elem.addClass("ajax_onclick_hide_element");
           jQuery.ajax({ type: 'GET',
-          url: jQuery(onclick_elem).attr("data-url"),
-          dataType: 'html',
-          success: function(data){
-            var new_data = jQuery(data);
-            new_data.attr("data-parents", parents);
-            new_data.addClass(parents);
-            before_content.replaceWith(new_data);
-            onclick_elem.find(".ajax_onclick_show_child").hide();
-            onclick_elem.find(".ajax_onclick_hide_child").show();
-          },
-	  error:function(e) {
-	    var new_data = jQuery("Error occured while processing this request");
-            new_data.attr("data-parents", parents);
-            new_data.addClass(parents);
-            before_content.replaceWith(new_data);
-            onclick_elem.find(".ajax_onclick_show_child").hide();
-            onclick_elem.find(".ajax_onclick_hide_child").show();
-	  },
-          data: {},
-	  async: true,
-	  timeout: 50000
-
-        });
+            url: jQuery(onclick_elem).attr("data-url"),
+            dataType: 'html',
+            success: function(data){
+              var new_data = jQuery(data);
+              new_data.attr("data-parents", parents);
+              new_data.addClass(parents);
+              before_content.replaceWith(new_data);
+              onclick_elem.find(".ajax_onclick_show_child").hide();
+              onclick_elem.find(".ajax_onclick_hide_child").show();
+            },
+	          error:function(e) {
+	            var new_data = jQuery("Error occured while processing this request");
+              new_data.attr("data-parents", parents);
+              new_data.addClass(parents);
+              before_content.replaceWith(new_data);
+              onclick_elem.find(".ajax_onclick_show_child").hide();
+              onclick_elem.find(".ajax_onclick_hide_child").show();
+  	        },
+            data: {},
+	          async: true,
+	          timeout: 50000
+          });
 
       };
 

@@ -44,12 +44,15 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
+    mincfile_id     = params[:mincfile_id]
+    mincfile        = Userfile.find(mincfile_id)
+    
     [
       "# The darn quarantine init resets the path",
       "CURPATH=\"$PATH\"",
       "source #{CBRAIN::Quarantine_dir}/init.sh",
       "export PATH=\"$PATH:$CURPATH\"",
-      "minc2jiv.pl -force -output_path . in.mnc"
+      "minc2jiv.pl -force in.mnc"
     ]
   end
 
@@ -60,55 +63,42 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     mincfile_id     = params[:mincfile_id]
     mincfile        = Userfile.find(mincfile_id)
     group_id        = mincfile.group_id
-
+    
+    orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
     unless (File.exists?(Tmpheader_file) && File.exists?(Tmprawbyte_file))
       self.addlog("Could not find resultfiles #{Tmpheader_file} && #{Tmprawbyte_file}.")
       return false
     end
+    
+    safe_mkdir("output.jiv")
+    File.copy(Tmpheader_file, "output.jiv/" + orig_plainbasename + ".header")
+    File.copy(Tmprawbyte_file, "output.jiv/" + orig_plainbasename + ".raw_byte.gz")
 
     orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
-    numsaves = 0
 
-    headerfile = safe_userfile_find_or_new(SingleFile,
-      :name             => orig_plainbasename + ".header",
+    jiv_file = safe_userfile_find_or_new(JivFile,
+      :name             => orig_plainbasename + ".jiv",
       :user_id          => user_id,
       :group_id         => group_id,
       :data_provider_id => params[:data_provider_id],
       :task             => "Minc2jiv"
     )
-    headerfile.cache_copy_from_local_file(Tmpheader_file)
-    if headerfile.save
-      numsaves += 1
-      headerfile.move_to_child_of(mincfile)
-      self.addlog("Saved new header file #{headerfile.name}")
-      params[:header_id] = headerfile.id
+
+    jiv_file.cache_copy_from_local_file("output.jiv")
+    if jiv_file.save
+      mincfile.add_format(jiv_file)
+      jiv_file.move_to_child_of(mincfile)
+      jiv_file.addlog_context(self)
+      self.addlog("Saved new jiv file #{jiv_file.name}")
+      params[:jiv_file_id] = jiv_file.id
+      FileUtils.rm_rf("output.jiv")
     else
-      self.addlog("Could not save back result file '#{headerfile.name}'.")
+      cb_error("Could not save back result file '#{jiv_file.name}'.")
     end
+    
+    self.addlog_to_userfiles_these_created_these([ mincfile ], [ jiv_file ])
 
-    rawbytefile = safe_userfile_find_or_new(SingleFile,
-      :name             => orig_plainbasename + ".raw_byte.gz",
-      :user_id          => user_id,
-      :group_id         => group_id,
-      :data_provider_id => params[:data_provider_id],
-      :task             => "Minc2jiv"
-    )
-    rawbytefile.cache_copy_from_local_file(Tmprawbyte_file)
-    if rawbytefile.save
-      numsaves += 1
-      rawbytefile.move_to_child_of(mincfile)
-      self.addlog("Saved new rawbyte file #{rawbytefile.name}")
-      params[:raw_byte_id] = rawbytefile.id
-    else
-      self.addlog("Could not save back result file '#{rawbytefile.name}'.")
-    end
-
-    if numsaves > 0
-      # This method wll silently ignore the userfiles that are not saved.
-      self.addlog_to_userfiles_these_created_these([ mincfile ], [ headerfile, rawbytefile ])
-    end
-
-    return(numsaves == 2 ? true : false)
+    true
   end
 
   # Cleans output files because minc2jiv.pl doesn't clobber

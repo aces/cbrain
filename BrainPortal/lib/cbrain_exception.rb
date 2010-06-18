@@ -14,7 +14,10 @@ class CbrainException < StandardError
    Revision_info="$Id$"
 
    attr_accessor :redirect
-
+   
+   #Initializer for CbrainException objects. The optional second argument
+   #provides a url (or equivalent hash) to which the system will redirect the
+   #request after the exception is handled.
    def initialize(message = "Something went wrong.", redirect = nil)
      super(message)
 
