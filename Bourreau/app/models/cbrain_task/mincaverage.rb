@@ -64,7 +64,7 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
     
 
     unless (File.exists?(out_name))
-      self.addlog("Could not find result file #{out_name}.")
+      self.addlog("Could not find result file '#{out_name}'.")
       return false
     end
 
@@ -80,10 +80,14 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
     outfile_success = outfile.save
     if outfile_success
       self.addlog("Saved new average file #{out_name}")
+      params[:outfile_id] = outfile.id
     else
       self.addlog("Could not save back result file '#{out_name}'.")
+      params.delete(:outfile_id)
     end
     
+    sdfile = nil
+    sdfile_success = true
     if params[:sdfile]
       sdfile = safe_userfile_find_or_new(SingleFile,
         :name             => "sd_#{out_name}",
@@ -96,13 +100,16 @@ class CbrainTask::Mincaverage < CbrainTask::ClusterTask
       sdfile_success = sdfile.save
       if sdfile_success
         self.addlog("Saved new standard deviation file sd_#{out_name}")
+        params[:sdfile_id] = sdfile.id
       else
         self.addlog("Could not save back standard deviation file 'sd_#{out_name}'.")
+        params.delete(:sdfile_id)
       end
-      return outfile_success && sdfile_success
-    else
-      return outfile_success
     end
+
+    self.addlog_to_userfiles_these_created_these(Userfile.find(params[:interface_userfile_ids]), [ outfile, sdfile ])
+
+    return outfile_success && sdfile_success
   end
 
 end

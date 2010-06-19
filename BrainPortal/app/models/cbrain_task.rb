@@ -99,6 +99,15 @@ class CbrainTask < ActiveRecord::Base
     @name ||= self.class.to_s.sub(/^CbrainTask::/,"")
   end
 
+  # Returns a longer name for the task (without the Cbrain prefix stuff)
+  # that includes the task's Bourreau name and ID.
+  # Example: 'Civet@MyBourreau/23'
+  def fullname
+    mybourreau = self.bourreau.name rescue "(Unknown)"
+    myid       = self.id            ||     "(NoId)"
+    "#{self.name}@#{mybourreau}/#{myid}"
+  end
+
 
 
   ##################################################################

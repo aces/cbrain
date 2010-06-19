@@ -23,13 +23,12 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
    def setup #:nodoc:
       task_type = self.params[:rpm_task_type]
 
+      cpt_ref_file_id   = self.params[:cpt_ref_file_id]
+      img_collection_id = self.params[:img_collection_id]
       cpt_ref_file    = Userfile.find(cpt_ref_file_id)
       img_collection  = Userfile.find(img_collection_id)
 
       if task_type == 'subtask' and params[:subtask_id] == 0
-         cpt_ref_file_id   = self.params[:cpt_ref_file_id]
-         img_collection_id = self.params[:img_collection_id]
-
          cpt_ref_file.sync_to_cache
          img_collection.sync_to_cache
 
@@ -90,8 +89,10 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
      data_provider_id = self.params[:data_provider_id]
 
      # Use group id of one of the input files.
-     cpt_ref_file_id = self.params[:cpt_ref_file_id]
-     cpt_ref_file    = SingleFile.find(cpt_ref_file_id)
+     cpt_ref_file_id   = self.params[:cpt_ref_file_id]
+     img_collection_id = self.params[:img_collection_id]
+     cpt_ref_file    = Userfile.find(cpt_ref_file_id)
+     img_collection  = Userfile.find(img_collection_id)
      group_id        = cpt_ref_file.group_id
 
      unless (  File.exists?("./output/rpm_out_bp.i") ||
@@ -112,11 +113,15 @@ class CbrainTask::Rpm < CbrainTask::ClusterTask
 
      unless results_collection.save
         self.addlog("Could not save result files '#{results_collection.name}'.")
+        params.delete(:results_collection_id)
         return false
      end
 
      results_collection.cache_copy_from_local_file("output")
      results_collection.move_to_child_of(cpt_ref_file)
+
+     params[:results_collection_id] = results_collection.id
+     self.addlog_to_userfiles_these_created_these([ cpt_ref_file, img_collection ], [ results_collection ])
 
      return true
    end

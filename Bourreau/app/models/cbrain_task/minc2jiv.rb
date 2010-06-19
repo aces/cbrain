@@ -44,15 +44,12 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
-    mincfile_id     = params[:mincfile_id]
-    mincfile        = Userfile.find(mincfile_id)
-    
     [
       "# The darn quarantine init resets the path",
       "CURPATH=\"$PATH\"",
       "source #{CBRAIN::Quarantine_dir}/init.sh",
       "export PATH=\"$PATH:$CURPATH\"",
-      "minc2jiv.pl -force in.mnc"
+      "minc2jiv.pl -force -output_path . in.mnc"
     ]
   end
 
@@ -64,7 +61,8 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     mincfile        = Userfile.find(mincfile_id)
     group_id        = mincfile.group_id
     
-    orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
+    params.delete(:jiv_file_id)
+
     unless (File.exists?(Tmpheader_file) && File.exists?(Tmprawbyte_file))
       self.addlog("Could not find resultfiles #{Tmpheader_file} && #{Tmprawbyte_file}.")
       return false
@@ -88,7 +86,6 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     if jiv_file.save
       mincfile.add_format(jiv_file)
       jiv_file.move_to_child_of(mincfile)
-      jiv_file.addlog_context(self)
       self.addlog("Saved new jiv file #{jiv_file.name}")
       params[:jiv_file_id] = jiv_file.id
       FileUtils.rm_rf("output.jiv")
@@ -106,8 +103,7 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     params = self.params
     File.unlink(Tmpheader_file)  rescue true
     File.unlink(Tmprawbyte_file) rescue true
-    params.delete(:header_id)
-    params.delete(:raw_byte_id)
+    params.delete(:jiv_file_id)
     true
   end
 

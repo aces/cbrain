@@ -61,6 +61,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
     numfail = 0
     numok   = 0
 
+    mincfiles = []
     io.each_line do |file|
       next unless file.match(/\.mnc\s*$/)
       file = file.sub(/\n$/,"")
@@ -77,6 +78,7 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
         mincfile.move_to_child_of(dicom_col)
         numok += 1
         self.addlog("Saved new MINC file #{basename}")
+        mincfiles << mincfile
       else
         numfail += 1
         self.addlog("Could not save back result file '#{basename}'.")
@@ -84,6 +86,9 @@ class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
     end
 
     io.close
+
+    params[:created_mincfile_ids] = mincfiles.map &:id
+    self.addlog_to_userfiles_these_created_these([dicom_col],mincfiles)
 
     return true if numok > 0 && numfail == 0
     false

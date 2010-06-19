@@ -380,8 +380,8 @@ module ApplicationHelper
   # simply a block to define the content         
   #                                              
   # To initialize, provide it with a                         
-  # reference to ActionView::Helpers::CaputreHelper::caputre 
-  # and ActionView::TamplateHelperHandler::render                                                         
+  # reference to ActionView::Helpers::CaputreHelper::capture 
+  # and ActionView::TemplateHelperHandler::render                                                         
   #############################################################
   class TabBar
     

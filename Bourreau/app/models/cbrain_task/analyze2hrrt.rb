@@ -84,7 +84,12 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
       analyze_collection    = Userfile.find(analyze_collection_id)
 
       # Move results files into output directory.
-      FileUtils.mv(Dir.glob('*.{i,i.hdr}'), './output')
+      outputs = Dir.glob('*.{i,i.hdr}') || []
+      if outputs.size == 0
+        self.addlog("Cannot find outputfiles ?")
+        return false
+      end
+      FileUtils.mv(outputs, './output') # NOT RESTARTABLE!
 
       file_collection = safe_userfile_find_or_new(FileCollection,
         :name             => params[:output_collection_name],
@@ -97,11 +102,20 @@ class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
       file_collection.save!
       file_collection.move_to_child_of(analyze_collection)
       self.addlog("Saved new collection #{params[:output_collection_name]}")
+
+      params[:hrrt_collection_id] = file_collection.id
+      self.addlog_to_userfiles_these_created_these([analyze_collection],[file_collection])
+
     rescue => e
       self.addlog("An exception was raised during save_results step of Analyze2HRRT task: #{e.message}")
+      params.delete(:hrrt_collection_id)
       return false
     end
     true
+  end
+
+  def restart_at_post_processing #:nodoc:
+    false #because of FileUtils.mv above
   end
 
 end

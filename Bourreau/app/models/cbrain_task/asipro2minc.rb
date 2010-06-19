@@ -63,7 +63,12 @@ class CbrainTask::Asipro2minc < CbrainTask::ClusterTask
       asipro_collection    = Userfile.find(asipro_collection_id)
 
       # Move results files into output directory.
-      FileUtils.mv(Dir.glob('*.mnc'), './output')
+      outputs = Dir.glob('*.mnc') || []
+      if outputs.size == 0
+        self.addlog("Cannot find outputfiles ?")
+        return false
+      end
+      FileUtils.mv(outputs, './output') # NOT RESTARTABLE!
 
       minc_collection = safe_userfile_find_or_new(FileCollection,
           :name             => "#{asipro_collection.name}_#{Time.now.to_i}_MINC",
@@ -78,12 +83,20 @@ class CbrainTask::Asipro2minc < CbrainTask::ClusterTask
 
       self.addlog("Saved new MINC collection #{minc_collection}")
 
+      params[:mincfile_collection_id] = minc_collection.id
+      self.addlog_to_userfiles_these_created_these([asipro_collection],[minc_collection])
+
     rescue => e
       # e.backtrace?
       self.addlog("An error occured: #{e.message}")
+      params.delete(:mincfile_collection_id)
       return false      
     end
     true
+  end
+
+  def restart_at_post_processing #:nodoc:
+    false #because of FileUtils.mv above
   end
 
 end

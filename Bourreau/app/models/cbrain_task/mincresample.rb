@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# CbrainTask subclass for running mincmath
+# CbrainTask subclass for running mincresample
 #
 # Original author:
 # Template author: Pierre Rioux
@@ -115,9 +115,12 @@ class CbrainTask::Mincresample < CbrainTask::ClusterTask
     if outfile.save
       outfile.move_to_child_of(Userfile.find(params[:mincfile_id]))
       self.addlog("Saved new mincresample file #{out_name}")
+      params[:outfile_id] = outfile.id
+      self.addlog_to_userfiles_these_created_these( [ mincfile ], [ outfile ])
       return true
     else
       self.addlog("Could not save back result file '#{out_name}'.")
+      params.delete(:outfile_id)
       return false
     end
   end

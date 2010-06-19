@@ -62,9 +62,12 @@ class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
       hrrt_collection.save!
       hrrt_collection.move_to_child_of(dicom_collection)
       self.addlog("Saved new HRRT file #{basename}")
+      params[:hrrt_collection_id] = hrrt_collection.id
+      self.addlog_to_userfiles_these_created_these([ dicom_collection ], [ hrrt_collection ])
     rescue => e
       # e.backtrace?
       self.addlog("An exception was raised during save_results stage of DicomToHRRT task: #{e.message}")
+      params.delete(:hrrt_collection_id)
       return false      
     end
     true

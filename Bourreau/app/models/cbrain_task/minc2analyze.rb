@@ -78,8 +78,11 @@ class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
       file_collection.save!
       file_collection.move_to_child_of(minc_collection)
       self.addlog("Saved new collection #{params[:output_collection_name]}")
+      params[:analyze_collection_id] = file_collection.id
+      self.addlog_to_userfiles_these_created_these([ minc_collection ], [ file_collection ])
     rescue => e
       self.addlog("An exception was raised during save_results step of MincToAnalyze task: #{e.message}")
+      params.delete(:analyze_collection_id)
       return false
     end
     true

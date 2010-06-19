@@ -1,0 +1,16 @@
+
+<STRONG>Files synchronized:</STRONG>
+<P>
+<UL>
+<% if params[:interface_userfile_ids] && params[:interface_userfile_ids].size > 0 %>
+<%   params[:interface_userfile_ids].each do |id| %>
+  <LI>Userfile: <%= link_to_userfile_if_accessible id %></LI>
+<%   end %>
+<% else %>
+  <LI>(No userfiles needed to synchronize)</LI>
+<% end %>
+</UL>
+This diagnostics task is copy number <%= params[:copy_number] || "1" %> of <%= params[:num_copies] || "1" %>
+<P>
+<STRONG>Report:</STRONG>
+<%= link_to_userfile_if_accessible params[:report_id] %>

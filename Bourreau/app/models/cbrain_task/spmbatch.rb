@@ -50,7 +50,7 @@ class CbrainTask::Spmbatch < CbrainTask::ClusterTask
      safe_symlink(rootDir,name)
 
      batch_names = []
-     batchs_files = params[:batchs_files]
+     batchs_files = params[:batch_file_ids].values
      batchs_files.each_with_index { |batch_id,idx|      
        batch = Userfile.find(batch_id)
        batch.sync_to_cache
@@ -144,12 +144,14 @@ class CbrainTask::Spmbatch < CbrainTask::ClusterTask
 
     if spmbatchresult.save
       spmbatchresult.cache_copy_from_local_file("spmbatch_out/#{name}")
-      spmbatchresult.addlog_context(self,"Created by task '#{self.bname_tid}' from '#{source_userfile.name}'")
       spmbatchresult.move_to_child_of(source_userfile)
       self.addlog("Saved new spmBatch result file #{spmbatchresult.name}.")
+      params[:spmbatchresult_id] = spmbatchresult.id
+      self.addlog_to_userfiles_these_created_these( [ collection ], [ spmbatchresult ] )
       return true
     else
       self.addlog("Could not save back result file '#{spmbatchresult.name}'.")
+      params.delete(:spmbatchresult_id)
       return false
     end
     

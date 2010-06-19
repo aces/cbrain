@@ -565,6 +565,7 @@ class Userfile < ActiveRecord::Base
       self.provider_erase
     end
     self.cache_erase
+    true
   end
   
   def format_tree_update

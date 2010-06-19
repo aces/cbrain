@@ -126,15 +126,6 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
     params       = self.params
     user_id      = self.user_id
 
-    prefix     = params[:prefix]
-    dsid_names = params[:dsid_names] # hash, keys are meaningless
-    dsids      = dsid_names.values.sort.join(" ")
-
-    # Find study object and mark it as changed.
-    study_id = params[:study_id]
-    study = CivetStudy.find(study_id)
-    study.cache_is_newer
-
     # Check for some common error conditions.
     stderr = File.read(self.stderr_cluster_filename) rescue ""
     if stderr =~ /gnuplot.*command not found/i
@@ -145,10 +136,21 @@ class CbrainTask::CivetQc < CbrainTask::ClusterTask
       return false
     end
 
+    # Find study object and mark it as changed.
+    study_id = params[:study_id]
+    study = CivetStudy.find(study_id)
+
     # Save back study with QC report in it.
     self.addlog("Syncing study with QC reports back to data provider.")
-    study.addlog_context(self,"QC pipeline performed with prefix '#{prefix}' and subjects '#{dsids}'")
+    study.cache_is_newer
     study.sync_to_provider
+
+    # Log that it was processed
+    prefix     = params[:prefix]
+    dsid_names = params[:dsid_names] # hash, keys are meaningless
+    dsids      = dsid_names.values.sort.join(" ")
+    self.addlog_to_userfiles_processed(study, "with prefix '#{prefix}' and subjects '#{dsids}'")
+
     true
   end
 

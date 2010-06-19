@@ -69,7 +69,7 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
     
 
     unless (File.exists?(out_name))
-      self.addlog("Could not find result file #{out_name}.")
+      self.addlog("Could not find result file '#{out_name}'.")
       return false
     end
 
@@ -83,9 +83,12 @@ class CbrainTask::Mincmath < CbrainTask::ClusterTask
     outfile.cache_copy_from_local_file(out_name)
     if outfile.save
       self.addlog("Saved new mincmath file #{out_name}")
+      params[:outfile_id] = outfile.id
+      self.addlog_to_userfiles_these_created_these(Userfile.find(params[:interface_userfile_ids]), [ outfile ])
       return true
     else
       self.addlog("Could not save back result file '#{out_name}'.")
+      params.delete(:outfile_id)
       return false
     end
   end

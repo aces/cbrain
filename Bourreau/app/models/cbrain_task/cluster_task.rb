@@ -263,7 +263,11 @@ class CbrainTask::ClusterTask < CbrainTask
     cb_error "Attribute list missing a required attribute." unless
       [ :name, :data_provider_id, :user_id, :group_id ].all? { |i| attlist.has_key?(i) }
     results = klass.find(:all, :conditions => attlist)
-    return results[0] if results.size == 1
+    if results.size == 1
+      existing_userfile = results[0]
+      existing_userfile.cache_is_newer # we assume we want to update the content, always
+      return existing_userfile
+    end
     cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
     return klass.new(attlist)
   end

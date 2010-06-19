@@ -138,12 +138,16 @@ class CbrainTask::Cw5 < CbrainTask::ClusterTask
     )
     opticresult.cache_copy_from_local_file(optic_tarresult)
 
+    params[:opticresult_id] = opticresult.id
+    self.addlog_to_userfiles_these_created_these([optic_col],[opticresult])
+
     if opticresult.save
       opticresult.move_to_child_of(optic_col)
       self.addlog("Saved new cw5 result file #{opticresult.name}.")
       return true
     else
       self.addlog("Could not save back result file '#{opticresult.name}'.")
+      params.delete(:opticresult_id)
       return false
     end
 

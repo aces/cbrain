@@ -22,8 +22,8 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
     params       = self.params
 
     # List of collection IDs directly supplied
-    civet_collection_ids = params[:civet_collection_ids] || ""
-    civet_ids            = civet_collection_ids.split(/,/)
+    civet_collection_ids = params[:civet_collection_ids] || [] # used to be string
+    civet_ids            = civet_collection_ids.is_a?(Array) ? civet_collection_ids : civet_collection_ids.split(/,/)
 
     # Fetch list of collection IDs indirectly through task list
     task_list_ids        = params[:civet_from_task_ids] || ""
@@ -38,14 +38,13 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
 
     # Save back full list of all collection IDs into params
     civet_ids.uniq!
-    params[:civet_collection_ids] = civet_ids.join(",")
+    params[:civet_collection_ids] = civet_ids
 
     # Get each source collection
     cols = []
     civet_ids.each do |id|
       col = Userfile.find(id.to_i)
       unless col && (col.is_a?(CivetCollection)) # || col.is_a?(CivetStudy))
-        #self.addlog("Error: cannot find Civet Collection or Study with ID=#{id}")
         self.addlog("Error: cannot find CivetCollection with ID=#{id}")
         return false
       end
@@ -150,33 +149,35 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
       :data_provider_id => provid
     )
 
-    # Save the new CivetStudy object
-    unless newstudy.save
-      cb_error "Cannot create a new CivetStudy named '#{newname}'."
-    end
+    civet_collection_ids = params[:civet_collection_ids] || [] # used to be string
+    civet_ids            = civet_collection_ids.is_a?(Array) ? civet_collection_ids : civet_collection_ids.split(/,/)
+    # Save back full list of all collection IDs into params
+    civet_ids.uniq!
+    params[:civet_collection_ids] = civet_ids
+    cols = civet_ids.map { |id| Userfile.find(id) }
 
     # Now let's fill the new CivetStudy with everything in
     # the original collections; if anything fails, we need
     # to destroy the incomplete newstudy object.
 
-    civet_collection_ids = params[:civet_collection_ids] || ""
-    civet_ids = civet_collection_ids.split(/,/)
-    cols = civet_ids.map { |id| Userfile.find(id) }
-
     self.addlog("Combining collections...")
-    newstudy.addlog("Created by task #{self.bname_tid} with prefix '#{prefix}'")
     begin
+      newstudy.save!
       newstudy.cache_prepare
+      self.addlog_to_userfiles_these_created_these(cols,[newstudy],"with prefix '#{prefix}'")
+
       coldir = newstudy.cache_full_path
       Dir.mkdir(coldir) unless File.directory?(coldir)
       errfile = self.stderr_cluster_filename
 
       # Issue rsync commands to combine the files
+      subjects = []
       cols.each do |col|
         col_id = col.id
         dsid   = tcol_to_dsid["C#{col_id}"]
+        subjects << dsid
         self.addlog("Adding #{col.class.to_s} '#{col.name}'")
-        newstudy.addlog_context(self,"Adding #{col.class.to_s} '#{col.name}'")
+        newstudy.addlog("Adding #{col.class.to_s} '#{col.name}'")
         colpath = col.cache_full_path
         dsid_dir = coldir + dsid
         Dir.mkdir(dsid_dir.to_s) unless File.directory?(dsid_dir.to_s)
@@ -190,7 +191,9 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
       newstudy.sync_to_provider
       newstudy.set_size
       newstudy.save
+
       params[:output_civetstudy_id] = newstudy.id
+      newstudy.addlog("Subjects are: #{subjects.join(", ")}")
 
       # Option: destroy the original sources
       if params[:destroy_sources] && params[:destroy_sources].to_s == 'YeS'
@@ -202,6 +205,7 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
 
     rescue => itswrong
       newstudy.destroy
+      params.delete(:output_civetstudy_id)
       raise itswrong
     end
 

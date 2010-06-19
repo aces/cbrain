@@ -151,18 +151,18 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
     report  = nil
 
     if dp_id  # creating the report is optional
-      report_attributes = {
-                               :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
-                               :user_id          => myuser.id,
-                               :group_id         => mygroup.id,
-                               :data_provider_id => dp_id,
-                               :task             => 'Bourreau Diagnostics'
-                          }
-      report = safe_userfile_find_or_new(SingleFile, report_attributes)
+      report = safe_userfile_find_or_new(SingleFile,
+            :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
+            :user_id          => myuser.id,
+            :group_id         => mygroup.id,
+            :data_provider_id => dp_id,
+            :task             => 'Bourreau Diagnostics'
+      )
     end
 
     if dp_id.blank?
       self.addlog("No Data Provider ID provided, so no report created.")
+      params.delete(:report_id)
     elsif report.save
       report.cache_writehandle do |fh|
         stdout_text = File.read(self.stdout_cluster_filename) rescue "(Exception)"
@@ -183,8 +183,11 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
         REPORT_DIAGNOSTICS
       end
+      params[:report_id] = report.id
+      self.addlog_to_userfiles_created(report)
     else
       self.addlog("Could not save report?!?")
+      params.delete(:report_id)
     end
 
     postpro_delay = params[:postpro_delay] ? params[:postpro_delay].to_i : 0

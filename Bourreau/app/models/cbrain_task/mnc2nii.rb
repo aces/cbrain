@@ -65,6 +65,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     data_provider.id = params[:data_provider_id]
 
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
+    niifiles = []
     out_files.each do |file|
       self.addlog(file)
       niifile = safe_userfile_find_or_new(SingleFile,
@@ -78,10 +79,15 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
       if niifile.save
         niifile.move_to_child_of(minc_col)
         self.addlog("Saved new Nifti file ")
+        niifiles << niifile
       else
-        self.addlog("Could not save back result file.")
+        self.addlog("Could not save back result file #{niifile.name}")
       end
     end
+
+    params[:niifile_ids] = niifiles.map &:id
+    self.addlog_to_userfiles_these_created_these( [ minc_col ], niifiles )
+
     true
   end
 

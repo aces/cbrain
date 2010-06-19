@@ -124,10 +124,20 @@
     
       <tr>
          <td colspan="2">
-         <% begin %>
-           <%= render :partial => "tasks/show_params/#{@task.name.underscore}", :locals => { :params => @task.params } %>
-         <% rescue %>
-           <pre><%= h(@task.params.to_yaml :root => "Params") -%></pre>
+         <% tab_bar do |tb| %>
+           <% tb.tab(:name => "Summary") do %>
+             <% begin %>
+               <%= render :partial => "tasks/show_params/#{@task.name.underscore}", :locals => { :task => @task, :params => @task.params } %>
+             <% rescue ActionView::MissingTemplate %>
+               <pre>Problem loading summary view (no template provided by task author).</pre>
+             <% rescue => ex %>
+               <pre>Problem loading summary view (template error).</pre>
+               <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
+             <% end %>
+           <% end %>
+           <% tb.tab(:name => "Raw") do %>
+             <pre><%= h(@task.params.to_yaml :root => "Params") -%></pre>
+           <% end %>
          <% end %>
          </td>
       </tr>
@@ -161,26 +171,27 @@
           <td colspan="2"><pre><%= h(@task.log) -%></pre></td>
       </tr>    
    
-   </table>
-
    <%
       prettystdout = @task.cluster_stdout || "(None)"
       prettystderr = @task.cluster_stderr || "(None)"
    %>
+      <tr>
+        <th colspan="2">Cluster Job's Captured Output</th>
+      </tr>
 
-   <table id="output_tasks_table">
       <tr>
-          <th>Cluster Job's Standard Output</th>
+        <td class="left_align" colspan="2">
+          <% tab_bar do |tb| %>
+            <% tb.tab(:name => "Standard Out") do %>
+              <pre id="standard_out"><%= h(prettystdout) -%></pre>
+            <% end %>
+            <% tb.tab(:name => "Standard Error") do %>
+              <pre id="standard_out"><%= h(prettystderr) -%></pre>
+            <% end %>
+          <% end %>
+        </td>
       </tr>
-      <tr>
-          <td class="left_align"><pre id="standard_out"><%= h(prettystdout) -%></pre></td>
-      </tr>
-      <tr>
-          <th>Cluster Job's Standard Error</th>
-      </tr>
-      <tr>
-          <td class="left_align"><pre id="standard_out"><%= h(prettystderr) -%></pre></td>
-      </tr>
+
    </table>
 
 </div>

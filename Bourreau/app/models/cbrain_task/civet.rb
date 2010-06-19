@@ -255,6 +255,7 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
       :task             => "Civet"
     )
     unless civetresult.save
+      params.delete(:output_civetcollection_id)
       cb_error "Could not save back result file '#{civetresult.name}'."
     end
 
@@ -291,7 +292,7 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
     civetresult.cache_copy_from_local_file(out_dsid)
 
     # Log information
-    civetresult.addlog_context(self,"Created by task '#{self.bname_tid}' from '#{source_userfile.name}'")
+    self.addlog_to_userfiles_these_created_these([ source_userfile ],[ civetresult ])
     civetresult.move_to_child_of(source_userfile)
     self.addlog("Saved new CIVET result file #{civetresult.name}.")
     true

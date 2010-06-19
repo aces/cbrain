@@ -105,15 +105,22 @@ class CbrainTask::Cw5filter < CbrainTask::ClusterTask
       :task             => 'CW5filter'
     )
     outfile.cache_copy_from_local_file(out_name)
-    
-   if outfile.save
+
+    if outfile.save
       outfile.move_to_child_of(input_file)
       self.addlog("Saved new cw5 file #{out_name}")
       return true
     else
       self.addlog("Could not save back result file '#{out_name}'.")
+      params.delete(:opticresult_id)
       return false
     end
+    
+    input_file_id  = params[:file_ids]
+    input_file = Userfile.find(input_file_id)
+
+    params[:opticresult_id] = outfile.id
+    self.addlog_to_userfiles_these_created_these([input_file],[outfile])
     
     true
   end

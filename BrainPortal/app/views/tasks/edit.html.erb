@@ -1,5 +1,5 @@
 
-<h1>Edit <%= @task.name %> Task</h1>
+<h1>Edit Task <%= @task.fullname %></h1>
 
 <%
      form_for(:cbrain_task, @task, :url => '/tasks/update', :method => :put ) do |form|
