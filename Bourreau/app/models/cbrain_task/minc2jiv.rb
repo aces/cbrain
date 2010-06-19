@@ -69,10 +69,9 @@ class CbrainTask::Minc2jiv < CbrainTask::ClusterTask
     end
     
     safe_mkdir("output.jiv")
+    orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
     File.copy(Tmpheader_file, "output.jiv/" + orig_plainbasename + ".header")
     File.copy(Tmprawbyte_file, "output.jiv/" + orig_plainbasename + ".raw_byte.gz")
-
-    orig_plainbasename = mincfile.name.sub(/\.mnc$/,"")
 
     jiv_file = safe_userfile_find_or_new(JivFile,
       :name             => orig_plainbasename + ".jiv",
