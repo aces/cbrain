@@ -14,6 +14,7 @@
     <%= link_to 'Manage Tags', tags_path %>
     </center>
 <% end %>
+
 <% button_with_dropdown_menu(:title => "Update Groups") do %>
    <br>
    Group Update: 
@@ -33,13 +34,7 @@
 
 <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
 
-<br><br><br>
-
 <%= submit_button("Create Collection", {:name => "commit"}) %>
 
-<%= submit_button("Delete Files", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected files?');"}) %>  
-
-        
-      
-        
+<%= submit_button("Delete Files", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected files?');"}) %>
 
