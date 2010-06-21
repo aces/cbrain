@@ -90,12 +90,14 @@ class SshDataProvider < DataProvider
       begin
         att = sftp.lstat!(newpath)
         return false # means file exists already
-      end rescue
+      rescue => ex
+        return false
+      end
       begin
         sftp.rename!(oldpath,newpath)
         userfile.name = newname
         return true
-      rescue
+      rescue => ex
         return false
       end
     end

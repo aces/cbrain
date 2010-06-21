@@ -18,7 +18,7 @@
 
 <div class="generalbox">
 
-<% form_for :userfile, :url => { :action => "update" } do |f| %>
+<% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
 
   <%= f.error_messages %>
 

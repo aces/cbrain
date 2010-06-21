@@ -333,13 +333,14 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     flash[:notice] ||= ""
-    flash[:error] ||= ""
+    flash[:error]  ||= ""
 
-    attributes = (params[:single_file] || params[:file_collection] || params[:civet_collection] || {}).merge(params[:userfile] || {})
+    attributes = params[:userfile] || {}
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
 
     old_name = @userfile.name
     new_name = attributes[:name] || old_name
+
     if ! Userfile.is_legal_filename?(new_name)
       flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
       new_name = old_name
@@ -350,12 +351,12 @@ class UserfilesController < ApplicationController
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
     respond_to do |format|
       if @userfile.update_attributes(attributes)
-        flash[:notice] += "#{@userfile.name} successfully updated."
         if new_name != old_name
            if @userfile.provider_rename(new_name)
               @userfile.save
            end
         end
+        flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(userfiles_url) }
         format.xml  { head :ok }
       else
