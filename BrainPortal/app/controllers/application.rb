@@ -86,7 +86,7 @@ class ApplicationController < ActionController::Base
     if BrainPortal.current_resource.portal_locked?
       flash.now[:error] ||= ""
       flash.now[:error] += "\n" unless flash.now[:error].blank?
-      flash.now[:error] += "This portal is currently locked."
+      flash.now[:error] += "This portal is currently locked for maintenance."
     end
     
     return unless current_user

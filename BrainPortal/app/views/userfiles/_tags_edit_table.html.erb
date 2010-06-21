@@ -14,12 +14,12 @@
          <th rowspan="<%= @tags.size %>">Tags:</th>
          <td><%= @tags[0].name %></td>
          <td><%= check_box_tag("tag_ids[]", @tags[0].id, @userfile.tags.include?(@tags[0])) %></td>
-         <% for tag in @tags[1..-1] %>
-            <tr>
-               <td><%= tag.name %></td>
-               <td><%= check_box_tag("tag_ids[]", tag.id, @userfile.tags.include?(tag)) %></td>
-            </tr>
-         <% end %>
       </tr>
+      <% for tag in @tags[1..-1] %>
+      <tr>
+         <td><%= tag.name %></td>
+         <td><%= check_box_tag("tag_ids[]", tag.id, @userfile.tags.include?(tag)) %></td>
+      </tr>
+      <% end %>
 </table>
 <% end %>
