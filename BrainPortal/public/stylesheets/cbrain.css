@@ -482,8 +482,6 @@ a:hover {
     color: black;
 } 
 
-
-
 /* ######################################################## */
 /* ssh_keys as part of the edit, show, _new data provider pages */
 /* ######################################################## */
@@ -1164,6 +1162,12 @@ table.resource_list td.checkbox {
     min-width: 14em;
     color: black;
 }
+
+#filter_div_format {
+    float: right;
+    width: 100%;
+}
+
 
 #current_filters ul {
     padding-left: 0;
@@ -1945,12 +1949,31 @@ td.middle{
 }
 
 .filter_list {
-    position: absolute;
+    position: absolute;                                                    
+    margin: 0;                      
+    padding: 1em 1em 1em 2em;                       
+    background-color: #05A3D6;                                                            
+    text-align:left;   
+}                     
+
+.filter_list_filename{
     margin: 0;
-    padding: 1em 1em 1em 2em;
-    background-color: #05A3D6;
+    padding-top: 0.5em;
+    background-color: #ffffff;
+    color: #00000;
     text-align:left;
+    float: left;
 }
+
+#userfile_table_format{
+    float: left;
+    margin: 0px;
+    width: 40px;
+    background-color: #ffffff;
+    color: #000000;
+    text-align: left;
+}
+
 
 #data_provider_classes {
     max-width: 60em;

@@ -1,38 +1,50 @@
 <thead>
-    <tr>   
+<tr>   
    <tr>
-       <td colspan = 5>  
-           <div id="pages">     
-           
-            <%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %>
-            <br>
-            <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-            	<%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %>
-            	<% end %><br><br>
-             	<%= link_to_remote "Tree view", :url => {:action => :index, :userfiles_sort_order => 'userfiles.lft'}, :method => 'get' %>
-         	<%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
-         	<% if @userfile_count > @userfiles_per_page %>
-                 <%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %>
+       <div id="pages">  
+            <tr colspan = "5">
+                <td id = "userfile_table_format" colspan = "5" onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');" colspan = "5">
+      	              Search by filename
+      	              <div id="name_search_filter" class="filter_list_filename" style="display:none;">
+                            <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
+                            <%= hidden_field_tag :userfiles_search_type, "name_search" %>
+                            <%= text_field_tag :userfiles_search_term %>
+                         <br><br>
+                      </div>
+                      <br>
+                </td>
+            </tr>        
+            <tr>
+            <td colspan = "5" id = "userfile_table_format">
+                <%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %>
+                <br>
+                <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
+                    <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %>
+                <% end %><br>
+                <%= link_to_remote "Tree view", :url => {:action => :index, :userfiles_sort_order => 'userfiles.lft'}, :method => 'get' %><br>
+         	    <%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
+         	    <% if @userfile_count > @userfiles_per_page %>
+                    <%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %>
                 <% end %><br>
                 <% if session[:userfiles_pagination] == 'on' %>
-                    <%= will_paginate %>
-                <% end %>
-            </div>
-        </td>
-        
-        <td>
-        <div id="filter_div">
-            Active Filters 
-            <small>
-            <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
-            </small>
-             <div id="current_filters">
-                 <%= render :partial => 'current_filters' %>
-             </div>
-        </div>
-      </td>
-   </tr>
-  
+                  <%= will_paginate %>
+                 <% end %>  
+                 <br>
+             </td>
+            <td colspan = "5">
+                <div id="filter_div">
+                    Active Filters 
+                    <small>
+                        <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
+                    </small>
+                    <div id="current_filters">
+                        <%= render :partial => 'current_filters' %>
+                    </div>
+               </div>
+           </td>
+           </tr>
+    </div>
+    </tr>  
     <tr>
       <th>
 	<input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
@@ -41,17 +53,12 @@
             });
             } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
           />
-      </th>
-      <th onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" 
-          onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
-        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+    </th> 
+    <th>
+            <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-        <div id="name_search_filter" class="filter_list" style="display:none;">
-          <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
-          <%= hidden_field_tag :userfiles_search_type, "name_search" %>
-          Search: <%= text_field_tag :userfiles_search_term %>
-        </div>
       </th>
+      
        <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
