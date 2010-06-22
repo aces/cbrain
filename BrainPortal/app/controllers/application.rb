@@ -17,7 +17,6 @@ class ApplicationController < ActionController::Base
   include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session
-  helper_method :available_data_providers, :available_bourreaux
   helper        :all # include all helpers, all the time
 
   filter_parameter_logging :password, :login, :email, :full_name, :role
@@ -134,16 +133,6 @@ class ApplicationController < ActionController::Base
     @session ||= Session.new(session, params)
   end
 
-  #Returns an array of the DataProvider objects representing the data providers that can be accessed by +user+.
-  def available_data_providers(user = current_user)
-    DataProvider.find(:all, :conditions => { :online => true, :read_only => false }).select { |p| p.can_be_accessed_by?(user) }
-  end
-
-  #Returns an array of the Bourreau objects representing the bourreaux that can be accessed by +user+.
-  def available_bourreaux(user = current_user)
-    Bourreau.find(:all, :conditions => { :online => true  }).select { |p| p.can_be_accessed_by?(user) }
-  end
-  
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
       render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)

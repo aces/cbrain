@@ -73,9 +73,9 @@ class UserfilesController < ApplicationController
     else
       @user_groups = current_user.groups.find(:all, :order => "type")
     end
-    @default_group = SystemGroup.find_by_name(current_user.login).id
-    @data_providers = available_data_providers(current_user)
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).select{ |b| b.online == true }
+    @default_group  = SystemGroup.find_by_name(current_user.login).id
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
     @preferred_bourreau_id = current_user.user_preference.bourreau_id
     
     #For the 'new' panel
