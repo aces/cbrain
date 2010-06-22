@@ -18,13 +18,22 @@
    <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
   </p>
   <p>
-    Default execution server: <%= f.select :bourreau_id, available_bourreaux(@user).collect{|b| [b.name, b.id]}, :include_blank => true  %>
+    Default execution server:
+    <%= bourreau_select(     "user_preference[bourreau_id]",
+                             { :bourreaux => Bourreau.find_all_accessible_by_user(current_user),
+                               :selector => user_preference.bourreau_id },
+                             { :include_blank => true } )
+    %>
   </p>
   <p>
-    Default data provider:  <%= data_provider_select("user_preference[data_provider_id]", user_preference.data_provider_id, { :include_blank => true }) %>
+    Default data provider:
+    <%= data_provider_select("user_preference[data_provider_id]",
+                             { :selector =>  user_preference.data_provider_id },
+                             { :include_blank => true } )
+    %>
   </p>
   <p>
-    <%= f.submit "Save" %>
+    <%= f.submit "Save Preferences" %>
   </p>
 <% end %>  <!-- End form -->
 
