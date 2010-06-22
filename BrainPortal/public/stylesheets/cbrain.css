@@ -1958,7 +1958,7 @@ td.middle{
 
 .filter_list_filename{
     margin: 0;
-    padding-top: 0.5em;
+    padding-top: 2em;
     background-color: #ffffff;
     color: #00000;
     text-align:left;
@@ -1972,6 +1972,15 @@ td.middle{
     background-color: #ffffff;
     color: #000000;
     text-align: left;
+}
+
+#userfile_table_format_options{
+    float: none;
+    width: 40px;
+    background-color: #ffffff;
+    color: #000000;
+    text-align: left;
+    padding-left: 40px;
 }
 
 

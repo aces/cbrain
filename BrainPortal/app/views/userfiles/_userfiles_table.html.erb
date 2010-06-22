@@ -2,10 +2,13 @@
 <tr>   
    <tr>
        <div id="pages">  
-            <tr colspan = "5">
-                <td id = "userfile_table_format" colspan = "5" onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');" colspan = "5">
-      	              Search by filename
-      	              <div id="name_search_filter" class="filter_list_filename" style="display:none;">
+            <tr>
+              <td colspan = "5">
+              </td>
+                <td id = "userfile_table_format_options" onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
+                <br>
+  	              Search by filename
+      	              <div id="name_search_filter" class="userfile_table_format_options" style="display:none;">
                             <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
                             <%= hidden_field_tag :userfiles_search_type, "name_search" %>
                             <%= text_field_tag :userfiles_search_term %>
@@ -15,7 +18,7 @@
                 </td>
             </tr>        
             <tr>
-            <td colspan = "5" id = "userfile_table_format">
+            <td colspan = "5" id = "userfile_table_format_options">
                 <%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %>
                 <br>
                 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
@@ -31,7 +34,7 @@
                  <% end %>  
                  <br>
              </td>
-            <td colspan = "5">
+            <td>
                 <div id="filter_div">
                     Active Filters 
                     <small>
