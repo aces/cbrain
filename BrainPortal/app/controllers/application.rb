@@ -55,6 +55,9 @@ class ApplicationController < ActionController::Base
     rescue ActiveRecord::RecordNotFound => e
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
+    rescue ActionController::UnknownAction => e
+      flash[:error] = "The page you requested does not exist."
+      redirect_to default_redirect
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
