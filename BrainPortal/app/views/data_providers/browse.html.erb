@@ -23,8 +23,26 @@
           <%= render :partial => 'dp_browse_table' %>
         </table>
 
-        <%= submit_tag 'Register files' %>
         <%= submit_tag 'Unregister files' %>
-
+        <%= submit_tag 'Register files' %>
+        <strong>Optional:</strong> when registering, automatically...
+        <%= select_tag :auto_do,
+          options_for_select([ [ "... do nothing else!", "" ],
+                               [ "... move the files to Data Provider ->", "MOVE" ],
+                               [ "... copy the files to Data Provider ->", "COPY" ]
+                             ])
+        %>
+        <%= data_provider_select :other_data_provider_id, { :data_providers => DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } }, { :include_blank => "(Select another Data Provider)" } %>
+        
       <% end %>
+
+      <BR><strong>Important notes about automatically copying and moving files:</strong><BR>
+      <UL>
+        <LI>The operation will start in background as soon as you click 'Register files'.</LI>
+        <LI>While the operation is in progress, do not modify the files on the current Data Provider!</LI>
+        <LI>While the COPY operation is in progress, there will seem to be two registered versions of the file in the file manager (one on each Data Provider).</LI>
+        <LI>After the COPY operation is done, the files will still be visible here and will no longer seem to be registered.</LI>
+        <LI>Attempts to COPY of MOVE files to Data Providers where identically named files already exist will be ignored.</LI>
+      </UL>
+
 </div>  <!-- End class="generalcontent" -->

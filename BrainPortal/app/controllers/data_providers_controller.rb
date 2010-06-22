@@ -382,7 +382,7 @@ class DataProvidersController < ApplicationController
       base2type[base] = type
     end
     
-    num_registered   = 0
+    newly_registered_userfiles = []
     num_unregistered = 0
     num_skipped      = 0
 
@@ -434,31 +434,101 @@ class DataProvidersController < ApplicationController
                                :group_id         => current_user.own_group.id,
                                :data_provider_id => provider_id )
       if userfile.save
-        CBRAIN.spawn_with_active_records_unless(userfile.size_set?, current_user, "FileCollection Set Size") do
-          userfile.set_size! rescue true
-        end
-        num_registered += 1
+        newly_registered_userfiles << userfile
       else
-        flash[:error] += "Error: could not register #{subtype} '#{basename}'\n"
+        flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
         num_skipped += 1
       end
 
-    end
+    end # loop to register/unregister files
 
     if num_skipped > 0
       flash[:notice] += "Skipped #{num_skipped} files.\n"
     end
 
-    if num_registered > 0
-      flash[:notice] += "Registered #{num_registered} files.\n"
+    if newly_registered_userfiles.size > 0
+      flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
     else
       flash[:notice] += "No files affected.\n"
     end
 
-    redirect_to :action => :browse
+    # Automatic MOVE or COPY operation?
+    move_or_copy = params[:auto_do]                || ""
+    other_provid = params[:other_data_provider_id] || nil
+    new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
+    past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
     
+    # Nothing else do to if no automatic operation required.
+    if (move_or_copy != "MOVE" && move_or_copy != "COPY") || !new_dp || newly_registered_userfiles.size == 0
+      if newly_registered_userfiles.size > 0
+        CBRAIN.spawn_with_active_records("Set Sizes After Register") do
+          newly_registered_userfiles.each do |userfile|
+            userfile.set_size! rescue true
+          end
+        end
+      end
+      redirect_to :action => :browse
+      return
+    end
+
+    # Alright, we need to move or copy the files
+    collisions = newly_registered_userfiles.select do |u|
+      found = Userfile.find(:first, :conditions => { :name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id })
+      found ? true : false
+    end
+    to_operate = newly_registered_userfiles - collisions
+
+    if collisions.size > 0
+      flash[:error] += "Could not #{move_or_copy.downcase} some files, as files with the same names already exist:\n" +
+                         collisions.map(&:name).sort.join(", ")
+    end
+
+    if to_operate.size == 0
+      flash[:error] += "No files are left to #{move_or_copy.downcase} !\n"
+    else
+      flash[:notice] += "Warning! #{to_operate.size} files are now being #{past_tense} in background.\n"
+      CBRAIN.spawn_with_active_records("#{move_or_copy} Registered Files") do
+        errors = ""
+        num_ok  = 0
+        num_err = 0
+        to_operate.each do |u|
+          orig_name = u.name
+          begin
+            if move_or_copy == "MOVE"
+              u.provider_move_to_otherprovider(new_dp)
+              u.set_size!
+            elsif move_or_copy == "COPY" # an no ELSE !
+              new = u.provider_copy_to_otherprovider(new_dp)
+              u.destroy rescue true # will simply unregister
+              new.set_size!
+            end
+            num_ok += 1
+          rescue => ex
+            num_err += 1
+            errors += "Error for file '#{orig_name}': #{ex.class}: #{ex.message}\n"
+          end
+        end # each file
+        if num_ok > 0
+          Message.send_message(current_user, 
+                                :message_type   => 'notice', 
+                                :header         => "#{num_ok} files #{past_tense} during registration.",
+                                :variable_text  => ""
+                                )
+        end
+        if num_err > 0
+          Message.send_message(current_user, 
+                                :message_type   => 'error', 
+                                :header         => "#{num_ok} files FAILED to be #{past_tense} during registration. See report below.",
+                                :variable_text  => errors
+                                )
+        end
+      end # spawn
+    end # if move or copy
+
+    redirect_to :action => :browse
+
   end
 
 
