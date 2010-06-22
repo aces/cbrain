@@ -65,6 +65,21 @@ h2  {
     color: #444;
 }
 
+
+h4{
+    font-size: 20px;
+    padding-left: 15px;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    padding-bottom: 0em;
+    padding-top: 0em; 
+    width: 130px; 
+    margin-right: 0em; 
+    margin-left: 0em; 
+    color: #444;
+}
+
+
 #header h1 {
     float:left;
     padding: 10px;
@@ -244,7 +259,7 @@ pre {
 }
 
 #sidebar {
-    width: 9%;
+    width: 50%;
     height: 100%; 
     color: #666;
     background-color: #FFFFFF;
@@ -393,7 +408,7 @@ a:hover {
     width: 1021px; 
     background-color: #ffffff; 
     height:100%; 
-    margin-left: 20px;
+    margin-left: 15px;
 	margin-right: auto;
     padding-bottom: 4px; 
     padding-bottom:10px;
@@ -1983,6 +1998,21 @@ td.middle{
     padding-left: 40px;
 }
 
+#file_manager_sidebar{
+    width: 20%;
+    float: left;
+    min-height: 600px;
+    padding: 0;
+    margin-left: -15px;
+    position: relative;
+    background-color: #EEEEEE;
+}
+
+#main_userfiles_content{
+    width: 80%;
+    float: left;
+    padding: 0;
+}
 
 #data_provider_classes {
     max-width: 60em;
