@@ -4,14 +4,9 @@
   <%= submit_tag("Download Files") %>
 <% end %>
 
-<% button_with_dropdown_menu(:title => "Filter Files") do %>
-   <%= render :partial => "filters"%>
-<% end %>
-
 <% button_with_dropdown_menu(:title => "Tag Files")  do %>
     <center>
     <%= render :partial => 'tag_table'%>
-    <%= link_to 'Manage Tags', tags_path %>
     </center>
 <% end %>
 

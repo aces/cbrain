@@ -14,8 +14,13 @@
 
 <% title 'Files' %><% #Side bar stuff goes here -%>
 
-  <div class="generalcontent">
-
+<div id = "content_userfiles">
+ <div id = "file_manager_sidebar">
+     <%= render :partial => "sidebar" %>
+ </div>
+   
+   <div class="generalcontent">
+   
       <div class = 'help_button_drop_down'>
           <% button_with_dropdown_menu(:title => "Help") do %>
             <a class = "overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
@@ -26,37 +31,38 @@
           <% end %>     
       </div>
 
-   <%= javascript_tag "var current_options;" %> 
+      <%= javascript_tag "var current_options;" %>         
        
-        <div id="main_userfiles_content"  style="width: 90%">
-        <div id="userfiles_top_menu">
-            <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
-            <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
-        <br>
-        </div>
-        <br>
-        <div class="userfiles_upper_form">  
-          <div id="upload_option_div" class="upper_form" style="display:none">
-          </div>
-        </div>
+           <div id="main_userfiles_content"  style="width: 90%">
           
-    <% form_tag(operation_userfiles_path(:method => :post)) do %>
+               <div id="userfiles_top_menu">
+                   <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
+                   <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
+                   <br>
+               </div>
+               <br>
+               <div class="userfiles_upper_form">  
+                   <div id="upload_option_div" class="upper_form" style="display:none">
+               </div>
+           </div>  
+            
+           <% form_tag(operation_userfiles_path(:method => :post)) do %>
          
-        <div class="userfiles_upper_form">
-        <div id="conversion_tool_option_div" class="upper_file_menu" style="display:none">
-        </div>
-        <div id="scientific_tool_option_div" class="upper_file_menu" style="display:none">
-        </div>
-        </div>
-    
-        <div id = "file_menu">
-          <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%> 
-          <%= render :partial => "file_menu" %>
-        </div>
-        
-        <table id="userfilesdisplay" class="resource_list">
-              <%= render :partial => 'userfiles_table' %>
-        </table>
+           <div class="userfiles_upper_form">
+               <div id="conversion_tool_option_div" class="upper_file_menu" style="display:none">
+               </div>
+               <div id="scientific_tool_option_div" class="upper_file_menu" style="display:none">
+               </div>
+           </div>
+
+           <div id = "file_menu">
+               <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%> 
+               <%= render :partial => "file_menu" %>
+           </div>
+         
+           <table id="userfilesdisplay" class="resource_list">
+             <%= render :partial => 'userfiles_table' %>
+           </table>
         
         <center>
            Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;

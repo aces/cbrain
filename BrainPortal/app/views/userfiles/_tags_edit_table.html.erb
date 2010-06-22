@@ -8,7 +8,7 @@
 
 -%>
 
-<% unless @tags.empty? %>
+<% unless @tags.nil? || @tags.empty? %>
 <table>
       <tr>
          <th rowspan="<%= @tags.size %>">Tags:</th>
