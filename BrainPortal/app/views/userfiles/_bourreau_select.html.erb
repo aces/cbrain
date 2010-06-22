@@ -1,8 +1,0 @@
-<% unless @bourreaux.blank? %>
-  <%= select_tag "bourreau_id", 
-    "<option value=\"\">Random Selection</option>" +
-     options_for_select(@bourreaux.collect{|b| [b.name, b.id]}, current_user.user_preference.bourreau_id)
-  %>
-<% else %>
-  <strong style="color:red">No Execution Servers Available</strong>
-<% end %>

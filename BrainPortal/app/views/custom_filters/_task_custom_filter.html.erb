@@ -1,7 +1,7 @@
 <p>
    Task:<br>
    
-      <%= select :data, :type, CbrainTask::PortalTask.subclasses.sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
+      <%= select :data, :type, CbrainTask::PortalTask.instance_eval{subclasses}.map(&:to_s).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
    
 </p>
 <p>

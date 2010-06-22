@@ -29,15 +29,22 @@ class ToolsController < ApplicationController
   
   def bourreau_select #:nodoc:
     @tool = current_user.available_tools.find_by_cbrain_task_class(params[:cbrain_task_class])
-    @bourreaux = @tool.bourreaux.all(:conditions  => {:id  => available_bourreaux})
+    @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
     
     respond_to do |format|
-      format.html { render :layout  => false, :partial  => 'userfiles/bourreau_select'}
+      format.html do 
+        render :layout  => false, 
+               :partial => 'layouts/bourreau_select', 
+               :locals  => { :parameter_name  => "bourreau_id", 
+                             :selected  => current_user.user_preference.bourreau_id.to_s, 
+                             :bourreaux  => @bourreaux,
+                             :select_tag_options  => {:include_blank  => "Random Selection"}}
+      end
       format.xml  { render :xml => @bourreaux }
     end
     
   rescue
-    render :text  => ""
+    render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
   end
 
   # GET /tools/1/edit
