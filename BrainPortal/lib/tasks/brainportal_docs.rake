@@ -12,6 +12,7 @@ namespace :doc do
      rdoc.rdoc_files.include('config/initializers/cbrain.rb')
      rdoc.rdoc_files.include('config/initializers/revisions.rb')
      rdoc.rdoc_files.include('config/initializers/logging.rb')
+     rdoc.rdoc_files.include('config/initializers/meta_data.rb')
      rdoc.rdoc_files.include('lib/cbrain_checker.rb')
      rdoc.rdoc_files.include('lib/cbrain_exception.rb')
      rdoc.rdoc_files.include('lib/cbrain_task_logging.rb')

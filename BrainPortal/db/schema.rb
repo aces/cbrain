@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100609155029) do
+ActiveRecord::Schema.define(:version => 20100622202648) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -127,6 +127,20 @@ ActiveRecord::Schema.define(:version => 20100609155029) do
     t.boolean  "critical"
     t.boolean  "display"
   end
+
+  create_table "meta_data_store", :force => true do |t|
+    t.integer  "ar_id"
+    t.string   "ar_class"
+    t.string   "meta_key"
+    t.text     "meta_value"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "meta_data_store", ["ar_class", "meta_key"], :name => "index_meta_data_store_on_ar_class_and_meta_key"
+  add_index "meta_data_store", ["ar_id", "ar_class", "meta_key"], :name => "index_meta_data_store_on_ar_id_and_ar_class_and_meta_key"
+  add_index "meta_data_store", ["ar_id", "ar_class"], :name => "index_meta_data_store_on_ar_id_and_ar_class"
+  add_index "meta_data_store", ["meta_key"], :name => "index_meta_data_store_on_meta_key"
 
   create_table "remote_resources", :force => true do |t|
     t.string   "name"
