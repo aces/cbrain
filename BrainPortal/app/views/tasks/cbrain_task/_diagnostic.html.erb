@@ -1,4 +1,6 @@
 
+<%= form.params_check_box :allo, {}, 1, nil %>
+
 <% title 'Cluster Diagnostics Parameters' %>
 
 <h3>Life Cycle, Recovery and Restarting Capabilities</h3>
@@ -14,32 +16,32 @@
 
 <tr>
   <th>Setup</th>
-    <TD>Crash?  <%= check_box_tag :setup_crash.to_la,           1, params[:setup_crash] %></TD>
-    <TD>Delay: <%= text_field_tag :setup_delay.to_la,              params[:setup_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :recover_setup.to_la,         1, params[:recover_setup] %></TD>
-    <TD>Delay: <%= text_field_tag :recover_setup_delay.to_la,      params[:recover_setup_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :restart_setup.to_la,         1, params[:restart_setup] %></TD>
-    <TD>Delay: <%= text_field_tag :restart_setup_delay.to_la,      params[:restart_setup_delay], :size => 4 %></TD>
+    <TD>Crash?  <%= form.params_check_box  :setup_crash                       %></TD>
+    <TD>Delay:  <%= form.params_text_field :setup_delay,           :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :recover_setup                     %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_setup_delay,   :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :restart_setup                     %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_setup_delay,   :size => 4 %></TD>
 </tr>
 
 <tr>
   <th>Cluster</th>
-    <TD>Crash?  <%= check_box_tag :cluster_crash.to_la,         1, params[:cluster_crash] %></TD>
-    <TD>Delay: <%= text_field_tag :cluster_delay.to_la,            params[:cluster_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :recover_cluster.to_la,       1, params[:recover_cluster] %></TD>
-    <TD>Delay: <%= text_field_tag :recover_cluster_delay.to_la,    params[:recover_cluster_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :restart_cluster.to_la,       1, params[:restart_cluster] %></TD>
-    <TD>Delay: <%= text_field_tag :restart_cluster_delay.to_la,    params[:restart_cluster_delay], :size => 4 %></TD>
+    <TD>Crash?  <%= form.params_check_box  :cluster_crash                     %></TD>
+    <TD>Delay:  <%= form.params_text_field :cluster_delay,         :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :recover_cluster                   %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_cluster_delay, :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :restart_cluster                   %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_cluster_delay, :size => 4 %></TD>
 </tr>
 
 <tr>
   <th>PostProcess</th>
-    <TD>Crash?  <%= check_box_tag :postpro_crash.to_la,         1, params[:postpro_crash] %></TD>
-    <TD>Delay: <%= text_field_tag :postpro_delay.to_la,            params[:postpro_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :recover_postpro.to_la,       1, params[:recover_postpro] %></TD>
-    <TD>Delay: <%= text_field_tag :recover_postpro_delay.to_la,    params[:recover_postpro_delay], :size => 4 %></TD>
-    <TD>Enable? <%= check_box_tag :restart_postpro.to_la,       1, params[:restart_postpro] %></TD>
-    <TD>Delay: <%= text_field_tag :restart_postpro_delay.to_la,    params[:restart_postpro_delay], :size => 4 %></TD>
+    <TD>Crash?  <%= form.params_check_box  :postpro_crash                     %></TD>
+    <TD>Delay:  <%= form.params_text_field :postpro_delay,         :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :recover_postpro                   %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_postpro_delay, :size => 4 %></TD>
+    <TD>Enable? <%= form.params_check_box  :restart_postpro                   %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_postpro_delay, :size => 4 %></TD>
 </tr>
 
 </table>
@@ -49,12 +51,12 @@
 <h3>Miscellaneous</h3>
 
 <strong>Crashes will reset to false after they are first triggered: </strong>
-<%= check_box_tag :crash_will_reset.to_la, 1, params[:crash_will_reset] %>
+<%= form.params_check_box :crash_will_reset %>
 <P>
 
 <% if @task.new_record? %>
 <strong>Number of copies of this task to launch: </strong>
-<%= text_field_tag :num_copies.to_la, params[:num_copies], :size => 4 %> (for stress testing ONLY!)
+<%= form.params_text_field :num_copies %> (for stress testing ONLY!)
 <P>
 <% end %>
 

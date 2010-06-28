@@ -60,8 +60,8 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
       sleep setup_delay
     end
 
-    unless params[:setup_crash].blank?
-      params[:setup_crash]=nil unless params[:crash_will_reset].blank?
+    if mybool(params[:setup_crash])
+      params[:setup_crash]=nil if mybool(params[:crash_will_reset])
       cb_error "This program crashed on purpose, as ordered."
     end
 
@@ -138,8 +138,8 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
     self.addlog "Starting diagnostics postprocessing."
 
-    unless params[:cluster_crash].blank?
-      params[:cluster_crash]=nil unless params[:crash_will_reset].blank?
+    if mybool(params[:cluster_crash])
+      params[:cluster_crash]=nil if mybool(params[:crash_will_reset])
       self.addlog "Pretending that the cluster job failed."
       return false
     end
@@ -196,8 +196,8 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
       sleep postpro_delay
     end
 
-    unless params[:postpro_crash].blank?
-      params[:postpro_crash]=nil unless params[:crash_will_reset].blank?
+    if mybool(params[:postpro_crash])
+      params[:postpro_crash]=nil if mybool(params[:crash_will_reset])
       cb_error "This program crashed on purpose, as ordered."
     end
 
@@ -212,7 +212,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def recover_from_setup_failure #:nodoc:
     params = self.params
-    return false if params[:recover_setup].blank?
+    return false unless mybool(params[:recover_setup])
     unless params[:recover_setup_delay].blank? 
       sleep params[:recover_setup_delay].to_i
     end
@@ -221,7 +221,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def recover_from_cluster_failure #:nodoc:
     params = self.params
-    return false if params[:recover_cluster].blank?
+    return false unless mybool(params[:recover_cluster])
     unless params[:recover_cluster_delay].blank? 
       sleep params[:recover_cluster_delay].to_i
     end
@@ -230,7 +230,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def recover_from_post_processing_failure #:nodoc:
     params = self.params
-    return false if params[:recover_postpro].blank?
+    return false unless mybool(params[:recover_postpro])
     unless params[:recover_postpro_delay].blank? 
       sleep params[:recover_postpro_delay].to_i
     end
@@ -239,7 +239,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def restart_at_setup #:nodoc:
     params = self.params
-    return false if params[:restart_setup].blank?
+    return false unless mybool(params[:restart_setup])
     unless params[:restart_setup_delay].blank? 
       sleep params[:restart_setup_delay].to_i
     end
@@ -248,7 +248,7 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def restart_at_cluster #:nodoc:
     params = self.params
-    return false if params[:restart_cluster].blank?
+    return false unless mybool(params[:restart_cluster])
     unless params[:restart_cluster_delay].blank? 
       sleep params[:restart_cluster_delay].to_i
     end
@@ -257,11 +257,22 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def restart_at_post_processing #:nodoc:
     params = self.params
-    return false if params[:restart_postpro].blank?
+    return false unless mybool(params[:restart_postpro])
     unless params[:restart_postpro_delay].blank? 
       sleep params[:restart_postpro_delay].to_i
     end
     true
+  end
+
+  # My old convention was '1' for true, "" for false;
+  # the new form helpers send '1' for true and '0' for false.
+  private
+
+  def mybool(value) #:nodoc:
+    return false if value.blank?
+    return false if value.is_a?(String)   and value == "0"
+    return false if value.is_a?(Numberic) and value == 0
+    return true
   end
 
 end

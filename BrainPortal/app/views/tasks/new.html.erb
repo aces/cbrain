@@ -2,7 +2,7 @@
 <h1>Launch <%= @task.name %> Task</h1>
 
 <%
-     form_for(:cbrain_task, @task, :url => '/tasks/create', :method => :post ) do |form|
+     form_for(:cbrain_task, @task, :url => '/tasks/create', :method => :post, :builder => CbrainTaskFormBuilder ) do |form|
 -%>
 
 <% # Hidden fields -%>

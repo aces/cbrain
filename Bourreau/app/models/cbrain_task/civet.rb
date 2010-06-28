@@ -154,31 +154,31 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
 
     args = ""
 
-    args += "-make-graph "                          if params[:make_graph]
-    args += "-make-filename-graph "                 if params[:make_filename_graph]
-    args += "-print-status-report "                 if params[:print_status_report]
-    args += "-template #{params[:template]} "       if params[:template]
-    args += "-model #{params[:model]} "             if params[:model]
-    args += "-interp #{params[:interp]} "           if params[:interp]
-    args += "-N3-distance #{params[:N3_distance]} " if params[:N3_distance]
+    args += "-make-graph "                          if mybool(params[:make_graph])
+    args += "-make-filename-graph "                 if mybool(params[:make_filename_graph])
+    args += "-print-status-report "                 if mybool(params[:print_status_report])
+    args += "-template #{params[:template]} "       if ! params[:template].blank?
+    args += "-model #{params[:model]} "             if ! params[:model].blank?
+    args += "-interp #{params[:interp]} "           if ! params[:interp].blank?
+    args += "-N3-distance #{params[:N3_distance]} " if ! params[:N3_distance].blank?
     args += "-lsq#{params[:lsq]} "                  if params[:lsq] && params[:lsq].to_i != 9 # there is NO -lsq9 option!
-    args += "-no-surfaces "                         if params[:no_surfaces]
-    args += "-correct-pve "                         if params[:correct_pve]
-    args += "-resample-surfaces "                   if params[:resample_surfaces]
-    args += "-combine-surfaces "                    if params[:combine_surfaces]
+    args += "-no-surfaces "                         if mybool(params[:no_surfaces])
+    args += "-correct-pve "                         if mybool(params[:correct_pve])
+    args += "-resample-surfaces "                   if mybool(params[:resample_surfaces])
+    args += "-combine-surfaces "                    if mybool(params[:combine_surfaces])
 
-    args += "-multispectral "                       if file0[:multispectral]
-    args += "-spectral_mask "                       if file0[:spectral_mask]
+    args += "-multispectral "                       if mybool(file0[:multispectral])
+    args += "-spectral_mask "                       if mybool(file0[:spectral_mask])
 
-    if params[:thickness_method] && params[:thickness_kernel]
+    if ! params[:thickness_method].blank? && ! params[:thickness_kernel].blank?
         args += "-thickness #{params[:thickness_method]} #{params[:thickness_kernel]} "
     end
 
-    if params[:VBM]
+    if mybool(params[:VBM])
         args += "-VBM "
-        args += "-VBM-symmetry "                    if params[:VBM_symmetry]
-        args += "-VBM-cerebellum "                  if params[:VBM_cerebellum]
-        args += "-VBM-fwhm #{params[:VBM_fwhm]} "   if params[:VBM_fwhm]
+        args += "-VBM-symmetry "                    if mybool(params[:VBM_symmetry])
+        args += "-VBM-cerebellum "                  if mybool(params[:VBM_cerebellum])
+        args += "-VBM-fwhm #{params[:VBM_fwhm]} "   if ! params[:VBM_fwhm].blank?
     end
 
     civet_command = "CIVET_Processing_Pipeline -prefix #{prefix} -source mincfiles -target civet_out -spawn #{args} -run #{dsid}"
@@ -297,6 +297,17 @@ class CbrainTask::Civet < CbrainTask::ClusterTask
     self.addlog("Saved new CIVET result file #{civetresult.name}.")
     true
 
+  end
+
+  # My old convention was '1' for true, "" for false;
+  # the new form helpers send '1' for true and '0' for false.
+  private
+
+  def mybool(value) #:nodoc:
+    return false if value.blank?
+    return false if value.is_a?(String)   and value == "0"
+    return false if value.is_a?(Numberic) and value == 0
+    return true
   end
 
 end

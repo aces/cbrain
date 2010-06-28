@@ -281,4 +281,34 @@ class CbrainTask::PortalTask < CbrainTask
     return ext
   end
 
+
+
+  #######################################################
+  # Methods For CbrainTask Form Builder
+  #######################################################
+
+  def params_path_value(paramspath) #:nodoc:
+    params     = self.params || {}
+    stringpath = paramspath.to_s
+    foundvalue = params
+    key        = ""
+    while stringpath != ""
+      break unless stringpath =~ /^(\[?([\w\.\-]+)\]?)/
+      brackets = Regexp.last_match[1]   # "[abcdef]"
+      key      = Regexp.last_match[2]   # "abcdef"
+      stringpath = stringpath[brackets.size .. -1]
+      if foundvalue.is_a?(Hash)
+        foundvalue = foundvalue[key.to_sym] || foundvalue[key]
+      elsif foundvalue.is_a?(Array) && key =~ /^\d+$/
+        foundvalue = foundvalue[key.to_i]
+      else
+        cb_error "Can't access params structure for '#{paramspath}' (stopped at '#{key}' with current structure a '#{foundvalue.class}'."
+      end
+      break if foundvalue.nil?
+    end
+    cb_error "Can't find intermediate params structure for '#{paramspath}' (stopped at '#{key}' for '#{foundvalue.inspect}')" if stringpath != "" && stringpath != "[]"
+    foundvalue
+  end
+
 end
+
