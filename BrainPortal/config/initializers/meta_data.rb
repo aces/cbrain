@@ -160,6 +160,12 @@ module ActRecMetaData
       delete_attribute(mykey)
     end
 
+    # Returns all the MetaDataStore objects associated
+    # with the current ActiveRecord object.
+    def all #:nodoc:
+      self.md_cache.values
+    end
+
 
 
     ###################################################################
@@ -167,12 +173,6 @@ module ActRecMetaData
     ###################################################################
 
     protected
-
-    # Returns all the MetaDataStore objects associated
-    # with the current ActiveRecord object.
-    def all #:nodoc:
-      self.md_cache.values
-    end
 
     # Reloads the cached set of MetaDataStore objects
     # associated with the current ActiveRecord object.
@@ -234,6 +234,7 @@ module ActRecMetaData
   def destroy_all_meta_data
     return true if self.is_a?(MetaDataStore)
     allmeta = self.meta.all
+    @meta = nil
     return true unless allmeta
     allmeta.each { |m| m.destroy_without_callbacks }
     true
