@@ -1,0 +1,27 @@
+void setup() {
+  size(400,400);
+  frameRate(1);
+  strokeWeight(2);
+}
+
+void draw() {
+  background(50);
+  int meterCount = 0;
+  int unit = 64;
+  int divisions = 256/unit;
+  float min = 0;
+  float max = 5;
+  float range = max - min;
+  float step = range/divisions;
+  for(int i = 0; i < 256; i++){
+     stroke(i, i, i);
+     line(width/2 - 128 + i, height/2 - 10, width/2 - 128 + i, height/2 + 10);
+     
+     if(i == 0 || i == 255 || i % unit == 0){
+        stroke(255);
+        line(width/2 - 128 + i, height/2 + 10, width/2 - 128 + i, height/2 + 20);
+        text("" + (min + step*meterCount), width/2 - 128 + i, height/2 + 30);
+        meterCount++;
+     }
+  }
+}

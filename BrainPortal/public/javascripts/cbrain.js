@@ -1,3 +1,5 @@
+var macacc;
+var brainbrowser;
 jQuery(
   function() {
 
@@ -130,7 +132,7 @@ jQuery(
           });
           return false;
         });
-        
+
         jQuery("#jiv_submit").click(function(){
           var data_type = jQuery(this).attr("data-datatype");
           jQuery(this).closest("form").ajaxSubmit({
@@ -251,12 +253,45 @@ jQuery(
       jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
       jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
 
-      jQuery(".o3d_link").live('click',O3DOverlay);
+    jQuery(".o3d_link").live('click',o3DOverlay);
+
+    jQuery(".macacc_link").live('click',macaccOverlay);
+
+    function macaccOverlay(event) {
 
 
+      var macacc=jQuery("<div></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
+	show: "puff",
+      	modal: true,
+	position: 'center',
+      	width: 1024,
+      	height:  768,
+	async: false,
+	close: function(){
+      	  brainbrowser.uninit();
+      	  jQuery("#o3d").remove();
+      	}
+      });
+      jQuery(".macacc_button").button();
+      brainbrowser = new BrainBrowser();
+      brainbrowser.afterInit = function(bb) {
+	macacc = new MacaccObject(bb,jQuery("#launch_macacc").attr("data-content-url"));
+	jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
+	jQuery('#range_change').click(macacc.range_change);
+	jQuery('.data_controls').change(macacc.data_control_change);
+	macacc.pickInfoElem=jQuery("#vertex_info");
+	jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
 
-    var brainbrowser;
-    function O3DOverlay(event) {
+      };
+      brainbrowser.setup(jQuery("#launch_macacc").attr("data-content-url")+"?model=normal");
+
+      jQuery("#viewinfo > .button").button();
+
+    }
+
+   
+
+    function o3DOverlay(event) {
       var dialog = jQuery("<div id=\"o3d\"></div>").appendTo(jQuery("body")).dialog({
       	show: "puff",
       	modal: true,
@@ -271,6 +306,10 @@ jQuery(
       brainbrowser = new BrainBrowser(jQuery(this).attr('data-content-url'));
       return false;
     }
+
+
+
+
 
 
 });

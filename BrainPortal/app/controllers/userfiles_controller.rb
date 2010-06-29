@@ -89,8 +89,20 @@ class UserfilesController < ApplicationController
       format.xml  { render :xml => @userfiles }
     end
   end
-  #The content action handles requests for file content
-  #by URL. Used mainly by JIV at this point.
+
+  ####################################################
+  # Provides a way of accessing file contents intelligently and customizably 
+  # for each type of files supported in the platform
+  # Each userfile subclass is in charge of defining it's on content method 
+  # which returns a has that will either be used by 
+  # 1) render 
+  # 2) or contains the sendfile symbol which will instruct the system to stream the file 
+  # 3) or if it includes the :gzip symbol, it will adjust the content-encoding such that 
+  #    the browser can decode it. 
+  # 
+  # other possibilities are also possible. 
+  ####################################################
+  #GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
@@ -101,8 +113,13 @@ class UserfilesController < ApplicationController
       if content[:sendfile]
         send_file content[:sendfile]
         return
+      elsif content[:gzip]
+        response.headers["Content-Encoding"] = "gzip" 
+        render :text => content[:gzip]
+      else
+        render content
+        return
       end
-      render content
     else
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path

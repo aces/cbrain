@@ -29,6 +29,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :file_collection,         :controller => :userfiles  
   map.resources :civet_collection,        :controller => :userfiles  
   map.resources :civet_study,             :controller => :userfiles  
+  map.resources :macacc_collection,       :controller => :userfiles
 
   map.resources :work_groups,             :controller => :groups     
   map.resources :system_groups,           :controller => :groups     
