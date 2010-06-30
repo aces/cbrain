@@ -260,7 +260,7 @@ jQuery(
     function macaccOverlay(event) {
 
 
-      var macacc=jQuery("<div></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
+      var macacc=jQuery("<div id=\"macacc_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
 	show: "puff",
       	modal: true,
 	position: 'center',
@@ -269,7 +269,7 @@ jQuery(
 	async: false,
 	close: function(){
       	  brainbrowser.uninit();
-      	  jQuery("#o3d").remove();
+      	  jQuery("#macacc_viewer").remove();
       	}
       });
       jQuery(".macacc_button").button();
@@ -289,26 +289,33 @@ jQuery(
 
     }
 
-   
+
 
     function o3DOverlay(event) {
-      var dialog = jQuery("<div id=\"o3d\"></div>").appendTo(jQuery("body")).dialog({
-      	show: "puff",
+      var macacc=jQuery("<div id=\"civet_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
+     	show: "puff",
       	modal: true,
 	position: 'center',
-      	width: 800,
-      	height: 600,
+      	width: 1024,
+      	height: 768,
       	close: function(){
       	  brainbrowser.uninit();
-      	  jQuery("#o3d").remove();
+      	  jQuery("#civet_viewer").remove();
       	}
       });
-      brainbrowser = new BrainBrowser(jQuery(this).attr('data-content-url'));
+      brainbrowser = new BrainBrowser();
+      var civet;
+      var obj_link = this;
+      brainbrowser.afterInit = function(bb) {
+	civet = new CivetObject(bb,jQuery(obj_link).attr("data-content"));
+	jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
+	jQuery('#range_change').click(civet.range_change);
+	civet.pickInfoElem=jQuery("#vertex_info");
+	jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
+      };
+      brainbrowser.setup(jQuery(this).attr('data-content-url'));
       return false;
-    }
-
-
-
+      };
 
 
 
