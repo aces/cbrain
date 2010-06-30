@@ -4,6 +4,7 @@ class ClusterTaskGenerator < Rails::Generator::NamedBase
     task_manifest = record do |m|
       m.template "portal_task_model.rb", "app/models/cbrain_task/#{file_name}.rb"
       m.template "partial.html.erb",     "app/views/tasks/cbrain_task/_#{file_name}.html.erb"
+      m.template "show_params.html.erb", "app/views/tasks/show_params/_#{file_name}.html.erb"
     end
     task_manifest
   end

@@ -77,6 +77,16 @@ class <%= "CbrainTask::#{class_name}" %> < CbrainTask::ClusterTask
   # that normally all normal API methods are #:nodoc: anyway.
   ################################################################
 
+  ################################################################
+  # Uncomment the following two lines ONLY if the task has been coded
+  # to properly follow the guidelines for recovery and restartability.
+  # In that case, these modules will provide the six recover_* and
+  # restart_at_* methods that simply all return true.
+  ################################################################
+
+  #include RestartableTask
+  #include RecoverableTask
+
   # See CbrainTask.txt
   def setup #:nodoc:
     params       = self.params

@@ -22,6 +22,8 @@ first_arg    = ARGV[0]
 
 if program_name =~ /about$/ # script/about
   puts "C> \t- What's this all ABOUT?"
+elsif program_name =~ /generate$|destroy$/ # script/generate or script/destroy
+  puts "C> \t- Running Rails utility '#{program_name}'."
 else
   BourreauSystemChecks.check(:all)
 end

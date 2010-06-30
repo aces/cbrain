@@ -38,31 +38,49 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
-    data_type = params[:data_type]
+    voxel_type         = params[:voxel_type]
+    int_sign           = params[:voxel_int_signity]
+    file_format        = params[:file_format]
 
-    if data_type == "default"
-      data_type = ""
+    cb_error "Unexpected voxel type"     if voxel_type !~ /^(short|word|int|float|double|default)$/
+    cb_error "Unexpected voxel int sign" if int_sign   !~ /^(signed|unsigned|default)$/
+
+    if voxel_type == "default"
+      voxel_type = ""
     else
-      data_type = "-#{data_type}"
+      voxel_type = "-#{voxel_type}"
+    end
+
+    voxel_sign = ""
+    if voxel_type =~ /^(short|word|int)$/ && int_sign =~ /^(signed|unsigned)$/
+      voxel_sign = "-#{int_sign}"
     end
 
     file_format = params[:file_format]
     file_format = "-#{file_format}"
 
+    command = "mnc2nii #{voxel_type} #{voxel_sign} #{file_format} minc_col.mnc"
+
+    out_files = Dir.glob("*.{img,hdr,nii,nia}")
+    out_files.each do |f|
+      File.unlink(f) rescue true
+    end
+
     [
       "source #{CBRAIN::Quarantine_dir}/init.sh",
-      "mnc2nii #{data_type} #{file_format} minc_col.mnc"
+      "echo \"Command: #{command}\"",
+      command
     ]
   end
 
   def save_results #:nodoc:
-    params      = self.params
+    params     = self.params
     minc_colid = params[:mincfile_id]
     minc_col   = Userfile.find(minc_colid)
     group_id   = minc_col.group_id
 
     user_id          = self.user_id
-    data_provider.id = params[:data_provider_id]
+    data_provider_id = params[:data_provider_id]
 
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
     niifiles = []
