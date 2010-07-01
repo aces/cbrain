@@ -194,7 +194,7 @@ class BourreauxController < ApplicationController
 
     cb_notice "This Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "This Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "This Execution Server is already alive."                         if @bourreau.is_alive?
+    cb_notice "This Execution Server has already been alive for #{@bourreau.info.uptime} seconds." if @bourreau.is_alive?
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?
@@ -204,16 +204,15 @@ class BourreauxController < ApplicationController
     end
 
     @bourreau.start_tunnels
-    cb_error "Could not start master SSH connection and tunnels." unless @bourreau.ssh_master.is_alive?
+    cb_error "Could not start master SSH connection and tunnels for '#{@bourreau.name}'." unless @bourreau.ssh_master.is_alive?
     @bourreau.start
 
     if @bourreau.is_alive?
-      flash[:notice] = "Execution Server started."
+      flash[:notice] = "Execution Server '#{@bourreau.name}' started."
       @bourreau.addlog("Rails application started by user #{current_user.login}.")
       begin
         @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
         @bourreau.send_command_start_workers
-        @bourreau.addlog("Workers started too.")
         flash[:notice] += "\nWorkers on Execution Server started."
       rescue
         flash[:notice] += "\nHowever, we couldn't start the workers."
