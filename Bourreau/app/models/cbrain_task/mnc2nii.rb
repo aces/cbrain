@@ -83,6 +83,11 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     data_provider_id = params[:data_provider_id]
 
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
+    if out_files.size == 0
+      self.addlog("Could not find any output files?!?")
+      return false
+    end
+
     niifiles = []
     out_files.each do |file|
       self.addlog(file)
@@ -96,7 +101,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
       niifile.cache_copy_from_local_file(file)
       if niifile.save
         niifile.move_to_child_of(minc_col)
-        self.addlog("Saved new Nifti file ")
+        self.addlog("Saved output file #{niifile.name}") # not necessarily NIfTI format
         niifiles << niifile
       else
         self.addlog("Could not save back result file #{niifile.name}")

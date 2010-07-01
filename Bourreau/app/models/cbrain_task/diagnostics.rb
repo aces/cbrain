@@ -270,8 +270,8 @@ class CbrainTask::Diagnostics < CbrainTask::ClusterTask
 
   def mybool(value) #:nodoc:
     return false if value.blank?
-    return false if value.is_a?(String)   and value == "0"
-    return false if value.is_a?(Numberic) and value == 0
+    return false if value.is_a?(String)  and value == "0"
+    return false if value.is_a?(Numeric) and value == 0
     return true
   end
 
