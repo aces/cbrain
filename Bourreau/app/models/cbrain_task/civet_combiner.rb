@@ -87,8 +87,8 @@ class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
       civet_params = YAML::load(ymltext)
       file_args = civet_params[:file_args] || { "0" => {} }
       file0     = file_args["0"]           || {}
-      prefix = file_0[:prefix] || civet_params[:prefix]  # change in struct: NEW || OLD
-      dsid   = file_0[:dsid]   || civet_params[:dsid]    # change in struct: NEW || OLD
+      prefix = file0[:prefix] || civet_params[:prefix]  # change in struct: NEW || OLD
+      dsid   = file0[:dsid]   || civet_params[:dsid]    # change in struct: NEW || OLD
       if prefix.blank?
         self.addlog("Could not find PREFIX for CivetCollection '#{col.name}'.")
         return false
