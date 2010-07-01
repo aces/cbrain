@@ -29,7 +29,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
     mincfile.sync_to_cache
     cachename = mincfile.cache_full_path
-    basename  = cachename.basename
+    basename  = cachename.basename.to_s
     safe_symlink(cachename,basename)
 
     params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
@@ -46,7 +46,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     mincfile_id = params[:mincfile_id]
     mincfile    = Userfile.find(mincfile_id)
     cachename   = mincfile.cache_full_path
-    basename    = cachename.basename
+    basename    = cachename.basename.to_s
 
     cb_error "Unexpected voxel type"     if voxel_type !~ /^(short|word|int|float|double|default)$/
     cb_error "Unexpected voxel int sign" if int_sign   !~ /^(signed|unsigned|default)$/
@@ -84,7 +84,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     mincfile_id = params[:mincfile_id]
     mincfile    = Userfile.find(mincfile_id)
     cachename   = mincfile.cache_full_path
-    basename    = cachename.basename
+    basename    = cachename.basename.to_s
     shortbase   = basename.sub(/\.mi?nc(\.g?z)?$/i,"")
     group_id    = mincfile.group_id
 
@@ -99,9 +99,9 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
     niifiles = []
     out_files.each do |file|
-      self.addlog(file)
+      self.addlog("Found raw output file '#{file}'.")
       niifile = safe_userfile_find_or_new(SingleFile,
-        :name             => shortname + File.extname(file),
+        :name             => shortbase + File.extname(file),
         :user_id          => user_id,
         :group_id         => group_id,
         :data_provider_id => data_provider_id,
