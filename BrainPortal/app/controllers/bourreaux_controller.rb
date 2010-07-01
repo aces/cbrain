@@ -192,9 +192,9 @@ class BourreauxController < ApplicationController
   def start #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "This Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
-    cb_notice "This Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "This Execution Server has already been alive for #{@bourreau.info.uptime} seconds." if @bourreau.is_alive?
+    cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{@bourreau.info.uptime} seconds." if @bourreau.is_alive?
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?
@@ -213,12 +213,12 @@ class BourreauxController < ApplicationController
       begin
         @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
         @bourreau.send_command_start_workers
-        flash[:notice] += "\nWorkers on Execution Server started."
+        flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
       rescue
         flash[:notice] += "\nHowever, we couldn't start the workers."
       end
     else
-      flash[:error] = "Execution Server could not be started. Diagnostics:\n" +
+      flash[:error] = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
                       @bourreau.operation_messages
     end
 
@@ -232,21 +232,21 @@ class BourreauxController < ApplicationController
   def stop #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "Execution Server not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
-    cb_notice "Execution Server is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     begin
       @bourreau.send_command_stop_workers
       @bourreau.addlog("Workers stopped by user #{current_user.login}.")
-      flash[:notice] = "Workers on Execution Server stopped."
+      flash[:notice] = "Workers on Execution Server '#{@bourreau.name}' stopped."
     rescue
-      flash[:notice] = "It seems we couldn't stop the workers. They'll likely die by themselves."
+      flash[:notice] = "It seems we couldn't stop the workers on Executon Server '#{@bourreau.name}'. They'll likely die by themselves."
     end
 
     @bourreau.stop
     @bourreau.ssh_master.stop
     @bourreau.addlog("Rails application stopped.")
-    flash[:notice] += "\nExecution Server stopped. Tunnels stopped."
+    flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped."
     redirect_to :action => :index
 
   rescue => e
