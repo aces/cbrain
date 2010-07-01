@@ -19,17 +19,18 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
 
   def setup #:nodoc:
     params      = self.params
-    minc_colid = params[:mincfile_id]  # the ID of a FileCollection
-    minc_col   = Userfile.find(minc_colid)
+    mincfile_id = params[:mincfile_id]
+    mincfile    = Userfile.find(mincfile_id)
 
-    unless minc_col
-      self.addlog("Could not find active record entry for file #{minc_colid}")
+    unless mincfile
+      self.addlog("Could not find active record entry for file #{mincfile_id}")
       return false
     end
 
-    minc_col.sync_to_cache
-    cachename = minc_col.cache_full_path
-    safe_symlink(cachename,"minc_col.mnc")
+    mincfile.sync_to_cache
+    cachename = mincfile.cache_full_path
+    basename  = cachename.basename
+    safe_symlink(cachename,basename)
 
     params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
 
@@ -37,10 +38,15 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
   end
 
   def cluster_commands #:nodoc:
-    params       = self.params
-    voxel_type         = params[:voxel_type]
-    int_sign           = params[:voxel_int_signity]
-    file_format        = params[:file_format]
+    params      = self.params
+    voxel_type  = params[:voxel_type]
+    int_sign    = params[:voxel_int_signity]
+    file_format = params[:file_format]
+
+    mincfile_id = params[:mincfile_id]
+    mincfile    = Userfile.find(mincfile_id)
+    cachename   = mincfile.cache_full_path
+    basename    = cachename.basename
 
     cb_error "Unexpected voxel type"     if voxel_type !~ /^(short|word|int|float|double|default)$/
     cb_error "Unexpected voxel int sign" if int_sign   !~ /^(signed|unsigned|default)$/
@@ -59,7 +65,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     file_format = params[:file_format]
     file_format = "-#{file_format}"
 
-    command = "mnc2nii #{voxel_type} #{voxel_sign} #{file_format} minc_col.mnc"
+    command = "mnc2nii #{voxel_type} #{voxel_sign} #{file_format} #{basename}"
 
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
     out_files.each do |f|
@@ -74,10 +80,13 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
   end
 
   def save_results #:nodoc:
-    params     = self.params
-    minc_colid = params[:mincfile_id]
-    minc_col   = Userfile.find(minc_colid)
-    group_id   = minc_col.group_id
+    params      = self.params
+    mincfile_id = params[:mincfile_id]
+    mincfile    = Userfile.find(mincfile_id)
+    cachename   = mincfile.cache_full_path
+    basename    = cachename.basename
+    shortbase   = basename.sub(/\.mi?nc(\.g?z)?$/i,"")
+    group_id    = mincfile.group_id
 
     user_id          = self.user_id
     data_provider_id = params[:data_provider_id]
@@ -92,7 +101,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     out_files.each do |file|
       self.addlog(file)
       niifile = safe_userfile_find_or_new(SingleFile,
-        :name             => File.basename(minc_col.cache_full_path,".mnc")+File.extname(file),
+        :name             => shortname + File.extname(file),
         :user_id          => user_id,
         :group_id         => group_id,
         :data_provider_id => data_provider_id,
@@ -100,7 +109,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
       )
       niifile.cache_copy_from_local_file(file)
       if niifile.save
-        niifile.move_to_child_of(minc_col)
+        niifile.move_to_child_of(mincfile)
         self.addlog("Saved output file #{niifile.name}") # not necessarily NIfTI format
         niifiles << niifile
       else
@@ -109,7 +118,7 @@ class CbrainTask::Mnc2nii < CbrainTask::ClusterTask
     end
 
     params[:niifile_ids] = niifiles.map &:id
-    self.addlog_to_userfiles_these_created_these( [ minc_col ], niifiles )
+    self.addlog_to_userfiles_these_created_these( [ mincfile ], niifiles )
 
     true
   end
