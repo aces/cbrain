@@ -1047,7 +1047,7 @@ td.taskinfo {
     clear: both;
     margin-right: auto;
     margin-left: 11px;
-    margin-top: 13px;
+    margin-top: 10px;
     width: 977px;
     border: 0px;
 }
@@ -1934,8 +1934,13 @@ td.middle{
 
 #pagination{
     text-align: right;
-    margin-right: 75px;
-    margin-left: 120px;
+    padding-top: 30px;
+    margin-right: 115px;
+    margin-left: 130px;
+}
+
+.enclose_sidebar{
+    margin-top: 22px;
 }
 
 .upload_file_format{
