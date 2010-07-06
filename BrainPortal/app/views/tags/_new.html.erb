@@ -8,17 +8,15 @@
 #
 
 -%>
-
-<div class = "generalcontent">
-    
-    <div id = "new_tag">
-      <br>
-      <% form_for :tag, @tag, {:url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"}}  do |f| -%>
-        <%= f.error_messages %>
-          <%= f.label :name %><br />
-          <%= f.text_field :name %>
-          <%= f.submit "Create" %>
-      <% end %>
-      <br>
-     </div>
-</div>   <!-- End class="generalcontent" -->
+<% form_for :tag, @tag, {:url => { :controller => "tags", :action => "create" }}  do |f| %>
+            <%= f.error_messages %>
+            <div id = "add_tag">
+                <div id = "new_tag">
+                    Create Tag (use a unique name)
+                </div>
+                <%= f.text_field :name, :size => 9 %>
+                <%= f.submit "Add" %>
+                <br>
+                <br>
+        </div>
+<% end %>   
