@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run dcm2mnc.
-class CbrainTask::Dcm2mnc < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run dcm2mnc.
+class CbrainTask::Dcm2mnc < ClusterTask
 
   Revision_info="$Id$"
 

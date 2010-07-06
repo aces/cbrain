@@ -10,8 +10,8 @@
 # $Id$
 #
 
-# A subclass of CbrainTask::ClusterTask to combine CIVET results.
-class CbrainTask::CivetCombiner < CbrainTask::ClusterTask
+# A subclass of ClusterTask to combine CIVET results.
+class CbrainTask::CivetCombiner < ClusterTask
 
   Revision_info="$Id$"
 

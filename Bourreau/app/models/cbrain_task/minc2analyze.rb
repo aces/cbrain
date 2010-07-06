@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run minc2analyze.
-class CbrainTask::Minc2analyze < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run minc2analyze.
+class CbrainTask::Minc2analyze < ClusterTask
 
   Revision_info="$Id$"
 

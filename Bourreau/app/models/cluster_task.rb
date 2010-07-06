@@ -37,11 +37,11 @@ require 'cbrain_exception'
 #                       tasks the current task depend on.
 #[<b>log</b>] A log of task's progress.
 #
-#<b>CbrainTask::ClusterTask should not be instantiated directly.</b> Instead, subclasses of CbrainTask should be created to
+#<b>ClusterTask objects should not be instantiated directly.</b> Instead, subclasses of ClusterTask should be created to
 #represent requests for specific processing tasks.
 #
-#= Creating a CbrainTask::ClusterTask subclass
-#Subclasses of CbrainTask::ClusterTask will have to override the following methods to function properly:
+#= Creating a ClusterTask subclass
+#Subclasses of ClusterTask will have to override the following methods to function properly:
 #[<b>setup</b>] Perform any preparatory steps before launching the job (e.g. syncing files).
 #[*cluster_commands*] Returns an array of the bash commands to be run by the job.
 #[*save_results*] Perform any finalization steps after the job is run (e.g. saving result files).
@@ -49,13 +49,13 @@ require 'cbrain_exception'
 #Note that all these methods can access request parameters through the hash in the +params+
 #attribute.
 #
-#A generator script has been written to simplify the creation of CbrainTask::ClusterTask subclasses. To
+#A generator script has been written to simplify the creation of ClusterTask subclasses. To
 #use it, simply go to the Bourreau application's base directory and run:
 #  script/generate cluster_task <your_task_name>
 #This will create a template for your task.
 #
 #Instructions in the files themselves will indicate how to integrate your task into the system.
-class CbrainTask::ClusterTask < CbrainTask
+class ClusterTask < CbrainTask
 
   Revision_info="$Id$"
 
@@ -894,5 +894,16 @@ class CbrainTask::ClusterTask < CbrainTask
     end
   end
 
-
 end
+
+# Patch: pre-load all model files for the subclasses
+Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
+  Dir.glob("*.rb").each do |model|      
+    model.sub!(/.rb$/,"")
+    unless CbrainTask.const_defined? model.classify
+      require_dependency "cbrain_task/#{model}.rb"
+      puts ">>>> #{model} #{model.classify}"
+    end
+  end
+end
+

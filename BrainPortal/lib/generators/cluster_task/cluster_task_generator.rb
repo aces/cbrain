@@ -12,7 +12,7 @@ class ClusterTaskGenerator < Rails::Generator::NamedBase
   def add_options!(opt)
     opt.separator ''
     opt.separator 'Options:'
-    opt.on("--advanced", "Include the advanced CbrainTask::PortalTask API methods in the template.") do |v|
+    opt.on("--advanced", "Include the advanced PortalTask API methods in the template.") do |v|
        options[:advanced] = true
     end
   end

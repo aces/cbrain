@@ -13,8 +13,8 @@
 # Typically this class is not used directly, instead intermediate subclasses are
 # used on the Portal side and on the Bourreau side:
 #
-#   CbrainTask::PortalTask  < CbrainTask
-#   CbrainTask::ClusterTask < CbrainTask
+#   PortalTask  < CbrainTask
+#   ClusterTask < CbrainTask
 #
 class CbrainTask < ActiveRecord::Base
 

@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run mincpik.
-class CbrainTask::Mincpik < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run mincpik.
+class CbrainTask::Mincpik < ClusterTask
 
   Revision_info="$Id$"
 

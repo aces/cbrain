@@ -11,8 +11,8 @@
 
 
 
-#A subclass of CbrainTask::ClusterTask to run bigseed.
-class CbrainTask::Spmbatch < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run bigseed.
+class CbrainTask::Spmbatch < ClusterTask
 
   Revision_info="$Id$"
 

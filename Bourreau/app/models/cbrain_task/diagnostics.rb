@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run diagnostics.
-class CbrainTask::Diagnostics < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run diagnostics.
+class CbrainTask::Diagnostics < ClusterTask
 
   Revision_info="$Id$"
 

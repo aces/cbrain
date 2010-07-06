@@ -9,8 +9,8 @@
 # $Id$
 #
 
-# A subclass of CbrainTask::ClusterTask to run Claude's CIVET QC PIPELINE
-class CbrainTask::CivetQc < CbrainTask::ClusterTask
+# A subclass of ClusterTask to run Claude's CIVET QC PIPELINE
+class CbrainTask::CivetQc < ClusterTask
 
   Revision_info="$Id$"
 

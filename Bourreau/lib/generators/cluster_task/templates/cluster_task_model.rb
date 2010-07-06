@@ -9,8 +9,8 @@
 # $Id$
 #
 
-# A subclass of CbrainTask::ClusterTask to run <%= class_name %>.
-class <%= "CbrainTask::#{class_name}" %> < CbrainTask::ClusterTask
+# A subclass of ClusterTask to run <%= class_name %>.
+class <%= "CbrainTask::#{class_name}" %> < ClusterTask
 
   Revision_info="$Id$"
 

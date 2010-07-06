@@ -8,8 +8,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run RPM.
-class CbrainTask::Rpm < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run RPM.
+class CbrainTask::Rpm < ClusterTask
 
    Revision_info="$Id$"
 

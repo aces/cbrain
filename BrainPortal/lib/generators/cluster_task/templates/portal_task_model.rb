@@ -10,7 +10,7 @@
 #
 
 # A subclass of CbrainTask to launch <%= class_name %>.
-class <%= "CbrainTask::#{class_name}" %> < CbrainTask::PortalTask
+class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
   Revision_info="$Id$"
 

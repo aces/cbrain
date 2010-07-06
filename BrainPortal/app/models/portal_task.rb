@@ -13,7 +13,7 @@
 # for deploying CbrainTasks on the BrainPortal side.
 #
 # See the documentation in CbrainTask.txt for more information.
-class CbrainTask::PortalTask < CbrainTask
+class PortalTask < CbrainTask
 
   Revision_info="$Id$"
 
@@ -91,11 +91,11 @@ class CbrainTask::PortalTask < CbrainTask
 
   # Special boolean properties of your task, returned as a
   # hash table. Used by CBRAIN rendering code to control
-  # default elements. Advanced features. The defaults
+  # default elements. Advanced feature. The defaults
   # for all properties should be 'false' so that subclass
   # only have to explicitely set the special properties
   # that they want 'true' (since nil is also false).
-  def self.properties #:nodoc:
+  def self.properties
     {
        :no_submit_button                   => false, # view will not automatically have a submit button
        :i_save_my_task_in_after_form       => false, # used by validation code for detected coding errors
@@ -310,5 +310,16 @@ class CbrainTask::PortalTask < CbrainTask
     foundvalue
   end
 
+end
+
+# Patch: pre-load all model files for the subclasses
+Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
+  Dir.glob("*.rb").each do |model|
+    model.sub!(/.rb$/,"")
+    unless CbrainTask.const_defined? model.classify
+      require_dependency "cbrain_task/#{model}.rb"
+      #puts ">>>> #{model} #{model.classify}"
+    end
+  end
 end
 

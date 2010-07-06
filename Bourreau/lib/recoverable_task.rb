@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Module containing common methods for the CbrainTask::ClusterTask
+# Module containing common methods for the ClusterTask
 # subclasses that are naturally recoverable.
 #
 # Original author: Pierre Rioux

@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run asipro2minc.
-class CbrainTask::Asipro2minc < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run asipro2minc.
+class CbrainTask::Asipro2minc < ClusterTask
 
   Revision_info="$Id$"
 

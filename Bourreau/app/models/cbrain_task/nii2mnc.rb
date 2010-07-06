@@ -9,8 +9,8 @@
 # $Id$
 #
 
-# A subclass of CbrainTask::ClusterTask to run Nii2mnc.
-class CbrainTask::Nii2mnc < CbrainTask::ClusterTask
+# A subclass of ClusterTask to run Nii2mnc.
+class CbrainTask::Nii2mnc < ClusterTask
 
   Revision_info="$Id$"
 

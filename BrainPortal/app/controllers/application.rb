@@ -297,18 +297,12 @@ class ApplicationController < ActionController::Base
 
 end
 
-#Patch: Load all models so single-table inheritance works properly.
+# Patch: Load all models so single-table inheritance works properly.
 begin
   Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
     Dir.glob("*.rb").each do |model|
       model.sub!(/.rb$/,"")
       require_dependency "#{model}.rb" unless Object.const_defined? model.classify
-    end
-  end
-  Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
-    Dir.glob("*.rb").each do |model|
-      model.sub!(/.rb$/,"")
-      require_dependency "cbrain_task/#{model}.rb" unless CbrainTask.const_defined? model.classify
     end
   end
 rescue => error

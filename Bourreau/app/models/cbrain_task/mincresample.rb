@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run mincresample.
-class CbrainTask::Mincresample < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run mincresample.
+class CbrainTask::Mincresample < ClusterTask
 
   Revision_info="$Id$"
 

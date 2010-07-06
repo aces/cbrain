@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run mincmath.
-class CbrainTask::Mincmath < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run mincmath.
+class CbrainTask::Mincmath < ClusterTask
 
   Revision_info="$Id$"
 

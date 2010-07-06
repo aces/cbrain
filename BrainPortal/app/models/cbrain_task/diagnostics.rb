@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::PortalTask to launch diagnostics.
-class CbrainTask::Diagnostics < CbrainTask::PortalTask
+#A subclass of PortalTask to launch diagnostics.
+class CbrainTask::Diagnostics < PortalTask
 
   Revision_info="$Id$"
 

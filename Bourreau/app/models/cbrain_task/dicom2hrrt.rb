@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run dicom2hrrt.
-class CbrainTask::Dicom2hrrt < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run dicom2hrrt.
+class CbrainTask::Dicom2hrrt < ClusterTask
 
   Revision_info="$Id$"
 

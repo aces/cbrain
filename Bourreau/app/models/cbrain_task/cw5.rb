@@ -9,8 +9,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run cw5.
-class CbrainTask::Cw5 < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run cw5.
+class CbrainTask::Cw5 < ClusterTask
 
   Revision_info="$Id$"
 

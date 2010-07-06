@@ -7,7 +7,7 @@ Usage:
 
 Options:
      --advanced : will include templates for the advanced
-                  CbrainTask::Portal API methods in the
+                  PortalTask API methods in the
                   Ruby code template for the task.
 
 Example:

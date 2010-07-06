@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run mincaverage.
-class CbrainTask::Mincaverage < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run mincaverage.
+class CbrainTask::Mincaverage < ClusterTask
 
   Revision_info="$Id$"
 

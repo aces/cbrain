@@ -12,8 +12,8 @@
 # This will call ana2hrrt command line tool which assumes the following:
 #  - input is the collection(directory) of analyze images and headers
 #  - file names has the following format: yadayada_frame_#_blah.i 
-#A subclass of CbrainTask::ClusterTask to run analyze2hrrt.
-class CbrainTask::Analyze2hrrt < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run analyze2hrrt.
+class CbrainTask::Analyze2hrrt < ClusterTask
 
   Revision_info="$Id$"
 

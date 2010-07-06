@@ -366,10 +366,10 @@ class TasksController < ApplicationController
             sent_ok += btasklist.size
             next
           end
-          new_status  = CbrainTask::PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
+          new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
             cur_status  = t.status
-            allowed_new = CbrainTask::PortalTask::AllowedOperations[cur_status] || []
+            allowed_new = PortalTask::AllowedOperations[cur_status] || []
             new_status && allowed_new.include?(new_status)
           end
           skippedtasks = btasklist - oktasks

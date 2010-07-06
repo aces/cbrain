@@ -10,8 +10,8 @@
 # $Id$
 #
 
-#A subclass of CbrainTask::ClusterTask to run cw5filter.
-class CbrainTask::Cw5filter < CbrainTask::ClusterTask
+#A subclass of ClusterTask to run cw5filter.
+class CbrainTask::Cw5filter < ClusterTask
 
   Revision_info="$Id$"
 

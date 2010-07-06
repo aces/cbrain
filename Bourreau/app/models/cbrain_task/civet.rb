@@ -11,8 +11,8 @@
 # $Id$
 #
 
-# A subclass of CbrainTask::ClusterTask to run CIVET.
-class CbrainTask::Civet < CbrainTask::ClusterTask
+# A subclass of ClusterTask to run CIVET.
+class CbrainTask::Civet < ClusterTask
 
   Revision_info="$Id$"
 

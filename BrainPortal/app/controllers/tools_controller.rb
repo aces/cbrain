@@ -58,7 +58,7 @@ class ToolsController < ApplicationController
     if params[:autoload]
       successes = 0
       failures  = ""
-      CbrainTask::PortalTask.send(:subclasses).map(&:name).sort.each do |tool|
+      PortalTask.send(:subclasses).map(&:name).sort.each do |tool|
         unless current_user.available_tools.find_by_cbrain_task_class(tool)
           @tool = Tool.new(
                       :name               => tool.sub(/^CbrainTask::/, ""),
