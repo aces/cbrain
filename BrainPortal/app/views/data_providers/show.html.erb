@@ -88,6 +88,11 @@
              <td class="info"><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
          </tr>
 
+         <tr>
+             <th>Syncability</th>
+             <td class="info"><%= h(@provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
+         </tr>
+
          <% if check_role(:admin) || @provider.user_id == current_user.id %>
 
          <tr>

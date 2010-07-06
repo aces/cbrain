@@ -302,7 +302,8 @@ class DataProvider < ActiveRecord::Base
   # Synchronizes the content of +userfile+ as stored
   # on the provider into the local cache.
   def sync_to_cache(userfile)
-    cb_error "Error: provider is offline." unless self.online
+    cb_error "Error: provider is offline."      unless self.online
+    cb_error "Error: provider is not syncable." if     self.not_syncable?
     SyncStatus.ready_to_copy_to_cache(userfile) do
       impl_sync_to_cache(userfile)
     end
@@ -311,8 +312,9 @@ class DataProvider < ActiveRecord::Base
   # Synchronizes the content of +userfile+ from the
   # local cache back to the provider.
   def sync_to_provider(userfile)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if     self.read_only
+    cb_error "Error: provider is offline."      unless self.online
+    cb_error "Error: provider is read_only."    if     self.read_only
+    cb_error "Error: provider is not syncable." if     self.not_syncable?
     SyncStatus.ready_to_copy_to_dp(userfile) do
       impl_sync_to_provider(userfile)
     end

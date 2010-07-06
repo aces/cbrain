@@ -145,6 +145,11 @@
   <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, :prompt => "Select mode" %></p>
 </span>
 
+<span title="Is this data provider syncable?">
+  <p><label for="not_syncable">Syncability</label><br/>
+  <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true }, :prompt => "Select syncability" %></p>
+</span>
+
 <div class="groupentry">
   <br>
   <strong>Info for Remote Data Providers</strong>

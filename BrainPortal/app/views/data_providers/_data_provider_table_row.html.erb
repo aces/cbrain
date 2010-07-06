@@ -5,9 +5,10 @@
   <td class="provider_details" style="display:none"><%= (link_to h(data_provider.site.name), site_path(data_provider.site)) rescue "(Unassigned)" %></td>
   <td><%= data_provider.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <% ajax_element({:element  => "td", :url  => url_for(:action  => :is_alive, :id  => data_provider.id)}) do %>
-    <span class="loading_message">Loading...</span>
+    <span class="loading_message">Checking...</span>
   <% end %>
-  <td><%= h(data_provider.read_only ? "Read Only" : "Read/Write") %></td>
+  <td><%= h(data_provider.read_only    ? "Read Only"    : "Read/Write") %></td>
+  <td class="provider_details" style="display:none"><%= h(data_provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.description) %></td>
   <td>
      <% if data_provider.has_owner_access?(current_user) %>
