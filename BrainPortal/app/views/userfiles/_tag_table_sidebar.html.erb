@@ -6,6 +6,9 @@
 # $Id$
 #
 -%>
-
-<%= link_to 'Manage Tags', tags_path %><br><br>
-
+<h4>
+   By Tag<br> 
+</h4>
+<ul id = "filter_menu">
+    <%= render :partial => "tag_display" %>
+</li>
