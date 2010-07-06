@@ -19,7 +19,7 @@
       <tr>
          <td><%= tag.name %></td>
          <td><%= check_box_tag("tag_ids[]", tag.id, @userfile.tags.include?(tag)) %></td>
-      </tr>
+      </tr>      
       <% end %>
 </table>
 <% end %>
