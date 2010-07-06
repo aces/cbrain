@@ -468,7 +468,7 @@ module ApplicationHelper
     button_text = options[:button_text]
     width = options[:width] || ""
     if partial
-      content = render partial
+      content = render :partial  => partial
     else
       content = capture(&block)
     end
@@ -487,6 +487,7 @@ module ApplicationHelper
     concat(content)
     concat("</div>")
     concat("<a class=\"dialog_button button\">#{button_text}</a>")
+    concat("</div>")
   end
   
  
@@ -582,7 +583,7 @@ module ApplicationHelper
     partial = options[:partial]
     title = options[:title]
     html_opts[:class] ||= ""
-    html_opts[:class] +=  " button"
+    html_opts[:class] +=  " button_menu"
     
     content=""
     if block_given?
@@ -593,12 +594,12 @@ module ApplicationHelper
     end
 
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
-    concat("<div class=\"button_with_drop_down\">")
+    concat("<span class=\"button_with_drop_down\">")
     concat("<a #{atts}>#{title}</a>")
     concat("<div class=\"drop_down_menu\">")
     concat(content)
     concat("</div>")
-    concat("</div>")
+    concat("</span>")
            
   end
   
