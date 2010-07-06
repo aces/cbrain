@@ -10,6 +10,8 @@
 
 <% if @userfile_count > @userfiles_per_page %>
      <h5><%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %></h5>
+<% else %>
+    <br><br>
 <% end %>
 
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
