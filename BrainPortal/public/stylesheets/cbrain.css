@@ -65,20 +65,32 @@ h2  {
     color: #444;
 }
 
-
 h4{
-    font-size: 20px;
-    padding-left: 15px;
-    margin-top: 1em;
+    font-size: 12px;
+    padding-left: 0px;
+    margin-top: 0em;
     margin-bottom: 0.5em;
+    margin-right: 0em; 
+    margin-left: 0em;
     padding-bottom: 0em;
     padding-top: 0em; 
     width: 130px; 
-    margin-right: 0em; 
-    margin-left: 0em; 
-    color: #444;
+    color: #000;
+    border-bottom: 1px solid #666; 
 }
 
+h5{
+    font-size: 11px;
+    padding-left: 0px;
+    margin-top: 0em;
+    margin-bottom: 0.5em;
+    margin-right: 0em; 
+    margin-left: 0em;
+    padding-bottom: 0em;
+    padding-top: 0em; 
+    width: 130px; 
+    color: #000;
+}
 
 #header h1 {
     float:left;
@@ -228,6 +240,7 @@ pre {
     display: inline;
 }
 
+
 /* ######################################################### */
 /* File Operations Menu */
 /* ######################################################### */
@@ -296,12 +309,13 @@ pre {
 /* ########################################################  */
 #filter_menu { 
     padding:0; 
-    margin:0; 
-    text-align: center;
+    margin-left: 0px; 
+    text-align: left;
 }
  
 #filter_menu li { 
-    list-style-type:none; 
+    list-style-type:none;
+    margin-left: 0px;
 }
 
 #custom_filter li{
@@ -1033,7 +1047,9 @@ td.taskinfo {
     clear: both;
     margin-right: auto;
     margin-left: 11px;
+    margin-top: 13px;
     width: 977px;
+    border: 0px;
 }
 
 .resource_list_file {
@@ -1141,8 +1157,16 @@ table.resource_list td.checkbox {
 
 .filters {
     float:left; 
-    width:20em;
-    margin-left: 1em;
+    width: 20%;
+    margin-left: 3em;
+}
+
+#filter_sidebar{
+    background-color: #EEEEEE;
+    color: #505050;
+    margin-left: 2px;
+    padding-bottom: 10px;
+    padding-left: 20px;
 }
 
 .tags {
@@ -1157,7 +1181,7 @@ table.resource_list td.checkbox {
     padding-left: 2em;
 }
 
-#pages {
+#pages{
     width: auto;
     margin-left: 1em;
     margin-right: 4em;
@@ -1169,6 +1193,21 @@ table.resource_list td.checkbox {
     border: none;
     float: left;
     /*border: 1px solid #e4e4e4;*/
+}
+
+
+#pages_userfiles {
+    width: 90%;
+    margin-left: 0em;
+    margin-right: 0em;
+    margin-bottom: 0em;
+    padding-left: 2em;
+    padding-top: 0.5em;
+    background-color: #ffffff;
+    text-align: left;
+    border: none;
+    float: left;
+    border: 1px solid #eeeeee;
 }
 
 #filter_div {
@@ -1196,9 +1235,10 @@ table.resource_list td.checkbox {
 
 #userfiles_top_menu {
     padding: 1em 0 0;
-    margin-left: 290px;
+    margin-left: 240px;
     margin-right: 0px;
     width: 50em;
+    margin-bottom: 10px;
 }
 
 .userfiles_upper_form {
@@ -1206,7 +1246,7 @@ table.resource_list td.checkbox {
     width: 45em;
     margin-left: 185px;
     margin-right: auto;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
 }
 
 #userfile_contents_display{
@@ -1221,7 +1261,7 @@ table.resource_list td.checkbox {
     padding: 2em;
     margin-top: 10px;
     width: auto;
-    margin-left: 11px;
+    margin-left: 0px;
     margin-bottom: 0px;  
 }
 
@@ -1249,14 +1289,15 @@ table.resource_list td.checkbox {
 }
 
 .help_button_userfiles{
-    margin-left: 76em;
-    margin-top: 1em;
-    margin-right: 1em;
+    margin-left: 56em;
+    margin-top: 0em;
+    margin-bottom: 4em;
 }
 
 .help_button_drop_down{
-    margin-left: 76em;
+    margin-left: 75em;
     margin-top: 1em;
+    margin-bottom: 4em;
 }
 
 #new_feedback{
@@ -1272,9 +1313,14 @@ table.resource_list td.checkbox {
     margin-left: 1em;
 }
 
+#tools_display{
+    width: 30%;
+}
+
 #file_menu{
-    margin-left: 10px;
+    margin-left: 0px;
     margin-right: auto;
+    margin-bottom: 10px;
     min-width: 1097px;
 }
 
@@ -1304,7 +1350,7 @@ table.resource_list td.checkbox {
 .resource_list_box {
     float:left; 
     width: 95%;
-    margin-top: 1em;
+    margin-top: -15px;
     margin-left: 11px;
     padding: 1em;
     background-color: #f6f6f6;
@@ -1886,6 +1932,19 @@ td.middle{
     padding: 0.25em;
 }
 
+#pagination{
+    text-align: right;
+    margin-right: 75px;
+    margin-left: 120px;
+}
+
+.upload_file_format{
+    margin-left: 150px;
+    margin-top: -2px;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+}
+
 /* ############################################## */
 /*    Task summary page                           */
 /* ############################################## */
@@ -1991,21 +2050,36 @@ td.middle{
 
 #userfile_table_format_options{
     float: none;
-    width: 40px;
+    width: 90%;
     background-color: #ffffff;
     color: #000000;
     text-align: left;
-    padding-left: 40px;
+    padding-left: 20px;
+    padding-top: 0px;
+    padding-bottom: 10px;
+}
+
+#userfile_table_format_options_2{
+    float: none;
+    width: 92%;
+    background-color: #eeeeee;
+    color: #000000;
+    text-align: left;
+    padding-left: 20px;
+    padding-top: 0px;
+    padding-bottom: 10px;
 }
 
 #file_manager_sidebar{
-    width: 20%;
+    width: 25%;
     float: left;
+    margin-top: 80px;
     min-height: 600px;
     padding: 0;
     margin-left: -15px;
+    margin-right: 0px;
+    margin-bottom: 20px;
     position: relative;
-    background-color: #EEEEEE;
 }
 
 #main_userfiles_content{
@@ -2059,14 +2133,19 @@ h1.warning {
 /* ######################################################### */
 
 .button_with_drop_down {
+    z-index: 501; 
+    float: left;
+}
+
+.button {
     z-index: 500;
     float: left;
-    z-index: 1;
 }
+
 
 .button_with_drop_down > .drop_down_menu {
     position: absolute;
-    z-index: 500;
+     z-index: 501;
     border: solid;
     border-width: 1px;
     padding: 5px;
@@ -2113,3 +2192,18 @@ h1.warning {
     margin-bottom: 25px;
 }
 
+.tag_sidebar{
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: #FFFFFF;
+}
+
+
+#add_tag{
+    background-color: #FFFFFF; 
+    padding:0px;   
+}
+
+#new_tag{
+    background-color: #FFFF;    
+}

@@ -7,7 +7,8 @@ jQuery(
     //All elements with the accordion class will be changed to accordions.
     jQuery(".accordion").accordion({
       active: false,
-      collapsible: true}
+      collapsible: true,
+      autoHeight: false}
     );
 
 
@@ -39,7 +40,10 @@ jQuery(
       //Overlay dialogs
     jQuery(".overlay_dialog").each( function(index,element){
       var content_width = parseInt(jQuery(element).children('.dialog').attr('data-width'));
-      var dialog = jQuery(this).children(".dialog").dialog({ autoOpen: false,
+      var dialog = jQuery(this).children(".dialog")
+      dialog.remove().appendTo("body");
+      
+      dialog.dialog({ autoOpen: false,
           modal: true,
           position: "center",
 	  resizable: false,
@@ -96,7 +100,7 @@ jQuery(
 
 
         jQuery(".button").button();
-        jQuery(".button_with_drop_down").children(".button").button({
+        jQuery(".button_with_drop_down").children(".button_menu").button({
           icons: {
             secondary: 'ui-icon-triangle-1-s'
           }
