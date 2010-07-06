@@ -1,8 +1,12 @@
-    <h4>
-       Filters<br> 
-    </h4>
+   <%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %>
+  <br>
+  <br>
+  
+  <h4>By Filter</h4>
+       
     <ul id = "filter_menu">
     <li>
+        
          <%= link_to_remote 'All Files', :url  => {:action  => :index, :userfiles_search_type  => :unfilter}, 
                                         :method  => 'get',
                                         :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
@@ -33,21 +37,8 @@
     </li>
     <% end %>
     </ul>
-    <ul>
-        <%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %>
-    </ul>
-    <h4>
-       Filter By Tags<br> 
-    </h4>
-    <ul id = "filter_menu">
-    <% current_user.tags.collect(&:name).each do |tag| %> 
-     <li>
-      <%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :userfiles_tag_filter => tag},
-                                      :method  => 'get',
-                                      :complete  => "$('filter_option_show').show(); $('filter_option_hide').hide();  $('side_filter_menu_wrapper').hide();" 
-       %>
-     </li>
-    <% end %> 
-    <br>
+
+    
+  
     
   
