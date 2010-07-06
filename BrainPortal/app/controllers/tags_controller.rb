@@ -53,9 +53,11 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
+        format.html { redirect_to userfiles_path }
         format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
+        format.html { redirect_to userfiles_path }
         format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
@@ -94,7 +96,7 @@ class TagsController < ApplicationController
     @destroyed = @tag.destroy
 
     respond_to do |format|
-      format.js
+      format.html { redirect_to userfiles_path }
       format.xml  { head :ok }
     end
   end
