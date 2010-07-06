@@ -1,53 +1,5 @@
 <thead>
-<tr>   
-   <tr>
-       <div id="pages">  
-            <tr>
-              <td colspan = "5">
-              </td>
-                <td id = "userfile_table_format_options" onMouseOver="function showSearch(){$('name_search_filter').show();$('redirect_to_index').writeAttribute('value', 'true');} showSearch();" onMouseOut="$('name_search_filter').hide();$('redirect_to_index').writeAttribute('value', '');">
-                <br>
-  	              Search by filename
-      	              <div id="name_search_filter" class="userfile_table_format_options" style="display:none;">
-                            <%= hidden_field_tag :redirect_to_index, nil, :id => :redirect_to_index %>
-                            <%= hidden_field_tag :userfiles_search_type, "name_search" %>
-                            <%= text_field_tag :userfiles_search_term %>
-                         <br><br>
-                      </div>
-                      <br>
-                </td>
-            </tr>        
-            <tr>
-            <td colspan = "5" id = "userfile_table_format_options">
-                <%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %>
-                <br>
-                <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-                    <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %>
-                <% end %><br>
-                <%= link_to_remote "Tree view", :url => {:action => :index, :userfiles_sort_order => 'userfiles.lft'}, :method => 'get' %><br>
-         	    <%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %>
-         	    <% if @userfile_count > @userfiles_per_page %>
-                    <%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %>
-                <% end %><br>
-                <% if session[:userfiles_pagination] == 'on' %>
-                  <%= will_paginate %>
-                 <% end %>  
-                 <br>
-             </td>
-            <td>
-                <div id="filter_div">
-                    Active Filters 
-                    <small>
-                        <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
-                    </small>
-                    <div id="current_filters">
-                        <%= render :partial => 'current_filters' %>
-                    </div>
-               </div>
-           </td>
-           </tr>
-    </div>
-    </tr>  
+<tr>    
     <tr>
       <th>
 	<input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
