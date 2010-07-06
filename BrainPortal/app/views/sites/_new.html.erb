@@ -13,6 +13,7 @@
 <div id = "new_site">
 
 <% form_for :site, @site, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
+
   <%= f.error_messages %>
 
  
