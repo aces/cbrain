@@ -1,0 +1,18 @@
+<%
+# CBRAIN Project
+#
+# $Id$
+#
+%>
+
+<% current_user.tags.collect(&:name).each do |tag| %> 
+    <% tag_object = Tag.find(:first, :conditions => "name = '#{tag}'") %>
+    <%= link_to_remote crop_text_to(15, tag), :url  => {:action  => :index, :userfiles_tag_filter => tag},:method  => 'get'                                                                                                                                                                                                  %>
+    <small>
+        <td><%= link_to 'Edit', edit_tag_path(tag_object) %></td>
+        <td><%= link_to 'Delete', tag_object, :confirm => "Are you sure you want to delete tag '#{tag_object.name}'?", :method => :delete %> 
+    </small>
+      <br>
+  </td>
+</tr>
+<% end %>

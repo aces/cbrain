@@ -1,0 +1,21 @@
+<%
+#
+# CBRAIN Project
+#
+# $Id$
+#
+%>
+
+<h5><%= link_to_remote "Toggle Details", {:url => {:action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %></h5>
+
+<% if @userfile_count > @userfiles_per_page %>
+     <h5><%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %></h5>
+<% end %>
+
+<% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
+     <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %><br>
+ <% end %>
+
+ <%= link_to_remote "Tree view", :url => {:action => :index, :userfiles_sort_order => 'userfiles.lft'}, :method => 'get' %>
+  <%= set_order_icon('userfiles.lft', current_session[:userfiles_sort_order]) %><br>
+<br>

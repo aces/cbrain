@@ -1,0 +1,13 @@
+<%
+#
+# CBRAIN Project
+#
+# $Id$
+#
+%>
+
+<% if session[:userfiles_pagination] == 'on' %>
+   <%= will_paginate %>
+<% else %>
+    <br>
+<% end %>
