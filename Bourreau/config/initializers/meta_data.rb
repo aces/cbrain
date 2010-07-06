@@ -1,1 +1,0 @@
-../../../BrainPortal/config/initializers/meta_data.rb

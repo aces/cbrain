@@ -263,4 +263,17 @@ class Message < ActiveRecord::Base
     allusers
   end
 
+  # Parses a string and replaces special markup with HTML links:
+  #    "abcde [[name][/my/path]] def"
+  # will return
+  #    "abcde <a href="/my/path" class="action_link">name</a>"
+  def self.parse_markup(string)
+    arr = string.split(/(\[\[.*?\]\])/)
+    arr.each_with_index do |str,i|
+      next if i % 2 == 0 # nothing to do to outside context
+      arr[i].sub!(/\[\[(.+?)\]\[(.+?)\]\]/, "<a href=\"\\2\" class=\"action_link\">\\1</a>") # parse markup
+    end
+    arr.join
+  end
+
 end

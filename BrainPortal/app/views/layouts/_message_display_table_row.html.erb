@@ -1,7 +1,7 @@
 <tr id="message_display_<%= mess.id %>">
   <td  class="<%= mess.message_type %>_display left_side">
     <%= 
-      link_to_function parse_message( h(mess.header) ) do |page|
+      link_to_function Message.parse_markup( h(mess.header) ) do |page|
         page["message_display_details_#{mess.id}"].toggle
       end 
     %>

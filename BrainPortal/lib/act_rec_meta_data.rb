@@ -286,16 +286,3 @@ module ActRecMetaData
   end # ClassMethods module
 
 end # ActRecMetaData module
-
-
-
-###################################################################
-# ActiveRecord Added Behavior For MetaData
-###################################################################
-
-class ActiveRecord::Base
-  include ActRecMetaData
-
-  after_destroy :destroy_all_meta_data
-end
-

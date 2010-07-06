@@ -1,7 +1,7 @@
 <tr id="message_display_<%= mess.id %>" class="<%= cycle("list-odd", "list-even") %> row_highlight">
   <td  class="<%= "#{mess.message_type}_display" unless mess.read? %> left_side">
     <%= 
-      link_to_function parse_message( h(mess.header) ) do |page|
+      link_to_function Message.parse_markup( h(mess.header) ) do |page|
         page["message_table_details_#{mess.id}"].toggle
       end 
     %>

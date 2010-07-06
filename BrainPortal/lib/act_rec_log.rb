@@ -285,6 +285,18 @@ module ActRecLog
     arl.update_attributes( { :log => log } )
   end
 
+  # Destroy the log associated with an ActiveRecord.
+  # This is usually called automatically as a +after_destroy+
+  # callback when the record is destroyed, but it can be
+  # called manually too.
+  def destroy_log
+    return true if self.is_a?(ActiveRecordLog)
+    arl = self.active_record_log
+    return true unless arl
+    arl.destroy_without_callbacks
+    true
+  end
+
   protected
 
   def active_record_log #:nodoc:
@@ -316,22 +328,3 @@ module ActRecLog
   end
 
 end
-
-class ActiveRecord::Base
-  include ActRecLog
-
-  after_destroy :destroy_log
-
-  # Destroy the log associated with an ActiveRecord.
-  # This is usually called automatically as a +after_destroy+
-  # callback when the record is destroyed, but it can be
-  # called manually too.
-  def destroy_log
-    return true if self.is_a?(ActiveRecordLog)
-    arl = self.active_record_log
-    return true unless arl
-    arl.destroy_without_callbacks
-    true
-  end
-end
-

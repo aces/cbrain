@@ -194,7 +194,7 @@ class BourreauxController < ApplicationController
 
     cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{@bourreau.info.uptime} seconds." if @bourreau.is_alive?
+    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{pretty_elapsed(@bourreau.info.uptime)}." if @bourreau.is_alive?
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?

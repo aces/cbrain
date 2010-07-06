@@ -10,13 +10,13 @@
 # session.
 class ApplicationController < ActionController::Base
 
-  
   Revision_info="$Id$"
 
   include AuthenticatedSystem
   include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session
+  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size
   helper        :all # include all helpers, all the time
 
   filter_parameter_logging :password, :login, :email, :full_name, :role
@@ -31,8 +31,38 @@ class ApplicationController < ActionController::Base
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
   
-  private
   
+
+  ########################################################################
+  # Controller Filters
+  ########################################################################
+
+  private
+
+  #Prevents pages from being cached in the browser. 
+  #This prevents users from being able to access pages after logout by hitting
+  #the 'back' button on the browser.
+  #
+  #NOTE: Does not seem to be effective for all browsers.
+  def set_cache_killer
+    # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
+    # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
+    # resource will not be written
+    # (must-revalidate) the cache may use the response in replying to a subsequent reques but if the resonse is stale
+    # all caches must first revalidate with the origin server using the request headers from the new request to allow
+    # the origin server to authenticate the new reques
+    # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
+    # Unless max- stale directive is also included, the client is not willing to accept a stale response.
+    response.headers["Last-Modified"] = Time.now.httpdate
+    response.headers["Expires"] = "#{1.year.ago}"
+    # HTTP 1.0
+    # When the no-cache directive is present in a request message, an application SHOULD forward the request 
+    # toward the origin server even if it has a cached copy of what is being requested
+    response.headers["Pragma"] = "no-cache"
+    # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
+    response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
+  end
+
   def set_session
     current_session.update(params)
     @filter_params = current_session.params_for(params[:controller])
@@ -47,6 +77,10 @@ class ApplicationController < ActionController::Base
     end
   end
   
+  ########################################################################
+  # CBRAIN Exception Handling (Filters)
+  ########################################################################
+
   #Catch and display cbrain messages
   def catch_cbrain_message
     begin
@@ -83,6 +117,18 @@ class ApplicationController < ActionController::Base
     end
   end
   
+  def default_redirect
+    if self.respond_to?(:index) && params[:action] != "index"
+      {:action => :index}
+    else
+      home_path
+    end
+  end
+  
+  ########################################################################
+  # CBRAIN Messaging System Filters
+  ########################################################################
+
   def prepare_messages
 
     if BrainPortal.current_resource.portal_locked?
@@ -112,6 +158,10 @@ class ApplicationController < ActionController::Base
     end
   end
     
+  ########################################################################
+  # Helpers
+  ########################################################################
+
   #Checks that the current user's role matches +role+.
   def check_role(role)
     current_user && current_user.role.to_sym == role.to_sym
@@ -138,37 +188,112 @@ class ApplicationController < ActionController::Base
       render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
   end
   
-  def default_redirect
-    if self.respond_to?(:index) && params[:action] != "index"
-      {:action => :index}
-    else
-      home_path
+  #################################################################################
+  # Date/Time Helpers
+  #################################################################################
+  
+  #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
+  def to_localtime(stringtime, what = :date)
+     loctime = Time.parse(stringtime.to_s).localtime
+     if what == :date || what == :datetime
+       date = loctime.strftime("%Y-%m-%d")
+     end
+     if what == :time || what == :datetime
+       time = loctime.strftime("%H:%M:%S")
+     end
+     case what
+       when :date
+         return date
+       when :time
+         return time
+       when :datetime
+         return "#{date} #{time}"
+       else
+         raise "Unknown option #{what.to_s}"
+     end
+  end
+
+  # Returns a string that represents the amount of elapsed time
+  # encoded in +numseconds+ seconds.
+  #
+  # 0:: "0 seconds"
+  # 1:: "1 second"
+  # 7272:: "2 hours, 1 minute and 12 seconds"
+  def pretty_elapsed(numseconds)
+    remain = numseconds.to_i
+
+    return "0 seconds" if remain <= 0
+
+    numweeks = remain / 1.week
+    remain   = remain - ( numweeks * 1.week   )
+
+    numdays  = remain / 1.day
+    remain   = remain - ( numdays  * 1.day    )
+
+    numhours = remain / 1.hour
+    remain   = remain - ( numhours * 1.hour   )
+
+    nummins  = remain / 1.minute
+    remain   = remain - ( nummins  * 1.minute )
+
+    numsecs  = remain
+
+    components = [
+      [numweeks, "week"],
+      [numdays,  "day"],
+      [numhours, "hour"],
+      [nummins,  "minute"],
+      [numsecs,  "second"]
+    ]
+
+    components = components.select { |c| c[0] > 0 }
+
+    final = ""
+
+    while components.size > 0
+      comp = components.shift
+      num  = comp[0]
+      unit = comp[1]
+      unit += "s" if num > 1
+      unless final.blank?
+        if components.size > 0
+          final += ", "
+        else
+          final += " and "
+        end
+      end
+      final += "#{num} #{unit}"
     end
+
+    final
+  end
+
+  def pretty_past_date(pastdate, what = :datetime)
+    loctime = Time.parse(pastdate.to_s).localtime
+    locdate = to_localtime(pastdate,what)
+    elapsed = pretty_elapsed(Time.now - loctime)
+    "#{locdate} (#{elapsed} ago)"
   end
   
-  #Prevents pages from being cached in the browser. 
-  #This prevents users from being able to access pages after logout by hitting
-  #the 'back' button on the browser.
-  #
-  #NOTE: Does not seem to be effective for all browsers.
-  def set_cache_killer
-     # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
-     # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
-     # resource will not be written
-     # (must-revalidate) the cache may use the response in replying to a subsequent reques but if the resonse is stale
-     # all caches must first revalidate with the origin server using the request headers from the new request to allow
-     # the origin server to authenticate the new reques
-     # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
-     # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-     response.headers["Last-Modified"] = Time.now.httpdate
-     response.headers["Expires"] = "#{1.year.ago}"
-     # HTTP 1.0
-     # When the no-cache directive is present in a request message, an application SHOULD forward the request 
-     # toward the origin server even if it has a cached copy of what is being requested
-     response.headers["Pragma"] = "no-cache"
-     # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
-     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
-   end
+  # Format a byte size for display in the view.
+  # Returns the size as one of
+  #   12.3 GB
+  #   12.3 MB
+  #   12.3 KB
+  #   123 bytes
+  def pretty_size(size)
+    if size.blank?
+      "unknown"
+    elsif size >= 1_000_000_000
+      sprintf "%6.1f GB", size/(1_000_000_000 + 0.0)
+    elsif size >=     1_000_000
+      sprintf "%6.1f MB", size/(    1_000_000 + 0.0)
+    elsif size >=         1_000
+      sprintf "%6.1f KB", size/(        1_000 + 0.0)
+    else
+      sprintf "%d bytes", size
+    end 
+  end
 
 end
 
