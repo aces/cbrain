@@ -22,7 +22,9 @@
      </div>
      <br>
      <br>
-     <%= render :partial => "sidebar" %>
+     <div class = "enclose_sidebar">
+         <%= render :partial => "sidebar" %>
+     </div>
  </div>
    
    <div class="generalcontent">
@@ -56,11 +58,10 @@
         
       <div id = "file_menu">
           <%= render :partial => "file_menu" %>
-          <div id = "pagination" colspan = "4">
-              <%= render :partial => 'pagination' %>
-          </div>
       </div>
-             
+       <div id = "pagination" colspan = "4">
+            <%= render :partial => 'pagination' %>
+        </div>
       <table id="userfilesdisplay" class="resource_list">
            <%= render :partial => 'userfiles_table' %>
       </table>
