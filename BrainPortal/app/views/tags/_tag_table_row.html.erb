@@ -1,8 +1,9 @@
+<% tag_object = Tag.find(:first, :conditions => "name = '#{tag}'") %>
 <tr class="<%= cycle( 'list-odd', 'list-even') -%>" id="tag_<%= tag.id %>">
-  <td><%= link_to h(tag.name), edit_tag_path(tag) %></td>
+  <td><%= h(tag.name) %></td>
+  <td><%= link_to 'Edit', edit_tag_path(tag), {:class => 'action_link'}%></td>
   <td>
-    <%= 
-        link_to_remote  'Delete',
+    <%= link_to_remote  'Delete',
                       {:url  => tag_path(tag),
                        :method  => 'delete',
                        :confirm => 'Are you sure?',
