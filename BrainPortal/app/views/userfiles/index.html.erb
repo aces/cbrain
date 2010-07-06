@@ -15,61 +15,63 @@
 <% title 'Files' %><% #Side bar stuff goes here -%>
 
 <div id = "content_userfiles">
- <div id = "file_manager_sidebar">
+ <div id = "file_manager_sidebar">   
+     <br>
+     <div class = "upload_file_format">
+        <% overlay_dialog_with_button({:name => "Upload", :partial => "new", :button_text => "Upload File"}) %> 
+     </div>
+     <br>
+     <br>
      <%= render :partial => "sidebar" %>
  </div>
    
    <div class="generalcontent">
    
-      <div class = 'help_button_drop_down'>
-          <% button_with_dropdown_menu(:title => "Help") do %>
-            <a class = "overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
-              <br>
-              <a class = "overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
-              <br>
-              <a class = "overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
-          <% end %>     
-      </div>
-
-      <%= javascript_tag "var current_options;" %>         
-       
-           <div id="main_userfiles_content"  style="width: 90%">
-          
-               <div id="userfiles_top_menu">
-                   <%= userfiles_menu_option('Conversion Tools', 'conversion_tool_option', 'tool_management_conversion') %>
-                   <%= userfiles_menu_option('Scientific Tools', 'scientific_tool_option', 'tool_management_scientific') %>
-                   <br>
-               </div>
-               <br>
-               <div class="userfiles_upper_form">  
-                   <div id="upload_option_div" class="upper_form" style="display:none">
-               </div>
-           </div>  
-            
-           <% form_tag(operation_userfiles_path(:method => :post)) do %>
-         
-           <div class="userfiles_upper_form">
-               <div id="conversion_tool_option_div" class="upper_file_menu" style="display:none">
-               </div>
-               <div id="scientific_tool_option_div" class="upper_file_menu" style="display:none">
-               </div>
-           </div>
-
-           <div id = "file_menu">
-               <%= userfiles_menu_option('Upload File', 'upload_option', 'new')%> 
-               <%= render :partial => "file_menu" %>
-           </div>
-         
-           <table id="userfilesdisplay" class="resource_list">
-             <%= render :partial => 'userfiles_table' %>
-           </table>
+        <% form_tag(operation_userfiles_path(:method => :post)) do %>
         
-        <center>
+        <div id="userfiles_top_menu">
+            <% button_with_dropdown_menu(:title => "Scientific Tools")  do %>
+                <center>
+                 	<%= render :partial => 'tool_management_scientific' %>
+                </center>
+            <% end %>
+
+            <% button_with_dropdown_menu(:title => "Conversion Tools")  do %>
+                <center>
+               		<%= render :partial => 'tool_management_conversion' %>
+                </center>
+            <% end %>
+              <div class = 'help_button_userfiles'>
+                  <% button_with_dropdown_menu(:title => "Help") do %>
+                    <a class = "overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
+                      <br>
+                      <a class = "overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
+                      <br>
+                      <a class = "overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
+                  <% end %>     
+              </div>
+        </div>        
+        <br>        
+        <br>
+        
+      <div id = "file_menu">
+          <%= render :partial => "file_menu" %>
+          <div id = "pagination" colspan = "4">
+              <%= render :partial => 'pagination' %>
+          </div>
+      </div>
+             
+      <table id="userfilesdisplay" class="resource_list">
+           <%= render :partial => 'userfiles_table' %>
+      </table>
+        
+      <center>
            Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-           <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+         <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
            <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
          <% end %>
-        </center>
-        <% end %>
+      </center>
+      <% end %>
+   </div>
 </div>
 </div>
