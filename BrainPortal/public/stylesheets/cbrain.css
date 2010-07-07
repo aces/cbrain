@@ -1243,11 +1243,11 @@ table.resource_list td.checkbox {
 }
 
 #content_userfiles{
-  min-width: 101em;
+  display: block;
 }
 
 #userfiles_main{
-  float:left;
+  display:table;
 }
 
 #userfile_contents_display{
