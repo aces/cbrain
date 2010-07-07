@@ -19,11 +19,11 @@ class GroupsController < ApplicationController
   # GET /groups.xml
   def index  #:nodoc:    
     if current_user.has_role? :admin
-      @system_groups = SystemGroup.find(:all, :include => [:users, :site])
-      @work_groups = WorkGroup.find(:all, :include => [:users, :site])
+      @system_groups = SystemGroup.find(:all, :include => [:users, :site], :order  => "groups.type")
+      @work_groups = WorkGroup.find(:all, :include => [:users, :site], :order  => "groups.type")
     else
-      @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]}, :include => [:users])
-      @work_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"}, :include => [:users])
+      @system_groups = current_user.site.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]}, :include => [:users], :order  => "groups.type")
+      @work_groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"}, :include => [:users], :order  => "groups.type")
     end
     
     #For new panel
