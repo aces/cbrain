@@ -12,7 +12,7 @@
 <br>
  
    <%= select_tag(
-      "operation", 
+      "scientific_operation", 
       ' <option value="">Select a Scientific Operation</option>' +
         current_user.available_scientific_tools.inject("") { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
          :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
