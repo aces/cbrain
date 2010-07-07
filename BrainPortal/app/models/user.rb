@@ -158,12 +158,12 @@ class User < ActiveRecord::Base
   end
   #Find the scientific tools that this user has access to.
   def available_scientific_tools
-    @available_scientific_tools = self.available_tools.scoped(:conditions  => {:category  => "scientific tool"})
+    @available_scientific_tools = self.available_tools.scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
   def available_conversion_tools
-    @available_conversion_tools = self.available_tools.scoped(:conditions  => {:category  => "conversion tool"})
+    @available_conversion_tools = self.available_tools.scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
