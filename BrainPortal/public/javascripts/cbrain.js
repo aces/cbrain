@@ -108,12 +108,12 @@ jQuery(
 
 
         }).toggle(function(event){
-	        var menu = jQuery(this).siblings("div.drop_down_menu");
-	        jQuery(".drop_down_menu:visible").siblings(".button").click();
+	        var menu = jQuery(this).siblings(".drop_down_menu");
+	        jQuery(".drop_down_menu:visible").siblings(".button_menu").click();
       	  menu.show();
         },
         function(event){
-      	  var menu = jQuery(this).siblings("div.drop_down_menu");
+      	  var menu = jQuery(this).siblings(".drop_down_menu");
       	  menu.hide();
         });
 

@@ -8,43 +8,51 @@
 #
 
 -%>  
-<div id="pages_userfiles">  
-    <%= render :partial => "page_display" %>
-</div>
-    <div id="filter_sidebar">
-        <h4>Active Filters</h4>
-        <div id ="current_filters">
-            <%= render :partial => 'current_filters' %>
-        </div>
-        <%= link_to_remote 'clear', {:url  => {:action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
-    </div>
 
-    <div class="accordion">
-  	<h3><a href="#">Filter Files</a></h3>
-  	<div id = "accordion_box">
-  		<%= render :partial => 'filters' %>
-  	</div>
-  	<h3><a href="#">Filter Files by Tags</a></h3>
-  	<div id = "accordion_box">
-        <%= render :partial => 'tag_table_sidebar' %>
-        <br>
-        <div id = "create_tag">
-            <%= render :partial => "tags/new", :object => @tag %>
-  	    </div>
-  	</div>
+<div id="pages_userfiles">  
+    <%= render :partial => "userfiles/page_display" %>
+</div>
+<div id = "userfile_table_format_options_2">
+ <% form_tag({:controller  => :userfiles, :action => "index"}, :method => "get") do %>
+   <h5>Search by filename</h5>
+    <div id="name_search_filter" class="userfile_table_format_options_2">
+         <%= hidden_field_tag :userfiles_search_type, "name_search" %>
+         <%= text_field_tag :userfiles_search_term %>
     </div>
-    <div id = "userfile_table_format_options_2">
-     <br>
-     <% form_tag({:action => "index"}, :method => "get") do %>
-       <h5>Search by filename</h5>
-        <div id="name_search_filter" class="userfile_table_format_options_2">
-             <%= hidden_field_tag :userfiles_search_type, "name_search" %>
-             <%= text_field_tag :userfiles_search_term %>
-        <br><br>
-        </div>
-    <% end %>
+<% end %>
+</div>
+<div id="filter_sidebar">
+    <h4>Active Filters</h4>
+    <div id ="current_filters">
+        <%= render :partial => 'userfiles/current_filters' %>
+    </div>
+    <%= link_to_remote 'clear', {:url  => {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, :method  => 'get'}, {:class  => 'action_link'} %>
+</div>
+
+<div class="accordion">
+  <h3><a href="#">Filter Files</a></h3>
+  <div id = "accordion_box">
+  	<%= render :partial => 'userfiles/filters' %>
+  	<%= render :partial => 'userfiles/tag_table_sidebar' %>
     <br>
+    <div id = "create_tag">
+        <%= render :partial => "tags/new", :object => @tag %>
     </div>
+  </div>
+  <h3><a href="#">Upload File</a></h3>
+  <div id = "accordion_box">
+      <%= render :partial => "userfiles/new" %> 
+  </div>
+  <h3><a href="#">Help</a></h3>
+  <div class = 'help_button_userfiles'>
+        <a class = "overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
+        <br>
+        <a class = "overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
+        <br>
+        <a class = "overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
+  </div>
+</div>
+
   
   
   

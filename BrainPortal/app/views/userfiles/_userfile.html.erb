@@ -32,7 +32,7 @@
       <%= link_to_userfile_if_accessible userfile %>
       <%= userfile.pretty_type %>    
       <% userfile.sync_status.each do |syncstat| %>
-        <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+        <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
       <% end %>
       <% if userfile.formats.size > 0 %>
         <br>
