@@ -430,9 +430,14 @@ class UserfilesController < ApplicationController
     elsif params[:commit] == 'Jiv Viewer'
       redirect_to :controller  => :jiv, :action => :index
       return
-    else
-      operation   = 'cluster_task'
-      task = params[:operation].sub(/^CbrainTask::/,"")
+    elsif
+      operation = 'cluster_task'
+      if params[:scientific_operation].empty?
+        task = params[:conversion_operation]
+      else
+        task = params[:scientific_operation]
+      end
+      task.sub!(/^CbrainTask::/,"")
     end
     
     filelist    = params[:filelist] || []
@@ -440,7 +445,7 @@ class UserfilesController < ApplicationController
     flash[:error]  ||= ""
     flash[:notice] ||= ""
 
-    if operation.blank? || (operation == "cluster_task" && task.blank?)
+    if operation.blank? || ((operation == "cluster_task") && task.blank?)
       flash[:error] += "No operation selected? Selection cleared.\n"
       redirect_to :action => :index
       return
@@ -455,7 +460,7 @@ class UserfilesController < ApplicationController
     # TODO: replace "case" and make each operation a private method ?
     case operation
 
-      when "cluster_task"
+      when 'cluster_task'
         redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :toolname => task, :bourreau_id => params[:bourreau_id]
         return
 
