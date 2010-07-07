@@ -24,6 +24,7 @@ class BourreauSystemChecks < CbrainChecker
     needed_Constants = %w(
                        DataProviderCache_dir
                        DataProviderCache_RevNeeded
+                       DataProvider_IgnorePatterns
                        CLUSTER_sharedir Quarantine_dir CIVET_dir 
                        BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
                        EXTRA_QSUB_ARGS EXTRA_BASH_INIT_CMDS
@@ -70,6 +71,16 @@ class BourreauSystemChecks < CbrainChecker
       raise "CBRAIN configuration error: the EXTRA_BASH_INIT_CMDS is not an array of strings!"
     end
 
+    raise "CBRAIN configuration error: 'DataProvider_IgnorePatterns' is not an array!" unless
+      CBRAIN::DataProvider_IgnorePatterns.is_a?(Array)
+
+    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+      raise "Configuration error: the pattern '#{pattern}' in 'DataProvider_IgnorePatterns' is not acceptable." if
+        pattern.blank? ||
+        ! pattern.is_a?(String) ||
+        pattern =~ /\*\*|\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*]+$/ # very strict! other special characters can cause shell side-effects!
+    end
 
   end
   

@@ -438,10 +438,7 @@ class DataProvider < ActiveRecord::Base
       else
         FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && File.directory?(dest.to_s)
       end
-      rsyncout = ""
-      IO.popen("rsync -a -l --delete '#{localpath}#{needslash}' '#{dest}' 2>&1","r") do |fh|
-        rsyncout=fh.read
-      end
+      rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} '#{localpath}#{needslash}' '#{dest}' 2>&1")
       cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
@@ -472,10 +469,7 @@ class DataProvider < ActiveRecord::Base
     else
       FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && File.directory?(localpath.to_s)
     end
-    rsyncout = ""
-    IO.popen("rsync -a -l --delete '#{source}#{needslash}' '#{localpath}' 2>&1","r") do |fh|
-      rsyncout=fh.read
-    end
+    rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} '#{source}#{needslash}' '#{localpath}' 2>&1")
     cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
     true
   end
@@ -1043,5 +1037,47 @@ class DataProvider < ActiveRecord::Base
     cache_full_dirname(userfile) + basename
   end
   
+
+
+  #################################################################
+  # Internal Utility Methods
+  #################################################################
+
+  # Returns a string with a set of --exclude=ABC options for
+  # a rsync command, based on the patterns ABC defined
+  # in the constant array CBRAIN::DataProvider_IgnorePatterns
+  def rsync_excludes #:nodoc:
+    excludes = ""
+    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+      excludes += " " unless excludes.blank?
+      excludes += "--exclude=#{shell_escape(pattern)}"
+    end
+    return "" if excludes.blank?
+    excludes + " --delete-excluded"
+  end
+
+  # This utility method escapes properly any string such that
+  # it becomes a literal in a bash command; the string returned
+  # will include the surrounding single quotes.
+  #
+  #   shell_escape("Mike O'Connor")
+  #
+  # returns
+  #
+  #   'Mike O'\''Connor'
+  def shell_escape(s)
+    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
+  end
+
+  # This utility method runs a bash command, intercepts the output
+  # and returns it.
+  def bash_this(command)
+    #puts "BASH: #{command}"
+    fh = IO.popen(command,"r")
+    output = fh.read
+    fh.close
+    output
+  end
+
 end
 

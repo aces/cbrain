@@ -27,6 +27,13 @@ class CBRAIN
   # The cache directory must differ from portal's, if you're running both.
   DataProviderCache_dir    = "/your/local/bourreau/cache/here"
 
+  # This is a list of simple file patterns that specify files
+  # the DataProvider subclasses will ignore when performing
+  # rsync operations. This array must include ONLY strict
+  # simple patterns with at most SINGLE asterisks ("*") and no
+  # slashes ("/") or unprintable characters.
+  DataProvider_IgnorePatterns = [ ".DS_Store" ]
+
   # Local bourreau constants 
   CLUSTER_sharedir         = "/your/cluster/shared/dir" # a writable directory also visible from all cluster nodes
 

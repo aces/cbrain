@@ -52,7 +52,8 @@ class SshDataProvider < DataProvider
     end
 
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a -l --delete :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    # It's IMPORTANT that the source be specified with a bare ':' in front.
+    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     cb_error "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
     true
@@ -65,7 +66,8 @@ class SshDataProvider < DataProvider
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
-    text = bash_this("#{rsync} -a -l --delete #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
+    # It's IMPORTANT that the destination be specified with a bare ':' in front.
+    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
     cb_error "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
     true
@@ -247,32 +249,5 @@ class SshDataProvider < DataProvider
     @master.ssh_shared_options("auto") # ControlMaster=auto
   end
   
-  #################################################################
-  # Shell utility methods
-  #################################################################
-
-  # This utility method escapes properly any string such that
-  # it becomes a literal in a bash command; the string returned
-  # will include the surrounding single quotes.
-  #
-  #   shell_escape("Mike O'Connor")
-  #
-  # returns
-  #
-  #   'Mike O'\''Connor'
-  def shell_escape(s)
-    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
-  end
-
-  # This utility method runs a bash command, intercepts the output
-  # and returns it.
-  def bash_this(command)
-    #puts "BASH: #{command}"
-    fh = IO.popen(command,"r")
-    output = fh.read
-    fh.close
-    output
-  end
-
 end
 

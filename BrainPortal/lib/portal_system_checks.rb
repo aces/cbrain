@@ -53,7 +53,12 @@ class PortalSystemChecks < CbrainChecker
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
   
-    needed_Constants = %w( DataProviderCache_dir Site_URL DataProviderCache_RevNeeded )
+    needed_Constants = %w(
+                       Site_URL
+                       DataProviderCache_dir
+                       DataProviderCache_RevNeeded
+                       DataProvider_IgnorePatterns
+                     )
     
     # Constants
     needed_Constants.each do |c|
@@ -66,6 +71,17 @@ class PortalSystemChecks < CbrainChecker
     # Run-time checks
     unless File.directory?(CBRAIN::DataProviderCache_dir)
       raise "CBRAIN configuration error: Data Provider cache directory '#{CBRAIN::DataProviderCache_dir}' does not exist!"
+    end
+
+    raise "CBRAIN configuration error: 'DataProvider_IgnorePatterns' is not an array!" unless
+      CBRAIN::DataProvider_IgnorePatterns.is_a?(Array)
+
+    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+      raise "Configuration error: the pattern '#{pattern}' in 'DataProvider_IgnorePatterns' is not acceptable." if
+        pattern.blank? ||
+        ! pattern.is_a?(String) ||
+        pattern =~ /\*\*|\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*]+$/ # very strict! other special characters can cause shell side-effects!
     end
   end
   

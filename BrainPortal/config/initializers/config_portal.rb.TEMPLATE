@@ -26,5 +26,12 @@ class CBRAIN
   # Data Providers constants
   DataProviderCache_dir    = "/your/local/portal/cache/here"
   Site_URL                 = "https://brainstorm.cbrain.mcgill.ca/"
+
+  # This is a list of simple file patterns that specify files
+  # the DataProvider subclasses will ignore when performing
+  # rsync operations. This array must include ONLY strict
+  # simple patterns with at most SINGLE asterisks ("*") and no
+  # slashes ("/") or unprintable characters.
+  DataProvider_IgnorePatterns = [ ".DS_Store" ]
     
 end
