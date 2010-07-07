@@ -225,6 +225,8 @@ pre {
 
 #main {
     background-color:#FFFFFF;
+    min-width: 100%;
+    position: relative;
 }
 
 #selected a {
@@ -419,9 +421,8 @@ a:hover {
 /* ######################################################### */
 
 #content {
-    width: 1021px; 
+    width: 80%; 
     background-color: #ffffff; 
-    height:100%; 
     margin-left: 15px;
 	margin-right: auto;
     padding-bottom: 4px; 
@@ -490,7 +491,8 @@ a:hover {
     margin-right: auto;
     margin-left: 10px;
     display: table;
-    width: 1000px;
+    min-width: 100%;
+    position: relative;
 }
 
 .generalcontent_data_provider {
@@ -1050,6 +1052,7 @@ td.taskinfo {
     margin-top: 10px;
     width: 977px;
     border: 0px;
+    border-collapse: collapse;
 }
 
 .resource_list_file {
@@ -1349,8 +1352,8 @@ table.resource_list td.checkbox {
 
 .resource_list_box {
     float:left; 
-    width: 95%;
-    margin-top: -15px;
+    width: 68%;
+    margin-top: 9px;
     margin-left: 11px;
     padding: 1em;
     background-color: #f6f6f6;
@@ -1944,7 +1947,7 @@ td.middle{
 }
 
 .upload_file_format{
-    margin-left: 150px;
+    margin-left: 148px;
     margin-top: -2px;
     margin-bottom: 5px;
     padding-bottom: 5px;
@@ -2076,7 +2079,7 @@ td.middle{
 }
 
 #file_manager_sidebar{
-    width: 25%;
+    max-width: 250px;
     float: left;
     margin-top: 80px;
     min-height: 600px;
