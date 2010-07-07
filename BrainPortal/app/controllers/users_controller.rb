@@ -20,9 +20,9 @@ class UsersController < ApplicationController
   
   def index #:nodoc:
     if current_user.has_role? :admin
-      @users = User.find(:all, :include => :groups)
+      @users = User.find(:all, :include => :groups, :order  => "users.full_name" )
     elsif current_user.has_role? :site_manager
-      @users = current_user.site.users.find(:all, :include => :groups)
+      @users = current_user.site.users.find(:all, :include => :groups, :order  => "users.full_name")
     end
     
     #For the 'new' panel
