@@ -430,7 +430,7 @@ class UserfilesController < ApplicationController
     elsif params[:commit] == 'Jiv Viewer'
       redirect_to :controller  => :jiv, :action => :index
       return
-    elsif
+    else
       operation = 'cluster_task'
       if params[:scientific_operation].empty?
         task = params[:conversion_operation]
