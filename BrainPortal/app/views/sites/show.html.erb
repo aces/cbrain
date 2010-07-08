@@ -24,10 +24,10 @@
         <th>Remote Resources</th>
      </tr>
      <tr>
-        <td><%= @site.users.all.collect(&:login).join("<br>") %></td>
-        <td><%= @site.groups.all.collect(&:name).join("<br>") %></td>
-        <td><%= @site.data_providers_find_all.collect(&:name).join("<br>") %></td>
-        <td><%= @site.remote_resources_find_all.collect(&:name).join("<br>") %></td>
+        <td><%= @site.users.all.collect(&:login).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+        <td><%= @site.groups.all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+        <td><%= @site.data_providers_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+        <td><%= @site.remote_resources_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
      </tr>
   </table>
 
