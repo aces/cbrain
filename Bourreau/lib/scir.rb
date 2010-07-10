@@ -64,10 +64,10 @@ class Session
 
   Revision_info="$Id$"
 
-public
+  public
 
   # Opens a session once, then cache it
-  def Session.session_cache #:nodoc:
+  def self.session_cache #:nodoc:
     @@session_cache = self.new_session unless self.class_variable_defined?('@@session_cache')
     @@session_cache
   end

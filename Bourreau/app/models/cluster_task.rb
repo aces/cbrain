@@ -902,7 +902,7 @@ Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
     model.sub!(/.rb$/,"")
     unless CbrainTask.const_defined? model.classify
       require_dependency "cbrain_task/#{model}.rb"
-      puts ">>>> #{model} #{model.classify}"
+      #puts ">>>> #{model} #{model.classify}"
     end
   end
 end

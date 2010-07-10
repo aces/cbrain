@@ -135,7 +135,7 @@
     <% else %>
       <p>This file is currently being synchronized.</p>
     <% end %>
-  <% else %>
+  <% elsif ! (@userfile.data_provider.not_syncable?) %>
     <% if @userfile.is_a?(FileCollection) %>
       <p>This Collection is not currently synchronized.<BR>
     <% else %>

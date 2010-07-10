@@ -57,17 +57,15 @@ class ScirLocalSession < Scir::Session
   end
 
   def suspend(jid)
-    Process.kill("STOP", 0 - jid.to_i) rescue true
-    Process.kill("STOP", jid.to_i) rescue true
+    Process.kill("-STOP",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
   end
 
   def resume(jid)
-    Process.kill("CONT", 0 - jid.to_i) rescue true
-    Process.kill("CONT",jid.to_i) rescue true
+    Process.kill("-CONT",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
   end
 
   def terminate(jid)
-    Process.kill("TERM",jid.to_i) rescue true
+    Process.kill("-TERM",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
   end
 
   def queue_tasks_tot_max
@@ -91,13 +89,23 @@ class ScirLocalSession < Scir::Session
     [ "exception", "exception" ]
   end
 
+  def run(job)
+    reset_job_info_cache
+    command = job.qsub_command
+    pid = Process.fork do
+      (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
+      Process.setpgrp        rescue true
+      Kernel.exec("/bin/bash","-c",command)
+      Process.exit!(0) # should never get here
+    end
+    Process.detach(pid)
+    return pid.to_s
+  end
+
   private
 
   def qsubout_to_jid(txt)
-    if txt && txt =~ /^PID=(\d+)/
-      return Regexp.last_match[1]
-    end
-    raise "Cannot find job ID from bash subshell output"
+    raise "Not used in this implementation."
   end
 
 end
@@ -107,25 +115,24 @@ class ScirLocalJobTemplate < Scir::JobTemplate
   # Register ourselves as the real implementation for Scir::JobTemplate
   Scir.jobtemplate_subclass = self.to_s
 
+  # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
   def qsub_command
     raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
       self.command == "/bin/bash" && self.arg.size == 1
     raise "Error: stdin not supported" if self.stdin
 
-    stdout = self.stdout
-    stderr = self.stderr
+    stdout = self.stdout || ":/dev/null"
+    stderr = self.stderr || (self.join ? nil : ":/dev/null")
 
     stdout.sub!(/^:/,"") if stdout
     stderr.sub!(/^:/,"") if stderr
 
     command = ""
-    command += "cd #{shell_escape(self.wd)} || exit 20; " if self.wd
+    command += "cd #{shell_escape(self.wd)} || exit 20;"  if self.wd
     command += "/bin/bash #{shell_escape(self.arg[0])}"
-    command += "  > #{shell_escape(stdout)} "             if stdout
-    command += " 2> #{shell_escape(stderr)} "             if stderr
-    command += " 2>&1 "                                   if self.join
-
-    command = "bash -c \"echo PID=\\$\\$ ; #{command}\" | head -1 & "
+    command += "  > #{shell_escape(stdout)}"
+    command += " 2> #{shell_escape(stderr)}"              if stderr
+    command += " 2>&1"                                    if self.join && stderr.blank?
 
     return command
   end
