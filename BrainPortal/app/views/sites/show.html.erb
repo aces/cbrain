@@ -24,7 +24,8 @@
         <th>Remote Resources</th>
      </tr>
      <tr>
-        <td><%= @site.users.all.collect(&:login).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+      
+        <td><%= @site.users.all.sort{|a, b| a.login.casecmp(b.login)}.map{|u| link_to(h(u.login), user_path(u))}.join("<br>") %></td>
         <td><%= @site.groups.all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
         <td><%= @site.data_providers_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
         <td><%= @site.remote_resources_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
