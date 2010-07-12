@@ -2,8 +2,8 @@
   <td><%= link_to h(user.full_name), user_path(user) %></td>
   <td><%=h user.login %></td>
   <td><%=h user.email %></td>
-  <% groups = user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.map{|g| h(g.name)} %>
-  <td><%= sorted_groups = groups.sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+  <% groups = user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.sort{|a, b| a.name.casecmp(b.name)} %>
+  <td><%= sorted_groups = groups.map{|g| work_group_link g, h(g.name), edit_group_path(g)}.join('<BR>') %></td>
   <td><%=h user.role.humanize %></td>
   <td><%=h user.site.name rescue "(Unassigned)" %></td>
   <td><%=h user.userfiles.count %></td>
