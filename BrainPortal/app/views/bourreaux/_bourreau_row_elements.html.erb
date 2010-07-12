@@ -1,5 +1,6 @@
 <% info        = bour.info            %>
-<% rev         = info.revision        %>
+<% diskrev     = info.revision;           diskrev = "????" if diskrev == "???" %>
+<% runrev      = info.starttime_revision; runrev  = "????" if runrev  == "???" %>
 <% worker_pids = info.worker_pids     %>
 <% worker_pids = nil if worker_pids == "???" %>
 <% tasks_tot   = info.tasks_tot %>
@@ -8,7 +9,7 @@
 <% isbourreau  = bour.is_a?(Bourreau) %>
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
-<td class="resource_details" style="display:none"><%= h(rev) %></td>
+<td class="resource_details" style="display:none">Code:&nbsp;<%= h(diskrev) %>&nbsp;Live:&nbsp;<%= h(runrev) %></td>
 <td class="resource_details" style="display:none"><%= h(bour.user.login) %></td>
 <td><%= h(bour.group.name) %></td>
 <td class="resource_details" style="display:none"><%= (link_to h(bour.site_affiliation.name), site_path(bour.site_affiliation)) rescue "(Unassigned)" %></td>

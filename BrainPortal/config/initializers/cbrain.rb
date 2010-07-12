@@ -20,11 +20,13 @@ class CBRAIN
 
   public
 
-  Startup_LocalTime = Time.now.localtime
-  Rails_UserId      = Process.uid
-  Rails_UserName    = Etc.getpwuid(Rails_UserId).name
-  Rails_UserHome    = Etc.getpwuid(Rails_UserId).dir
-  System_Uname      = `uname -a`.chomp
+  Startup_LocalTime  = Time.now.localtime
+  Rails_UserId       = Process.uid
+  Rails_UserName     = Etc.getpwuid(Rails_UserId).name
+  Rails_UserHome     = Etc.getpwuid(Rails_UserId).dir
+  System_Uname       = `uname -a`.chomp
+
+  $CBRAIN_StartTime_Revision = "???"  # numeric; will be filled in by validation script
 
   # This value is used to trigger DP cache wipes
   # in the validation code (see PortalSystemChecks)

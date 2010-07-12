@@ -445,7 +445,7 @@ class CbrainTask < ActiveRecord::Base
   def addlog_current_resource_revision
     rr     = RemoteResource.current_resource
     rrinfo = rr.info # always local, will not trigger network query
-    rr_rev = rrinfo.revision
+    rr_rev = rrinfo.starttime_revision
     self.addlog("#{rr.class} rev. #{rr_rev}", :caller_level => 1 )
   end
 

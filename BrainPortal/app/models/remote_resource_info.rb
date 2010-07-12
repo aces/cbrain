@@ -40,10 +40,11 @@ class RemoteResourceInfo < RestrictedHash
      :ssh_public_key,
 
      # Svn info (Rails app)
-     :revision,
-     :lc_author,
-     :lc_rev,
-     :lc_date,
+     :revision,             # FRom 'svn info' on disk AT QUERYTIME
+     :lc_author,            # From 'svn info' on disk AT QUERYTIME
+     :lc_rev,               # From 'svn info' on disk AT QUERYTIME
+     :lc_date,              # From 'svn info' on disk AT QUERYTIME
+     :starttime_revision,   # From 'svn info' on disk AT STARTTIME
 
      # Bourreau-specific fields
      :bourreau_cms, :bourreau_cms_rev,

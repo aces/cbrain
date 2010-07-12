@@ -15,6 +15,8 @@ class BourreauSystemChecks < CbrainChecker
 
   Revision_info="$Id$"
 
+
+
   def self.a010_ensure_configuration_variables_are_set
     
     #-----------------------------------------------------------------------------
@@ -85,8 +87,8 @@ class BourreauSystemChecks < CbrainChecker
   end
   
 
+
   def self.a020_ensure_registered_as_remote_ressource
-    
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
@@ -132,7 +134,10 @@ class BourreauSystemChecks < CbrainChecker
 
   end
 
+
+
   def self.a030_ensure_data_provider_caches_needs_wiping
+
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
@@ -167,8 +172,9 @@ class BourreauSystemChecks < CbrainChecker
     end
   end
 
+
+
   def self.a050_ensure_proper_cluster_management_layer_is_loaded
-    
 
     #-----------------------------------------------------------------------------
     puts "C> Loading cluster management SCIR layers..."
@@ -193,8 +199,8 @@ class BourreauSystemChecks < CbrainChecker
   end
 
 
+
   def self.a060_ensure_bourreau_worker_precess_are_reported
-    
 
     #-----------------------------------------------------------------------------
     puts "C> Reporting Bourreau Worker Processes (if any)..."
@@ -217,6 +223,13 @@ class BourreauSystemChecks < CbrainChecker
 
 
 
+  def self.a080_ensure_set_starttime_revision
 
+    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
+    #-----------------------------------------------------------------------------
+    puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
+    #-----------------------------------------------------------------------------
+
+  end
 
 end

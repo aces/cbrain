@@ -12,8 +12,11 @@ class PortalSystemChecks < CbrainChecker
   
   Revision_info="$Id$"
 
+
+
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations
+
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
     #-----------------------------------------------------------------------------
@@ -34,7 +37,10 @@ class PortalSystemChecks < CbrainChecker
     end
   end
     
+
+
   def self.a020_check_database_sanity
+
     #----------------------------------------------------------------------------
     puts "C> Checking if the BrainPortal database needs a sanity check..."
     #----------------------------------------------------------------------------
@@ -48,7 +54,10 @@ class PortalSystemChecks < CbrainChecker
     end
   end
 
+
+
   def self.a030_check_configuration_variables
+
     #-----------------------------------------------------------------------------
     puts "C> Verifying configuration variables..."
     #-----------------------------------------------------------------------------
@@ -85,7 +94,10 @@ class PortalSystemChecks < CbrainChecker
     end
   end
   
+
+
   def self.a040_ensure_portal_RemoteResourceId_constant_is_set
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that the CBRAIN::RemoteResourceId constant is set..."
     #-----------------------------------------------------------------------------
@@ -107,7 +119,10 @@ class PortalSystemChecks < CbrainChecker
     end
   end
 
+
+
   def self.a050_check_data_provider_cache_wipe
+
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
@@ -142,7 +157,10 @@ class PortalSystemChecks < CbrainChecker
     end
   end
 
+
+
   def self.a070_start_bourreau_ssh_tunnels
+
     #-----------------------------------------------------------------------------
     puts "C> Starting SSH control channels and tunnels to each Bourreau, if necessary..."
     #-----------------------------------------------------------------------------
@@ -160,6 +178,17 @@ class PortalSystemChecks < CbrainChecker
         puts "C> \t- Bourreau '#{name}' not configured for remote control."
       end
     end
-  end  
+  end
+
+
+
+  def self.a080_ensure_set_starttime_revision
+
+    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
+    #-----------------------------------------------------------------------------
+    puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
+    #-----------------------------------------------------------------------------
+
+  end
 
 end 

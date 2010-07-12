@@ -399,7 +399,8 @@ class RemoteResource < ActiveRecord::Base
       :revision           => revinfo['Revision'],
       :lc_author          => revinfo['Last Changed Author'],
       :lc_rev             => revinfo['Last Changed Rev'],
-      :lc_date            => revinfo['Last Changed Date']
+      :lc_date            => revinfo['Last Changed Date'],
+      :starttime_revision => $CBRAIN_StartTime_Revision
 
     )
 

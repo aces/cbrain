@@ -39,12 +39,11 @@ class PortalSanityChecks < CbrainChecker
 
   #validates the model. Used in lib/task/cbrain_model_validation.rake
   def self.check(checks_to_run)
-    #Run sanity checks  if it never has been run
+
+    #Run sanity checks if it has never has been run
     #-----------------------------------------------------------------------------
     puts "C> CBRAIN BrainPortal database sanity check started, " + Time.now.to_s
     #-----------------------------------------------------------------------------
-    
-    
     
     begin
       #Where the magic happens
@@ -52,10 +51,6 @@ class PortalSanityChecks < CbrainChecker
       super #calling super to run the actual checks
       puts "C> \t- Adding new sanity check record."
       SanityCheck.new(:revision_info => Revision_info).save! #Adding new SanityCheck record
-      
-      
-      
-      
       
       #-----------------------------------------------------------------------------
       # Rescue: for the cases when the Rails application is started as part of
@@ -75,9 +70,9 @@ class PortalSanityChecks < CbrainChecker
       else
         raise
       end
-      
-      
+
     end
+
   end
 
 
@@ -130,11 +125,15 @@ class PortalSanityChecks < CbrainChecker
     end
   end
   
+
+
   #adds everyone to the everyone group 
   def self.ensure_002_users_belongs_to_everyone_group
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
     #-----------------------------------------------------------------------------
+
     everyone_group=Group.find_by_name('everyone')
     User.find(:all, :include => [:groups, :user_preference]).each do |u|
       unless u.group_ids.include? everyone_group.id
@@ -169,6 +168,8 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
+
+
   #Makes sure that all sites belong to a group and that users of that site belong to it
   def self.ensure_that_all_sites_have_a_group_and_that_all_their_users_belong_to_it
 
@@ -200,6 +201,8 @@ class PortalSanityChecks < CbrainChecker
 
   end
   
+
+
   #Groups must have a type like WorkGroup, SystemGroup...
   def self.ensure_that_all_groups_have_a_type
 
@@ -215,6 +218,8 @@ class PortalSanityChecks < CbrainChecker
     end
 
   end
+
+
 
   #Userfiles must belong to a group or everyone
   def self.ensure_that_all_userfiles_have_a_group
@@ -237,8 +242,10 @@ class PortalSanityChecks < CbrainChecker
   end
   
 
+
   #Makes sure that the portal is registered as a remote ressource or adds it
   def self.ensure_that_rails_app_is_a_remote_resource
+
      #-----------------------------------------------------------------------------
      puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
      #-----------------------------------------------------------------------------
@@ -268,6 +275,7 @@ class PortalSanityChecks < CbrainChecker
   
   #cleans up old syncstatus that are left in the database 
   def self.ensure_syncstatus_is_clean
+
     #-----------------------------------------------------------------------------
     puts "C> Cleaning up old SyncStatus objects..."
     #-----------------------------------------------------------------------------
@@ -290,8 +298,10 @@ class PortalSanityChecks < CbrainChecker
   end
   
 
+
   #Custom filters must have a type or be of type UserfileCustomFilter
   def self.ensure_custom_filters_have_a_type
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring custom filters have a type..."
     #-----------------------------------------------------------------------------
@@ -305,7 +315,6 @@ class PortalSanityChecks < CbrainChecker
         end
       end
     end
-    
   end
 
 end
