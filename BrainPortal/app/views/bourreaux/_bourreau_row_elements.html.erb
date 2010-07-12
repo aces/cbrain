@@ -1,4 +1,5 @@
 <% info        = bour.info            %>
+<% rev         = info.revision        %>
 <% worker_pids = info.worker_pids     %>
 <% worker_pids = nil if worker_pids == "???" %>
 <% tasks_tot   = info.tasks_tot %>
@@ -7,6 +8,7 @@
 <% isbourreau  = bour.is_a?(Bourreau) %>
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_if_has_access(bour, bour.name, bourreau_path(bour)) %></td>
+<td class="resource_details" style="display:none"><%= h(rev) %></td>
 <td class="resource_details" style="display:none"><%= h(bour.user.login) %></td>
 <td><%= h(bour.group.name) %></td>
 <td class="resource_details" style="display:none"><%= (link_to h(bour.site_affiliation.name), site_path(bour.site_affiliation)) rescue "(Unassigned)" %></td>
@@ -29,7 +31,7 @@
                       {:url  => bourreau_path(bour),
                        :method  => 'delete',
                        :confirm => 'Are you sure?',
-                       :before  => "$('bourreau_#{bour.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
+                       :before  => "$('bourreau_#{bour.id}').update('<td colspan=\"15\" style=\"color:red; text-align:center;\">Deleting...</td>');"
                        },
                       {:class => 'action_link'}
       %>
