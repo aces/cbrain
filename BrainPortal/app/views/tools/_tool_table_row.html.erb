@@ -3,7 +3,7 @@
     <td><%=h tool.name %></td>
     <td><%=h tool.user.login %>
     <td><%=h tool.group.name %></td>
-    <td><%= tool.bourreaux{g.name == bourreau.name}.map{|g| h(g.name)}.sort.join("<br>") %></td>
+    <td><%= tool.bourreaux{g.name == bourreau.name}.sort{|a, b| a.name.casecmp(b.name)}.map{|g| link_to(g.name, bourreau_path(g))}.join("<br>") %></td>
     <td><%=h tool.category %></td>
     <% if current_user.has_role?(:admin) %>
       <td><%= link_to 'Edit', edit_tool_path(tool), :class  => "action_link" %></td>
