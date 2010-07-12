@@ -19,7 +19,10 @@ class CbrainTask::Diagnostics < ClusterTask
   # log entry is also sent to STDOUT.
   def addlog(message,options={}) #:nodoc:
     puts "DIAGNOSTICS: #{self.bname_tid} #{message}" unless self.bourreau_id.blank?
-    super(message,options.dup.merge( :caller_level => 1 ))
+    newoptions = options.dup
+    newoptions[:caller_level] = 0 unless newoptions.has_key?(:caller_level)
+    newoptions[:caller_level] += 1
+    super(message,newoptions)
   end
 
   # Synchronize the userfiles given in argument, measuring

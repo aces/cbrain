@@ -64,6 +64,8 @@ require 'action_view/helpers/form_helper'
 # that the default checked and unchecked values are "1" and "0".
 class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
 
+  Revision_info="$Id$"
+
   #########################################################
   # Implementation note: we cheat by calling the
   # standard FormBuilder methods and giving them

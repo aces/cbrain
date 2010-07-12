@@ -1,5 +1,7 @@
 class ClusterTaskGenerator < Rails::Generator::NamedBase
     
+  Revision_info="$Id$"
+
   def manifest        
     task_manifest = record do |m|
       m.template "portal_task_model.rb", "app/models/cbrain_task/#{file_name}.rb"

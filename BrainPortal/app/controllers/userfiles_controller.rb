@@ -851,14 +851,14 @@ class UserfilesController < ApplicationController
   end
 
   # This method creates a tar file of the userfiles listed
-  # in +ulist+ (and array of Userfiles) such that
+  # in +ulist+ (an array of Userfiles) such that
   # the tar structure is independent of the DP path
   # and owners. Each userfile basename 'x' will be
   # stored as a relative path 'user/dpname/x'. This
   # is needed when downloading a file, as a user is
   # allowed to have several files with the same names
   # on different DPs, and several users are allowed to
-  # files with the same names on the same DP.
+  # have files with the same names on the same DP.
   def create_relocatable_tar_for_userfiles(ulist,username) #:nodoc:
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
     tmpdir       = Pathname.new("/tmp/dl.#{Process.pid}.#{timestamp}")
@@ -891,7 +891,7 @@ class UserfilesController < ApplicationController
         end # chdir tmpdir/user
       end # each user
 
-      filelistname = "files_for_#{username}.lst"
+      filelistname = "files_for_#{username}.#{Process.pid}.lst"
       File.open(filelistname,"w") do |fh|
         fh.write relpath_to_tar.join("\n")
         fh.write "\n"

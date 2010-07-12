@@ -64,8 +64,6 @@ class ClusterTask < CbrainTask
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
   QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
 
-  include CbrainTaskLogging
-
   # Automatically register the task's version when new() is invoked.
   def initialize(arguments = {}) #:nodoc:
     super(arguments)

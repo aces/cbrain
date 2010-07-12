@@ -148,7 +148,7 @@ class BourreauSystemChecks < CbrainChecker
       Dir.chdir(DataProvider.cache_rootdir) do
         Dir.foreach(".") do |entry|
           next unless File.directory?(entry) && entry !~ /^\./ # ignore ., .. and .*_being_deleted.*
-          newname = ".#{entry}_being_deleted.#{$$}"
+          newname = ".#{entry}_being_deleted.#{Process.pid}"
           renamed_ok = File.rename(entry,newname) rescue false
           if renamed_ok
             puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."

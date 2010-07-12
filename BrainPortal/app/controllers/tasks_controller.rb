@@ -197,6 +197,9 @@ class TasksController < ApplicationController
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id     = current_user.id
 
+    # Log revision number of portal.
+    @task.addlog_current_resource_revision
+
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
       commit_button = params[:commit] || "Start" # default
@@ -289,6 +292,10 @@ class TasksController < ApplicationController
 
     # Final update to the task object, this time we save it.
     messages     = @task.wrapper_after_form
+
+    # Log revision number of portal.
+    @task.addlog_current_resource_revision
+
     @task.log_params_changes(old_params,@task.params)
     @task.save!
 

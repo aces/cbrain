@@ -287,6 +287,7 @@ class Bourreau < RemoteResource
 
         # OK now, if something has changed (based on status), we proceed we the update.
         next unless task.status != old_status
+        task.addlog_current_resource_revision
         task.save
         tasks_affected += 1 if task.bourreau_id == myself.id
       rescue

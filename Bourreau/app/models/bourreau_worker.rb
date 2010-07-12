@@ -111,6 +111,7 @@ class BourreauWorker < Worker
           # transition ourselves.
           task.status_transition!("New","Setting Up")
           worker_log.debug "Start   #{task.bname_tid}"
+          task.addlog_current_resource_revision
           task.addlog_context(self,"#{self.pretty_name}")
           task.setup_and_submit_job # New -> Queued|Failed To Setup
           worker_log.info  "Submitted: #{task.bname_tid}"
@@ -132,6 +133,7 @@ class BourreauWorker < Worker
           # transition ourselves.
           task.status_transition!("Data Ready","Post Processing")
           worker_log.debug "PostPro #{task.bname_tid}"
+          task.addlog_current_resource_revision
           task.addlog_context(self,"#{self.pretty_name}")
           task.post_process # Data Ready -> Completed|Failed To PostProcess|Failed On Cluster
           worker_log.info  "PostProcess: #{task.bname_tid}"
@@ -157,6 +159,7 @@ class BourreauWorker < Worker
         canrecover = false
         task.addlog_context(self,"Attempting to run recovery method '#{recover_method}'.")
         begin
+          task.addlog_current_resource_revision
           canrecover = task.send(recover_method)  # custom recovery method written by task programmer
         rescue => ex
           task.addlog_exception(ex,"Recovery method '#{recover_method}' raised an exception:")
@@ -200,6 +203,7 @@ class BourreauWorker < Worker
         canrestart = false
         task.addlog_context(self,"Attempting to run restart method '#{restart_method}'.")
         begin
+          task.addlog_current_resource_revision
           canrestart = task.send(restart_method)  # custom restart preparation method written by task programmer
         rescue => ex
           task.addlog_exception(ex,"Restart preparation method '#{restart_method}' raised an exception:")
