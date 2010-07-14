@@ -39,12 +39,13 @@ class GroupsController < ApplicationController
 
   # GET /groups/1/edit
   def edit  #:nodoc:
+    @group = current_user.available_groups(params[:id], :conditions  => {:type  => "WorkGroup"})
     if current_user.has_role? :admin
-      @group = WorkGroup.find(params[:id])
       @users = User.all.reject{|u| u.login == 'admin'}
-    else
-      @group = current_user.site.groups.find(params[:id], :conditions  => {:type  => "WorkGroup"})
+    elsif current_user.has_role? :site_manager
       @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+    else
+      @users = [current_user]
     end
   end
 
@@ -62,7 +63,7 @@ class GroupsController < ApplicationController
     elsif current_user.has_role? :site_manager
       @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
     else
-      @users = current_user.own_group
+      @users = [current_user]
     end
 
     respond_to do |format|
@@ -91,8 +92,10 @@ class GroupsController < ApplicationController
       else
         if current_user.has_role? :admin
           @users = User.all.reject{|u| u.login == 'admin'}
-        else
+        elsif current_user.has_role? :site_manager
           @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
+        else
+          @users = [current_user]
         end
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
@@ -104,11 +107,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1
   # DELETE /groups/1.xml
   def destroy  #:nodoc:
-    if current_user.has_role? :admin
-      @group = WorkGroup.find(params[:id])
-    else
-      @group = current_user.site.groups.find(params[:id], :conditions  => {:type  => "WorkGroup"})
-    end
+    @group = current_user.available_groups(params[:id])
     @destroyed = @group.destroy
 
     respond_to do |format|
