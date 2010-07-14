@@ -22,6 +22,7 @@ class CbrainTask < ActiveRecord::Base
 
   belongs_to            :bourreau
   belongs_to            :user
+  belongs_to            :group
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id

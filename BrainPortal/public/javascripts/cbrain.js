@@ -136,7 +136,39 @@ jQuery(
           });
           return false;
         });
-
+        
+        jQuery(".ajax_submit_button").live("click", function(){
+          button = jQuery(this);
+          commit = button.attr("value");
+          var data_type = button.attr("data-datatype");
+          var url = button.attr("data-url");
+          var method = button.attr("data-method");
+          enclosing_form = button.closest("form");
+          if(!data_type) data_type = enclosing_form.attr("data-datatype");
+          if(!data_type) data_type = "html";
+          
+          if(!url) url = enclosing_form.attr("action");
+          
+          if(!method) method = enclosing_form.attr("data-method");
+          if(!method) method = "POST";          
+          
+          enclosing_form.find('.ajax_commit_parameter').remove();
+          
+          jQuery('<input />').attr('type', 'hidden')
+                      .addClass('ajax_commit_parameter')
+                      .attr('name', "commit")
+                      .attr('value', commit)
+                      .appendTo(enclosing_form);
+          enclosing_form.ajaxSubmit({
+            url: url,
+            type: method,
+            dataType: data_type,
+            resetForm: false
+            }
+          );
+          return false;
+        });
+        
         jQuery("#jiv_submit").click(function(){
           var data_type = jQuery(this).attr("data-datatype");
           jQuery(this).closest("form").ajaxSubmit({

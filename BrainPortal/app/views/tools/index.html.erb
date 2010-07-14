@@ -44,9 +44,9 @@
     <% end %>
   </tr>
 
-<% for tool in @tools %>
-  <%= render :partial => 'tool_table_row', :locals  => {:tool  => tool} %>
-<% end %>
+  <% for tool in @tools %>
+    <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
+  <% end %>
 </table>
 
 <%= link_to 'Tool Statistics', {:controller => "statistics", :action => "index"}, :class => "action_link" %>

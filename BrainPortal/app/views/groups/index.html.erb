@@ -13,11 +13,13 @@
 
 <div class = "generalcontent">
 
-   <% title 'Groups' %>
+   <% title 'Projects' %>
   
    <div class="menu_bar">
-          <% button_with_dropdown_menu({:title => 'Create Group', :partial => 'new'}, {:id => "new_group_button"}) %>
+          <% button_with_dropdown_menu({:title => 'Create Project', :partial => 'new'}, {:id => "new_group_button"}) %>
    </div>
+
+   <%= link_to "Remove Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :action_link %>
 
       <table class="resource_list" id="group_table">
         <tr>
@@ -28,7 +30,6 @@
           <th colspan="3"/>
         </tr>
          <% for group in @system_groups %>
-             
            <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
          <% end %>
          <% for group in @work_groups %>

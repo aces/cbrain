@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include ExceptionLoggable
 
-  helper_method :check_role, :not_admin_user, :current_session
+  helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size
   helper        :all # include all helpers, all the time
 
@@ -182,7 +182,18 @@ class ApplicationController < ActionController::Base
   def current_session
     @session ||= Session.new(session, params)
   end
-
+  
+  #Returns currently active project.
+  def current_project
+    return nil unless current_session[:active_group_id]
+    
+    if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
+      @current_project = Group.find(current_session[:active_group_id])
+    end
+    
+    @current_project
+  end
+  
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
       render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)

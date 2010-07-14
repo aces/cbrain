@@ -16,26 +16,33 @@
    <h2>Edit Group</h2>
 
    <div class = "generalbox">
-      <% form_for(@group) do |f| %>
+      <% form_for :group, @group, :url => { :action => "update"}, :html  => {:method  => :put} do |f| %>
         <%= f.error_messages %>
 
         <p>
           <%= f.label :name %><br />
           <%= f.text_field :name %>
         </p>
-        <p><label for="role">Site</label><br/>
-         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>  
-        <label for="users">Users in group:</label>
-        <table id="button_table">
-           <% for user in @users %>
-               <tr>
-                 <td class="left_align"><%= check_box_tag("work_group[user_ids][]", user.id.to_s, @group.users.include?(user) ) %></td>
-                 <td class="left_align"><%= h(user.full_name) -%></td>
-               </tr>
-           <% end %>
-        </table>
-  
-  
+        <% if current_user.has_role?(:admin) %>
+          <p><label for="role">Site</label><br/>
+           <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+        <% elsif current_user.site %>
+           <%= hidden_field_tag("group[site_id]", current_user.site.id) %>
+        <% end %>
+         <% if current_user.has_role?(:user) %>
+           <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
+         <% else %>
+           <label for="users">Users in project:</label>
+           <table id = "button_table">
+              <% for user in @users %>
+                  <tr>
+                    <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+                    <td class="left_align"><%= h(user.full_name) -%></td>
+                  </tr>
+              <% end %>
+           </table>
+         <% end %>
+
         <p>
           <%= f.submit "Update" %>
         </p>

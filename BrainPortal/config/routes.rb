@@ -15,11 +15,11 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :user_preferences
   map.resources :feedbacks
   map.resources :tags
-  map.resources :groups
   map.resources :messages
 
   # Standard CRUD resources, with extra methods
-  map.resources :users,          :member => { :switch  => :get }, :collection  => {:request_password  => :get, :send_password  => :post}
+  map.resources :users,          :member => { :switch  => :post }, :collection  => {:request_password  => :get, :send_password  => :post}
+  map.resources :groups,         :member => { :switch  => :post }
   map.resources :bourreaux,      :member => { :start   => :post, :stop => :post, :row_data  => :get }, :collection  => { :refresh_ssh_keys  => :post } 
   map.resources :data_providers, :member => { :browse  => :get, :register => :post, :is_alive  => :get }, :collection => { :cleanup => :post, :disk_usage  => :get }
   map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }

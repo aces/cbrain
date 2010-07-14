@@ -427,11 +427,13 @@ class DataProvidersController < ApplicationController
         size = fileinfo.size rescue 0
       end
 
+      file_group_id = current_session[:active_group_id] || current_user.own_group.id
+
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
                                :size             => size,
                                :user_id          => user_id,
-                               :group_id         => current_user.own_group.id,
+                               :group_id         => file_group_id,
                                :data_provider_id => provider_id )
       if userfile.save
         newly_registered_userfiles << userfile

@@ -148,7 +148,7 @@ class User < ActiveRecord::Base
   
   #Find the tools that this user has access to.
   def available_tools
-    @available_tools = if self.has_role? :admin
+    @available_tools ||= if self.has_role? :admin
                          Tool.scoped({})
                        elsif self.has_role? :site_manager
                          Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
@@ -158,25 +158,44 @@ class User < ActiveRecord::Base
   end
   #Find the scientific tools that this user has access to.
   def available_scientific_tools
-    @available_scientific_tools = self.available_tools.scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
+    @available_scientific_tools ||= self.available_tools.scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
   def available_conversion_tools
-    @available_conversion_tools = self.available_tools.scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
+    @available_conversion_tools ||= self.available_tools.scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
-  def available_groups
-    return @available_groups if @available_groups
-    
+  def available_groups(arg1 = :all, options = {})
     if self.has_role? :admin
-      @available_groups = Group.all
+      Group.find(arg1, options)
     elsif self.has_role? :site_manager
-      @available_groups = [Group.find_by_name("everyone")] | self.site.groups.all | self.groups.all
-    else
-      @available_groups = [Group.find_by_name("everyone")] | self.groups.all
+      site_groups = self.site.groups.find(arg1, options.clone) rescue []
+      site_groups = [site_groups] unless site_groups.is_a?(Array) 
+      self_groups = self.groups.find(arg1, options.clone) rescue []
+      self_groups = [self_groups] unless self_groups.is_a?(Array)
+            
+      if site_groups.blank? and self_groups.blank?
+        raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}"
+      end
+       
+      all_groups = site_groups | self_groups
+      all_groups = all_groups.first if all_groups.size == 1
+      return all_groups
+    else                  
+      self.groups.find(arg1, options)
     end
+  end
+  
+  def available_tasks
+    @available_tasks ||= if self.has_role? :admin
+                         CbrainTask.scoped({})
+                       elsif self.has_role? :site_manager
+                         CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+                       else
+                         CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids])
+                       end
   end
   
   #Return the list of users under this user's control based on role.

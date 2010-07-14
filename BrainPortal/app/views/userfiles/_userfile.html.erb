@@ -53,7 +53,9 @@
    <% end %>
    <td><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></td>
    <% if userfile.group != nil %>
-     <td><%= h userfile.group.name -%></td>
+     <% unless current_project %>
+        <td><%= h userfile.group.name -%></td>
+     <% end %>
      <td><%= userfile.group_writable ? 'Read/Write' : 'Read Only' -%></td>
    <% else %>
      <td/><td/>

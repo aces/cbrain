@@ -31,6 +31,9 @@ class UserfilesController < ApplicationController
 
     scope = Userfile.convert_filters_to_scope(name_filters)
     scope = scope.scoped(:conditions  => {:format_source_id  => nil})
+    if current_project
+      scope = scope.scoped(:conditions  => {:group_id  => current_project.id})
+    end
 
     if current_session.view_all?
       if current_user.has_role? :site_manager
@@ -48,7 +51,6 @@ class UserfilesController < ApplicationController
       :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
     )
 
-    @userfile_count     = @userfiles.size
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
 
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
@@ -82,9 +84,9 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.new(
       :group_id => SystemGroup.find_by_name(current_user.login).id
     )
-    
+        
     respond_to do |format|
-      format.html # index.html.erb
+      format.html
       format.js
       format.xml  { render :xml => @userfiles }
     end
@@ -186,11 +188,12 @@ class UserfilesController < ApplicationController
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
+    redirect_path = params[:redirect_to] || {:action  => :index}
 
     # Get the upload stream object
     upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
-      redirect_to :action => :index
+      redirect_to redirect_path
       return
     end
 
@@ -222,7 +225,7 @@ class UserfilesController < ApplicationController
         userfile.errors.each do |field, error|
           flash[:error] += field.capitalize + " " + error + ".\n"
         end
-        redirect_to :action => :index
+        redirect_to redirect_path
         return
       end
 
@@ -252,7 +255,7 @@ class UserfilesController < ApplicationController
                              )
       end # spawn
       
-      redirect_to :action => :index
+      redirect_to redirect_path
       return
     end # save
 
@@ -260,7 +263,7 @@ class UserfilesController < ApplicationController
     # First, check for supported extensions
     if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
-      redirect_to :action => :index
+      redirect_to redirect_path
       return
     end
 
@@ -270,7 +273,7 @@ class UserfilesController < ApplicationController
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
         flash[:error] = "Collection '#{collection_name}' already exists.\n"
-        redirect_to :action => :index
+        redirect_to redirect_path
         return
       end
 
@@ -303,13 +306,13 @@ class UserfilesController < ApplicationController
       
         flash[:notice] = "Collection '#{collection_name}' created."
         current_user.addlog_context(self,"Uploaded FileCollection '#{collection_name}'")
-        redirect_to :action => :index
+        redirect_to redirect_path
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"
         collection.errors.each do |field, error|
           flash[:error] += field.capitalize + " " + error + ".\n"
         end
-        redirect_to :action => :index
+        redirect_to redirect_path
       end # save collection
       return
     end
@@ -335,7 +338,7 @@ class UserfilesController < ApplicationController
     end # spawn
 
     flash[:notice] += "Your files are being extracted and added in background."
-    redirect_to :action => :index
+    redirect_to redirect_path
   end
 
   # PUT /userfiles/1
@@ -404,8 +407,11 @@ class UserfilesController < ApplicationController
   #[<b>Delete files</b>] Delete the selected files (delete the file on disk
   #                      and purge the record from the database).
   def operation
+    
+    params[:format] ||= request.format.to_sym
+    
     unless params[:redirect_to_index].blank?
-      redirect_to :action => :index, :userfiles_search_type => params[:userfiles_search_type], :userfiles_search_term => params[:userfiles_search_term]
+      redirect_to :action => :index, :format => params[:format], :userfiles_search_type => params[:userfiles_search_type], :userfiles_search_term => params[:userfiles_search_term]
       return
     end
     
@@ -417,7 +423,7 @@ class UserfilesController < ApplicationController
       operation = 'tag_update'
     elsif params[:commit] == 'Create Collection'
       operation = 'merge_collections'
-    elsif params[:commit] == 'Update Groups'
+    elsif params[:commit] == 'Update Projects'
       operation = 'group_update'
     elsif params[:commit] == 'Update Permissions'
       operation = 'permission_update'
@@ -447,13 +453,13 @@ class UserfilesController < ApplicationController
 
     if operation.blank? || ((operation == "cluster_task") && task.blank?)
       flash[:error] += "No operation selected? Selection cleared.\n"
-      redirect_to :action => :index
+      redirect_to :action => :index, :format => params[:format]
       return
     end
 
     if filelist.empty?
       flash[:error] += "No file selected? Selection cleared.\n"
-      redirect_to :action => :index
+      redirect_to :action => :index, :format => params[:format]
       return
     end
 
@@ -490,7 +496,7 @@ class UserfilesController < ApplicationController
         if ! specified_filename.blank?
           if ! Userfile.is_legal_filename?(specified_filename)
               flash[:error] += "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
-              redirect_to :action => :index
+              redirect_to :action => :index, :format => params[:format]
               return
           else
             specified_filename = "#{specified_filename}.tar.gz"
@@ -516,7 +522,7 @@ class UserfilesController < ApplicationController
           end
           if userfiles_list.size == 0
             flash[:notice] = "No filenames selected for download."
-            redirect_to :action => :index
+            redirect_to :action => :index, :format => params[:format]
             return
           end
           tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
@@ -561,10 +567,10 @@ class UserfilesController < ApplicationController
          end
 
          if success_count > 0
-           flash[:notice] += "Group for #{@template.pluralize(success_count, "files")} successfully updated."
+           flash[:notice] += "Project for #{@template.pluralize(success_count, "files")} successfully updated."
          end
          if failure_count > 0
-           flash[:error] += "Group for #{@template.pluralize(failure_count, "files")} could not be updated."
+           flash[:error] += "Project for #{@template.pluralize(failure_count, "files")} could not be updated."
          end
 
       when 'permission_update'
@@ -629,7 +635,7 @@ class UserfilesController < ApplicationController
 
         unless new_provider
           flash[:error] += "Data provider #{data_provider_id} not accessible.\n"
-          redirect_to :action => :index
+          redirect_to :action => :index, :format => params[:format]
           return
         end
 
@@ -679,7 +685,7 @@ class UserfilesController < ApplicationController
         end # spawn
 
         flash[:notice] += "Your files are being #{word_moved} in the background.\n"
-        redirect_to :action => :index
+        redirect_to :action => :index, :format => params[:format]
         return
 
       else
@@ -687,14 +693,14 @@ class UserfilesController < ApplicationController
 
     end # case
 
-    redirect_to :action => :index
+    redirect_to :action => :index, :format => params[:format]
 
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
     flash[:error] += "You don't have appropriate permissions to #{operation} the selected files.".humanize
 
-    redirect_to :action => :index
+    redirect_to :action => :index, :format => params[:format]
   end
 
   #Extract a file from a collection and register it separately

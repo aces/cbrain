@@ -11,5 +11,5 @@
 <select name="tags[]" multiple="multiple" style="width:150px" >
 <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
 </select>
-<%= submit_tag("Update Tags") %> 
+<%= submit_tag("Update Tags", :class  => "ajax_submit_button") %> 
 <br>

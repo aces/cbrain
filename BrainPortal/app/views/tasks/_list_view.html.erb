@@ -4,6 +4,9 @@
       <td class="left"><%= link_to task.name, :controller => :tasks, :action => :show, :id => task.id  %></td>
       <td><%= h(crop_text_to(30, task.description)) %></td>
       <td><%= h(task.user.login) %></td>
+      <% unless current_project %>
+        <td><%= h(task.group.name) rescue "" %></td>
+      <% end %>
       <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
       <td><%= h(task.status) %></td>
       <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>

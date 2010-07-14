@@ -33,6 +33,7 @@ class Group < ActiveRecord::Base
   has_many                :userfiles
   has_many                :data_providers 
   has_many                :remote_resources
+  has_many                :cbrain_tasks
   belongs_to              :site 
 
   validates_presence_of   :name
@@ -47,6 +48,14 @@ class Group < ActiveRecord::Base
   # both have a meaningful own_group() method.
   def own_group
     self
+  end
+  
+  #Can this group be edited by +user+?
+  #
+  #Returns false in general. Should be overidden in subclasses
+  #in cases where editing is possible.
+  def can_be_edited_by?(user)
+    false
   end
 
   private

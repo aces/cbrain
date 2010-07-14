@@ -18,13 +18,17 @@ class TasksController < ApplicationController
 
   def index #:nodoc:   
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
-    scope = CbrainTask.scoped({})
+
+    if current_project
+      scope = CbrainTask.scoped(:conditions  => {:group_id  => current_project.id})
+    else
+      scope = current_user.available_tasks
+    end
+    
     if current_user.has_role? :admin
       unless @filter_params["filters"]["user_id"].blank?
         scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
       end
-    else
-      scope = scope.scoped(:conditions => {:user_id => current_user.id} )
     end
     
     #Used to create filters
@@ -196,6 +200,7 @@ class TasksController < ApplicationController
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id     = current_user.id
+    @task.group_id    = current_session[:active_group_id]
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
@@ -408,7 +413,7 @@ class TasksController < ApplicationController
     end
 
     current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
-    redirect_to :action => :index
+    redirect_to :action => :index, :format  => :js
 
   end # method 'operation'
 

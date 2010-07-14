@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100706152131) do
+ActiveRecord::Schema.define(:version => 20100708182326) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(:version => 20100706152131) do
     t.text     "prerequisites"
     t.integer  "share_wd_tid"
     t.integer  "run_number"
+    t.integer  "group_id"
   end
 
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"

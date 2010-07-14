@@ -1,12 +1,10 @@
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="group_<%= group.id %>">
-  <td><%= work_group_link group, h(group.name), edit_group_path(group) %></td>
+  <td><%= h(group.name) %></td>
   <td><%= group.class.name %></td>
   <% users = group.users.map{|u| h(u.login)} %>
   <td><%= sorted_users = group.users.collect{ |m| link_if_admin(m.login, user_path(m))}.sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
   <td><%= link_to(group.site.name, site_path(group.site)) rescue "(Unassigned)" %></td>
-  <% if group.is_a? SystemGroup %>
-    <td colspan="3" />
-  <% else %>
+  <% if group.is_a?(WorkGroup) && group.can_be_edited_by?(current_user)%>
     <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>
     <td>
       <%= 
@@ -18,6 +16,9 @@
                          },
                         {:class => 'action_link'}
         %>
-    </td>
+    </td>  
+  <% else %>
+    <td colspan="2" />
   <% end %>
+  <td><%= link_to 'Switch', switch_group_path(group), :class => 'action_link', :method  => :post %></td>
 </tr>

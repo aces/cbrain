@@ -19,6 +19,6 @@
                         {:class => 'action_link'}
         %>
     </td>
-    <td><%= link_to 'Switch', switch_user_path(user), :class => 'action_link' %></td>
+    <td><%= link_to 'Switch', switch_user_path(user), :class => 'action_link', :method  => :post %></td>
   <% else %><td colspan="2"></td><% end %>
 </tr>

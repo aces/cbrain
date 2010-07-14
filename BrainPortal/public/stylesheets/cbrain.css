@@ -2115,6 +2115,31 @@ h1.warning {
     margin: 0;
 }
 
+#active_project_div{
+  font-size: 1.2em;
+  margin-left: 20em;
+}
+
+#active_project_div h1{
+  font-size: 1.4em;
+}
+
+#header_project_menu{
+  color: #F33;
+  margin: 0.8em 1em 0 0;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+#project_menu_items{
+  color: #22C;
+}
+
+#header_project_menu span{
+  padding: 0;
+  background-image: none;
+}
+
 .xstooltip {
     visibility: hidden; 
     position: absolute; 
@@ -2211,4 +2236,10 @@ h1.warning {
 
 #new_tag{
     background-color: #FFFF;    
+}
+
+.ui-widget-content{
+  border: none!important;
+}
+  
 }

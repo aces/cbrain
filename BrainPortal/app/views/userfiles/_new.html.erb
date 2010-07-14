@@ -22,11 +22,15 @@
                <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil}      %>
             </select>
             <br><br>
-
-            Group for uploaded file:<br>
-                  <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
-                  <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-            <br><br>
+            <% if current_project %>
+              <%= hidden_field_tag 'userfile[group_id]', current_project.id %>
+              Group permissions:
+            <% else %>
+              Group for uploaded file:<br>
+                    <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
+            <% end %>
+            <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+             <br><br>
 
             Archive options (for zip or tar files): 
                   <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>

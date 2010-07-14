@@ -30,12 +30,14 @@
          <%= link_to_remote  "Tags", :url  =>  userfiles_path(:userfiles_sort_order  => 'tags.name', :userfiles_sort_dir  => set_dir_old('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
+      <% unless current_project %>
+        <th>
+          <%= link_to_remote  "Project", :url  =>  userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+          <%= set_order_icon('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+        </th>
+      <% end %>
       <th>
-         <%= link_to_remote  "Group", :url  =>  userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
-         <%= set_order_icon('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-      </th>
-      <th>
-        <%= link_to_remote  "Group Access", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= link_to_remote  "Project Access", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
          <%= set_order_icon('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
        <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >

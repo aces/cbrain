@@ -259,7 +259,11 @@ class ClusterTask < CbrainTask
     cb_error "Class for file must be a subclass of Userfile." unless
       klass < Userfile
     cb_error "Attribute list missing a required attribute." unless
-      [ :name, :data_provider_id, :user_id, :group_id ].all? { |i| attlist.has_key?(i) }
+      [ :name, :data_provider_id, :user_id].all? { |i| attlist.has_key?(i) }
+    unless attlist.has_key?(:group_id)
+      cb_error "Cannot assign group to file." unless self.group_id
+      attlist[:group_id] = self.group_id
+    end
     results = klass.find(:all, :conditions => attlist)
     if results.size == 1
       existing_userfile = results[0]

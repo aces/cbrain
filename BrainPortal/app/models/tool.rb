@@ -26,6 +26,8 @@
 class Tool < ActiveRecord::Base
   Revision_info="$Id$"
   
+  include ResourceAccess
+  
   Categories = ["scientific tool", "conversion tool"]
   
   before_validation :set_default_attributes
