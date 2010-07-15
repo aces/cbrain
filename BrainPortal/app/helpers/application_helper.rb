@@ -249,7 +249,7 @@ module ApplicationHelper
       userfile = Userfile.find(userfile) rescue nil
       return "(Deleted/Non-existing file)" if userfile.blank?
     end
-    name = options[:name] || userfile.name
+    name = crop_text_to(40, options[:name] || userfile.name)
     path = options[:path] || edit_userfile_path(userfile)
     if userfile.available? && userfile.can_be_accessed_by?(user)
       link_to(name, path)

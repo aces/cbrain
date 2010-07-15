@@ -29,7 +29,9 @@
       <% else %>
         <%= image_tag "/images/file_icon.png" %>
       <% end %>
-      <%= link_to_userfile_if_accessible userfile %>
+      <% add_tool_tip(h(userfile.name)) do %>
+        <%= link_to_userfile_if_accessible userfile %>
+      <% end %>
       <%= userfile.pretty_type %>    
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
