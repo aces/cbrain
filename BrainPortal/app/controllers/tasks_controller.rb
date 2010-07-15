@@ -83,6 +83,9 @@ class TasksController < ApplicationController
     if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       @tasks = @tasks.group_by(&:launch_time)
     end
+    
+    @bourreau_status = {}
+    status = @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}
 
     respond_to do |format|
       format.html

@@ -19,6 +19,8 @@
 <div class = "generalcontent">
 <div class = "generalbox">
 
+<% if @task.bourreau.online? %>
+
 <table border="0">
 <tr><th>Operations:</th>
 
@@ -69,7 +71,7 @@
    <% end %>
 
 </tr></table>
-
+<% end %>
 
    <table class ="showtasksdisplay">
 
