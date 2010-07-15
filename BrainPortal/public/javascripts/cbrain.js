@@ -152,17 +152,11 @@ jQuery(
           if(!method) method = enclosing_form.attr("data-method");
           if(!method) method = "POST";          
           
-          enclosing_form.find('.ajax_commit_parameter').remove();
-          
-          jQuery('<input />').attr('type', 'hidden')
-                      .addClass('ajax_commit_parameter')
-                      .attr('name', "commit")
-                      .attr('value', commit)
-                      .appendTo(enclosing_form);
           enclosing_form.ajaxSubmit({
             url: url,
             type: method,
             dataType: data_type,
+            data: { commit : commit},
             resetForm: false
             }
           );
