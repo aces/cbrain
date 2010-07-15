@@ -3,6 +3,7 @@
     <% if(@bourreau_status[task.bourreau.id])%>
        <td><%= check_box_tag("tasklist[]", task.id, false, :class  => 'checkbox') %></td>
     <% else %>
+        <tr class="list-unavailable row_highlight" title="This file is unavailable due to its provider being offline">
         <td></td>
     <% end %>
       <td class="left"><%= link_to task.name, :controller => :tasks, :action => :show, :id => task.id  %></td>
