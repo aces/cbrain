@@ -30,7 +30,10 @@
     
      <br>
      <br>
-     <%= submit_tag("Apply Operation") %>
+     <%= submit_tag("Apply Operation", :class  => "ajax_submit_button", 
+                                       "data-url"  => url_for({:controller  => :tasks, :action  => :new}),
+                                       "data-method"  => :get,
+                                       "data-datatype"  => "script") %>
      <br><br>
      <% else %>
      <br>

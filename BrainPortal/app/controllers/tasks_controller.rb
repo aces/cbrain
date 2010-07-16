@@ -118,9 +118,30 @@ class TasksController < ApplicationController
   end
   
   def new #:nodoc:
-
+    
+    unless params[:toolname] 
+      if params[:scientific_operation].blank?
+        task = params[:conversion_operation]
+      else
+        task = params[:scientific_operation]
+      end
+      task.sub!(/^CbrainTask::/,"")
+      params[:toolname]  = task
+    end
+    
+    if request.format.to_sym == :js
+      render :text  => "window.location='#{url_for(:controller  => :tasks, :action  => :new, :toolname  => params[:toolname], :bourreau_id  => params[:bourreau_id], :file_ids  => params[:file_ids] )}'"
+      return
+    end
+    
     # Brand new task object for the form
     @toolname         = params[:toolname]
+    if @toolname.blank?
+      flash[:error] = "Please select a task to perform."
+      redirect_to :controller  => :userfiles, :action  => :index
+      return
+    end
+    
     @task             = CbrainTask.const_get(@toolname).new
 
     # Our new task object needs some initializing
@@ -129,7 +150,14 @@ class TasksController < ApplicationController
     @task.user_id     = current_user.id
 
     # Filter list of files as provided by the get request
-    @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write)
+    @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write) rescue []
+    if @files.empty?
+      flash[:error] = "You must select at least one file to which you have write access."
+      redirect_to :controller  => :userfiles, :action  => :index
+      return
+    end
+    
+    
     @task.params[:interface_userfile_ids] = @files.map &:id
 
     # Other common instance variables, such as @data_providers and @bourreaux

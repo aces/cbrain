@@ -22,7 +22,14 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :groups,         :member => { :switch  => :post }
   map.resources :bourreaux,      :member => { :start   => :post, :stop => :post, :row_data  => :get }, :collection  => { :refresh_ssh_keys  => :post } 
   map.resources :data_providers, :member => { :browse  => :get, :register => :post, :is_alive  => :get }, :collection => { :cleanup => :post, :disk_usage  => :get }
-  map.resources :userfiles,      :member => { :content => :get }, :collection => { :operation => :post }
+  map.resources :userfiles,      :member => { :content => :get }, 
+                                 :collection => { :download => :get, 
+                                                  :delete_files  => :delete, 
+                                                  :create_collection  => :post,
+                                                  :project_update  => :post,
+                                                  :permission_update  => :post,
+                                                  :change_provider  => :post,
+                                                  :tag_update  =>  :post}
 
   # Redirect for polymorphisms
   map.resources :single_files,            :controller => :userfiles  

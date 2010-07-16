@@ -137,6 +137,31 @@ jQuery(
           return false;
         });
         
+        jQuery(".search_box").live("keypress", function(event){ 
+          if(event.keyCode == 13){
+            text_field = jQuery(this);
+            var data_type = text_field.attr("data-datatype");
+            if(!data_type) data_type = "script";
+            var url = text_field.attr("data-url");
+            var method = text_field.attr("data-method");
+            if(!method) method = "GET";
+            var target = text_field.attr("data-target");
+                    
+                    
+            var parameters = {};
+            parameters[text_field.attr("id")] = text_field.attr("value");
+          
+            jQuery.ajax({ 
+              type: method,
+              url: url,
+              dataType: data_type,
+              target: target, 
+              data: parameters
+            });
+            return false;
+          }
+        });
+        
         jQuery(".ajax_submit_button").live("click", function(){
           button = jQuery(this);
           commit = button.attr("value");
@@ -151,15 +176,47 @@ jQuery(
           
           if(!method) method = enclosing_form.attr("data-method");
           if(!method) method = "POST";          
-          
+                    
           enclosing_form.ajaxSubmit({
             url: url,
             type: method,
             dataType: data_type,
-            data: { commit : commit},
+            data: { commit : commit },
             resetForm: false
             }
           );
+          return false;
+        });
+        
+        jQuery(".userfiles_partial_form").live("submit", function(){
+          current_form = jQuery(this);
+      try{
+          var data_type = current_form.attr("data-datatype");
+          var target = current_form.attr("data-target");
+          var method = current_form.attr("data-method");
+          if(!data_type) data_type = "html";
+          if(!method) method = "POST";
+     
+          commit = this.commit.value;
+         
+             var post_data = { commit : commit, iamjs: "YES" };
+              var file_ids = new Array();
+              jQuery('.userfiles_checkbox:checked').each(function(index, element){
+                file_ids.push(element.value);
+              });
+            }catch(e){
+              alert(e.toString());
+              return false;
+            }
+          post_data["filelist[]"] = file_ids;
+          current_form.ajaxSubmit({
+            type: method,
+            data: post_data,
+            dataType: data_type,
+            target: target,
+            resetForm: true
+          });
+          
           return false;
         });
         

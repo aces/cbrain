@@ -22,8 +22,7 @@
         </div>
    
         <div id = "userfiles_main">
-            <% form_tag(url_for(:controller => 'userfiles', :action => 'operation'), :method => :post, "data-datatype"  => "script") do %>
-
+          <% form_tag(url_for(:controller => 'userfiles', :action => 'download'), :method => :post, "data-datatype"  => "script") do %>
             <div id="userfiles_top_menu">
                 <% button_with_dropdown_menu(:title => "Scientific Tools")  do %>
                     <center>
@@ -40,22 +39,22 @@
             <br>        
             <br>
 
-          <div id = "file_menu">
-              <%= render :partial => "userfiles/file_menu" %>
-          </div>
-          <div id="pagination">
-            <%= render :partial => 'userfiles/pagination' %>
-          </div>
-          <table id="userfilesdisplay" class="resource_list">
-               <%= render :partial => 'userfiles/userfiles_table' %>
-          </table>
+            <div id = "file_menu">
+                <%= render :partial => "userfiles/file_menu" %>
+            </div>
+            <div id="pagination">
+              <%= render :partial => 'userfiles/pagination' %>
+            </div>
+            <table id="userfilesdisplay" class="resource_list">
+                 <%= render :partial => 'userfiles/userfiles_table' %>
+            </table>
 
-          <center>
-               Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-             <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-               <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-             <% end %>
-          </center>
-          <% end %>
+            <center>
+                 Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+               <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+                 <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+               <% end %>
+            </center>
+          <% end %> 
         </div>
 </div>

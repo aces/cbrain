@@ -2,7 +2,7 @@
 <% button_with_dropdown_menu(:title => "Download Files") do %>
   Specify Download File Name (optional):
   <%= text_field_tag :specified_filename %>
-  <%= submit_tag("Download Files") %>
+  <%= submit_tag("Download Files", {:class  => "ajax_submit_button", "data-method"  => :get}) %>
 <% end %>
 
 <% button_with_dropdown_menu(:title => "Update File Attributes") do %>
@@ -14,23 +14,39 @@
    <h4>Projects</h4>
    Change Project: 
    <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
-   <%= submit_tag("Update Projects", :class  => "ajax_submit_button") %> 
+   <%= submit_tag("Update Projects", {:class  => "ajax_submit_button", 
+                                      "data-url"  => url_for({:action  => :project_update}),
+                                      "data-method"  => :post})
+   %>
    <br>
    Project permission update: 
    <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-   <%= submit_tag("Update Permissions", :class  => "ajax_submit_button") %> 
+   <%= submit_tag("Update Permissions", :class  => "ajax_submit_button", 
+                                       "data-url"  => url_for({:action  => :permission_update}),
+                                       "data-method"  => :post) %> 
    <br>
 <% end %>
 
 <% button_with_dropdown_menu(:title => "Move/Copy Files")  do %>
     <%= data_provider_select("data_provider_id") %>
-    <%= submit_tag("Move Files", :class  => "ajax_submit_button") %>
-    <%= submit_tag("Copy Files", :class  => "ajax_submit_button") %>
+    <%= submit_tag("Move Files", :class  => "ajax_submit_button", 
+                                 "data-url"  => url_for({:action  => :change_provider}),
+                                 "data-method"  => :post) %>
+    <%= submit_tag("Copy Files", :class  => "ajax_submit_button", 
+                                 "data-url"  => url_for({:action  => :change_provider}),
+                                 "data-method"  => :post) %>
 <% end %>
 
-<%= submit_button("Create Collection", {:name => "commit", :id => "ajax_submit_button"}) %>
+<%= submit_button("Create Collection", {:name => "commit", 
+                                        :class  => "ajax_submit_button", 
+                                        "data-url"  => url_for({:action  => :create_collection}),
+                                        "data-method"  => :post})
+%>
 
 <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
-
-<%= submit_button("Delete Files", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected files?');", :class  => "ajax_submit_button"}) %>
-
+<%= submit_button("Delete Files", {:name => "commit", 
+                                   :onclick => "return confirm('Are you sure you want to delete the selected files?');", 
+                                   :class  => "ajax_submit_button", 
+                                   "data-url"  => url_for({:action  => :delete_files}),
+                                   "data-method"  => :delete}) 
+%>

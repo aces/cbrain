@@ -17,7 +17,8 @@ class UserfilesController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-
+  around_filter :permission_check, :only  => [:download, :delete_files, :create_collection, :project_update,
+                                              :permission_update, :change_provider, :tag_update]
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
@@ -93,16 +94,16 @@ class UserfilesController < ApplicationController
   end
 
   ####################################################
-  # Provides a way of accessing file contents intelligently and customizably 
-  # for each type of files supported in the platform
-  # Each userfile subclass is in charge of defining it's on content method 
-  # which returns a has that will either be used by 
-  # 1) render 
-  # 2) or contains the sendfile symbol which will instruct the system to stream the file 
-  # 3) or if it includes the :gzip symbol, it will adjust the content-encoding such that 
-  #    the browser can decode it. 
+  # Provides a way of accessing file contents in a way that is intelligent and customizable 
+  # for each type of file supported in the platform
+  # Each userfile subclass is in charge of defining its own content method 
+  # which returns a hash that will either
+  # 1) be used by render 
+  # 2) or contain the :sendfile symbol which will instruct the system to stream the file 
+  # 3) or contain the :gzip symbol which will adjust the content-encoding allowing 
+  #    the browser to decode it. 
   # 
-  # other possibilities are also possible. 
+  # Other possibilities are also possible. Except for the impossible ones.
   ####################################################
   #GET /userfiles/1/content?option1=....optionN=...
   def content
@@ -390,317 +391,273 @@ class UserfilesController < ApplicationController
     end
   end
   
-
-  #This action is for performing a given operation on a Userfile.
-  #
-  #Potential operations are:
-  #[<b>Cluster task</b>] Send userfile to be processed on a cluster by some
-  #                      some analytical tool (see CbrainTask). These requests
-  #                      are forwarded to the TasksController.
-  #[<b>Download files</b>] Download a set of selected files.
-  #[<b>Update tags</b>] Update the tagging of selected files which a set
-  #                     of specified tags.
-  #[<b>Update groups</b>] Update the group label of selected files.
-  #[<b>Merge files into collection</b>] Merge the selected files and file
-  #                                     collections into a new file collection.
-  #                                     (see FileCollection).
-  #[<b>Delete files</b>] Delete the selected files (delete the file on disk
-  #                      and purge the record from the database).
-  def operation
+  #Update tags for the selected files.
+  def tag_update
+    filelist    = params[:file_ids] || []
     
-    params[:format] ||= request.format.to_sym
+    success_count = 0
+    failure_count = 0
     
-    unless params[:redirect_to_index].blank?
-      redirect_to :action => :index, :format => params[:format], :userfiles_search_type => params[:userfiles_search_type], :userfiles_search_term => params[:userfiles_search_term]
-      return
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read).each do |userfile|
+      userfile.set_tags_for_user(current_user, params[:tags])
+      if userfile.save
+        success_count += 1
+      else
+        failure_count +=1
+      end
     end
     
-    if params[:commit] == 'Download Files'
-      operation = 'download'
-    elsif params[:commit] == 'Delete Files'
-      operation = 'delete'
-    elsif params[:commit] == 'Update Tags'
-      operation = 'tag_update'
-    elsif params[:commit] == 'Create Collection'
-      operation = 'merge_collections'
-    elsif params[:commit] == 'Update Projects'
-      operation = 'group_update'
-    elsif params[:commit] == 'Update Permissions'
-      operation = 'permission_update'
-    elsif params[:commit] == 'Move Files'
-      operation = 'move_to_other_provider'
+    if success_count > 0
+      flash[:notice] = "Tags for #{@template.pluralize(success_count, "files")} successfully updated."
+    end
+    if failure_count > 0
+      flash[:error] = "Tags for #{@template.pluralize(failure_count, "files")} could not be updated."
+    end
+    
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+  
+  #Update project for the selected files.
+  def project_update
+    filelist    = params[:file_ids] || []
+    
+    success_count = 0
+    failure_count = 0
+    
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+      if userfile.update_attributes(:group_id => params[:userfile][:group_id])
+         success_count += 1
+       else
+         failure_count +=1
+       end
+     end
+
+     if success_count > 0
+       flash[:notice] = "Project for #{@template.pluralize(success_count, "files")} successfully updated."
+     end
+     if failure_count > 0
+       flash[:error] = "Project for #{@template.pluralize(failure_count, "files")} could not be updated."
+     end
+     
+     redirect_to :action => :index, :format => request.format.to_sym
+  end
+  
+  #Update project permissions on the selected files.
+  def permission_update
+    filelist    = params[:file_ids] || []
+    success_count = 0
+    failure_count = 0
+    
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+     if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
+        success_count += 1
+      else
+        failure_count +=1
+      end
+    end
+    
+    if success_count > 0
+      flash[:notice] = "Permissions for #{@template.pluralize(success_count, "files")} successfully updated."
+    end
+    if failure_count > 0
+      flash[:error] = "Permissions for #{@template.pluralize(failure_count, "files")} could not be updated."
+    end
+    
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+  
+  #Create a collection from the selected files.
+  def create_collection
+    filelist    = params[:file_ids] || []
+    if current_project
+      file_group = current_project.id
+    else
+      file_group = current_user.own_group.id
+    end
+    
+    collection = FileCollection.new(
+        :user_id          => current_user.id,
+        :group_id         => file_group,
+        :data_provider    => DataProvider.find(params[:data_provider_id])
+        )
+
+    CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
+      result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
+      if result == :success
+        Message.send_message(current_user,
+                            :message_type  => 'notice', 
+                            :header  => "Collections Merged", 
+                            :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
+                            )
+      else
+        Message.send_message(current_user,
+                            :message_type  => 'error', 
+                            :header  => "Collection could not be merged.", 
+                            :variable_text  => "There was a collision among the file names."
+                            )
+      end
+    end # spawn
+
+    flash[:notice] = "Collection #{collection.name} is being created in background."
+    redirect_to :action => :index, :format => request.format.to_sym
+    
+  end
+  
+  #Copy or move files to a new provider.
+  def change_provider
+    if params[:commit] == 'Move Files'
       task      = 'move'
     elsif params[:commit] == 'Copy Files'
-      operation = 'move_to_other_provider'
       task      = 'copy'
-    elsif params[:commit] == 'Jiv Viewer'
-      redirect_to :controller  => :jiv, :action => :index
+    end
+    
+    filelist    = params[:file_ids] || []
+    # Default message keywords for 'move'
+    word_move  = 'move'
+    word_moved = 'moved'
+    if task == 'copy'  # switches to 'copy' mode, so adjust the words
+      word_move  = 'copy'
+      word_moved = 'copied'
+    end
+
+
+
+    data_provider_id = params[:data_provider_id]#Regexp.last_match[1].to_i
+    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
+
+    unless new_provider
+      flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
       return
-    else
-      operation = 'cluster_task'
-      if params[:scientific_operation].empty?
-        task = params[:conversion_operation]
-      else
-        task = params[:scientific_operation]
+    end
+
+    CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
+      moved_list  = []
+      failed_list = []
+      filelist.each do |id|
+        u = Userfile.find(id)
+        next unless u
+        orig_provider = u.data_provider
+        next if orig_provider.id == data_provider_id
+        begin
+          if task == 'move'
+            res = u.provider_move_to_otherprovider(new_provider)
+          else
+            res = u.provider_copy_to_otherprovider(new_provider)
+          end
+          if res
+            u.save
+            u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+            moved_list << u
+          else
+            failed_list << u
+          end
+        rescue => e
+          u.addlog "Could not #{word_move} from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
+          failed_list << u
+        end
       end
-      task.sub!(/^CbrainTask::/,"")
-    end
+
+      if moved_list.size > 0
+        Message.send_message(current_user,
+                            :message_type  => 'notice', 
+                            :header  => "Files #{word_moved} to #{new_provider.name}",
+                            :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
+                            ) 
+      end
+
+      if failed_list.size > 0
+        Message.send_message(current_user,
+                            :message_type  => 'error', 
+                            :header  => "Some files could not be #{word_moved} to #{new_provider.name}",
+                            :variable_text  => "List:\n" + failed_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
+                            )
+      end
+
+    end # spawn
+
+    flash[:notice] = "Your files are being #{word_moved} in the background.\n"
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+  
+  #Delete the selected files.
+  def delete_files
+    filelist    = params[:file_ids] || []
     
-    filelist    = params[:filelist] || []
-
-    flash[:error]  ||= ""
-    flash[:notice] ||= ""
-
-    if operation.blank? || ((operation == "cluster_task") && task.blank?)
-      flash[:error] += "No operation selected? Selection cleared.\n"
-      redirect_to :action => :index, :format => params[:format]
-      return
-    end
-
-    if filelist.empty?
-      flash[:error] += "No file selected? Selection cleared.\n"
-      redirect_to :action => :index, :format => params[:format]
-      return
-    end
-
-    # TODO: replace "case" and make each operation a private method ?
-    case operation
-
-      when 'cluster_task'
-        redirect_to :controller => :tasks, :action => :new, :file_ids => filelist, :toolname => task, :bourreau_id => params[:bourreau_id]
-        return
-
-      when "delete"
-        deleted_count      = 0
-        unregistered_count = 0
-        
-        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-          basename = userfile.name
-          if userfile.data_provider.is_browsable?
-            unregistered_count += 1
-          else
-            deleted_count += 1
-          end
-          userfile.destroy
-        end
-        
-        if deleted_count > 0
-          flash[:notice] += "#{@template.pluralize(deleted_count, "files")} deleted.\n"
-        end
-        if unregistered_count > 0
-          flash[:notice] += "#{@template.pluralize(unregistered_count, "files")} unregistered.\n"
-        end
-
-      when "download"
-        specified_filename = params[:specified_filename]
-        if ! specified_filename.blank?
-          if ! Userfile.is_legal_filename?(specified_filename)
-              flash[:error] += "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
-              redirect_to :action => :index, :format => params[:format]
-              return
-          else
-            specified_filename = "#{specified_filename}.tar.gz"
-          end
-        else
-          is_blank = true
-          timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
-          specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}.tar.gz"
-        end
-        
-        if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
-          userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
-          userfile.sync_to_cache
-          fullpath = userfile.cache_full_path
-          specified_filename.sub!(/.tar.gz$/,"") unless specified_filename.blank?
-          send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename        
-        else
-          userfiles_list = filelist.collect do |id|
-            u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
-            next unless u
-            u.sync_to_cache
-            u
-          end
-          if userfiles_list.size == 0
-            flash[:notice] = "No filenames selected for download."
-            redirect_to :action => :index, :format => params[:format]
-            return
-          end
-          tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
-          send_file tarfile, :stream  => true, :filename => specified_filename
-          CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
-            sleep 300
-            File.unlink(tarfile)
-          end
-        end
-        return
-
-      when 'tag_update'
-        success_count = 0
-        failure_count = 0
-        
-        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read).each do |userfile|
-          userfile.set_tags_for_user(current_user, params[:tags])
-          if userfile.save
-            success_count += 1
-          else
-            failure_count +=1
-          end
-        end
-        
-        if success_count > 0
-          flash[:notice] += "Tags for #{@template.pluralize(success_count, "files")} successfully updated."
-        end
-        if failure_count > 0
-          flash[:error] += "Tags for #{@template.pluralize(failure_count, "files")} could not be updated."
-        end
-
-      when 'group_update'
-        success_count = 0
-        failure_count = 0
-        
-        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-          if userfile.update_attributes(:group_id => params[:userfile][:group_id])
-             success_count += 1
-           else
-             failure_count +=1
-           end
-         end
-
-         if success_count > 0
-           flash[:notice] += "Project for #{@template.pluralize(success_count, "files")} successfully updated."
-         end
-         if failure_count > 0
-           flash[:error] += "Project for #{@template.pluralize(failure_count, "files")} could not be updated."
-         end
-
-      when 'permission_update'
-        success_count = 0
-        failure_count = 0
-        
-        Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-          if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
-             success_count += 1
-           else
-             failure_count +=1
-           end
-         end
-
-         if success_count > 0
-           flash[:notice] += "Permissions for #{@template.pluralize(success_count, "files")} successfully updated."
-         end
-         if failure_count > 0
-           flash[:error] += "Permissions for #{@template.pluralize(failure_count, "files")} could not be updated."
-         end
-
-      when 'merge_collections'
-        collection = FileCollection.new(
-            :user_id          => current_user.id,
-            :group_id         => current_user.own_group.id,
-            :data_provider    => DataProvider.find(params[:data_provider_id])
-            )
-
-        CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-          result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
-          if result == :success
-            Message.send_message(current_user,
-                                :message_type  => 'notice', 
-                                :header  => "Collections Merged", 
-                                :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
-                                )
-          else
-            Message.send_message(current_user,
-                                :message_type  => 'error', 
-                                :header  => "Collection could not be merged.", 
-                                :variable_text  => "There was a collision among the file names."
-                                )
-          end
-        end # spawn
-
-        flash[:notice] = "Collection #{collection.name} is being created in background."
-
-      when "move_to_other_provider"
-
-        # Default message keywords for 'move'
-        word_move  = 'move'
-        word_moved = 'moved'
-        if task == 'copy'  # switches to 'copy' mode, so adjust the words
-          word_move  = 'copy'
-          word_moved = 'copied'
-        end
-
-    
-
-        data_provider_id = params[:data_provider_id]#Regexp.last_match[1].to_i
-        new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
-
-        unless new_provider
-          flash[:error] += "Data provider #{data_provider_id} not accessible.\n"
-          redirect_to :action => :index, :format => params[:format]
-          return
-        end
-
-        CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
-          moved_list  = []
-          failed_list = []
-          filelist.each do |id|
-            u = Userfile.find(id)
-            next unless u
-            orig_provider = u.data_provider
-            next if orig_provider.id == data_provider_id
-            begin
-              if task == 'move'
-                res = u.provider_move_to_otherprovider(new_provider)
-              else
-                res = u.provider_copy_to_otherprovider(new_provider)
-              end
-              if res
-                u.save
-                u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
-                moved_list << u
-              else
-                failed_list << u
-              end
-            rescue => e
-              u.addlog "Could not #{word_move} from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
-              failed_list << u
-            end
-          end
-
-          if moved_list.size > 0
-            Message.send_message(current_user,
-                                :message_type  => 'notice', 
-                                :header  => "Files #{word_moved} to #{new_provider.name}",
-                                :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
-                                ) 
-          end
-
-          if failed_list.size > 0
-            Message.send_message(current_user,
-                                :message_type  => 'error', 
-                                :header  => "Some files could not be #{word_moved} to #{new_provider.name}",
-                                :variable_text  => "List:\n" + failed_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
-                                )
-          end
-
-        end # spawn
-
-        flash[:notice] += "Your files are being #{word_moved} in the background.\n"
-        redirect_to :action => :index, :format => params[:format]
-        return
-
+    deleted_count      = 0
+    unregistered_count = 0
+  
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+      basename = userfile.name
+      if userfile.data_provider.is_browsable?
+        unregistered_count += 1
       else
-        flash[:error] = "Unknown operation #{operation}"
+        deleted_count += 1
+      end
+      userfile.destroy
+    end
+  
+    if deleted_count > 0
+      flash[:notice] = "#{@template.pluralize(deleted_count, "files")} deleted.\n"
+    end
+    if unregistered_count > 0
+      flash[:notice] = "#{@template.pluralize(unregistered_count, "files")} unregistered.\n"
+    end
+    
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+  
 
-    end # case
-
-    redirect_to :action => :index, :format => params[:format]
-
-  rescue ActiveRecord::RecordNotFound => e
-    flash[:error] += "\n" unless flash[:error].blank?
-    flash[:error] ||= ""
-    flash[:error] += "You don't have appropriate permissions to #{operation} the selected files.".humanize
-
-    redirect_to :action => :index, :format => params[:format]
+  #Dowload the selected files.
+  def download
+    if request.format.to_sym == :js
+      render :text  => "window.location='#{url_for(:action  => :download, :file_ids  => params[:file_ids] )}'"
+      return
+    end
+    
+       
+    filelist    = params[:file_ids] || []
+    
+    specified_filename = params[:specified_filename]
+    if ! specified_filename.blank?
+      if ! Userfile.is_legal_filename?(specified_filename)
+          flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
+          redirect_to :action => :index, :format =>  request.format.to_sym
+          return
+      else
+        specified_filename = "#{specified_filename}.tar.gz"
+      end
+    else
+      is_blank = true
+      timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
+      specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}.tar.gz"
+    end
+    
+    if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
+      userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
+      userfile.sync_to_cache
+      fullpath = userfile.cache_full_path
+      specified_filename.sub!(/.tar.gz$/,"") unless specified_filename.blank?
+      send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename        
+    else
+      userfiles_list = filelist.collect do |id|
+        u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
+        next unless u
+        u.sync_to_cache
+        u
+      end
+      if userfiles_list.size == 0
+        flash[:notice] = "No filenames selected for download."
+        redirect_to :action => :index, :format =>  request.format.to_sym
+        return
+      end
+      tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+      send_file tarfile, :stream  => true, :filename => specified_filename
+      CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
+        sleep 300
+        File.unlink(tarfile)
+      end
+    end
   end
 
   #Extract a file from a collection and register it separately
@@ -708,7 +665,7 @@ class UserfilesController < ApplicationController
   def extract_from_collection
     success = failure = 0
 
-    unless params[:filelist] && params[:filelist].size > 0
+    unless params[:file_ids] && params[:file_ids].size > 0
       flash[:notice] = "No files selected for extraction"
       redirect_to :action  => :edit
       return
@@ -717,7 +674,7 @@ class UserfilesController < ApplicationController
     collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
-    params[:filelist].each do |file|
+    params[:file_ids].each do |file|
       userfile = SingleFile.new(
           :name             => File.basename(file),
           :user_id          => current_user.id,
@@ -745,6 +702,21 @@ class UserfilesController < ApplicationController
   end
 
   private
+  
+  def permission_check
+    if params[:file_ids].blank?
+      flash[:error] = "No file selected? Selection cleared.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
+    end
+    yield
+  rescue ActiveRecord::RecordNotFound => e
+    flash[:error] += "\n" unless flash[:error].blank?
+    flash[:error] ||= ""
+    flash[:error] += "You don't have appropriate permissions to #{params[:action]} the selected files.".humanize
+
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
   
   #Extract files from an archive and register them in the database.
   #The first argument is a path to an archive file (tar or zip).

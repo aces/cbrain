@@ -17,7 +17,7 @@
    <h5>Search by filename</h5>
     <div id="name_search_filter" class="userfile_table_format_options_2">
          <%= hidden_field_tag :userfiles_search_type, "name_search" %>
-         <%= text_field_tag :userfiles_search_term %>
+         <%= text_field_tag :userfiles_search_term, nil, :class  => "search_box", "data-url"  => userfiles_path(:userfiles_search_type  =>  "name_search") %>
     </div>
 <% end %>
 </div>
