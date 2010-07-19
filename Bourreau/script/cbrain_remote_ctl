@@ -181,9 +181,9 @@ if status_message =~ /STARTED/i # see Bourreau's validation.rb
   puts "Bourreau Started."
 else
   puts "Bourreau Failed."
-  puts "Here are the last 50 lines of mongrel's log:"
+  puts "Here are the last 100 lines of mongrel's log:"
   Dir.chdir(rails_home) do
-    system("tail -50 log/mongrel.log")
+    system("tail -100 log/mongrel.log")
   end
 end
 Kernel.exit(0)
