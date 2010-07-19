@@ -94,8 +94,8 @@ module SmartDataProviderInterface
     @provider.cache_readhandle(userfile, *args, &block)
   end
 
-  def cache_writehandle(userfile,&block) #:nodoc:
-    @provider.cache_writehandle(userfile,&block)
+  def cache_writehandle(userfile, *args, &block) #:nodoc:
+    @provider.cache_writehandle(userfile, *args, &block)
   end
 
   def cache_copy_from_local_file(userfile,localfilename) #:nodoc:

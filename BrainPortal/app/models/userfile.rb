@@ -488,15 +488,12 @@ class Userfile < ActiveRecord::Base
     self.data_provider.provider_copy_to_otherprovider(self,otherprovider,newname)
   end
 
-  # Returns an Array of FileInfo objects containing
-  # information about the files associated with this Userfile
-  # entry.
-  #
-  # Information is requested from the actual data provider (not the cache).
+  # See the description in class DataProvider
   def provider_collection_index(*args)
     self.data_provider.provider_collection_index(self, *args)
   end
 
+  # See the description in class DataProvider
   def provider_readhandle(*args, &block)
     self.data_provider.provider_readhandle(self, *args,  &block)
   end
@@ -507,9 +504,9 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
-  def cache_writehandle(&block)
+  def cache_writehandle(*args, &block)
     self.save!
-    self.data_provider.cache_writehandle(self, &block)
+    self.data_provider.cache_writehandle(self, *args, &block)
     self.set_size!
   end
 

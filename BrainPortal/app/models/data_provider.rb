@@ -79,11 +79,17 @@ require 'digest/md5'
 #
 # == Handling FileCollections content
 #
-# The cache_readhandle() and cache_writehandle() methods *cannot* be used
-# to access FileCollections, as these are modeled on the filesystem by
-# subdirectories. However, the methods cache_copy_to_local_file() and
-# cache_copy_from_local_file() will work perfectly well, assuming that
-# the +localfile+ they are given in argument is itself a local subdirectory.
+# The cache_readhandle() and cache_writehandle() methods can be used
+# to access FileCollections, as long as a second argument is provided
+# indicating the relative path of the file to be read from/written to.
+# There is also a provider_readhandle() method to read from files on the 
+# provider side, though its use is not recommended except in cases where 
+# syncing to the cache is unfeasible (e.g. with particularly large 
+# datasets).
+#
+# The methods cache_copy_to_local_file() and cache_copy_from_local_file() 
+# will work perfectly well, assuming that the +localfile+ they are given 
+# in argument is itself a local subdirectory.
 #
 # When creating new FileCollections, the cache_prepare() method should be
 # called once first, then the cache_full_path() can be used to obtain
@@ -115,8 +121,9 @@ require 'digest/md5'
 #
 # * cache_prepare(userfile)
 # * cache_full_path(userfile)
-# * cache_readhandle(userfile)
-# * cache_writehandle(userfile)
+# * cache_collection_index(userfile, directory, allowed_types)
+# * cache_readhandle(userfile, rel_path)
+# * cache_writehandle(userfile, rel_path)
 # * cache_copy_from_local_file(userfile,localfilename)
 # * cache_copy_to_local_file(userfile,localfilename)
 # * cache_erase(userfile)
@@ -130,6 +137,8 @@ require 'digest/md5'
 # * provider_move_to_otherprovider(userfile,otherprovider)
 # * provider_copy_to_otherprovider(userfile,otherprovider)
 # * provider_list_all(user=nil)
+# * provider_collection_index(userfile, directory, allowed_types)
+# * provider_readhandle(userfile, rel_path)
 #
 # Note that all of these except for provider_list_all() are
 # also present in the Userfile model.
@@ -157,6 +166,8 @@ require 'digest/md5'
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
 # * impl_provider_list_all(user=nil)
+# * impl_provider_collection_index(userfile, directory, allowed_types)
+# * impl_provider_readhandle(userfile, rel_path)
 #
 # =Attributes:
 # [*name*] A string representing a the name of the data provider.
@@ -361,10 +372,14 @@ class DataProvider < ActiveRecord::Base
   #   provider.cache_readhandle(u) do |fh|
   #     content = fh.read
   #   end
-  def cache_readhandle(userfile, rel_path = ".")
+  def cache_readhandle(userfile, rel_path = nil)
     cb_error "Error: provider is offline."   unless self.online
+    cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
     sync_to_cache(userfile)
-    full_path = cache_full_path(userfile) + rel_path
+    full_path = cache_full_path(userfile)
+    if userfile.is_a?(FileCollection) && rel_path
+      full_path += rel_path
+    end
     cb_error "Error: read handle cannot be provided for non-file." unless File.file? full_path
     File.open(full_path,"r") do |fh|
       yield(fh)
@@ -398,15 +413,17 @@ class DataProvider < ActiveRecord::Base
   #       fh.write "data"
   #     end
   #   end
-  def cache_writehandle(userfile)
+  def cache_writehandle(userfile, rel_path = nil)
     cb_error "Error: provider is offline."   unless self.online
     cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
-      if userfile.is_a?(FileCollection)
+      if userfile.is_a?(FileCollection) && !rel_path
         yield
       else # a normal file, just crush it
+        localpath += rel_path if rel_path
         File.open(localpath,"w") do |fh|
           yield(fh)
         end
@@ -838,8 +855,10 @@ class DataProvider < ActiveRecord::Base
   def impl_provider_collection_index(userfile, *args) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
-
-
+  
+  def impl_provider_readhandle(userfile, *args) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
 
   #################################################################
   # Internal cache-handling methods
