@@ -6,7 +6,7 @@
 #                 
 # Original author:Ronghai Tu
 #
-# $Id: cluster_task_model.rb 1087 2010-05-31 19:36:43Z prioux $
+# $Id$
 #
 
 # A subclass of CbrainTask::ClusterTask to run Fdf2sdt.
