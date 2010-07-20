@@ -145,7 +145,7 @@ module ApplicationHelper
   def data_provider_select(parameter_name = "data_provider_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
-    if selector.blank? && current_user.user_preference
+    if selector.nil? && current_user.user_preference
       selector = current_user.user_preference.data_provider_id
     end
     data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
@@ -172,7 +172,7 @@ module ApplicationHelper
   def bourreau_select(parameter_name = "bourreau_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
-    if selector.blank? && current_user.user_preference
+    if selector.nil? && current_user.user_preference
       selector = current_user.user_preference.bourreau_id
     end
     bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
@@ -249,7 +249,7 @@ module ApplicationHelper
       userfile = Userfile.find(userfile) rescue nil
       return "(Deleted/Non-existing file)" if userfile.blank?
     end
-    name =options[:name] || userfile.name
+    name = options[:name] || userfile.name
     path = options[:path] || edit_userfile_path(userfile)
     if userfile.available? && userfile.can_be_accessed_by?(user)
       link_to(name, path)

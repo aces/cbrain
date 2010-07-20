@@ -24,20 +24,19 @@
    Owner:<br>
 
       <%= user_select("data[user_id]", { :selector => @custom_filter.data["user_id"] }, { :include_blank => true })  %>
-
 </p>
 
 <p>
    Project:<br>
  
-       <%= group_select("data[group_id]", { :selector => @custom_filter.data["group_id"] }, { :include_blank => true })  %>
+       <%= group_select("data[group_id]", { :selector => @custom_filter.data["group_id"]}, { :include_blank => true })  %>
  
 </p>
 
 <p>
     Data Provider:<br>
 
-       <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data["data_provider_id"]}, { :include_blank => true })  %>
+       <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true })  %>
 
 </p> 
 
