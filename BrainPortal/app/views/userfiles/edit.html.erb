@@ -141,7 +141,7 @@
     <% else %>
       <p>This file is not currently synchronized.<BR>
     <% end %>
-    Click <%= link_to "here", edit_userfile_path(@userfile, :start_sync => 'yes') %>
+    Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
     to start the synchronization process.<br>
     Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
     </p>

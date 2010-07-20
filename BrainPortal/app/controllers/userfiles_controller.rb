@@ -144,15 +144,7 @@ class UserfilesController < ApplicationController
     @sync_status = 'ProvNewer' # same terminology as in SyncStatus
     state = @userfile.local_sync_status
     @sync_status = state.status if state
-    start_sync = params[:start_sync] || "no"
-    if start_sync.to_s == "yes" && @sync_status !~ /^To|InSync|Corrupted/
-      CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
-        @userfile.sync_to_cache
-        @userfile.set_size
-      end # spawn
-      @sync_status = "ToCache" # so the interface says 'in progress'
-    end
-    
+
     if current_user.has_role? :admin
       @user_groups = Group.find(:all, :order => "type")
     elsif current_user.has_role? :site_manager
@@ -167,6 +159,22 @@ class UserfilesController < ApplicationController
     @tags = current_user.tags.find(:all)
 
     @log  = @userfile.getlog rescue nil
+  end
+  
+  def sync_to_cache #:nodoc:
+     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+     state = @userfile.local_sync_status
+     @sync_status = 'ProvNewer'
+     @sync_status = state.status if state
+     
+     if @sync_status !~ /^To|InSync|Corrupted/
+       CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
+         @userfile.sync_to_cache
+         @userfile.set_size
+       end # spawn
+     end
+     
+     redirect_to :action  => :edit
   end
 
   # POST /userfiles
