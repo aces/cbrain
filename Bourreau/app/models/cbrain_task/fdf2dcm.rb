@@ -47,6 +47,7 @@ class CbrainTask::Fdf2dcm < ClusterTask
       fs_option   = "-V"    
     else
       fs_option   = ""
+    end  
     [
       "fdf2dcm #{fs_option} fdf_col",
       "mv fdf_col/*.dcm results",
