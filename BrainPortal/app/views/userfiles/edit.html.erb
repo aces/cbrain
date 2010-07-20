@@ -11,9 +11,9 @@
 
 -%>
 
-<% title "File Info: #{@userfile.name}" %>
+<% title "Edit File: #{@userfile.name}" %>
 
-<h2>File details for <%= h @userfile.name %></h2>
+<h2>Edit File: <%= link_to @userfile.name, userfile_path(@userfile) %></h2>
 <div class="generalcontent">
 
 <div class="generalbox">
@@ -40,11 +40,6 @@
           = <%= @userfile.size %> bytes
           <% end -%>
       </td>
-    </tr>  
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Data Provider:</th>
-      <td><%=h @userfile.data_provider.name %></td>
-      <td></td>
     </tr>  
   
     <%if @userfile.is_a? SingleFile %>
@@ -78,14 +73,14 @@
       <td><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
       <td></td>
     </tr>
-    <tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Group permission on file:</th>
       <td><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
       <td></td>
     </tr>
 
     <% if current_user.has_role? :admin %>
-    <tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
       <td><%= link_to @userfile.data_provider.name, edit_data_provider_path(@userfile.data_provider) %>
       ( <%= h(@userfile.data_provider.class.to_s) %> )
@@ -96,14 +91,14 @@
           <% end %>
       </td>
     </tr>
-    <tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Local Data Provider (cache) path:</th>
-      <td colpath="2"><%= h(@userfile.cache_full_path) %></td>
+      <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
     </tr>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-        <tr>
+        <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th class="right_align">Remote SSH Data Provider path:</th>
-          <td COLSPAN="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+          <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
         </tr>
       <% end %>
     <% end %>
@@ -115,21 +110,9 @@
   <% if @userfile.can_be_accessed_by?(current_user)  %>
     <%= submit_tag "Update Fields" %>
   <% end %>
-  
-  <% if @userfile.is_locally_synced? %>
-    <%= display_contents(@userfile) %>
-    <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
-        <div id="userfile_contents_display" class="loading_message">
-          <strong>QC</strong><br><br>
-          <% ajax_element({:url  => url_for(:action  => :content, :qc_file  => "base")}) do %>
-	   <span class="loading_message">Loading...</span>
-          <% end %>
-          <br>
-          <div id="qc_data">
-          </div>
-        </div>
-    <% end %>
-  <% elsif @sync_status =~ /^To/ %>
+<% end %> <!-- form -->
+  <% unless @userfile.is_locally_synced? %>
+  <% if @sync_status =~ /^To/ %>
     <% if @userfile.is_a?(FileCollection) %>
       <p>This Collection is currently being synchronized.</p>
     <% else %>
@@ -146,17 +129,10 @@
     Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
     </p>
   <% end %>
-  
-  <% if @userfile.is_a?(FileCollection) %>
-    <% ajax_element({:url  => content_userfile_path(@userfile)}, {:class  => "loading_message"}) do %>
-      <br>
-      Loading...
-      <br>
-    <% end %>
-  <% end %>
+<% end %>
 
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
-  </div>
-  </div>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+</div>
+</div>
 
-<% end %> <!-- form -->
+

@@ -1,0 +1,124 @@
+<% title "File Info: #{@userfile.name}" %>
+
+<h2>File details for <%= h @userfile.name %></h2>
+<div class="generalcontent">
+
+  <div class="generalbox">
+
+    <table class="resource_list edit_file_table">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Name:</th>
+        <td colspan="2"><%= h @userfile.name %></td>
+      </tr class="list-odd">
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Owner:</th>
+        <td><%= @userfile.user.login %></td>
+        <td></td>
+      </tr>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Size:</th>
+        <td><%= h(@userfile.format_size) %></td>
+        <td><% if @userfile.size && @userfile.size >= 1_000 -%>
+            = <%= @userfile.size %> bytes
+            <% end -%>
+        </td>
+      </tr>  
+
+      <%if @userfile.is_a? SingleFile %>
+        <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <th class="right_align">Parent:</th>
+          <td><%=h @userfile.parent.name rescue ""%></td>
+          <td></td>
+        </tr>
+
+        <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <th class="right_align">Children:</th>
+          <td><%=h @userfile.parent.name rescue ""%></td>
+          <td></td>
+        </tr>
+      <% end %> <!-- singlefile -->
+ 
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Created at:</th>
+        <td><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
+        <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
+      </tr>
+
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Modified at:</th>
+        <td><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
+        <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
+      </tr>
+ 
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Group:</th>
+        <td><%= h @userfile.group.name %></td>
+        <td></td>
+      </tr>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Group permission on file:</th>
+        <td><%= h @userfile.group_writable? ? "Read/Write" : "Read" %></td>
+        <td></td>
+      </tr>
+
+      <% if current_user.has_role? :admin %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Data Provider:</th>
+        <td><%= link_to @userfile.data_provider.name, edit_data_provider_path(@userfile.data_provider) %>
+        ( <%= h(@userfile.data_provider.class.to_s) %> )
+        </td>
+        <td>
+            <% @userfile.sync_status.each do |syncstat| %>
+              <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+            <% end %>
+        </td>
+      </tr>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Local Data Provider (cache) path:</th>
+        <td colpath="2"><%= h(@userfile.cache_full_path) %></td>
+      </tr>
+        <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
+          <tr class="<%= cycle('list-odd', 'list-even') %>">
+            <th class="right_align">Remote SSH Data Provider path:</th>
+            <td COLSPAN="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+          </tr>
+        <% end %>
+      <% end %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Tags:</th>
+        <td>
+          <%= @userfile.tags.map(&:name).join(", ") %>
+        </td>
+      </tr>
+    </table>
+    
+    <% if @userfile.can_be_accessed_by?(current_user) %>
+      <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
+    <% end %>
+
+    <% if @userfile.is_locally_synced? %>
+      <%= display_contents(@userfile) %>
+      <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
+          <div id="userfile_contents_display" class="loading_message">
+            <strong>QC</strong><br><br>
+            <% ajax_element({:url  => url_for(:action  => :content, :qc_file  => "base")}) do %>
+       <span class="loading_message">Loading...</span>
+            <% end %>
+            <br>
+            <div id="qc_data">
+            </div>
+          </div>
+      <% end %>
+    <% end %>
+
+    <% if @userfile.is_a?(FileCollection) %>
+      <% ajax_element({:url  => content_userfile_path(@userfile)}, {:class  => "loading_message"}) do %>
+        <br>
+        Loading...
+        <br>
+      <% end %>
+    <% end %>
+
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+  </div>
+</div>

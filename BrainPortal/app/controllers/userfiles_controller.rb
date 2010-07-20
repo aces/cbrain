@@ -130,6 +130,11 @@ class UserfilesController < ApplicationController
   
   end
   
+  def show
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @log  = @userfile.getlog rescue nil
+  end
+  
   # GET /userfiles/1/edit
   def edit  #:nodoc:
     session[:full_civet_display] ||= 'on'
@@ -138,7 +143,7 @@ class UserfilesController < ApplicationController
       session[:full_civet_display] = params[:full_civet_display]
     end
 
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
     # This allows the user to manually trigger the syncing to the Portal's cache
     @sync_status = 'ProvNewer' # same terminology as in SyncStatus
@@ -353,12 +358,6 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-
-    if params[:commit] =~ /extract.*collection/i
-      extract_from_collection
-      return
-    end
-
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     flash[:notice] ||= ""
