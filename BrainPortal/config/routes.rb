@@ -26,10 +26,8 @@ ActionController::Routing::Routes.draw do |map|
                                  :collection => { :download => :get, 
                                                   :delete_files  => :delete, 
                                                   :create_collection  => :post,
-                                                  :project_update  => :post,
-                                                  :permission_update  => :post,
-                                                  :change_provider  => :post,
-                                                  :tag_update  =>  :post}
+                                                  :update_multiple  => :put,
+                                                  :change_provider  => :post}
 
   # Redirect for polymorphisms
   map.resources :single_files,            :controller => :userfiles  

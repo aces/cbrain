@@ -15,15 +15,15 @@
    Change Project: 
    <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
    <%= submit_tag("Update Projects", {:class  => "ajax_submit_button", 
-                                      "data-url"  => url_for({:action  => :project_update}),
-                                      "data-method"  => :post})
+                                      "data-url"  => url_for({:action  => :update_multiple}),
+                                      "data-method"  => :put})
    %>
    <br>
    Project permission update: 
    <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
    <%= submit_tag("Update Permissions", :class  => "ajax_submit_button", 
-                                       "data-url"  => url_for({:action  => :permission_update}),
-                                       "data-method"  => :post) %> 
+                                       "data-url"  => url_for({:action  => :update_multiple}),
+                                       "data-method"  => :put) %> 
    <br>
 <% end %>
 

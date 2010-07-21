@@ -17,8 +17,7 @@ class UserfilesController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
-  around_filter :permission_check, :only  => [:download, :delete_files, :create_collection, :project_update,
-                                              :permission_update, :change_provider, :tag_update]
+  around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider]
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
@@ -364,7 +363,6 @@ class UserfilesController < ApplicationController
     flash[:error]  ||= ""
 
     attributes = params[:userfile] || {}
-    @userfile.set_tags_for_user(current_user, params[:tag_ids])
 
     old_name = @userfile.name
     new_name = attributes[:name] || old_name
@@ -398,65 +396,25 @@ class UserfilesController < ApplicationController
     end
   end
   
-  #Update tags for the selected files.
-  def tag_update
+  def update_multiple
     filelist    = params[:file_ids] || []
+    operation = case params[:commit].to_s
+                   when "Update Tags"
+                     ['set_tags_for_user', current_user, params[:tags]]
+                   when "Update Projects"
+                     ["update_attributes", {:group_id => params[:userfile][:group_id]}]
+                   when "Update Permissions" 
+                     ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
+                end
     
-    success_count = 0
-    failure_count = 0
-    
-    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read).each do |userfile|
-      userfile.set_tags_for_user(current_user, params[:tags])
-      if userfile.save
-        success_count += 1
-      else
-        failure_count +=1
-      end
-    end
-    
-    if success_count > 0
-      flash[:notice] = "Tags for #{@template.pluralize(success_count, "files")} successfully updated."
-    end
-    if failure_count > 0
-      flash[:error] = "Tags for #{@template.pluralize(failure_count, "files")} could not be updated."
-    end
-    
-    redirect_to :action => :index, :format => request.format.to_sym
-  end
-  
-  #Update project for the selected files.
-  def project_update
-    filelist    = params[:file_ids] || []
-    
-    success_count = 0
-    failure_count = 0
-    
-    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-      if userfile.update_attributes(:group_id => params[:userfile][:group_id])
-         success_count += 1
-       else
-         failure_count +=1
-       end
-     end
 
-     if success_count > 0
-       flash[:notice] = "Project for #{@template.pluralize(success_count, "files")} successfully updated."
-     end
-     if failure_count > 0
-       flash[:error] = "Project for #{@template.pluralize(failure_count, "files")} could not be updated."
-     end
-     
-     redirect_to :action => :index, :format => request.format.to_sym
-  end
-  
-  #Update project permissions on the selected files.
-  def permission_update
-    filelist    = params[:file_ids] || []
+    access_requested = params[:commit] == "Update Tags" ? :read : :write
+
     success_count = 0
     failure_count = 0
     
-    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-     if userfile.update_attributes(:group_writable => params[:userfile][:group_writable])
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => access_requested).each do |userfile|
+     if userfile.send(*operation)
         success_count += 1
       else
         failure_count +=1
@@ -464,10 +422,10 @@ class UserfilesController < ApplicationController
     end
     
     if success_count > 0
-      flash[:notice] = "Permissions for #{@template.pluralize(success_count, "files")} successfully updated."
+      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{@template.pluralize(success_count, "files")}."
     end
     if failure_count > 0
-      flash[:error] = "Permissions for #{@template.pluralize(failure_count, "files")} could not be updated."
+      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(success_count, "files")}."
     end
     
     redirect_to :action => :index, :format => request.format.to_sym
@@ -716,11 +674,16 @@ class UserfilesController < ApplicationController
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
+    action_name = params[:action].to_s
+    if action_name == "update_multiple"
+      action_name = params[:commit] + " on"
+    end
+    
     yield
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
-    flash[:error] += "You don't have appropriate permissions to #{params[:action]} the selected files.".humanize
+    flash[:error] += "You don't have appropriate permissions to #{action_name} the selected files.".humanize
 
     redirect_to :action => :index, :format => request.format.to_sym
   end

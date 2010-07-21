@@ -12,6 +12,6 @@
 <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil} %>
 </select>
 <%= submit_tag("Update Tags", :class  => "ajax_submit_button", 
-                              "data-url"  => url_for({:action  => :tag_update}),
-                              "data-method"  => :post) %>
+                              "data-url"  => url_for({:action  => :update_multiple}),
+                              "data-method"  => :put) %>
 <br>

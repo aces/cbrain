@@ -75,18 +75,18 @@
       </tr>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Local Data Provider (cache) path:</th>
-        <td colpath="2"><%= h(@userfile.cache_full_path) %></td>
+        <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
       </tr>
         <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
           <tr class="<%= cycle('list-odd', 'list-even') %>">
             <th class="right_align">Remote SSH Data Provider path:</th>
-            <td COLSPAN="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+            <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
           </tr>
         <% end %>
       <% end %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Tags:</th>
-        <td>
+        <td colspan="2">
           <%= @userfile.tags.map(&:name).join(", ") %>
         </td>
       </tr>
