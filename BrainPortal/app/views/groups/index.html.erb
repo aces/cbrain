@@ -15,6 +15,12 @@
 
    <% title 'Projects' %>
   
+   <div class = 'help_button_drop_down'>
+              <% button_with_dropdown_menu(:title => "Help") do %>
+                   <a class = "overlay_link" data-url ="/doc/groups/groups_info.html">Group Info</a>                            
+               <% end %>     
+   </div>
+  
    <div class="menu_bar">
           <% button_with_dropdown_menu({:title => 'Create Project', :partial => 'new'}, {:id => "new_group_button"}) %>
    </div>
