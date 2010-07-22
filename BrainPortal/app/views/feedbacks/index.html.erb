@@ -28,11 +28,11 @@
             <th>Summary</th>
             <th>Author</th>
             <th>Posted at</th>
-            <th colspan="2">Operations</th>
+            <th>Operations</th>
          
          <% form_tag({:controller => :feedbacks, :action => :delete_feedback}, :method => :delete) do %>
          
-             <th> <%= submit_button("Delete Feedback", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected feedback entries?')"}) 
+             <th class = "ck_box_delete"> <%= submit_button("Delete Feedback", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected feedback entries?')"}) 
               %>
 
               <% for feedback in @feedbacks %>

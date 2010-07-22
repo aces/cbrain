@@ -13,7 +13,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :sites
   map.resources :custom_filters
   map.resources :user_preferences
-  map.resources :feedbacks
+  map.resources :feedbacks,      :collection => { :delete_feedback => :delete }
   map.resources :tags
   map.resources :messages
 

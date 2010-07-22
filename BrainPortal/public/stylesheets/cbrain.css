@@ -1111,11 +1111,16 @@ table.resource_list td.checkbox {
     text-align: center;
 }
 
+
 table.resource_list td.ck_box_delete{
     text-align: center;
-    padding-right: 112px;   
-    
 }
+
+table.resource_list th.ck_box_delete{
+    text-align: center;
+    width: 15%;
+}
+
 
 .userfiles {
     border: 0px;
