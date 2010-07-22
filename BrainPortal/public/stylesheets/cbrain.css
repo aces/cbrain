@@ -1042,6 +1042,8 @@ td.taskinfo {
     white-space: nowrap;
 }
 
+
+
 .resource_list {
     clear: both;
     margin-right: auto;
@@ -1107,6 +1109,12 @@ td.taskinfo {
 
 table.resource_list td.checkbox {
     text-align: center;
+}
+
+table.resource_list td.ck_box_delete{
+    text-align: center;
+    padding-right: 112px;   
+    
 }
 
 .userfiles {
@@ -2241,5 +2249,7 @@ h1.warning {
 .ui-widget-content{
   border: none!important;
 }
-  
+
+
+
 }
