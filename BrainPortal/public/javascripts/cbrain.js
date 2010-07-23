@@ -1,39 +1,9 @@
 var macacc;
 var brainbrowser;
-function set_ajax_elements(){
-        jQuery(".ajax_element").each(function (index,element){
-    	  //jQuery(element).load(jQuery(element).attr("data-url"));
-    	  var url = jQuery(element).attr("data-url");
-    	  var error_message = jQuery(element).attr("data-error");
-    	  var replace = jQuery(element).attr("data-replace");
-    	  jQuery.ajax({
-    	    type: 'GET',
-    	    url: url,
-    	    dataType: 'html',
-    	    success: function(data) {
-    	      if(replace == "true"){
-    	        jQuery(element).replaceWith(data);
-    	      }else{
-    	        jQuery(element).html(data);
-  	        }
-    	    },
-    	    error: function(e) {
-    	      if(!error_message){
-    		error_message = "Error loading element";
-    	      }
-    	      jQuery(element).html("<span>"+ error_message +"</span>");
-    	    },
-    	    timeout: 50000
 
-
-	       });
-       });
-}
-
+        
 jQuery(
   function() {
-
-    set_ajax_elements();
     
     //All elements with the accordion class will be changed to accordions.
     jQuery(".accordion").accordion({
@@ -273,7 +243,34 @@ jQuery(
           return false;
         });
 
+        jQuery(".ajax_element").each(function (index,element){
+    	  //jQuery(element).load(jQuery(element).attr("data-url"));
+    	  var url = jQuery(element).attr("data-url");
+    	  var error_message = jQuery(element).attr("data-error");
+    	  var replace = jQuery(element).attr("data-replace");
+    	  jQuery.ajax({
+    	    type: 'GET',
+    	    url: url,
+    	    dataType: 'html',
+    	    success: function(data) {
+    	      if(replace == "true"){
+    	        jQuery(element).replaceWith(data);
+    	      }else{
+    	        jQuery(element).html(data);
+  	        }
+    	    },
+    	    error: function(e) {
+    	      if(!error_message){
+    		error_message = "Error loading element";
+    	      }
+    	      jQuery(element).html("<span>"+ error_message +"</span>");
+    	    },
+    	    timeout: 50000
 
+
+	       });
+       });
+        
 
         function ajax_onclick_show(event) {
           var onclick_elem = jQuery(this);
