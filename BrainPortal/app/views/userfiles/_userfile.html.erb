@@ -23,7 +23,7 @@
    </td>
    
    <td class="left">
-      <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if userfile.level > 0 -%>
+      <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if (userfile.level || 0) > 0 -%>
       <% if userfile.is_a? FileCollection %>
         <%= image_tag "/images/folder_icon_solid.png" %>
       <% else %>
@@ -39,12 +39,14 @@
         Formats: <%= userfile.formats.map { |u| link_to_userfile_if_accessible(u,current_user,:name => u.format_name) }.join(", ") %>
       <% end %>
    </td>
-   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> ><%= h userfile.user.login  %></td>
-   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
+   <% unless current_session[:userfiles_details] == 'off' %>
+   <td class="userfiles_details"><%= h userfile.user.login  %></td>
+   <td class="userfiles_details">
       <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
          <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
       </span>
    </td>
+   <% end %>
 
    <% if userfile.size != nil %>
       <td><span title="<%= userfile.size %> bytes"><%= h(userfile.format_size) -%></span></td>
@@ -60,7 +62,9 @@
    <% else %>
      <td/><td/>
    <% end %>
-   <td class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-      <%= userfile.data_provider.name %>
-   </td>
+   <% unless current_session[:userfiles_details] == 'off' %>
+     <td class="userfiles_details">
+        <%= userfile.data_provider.name %>
+     </td>
+   <% end %>
 </tr>

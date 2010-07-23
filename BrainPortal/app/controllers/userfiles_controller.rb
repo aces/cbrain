@@ -46,17 +46,26 @@ class UserfilesController < ApplicationController
     # params[:sort_order] ||= 'userfiles.lft'
     #  sort_order = params[:sort_order]
     #  sort_dir   = params[:sort_dir]
-    @userfiles = scope.scoped( 
-      :include  => [:tags, {:user => :site}, :data_provider, :group, { :sync_status => :remote_resource } ],
-      :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
+    scope = scope.scoped( 
+      :include  => [:tags, {:user => :site}, :data_provider, :group, { :sync_status => :remote_resource } ]
     )
-
+    
+    unless current_session.userfiles_sort_order == "tree_sort"
+      scope = scope.scoped(:order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}")
+    end
+    
+    @userfiles = scope
+    
     @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
 
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
 
     format_filters.each do |fmt|
       @userfiles = @userfiles.select{ |file| file.get_format fmt.sub(/^format:/, "") }
+    end
+
+    if current_session.userfiles_sort_order == "tree_sort"
+      @userfiles = Userfile.tree_sort(@userfiles)
     end
 
     if current_session.paginate?

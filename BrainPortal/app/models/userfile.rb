@@ -38,20 +38,25 @@ class Userfile < ActiveRecord::Base
   Revision_info="$Id$"
   Default_num_pages = "50"
 
-  acts_as_nested_set      :dependent => :destroy, :before_destroy => :move_children_to_root
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
   belongs_to              :format_source,
                           :class_name   => "Userfile",
                           :foreign_key  => "format_source_id"
+  belongs_to              :parent,
+                          :class_name   => "Userfile",
+                          :foreign_key  => "parent_id"
                           
   has_and_belongs_to_many :tags
   has_many                :sync_status
   has_many                :formats,
                           :class_name   => "Userfile",
                           :foreign_key  => "format_source_id"
-
+  has_many                :children,
+                          :class_name   => "Userfile",
+                          :foreign_key  => "parent_id"
+                          
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
   validates_presence_of   :user_id
@@ -59,7 +64,7 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :group_id
   validate                :validate_associations
   
-  before_destroy          :erase_or_unregister, :format_tree_update
+  before_destroy          :erase_or_unregister, :format_tree_update, :update_children
 
   def site
     @site ||= self.user.site
@@ -121,6 +126,26 @@ class Userfile < ActiveRecord::Base
 
     self.tag_ids = (all_tags - current_user_tags) + ((tags || []).collect(&:to_i) & user.tag_ids)
     self.save
+  end
+
+  def self.tree_sort(userfiles)
+    grouped_files = userfiles.group_by(&:parent_id)
+    
+    result = grouped_files.delete(nil)
+    keys = grouped_files.keys
+    num_keys = keys.size
+    upper_limit = (num_keys * (num_keys - 1))/2
+    
+    keys.each do |k|
+      index = result.index{ |p| p.id == k}
+      if index
+        result.insert(index + 1, *grouped_files[k])
+      else
+        keys.push(k) unless keys.last == k || keys.size > upper_limit
+      end
+    end
+    
+    result
   end
 
   #Produces the list of files to display for a paginated Userfile index
@@ -375,7 +400,44 @@ class Userfile < ActiveRecord::Base
     "(???)"
   end
 
+  ##############################################
+  # Tree Traversal Methods
+  ##############################################
 
+  def move_to_child_of(userfile)
+    if self.descendants.include? userfile
+      raise ActiveRecord::ActiveRecordError, "A userfile cannot become the child of one of its own descendants." 
+    end
+    
+    self.parent_id = userfile.id
+    self.save!
+    self.set_level!
+    
+    true
+  end
+
+  def set_level!
+    if self.parent_id.nil?
+      self.level = 0
+    else
+      self.level = self.parent.level + 1
+    end
+    self.save!
+    
+    self.children.each {|c| c.set_level!}
+  end
+  
+  def descendants
+    result = []
+     self.children.each do |child|
+       result << child
+       result += child.descendants
+     end
+     
+     result
+  end
+  
+  
 
   ##############################################
   # Synchronization Status Access Methods
@@ -578,5 +640,14 @@ class Userfile < ActiveRecord::Base
       fmt.update_attributes!(:format_source_id  => new_source.id)
     end
   end
+  
+  def update_children
+    self.children.each do |c|
+      c.parent_id = nil
+      c.set_level!
+      c.save!
+    end
+  end
    
 end
+

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100708182326) do
+ActiveRecord::Schema.define(:version => 20100722192219) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -262,8 +262,6 @@ ActiveRecord::Schema.define(:version => 20100708182326) do
     t.integer  "size",             :limit => 24, :precision => 24, :scale => 0
     t.integer  "user_id"
     t.integer  "parent_id"
-    t.integer  "lft"
-    t.integer  "rgt"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "type"
@@ -273,6 +271,7 @@ ActiveRecord::Schema.define(:version => 20100708182326) do
     t.boolean  "group_writable",                                                :default => false
     t.integer  "num_files"
     t.integer  "format_source_id"
+    t.integer  "level"
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"

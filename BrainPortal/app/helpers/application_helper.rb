@@ -295,7 +295,7 @@ module ApplicationHelper
     
     return unless location == current_order
     
-    if location == 'userfiles.lft' || location == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+    if location == 'tree_sort' || location == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       icon = '<font color="Red">&nbsp;&bull;</font>'
     else
       icon = '<font color="Red">&nbsp;&dArr;</font>'

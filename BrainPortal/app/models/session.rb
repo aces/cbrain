@@ -32,11 +32,15 @@ class Session
   
   def initialize(session, params) #:nodoc:
     @session = session
+    if @session[:userfiles_sort_order] == "userfiles.lft"
+      @session[:userfiles_sort_order] = nil
+    end
+    
     @session[:userfiles_basic_filters] ||= []
     @session[:userfiles_tag_filters] ||= []
     @session[:userfiles_custom_filters] ||= []
     @session[:userfiles_pagination] ||= 'on'
-    @session[:userfiles_sort_order] ||= 'userfiles.lft'
+    @session[:userfiles_sort_order] ||= 'tree_sort'
     @session[:userfiles_details] ||= 'off'
     
     controller = params[:controller]
