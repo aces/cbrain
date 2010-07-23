@@ -119,23 +119,39 @@ class ToolsController < ApplicationController
       end
     end
   end
-
-  # DELETE /tools/1
-  # DELETE /tools/1.xml
-  def destroy #:nodoc:
-    @tool = current_user.available_tools.find(params[:id])
-    @tool.destroy
-    
-    respond_to do |format|
-      format.js do
-        render :update do |page|
-          page["tool_#{@tool.id}"].remove
-        end
-      end
-      format.xml  { head :ok }
-    end
-  end
   
+  
+  # DELETE /tools/1                                 
+    # DELETE /tools/1.xml                           
+  def destroy #:nodoc:                              
+      @tool = current_user.available_tools.find(params[:id])  
+      @tool.destroy                                           
+                                                              
+      respond_to do |format|                                  
+        format.js do                                          
+          render :update do |page|                            
+            page["tool_#{@tool.id}"].remove                   
+          end                                                 
+        end                                                   
+        format.xml  { head :ok }                              
+      end                                                     
+  end
+    
+  #Delete the selected feedback.
+  def delete_tools
+      tool_list    = params[:tool_ids] || []
+      deleted_count      = 0
+
+      tool_list.each do |tool_item|
+        tool_obj = Tool.find(tool_item)
+        deleted_count += 1
+        tool_obj.destroy
+      end 
+
+      flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n"
+      redirect_to :action => :index
+  end  
+    
   def tool_management #:nodoc:
       @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
       @bourreaux = Bourreau.find(:all)

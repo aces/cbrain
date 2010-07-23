@@ -1,5 +1,5 @@
 ActionController::Routing::Routes.draw do |map|
-  map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post }
+  map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
 
   map.resources :statistics
 
@@ -18,7 +18,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :messages
 
   # Standard CRUD resources, with extra methods
-  map.resources :users,          :member => { :switch  => :post }, :collection  => {:request_password  => :get, :send_password  => :post}
+  map.resources :users,          :member => { :switch  => :post }, :collection  => {:request_password  => :get, :send_password  => :post }
   map.resources :groups,         :member => { :switch  => :post }
   map.resources :bourreaux,      :member => { :start   => :post, :stop => :post, :row_data  => :get }, :collection  => { :refresh_ssh_keys  => :post } 
   map.resources :data_providers, :member => { :browse  => :get, :register => :post, :is_alive  => :get }, :collection => { :cleanup => :post, :disk_usage  => :get }
