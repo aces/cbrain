@@ -1,0 +1,3 @@
+<% for provider in @providers %>
+  jQuery("#is_alive_<%= provider.id %>").html("<%= provider.is_alive? ? "Yes" : "<font color=\"red\">No</font>" %>");
+<% end %>

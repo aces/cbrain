@@ -18,7 +18,8 @@ class DataProvidersController < ApplicationController
   before_filter :manager_role_required, :only  => [:new, :create]
    
   def index #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user).group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
+    @all_providers = DataProvider.find_all_accessible_by_user(current_user)
+    @providers = @all_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
     @providers["CBRAIN Official Storage"] ||= []
     @providers["User Storage"] ||= []
     @typelist = get_type_list
@@ -173,13 +174,7 @@ class DataProvidersController < ApplicationController
   end
   
   def is_alive #:nodoc:
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    if @provider.is_alive?
-      render :text  => "Yes"
-    else
-      render :text  => "<font color=\"red\">No</font>"
-    end
-    return
+    @providers = DataProvider.find_accessible_by_user(params[:data_provider_ids], current_user)
   end
   
   def disk_usage #:nodoc:

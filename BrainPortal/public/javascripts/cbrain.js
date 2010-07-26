@@ -245,25 +245,26 @@ jQuery(
 
         jQuery(".ajax_element").each(function (index,element){
     	  //jQuery(element).load(jQuery(element).attr("data-url"));
-    	  var url = jQuery(element).attr("data-url");
-    	  var error_message = jQuery(element).attr("data-error");
-    	  var replace = jQuery(element).attr("data-replace");
+    	  current_element = jQuery(element);
+    	  var url = current_element.attr("data-url");
+    	  var error_message = current_element.attr("data-error");
+    	  var replace = current_element.attr("data-replace");
     	  jQuery.ajax({
     	    type: 'GET',
     	    url: url,
     	    dataType: 'html',
     	    success: function(data) {
-    	      if(replace == "true"){
-    	        jQuery(element).replaceWith(data);
-    	      }else{
-    	        jQuery(element).html(data);
-  	        }
+    	        if(replace == "true"){
+      	        current_element.replaceWith(data);
+      	      }else{
+      	        current_element.html(data);
+    	        }
     	    },
     	    error: function(e) {
     	      if(!error_message){
-    		error_message = "Error loading element";
+    		      error_message = "Error loading element";
     	      }
-    	      jQuery(element).html("<span>"+ error_message +"</span>");
+    	      current_element.html("<span class='loading_message'>"+ error_message +"</span>");
     	    },
     	    timeout: 50000
 
@@ -271,6 +272,15 @@ jQuery(
 	       });
        });
         
+        jQuery(".script_loader").each(function (index,element){
+    	  current_element = jQuery(element);
+    	  current_element.css("display", "none");
+    	  var url = current_element.attr("data-url");
+    	  jQuery.ajax({
+    	    url: url,
+    	    timeout: 50000
+	       });
+       });
 
         function ajax_onclick_show(event) {
           var onclick_elem = jQuery(this);

@@ -49,29 +49,9 @@
     
    <div id = "bourreau_info">
   
-
-    <table class="resource_list" id="bourreau_table">
-         <tr>
-             <th>Server Class</th>
-             <th>Server Name</th>
-             <th class="resource_details" style="display:none">Revision Numbers</th>
-             <th class="resource_details" style="display:none">Owner</th>
-             <th>Group</th>
-             <th class="resource_details" style="display:none">Site</th>
-             <th>Online?</th>
-             <th>Alive?</th>
-             <th>Workers?</th>
-             <th>Load</th>
-             <th class="resource_details" style="display:none">Description</th>
-             <th colspan="4">Operations</th>
-         </tr>
-
-         <% for bour in @bourreaux %>
-          <% ajax_element({:element  => "tr", :url => url_for(:action => :row_data, :id => bour.id)}, {:class  => "#{cycle('list-odd', 'list-even')} row_highlight", :id  => "bourreau_#{bour.id}"}) do %>
-            <td colspan="15" class="loading_message">Checking <%= bour.name %>...</td>
-          <% end %>
-         <% end %>
-     </table>
+     <% ajax_element({:element  => "table", :url => url_for(:action => :index, :table_contents => true)}, {:class  => "resource_list", :id  => "bourreau_table"}) do %>
+       <tr><td class="loading_message">Loading...</td></tr>
+     <% end %>
   
   </div>
 </div>  <!-- End class="generalcontent" -->

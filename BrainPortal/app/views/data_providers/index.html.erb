@@ -53,6 +53,8 @@
             %>
     </div><!-- End id="hide_details_link" --> 
 
+    <%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
+    
 
    <table class="resource_list" id="cbrain_data_provider_table">
       <tr>
@@ -104,7 +106,7 @@
             end 
             %>
     </div><!-- End id="hide_details_link" -->
-   
+  
    <table class="resource_list" id="user_data_provider_table">
       <tr>
         <th colspan="1"/>                                               <!-- name -->

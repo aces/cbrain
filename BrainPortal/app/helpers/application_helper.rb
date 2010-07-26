@@ -453,13 +453,30 @@ module ApplicationHelper
     
     #This builds an html attribute string from the html_opts hash
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
-
-    initial_content=capture(&block)+((render partial unless !partial) || "")
+    
+    if block_given?
+      initial_content=capture(&block)+((render partial unless !partial) || "")
+    else
+      initial_content = ""
+    end
     
     concat("<#{element} data-url=\"#{url}\" #{atts}>") 
     concat(initial_content)
     concat("</#{element}>")
   end
+  
+  def script_loader(options) 
+    url = options.delete(:url)
+    
+    options[:class] ||= ""
+    options[:class] +=  " script_loader"
+    
+    #This builds an html attribute string from the html_opts hash
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    
+    "<div data-url=\"#{url}\" #{atts}></div>" 
+  end
+  
  
   ###############################################################
   # Creates an html element which will have it's or another elements 

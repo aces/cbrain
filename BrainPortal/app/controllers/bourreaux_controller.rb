@@ -19,11 +19,12 @@ class BourreauxController < ApplicationController
   before_filter :manager_role_required, :except  => [:index, :show, :row_data]
    
   def index #:nodoc:
-    if current_user.has_role?(:admin)
-      @bourreaux = RemoteResource.all
-      @bourreaux.sort! { |a,b| b.class.to_s <=> a.class.to_s } # we depend on 'BrainPortal' > 'Bourreau'
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user, :order  => "remote_resources.type")
+    
+    if params[:table_contents]
+      render :partial  => "bourreaux_table_contents"
     else
-      @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+      render :action  => "index"
     end
   end
   
