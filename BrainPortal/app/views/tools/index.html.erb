@@ -44,7 +44,7 @@
           <% if current_user.has_role?(:admin) %>
               <th colspan="2">Operations</th>
                 <th class = "ck_box_delete"> <%= submit_button("Delete Tools", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected tools?')"}) 
-          %>
+          %></th>
         <% end %>
     
   </tr>
