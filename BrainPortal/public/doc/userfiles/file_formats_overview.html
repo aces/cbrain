@@ -4,7 +4,7 @@
 <br>
 <b>MINC 1 and MINC 2</b>
 <br>
-MINC is a software system for storing and manipulating medical images, originally developed in 1993 by Peter Neelin at the McConnell Brain Imaging Centre. The name MINC is an acronym for Medical Imaging NetCDF. MINC was conceived as a means to allow researchers to use a common set of tools and files to work with medical images in a variety of modalities. The file format was originally defined as a specialisation of the NetCDF (Network Common Data Form) file format created by the Unidata Program Center at UCAR (University Corporation for Atmospheric Research). The NetCDF format, libraries, and tools were created to store generic datasets of arbitrary dimensionality. NetCDF was chosen because it implements many of the functions that were envisioned for the MINC system.
+MINC is a software system for storing and manipulating medical images, originally developed in 1993 by Peter Neelin at the McConnell Brain Imaging Centre. The name MINC is an acronym for Medical Imaging NetCDF. MINC was conceived as a means to allow researchers to use a common set of tools and files to work with medical images in a variety of modalities. The file format was originally defined as a specialization of the NetCDF (Network Common Data Form) file format created by the Unidata Program Center at UCAR (University Corporation for Atmospheric Research). The NetCDF format, libraries, and tools were created to store generic datasets of arbitrary dimensionality. NetCDF was chosen because it implements many of the functions that were envisioned for the MINC system.
 <br>
 <br>
 Like most other medical imaging data formats, MINC allows medical image data to take on a wide range of data types or ranges, and defines a set of standard supporting data describing the image acquisition parameters or patient details.
@@ -13,7 +13,7 @@ Like most other medical imaging data formats, MINC allows medical image data to 
 However, MINC is different from most other medical imaging formats in several respects:
 <br>
 <ul>
-   <li>MINC is inherently N-dimensional. MINC data can be structured with any number of spatial, temporal, or other dimensions, and these dimensions may be organised an an arbitrary order. Actually, NetCDF limits data to at most 100 dimensions, but this has not proven to be a meaningful restriction.</li>
+   <li>MINC is inherently N-dimensional. MINC data can be structured with any number of spatial, temporal, or other dimensions, and these dimensions may be organized an an arbitrary order. Actually, NetCDF limits data to at most 100 dimensions, but this has not proven to be a meaningful restriction.</li>
    <li>MINC is multi-modal. MINC has been used to store CT, MRI, PET, EEG, and other medical imaging data.</li>
    <li>MINC is extensible. MINC file may contain an arbitrary collection of supporting attributes and data. If your study requires that you keep track of a patient's blood pressure or psychiatric history, this information can be added to the header of your MINC files without having to concern yourself with.</li>
    <li>MINC is self-describing. Most of the attributes and variables used in MINC have descriptive names and values which can be easily interpreted by a user.</li>
@@ -31,7 +31,7 @@ The 'core' MINC system can be considered to include the following:
    <li>The 'volume_io' programming interface, which provides a simplified but restricted programming interface to the MINC format.</li>
    <li>A set of tools written using these libraries.</li>
 </ul>
-In addition to the core MINC tools, a large set of additional application programs exist which perform more sophisticated operations on MINC files. These include programs for visualisation, image enhancement or correction, automatic tissue classification, and image registration.
+In addition to the core MINC tools, a large set of additional application programs exist which perform more sophisticated operations on MINC files. These include programs for visualization, image enhancement or correction, automatic tissue classification, and image registration.
 <br>
 <br>
 
