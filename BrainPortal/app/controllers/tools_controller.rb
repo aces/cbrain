@@ -144,8 +144,8 @@ class ToolsController < ApplicationController
 
       tool_list.each do |tool_item|
         tool_obj = Tool.find(tool_item)
-        deleted_count += 1
         tool_obj.destroy
+        deleted_count += 1
       end 
 
       flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n"
