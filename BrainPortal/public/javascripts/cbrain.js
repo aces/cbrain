@@ -5,6 +5,13 @@ var brainbrowser;
 jQuery(
  function() {
    
+   /////////////////////////////////////////////////////////////////////
+   //
+   // UI Helper Methods see application_helper.rb for corresponding 
+   // helpers.
+   //
+   /////////////////////////////////////////////////////////////////////
+   
    //All elements with the accordion class will be changed to accordions.
    jQuery(".accordion").accordion({
      active: false,
@@ -33,9 +40,11 @@ jQuery(
    jQuery(".sortable_list ul, sortable_list li").disableSelection();
 
    //Tab Bar, div's of type tabs become tab_bars
+   // See TabBar class
    jQuery(".tabs").tabs();
 
    //Overlay dialogs
+   //See overlay_dialog_with_button()
    jQuery(".overlay_dialog").each( function(index,element){
      var content_width = parseInt(jQuery(element).children('.dialog').attr('data-width'));
      var dialog = jQuery(this).children(".dialog")
@@ -51,7 +60,8 @@ jQuery(
      var button = jQuery(this).children(".dialog_button").click(function(){dialog.dialog('open')});
    });
 
-
+   //Links with class "overlay_link" will create an overlay with content loaded
+   //from "data-url".
    jQuery(".overlay_link").click( function() {
      var url=jQuery(this).attr('data-url');
      var dialog = jQuery("<div></div>").load(url).appendTo(jQuery("body")).dialog({
@@ -110,6 +120,18 @@ jQuery(
 
    jQuery(".button_with_drop_down > div.drop_down_menu").hide();
    
+   //Highlighting on ressource list tables.
+   jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
+   jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
+   
+   /////////////////////////////////////////////////////////////////////
+   //
+   // Form hijacking helpers
+   //
+   /////////////////////////////////////////////////////////////////////
+   
+   //Forms with the class "ajax_form" will be submitted as ajax requrests.
+   //Datatype and target can be set with appropriate "data" attributes. 
    jQuery(".ajax_form").live("submit", function(){
      var data_type = jQuery(this).attr("data-datatype");
      var target = jQuery(this).attr("data-target");
@@ -118,14 +140,14 @@ jQuery(
        type: "POST",
        dataType: data_type,
        target: jQuery(target),
-       success: function(data){
-         jQuery(target).html(data);
-       },
        resetForm: true
      });
      return false;
    });
    
+   //Allows a textfield to submit an ajax request independantly of 
+   //the surrounding form. Submission is triggered when the ENTER
+   //key is pressed.
    jQuery(".search_box").live("keypress", function(event){ 
      if(event.keyCode == 13){
        text_field = jQuery(this);
@@ -151,12 +173,16 @@ jQuery(
      }
    });
    
+   //Allows for the creation of form submit buttons that can highjack
+   //the form and send its contents elsewhere, changing the datatype,
+   //target, http method as needed.
    jQuery(".ajax_submit_button").live("click", function(){
      button = jQuery(this);
      commit = button.attr("value");
      var data_type = button.attr("data-datatype");
      var url = button.attr("data-url");
      var method = button.attr("data-method");
+     var target = button.attr("data-target");
      enclosing_form = button.closest("form");
      if(!data_type) data_type = enclosing_form.attr("data-datatype");
      if(!data_type) data_type = "html";
@@ -170,6 +196,7 @@ jQuery(
        url: url,
        type: method,
        dataType: data_type,
+       target: target, 
        data: { commit : commit },
        resetForm: false
        }
@@ -177,6 +204,13 @@ jQuery(
      return false;
    });
        
+   //UNFINISHED: DO NOT USE
+   //Attempting to create a form for the userfiles page that
+   //can pull in inputs from elsewhere on the page (outside the
+   //form).
+   //Currently the problem is that the Prototype library is 
+   //interfering with some functionality that this function needs.
+   //If we migrate away from Prototype, it should work.
    jQuery(".userfiles_partial_form").live("submit", function(){
      current_form = jQuery(this);
      try{
@@ -208,7 +242,8 @@ jQuery(
        
        return false;
    });
-       
+   
+   //Only used for jiv. Used to submit parameters and create an overlay with the response.
    jQuery("#jiv_submit").click(function(){
      var data_type = jQuery(this).attr("data-datatype");
      jQuery(this).closest("form").ajaxSubmit({
@@ -231,6 +266,17 @@ jQuery(
      return false;
    });
 
+   /////////////////////////////////////////////////////////////////////
+   //
+   // Delayed loading of content
+   //
+   /////////////////////////////////////////////////////////////////////
+
+   //See ajax_element() in application_helper.rb
+   //The ajax element will have its contents loaded by the response from an
+   //ajax request (so the element's conents will be loaded later with respect
+   //to the rest of the page). If the "data-replace" attribute is set to "true"
+   //the entire element will be replace an not just its contents.
    jQuery(".ajax_element").each(function (index,element){
      current_element = jQuery(element);
      var url = current_element.attr("data-url");
@@ -256,17 +302,24 @@ jQuery(
        timeout: 50000
  	   });
    });
-       
+   
+   //See script_loader() in application_helper.rb 
+   //Similar to above except that instead of loading html
+   //it fetches javascript from the server that will be executed
+   //update the page.
    jQuery(".script_loader").each(function (index,element){
      current_element = jQuery(element);
      current_element.css("display", "none");
      var url = current_element.attr("data-url");
      jQuery.ajax({
+       dataType: 'script',
        url: url,
        timeout: 50000
      });
    });
 
+   //For loading content into an element after it is clicked.
+   //See on_click_ajax_replace() in application_helper.rb
    function ajax_onclick_show(event) {
      var onclick_elem = jQuery(this);
      var before_content = onclick_elem.attr("data-before");
@@ -323,6 +376,8 @@ jQuery(
    
    };
 
+   //For loading content into an element after it is clicked.
+   //See on_click_ajax_replace() in application_helper.rb
    function ajax_onclick_hide(event){
      var onclick_elem = jQuery(this);
      var parental_id = "__cbrain_parent_" + onclick_elem.attr("id");
@@ -337,8 +392,12 @@ jQuery(
    jQuery(".ajax_onclick_show_element").live("click", ajax_onclick_show);
    jQuery(".ajax_onclick_hide_element").live("click", ajax_onclick_hide);
    
-   jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
-   jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
+
+   /////////////////////////////////////////////////////////////////////
+   //
+   // Macacc stuff
+   //
+   /////////////////////////////////////////////////////////////////////
 
    jQuery(".o3d_link").live('click',o3DOverlay);
 
