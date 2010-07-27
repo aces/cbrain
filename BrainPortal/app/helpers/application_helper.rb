@@ -414,7 +414,7 @@ module ApplicationHelper
     if width
       html_opts["data-width"] = width
     end
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
 
     concat("<div class=\"overlay_dialog\">")
@@ -452,7 +452,7 @@ module ApplicationHelper
     html_opts[:class] +=  " ajax_element"
     
     #This builds an html attribute string from the html_opts hash
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
     if block_given?
       initial_content=capture(&block)+((render partial unless !partial) || "")
@@ -472,14 +472,14 @@ module ApplicationHelper
     options[:class] +=  " script_loader"
     
     #This builds an html attribute string from the html_opts hash
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
     "<div data-url=\"#{url}\" #{atts}></div>" 
   end
   
  
   ###############################################################
-  # Creates an html element which will have it's or another elements 
+  # Creates an html element which will have its or another element's 
   # content updated when it is clicked on
   #  with a ajax call to the url specified in the options hash
   #
@@ -521,7 +521,7 @@ module ApplicationHelper
       html_opts["data-before"] = before
     end
     #This builds an html attribute string from the html_opts hash
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
 
     
     initial_content=capture(&block)+((render partial unless !partial) || "")
@@ -531,6 +531,7 @@ module ApplicationHelper
     concat("</#{element}>")
     
   end
+  
   def button_with_dropdown_menu(options={},html_opts={}, &block)
     partial = options[:partial]
     title = options[:title]
@@ -545,7 +546,7 @@ module ApplicationHelper
       content += render :partial => partial
     end
 
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     concat("<span class=\"button_with_drop_down\">")
     concat("<a #{atts}>#{title}</a>")
     concat("<div class=\"drop_down_menu\">")
@@ -571,7 +572,7 @@ module ApplicationHelper
   def submit_button(value,html_opts={}) 
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button"
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p 
+    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
   end
   

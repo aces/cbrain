@@ -41,12 +41,7 @@ class MessagesController < ApplicationController
       format.js do
         @messages = current_user.messages.all(:order  => "last_sent DESC")
         
-        render :update do |page|
-            @message = Message.new
-            page['new_message'].replace_html(:partial  => 'new').hide
-            page.replace_html :message_display, :partial  => 'layouts/message_display'
-            page.replace_html :message_table,   :partial  => 'message_table'
-        end
+        render :action  => :create
       end
     end
   end

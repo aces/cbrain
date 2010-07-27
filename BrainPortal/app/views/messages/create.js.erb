@@ -1,0 +1,8 @@
+try{
+  jQuery("#new_message_button").click();
+  jQuery("#new_message").find("form").resetForm();
+  jQuery("#message_display").html("<%= escape_javascript(render :partial  => 'layouts/message_display') %>");
+  jQuery("#message_table").html("<%= escape_javascript(render :partial  => 'message_table') %>");
+} catch (error) {  
+  alert(error.message);  
+}
