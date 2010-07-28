@@ -136,22 +136,7 @@ class ToolsController < ApplicationController
         format.xml  { head :ok }                              
       end                                                     
   end
-    
-  #Delete the selected feedback.
-  def delete_tools
-      tool_list    = params[:tool_ids] || []
-      deleted_count      = 0
-
-      tool_list.each do |tool_item|
-        tool_obj = Tool.find(tool_item)
-        tool_obj.destroy
-        deleted_count += 1
-      end 
-
-      flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n"
-      redirect_to :action => :index
-  end  
-    
+      
   def tool_management #:nodoc:
       @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
       @bourreaux = Bourreau.find(:all)
