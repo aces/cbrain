@@ -8,13 +8,10 @@
 
 -%>
 
+<% form_for :tool, @tool, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
-<div id = "new_tool">
-    <% form_for :tool, @tool, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
-      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
-    <p>
-      <%= f.submit "Create new tool" %>
-    </p>
-   <% end %>
-</div>
-   
+  <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+  <p><%= f.submit "Create new tool" %></p>
+
+<% end %>
+

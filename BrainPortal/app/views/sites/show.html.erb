@@ -1,38 +1,43 @@
-<div class="generalcontent">
-    
-   <div class = 'help_button_drop_down'>
-         <% button_with_dropdown_menu(:title => "Help") do %>
-            <a class = "overlay_link" data-url ="/doc/site_information/site_information.html">Site Information</a>                            
-         <% end %>     
-   </div>
-    
-  <div class="resource_list_box">   
-            
-    <strong>Managers:</strong>                   <%= @site.managers.collect(&:login).join(", ") %><br>
-    <strong>Number of users:</strong>            <%= @site.users.count %><br>
-    <strong>Number of groups:</strong>           <%= @site.groups.count %><br>
-    <strong>Number of files:</strong>            <%= @site.userfiles_find_all.count %><br>
-    <strong>Number of data providers:</strong>   <%= @site.data_providers_find_all.count %><br>
-    <strong>Number of remote resources:</strong> <%= @site.remote_resources_find_all.count %><br>
-  </div>
 
-  <table class="site_info_list">
-     <tr>
-        <th>Users</th>
-        <th>Groups</th>
-        <th>Data Providers</th>
-        <th>Remote Resources</th>
-     </tr>
-     <tr>
-      
-        <td><%= @site.users.all.sort{|a, b| a.login.casecmp(b.login)}.map{|u| link_to(h(u.login), user_path(u))}.join("<br>") %></td>
-        <td><%= @site.groups.all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
-        <td><%= @site.data_providers_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
-        <td><%= @site.remote_resources_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
-     </tr>
-  </table>
+<h2>Information about site '<%= @site.name %>'</h2>
 
-  <% if check_role(:admin) %>
-     <%= link_to 'Edit', edit_site_path(@site), :class => 'action_link' %><br>
-  <% end %>
+<div class="menu_bar menu_bar_left">
+  <% button_with_dropdown_menu(:title => "Help") do %>
+    <a class = "overlay_link" data-url ="/doc/site_information/site_information.html">Site Information</a>
+  <% end %>     
 </div>
+    
+<P>
+
+<div class="groupentry">   
+  <strong>Managers:</strong>                   <%= @site.managers.collect(&:login).join(", ") %><br>
+  <strong>Number of users:</strong>            <%= @site.users.count %><br>
+  <strong>Number of groups:</strong>           <%= @site.groups.count %><br>
+  <strong>Number of files:</strong>            <%= @site.userfiles_find_all.count %><br>
+  <strong>Number of data providers:</strong>   <%= @site.data_providers_find_all.count %><br>
+  <strong>Number of remote resources:</strong> <%= @site.remote_resources_find_all.count %><br>
+</div>
+
+<P>
+
+<table class="resource_list">
+  <tr>
+    <th>Users</th>
+    <th>Groups</th>
+    <th>Data Providers</th>
+    <th>Remote Resources</th>
+  </tr>
+  <tr>
+    <td><%= @site.users.all.sort{|a, b| a.login.casecmp(b.login)}.map{|u| link_to(h(u.login), user_path(u))}.join("<br>") %></td>
+    <td><%= @site.groups.all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+    <td><%= @site.data_providers_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+    <td><%= @site.remote_resources_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+  </tr>
+</table>
+
+<P>
+
+<% if check_role(:admin) %>
+  <%= link_to 'Edit', edit_site_path(@site), :class => 'action_link' %><br>
+<% end %>
+

@@ -8,16 +8,14 @@
 
 -%>
 
-<div class = "generalcontent">
-  <br>
-  <div class="generalbox">
-    <% form_for(@tool) do |f| %>
-      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
-      <p>
-        <%= f.submit "Update tool" %>
-      </p>
-    <% end %>
+<div class="generalbox">
+  <% form_for(@tool) do |f| %>
+    <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+    <p>
+      <%= f.submit "Update tool" %>
+    </p>
+  <% end %>
 
-    <%= button_to 'Cancel', tools_path, :method  => :get %>
-  </div> 
-</div>
+  <%= button_to 'Cancel', tools_path, :method  => :get %>
+</div> 
+

@@ -13,169 +13,152 @@
 
 <% title 'Data Provider Info' %>
 
+<h2>Information about Data Provider '<%= h(@provider.name) %>'</h2>
 
-<% content_for(:sidebar) do %>
-   <% if @provider.is_alive? %>
-       <p class="notice">This data provider is alive.</p>
-   <% else %>
-       <p class="error">This data provider is NOT RESPONDING!</p>
-   <% end %>
+<div class = "generalbox">
+
+   <table>
+
+      <tr>
+        <th colspan="2" class="subtitle">Implementation information</th>
+      </tr>
+
+      <tr>
+          <th>Name</th>
+          <td><%= h(@provider.name) %></h1>
+      </tr>
+
+      <% if check_role(:admin) || @provider.user_id == current_user.id %>
+
+      <tr>
+          <th>Class</th>
+          <td><%= h(@provider.class.to_s) %></td>
+      </tr>
+
+      <tr>
+          <th>Revision Info (DataProvider)</th>
+          <td><%= h(DataProvider.revision_info.svn_id_pretty_rev_author_date) %></td>
+      </tr>
+
+      <tr>
+          <th>Revision Info (<%= @provider.class.to_s %>)</th>
+          <td><%= h(@provider.revision_info.svn_id_pretty_rev_author_date) %></td>
+      </tr>
+
+      <% end %>
+
+      <tr>
+          <th>Description</th>
+          <td><%= h(@provider.description) %></td>
+      </tr>
+
+      <tr>
+        <th colspan="2" class="subtitle">Access information</th>
+      </tr>
+
+      <tr>
+          <th>Owner</th>
+          <td><%= h(@provider.user.login) %></td>
+      </tr>
+
+      <tr>
+          <th>Group</th>
+          <td><%= h(@provider.group.name) %></td>
+      </tr>
+
+      <tr>
+          <th>Status</th>
+          <td><%= h(@provider.online ? "Online" : "Offline") %></td>
+      </tr>
+
+      <tr>
+          <th>Mode</th>
+          <td><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
+      </tr>
+
+      <tr>
+          <th>Syncability</th>
+          <td><%= h(@provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
+      </tr>
+
+      <% if check_role(:admin) || @provider.user_id == current_user.id %>
+
+      <tr>
+        <th colspan="2" class="subtitle">Network Parameters</th>
+      </tr>
+
+      <tr>
+          <th>Remote Host</th>
+          <td><%= h(@provider.remote_host) %></td>
+      </tr>
+
+      <tr>
+          <th>Remote User</th>
+          <td><%= h(@provider.remote_user) %></td>
+      </tr>
+
+      <tr>
+          <th>Remote Directory</th>
+          <td><%= h(@provider.remote_dir) %></td>
+      </tr>
+
+      <tr>
+          <th>Remote Port</th>
+          <td><%= h(@provider.remote_port) %></td>
+      </tr>
+
+      <% end %>
+
+
+      <% if check_role(:admin) || @provider.user_id == current_user.id %>
+         <tr>
+            <td align="center" colspan="2">
+                     <%= button_to 'Edit', edit_data_provider_path(@provider), :method => :get %>
+                     <%= button_to 'Delete', data_provider_path(@provider), :confirm => 'Are you sure?', :method => :delete %>
+                     <% if @provider.is_browsable? %>
+                       <%= button_to 'Browse', browse_data_provider_path(@provider), :method => :get %>
+                     <% end %>
+            </td>
+         </tr>
+      <% end %>
+
+   </table>
+
+   <P>
+
+   <table>
+     <tr>
+       <th colspan="3">File Registration Statistics</th>
+     </tr>
+     <tr>
+       <th>User</th><th>Number of SingleFiles</th><th>Number Of FileCollections</th>
+     </tr>
+     <%
+         @user_sf_fc.each do |login,sf_fc|
+           sf = sf_fc[0]
+           fc = sf_fc[1]
+     %>
+       <tr>
+         <td><%= h(login) %></td>
+         <td><%= h(sf.to_s) %></td>
+         <td><%= h(fc.to_s) %></td>
+       </tr>
+     <% end %>
+   </table>
+
+</div> <!-- End class="generalbox" -->
+
+
+<% if check_role(:admin) || @provider.user_id == current_user.id %>
+
+  <P>
+
+  <table>
+    <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
+    <% @ssh_keys.each do |pair| %>
+      <tr><th><%= h(pair[0]) %></th></tr>
+      <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
+    <% end %>
+  </table>
+
 <% end %>
-
-
-<h2>Information about a Data Provider</h2>
-
-<div class = "generalcontent">
-
-   <div class = "generalbox">
-
-      <table>
-
-         <tr>
-           <th colspan="2">Implementation information</th>
-         </tr>
-
-         <tr>
-             <th>Name</th>
-             <td class="info"><%= h(@provider.name) %></h1>
-         </tr>
-
-         <% if check_role(:admin) || @provider.user_id == current_user.id %>
-
-         <tr>
-             <th>Class</th>
-             <td class="info"><%= h(@provider.class.to_s) %></td>
-         </tr>
-
-         <tr>
-             <th>Revision Info (DataProvider)</th>
-             <td class="info"><%= h(DataProvider.revision_info.svn_id_pretty_rev_author_date) %></td>
-         </tr>
-
-         <tr>
-             <th>Revision Info (<%= @provider.class.to_s %>)</th>
-             <td class="info"><%= h(@provider.revision_info.svn_id_pretty_rev_author_date) %></td>
-         </tr>
-
-         <% end %>
-
-         <tr>
-             <th>Description</th>
-             <td class="info"><%= h(@provider.description) %></td>
-         </tr>
-
-         <tr>
-           <th colspan="2">Access information</th>
-         </tr>
-
-         <tr>
-             <th>Owner</th>
-             <td class="info"><%= h(@provider.user.login) %></td>
-         </tr>
-
-         <tr>
-             <th>Group</th>
-             <td class="info"><%= h(@provider.group.name) %></td>
-         </tr>
-
-         <tr>
-             <th>Status</th>
-             <td class="info"><%= h(@provider.online ? "Online" : "Offline") %></td>
-         </tr>
-
-         <tr>
-             <th>Mode</th>
-             <td class="info"><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
-         </tr>
-
-         <tr>
-             <th>Syncability</th>
-             <td class="info"><%= h(@provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
-         </tr>
-
-         <% if check_role(:admin) || @provider.user_id == current_user.id %>
-
-         <tr>
-           <th colspan="2">Network Parameters</th>
-         </tr>
-
-         <tr>
-             <th>Remote Host</th>
-             <td class="info"><%= h(@provider.remote_host) %></td>
-         </tr>
-
-         <tr>
-             <th>Remote User</th>
-             <td class="info"><%= h(@provider.remote_user) %></td>
-         </tr>
-
-         <tr>
-             <th>Remote Directory</th>
-             <td class="info"><%= h(@provider.remote_dir) %></td>
-         </tr>
-
-         <tr>
-             <th>Remote Port</th>
-             <td class="info"><%= h(@provider.remote_port) %></td>
-         </tr>
-
-         <% end %>
-
-
-         <% if check_role(:admin) || @provider.user_id == current_user.id %>
-            <tr>
-               <td class="info" align="center" colspan="2">
-                  <table>
-                    <tr>
-                      <td class="info">
-                        <%= button_to 'Edit', edit_data_provider_path(@provider), :method => :get %>
-                      </td>
-                      <td class="info">
-                        <%= button_to 'Delete', data_provider_path(@provider), :confirm => 'Are you sure?', :method => :delete %>
-                      </td>
-                      <td class="info">
-                        <% if @provider.is_browsable? %>
-                          <%= button_to 'Browse', browse_data_provider_path(@provider), :method => :get %>
-                        <% end %>
-                      </td>
-                    </tr>
-                  </table>
-               </td>
-            </tr>
-         <% end %>
-      </table>
-
-      <table>
-        <tr>
-          <th colspan="3">File Registration Statistics</th>
-        </tr>
-        <tr>
-          <th>User</th><th>Number of SingleFiles</th><th>Number Of FileCollections</th>
-        </tr>
-        <%
-            @user_sf_fc.each do |login,sf_fc|
-              sf = sf_fc[0]
-              fc = sf_fc[1]
-        %>
-          <tr>
-            <td class="info"><%= h(login) %></td>
-            <td class="info"><%= h(sf.to_s) %></td>
-            <td class="info"><%= h(fc.to_s) %></td>
-          </tr>
-        <% end %>
-      </table>
-   </div> <!-- End class="generalbox" -->
-
-   <% if check_role(:admin) || @provider.user_id == current_user.id %>
-   <div class="ssh_keys">
-      Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
-      <table id="provider_info_table">          
-        <% @ssh_keys.each do |pair| %>
-          <tr><th><%= h(pair[0]) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
-        <% end %>
-      </table>
-   </div> <!-- End class="ssh_keys" -->
-   <% end %>
-
-</div>  <!-- End class="generalcontent" -->

@@ -1,8 +1,10 @@
+
 <td>
   <% if @userfile.is_locally_synced? %>
      <%= string_if(file.symbolic_type == :regular, check_box_tag("file_ids[]", file.name, false, :class  => "collection_checkbox")) %>
   <% end %>
 </td>
+
 <td class="left">
     <%= "&nbsp" * 6 * file.depth %>
     <% if file.symbolic_type == :directory %>
@@ -15,4 +17,6 @@
       <span class="ajax_onclick_show_child small warning">Expand</span><span class="ajax_onclick_hide_child small warning" style="display:none">Hide</span>
     <% end %>
 </td>
+
 <td><%= h(pretty_size(file.size)) %></td>
+

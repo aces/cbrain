@@ -10,13 +10,12 @@
 #
 
 -%>
-<div class = "generalcontent">
 
 <% title "Users"%>
 
-    <div class="menu_bar">
-       <% button_with_dropdown_menu({:title => 'Create User', :partial => 'new'}, {:id => "new_user_button"}) %>
-    </div>
+<div class="menu_bar">
+  <% button_with_dropdown_menu({:title => 'Create User', :partial => 'new', :content_id => 'new_user' }, {:id => "new_user_button"}) %>
+</div>
 
 <table class="resource_list" id="user_table">
   <tr>
@@ -30,8 +29,9 @@
     <th colspan="2">Operations</th>
   </tr>
 
-<% for user in @users %>
-  <%= render :partial => 'user_table_row', :locals  => {:user  => user}%>
-<% end %>
+  <% for user in @users %>
+    <%= render :partial => 'user_table_row', :locals  => {:user  => user}%>
+  <% end %>
+
 </table>
-</div>
+

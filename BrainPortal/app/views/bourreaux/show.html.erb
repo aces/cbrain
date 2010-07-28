@@ -17,257 +17,245 @@
 
 <%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
 
-
-<!-- <% isbourreau = @bourreau.is_a?(Bourreau) %> -->
-
-<div class = "generalcontent">
-
 <div class= "generalbox">
     
-      <table>
+  <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+    <div class="menu_bar menu_bar_left">
+      <%= link_to 'Edit', edit_bourreau_path(@bourreau), { :method => :get, :class => "button" } %>
+      <%= link_to 'Delete', bourreau_path(@bourreau), { :confirm => 'Are you sure?', :method => :delete, :class => "button" } %>
+    </div>
+  <% end %>
 
-         <tr>
-           <th colspan="2">Implementation information</th>
-         </tr>
+  <P>
 
-         <tr>
-             <th>Name</th>
-             <td class="left_align"><%= h(@bourreau.name) %></td>
-         </tr>
+  <table>
 
-         <tr>
-             <th>Class</th>
-             <td class="left_align"><%= h(@bourreau.class.to_s) %></td>
-         </tr>
+    <tr>
+      <th colspan="2" class="subtitle">Implementation information</th>
+    </tr>
 
-         <tr>
-             <th>Revision Info (Client Side)</th>
-             <td class="left_align"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
-         </tr>
+    <tr>
+      <th>Name</th>
+      <td class="left_align"><%= h(@bourreau.name) %></td>
+    </tr>
 
-         <tr>
-             <th>Description</th>
-             <td class="left_align"><%= h(@bourreau.description) %></td>
-         </tr>
+    <tr>
+      <th>Class</th>
+      <td class="left_align"><%= h(@bourreau.class.to_s) %></td>
+    </tr>
 
-         <tr>
-           <th colspan="2">Access information</th>
-         </tr>
+    <tr>
+      <th>Revision Info (Client Side)</th>
+      <td class="left_align"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
+    </tr>
 
-         <tr>
-             <th>Owner</th>
-             <td class="left_align"><%= h(@bourreau.user.login) %></td>
-         </tr>
+    <tr>
+      <th>Description</th>
+      <td class="left_align"><%= h(@bourreau.description) %></td>
+    </tr>
 
-         <tr>
-             <th>Group</th>
-             <td class="left_align"><%= h(@bourreau.group.name) %></td>
-         </tr>
+    <tr>
+      <th colspan="2" class="subtitle">Access information</th>
+    </tr>
 
-         <tr>
-             <th>Status</th>
-             <td class="left_align"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
-         </tr>
+    <tr>
+      <th>Owner</th>
+      <td class="left_align"><%= h(@bourreau.user.login) %></td>
+    </tr>
 
-         <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+    <tr>
+      <th>Group</th>
+      <td class="left_align"><%= h(@bourreau.group.name) %></td>
+    </tr>
 
-         <tr>
-             <th colspan="2">ActiveResource Configuration</th>
-         </tr>
+    <tr>
+      <th>Status</th>
+      <td class="left_align"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
+    </tr>
 
-         <tr>
-             <th>Host</th>
-             <td class="left_align"><%= h(@bourreau.actres_host) %></td>
-         </tr>
+    <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
 
-         <tr>
-             <th>Port</th>
-             <td class="left_align"><%= h(@bourreau.actres_port) %></td>
-         </tr>
+      <tr>
+        <th colspan="2" class="subtitle">ActiveResource Configuration</th>
+      </tr>
 
-         <tr>
-             <th colspan="2">SSH Remote Control Configuration</th>
-         </tr>
+      <tr>
+        <th>Host</th>
+        <td class="left_align"><%= h(@bourreau.actres_host) %></td>
+      </tr>
 
-         <tr>
-             <th>Host</th>
-             <td class="left_align"><%= h(@bourreau.ssh_control_host) %></td>
-         </tr>
+      <tr>
+        <th>Port</th>
+        <td class="left_align"><%= h(@bourreau.actres_port) %></td>
+      </tr>
 
-         <tr>
-             <th>User</th>
-             <td class="left_align"><%= h(@bourreau.ssh_control_user) %></td>
-         </tr>
+      <tr>
+        <th colspan="2" class="subtitle">SSH Remote Control Configuration</th>
+      </tr>
 
-         <tr>
-             <th>Port</th>
-             <td class="left_align"><%= h(@bourreau.ssh_control_port) %></td>
-         </tr>
+      <tr>
+        <th>Host</th>
+        <td class="left_align"><%= h(@bourreau.ssh_control_host) %></td>
+      </tr>
 
-         <tr>
-             <th>Execution Server Rails HOME</th>
-             <td class="left_align"><%= h(@bourreau.ssh_control_rails_dir) %></td>
-         </tr>
+      <tr>
+        <th>User</th>
+        <td class="left_align"><%= h(@bourreau.ssh_control_user) %></td>
+      </tr>
 
-        <tr>
-             <th colspan="2">Tunneling Configuration</th>
-         </tr>
+      <tr>
+        <th>Port</th>
+        <td class="left_align"><%= h(@bourreau.ssh_control_port) %></td>
+      </tr>
 
-         <tr>
-             <th>Database Server Remote Tunnel Port</th>
-             <td class="left_align"><%= h(@bourreau.tunnel_mysql_port) %></td>
-         </tr>
+      <tr>
+        <th>Execution Server Rails HOME</th>
+        <td class="left_align"><%= h(@bourreau.ssh_control_rails_dir) %></td>
+      </tr>
 
-         <tr>
-             <th>ActiveResource Remote Tunnel Port</th>
-             <td class="left_align"><%= h(@bourreau.tunnel_actres_port) %></td>
-         </tr>
+      <tr>
+        <th colspan="2" class="subtitle">Tunneling Configuration</th>
+      </tr>
 
-         <tr>
-             <th colspan="2">Cache Management Configuration</th>
-         </tr>
+      <tr>
+        <th>Database Server Remote Tunnel Port</th>
+        <td class="left_align"><%= h(@bourreau.tunnel_mysql_port) %></td>
+      </tr>
 
-         <tr>
-             <th>Cache Expiration Timeout (in seconds)</th>
-             <td class="left_align"><%= h(@bourreau.cache_trust_expire) %></td>
-         </tr>
+      <tr>
+        <th>ActiveResource Remote Tunnel Port</th>
+        <td class="left_align"><%= h(@bourreau.tunnel_actres_port) %></td>
+      </tr>
 
-         <% end %>
+      <tr>
+        <th colspan="2" class="subtitle">Cache Management Configuration</th>
+      </tr>
 
-         <tr>
-           <th colspan="2">Runtime Information</th>
-         </tr>
+      <tr>
+        <th>Cache Expiration Timeout (in seconds)</th>
+        <td class="left_align"><%= h(@bourreau.cache_trust_expire) %></td>
+      </tr>
 
-         <% if @info.name == "???" %>
+    <% end %>
 
-             <tr>
-               <td colspan="2">This server is currently <font color="red">DOWN</font>.</td>
-             </tr>
+    <tr>
+      <th colspan="2" class="subtitle">Runtime Information</th>
+    </tr>
 
-         <% else %>
+    <% if @info.name == "???" %>
 
-             <tr>
-                 <th>Revision Info (Server Side)</th>
-                 <td class="left_align">
-                     <strong>Process Start Revision: </strong><%= @info.starttime_revision %><br>
-                     <strong>Code Subversion Revision: </strong><%= @info.revision %><br>
-                     <strong>Code Last Change Author: </strong><%= @info.lc_author %><br>
-                     <strong>Code Last Change Revision: </strong><%= @info.lc_rev %><br>
-                     <strong>Code Last Change Date: </strong><%= @info.lc_date %>
-                 </td>
-             </tr>
+      <tr>
+        <td colspan="2">This server is currently <font color="red">DOWN</font>.</td>
+      </tr>
 
-             <tr>
-                 <th>Host name</th>
-                 <td class="left_align"><%= h(@info.host_name) %></td>
-             </tr>
+    <% else %>
 
-             <tr>
-                 <th>Host IP address</th>
-                 <td class="left_align"><%= h(@info.host_ip) %></td>
-             </tr>
+      <tr>
+        <th>Revision Info (Server Side)</th>
+        <td class="left_align">
+          <strong>Process Start Revision: </strong><%= @info.starttime_revision %><br>
+          <strong>Code Subversion Revision: </strong><%= @info.revision %><br>
+          <strong>Code Last Change Author: </strong><%= @info.lc_author %><br>
+          <strong>Code Last Change Revision: </strong><%= @info.lc_rev %><br>
+          <strong>Code Last Change Date: </strong><%= @info.lc_date %>
+        </td>
+      </tr>
 
-             <tr>
-                 <th>Host OS type</th>
-                 <td class="left_align"><%= h(@info.host_uname) %></td>
-             </tr>
+      <tr>
+        <th>Host name</th>
+        <td class="left_align"><%= h(@info.host_name) %></td>
+      </tr>
 
-             <tr>
-                 <th>Host uptime</th>
-                 <td class="left_align"><%= h(@info.host_uptime) %></td>
-             </tr>
+      <tr>
+        <th>Host IP address</th>
+        <td class="left_align"><%= h(@info.host_ip) %></td>
+      </tr>
 
-             <tr>
-                 <th>Server uptime</th>
-                 <td class="left_align">
-                   Up since: <%= h(@info.uptime.to_i.ago.to_s(:db)) %><br>
-                   (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
-                 </td>
-             </tr>
+      <tr>
+        <th>Host OS type</th>
+        <td class="left_align"><%= h(@info.host_uname) %></td>
+      </tr>
 
-             
-             <tr>
-                 <th>Worker PIDs</th>
-                 <td class="left_align"><%= @info.worker_pids %></td>
-             </tr>
+      <tr>
+        <th>Host uptime</th>
+        <td class="left_align"><%= h(@info.host_uptime) %></td>
+      </tr>
 
-             <tr class="Bourreau" style="display:none">
-                 <th>Worker Revision Info</th>
-                 <td class="left_align">
-                     <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
-                     <strong>Last Change Revision: </strong><%= @info.worker_lc_rev %><br>
-                     <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
-                 </td>
-             </tr>
-             <tr class="Bourreau" style="display:none">
-                 <th>Number of tasks (running/max)</th>
-                 <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
-             </tr>
+      <tr>
+        <th>Server uptime</th>
+        <td class="left_align">
+          Up since: <%= h(@info.uptime.to_i.ago.to_s(:db)) %><br>
+          (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
+        </td>
+      </tr>
 
-             <tr class="Bourreau" style="display:none">
-                 <th>Execution Server Cluster Management System</th>
-                 <td class="left_align">
-                   Type: <%= h(@info.bourreau_cms) %><br>
-                   Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
-                 </td>
-             </tr>
+      <tr class="Bourreau" style="display:none">
+        <th>Worker PIDs</th>
+        <td class="left_align"><%= @info.worker_pids %></td>
+      </tr>
 
-             <tr>
-                 <th>Execution Server SSH Public Key</th>
-                 <td class="left_align"><SMALL><SMALL><PRE id="format_ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
-             </tr>
+      <tr class="Bourreau" style="display:none">
+        <th>Worker Revision Info</th>
+        <td class="left_align">
+          <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
+          <strong>Last Change Revision: </strong><%= @info.worker_lc_rev %><br>
+          <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
+        </td>
+      </tr>
 
-         <% end %>
+      <tr class="Bourreau" style="display:none">
+        <th>Number of tasks (running/max)</th>
+        <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+      </tr>
 
-         </table>
+      <tr class="Bourreau" style="display:none">
+        <th>Execution Server Cluster Management System</th>
+        <td class="left_align">
+          Type: <%= h(@info.bourreau_cms) %><br>
+          Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
+        </td>
+      </tr>
 
-         <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+      <tr>
+        <th>Execution Server SSH Public Key</th>
+        <td class="left_align"><SMALL><SMALL><PRE class="ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+      </tr>
 
-            <tr class="Bourreau" style="display:none">
-               <td class="left_align" align="center" colspan="2">
-                  <table id ="button_table">
-                    <tr>
-                      <td class="left_align">
-                        <%= button_to 'Edit', edit_bourreau_path(@bourreau), :method => :get %>
-                      </td>
-                      <td class="left_align">
-                        <%= button_to 'Delete', bourreau_path(@bourreau), :confirm => 'Are you sure?', :method => :delete %>
-                      </td>
-                    </tr>
-                  </table>
-               </td>
-            </tr>
+    <% end %>
 
-         <% end %>
+  </table>
 
-      <table class="Bourreau" style="display:none">
-        <tr>
-          <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
-        </tr>
-        <tr>
-          <th>User</th>
-          <% @statuses_list.each do |stat| %>
-            <th><%= h(stat) %></th>
-          <% end %>
-        </tr>
-        <% @user_tasks_info.each do |user, statcnt| %>
-          <tr>
-            <td class="left_align"><%= h(user) %></td>
-            <% @statuses_list.each do |stat| %>
-              <td><%= h(statcnt[stat]) %></td>
-            <% end %>
-          </tr>
+  <P>
+
+  <table class="Bourreau" style="display:none">
+    <tr>
+      <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
+    </tr>
+    <tr>
+      <th>User</th>
+      <% @statuses_list.each do |stat| %>
+        <th><%= h(stat) %></th>
+      <% end %>
+    </tr>
+    <% @user_tasks_info.each do |user, statcnt| %>
+      <tr>
+        <td class="left_align"><%= h(user) %></td>
+        <% @statuses_list.each do |stat| %>
+          <td><%= h(statcnt[stat]) %></td>
         <% end %>
-          <tr>
-            <td class="left_align">TOTAL</td>
-            <% @statuses_list.each do |stat| %>
-		  <td><%= h(@statuses[stat]) %></td>
-            <% end %>
-          <tr>
-      </table>
+      </tr>
+    <% end %>
+    <tr>
+      <td class="left_align">TOTAL</td>
+      <% @statuses_list.each do |stat| %>
+        <td><%= h(@statuses[stat]) %></td>
+      <% end %>
+    <tr>
+  </table>
 
-      <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
+  <P>
 
-  </div>  <!-- End class="generalbox" -->
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
 
-</div>  <!-- End class="generalcontent" -->
+</div>  <!-- End class="generalbox" -->
+

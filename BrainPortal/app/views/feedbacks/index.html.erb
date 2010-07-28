@@ -9,33 +9,29 @@
 
 -%>
 
-<div class = "generalcontent">
+<% title 'Feedback' %>
+ 
+ 
+<div class="menu_bar menu_bar_left">
+     <% button_with_dropdown_menu({:title => 'Leave Feedback', :partial => 'new', :content_id => 'new_feedback' }, {:id => "new_feedback_button"}) %>              
+     <% button_with_dropdown_menu(:title => "Help") do %>
+       <a class = "overlay_link" data-url = "/doc/feedback/feedback.html">Feedback</a>
+     <% end %>     
+</div>
+                 
+<% form_tag({:controller => :feedbacks, :action => :delete_feedback}, :method => :delete) do %>
 
-   <% title 'Feedback' %>
-    
-   <div class = 'help_button_drop_down'>
-            <% button_with_dropdown_menu(:title => "Help") do %>
-               <a class = "overlay_link" data-url = "/doc/feedback/feedback.html">Feedback</a>
-            <% end %>     
-    </div>
-    
-   <div class="menu_bar">
-        <% button_with_dropdown_menu({:title => 'Leave Feedback', :partial => 'new'}, {:id => "new_feedback_button"}) %>              
-   </div>
-                    
-   <table class="resource_list" id="feedback_table">
-   	    <tr>
-       	    <th>Summary</th>
-         	<th>Author</th>
-         	<th>Posted at</th>
-         	<th colspan="2">Operations</th>
-        </tr>
-     	
-        <% for feedback in @feedbacks %>
-         	<%= render :partial => 'feedback_table_row', :locals => {:feedback => feedback} %>
-        <% end %>
-    </table>
-    <br/>
-     	
-</div> <!-- End class="generalcontent" -->
-     
+   <table id="feedback_table" class="resource_list">
+      <tr>
+         <th>Summary</th>
+         <th>Author</th>
+         <th>Posted at</th>
+         <th colspan="2">Operations</th>
+      </tr>
+      <% for feedback in @feedbacks %>
+        <%= render :partial => 'feedback_table_row', :locals  => {:feedback  => feedback} %>
+      <% end %>
+   </table>
+
+<% end %>
+

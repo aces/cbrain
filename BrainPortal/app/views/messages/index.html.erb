@@ -1,53 +1,19 @@
 
-<%
+<% title 'CBRAIN Messaging Center' %>
 
-#
-# CBRAIN Project
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
--%>
-<div class = "generalcontent">
-
-  <% title 'CBRAIN Messaging Center' %>
-
-  <div class = 'help_button_drop_down'>
-      <% button_with_dropdown_menu(:title => "Help") do %>
-          <a class = "overlay_link" data-url = "/doc/messages/message_info.html">Messages</a>
-      <% end %>     
-  </div>
-  
-  <div class="menu_bar_delete">
-  
+<div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-     <% button_with_dropdown_menu({:title => 'Leave Message', :partial => 'new'}, {:id => "new_message_button"}) %>
+    <% button_with_dropdown_menu({:title => 'Leave Message', :partial => 'new', :content_id => 'new_message' }, {:id => "new_message_button"}) %>
   <% end %>
 
-  </div>
+  <% button_with_dropdown_menu(:title => "Help") do %>
+    <a class = "overlay_link" data-url = "/doc/messages/message_info.html">Messages</a>
+  <% end %>     
+</div>
 
-<!--   <H2>Message Center Note: this page is just a draft, work is in progress!</H2>
-  <p>
-  Future updates will include:<br>
-  <ul>
-  <li>1-click expand from summary to full message (right now you always see the full thing)
-  <li>1-click delete of messages
-  <li>creation of new messages for other users/groups
-  <li>forwarding of messages to anyone (good for bug reports!)
-  <li>sorting message list (by type, header, etc)
-  <li>expiration dates (for broadcast messages etc)
-  <li>pretty formatting of variable_text section (highlight timestamps, etc)
-  </ul>
-  <p> -->
-   
-  <% form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete) do %>
-       <%= submit_button("Delete Messages", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected message entries?')"})
-  %>
-    
-  <table class="resource_list" id="message_table">
-     <%= render :partial => 'message_table' %>
-  </table>
-  <% end %>
-</div>  <!-- End class="generalcontent" -->
+<P>
+
+<table class="resource_list" id="message_table">
+   <%= render :partial => 'message_table' %>
+</table>
+

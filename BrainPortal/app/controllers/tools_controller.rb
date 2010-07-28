@@ -56,7 +56,7 @@ class ToolsController < ApplicationController
   # POST /tools.xml
   def create #:nodoc:
     if params[:autoload]
-      successes = 0
+      successes = []
       failures  = ""
       PortalTask.send(:subclasses).map(&:name).sort.each do |tool|
         unless current_user.available_tools.find_by_cbrain_task_class(tool)
@@ -70,17 +70,20 @@ class ToolsController < ApplicationController
                     )
           success = @tool.save
           if success
-            successes += 1
+            successes << @tool
           else
             failures += "#{tool} could not be added.\n"
           end
         end
       end
       respond_to do |format|
-        if successes > 0
-          flash[:notice] = "#{@template.pluralize(successes, "tool")} successfully registered."
+        if successes.size > 0
+          flash[:notice] = "#{@template.pluralize(successes.size, "tool")} successfully registered:\n"
+          successes.each do |tool|
+            flash[:notice] += "Name: #{tool.name} Class: #{tool.cbrain_task_class}\n"
+          end
         else
-          flash[:notice] = "No unregistered tools."
+          flash[:notice] = "No unregistered tools found."
         end
         unless failures.blank?
           flash[:error] = failures

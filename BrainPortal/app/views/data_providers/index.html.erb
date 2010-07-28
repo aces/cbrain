@@ -11,136 +11,141 @@
 
 -%>
 
-<% title 'Data Provider' %>
+<% title 'Data Providers' %>
 
-   
-<div class = "generalcontent">
+<div class="menu_bar menu_bar_left">
+
+  <% if check_role(:admin) || check_role(:site_manager)%>
+    <% button_with_dropdown_menu({:title => 'Create New Data Provider', :content_id => 'new_data_provider', :partial => 'new'}, {:id => "new_data_provider_button"}) %>
+  <% end %>    
+
+  <% button_with_dropdown_menu(:title => "Help") do %>
+    <a class = "overlay_link" data-url = "/doc/data_providers/data_provider_info.html">Data Provider</a>
+  <% end %>     
     
-    <div class = 'help_button_drop_down'>
-          <% button_with_dropdown_menu(:title => "Help") do %>
-             <a class = "overlay_link" data-url = "/doc/data_providers/data_provider_info.html">Data Provider</a>
-          <% end %>     
-     </div>
-    
-   
-    <% if check_role(:admin) || check_role(:site_manager)%>
-      <div class = "menu_bar">  
-         <% button_with_dropdown_menu({:title => 'Create New Data Provider', :partial => 'new'}, {:id => "new_data_provider_button"}) %>
-      </div>
-    <% end %>    
+</div>
       
-    <br>    
-    <br>
-    
+<p>
   
-   <div id="cbrain_show_details_link" style="display:inline">
-             <%= 
-             link_to_function 'Show Details', {:class  => 'action_link'} do |page|
-               page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.show  }
-               page['cbrain_show_details_link'].hide
-               page['cbrain_hide_details_link'].show      
-             end 
-             %>
-    </div><!--End id="show_details_link"-->
+<div id="cbrain_show_details_link" style="display:inline">
+  <%= 
+  link_to_function 'Show Details', {:class  => 'action_link'} do |page|
+    page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.show  }
+    page['cbrain_show_details_link'].hide
+    page['cbrain_hide_details_link'].show      
+  end 
+  %>
+</div>
     
-    <div id="cbrain_hide_details_link" style="display:none">
-            <%= 
-            link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
-              page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.hide  }
-              page['cbrain_show_details_link'].show
-              page['cbrain_hide_details_link'].hide      
-            end 
-            %>
-    </div><!-- End id="hide_details_link" --> 
+<div id="cbrain_hide_details_link" style="display:none">
+  <%= 
+  link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
+    page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.hide  }
+    page['cbrain_show_details_link'].show
+    page['cbrain_hide_details_link'].hide      
+  end 
+  %>
+</div>
 
-    <%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
-    
+<%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
 
-   <table class="resource_list" id="cbrain_data_provider_table">
-      <tr>
-        <th colspan="1"/>                                               <!-- name -->
-        <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
-        <th colspan="1"/>                                               <!-- group -->
-        <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
-        <th colspan="3">CBRAIN Official Storage</th>                    <!-- online alive mode -->
-        <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
-        <th colspan="3"/>                                               <!-- operations -->
-      </tr>
-      <tr>
-          <th>Provider Name</th>
-          <th class="provider_details" style="display:none">Owner</th>
-          <th>Group</th>
-          <th class="provider_details" style="display:none">Site</th>
-          <th>Online?</th>
-          <th>Alive?</th>
-          <th>Mode</th>
-          <th class="provider_details" style="display:none">Syncability</th>
-          <th class="provider_details" style="display:none">Description</th>
-          <th colspan="3">Operations</th>
-      </tr>
-      <% for prov in @providers["CBRAIN Official Storage"].sort_by(&:name) %>
-          <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
-      <% end %>
+<table class="resource_list" id="cbrain_data_provider_table">
+
+  <tr>
+    <th colspan="1"/>                                               <!-- name -->
+    <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
+    <th colspan="1"/>                                               <!-- group -->
+    <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
+    <th colspan="3">CBRAIN Official Storage</th>                    <!-- online alive mode -->
+    <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
+    <th colspan="3"/>                                               <!-- operations -->
+  </tr>
+
+  <tr>
+    <th>Provider Name</th>
+    <th class="provider_details" style="display:none">Owner</th>
+    <th>Group</th>
+    <th class="provider_details" style="display:none">Site</th>
+    <th>Online?</th>
+    <th>Alive?</th>
+    <th>Mode</th>
+    <th class="provider_details" style="display:none">Syncability</th>
+    <th class="provider_details" style="display:none">Description</th>
+    <th colspan="3">Operations</th>
+  </tr>
+
+  <% for prov in @providers["CBRAIN Official Storage"].sort_by(&:name) %>
+    <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
+  <% end %>
       
-      <% if @providers.nil? || @providers.empty? %>
-        <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
-      <% end %>
-   </table>
-   <br>
-   <div id="user_show_details_link" style="display:inline">
-             <%= 
-             link_to_function 'Show Details', {:class  => 'action_link'} do |page|
-               page.select('#user_data_provider_table .provider_details').each{ |el| el.show  }
-               page['user_show_details_link'].hide
-               page['user_hide_details_link'].show      
-             end 
-             %>
-    </div><!--End id="show_details_link"-->
-    
-    <div id="user_hide_details_link" style="display:none">
-            <%= 
-            link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
-              page.select('#user_data_provider_table .provider_details').each{ |el| el.hide  }
-              page['user_show_details_link'].show
-              page['user_hide_details_link'].hide      
-            end 
-            %>
-    </div><!-- End id="hide_details_link" -->
-  
-   <table class="resource_list" id="user_data_provider_table">
-      <tr>
-        <th colspan="1"/>                                               <!-- name -->
-        <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
-        <th colspan="1"/>                                               <!-- group -->
-        <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
-        <th colspan="3">User Storage</th>                               <!-- online alive mode -->
-        <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
-        <th colspan="3"/>                                               <!-- operations -->
-      </tr>
-      <tr>
-          <th>Provider Name</th>
-          <th class="provider_details" style="display:none">Owner</th>
-          <th>Group</th>
-          <th class="provider_details" style="display:none">Site</th>
-          <th>Online?</th>
-          <th>Alive?</th>
-          <th>Mode</th>
-          <th class="provider_details" style="display:none">Syncability</th>
-          <th class="provider_details" style="display:none">Description</th>
-          <th colspan="3">Operations</th>
-      </tr>
-      <% for prov in @providers["User Storage"].sort_by(&:name) %>
-          <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
-      <% end %>
+  <% if @providers["CBRAIN Official Storage"].nil? || @providers["CBRAIN Official Storage"].empty? %>
+    <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
+  <% end %>
 
-      <% if @providers.nil? || @providers.empty? %>
-        <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
-      <% end %>
-   </table>
+</table>
+
+<P>
+
+<div id="user_show_details_link" style="display:inline">
+  <%= 
+  link_to_function 'Show Details', {:class  => 'action_link'} do |page|
+    page.select('#user_data_provider_table .provider_details').each{ |el| el.show  }
+    page['user_show_details_link'].hide
+    page['user_hide_details_link'].show      
+  end 
+  %>
+</div>
+    
+<div id="user_hide_details_link" style="display:none">
+  <%= 
+  link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
+    page.select('#user_data_provider_table .provider_details').each{ |el| el.hide  }
+    page['user_show_details_link'].show
+    page['user_hide_details_link'].hide      
+  end 
+  %>
+</div><!-- End id="hide_details_link" -->
+  
+<table class="resource_list" id="user_data_provider_table">
+
+  <tr>
+    <th colspan="1"/>                                               <!-- name -->
+    <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
+    <th colspan="1"/>                                               <!-- group -->
+    <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
+    <th colspan="3">User Storage</th>                               <!-- online alive mode -->
+    <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
+    <th colspan="3"/>                                               <!-- operations -->
+  </tr>
+
+  <tr>
+    <th>Provider Name</th>
+    <th class="provider_details" style="display:none">Owner</th>
+    <th>Group</th>
+    <th class="provider_details" style="display:none">Site</th>
+    <th>Online?</th>
+    <th>Alive?</th>
+    <th>Mode</th>
+    <th class="provider_details" style="display:none">Syncability</th>
+    <th class="provider_details" style="display:none">Description</th>
+    <th colspan="3">Operations</th>
+  </tr>
+
+  <% for prov in @providers["User Storage"].sort_by(&:name) %>
+    <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
+  <% end %>
+
+  <% if @providers.nil? || @providers.empty? %>
+    <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
+  <% end %>
+
+</table>
    
-   <div id="disk_usage">   
-     <% on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => "<span class='loading_message'>Loading...</span>"}) do %>
-        <a href="#" class="action_link">Click here to view disk usage statistics</a>
-     <% end %>
-   </div>
-</div> <!-- End class="generalcontent" --> 
+<P>
+
+<div id="disk_usage">   
+  <% on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => "<span class='loading_message'>Loading...</span>"}) do %>
+    <a href="#" class="action_link">Click here to view disk usage statistics</a>
+  <% end %>
+</div>
+

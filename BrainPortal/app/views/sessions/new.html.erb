@@ -11,33 +11,31 @@
 
 -%>
 
-<div class = "generalcontent">
-  
-   <% title 'Login' %>
+<% title 'Login' %>
 
-      <% form_tag session_path do -%>
+<% form_tag session_path do -%>
 
-         <table class = "logintable">
-           <tr>
-             <td><label for="login">Login</label></td>
-             <td class= "field"><%= text_field_tag 'login' %></td>
-           </tr>
-           <tr>  
-             <td><label for="password">Password</label></td>
-             <td class= "field"><%= password_field_tag 'password' %></td>
-           </tr>
-           <tr>
-            <td/><td class="field"><br><%= submit_tag 'Log in' %></td></td>
-           </tr>
-           <tr>
-            <td/><td class="field"><br><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
-           </tr>
-         </table>
-         <br>
+  <table class="logintable">
 
-         <!-- Uncomment this if you want this functionality
-         <p><label for="remember_me">Remember me:</label>
-         <%= check_box_tag 'remember_me' %></p>
-         -->
-      <% end -%>
-</div>   <!-- End class="generalcontent" -->
+    <tr>
+      <td><label for="login">Login</label></td>
+      <td class="field"><%= text_field_tag 'login' %></td>
+    </tr>
+
+    <tr>  
+      <td><label for="password">Password</label></td>
+      <td class="field"><%= password_field_tag 'password' %></td>
+    </tr>
+
+    <tr>
+     <td/><td class="field"><br><%= submit_tag 'Log in' %></td></td>
+    </tr>
+
+    <tr>
+     <td/><td class="field"><br><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
+    </tr>
+
+  </table>
+
+<% end -%>
+

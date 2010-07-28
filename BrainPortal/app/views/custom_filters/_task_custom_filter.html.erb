@@ -1,3 +1,4 @@
+
 <p>
    Task:<br>
    
@@ -32,3 +33,4 @@
       <%= select :data, :bourreau_id, Bourreau.find_all_accessible_by_user(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["bourreau_id"]  %>
    
 </p>
+

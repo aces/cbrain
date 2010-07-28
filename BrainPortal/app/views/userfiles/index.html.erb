@@ -12,49 +12,55 @@
 
 -%>
 
-<% title 'Files' %><% #Side bar stuff goes here -%>
+<% title 'Files' %>
 
-<div class="generalcontent" id="content_userfiles">
-        <div id = "file_manager_sidebar">   
-            <div class = "enclose_sidebar">
-                <%= render :partial => "userfiles/sidebar" %>
-            </div>
-        </div>
-   
-        <div id = "userfiles_main">
-          <% form_tag(url_for(:controller => 'userfiles', :action => 'download'), :method => :post, "data-datatype"  => "script") do %>
-            <div id="userfiles_top_menu">
-                <% button_with_dropdown_menu(:title => "Scientific Tools")  do %>
-                    <center>
-                     	<%= render :partial => 'userfiles/tool_management_scientific' %>
-                    </center>
-                <% end %>
+<!-- CELL #1 : The two menu button lines, the pagination, and the userfiles table -->
 
-                <% button_with_dropdown_menu(:title => "Conversion Tools")  do %>
-                    <center>
-                   		<%= render :partial => 'userfiles/tool_management_conversion' %>
-                    </center>
-                <% end %>
-            </div>        
-            <br>        
-            <br>
+<div class="display_cell" id="userfiles_menus_and_filelist">
 
-            <div id = "file_menu">
-                <%= render :partial => "userfiles/file_menu" %>
-            </div>
-            <div id="pagination">
-              <%= render :partial => 'userfiles/pagination' %>
-            </div>
-            <table id="userfilesdisplay" class="resource_list">
-                 <%= render :partial => 'userfiles/userfiles_table' %>
-            </table>
+  <% form_tag(url_for(:controller => 'userfiles', :action => 'download'), :method => :post, "data-datatype"  => "script") do %>
 
-            <center>
-                 Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-               <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-                 <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-               <% end %>
-            </center>
-          <% end %> 
-        </div>
+  <div class="menu_bar">
+      <% button_with_dropdown_menu(:title => "Scientific Tools")  do %>
+          <center>
+             <%= render :partial => 'userfiles/tool_management_scientific' %>
+          </center>
+      <% end %>
+
+      <% button_with_dropdown_menu(:title => "Conversion Tools")  do %>
+          <center>
+         	<%= render :partial => 'userfiles/tool_management_conversion' %>
+          </center>
+      <% end %>
+  </div>
+  
+  <div class="menu_bar">
+    <%= render :partial => "userfiles/file_menu" %>
+  </div>
+
+  <div id="pagination">
+    <%= render :partial => 'userfiles/pagination' %>
+  </div>
+
+  <div>
+    <table class="resource_list" id="userfiles_table">
+      <%= render :partial => 'userfiles/userfiles_table' %>
+    </table>
+
+    <center>
+       Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+       <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+         <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+       <% end %>
+    </center>
+  </div>
+
+  <% end %> <!-- form -->
+</div> <!-- cell #1 -->
+
+<!-- CELL #2 : The SIDEBAR -->
+
+<div class="display_cell sidebar">   
+  <%= render :partial => "userfiles/sidebar" %>
 </div>
+

@@ -1,13 +1,16 @@
+
 <%- flash.each do |name, msg| -%>
   <% unless msg.blank? %>
     <%= content_tag :div, h(msg).gsub(/\n/, '<BR>'), :id => "flash_#{name}" %>
   <% end %>
 <%- end -%>
+
 <% unless @display_messages.blank? %>
-  <table id="message_display_table">
-    <tr><th colspan="3">New/Important Messages</th></tr>
+  <table class="message_display_table">
+    <tr><th colspan="3">New or important messages</th></tr>
     <% for mess in @display_messages %>
       <%= render :partial  => "layouts/message_display_table_row", :locals  => {:mess  => mess} %>
     <% end %>
   </table>
 <% end %>
+

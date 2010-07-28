@@ -8,37 +8,42 @@
 
 <% title 'Tool Management' %>
 
-<h2>Tool Management</h2>
+<h2>Tool Management By Server</h2>
 
-<div class = "generalcontent">
-  
- <div class="generalbox">
+<div class="generalbox">
  
- <table>    
-     <tr>
-        <td><b>Bourreau</b></td>
-        <td><b>Tools</b></td>
-        <td><b>Update</b></td>
+  <table>
+  
+    <tr>
+      <th>Execution Server</th>
+      <th>Installed Tools</th>
+      <th>Update Installed List</th>
     </tr>
+  
     <% @bourreaux.each do |bourreau| %>
-        <% form_tag({:controller => "bourreaux", :action => "update", :id => bourreau.id}, :method => :put) do %>
+      <% form_tag({:controller => "bourreaux", :action => "update", :id => bourreau.id}, :method => :put) do %>
         <%= hidden_field_tag :tool_management, "true" %>
         <%= hidden_field_tag "bourreau[tool_ids][]", [] %>
         <tr>    
-            <th><%= bourreau.name %></th>
-            <th>
-                <br/>
+            <th class="subtitle"><%= bourreau.name %></th>
+            <td>
+                <P>
                 <select name= "bourreau[tool_ids][]", multiple="multiple", "overflow:scroll", style="height:125px; width:120">
                     <%= options_from_collection_for_select (@tools, 'id', 'name', bourreau.tools.collect{|u| u.id}) %>
-                </select><br/><br/>
-            </th>
-            <th>
-                <%= submit_tag "Update Bourreau"%>
-            </th>
+                </select>
+                <P>
+            </td>
+            <td>
+                <%= submit_tag "Save Settings"%>
+            </td>
         </tr>  
+      <% end %>
     <% end %>
-    <% end %>
-    </table>
-    <%= link_to "Back to Tools Page", :action  => :index %>  
-  </div> 
-</div>
+  
+  </table>
+  
+  <P>
+  
+  <%= link_to "Back to Tools Page", :action  => :index %>  
+  
+</div> 

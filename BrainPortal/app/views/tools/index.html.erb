@@ -1,57 +1,42 @@
-<%
 
-#
-# CBRAIN Project
-#
-# Revision_info="$Id$"
-#
-
--%>
-
-<div class = "generalcontent">
-
-    <div class = 'help_button_drop_down'>
-          <% button_with_dropdown_menu(:title => "Help") do %>
-            <a class = "overlay_link" data-url = "/doc/tool/tool_info.html">Tool Information</a>
-          <% end %>     
-    </div>
-
-<% if current_user.has_role?(:admin) %>
-    <span title="Registers all subclasses of PortalTask as Tools">
+<div class="menu_bar menu_bar_left">
+  <% if current_user.has_role?(:admin) %>
             
-        <%= javascript_tag "var current_options;" %> 
-
-        <div class = "menu_bar">
-             <% button_with_dropdown_menu({:title => 'Create New Tool', :partial => 'new'}, {:id => "new_tool_button"}) %>
+    <% button_with_dropdown_menu({:title => 'Create New Tool', :partial => 'new', :content_id => 'new_tool' }, {:id => "new_tool_button"}) %>
        
-                <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
+    <span title="Registers all subclasses of PortalTask as Tools">
+      <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
+    </span>
             
-            <%= link_to 'Tool Management', {:controller => "tools",  :action => "tool_management"}, :class => " button" %>
-      
-        </div> 
-        
-<% end %>
+    <%= link_to 'By Server', {:controller => "tools",  :action => "tool_management"}, :class => " button" %>
 
+  <% end %>
+
+  <% button_with_dropdown_menu(:title => "Help") do %>
+    <a class = "overlay_link" data-url = "/doc/tool/tool_info.html">Tool Information</a>
+  <% end %>     
+</div> 
+
+<P>
+        
 <table class="resource_list" id="tool_table">
+
   <tr>
     <th>Tool Name</th>
     <th>User</th>
     <th>Group</th>
     <th>Bourreau</th>
     <th>Category</th>
-     <% if current_user.has_role?(:admin) %>
-     	<th colspan="3">Operations</th>
-	 <% end %>
+    <th colspan="2">Operations</th>
   </tr>
-
+   
   <% for tool in @tools %>
     <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
   <% end %>
 
 </table>
 
-
+<P>
 
 <%= link_to 'Tool Statistics', {:controller => "statistics", :action => "index"}, :class => "action_link" %>
 
-</div>

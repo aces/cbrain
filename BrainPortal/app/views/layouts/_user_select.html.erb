@@ -1,3 +1,4 @@
+
 <%= 
     grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id.to_s ] }, selected || current_user.id.to_s)
     blank_label = select_tag_options.delete(:include_blank)

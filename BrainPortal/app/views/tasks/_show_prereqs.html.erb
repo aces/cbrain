@@ -1,8 +1,8 @@
 
-<TR>
-  <TD><STRONG>These other tasks...</STRONG></TD>
-  <TD><STRONG>...must be in these states</STRONG></TD>
-</TR>
+<tr>
+  <td><strong>These other tasks...</strong></td>
+  <td><strong>...must be in these states</strong></td>
+</tr>
 
 <% for_this.keys.sort.each do |ttid|
    next unless ttid =~ /^T(\d+)/
@@ -11,9 +11,9 @@
    otask = CbrainTask.find(tid) rescue nil
    otaskname = otask ? "#{otask.name}@#{otask.bname_tid}" : "(DestroyedTask)/#{tid}"
 %>
-  <TR>
-    <TD><%= otask ? (link_to otaskname, "/tasks/show/#{tid}") : h(otaskname) %></TD>
-    <TD><%= h(state) %></TD>
-  </TR>
+  <tr>
+    <td><%= otask ? (link_to otaskname, "/tasks/show/#{tid}") : h(otaskname) %></td>
+    <td><%= h(state) %></td>
+  </tr>
 <% end %>
 

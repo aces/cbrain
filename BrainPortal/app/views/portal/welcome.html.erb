@@ -18,119 +18,125 @@ Nifty("div.task_summary","big");
 }
 </script>
 
-<div class = "generalcontent">
-   <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
-        <div class="splitleft">
-          <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-            <h1>System Info</h1>
-            <div class="generalbox">
-              <% if @active_users %>
-                <p>
-                  <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
-                </p>
-              <% end %>
-              <% if current_user.has_role? :admin %>
-                <% form_tag home_path do %>
-                  <% if BrainPortal.current_resource.portal_locked? %>
-                    <%= hidden_field_tag :lock_portal, "unlock" %>
-                    <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
-                  <% else %>
-                    <%= hidden_field_tag :lock_portal, "lock" %>
-                    <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
-                  <% end %>
-                <% end %>  
-              <% end %>
-            
-            </div>
-            <br><br><br><br>
-          <% end %>
-          <br>
-          <h1><%= link_to "Account Info", user_path(current_user) %></h1>
-          
-          <div class="generalbox">
-            <p>
-              <strong>Login:</strong> <%= h(current_user.login) %>
-            </p>
-            <p>
-              <strong>Site:</strong> <%= h(current_user.site.name) rescue "No Site Assigned"%>
-            </p>
-            <p>
-               <strong>Groups you belong to:</strong>  <%= h(@groups) %>
-            </p>
-            <p>
-               <strong>Tools available to you:</strong>  <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
-            </p>
-           <p>
-            <strong>Default Data Provider:</strong> <%= h(@default_data_provider) %>
-           </p>
-            <p>
-              <strong>Default Execution Server:</strong> <%= h(@default_bourreau) %>
-            </p>
-          </div>
-        </div>
-        
-          <div class="splitright">
-            <h1><%= link_to "Tasks", :controller  => :tasks,  :action  => :index %></h1>
+<h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
 
-             <div id="completed_task_summary" class="task_summary">
-               <div class="task_summary_count">
-                 Completed tasks: <%= @tasks_by_status[:completed].size %>
-                 <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index, :tasks  => {:filters => {:status  => :completed}} %>
-               </div>
-                 <% unless @tasks_by_status[:completed].blank? %>
-                   <table class="task_summary_table">
-                     <tr><th colspan="2">Recent Activity</th></tr>
-                     <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-                       <tr>
-                         <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
-                         <td><%= task.updated_at %></td>
-                       </tr>
-                     <% end %>
-                   </table>
-                 <% end %>
-             </div>
-             <br>
-             <div id="running_task_summary" class="task_summary">
-               <div class="task_summary_count">
-                 Running tasks: <%= @tasks_by_status[:running].size %>
-                 <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status  => :running}} %>
-               </div>
-               <% unless @tasks_by_status[:running].blank? %>
-                 <table class="task_summary_table">
-                   <tr><th colspan="2">Recent Activity</th></tr>
-                   <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-                     <tr>
-                       <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
-                       <td><%= task.updated_at %></td>
-                     </tr>
-                   <% end %>
-                 </table>
-               <% end %>
-             </div>
-             <br>
-             <div id="failed_task_summary" class="task_summary">
-               <div class="task_summary_count">
-                 Failed tasks: <%= @tasks_by_status[:failed].size %>
-                 <br><br>
-                 <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status  => :failed}} %>
-               </div>
-               <% unless @tasks_by_status[:failed].blank? %>
-                 <table class="task_summary_table">
-                   <tr><th colspan="2">Recent Activity</th></tr>
-                   <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-                     <tr>
-                       <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
-                       <td><%= task.updated_at %></td>
-                     </tr>
-                   <% end %>
-                 </table>
-               <% end %>
-             </div>
-          </div>
-        
-     
+<div class="display_cell">
+
+  <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
+    <h1>System Info</h1>
+
+    <div class="generalbox">
+      <% if @active_users %>
+        <p>
+          <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
+        </p>
+      <% end %>
+      <% if current_user.has_role? :admin %>
+        <% form_tag home_path do %>
+          <% if BrainPortal.current_resource.portal_locked? %>
+            <%= hidden_field_tag :lock_portal, "unlock" %>
+            <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
+          <% else %>
+            <%= hidden_field_tag :lock_portal, "lock" %>
+            <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
+          <% end %>
+        <% end %>  
+      <% end %>
+    </div>
+  <% end %>
+
+  <BR><BR><BR><BR>
+
+  <h1><%= link_to "Account Info", user_path(current_user) %></h1>
   
-</div>  <!-- End class="generalcontent" -->
+  <div class="generalbox">
+    <p>
+      <strong>Login:</strong> <%= h(current_user.login) %>
+    </p>
+    <p>
+      <strong>Site:</strong> <%= h(current_user.site.name) rescue "No Site Assigned"%>
+    </p>
+    <p>
+       <strong>Groups you belong to:</strong>  <%= h(@groups) %>
+    </p>
+    <p>
+       <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
+    </p>
+   <p>
+    <strong>Default Data Provider:</strong> <%= h(@default_data_provider) %>
+   </p>
+    <p>
+      <strong>Default Execution Server:</strong> <%= h(@default_bourreau) %>
+    </p>
+  </div>
+
+</div>
+
+
+
+<div class="display_cell">
+  <h1><%= link_to "Tasks", :controller  => :tasks,  :action  => :index %></h1>
+
+   <div id="completed_task_summary" class="task_summary">
+     <div class="task_summary_count">
+       Completed tasks: <%= @tasks_by_status[:completed].size %>
+       <P>
+       <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index, :tasks  => {:filters => {:status  => :completed}} %>
+     </div>
+     <% unless @tasks_by_status[:completed].blank? %>
+       <table class="task_summary_table">
+         <tr><th colspan="2">Recent Activity</th></tr>
+         <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+           <tr>
+             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= task.updated_at %></td>
+           </tr>
+         <% end %>
+       </table>
+     <% end %>
+   </div>
+
+   <P>
+
+   <div id="running_task_summary" class="task_summary">
+     <div class="task_summary_count">
+       Running tasks: <%= @tasks_by_status[:running].size %>
+       <br><br>
+       <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status  => :running}} %>
+     </div>
+     <% unless @tasks_by_status[:running].blank? %>
+       <table class="task_summary_table">
+         <tr><th colspan="2">Recent Activity</th></tr>
+         <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+           <tr>
+             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= task.updated_at %></td>
+           </tr>
+         <% end %>
+       </table>
+     <% end %>
+   </div>
+
+   <P>
+
+   <div id="failed_task_summary" class="task_summary">
+     <div class="task_summary_count">
+       Failed tasks: <%= @tasks_by_status[:failed].size %>
+       <br><br>
+       <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status  => :failed}} %>
+     </div>
+     <% unless @tasks_by_status[:failed].blank? %>
+       <table class="task_summary_table">
+         <tr><th colspan="2">Recent Activity</th></tr>
+         <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+           <tr>
+             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= task.updated_at %></td>
+           </tr>
+         <% end %>
+       </table>
+     <% end %>
+   </div>
+
+</div>
 

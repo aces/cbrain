@@ -11,30 +11,23 @@
 
 <h2>Feedback</h2>
 
-<div class = "generalcontent">
+<table>
+   <tr>
+     <th colspan="2"><%= h @feedback.summary %></th>
+   </tr>
 
+   <tr>
+      <td> <%= h(@feedback.user.login) %> </td>
+      <td> <%= h(to_localtime(@feedback.created_at.to_s,:datetime)) %> </td>
+   </tr>
 
-      <table id = "feedback_table">
-         <tr>
-           <th colspan="2"><%= h @feedback.summary %></th>
-         </tr>
+   <tr>
+     <td colspan="2" class="left"><%= simple_format h(@feedback.details) %></td>
+   </tr>
+</table>
 
-         <tr>
-            <td> <%= h(@feedback.user.login) %> </td>
-            <td> <%= h(to_localtime(@feedback.created_at.to_s,:datetime)) %> </td>
-         </tr>
+<% if current_user.has_role?(:admin) || current_user.id == @feedback.user_id %>
+    <%= link_to 'Edit', edit_feedback_path(@feedback) %> &nbsp;
+    <%= link_to 'Destroy', @feedback, :confirm => 'Are you sure?', :method => :delete %>
+<% end %>
 
-         <tr>
-           <td colspan="2" class="left"><%= simple_format h(@feedback.details) %></td>
-         </tr>
-      </table>
-
-      <div class="generalcontent">
-      <% if current_user.has_role?(:admin) || current_user.id == @feedback.user_id %>
-          <%= link_to 'Edit', edit_feedback_path(@feedback) %> &nbsp;
-          <%= link_to 'Destroy', @feedback, :confirm => 'Are you sure?', :method => :delete %>
-      <% end %>
-      <br>
-      <br>
-      </div>
-</div>  <!-- End class="generalcontent" -->

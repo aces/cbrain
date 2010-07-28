@@ -7,6 +7,7 @@ namespace :db do
     puts "Found #{root_files.size} root userfiles."
     puts "Found #{all_files.size} userfiles with unset levels."
     root_files.each do |file|
+      next if file.level
       file.set_level!
     end
     

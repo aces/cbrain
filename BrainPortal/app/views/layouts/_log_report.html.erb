@@ -5,12 +5,13 @@
 %>
 
 <% unless log.blank? %>
-  <table id="log_table" style="clear:both;">
-  <tr class="list-odd">
-    <th><%= title.blank? ? "Processing Log" : h(title) %></th>
-  </tr>
-  <tr class="list-even">
-    <td><pre><%= Message.parse_markup(h(log)) %></pre></td>
-  </tr>
+  <table class="log_table">
+    <tr>
+      <th><%= title.blank? ? "Processing Log" : h(title) %></th>
+    </tr>
+    <tr>
+      <td><pre><%= Message.parse_markup(h(log)) %></pre></td>
+    </tr>
   </table>
 <% end %>
+

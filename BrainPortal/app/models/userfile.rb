@@ -145,7 +145,7 @@ class Userfile < ActiveRecord::Base
       end
     end
     
-    result
+    result || []
   end
 
   #Produces the list of files to display for a paginated Userfile index

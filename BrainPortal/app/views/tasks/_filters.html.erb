@@ -1,0 +1,25 @@
+
+<%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'task') %>
+
+<p>
+
+<h4>Available filters</h4>
+
+<ul class="filter_menu">
+  <% TaskCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+    <li class="custom_filter">
+      <%= link_to_remote crop_text_to(15, filter.name),
+          :url  => { :controller => :tasks,
+                     :action     => :index,
+                     :tasks      => { :filters => { :custom_filter  => filter.id } }
+                   },
+          :method => 'get'
+      %>
+      <small><small>
+        <%= link_to 'Edit', edit_custom_filter_path(filter) %>
+        <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>
+      </small></small>
+    </li>
+  <% end %>
+</ul>
+

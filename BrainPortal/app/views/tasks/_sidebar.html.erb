@@ -1,0 +1,66 @@
+
+<div id="task_view_mode">
+  <%= render :partial => 'tasks/tasks_view_mode' %>
+</div>
+
+<P>
+
+<%= select_tag( "operation", <<-"OPTIONS_FOR_TASKS"
+  <option value="">Operations on selected tasks:</option>
+
+  <optgroup label="Operations for queued tasks">
+  <option value="hold">Hold queued tasks</option>
+  <option value="release">Release held tasks</option>
+
+  <optgroup label="Operations for running tasks">
+  <option value="suspend">Suspend running tasks</option>
+  <option value="resume">Resume suspended tasks</option>
+
+  <optgroup label="Operations for failed tasks">
+  <option value="recover">Trigger failure recovery code</option>
+
+  <optgroup label="Operations for completed tasks">
+  <option value="restart_setup">Restart tasks at "Setup" stage</option>
+  <option value="restart_cluster">Restart tasks at "Cluster" stage</option>
+  <option value="restart_postprocess">Restart tasks at "Post Processing" stage</option>
+
+  <optgroup label="Operations for all tasks">
+  <option value="duplicate">Duplicate selected tasks and start them anew</option>
+  <option value="terminate">Terminate selected tasks</option>
+  <option value="delete">Remove selected tasks</option>
+  OPTIONS_FOR_TASKS
+
+) %>
+
+<br>
+
+<%= submit_tag("Apply Operation") %>
+
+<P>
+
+<div class="filter_sidebar">
+    <div id="current_filters">
+      <%= render :partial => 'tasks/current_filters' %>
+    </div>
+    <small>
+      <%= link_to_remote 'clear',
+          {
+            :url  => { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } },
+            :method  => 'get'
+          },
+          { :class  => 'action_link' }
+       %>
+    </small>
+</div>
+
+<div class="accordion">
+  <h3><a href="#">Filter Tasks</a></h3>
+  <div>
+    <%= render :partial => 'tasks/filters' %>
+  </div>
+  <h3><a href="#">Help</a></h3>
+  <div class="help_button_drop_down">
+    <a class="overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
+  </div>
+</div>
+

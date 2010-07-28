@@ -19,24 +19,13 @@ class TagsController < ApplicationController
   # GET /tags
   # GET /tags.xml
   def index #:nodoc:
-    @tags = current_user.tags.find(:all)
-    @userfiles = current_user.userfiles.find(:all)
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.xml  { render :xml => @tags }
-    end
+    cb_error "Tags 'index' page not available anymore."
   end
 
   # GET /tags/1
   # GET /tags/1.xml
   def show #:nodoc:
-    @tag = current_user.tags.find(params[:id])
-
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @tag }
-    end
+    cb_error "Tags 'show' page not available anymore."
   end
 
   # GET /tags/1/edit

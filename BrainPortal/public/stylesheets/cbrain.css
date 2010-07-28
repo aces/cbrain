@@ -8,616 +8,118 @@
 #
 */
 
+
+/* Main BODY of the HTML document */
+
 body {
     background: white;
-    font-family: Verdana, sans-serif; 
-    font-size: 12px; 
-    color:#484848; 
-    margin: 0; 
+    color: #484848;
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    margin: 0;
+    min-width: 900px;
     padding: 0;
-    min-width: 80em;
-    max-height:100%;
+    max-height: 100%;
     line-height: 18px;
 }
 
-/* ######################################################### */
-/* Heading format*/
-/* ######################################################### */
+
+
+/* % ######################################################### */
+/* % Heading formats */
+/* % ######################################################### */
 
 h1, h2, h3, h4 {
     font-family: "Trebuchet MS", Verdana, sans-serif;
 }
 
 h1 {
-    margin-top: 5px; 
-    margin-bottom: 5px; 
-    margin-left: 2px; 
-    margin-right: 2px; 
-    padding: 1em; 
-    text-align: center; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding: 1em;
+    text-align: center;
     font-size: 24px;
+}
+
+h2 {
+    font-size: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    margin-right: 0em;
+    margin-left: 0em;
+    border-bottom: 2px solid #bbbbbb;
+    color: #444;
 }
 
 h3 {
     font-size: 16px;
-    padding-top: 10px; 
-    padding-bottom: 10px; 
-    padding-left: 15px; 
-    margin-bottom: 15px; 
-    margin-top: 10px; 
-    margin-right: 0em; 
-    margin-left: 0em; 
-    border-bottom: 2px solid #bbbbbb; 
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    margin-right: 0em;
+    margin-left: 0em;
+    border-bottom: 2px solid #bbbbbb;
     color: #444;
 }
 
-h2  {
-    font-size: 20px;
-    padding-top: 10px; 
-    padding-bottom: 10px; 
-    padding-left: 15px; 
-    width: 993px; 
-    margin-bottom: 15px; 
-    margin-top: 10px; 
-    margin-right: 0em; 
-    margin-left: 0em; 
-    border-bottom: 2px solid #bbbbbb; 
-    color: #444;
-}
-
-h4{
+h4 {
     font-size: 12px;
     padding-left: 0px;
     margin-top: 0em;
     margin-bottom: 0.5em;
-    margin-right: 0em; 
+    margin-right: 0em;
     margin-left: 0em;
     padding-bottom: 0em;
-    padding-top: 0em; 
-    width: 130px; 
+    padding-top: 0em;
     color: #000;
-    border-bottom: 1px solid #666; 
+    border-bottom: 1px solid #666;
 }
 
-h5{
+h5 {
     font-size: 11px;
     padding-left: 0px;
     margin-top: 0em;
     margin-bottom: 0.5em;
-    margin-right: 0em; 
+    margin-right: 0em;
     margin-left: 0em;
     padding-bottom: 0em;
-    padding-top: 0em; 
-    width: 130px; 
+    padding-top: 0em;
     color: #000;
 }
 
-#header h1 {
-    float:left;
-    padding: 10px;
-}
 
-img {
-	max-width: 930px;
-}
 
-/* ######################################################### */
-/* For the <pre> formatting tags - allowing the page to resize properly */
-/* ######################################################### */
+/* % ######################################################### */
+/* % Structural classes; allows placing DIV elements so that
+/* % they never overlap. */
+/* % ######################################################### */
 
-pre {
-    overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
-    white-space: pre-wrap; /* css-3 */
-    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    text-align: left;
-    white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
-}
-
-#standard_out {
-    width: 600px;
-}
-
-#format_ssh_key {
-    width: 600px;
-}
-
-/* ######################################################### */
-/* Layout View */
-/* ######################################################### */
-
-#wrapper {
-    background: white;
-}
-
-#top-menu {
-    background: #0471B4; 
-    color: #fff; 
-    height:1.8em; 
-    font-size: 0.9em; 
-    padding: 2px 2px 0px 6px;
-    margin: 0px;
-}
-
-#top-menu ul {
-    margin: 0;  
-    padding: 0;
-}
-
-#top-menu li {
-    float:left;
-    list-style-type:none;
-    margin: 0px 0px 0px 0px;
-    padding: 0px 0px 0px 0px;
-    white-space:nowrap;
-}
-
-#top_01 {
-    background-image:url(/images/top_01.gif);
-    width:87px;
-    height:76px;
-    margin: 0px;
-    float:right;
-}
-
-#top-menu a {
-    color: #fff; 
-    padding-right: 8px; 
-    font-weight: bold;
-    text-decoration:none;
-}
-
-#top-menu #loggedas {
-    float: right; 
-    margin-right: 0.5em; 
-    color: #ffffff; 
-}
-
-#account {
-    float:right;
-}
-
-#header {
-    height:7em;
-    margin:0px;
-    background-color:#05A3D6;
-    color:#f8f8f8; 
-    position:relative;
-}
-
-
-#main-menu {
-    position: absolute;  
-    bottom: 0px;  
-    left:6px; 
-    margin-right: -500px;
-    font-size: 10px;
-}
-
-#main-menu ul {
-    margin: 0;  
-    padding: 0;
-    font-size: 11px;
-}
-
-#main-menu li {
-    float:left;
-    list-style-type:none;
-    margin: 0px 2px 0px 0px;
-    padding: 0px 0px 0px 0px;
-    white-space:nowrap;
-}
-
-#main-menu li a {
-    display: block;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 0;
-    padding: 4px 10px 4px 10px;
-}
-
-
-#main-menu li a:hover {
-    background:gray; 
-    color:#fff;
-}
-
-#main {
-    background-color:#FFFFFF;
-    min-width: 100%;
-    position: relative;
-}
-
-#selected a {
-    background-color:white;
-    color:#05A3D6;
-}
-
-#unselected a {
-    color: white;
-}
-
-.userfiles_select_all{
-    display: inline;
-}
-
-
-/* ######################################################### */
-/* File Operations Menu */
-/* ######################################################### */
-
-#tools_menu{
-    margin-left: 271px;
-}
-
-/* ######################################################### */
-/* Sidebar View */
-/* ######################################################### */
-
-#sidebar h3 {
-    font-size: 18px; 
-    margin-top:14px; 
-    color: #666; 
-    border-bottom: 2px solid #666; 
-    margin-left: 12px;  
-    padding: 0 0 0 0;
-}
-
-#main.nosidebar #sidebar {
-    display: none; 
-}
-
-#main.nosidebar #content {
-    width: auto; 
-    border-right: 0; 
-}
-
-#sidebar {
-    width: 50%;
-    height: 100%; 
-    color: #666;
-    background-color: #FFFFFF;
-    margin-right: 10px;
-    min-width: 133px;
-}
-
-#sidebar_wrapper{
-     float:left;
-     max-width: 9%;
-}
-
-#sidebar ul li {
-    margin-left: -10px;
-    color: #0471B4;
-}
-
-#sidebar a{
-    text-decoration: none;
-}
-
-.action_link{
-    color: blue!important;
-    text-decoration:none!important;
-}
-
-.userfiles_option_close{
-    text-align:center;
-}
-
-
-/* ######################################################### */
-/* Filter menu
-/* ########################################################  */
-#filter_menu { 
-    padding:0; 
-    margin-left: 0px; 
-    text-align: left;
-}
- 
-#filter_menu li { 
-    list-style-type:none;
-    margin-left: 0px;
-}
-
-#custom_filter li{
-    font-weight: bold;
-}
-
-/* ######################################################### */
-/* side_filter_menu View */
-/* ######################################################### */
-
-#side_filter_menu h3 {
-    font-size: 18px; 
-    margin-top:14px; 
-    color: #666; 
-    border-bottom: 2px solid #666; 
-    margin-left: 12px;  
-    padding: 0 0 0 0;
-}
-
-#main.nosidebar #side_filter_menu {
-    display: none; 
-}
-
-#main.nosidebar #content {
-    width: auto; 
-    border-right: 0; 
-}
-
-#side_filter_menu {
-    color: #666;
-    background-color: #FFFFFF;
-    margin-right: 10px;
-    padding: 1em;
-    margin-top: 1em;
-    border: 0.2em solid #0471B4;
-}
-
-#side_filter_menu_wrapper{
-     position: absolute;
-}
-
-#side_filter_menu ul li {
-    margin-left: -10px;
-    color: #0471B4;
-}
-
-#side_filter_menu a{
-    text-decoration: none;
-}
-
-/* ######################################################### */
-/* Login Formatting */
-/* ######################################################### */
-
-#login-form table {
-    margin-top:5em; 
-    padding:1em; 
-    margin-left: auto; 
-    margin-right: auto; 
-    border: 2px solid #FDBF3B; 
-    background-color:#FFEBC1; 
-}
-
-#login-form table td {
-    padding: 6px;
-}
-
-#login-form label {
-    font-weight: bold;
-}
-
-.clear:after {
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-/* ######################################################### */
-/* Links formatting */
-/* ######################################################### */
-
-#main-menu a:hover, a:active {
-    background:#ffffff none repeat scroll 0 0; 
-    color:#555555;
-}
-
-a { 
-    color: #000; 
-    text-decoration:underline;
-}
-
-a:hover { 
-    color: #fff; 
-    background-color:#000; 
-}
-
-/* ######################################################### */
-/* Content Formatting */
-/* ######################################################### */
-
-#content {
-    background-color: #ffffff; 
-    margin-left: 15px;
-	  margin-right: auto;
-    padding-bottom: 4px; 
-    padding-bottom:10px;
-    height: 100%;
-}
-
-/* ######################################################### */
-/* Index Userfiles View -search box formatting */
-/* ######################################################### */
-
-.searchtable {
-    float: right;
-    width: 100%;
-    height: 0.5em;
-    border: 0px;
-    margin-bottom: 0px;
-}
-
-.searchtable td {
-    border: 0px;
-    margin-bottom: 0px;
-}
-
-.search {
-    float: right;
-    border: 0px;
-    width: auto;
-    height: auto;
-    margin-left: 100%;
-    margin-bottom: 0px; 
-}
-
-
-/* ######################################################### */
-/* General formatting for the content of the page */
-/* Should be applied to all new pages */
-/* ######################################################### */
-
-.generalbox {
-    float: left;
-    width: auto;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    padding: 1em;
-    background-color: #F6F6F6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #E4E4E4;  
-}
-
-#infobox {
-    float: left
-    padding: 1em; 
-    background-color: #F6F6F6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #E4E4E4;  
-    width: 930px;
-    max-width: 910px;
-    margin: 1px;
-}
-
-.generalcontent {
-    margin-right: auto;
-    margin-left: 10px;
+.display_table {
     display: table;
 }
 
-.generalcontent_data_provider {
-    margin-right: 4px;
-    margin-left: 10px;
-    display: table;
-    width: 1000px;
+.display_row {
+    display: table-row;
 }
 
-.groupentry {
-    border: 1px solid black;
-    width: auto;
-    margin-left: 0;
-    margin-right: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    background-color: #E6E6E6;
-    color: black;
-} 
-
-/* ######################################################## */
-/* ssh_keys as part of the edit, show, _new data provider pages */
-/* ######################################################## */
-.ssh_keys{
-    float: left;
-    width: 74%;
-    margin-left: 0;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    padding: 1em;
-    line-height: 1.5em;
-}
-
-/* ######################################################### */
-/* Userfiles header index view encompasses tag management */
-/* ######################################################### */
-
-.filesheader {
-    float:left; 
-    width: 45%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 0em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-/* ######################################################### */
-/* Userfiles header index view encompasses tag management */
-/* ######################################################### */
-
-#filesheadermenu {
-    width: 45%;
-    margin-left: 1em;
-    margin-right: 0em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-    padding-top: 1em;
-    padding-bottom: 0.5em;
-    padding-left: 2em;
-    padding-right: 0em;
-    line-height: 1.5em;
-    border: 0px;
-}
-
-/* ######################################################### */
-/* Content for userfiles */
-/* ######################################################### */
-
-.userfile_menu {
-    color:#F8F8F8;
-    background-color: #0471B4;
-    float:left; 
-    width: auto;
-    margin-left: 0.2em;
-    padding-right: 0.5em;
-    padding-left: 0.5em;
-}
-
-/* ######################################################### */
-/* Bourreau Log table  */
-/* ######################################################### */
-
-#bourreau_log_table {
-    width: 95%;
-    margin-left: 0em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    padding: 1em;
-}
-
-/* ######################################################### */
-/* Log table  */
-/* ######################################################### */
-
-#log_table {
-/*    width: 90%; */
-    margin-left: 0em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    padding: 1em;
-}
-
-/* ######################################################### */
-/* Table for buttons  */
-/* ######################################################### */
-#button_table{
-    width: 100px;
-}
-
-#button_table td{
-    padding: 4px;
+.display_cell {
+    display: table-cell;
 }
 
 
-/* ######################################################### */
-/* General formatting for a table */
-/* ######################################################### */
+
+/* % ######################################################### */
+/* % General tables for reports, etc, with CBRAIN colors  */
+/* % ######################################################### */
 
 table {
-    margin: 1em 1em 1em 0;
-    padding: 2px;
     border-spacing: 0em;
     border: 2px solid #6699CC;
 }
@@ -627,8 +129,8 @@ table th {
     border: 1px solid #9CF;
     color: #ffffff;
     background: #0471B4;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 7px;
+    padding-right: 7px;
     text-align: center;
     text-indent: 0px;
     font-family: Verdana;
@@ -639,20 +141,21 @@ table th {
 table td {
     width: auto;
     border: 1px solid #9CF;
+    color: #404040;
     padding-top: 0px;
     padding-bottom: 0px;
-    padding-left: 6px;
+    padding-left: 0px;
     padding-right: 0px;
     text-align: center;
     font-family: Verdana, sans-serif, Arial;
     font-weight: normal;
     font-size: 11px;
-    color: #404040;
 }
 
 td.title {
     width: auto;
     background: #0471B4;
+    color: #ffffff;
     padding-left: 10px;
     padding-right: 10px;
     text-align: center;
@@ -660,12 +163,12 @@ td.title {
     font-family: Verdana;
     font-weight: bold;
     font-size: 11px;
-    color: #ffffff; 
 }
 
 th.subtitle {
     width: auto;
     background-color: #05A3D6;
+    color: #ffffff;
     padding-left: 10px;
     padding-right: 10px;
     text-align: left;
@@ -673,7 +176,6 @@ th.subtitle {
     font-family: Verdana;
     font-weight: bold;
     font-size: 11px;
-    color: #ffffff;
 }
 
 td.tabletext {
@@ -688,376 +190,22 @@ tr.list-even {
 tr.list-odd {
     background-color: #F1F5FF;
 }
+
 tr.list-unavailable {
     background-color: #ff6699;
 }
 
-/* ######################################################### */
-/* Format the provider info table
-/* ######################################################### */
-#provider_info_table{
-    width: auto;
-    white-space: pre-wrap; /* css-3 */
-    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
-    float: left;
-}
-
-/* ######################################################### */
-/* Format the provider info table
-/* ######################################################### */
-#output_tasks_table{
-    width: 900px;
-    float: left;
-    margin: 11px;
-}
 
 
-/* ######################################################### */
-/* Format the feedback table
-/* ######################################################### */
-#feedback_table {
-    width: 98%;
-    margin-left: 10px;
-    white-space: pre-wrap; /* css-3 */
-    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
-}
-
-#feedback_table p{
-    width: 500px;
-}
-
-
-/* ######################################################### */
-/* Show tasks table formatting */
-/* ######################################################### */
-
-.showtaskscontent {
-    float: left;
-    width: 99%;
-    margin-right: 4em;
-}
-
-.showtasksdisplay {
-    float: left;
-    width: 97%;
-    padding: 6px;
-    margin-top: 0.5em; 
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 4em;
-}
-
-.showtasksdisplay th {
-    width: 40%;
-    text-align: left;
-}
-
-.showtasksdisplay td {
-    text-align: left;
-}
-
-/* ######################################################### */
-/* Tasks menu formatting */
-/* ######################################################### */
-
-.tasksmenu {
-    float:left; 
-    width: 99%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-/* ######################################################### */
-/* Tags table formatting */
-/* ######################################################### */
-
-.edittagstable {
-    float: left;
-    width: 10%;
-    padding: 6px;
-    margin-top: 0em; 
-    margin-left: 0em;
-    margin-right: 0em;
-    margin-bottom: 0em;
-    padding: 0px;
-}
-
-.edittagstable th {
-    border: 0px;
-    background: #0471B4;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    padding: 2px;
-}
-
-.edittagstable td {
-    border: 0px;
-    text-align: left;
-    text-indent: 5px;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa; 
-    padding: 2px;
-}
-
-/* ######################################################### */
-/* Tasks table formatting */
-/* ######################################################### */
-
-.taskstable {
-    float: left;
-    width: 100%;
-    padding: 6px;
-    margin-top: 2em; 
-    margin-left: 1em;
-    margin-right: 0em;
-    margin-bottom: 4em;
-    padding: 2px;
-}
-
-.taskstable th {
-    border: 0px;
-    background-color: #05A3D6;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    padding: 2px;
-}
-
-.taskstable td {
-    border: 0px;
-    text-align: left;
-    text-indent: 5px;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa; 
-    padding: 2px;
-}
-
-
-
-td.taskinfo {
-    border: 0px;
-}
-
-/* ######################################################### */
-/* Bourreaux menu options formatting */
-/* ######################################################### */
-
-.bourreauxmenuoptions {
-    float: left;
-    width: 99%;
-    margin-right: 4em;
-}
-
-/* ######################################################### */
-/* Civet options table */
-/* ######################################################### */
-.civet_options{
-    width: 300px;
-}
-
-.civet_options td{
-    padding: 1px;
-    margin: 1px;
-}
-
-.civet_options th{
-    padding: 2px;
-    margin: 1px;
-}
-
-/* ######################################################### */
-/* Show tasks table formatting */
-/* ######################################################### */
-
-.showtaskstable {
-    float: left;
-    width: 995px;
-    padding: 6px;
-    margin-top: 2em; 
-    margin-left: 1em;
-    margin-right: 0em;
-    margin-bottom: 4em;
-    padding: 2px;       
-}
-
-.showtaskstable th {
-    border-bottom: 1px solid #9CF;
-    border-top: 1px solid #9CF;
-    border-left: 1px solid #9CF;
-    border-right: 0px;
-    border-bottom: 1px solid #6699CC;   
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    background-color: #0471B4;
-    padding: 2px;
-}
-
-.showtaskstable td {
-    border-bottom: 1px solid #9CF;
-    border-top: 1px solid #9CF;;
-    border-left: 1px solid #9CF;
-    border-right: 1px solid #9CF;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa; 
-    padding: 2px;
-    width: 30%;
-}
-
-/* ######################################################### */
-/* Format of tasks trigger box as part of the tasks index page */
-/* ######################################################### */
-
-.taskstrigger {
-    float:left; 
-    background-color: #f6f6f6;
-    color: #505050;
-}
-
-/* ######################################################### */
-/* Format of tasks operations box */
-/* ######################################################### */
-
-.tasksoperation {
-    float:left; 
-    margin-left: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-}
-
-/* ######################################################### */
-/* Userfiles Index formatting */
-/* ######################################################### */
-
-.filtertable {
-    padding: 2px;
-    border-spacing: 2px 2px;
-    border: 2px solid #6699CC;
-}
-
-.indented
-   {
-   padding-left: 50px;
-   padding-right: 50px;
-   }
-
-.formatting_html{
-    border: 0px;
-    margin-left: 425px;
-}
-
-.formatting_html td{
-    border: 0px;
-}
-
-.stat_list {
-    clear: both;
-    margin-right: auto;
-    margin-left: auto;
-    width: 50%;
-}
-
-.stat_list th {
-    border: 0px;
-    background-color: #0471B4;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.stat_list th a {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.stat_list th a:link {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.stat_list td{
-    border: 0px;    
-    text-align: center;
-    padding-left: 2em;
-    padding-right: 2em;
-    white-space: nowrap;
-}
-
-
-#plain_file_list{
-    max-width: 950px;
-    margin-left: 0px;
-}
-
-
-.site_info_list {
-    clear: both;
-    margin-right: auto;
-    margin-left: 11px;
-    width: 977px;
-}
-
-.site_info_list td{
-    border: 1px solid #9CF;
-    border
-    text-align: center;
-    padding-left: 2em;
-    padding-right: 2em;
-    white-space: nowrap;
-}
-
-
+/* % ######################################################### */
+/* % Resource List Table Styles */
+/* % These are usually used on pretty tables of data */
+/* % These will add up to or override the default table layout above */
+/* % ######################################################### */
 
 .resource_list {
-    clear: both;
-    margin-right: auto;
-    margin-left: 11px;
-    margin-top: 10px;
     border: 0px;
     border-collapse: collapse;
-}
-
-.resource_list_file {
-    clear: both;
-    margin-right: auto;
-    margin-left: 11px;
-    width: 977px;
 }
 
 .resource_list th {
@@ -1082,433 +230,145 @@ td.taskinfo {
     text-decoration: none;
 }
 
-.resource_list td{
-    border: 0px;    
+.resource_list td {
+    border: 0px;
     text-align: center;
     padding-left: 1em;
     padding-right: 1em;
     white-space: nowrap;
 }
 
-
-.edit_file_table{
-    clear: both;
-    margin-right: auto;
-    margin-left: 0px;
-    width: 950px;
-}
-
-.edit_file_table td {
-    text-align: left;
-}
-
-/*.resource_list td.left {
-    border: 0px;
-    text-align: left;
-}*/
-
 table.resource_list td.checkbox {
     text-align: center;
 }
 
 
-table.resource_list td.ck_box_delete{
-    text-align: center;
-}
 
-table.resource_list th.ck_box_delete{
-    text-align: center;
-    width: 15%;
-}
+/* % ############################################## */
+/* % Simpler table than the default; used mostly */
+/* % in tasks forms, for historical reasons. */
+/* % ############################################## */
 
-
-.userfiles {
+.simple {
     border: 0px;
 }
 
-.fileoptionpanel {
-    float:left; 
-    text-align: left;
-    min-height: 75px;
-}
-
-.fileoptionpanel h1{
-    text-align: left;
-}
-
-.userfiles tr {
+.simple tr {
     border: 1px;
     text-align: left;
 }
 
-.userfiles td {
+.simple td {
     border: 0px;
     text-align: left;
 }
 
-.fileoperations {
-    float:left; 
-    width: 100%;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 0.5em;
-    background-color: #f6f6f6;
-    color: #505050;
-    border: 1px solid #e4e4e4;
+
+
+/* % ######################################################### */
+/* % General styles for text */
+/* % ######################################################### */
+
+.warning {
+    color:red;
 }
 
-.filemanipulation {
-    float:left;
-    width: 43em;
-    margin-left: 1em;
+h1.warning {
+    line-height: 1.1em;
+    padding: 0;
+    margin: 0;
 }
 
-.filemanagement {
-    float: left;
-    margin-left: 5em;
+.loading_message {
+  text-align: center;
+  color: red;
 }
 
-.filters {
-    float:left; 
-    width: 20%;
-    margin-left: 3em;
+.no_wrap {
+   white-space:nowrap!important;
 }
 
-#filter_sidebar{
-    background-color: #EEEEEE;
-    color: #505050;
-    margin-left: 2px;
-    padding-bottom: 10px;
-    padding-left: 20px;
+.left {
+    text-align: left!important;
 }
 
-.tags {
-    float:left;
-    padding-left: 0em;
+.left_align {
+    text-align: left;
 }
 
-.groups {
-    float: left;
-    width: 30em;
-    margin-left: 1em;
-    padding-left: 2em;
+.right_align {
+   text-align: right;
 }
 
-#pages{
+.small {
+  font-size: 0.8em;
+}
+
+.alone_per_line {
+    display: block;
+    clear: both;
+}
+
+
+
+/* % ######################################################### */
+/* % General Links formatting */
+/* % ######################################################### */
+
+a {
+    color: #000;
+    text-decoration:underline;
+}
+
+a:hover {
+    color: #fff;
+    background-color:#000;
+}
+
+.action_link {
+    color: blue !important;
+    text-decoration: none !important;
+}
+
+
+
+/* % ######################################################### */
+/* % General box layouts for the miscellaneous content */
+/* % ######################################################### */
+
+.generalbox {
+    float: left;    /* I don't think this is right; TOFIX */
     width: auto;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 0em;
-    padding: 0.25em;
-    background-color: #ffffff;
-    color: #505050;
-    text-align: left;
-    border: none;
-    float: left;
-    /*border: 1px solid #e4e4e4;*/
-}
-
-
-#pages_userfiles {
-    padding-left: 2em;
-    padding-top: 0.5em;
-    background-color: #ffffff;
-    text-align: left;
-}
-
-#filter_div {
-    float: right;
-    width: 8%;
-    min-width: 14em;
-    color: black;
-}
-
-#filter_div_format {
-    float: right;
-    width: 100%;
-}
-
-
-#current_filters ul {
-    padding-left: 0;
-    color: #0471B4;
-}
-
-#current_filters a {
-    text-decoration: none;
-    color: blue;
-}
-
-#userfiles_top_menu {
-    padding: 1em 0 0;
-    margin-left: 240px;
-    margin-right: 0px;
-    width: 50em;
-    margin-bottom: 10px;
-}
-
-.userfiles_upper_form {
-    margin-top: 3em;
-    width: 45em;
-    margin-left: 185px;
-    margin-right: auto;
-    margin-bottom: 10px;
-}
-
-#content_userfiles{
-  display: block;
-}
-
-#userfiles_main{
-  display:table;
-}
-
-#userfile_contents_display{
-    border: 0.2em solid #6699CC;
-    padding: 0.5em;
-    margin-top: 1em;
-    margin-left: 11px;
-}
-
-.resource_list_upper_form {
-    border: 0px;
-    padding: 2em;
-    margin-top: 10px;
-    width: auto;
-    margin-left: 0px;
-    margin-bottom: 0px;  
-}
-
-.show_hide_details {
-    padding: 2em;
-    margin: 30em;
-}
-
-.menu_bar {
-    padding: 0.5em;
-    margin-top: 1em;
-    margin-bottom: 3em;
-    width: 960px;
-    margin-left: 5px;
-}
-
-.help_button{
-    margin-left: 80em;
-    margin-top: 0.5em;
-}
-
-.help_button_tools{
-    margin-left: 65em;
-    margin-top: 0.5em;
-}
-
-.help_button_userfiles{
-    margin-left: 56em;
-    margin-top: 0em;
-    margin-bottom: 4em;
-}
-
-.help_button_drop_down{
-    margin-left: 75em;
-    margin-top: 1em;
-    margin-bottom: 4em;
-}
-
-#new_feedback{
-    width: 400px;
-    padding-left: 30px;
-}
-
-#feedback_box{
-    border: 2px solid #6699CC;
-    padding: 0.5em;
-    margin-top: 1em;
-    width: 500px;
-    margin-left: 1em;
-}
-
-#tools_display{
-    width: 30%;
-}
-
-#file_menu{
-    margin-left: 0px;
-    margin-right: auto;
-    margin-bottom: 10px;
-    min-width: 74em;
-}
-
-.upper_file_menu{
-    border: 2px solid #6699CC;
-    padding: 0em 1em;
-    width: 343px;
-    margin-left: 107px;
-}
-
-.upper_form {
-    border: 2px solid #6699CC;
-    padding: 0em 1em;
-    margin-left: 185px;
-}
-
-#upload_option_div{
-    margin-left: 306px;
-    width: 310px;
-}
-
-#jiv_option_div{
-   margin-left: 65px;
-   width: 415px; 
-}
-
-.resource_list_box {
-    float:left; 
-    width: 68%;
-    margin-top: 9px;
-    margin-left: 11px;
-    padding: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-}
-
-/* ######################################################### */
-/* Session view (login) */
-/* ######################################################### */
-
-.loginbox {
-    margin-top: 1em;
-    margin-right: auto;
-    margin-bottom: 2em;
-    margin-left: auto;
-    padding-top: 1em;
-    padding-left: 1em;
-    padding-bottom: 2em;
-    padding-right: 2em;
-    width: 30%;
-    height: 12em;
-}
-
-.logintable {
-    float: left;
-    width: 100%;
-    border: 1px;
-    margin-top: 1em;
-    margin-right: 1em;
-    margin-bottom: 2em;
-    padding-top: 1em;
-    padding-left: 1em;
-    padding-bottom: 1em;
-    padding-bottom: 1em;
-}
-
-.logintable td {
-    border: 0px;
-    font-size: 1em;
-    color: #0471B4;
-    text-align: right;
-    padding: 2px;
-    margin: 0px;
-}
-
-.logintable td.field {
-    text-align: left;
-    padding: 2px;
-}
-
-.logintable tr {
-    margin: 1px;
-}
-
-#request_password{
-    padding-right: 12em;
-}
-
-
-/* ######################################################### */
-/* Formatting for the Userfiles view (new) */
-/* ######################################################### */
-
-.uploadtags {
-    float:left;
-    width:20em;
-    margin-left: 2em;
-}
-
-.fileupload {
-    float: left;
-    width: 30em;
-    margin-left: 2em;
-}
-
-.uploadgroups {
-    float: left;
-    width: 20em;
-    margin-left: 25px;
-}
-
-.dataprovider {
-    float: left;
-    width: 20em;
-    margin-left: 25px;
-}
-
-.archive {
-    float: left;
-    width: 100%;
-    margin-left: 25px;
-}
-
-.fileuploadbutton {
-    float: left;
-    width: 20em;
-    margin-left: 25px;
-}
-
-.fileoptions {
-    float: left;
-    width: 20em;
-    margin-left: 25px;
-}
-
-
-
-/* ######################################################### */
-/* Box for credits */
-/* ######################################################### */
-
-.credit_box {
-    float:left; 
     margin-left: 1em;
     margin-right: 1em;
     margin-bottom: 1em;
-    padding-bottom: 1em;
-    background-color: #f6f6f6;
+    padding: 1em;
+    background-color: #F6F6F6;
     color: #505050;
     line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-    padding:6px;
+    border: 1px solid #E4E4E4;
 }
 
-/* ######################################################### */
-/* Splits the screen for credits */
-/* ######################################################### */
-
-.credit_splitleft {
-    float: left;
-    width: 50%;
+.notesbox {
+    padding: 1em;
+    background-color: #F6F6F6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #E4E4E4;
+    width: 800px;
+    margin: 1px;
 }
 
-.credit_splitright {
-    float: right;
-    width: 50%;
+.groupentry {
+    border: 1px solid black;
+    width: auto;
+    margin-left: 0;
+    margin-right: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    background-color: #E6E6E6;
+    color: black;
 }
-
-
-/* ######################################################### */
-/* Splits the screen for edit files */
-/* ######################################################### */
 
 .splitleft {
     float: left;
@@ -1521,7 +381,7 @@ table.resource_list th.ck_box_delete{
 }
 
 .splitright {
-    float: left;
+    float: right;
     min-width: 25em;
     width: auto;
     margin-left: 1em;
@@ -1530,206 +390,83 @@ table.resource_list th.ck_box_delete{
 }
 
 
-/* ######################################################### */
-/* Formatting for show details link */
-/* ######################################################### */
-#show_details_link{
-    margin-left: 5px;
-}
 
-/* ######################################################### */
-/* Formatting for hid details link */
-/* ######################################################### */
-#hide_details_link{
-    margin-left: 6px;
-}
 
-/* ######################################################### */
-/* Formatting for show filters link */
-/* ######################################################### */
-#filter_option_show{
-    margin-left: 11px;
-}
+/* % #################################################################### */
+/* % Preformated Plain Text Styles */
+/* % #################################################################### */
 
-/* ######################################################### */
-/* Formatting for hid filters link */
-/* ######################################################### */
-#filter_option_hide{
-    margin-left: 11px;
-}
-
-/* ######################################################### */
-/* Formatting for data provider stats table */
-/* ######################################################### */
-#data_provider_stats{
-    margin-left:11px;
-    width: 50%;
-}
-
-/* ######################################################### */
-/* Formatting for data provider stats table */
-/* ######################################################### */
-#provider_statistics{
-    width: 50%;
-}
-
-/* ######################################################### */
-/* Formatting for the welcome page */
-/* ######################################################### */
-
-.welcomepage {
-    width: 100%;
-    height: 100%;
-    float: left;
-}
-
-.welcometable {
-    border: 0px;
-    float: left; 
-    width: 30em;
-    background-color: #f6f6f6;
-    color: #505050;
-}
-
-.welcometable td {
-    background-color: #f6f6f6;
-    border: 1px solid #9CF;
-    width: 20em;
-    border: 0px;
+pre {
+    overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
     text-align: left;
-    float: left;
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
-.welcometable td.welcomeresult {
-    background-color: #ffffff;
-    /*background-color: #f6f6f6;*/
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-    padding-left: 2em;
-    padding-right: 1em;
-    border: 1px solid #9CF;
-    text-align: left;
-    float: left;
-    width: 10em;
+.standard_out {
+    max-width: 1600px;
 }
 
-.welcometable tr {
-    background-color: #f6f6f6;
-    border: 1px solid #9CF;
-    width: 20em;
-    padding: 4px;
-    text-align: left;
+.ssh_key {
+    max-width: 1600px;
 }
 
-.welcometable th {
-    color: #ffffff;
-    background-color: #0471B4;
-}
 
-/* ######################################################### */
-/* Application view main content formatting */
-/* ######################################################### */
 
-#main-content {
-    min-height: 100%;
-    height: auto;
-    margin: 0px;
-}
-
-/* ######################################################### */
-/* Footer formatting */
-/* ######################################################### */
-
-#footer {
-    height: 2em;
-    clear: both; 
-    border-top: 2px solid #e4e4e4; 
-    font-size: 0.9em; 
-    color: #aaa; 
-    padding: 5px; 
-    text-align: center; 
-    background:#ffffff;
-}
-
-#bottomfooter {
-    text-align: center;
-}
-
-#bottomfooter a{
-    color: white;
-    text-decoration: none;
-}
-
-#site_logos {
-    float: right;
-    margin-right: 2em;
-    height: 9em;
-    border: 0;
-}
-
-#canarie_logo {
-    float: left;
-    margin-left: 2em;
-    height:7em;
-}
-
-/* ######################################################### */
-/* Format for notices */
-/* ######################################################### */
+/* % ######################################################### */
+/* % Format for flash messages (notice/system/error) */
+/* % ######################################################### */
 
 #flash_notice {
     z-index: 0;
-    width: 93%;
-    margin-right: auto;
-    margin-left: 19px;
     border: 2px solid green;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;
     padding-right: 1em;
-    margin-bottom: 2em;
-    margin-top: 2em;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    margin-right: 2px;
+    margin-left: 2px;
     background-color: #ddffdd;
 }
 
-/* ######################################################### */
-/* Format for system messages */
-/* ######################################################### */
-
 #flash_system {
     z-index: 0;
-    width: 93%;
-    margin-right: auto;
-    margin-left: 19px;
     border: 2px solid #00ffff;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;
     padding-right: 1em;
-    margin-bottom: 2em;
-    margin-top: 2em;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    margin-right: 2px;
+    margin-left: 2px;
     background-color: #ddeeff;
 }
 
-
-/* ######################################################### */
-/* Format for error messages */
-/* ######################################################### */
-
 #flash_error {
     z-index: 0;
-    width: 93%;
-    margin-right: auto;
-    margin-left: 19px;
     border: 2px solid red;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 1em;
     padding-right: 1em;
-    margin-bottom: 2em;
-    margin-top: 2em;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    margin-right: 2px;
+    margin-left: 2px;
     background-color: #ffeeee;
 }
+
+
+
+/* % ######################################################### */
+/* % ActiveRecord Validation Messages */
+/* % ######################################################### */
 
 .fieldWithErrors {
     padding: 2px;
@@ -1770,204 +507,258 @@ table.resource_list th.ck_box_delete{
     color: #000;
 }
 
-#message_table {
-    width: 976px;
-    margin-left: 9px;
-
-}
-
-#message_table td{
-    padding-left: 7px;
-    padding-right: 7px;
-}
-
-#message_table th{
-    width: auto;
-    padding: 0px;
-    margin-left: 20px;
-    
-}
 
 
-/* ########################################################## */
-/* Bourreau table
-/* ########################################################## */
-#bourreau_list{
-    width: 960px;
-}
+/* % ######################################################### */
+/* % Account Section of Application Layout */
+/* % ######################################################### */
 
-.generalbox_modified{
-    width: 900px;
-}
-
-/* ########################################################## */
-/* Bourreau table
-/* ########################################################## */
-#bourreau_table{
-    margin: 0px;
-    margin-left: 9px;
-    margin-top: 5px;
-}
-
-.Bourreau{
-    width: 903px;
-}
-
-
-/* ######################################################### */
-/* Format for new tool  */
-/* ######################################################### */
-
-#new_tool{
-    width: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-/* ######################################################### */
-/* Format for new site  */
-/* ######################################################### */
-
-#new_site{
-    width: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-/* ######################################################### */
-/* Format for new servers  */
-/* ######################################################### */
-
-#new_bourreau{
-    width: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-/* ######################################################### */
-/* Format for new user  */
-/* ######################################################### */
-
-#new_user{
-    width: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-/* ######################################################### */
-/* Format for new group  */
-/* ######################################################### */
-
-#new_data_provider{
-    width: 750px;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-/* ######################################################### */
-/* Format for new data provider  */
-/* ######################################################### */
-
-#new_group{
-    width: auto;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-
-/* ######################################################### */
-/* Format for message table */
-/* ######################################################### */
-
-#message_display_table {
-    clear: both;
-    border: 0;
-    margin-left: 20px;
-    margin-right: 5px;
-    width: 96%;
-}
-
-#message_display_table th {
-    color: black;
-    background-color: white;
-    font-size: 1.2em;
-    padding-bottom: 0.4em;
-    border: 0;
-    width: 20%;
+#account {
+    background: #0471B4;
+    color: #fff;
+    height:1.8em;
+    font-size: 0.9em;
+    padding: 2px 2px 0px 6px;
     margin: 0px;
 }
 
-#message_display_table td{
-    font-size: 1em;
-    padding: 0.2em 0.4em;
-    width: 20%;
-}
-
-#message_display_table tr {
-    border: 0;
-    width: 20%;
-}
-
-
-td.notice_display{
-    border-style: solid;
-    background-color: #ddffdd;
-    border-color: green;
-
-}
-
-td.error_display{
-    border-style: solid;
-    background-color: #ffeeee;
-    border-color: red;
-}
-
-td.system_display{
-    border-style: solid;
-    background-color: #ddeeff;
-    border-color: blue;
-}
-
-td.right_side{
-    border-width: 0.2em 0.2em 0.2em 0;
-    text-align: right;
-}
-
-td.left_side{
-    border-width: 0.2em 0em 0.2em 0.2em;
-    text-align: left;
+#account a {
+    color: #fff;
+    padding-right: 8px;
     font-weight: bold;
+    text-decoration:none;
 }
 
-td.middle{
-    border-width: 0.2em 0em 0.2em;
+#account #loggedas {
+    float: right;
+    margin-right: 0.5em;
+    color: #ffffff;
+}
+
+
+
+/* % ######################################################### */
+/* % Menu Section of Application Layout */
+/* % ######################################################### */
+
+#header {
+    height:7em;
+    margin:0px;
+    background-color:#05A3D6;
+    color:#f8f8f8;
+    position:relative;
+}
+
+#header h1 {
+    float:left;
+    padding: 10px;
+}
+
+#mni_logo {
+    float: right;
+    background-image:url(/images/mni_logo.png);
+    width: 84px;
+    height: 69px;
+    margin: 6px;
+    border: 2px solid black;
+}
+
+#main-menu {
+    position: absolute;
+    bottom: 0px;
+    left:6px;
+    font-size: 11px;
+}
+
+#main-menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+#main-menu li {
+    float: left;
+    list-style-type: none;
+    margin: 0px 2px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    white-space: nowrap;
+}
+
+#main-menu li a {
+    display: block;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0;
+    padding: 4px 10px 4px 10px;
+}
+
+#main-menu li a:hover {
+    background:gray;
+    color:#fff;
+}
+
+#main-menu a:hover, a:active {
+    background:#ffffff none repeat scroll 0 0;
+    color:#555555;
+}
+
+#selected a {
+    background-color:white;
+    color:#05A3D6;
+}
+
+#unselected a {
+    color: white;
+}
+
+#active_project_div {
+  font-size: 1.2em;
+  margin-left: 20em;
+}
+
+#active_project_div h1 {
+  font-size: 1.4em;
+}
+
+#header_project_menu {
+  color: #F33;
+  margin: 0.8em 1em 0 0;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+#project_menu_items {
+  color: #22C;
+}
+
+#header_project_menu span {
+  padding: 0;
+  background-image: none;
+}
+
+
+
+/* % ######################################################### */
+/* % Main Content Section of Application Layout */
+/* % ######################################################### */
+
+.main-content {
+    background-color: #FFFFFF;
+    margin-right: auto;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+
+
+/* % ######################################################### */
+/* % Footer Section of Application Layout */
+/* % ######################################################### */
+
+#footer {
+    height: 2em;
+    clear: both;
+    border-top: 2px solid #e4e4e4;
+    font-size: 0.9em;
+    color: #aaa;
+    padding: 5px;
     text-align: center;
-    padding: 0.25em;
+    background:#ffffff;
+    vertical-align:bottom;
 }
 
-#pagination{
+#footer a {
+    color: white;
+    text-decoration: none;
+}
+
+#site_logos {
+    float: right;
+    margin-right: 2em;
+    height: 9em;
+    border: 0;
+}
+
+#canarie_logo {
+    float: left;
+    margin-left: 2em;
+    height:7em;
+}
+
+
+
+/* ######################################################### */
+/* Box for credits */
+/* ######################################################### */
+
+.credit_box {
+    float:left;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    background-color: #f6f6f6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #e4e4e4;
+    padding:6px;
+}
+
+.credit_splitleft {
+    float: left;
+    width: 50%;
+}
+
+.credit_splitright {
+    float: right;
+    width: 50%;
+}
+
+
+
+/* ######################################################### */
+/* Session view (login) */
+/* ######################################################### */
+
+.logintable {
+    border: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 1em;
+    padding-left: 1em;
+    padding-bottom: 1em;
+    padding-bottom: 1em;
+}
+
+.logintable td {
+    border: 0px;
+    font-size: 1em;
+    color: #0471B4;
     text-align: right;
-    padding-top: 30px;
-    margin-right: 115px;
-    margin-left: 130px;
+    padding: 2px;
+    margin: 0px;
 }
 
-.enclose_sidebar{
-    margin-top: 22px;
+.logintable td.field {
+    text-align: left;
+    padding: 2px;
 }
 
-.upload_file_format{
-    margin-left: 148px;
-    margin-top: -2px;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
+.logintable tr {
+    margin: 1px;
 }
 
-/* ############################################## */
-/*    Task summary page                           */
-/* ############################################## */
+#request_password {
+    padding-right: 12em;
+}
 
-.task_summary{
+
+
+/* % ############################################## */
+/* % Task summary in welcome page */
+/* % ############################################## */
+
+.task_summary {
     clear: both;
     margin-left:auto;
     margin-right:auto;
@@ -1978,133 +769,559 @@ td.middle{
     min-width: 30em;
 }
 
-#completed_task_summary{
+#completed_task_summary {
     background-color: #ddffdd;
 }
 
-#completed_task_summary th{
+#completed_task_summary th {
     background-color: green;
     border: none;
 }
 
-#running_task_summary{
+#running_task_summary {
     background-color: #ddeeff;
 }
 
-#running_task_summary th{
+#running_task_summary th {
     background-color: blue;
     border: none;
 }
 
-#failed_task_summary{
+#failed_task_summary {
     background-color: #ffeeee;
 }
 
-#failed_task_summary th{
+#failed_task_summary th {
     background-color: red;
     border: none;
 }
 
-.task_summary_count{
+.task_summary_count {
     font-size: 2em;
     font-weight: bold;
 }
 
-.task_summary_count a{
+.task_summary_count a {
     font-size: 0.5em;
     font-weight: normal;
     color: blue;
 }
 
-.task_summary_table{
+.task_summary_table {
     margin-left:auto;
     margin-right:auto;
     border: 0px;
 }
 
-.task_summary_table td{
+.task_summary_table td {
     padding: 0.4em 1em 0.5em 1em;
-    
     font-weight: bold;
-    border: 0px;    
+    border: 0px;
     text-align: left;
 }
 
-#welcome_glance th{
-    font-size: 1.3em;
-    padding: 0.2em;
+
+
+/* % ######################################################### */
+/* % Generic Menu Bar */
+/* % ######################################################### */
+
+.menu_bar {
+    display: table;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-#welcome_glance td{
-    font-size: 1.3em;
-    padding: 0.2em;
+.menu_bar_left {
+    margin-left: 2em;
 }
+
+
+
+/* % ######################################################### */
+/* % Userfiles Index File Manager */
+/* % ######################################################### */
+
+/* DIV that contains the file manager and its two menu bars */
+#userfiles_menus_and_filelist {
+    width: 100%;
+    padding-right: 1em;
+}
+
+#pagination {
+    text-align: center;
+    padding: 0;
+    margin-right: 0;
+    margin-left: 0;
+    min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
+}
+
+#userfiles_table {
+    width: 100%;
+}
+
+
+
+/* % ######################################################### */
+/* % File Menu Edit Tags table formatting */
+/* % ######################################################### */
+
+.edittagstable {
+    float: left;
+    width: 10%;
+    padding: 6px;
+    margin-top: 0em;
+    margin-left: 0em;
+    margin-right: 0em;
+    margin-bottom: 0em;
+    padding: 0px;
+}
+
+.edittagstable th {
+    border: 0px;
+    background: #0471B4;
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    padding: 2px;
+}
+
+.edittagstable td {
+    border: 0px;
+    text-align: left;
+    text-indent: 5px;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;
+    padding: 2px;
+}
+
+
+
+/* % ######################################################### */
+/* % Generic Sidebar Content */
+/* % ########################################################  */
+
+.sidebar {
+    font-size: 0.9em;
+    padding: 5px;
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    background-color: #eeeeee;
+}
+
+.help_button_drop_down {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+
+/* % ######################################################### */
+/* % Userfiles Sidebar Content */
+/* % ########################################################  */
+
+#page_display {
+    padding-left: 2em;
+    padding-top: 0.5em;
+    text-align: left;
+}
+
+#userfiles_search_by_filename {
+    color: #000000;
+    text-align: left;
+    padding-left: 20px;
+    padding-top: 0px;
+    padding-bottom: 1em;
+    padding-right: 1em;
+}
+
+
+
+/* % ######################################################### */
+/* % Sidebar Filter Content (Tasks or Userfiles) */
+/* % ########################################################  */
+
+.filter_sidebar {
+    background-color: #EEEEEE;
+    color: #505050;
+    padding-left: 20px;
+}
+
+.filter_menu {
+    padding: 0;
+    margin-left: 0px;
+    text-align: left;
+}
+
+.filter_menu li {
+    list-style-type: none;
+    margin-left: 0px;
+}
+
+.custom_filter li {
+    font-weight: bold;
+}
+
+/* current_filters is an ID because the element is modified with AJAX */
+#current_filters ul {
+    padding-left: 0;
+    color: #0471B4;
+}
+
+/* current_filters is an ID because the element is modified with AJAX */
+#current_filters a {
+    text-decoration: none;
+    color: blue;
+}
+
+
+
+/* % ######################################################### */
+/* % Formatting for details toggle links */
+/* % ######################################################### */
+
+#show_details_link {
+    margin-left: 5px;
+}
+
+#hide_details_link {
+    margin-left: 6px;
+}
+
+
+
+/* % ######################################################### */
+/* % Userfiles Show and Edit */
+/* % ######################################################### */
+
+.edit_file_table {
+    clear: both;
+    margin-right: auto;
+    margin-left: 0px;
+    width: 950px;
+}
+
+.edit_file_table td {
+    text-align: left;
+}
+
+
+
+/* % ######################################################### */
+/* % Userfiles Content Subclasses */
+/* % ######################################################### */
+
+.plain_file_list {
+    max-width: 950px;
+    margin-left: 0px;
+}
+
+#userfile_contents_display {
+    border: 0.2em solid #6699CC;
+    padding: 0.5em;
+    margin-top: 1em;
+    margin-left: 1em;
+}
+
+img {
+    max-width: 930px;
+}
+
+
+
+/* % ######################################################### */
+/* % Tasks Index */
+/* % ######################################################### */
+
+#tasks_div {
+    width: 100%;
+    padding-right: 1em;
+}
+
+#tasks_table {
+    width: 100%;
+}
+
+.taskstable th {
+    border: 0px;
+    background-color: #05A3D6;
+    text-align: left;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    padding: 2px;
+}
+
+.taskstable td {
+    border: 0px;
+    text-align: left;
+    text-indent: 5px;
+    font-family: Verdana, sans-serif, Arial;
+    font-weight: normal;
+    font-size: 11px;
+    color: #404040;
+    background-color: #fafafa;
+    padding: 2px;
+}
+
+.batch_job_header {
+    background-color: #A3D3F6;
+}
+
+
+
+/* % ######################################################### */
+/* % Task Show Page */
+/* % ######################################################### */
+
+.showtasksdisplay {
+    float: left;
+    width: 97%;
+    padding: 6px;
+    margin-top: 0.5em;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-bottom: 4em;
+}
+
+.showtasksdisplay th {
+    width: 20%;
+    text-align: left;
+}
+
+.showtasksdisplay td {
+    text-align: left;
+}
+
+
+
+/* % ######################################################### */
+/* % Styles for Data Provider Browse page */
+/* % ######################################################### */
+
+.dp_browse_pages {
+    width: auto;
+    margin-left: 1em;
+    margin-right: 4em;
+    margin-bottom: 0em;
+    padding: 0.25em;
+    background-color: #ffffff;
+    color: #505050;
+    text-align: left;
+    border: none;
+    float: left;
+}
+
+.dp_browse_filter_div {
+    float: right;
+    width: 8%;
+    min-width: 14em;
+    color: black;
+}
+
+
+
+/* % ######################################################### */
+/* % Styles for Filtering Columns Headers */
+/* % Used in Task Index or Data Provider Browser */
+/* % ######################################################### */
 
 .filter_list {
-    position: absolute;                                                    
-    margin: 0;                      
-    padding: 1em 1em 1em 2em;                       
-    background-color: #05A3D6;                                                            
-    text-align:left;   
-}                     
-
-.filter_list_filename{
+    position: absolute;
     margin: 0;
-    padding-top: 2em;
-    background-color: #ffffff;
-    color: #00000;
+    padding: 1em 1em 1em 2em;
+    background-color: #05A3D6;
     text-align:left;
-    float: left;
 }
 
-#userfile_table_format{
-    float: left;
+
+
+/* % ######################################################### */
+/* % Message Styles For Main Layout  */
+/* % ######################################################### */
+
+.message_display_table {
+    clear: both;
+    border: 0;
+    margin-left: 20px;
+    margin-right: 5px;
+    width: 96%;
+}
+
+.message_display_table th {
+    color: black;
+    background-color: white;
+    font-size: 1.2em;
+    padding-bottom: 0.4em;
+    border: 0;
+    width: 20%;
     margin: 0px;
-    width: 40px;
-    background-color: #ffffff;
-    color: #000000;
+}
+
+.message_display_table td {
+    font-size: 1em;
+    padding: 0.2em 0.4em;
+    width: 20%;
+}
+
+.message_display_table tr {
+    border: 0;
+    width: 20%;
+}
+
+td.notice_display {
+    border-style: solid;
+    background-color: #ddffdd;
+    border-color: green;
+
+}
+
+td.error_display {
+    border-style: solid;
+    background-color: #ffeeee;
+    border-color: red;
+}
+
+td.system_display {
+    border-style: solid;
+    background-color: #ddeeff;
+    border-color: blue;
+}
+
+td.right_side {
+    border-width: 0.2em 0.2em 0.2em 0;
+    text-align: right;
+}
+
+td.left_side {
+    border-width: 0.2em 0em 0.2em 0.2em;
     text-align: left;
+    font-weight: bold;
 }
 
-#userfilesdisplay td.format_options{
-    float: none;
-    width: 90%;
-    background-color: #ffffff;
-    color: #000000;
-    text-align: left;
-    padding-left: 20px;
-    padding-top: 0px;
-    padding-bottom: 10px;
+td.middle {
+    border-width: 0.2em 0em 0.2em;
+    text-align: center;
+    padding: 0.25em;
 }
 
-#userfile_table_format_options_2{
-    float: none;
-    background-color: #eeeeee;
-    color: #000000;
-    text-align: left;
-    padding-left: 20px;
-    padding-top: 0px;
-    padding-bottom: 10px;
+/* % ######################################################### */
+/* % Message Index */
+/* % ######################################################### */
+
+#message_table {
+    width: 976px;
+    margin-left: 9px;
+
 }
 
-#file_manager_sidebar{
-    width: 17%;
-    min-width: 25.2em;
-    font-size: 0.9em;
-    float: left;
-    margin-top: 35px;
-    padding: 0;
-    margin-left: -15px;
-    margin-right: 0px;
-    margin-bottom: 20px;
-    position: relative;
+#message_table td {
+    padding-left: 7px;
+    padding-right: 7px;
 }
 
-#main_userfiles_content{
-    width: 80%;
-    float: left;
-    padding: 0;
+#message_table th {
+    width: auto;
+    padding: 0px;
+    margin-left: 20px;
 }
+
+
+
+/* % ######################################################### */
+/* % Table for user checkboxes for Groups and Sites  */
+/* % ######################################################### */
+
+.button_table {
+    width: 100px;
+}
+
+.button_table td {
+    padding: 4px;
+}
+
+
+
+/* % ######################################################### */
+/* % Statistics Index TOFIX NOT USED */
+/* % ######################################################### */
+
+.stat_list {
+    clear: both;
+    margin-right: auto;
+    margin-left: auto;
+    width: 50%;
+}
+
+.stat_list th {
+    border: 0px;
+    background-color: #0471B4;
+    text-align: center;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.stat_list th a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.stat_list th a:link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.stat_list td {
+    border: 0px;
+    text-align: center;
+    padding-left: 2em;
+    padding-right: 2em;
+    white-space: nowrap;
+}
+
+
+
+/* ######################################################### */
+/* JIV Browser Styles */
+/* ######################################################### */
+
+#jiv_option_div {
+   margin-left: 65px;
+   width: 415px;
+}
+
+
+
+/* % ######################################################### */
+/* % ActiveRecord Log table  */
+/* % ######################################################### */
+
+.log_table {
+    padding: 2px;
+}
+
+
+
+/* % ######################################################### */
+/* % Notes and Help Text Styles */
+/* % ######################################################### */
 
 #data_provider_classes {
     max-width: 60em;
@@ -2114,147 +1331,47 @@ td.middle{
     padding: 1em;
 }
 
-.batch_job_header {
-    background-color: #A3D3F6;
-}
 
-.warning {
-    color:red;
-}
 
-h1.warning {
-    line-height: 1.1em;
-    padding: 0;
-    margin: 0;
-}
-
-#active_project_div{
-  font-size: 1.2em;
-  margin-left: 20em;
-}
-
-#active_project_div h1{
-  font-size: 1.4em;
-}
-
-#header_project_menu{
-  color: #F33;
-  margin: 0.8em 1em 0 0;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-#project_menu_items{
-  color: #22C;
-}
-
-#header_project_menu span{
-  padding: 0;
-  background-image: none;
-}
+/* % ######################################################### */
+/* % xstooltip Styles */
+/* % ######################################################### */
 
 .xstooltip {
-    visibility: hidden; 
-    position: absolute; 
-    top: 0;  
-    left: 0; 
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 2;
     background-color: #FFFFCC;
     font: normal 8pt sans-serif;
     color: black;
-    padding: 5px; 
+    padding: 5px;
     border: 1px solid gray;
 }
 
-.loading_message {
-  text-align: center;
-  color: red;
-}
 
-/* ######################################################### */
-/* Z Toolkit element styling */
-/* ######################################################### */
 
-.button_with_drop_down {
-    z-index: 501; 
-    float: left;
-}
+/* % ######################################################### */
+/* % Z Toolkit element styling */
+/* % ######################################################### */
 
 .button {
+    float: left;   /* all buttons just stack from left to right; TO FIX */
     z-index: 500;
-    float: left;
 }
 
+.button_with_drop_down {
+    float: left;   /* all buttons just stack from left to right; TO FIX */
+    z-index: 501;
+}
 
 .button_with_drop_down > .drop_down_menu {
     position: absolute;
-     z-index: 501;
+    z-index: 501;
     border: solid;
     border-width: 1px;
     padding: 5px;
-    background: #f8f8f8;    
+    background: #f8f8f8;
 }
 
-/* ######################################################### */
-/* Miscellaneous formatting classes */
-/* ######################################################### */
-
-.no_wrap {
-  white-space:nowrap!important;
-}
-
-.alone_per_line {
-    display: block;
-    clear: both;
-}
-
-.left{
-    text-align: left!important;
-}
-
-.left_align{
-    text-align: left;
-}
-
-.right_align {
-   text-align: right;
-}
-
-.small {
-  font-size: 0.8em;
-}
-
-.ajax_form{
-    text-align: left;
-    background-color: #FFF;
-    color: #000;
-}
-
-.menu_options{
-    margin-top: 25px;
-    margin-bottom: 25px;
-}
-
-.tag_sidebar{
-    margin-left: 0px;
-    margin-right: 0px;
-    background-color: #FFFFFF;
-}
-
-
-#add_tag{
-    background-color: #FFFFFF; 
-    padding:0px;   
-}
-
-#new_tag{
-    background-color: #FFFF;    
-}
-
-.ui-widget-content{
-  border: none!important;
-}
-
-
-
-}

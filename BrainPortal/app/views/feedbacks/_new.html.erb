@@ -9,23 +9,20 @@
 
 -%>
 
-    
-    <div id = "new_feedback">
-    
-      <% form_for :feedback, @feedback, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"}  do |f| -%>
-        <%= f.error_messages %>
-        <p>
-          <%= f.label :summary %><br />
-          <%= f.text_field :summary %>
-        </p>
-        <p>
-          <%= f.label :details %><br />
-          <%= f.text_area :details %>
-        </p>
-        <p>
-          <%= f.submit "Create" %>
-        </p>
-      <% end %>
-    
-    </div>
+<% form_for :feedback, @feedback, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"}  do |f| -%>
+
+  <%= f.error_messages %>
+  <p>
+    <%= f.label :summary %><br />
+    <%= f.text_field :summary %>
+  </p>
+  <p>
+    <%= f.label :details %><br />
+    <%= f.text_area :details %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+
+<% end %>
     

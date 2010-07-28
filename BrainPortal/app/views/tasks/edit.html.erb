@@ -34,7 +34,7 @@
 
 <h2>Task Parameters:</h2>
 
-<div class = "generalbox" style="float: none;">
+<div class="generalbox" style="float: none;">
 <%= render :partial => "tasks/cbrain_task/#{@task.name.underscore}",
            :locals  => { :params  => @task.params, :form => form }
  %>

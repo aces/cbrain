@@ -1,0 +1,46 @@
+
+  <div id="active_project_div">
+
+    <h1>Active Project:</h1> 
+      <% button_with_dropdown_menu({:title => (current_project ? current_project.name : "None")}, {:id  => "header_project_menu"})  do %>
+        <div id="project_menu_items">
+          <% projects = current_user.available_groups.group_by{|p| p.class.to_s == "WorkGroup" ? "WorkGroup" : "SystemGroup"} %>
+          <% unless projects["WorkGroup"].blank? %>
+            Projects<br>
+            <% for group in projects["WorkGroup"] %>
+              <%= 
+                  link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], 
+                                                                              :redirect_action  => params[:action], 
+                                                                              :redirect_id  => params[:id]), 
+                                                     {:method  => :post}
+              %>
+              <br>
+            <% end %>
+            <br>
+          <% end %>
+          <% unless projects["SystemGroup"].blank? %>
+            System Groups<br>
+            <% for group in projects["SystemGroup"] %>
+              <%= 
+                  link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], 
+                                                                              :redirect_action  => params[:action], 
+                                                                              :redirect_id  => params[:id]), 
+                                                     {:method  => :post}
+              %>
+              <br>
+            <% end %>
+          <% end %>
+          <br>
+          <%= 
+            link_to "Switch off active project", {:controller  => :groups, 
+                                                  :action  => :switch, 
+                                                  :id  => :off, 
+                                                  :redirect_controller  => params[:controller], 
+                                                  :redirect_action  => params[:action],
+                                                  :redirect_id  => params[:id]},
+                                                 {:method  => :post} 
+          %>
+        <% end %>
+        </div>          
+  </div>
+

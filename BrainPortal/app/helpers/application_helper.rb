@@ -11,7 +11,7 @@ module ApplicationHelper
   
   #Sets the text to be displayed in the title bar when a given view is rendered.
   def title(page_title)
-    content_for(:title)  { ' - ' + page_title}
+    content_for(:title)  { ' - ' + page_title }
   end
 
   def add_tool_tip(message, &block)
@@ -531,10 +531,11 @@ module ApplicationHelper
     concat("</#{element}>")
     
   end
-  
+
   def button_with_dropdown_menu(options={},html_opts={}, &block)
-    partial = options[:partial]
-    title = options[:title]
+    partial    = options[:partial]
+    title      = options[:title]
+    content_id = "id=\"#{options[:content_id]}\"" if options[:content_id]
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button_menu"
     
@@ -549,7 +550,7 @@ module ApplicationHelper
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     concat("<span class=\"button_with_drop_down\">")
     concat("<a #{atts}>#{title}</a>")
-    concat("<div class=\"drop_down_menu\">")
+    concat("<div #{content_id} class=\"drop_down_menu\">")
     concat(content)
     concat("</div>")
     concat("</span>")

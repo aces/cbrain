@@ -15,31 +15,27 @@
 
 <h2>Edit Data Provider</h2>
 
-<div class = "generalcontent">
+<div class = "generalbox">
 
-   <div class = "generalbox">
+   <%= error_messages_for :provider %>
 
-      <%= error_messages_for :provider %>
+   <% form_for :data_provider, @provider, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
-      <% form_for :data_provider, @provider, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
 
-         <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+      <p><%= submit_tag 'Update' %></p>
 
-         <p><%= submit_tag 'Update' %></p>
+   <% end -%>
 
-      <% end -%>
+   <%= button_to 'Cancel', data_providers_path, :method => :get %>
 
-      <%= button_to 'Cancel', data_providers_path, :method => :get %>
-  </div>  <!-- End class="generalbox" -->
+</div>
 
-   <div class="ssh_keys">
-       <br>
-       Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.
-      <table id="provider_info_table">          
-        <% @ssh_keys.each do |pair| %>
-          <tr><th><%= h(pretty_ssh_key(pair[0])) %></th></tr>
-          <tr><td><SMALL><SMALL><PRE id="standard_out"><%= h(pretty_ssh_key(pair[1])) %></PRE></SMALL></SMALL></td></tr>
-        <% end %>
-      </table>
-   </div> <!-- End class="ssh_keys" -->
-</div>  <!-- End class="generalcontent" -->
+<table>
+  <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
+  <% @ssh_keys.each do |pair| %>
+    <tr><th><%= h(pretty_ssh_key(pair[0])) %></th></tr>
+    <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= h(pretty_ssh_key(pair[1])) %></PRE></SMALL></SMALL></td></tr>
+  <% end %>
+</table>
+

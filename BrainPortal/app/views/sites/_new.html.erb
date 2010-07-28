@@ -10,55 +10,50 @@
 
 -%>
 
-<div id = "new_site">
-
 <% form_for :site, @site, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
   <%= f.error_messages %>
 
- 
-  <div class = "splitleft">
-    <p>
-     <%= f.label :name %><br />
-     <%= f.text_field :name %>
-    </p>
+  <div class="display_row">
+    <%= f.label :name %><br/>
+    <%= f.text_field :name %>
+    <P>
+  </div>
       
-	<label for="users">Users:</label>
-	<table id ="button_table">
-	   <tr>
-	     <td>Name</td>
-	     <td>Regular User</td>
-	     <td>Site Manager</td>
-	   </tr>
-	   <% for user in User.all %>
-	       <tr>
-	         <td class="left_align"><%= h(user.full_name) -%></td>
-	         <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
-	         <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
-	       </tr>
-	   <% end %>
-	</table>
-	<p>
-       <%= f.submit "Create" %>
-       <br>
-     </p>
+  <div class="display_cell">
+    <label for="users">Users</label>
+    <table class="button_table">
+      <tr>
+        <td>Name</td>
+        <td>Regular User</td>
+        <td>Site Manager</td>
+      </tr>
+      <% for user in User.all %>
+        <tr>
+          <td class="left_align"><%= h(user.full_name) -%></td>
+          <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
+          <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
+        </tr>
+      <% end %>
+    </table>
   </div>
   
-  <div class="splitright">
-    <br>
-  	<br>
-  	<br>
-	<label for="groups">Groups</label>
-	<table id="button_table">
-	   
-	   <% for group in WorkGroup.all %>
-	       <tr>
-	         <td class="left_align"><%= h(group.name) -%></td>
-	         <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
-	       </tr>
-	   <% end %>
-	</table>
- 
+  <div class="display_cell">
+    <label for="groups">Groups</label>
+    <table class="button_table">
+      <% for group in WorkGroup.all %>
+        <tr>
+          <td class="left_align"><%= h(group.name) -%></td>
+          <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
+        </tr>
+      <% end %>
+    </table>
   </div>
+
+  <div class="display_row">
+    <P>
+    <%= f.submit "Create" %>
+  </div>
+
 <% end %>
-</div>
+

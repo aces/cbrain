@@ -9,38 +9,44 @@
 # $Id$
 #
 -%>
- <% form_tag( "/userfiles", :multipart => true, :method => :post) do %>
-            <br>
-            <br>
-            Select file to upload:
-  
-            <%= file_field_tag("upload_file") %>
-            <br><br>
 
-            Select tags for file:
-            <select name="tags[]" multiple="multiple" style="width:200px">
-               <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil}      %>
-            </select>
-            <br><br>
-            <% if current_project %>
-              <%= hidden_field_tag 'userfile[group_id]', current_project.id %>
-              Group permissions:
-            <% else %>
-              Group for uploaded file:<br>
-                    <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
-            <% end %>
-            <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-             <br><br>
+<% form_tag( "/userfiles", :multipart => true, :method => :post) do %>
 
-            Archive options (for zip or tar files): 
-                  <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
-            <br><br>
-           
-            Data provider for uploaded file:
-                  <%= select_tag "data_provider_id", options_for_select(@data_providers.collect{ |p| [ p.name, p.id ] }, current_user.user_preference.data_provider_id) %>
-            <br><br><br>
+  Select file to upload:<BR>
+
+  <%= file_field_tag("upload_file") %>
+
+  <P>
+
+  Select tags for file:<BR>
+  <select name="tags[]" multiple="multiple">
+     <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil}      %>
+  </select>
+
+  <% if current_project %>
+    <%= hidden_field_tag 'userfile[group_id]', current_project.id %>
+  <% else %>
+    <P>
+    Group or project for uploaded file:<br>
+    <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
+  <% end %>
+
+  <P>
+
+  Group permissions:<BR>
+  <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+
+  <P>
+
+  Archive options (for zip or tar files):<BR>
+  <%= select_tag(:archive, options_for_select([['Save file', 'save'],['Create collection', 'collection'], ['Auto-extract', 'extract']])) %>
+  <P>
+ 
+  Data provider for uploaded file:<BR>
+  <%= data_provider_select :data_provider_id, { :data_providers => @data_providers } %>
+  <P>
+
+  <%= submit_tag("Upload file") %>
   
-          <%= submit_tag("Upload file") %>
-            
-   <% end %>
-<br>
+<% end %>
+

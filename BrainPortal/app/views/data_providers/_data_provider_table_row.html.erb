@@ -1,3 +1,4 @@
+
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= data_provider.id %>">
   <td><%= link_to data_provider.name, data_provider_path(data_provider) %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.user.login) %></td>
@@ -32,3 +33,4 @@
      <% end %>
   </td>
 </tr>
+

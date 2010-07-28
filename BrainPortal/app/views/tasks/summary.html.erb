@@ -1,11 +1,10 @@
+
 <script type="text/javascript">
 window.onload=function(){
 Nifty("div.task_summary","big");
 }
 </script>
 
-<div class="generalcontent">
-  <br><br>
   <div id="completed_task_summary" class="task_summary">
     <div class="task_summary_count">
       Completed tasks: <%= @tasks_by_status[:completed].size %>
@@ -24,7 +23,9 @@ Nifty("div.task_summary","big");
         </table>
       <% end %>
   </div>
+
   <br>
+
   <div id="running_task_summary" class="task_summary">
     <div class="task_summary_count">
       Running tasks: <%= @tasks_by_status[:running].size %>
@@ -43,7 +44,9 @@ Nifty("div.task_summary","big");
       </table>
     <% end %>
   </div>
+
   <br>
+
   <div id="failed_task_summary" class="task_summary">
     <div class="task_summary_count">
       Failed tasks: <%= @tasks_by_status[:failed].size %>
@@ -62,5 +65,4 @@ Nifty("div.task_summary","big");
       </table>
     <% end %>
   </div>
-  
-</div>
+

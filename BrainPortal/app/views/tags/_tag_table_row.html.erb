@@ -1,4 +1,4 @@
-<% tag_object = Tag.find(:first, :conditions => "name = '#{tag}'") %>
+
 <tr class="<%= cycle( 'list-odd', 'list-even') -%>" id="tag_<%= tag.id %>">
   <td><%= h(tag.name) %></td>
   <td><%= link_to 'Edit', edit_tag_path(tag), {:class => 'action_link'}%></td>
@@ -13,3 +13,4 @@
       %>
   </td>
 </tr>
+

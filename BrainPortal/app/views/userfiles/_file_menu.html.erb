@@ -8,23 +8,20 @@
 <% button_with_dropdown_menu(:title => "Update File Attributes") do %>
     <h4>Tags</h4>
     <%= render :partial => 'userfiles/tag_table'%>
-  <br>
-   <hr>
-   <br>
-   <h4>Projects</h4>
-   Change Project: 
-   <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
-   <%= submit_tag("Update Projects", {:class  => "ajax_submit_button", 
-                                      "data-url"  => url_for({:action  => :update_multiple}),
-                                      "data-method"  => :put})
-   %>
-   <br>
-   Project permission update: 
-   <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-   <%= submit_tag("Update Permissions", :class  => "ajax_submit_button", 
+    <hr>
+    <h4>Projects</h4>
+    Change Project: 
+    <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+    <%= submit_tag("Update Projects", {:class  => "ajax_submit_button", 
                                        "data-url"  => url_for({:action  => :update_multiple}),
-                                       "data-method"  => :put) %> 
-   <br>
+                                       "data-method"  => :put})
+    %>
+    <P>
+    Project permission update: 
+    <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+    <%= submit_tag("Update Permissions", :class  => "ajax_submit_button", 
+                                        "data-url"  => url_for({:action  => :update_multiple}),
+                                        "data-method"  => :put) %> 
 <% end %>
 
 <% button_with_dropdown_menu(:title => "Move/Copy Files")  do %>

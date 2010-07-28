@@ -27,51 +27,6 @@ module UserfilesHelper
     end
   end
   
-  def userfiles_menu_option(name, option_name, partial) #:nodoc:
-    link_to_function name, {:class => " button userfile_menu", :id  => option_name}  do |page|
-      page << "if(current_options != '#{option_name}'){"
-      page << "var local_var = current_options;"
-      page[option_name].visual_effect(:morph, :style  => 'background-color: #FFFFFF; color: ##0073ea', :duration  => 0.4)
-      page << "if(local_var){Element.hide(local_var + '_div');"
-      page << "new Effect.Morph(local_var, {style: 'background-color: #ffffff; #0073ea;', duration: 0.2});"
-      page << "Element.update(local_var + '_div', '');"
-      page << "}"
-      page << "current_options = '#{option_name}';"
-      page.replace_html(option_name + '_div', :partial  => partial)
-      page[option_name + '_div'].visual_effect(:blind_down, :duration  => 0.4)
-      page << "}"
-    end
-  end
-  
-  def userfiles_menu_remote_option(name, option_name, url, expected_response = :html)
-    if(expected_response.to_sym == :html)
-      update_location = option_name + '_div'
-    else
-      update_location = nil
-    end
-    link_to_remote  name,
-                  {:url  => url,
-                   :method  => 'get',
-                   :condition  => "current_options != '#{option_name}'",
-                   :before  => "if(current_options){new Effect.Morph(current_options, {style: 'background-color: #0471B4; color:#F8F8F8;', duration: 0.2});} $('upload_option').morph('background-color: #FFFFFF; color: #000000');",
-                   :after  => "current_options = '#{option_name}';",
-                   :update  => update_location,
-                   :complete  => "if(current_options){Element.hide(current_options + '_div'); Element.update(current_options + '_div', ''););Element.update(current_options + '_div', '');} Effect.BlindDown('#{option_name + '_div'}', {duration: 0.4})"
-                   },
-                  {:class => "userfile_menu", :id  => 'upload_option'}
-  end 
-  
-  def userfiles_menu_close_button
-    '<div class="userfiles_option_close">' +
-    link_to_function('close', :class  => 'action_link') do |page|
-      page << "new Effect.Morph(current_options, {style: 'background-color: #ffffff; #0073ea', duration: 0.2});"
-      page << "Element.hide(current_options + '_div');"
-      page << "Element.update(current_options + '_div', '');"
-      page << "current_options = null;"
-    end +
-    '</div>'
-  end 
-
   # Return the HTML code that represent a symbol
   # for +statkeyword+, which is a SyncStatus 'status'
   # keyword. E.g. for "InSync", the

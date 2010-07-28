@@ -1,13 +1,15 @@
+
 <tr>
     <th>Message</th>
     <th>Last Updated</th>
-    <th colspan = "2"></th>
+    <th></th>
 </tr>
 
 <% for mess in @messages %>
-    <%= render :partial => 'message_table_row', :locals  => {:mess  => mess} %>
+  <%= render :partial => 'message_table_row', :locals  => {:mess  => mess} %>
 <% end %>
 
 <% if @messages.nil? || @messages.empty? %>
   <tr class="list-odd"><td colspan="3">There are no Messages in this list.</td></tr>
 <% end %>
+

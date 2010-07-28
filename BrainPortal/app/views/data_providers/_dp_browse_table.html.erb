@@ -1,107 +1,116 @@
-         <tr>
-          <td colspan="7">
-            <div id="pages">
-              <%= will_paginate @fileinfolist %>
-              <% if @fileinfolist.total_entries > 50 %>
-                  <%= link_to_remote "Toggle Pagination", :url  => {:controller  => :data_providers, 
-                                                                    :action  => :browse,
-                                                                    :pagination => set_toggle(params[:pagination])
-                                                                    }, 
-                                                          :method  => 'get' 
-                  %>
-                  <br><br>  
-              <% end %>
-              <%= link_to_remote 'Refresh list of files', :url  => browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), :method  => :get %>
-            </div>
+
+<tr>
+
+  <td colspan="7">
+    <div class="dp_browse_pages">
+      <%= will_paginate @fileinfolist %>
+      <% if @fileinfolist.total_entries > 50 %>
+        <%= link_to_remote "Toggle Pagination", :url  => {:controller  => :data_providers, 
+                                                          :action  => :browse,
+                                                          :pagination => set_toggle(params[:pagination])
+                                                          }, 
+                                                :method  => 'get' 
+         %>
+         <br>
+       <% end %>
+       <%= link_to_remote 'Refresh list of files', :url  => browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), :method  => :get %>
+     </div>
             
-            <% if params[:search] %>
-              <div id="filter_div">
-                 Filtering: <strong><%= params[:search] %></strong> 
-                 <small>
-                    <%= link_to_remote 'x', {:url  => {:action  => :browse, :pagination  => params[:pagination] }, :method  => 'get'}, {:class  => 'action_link'} %>
-                 </small>
-               </div>
-             <% end %>
-          </td>
-         </tr>
-         <tr>
-             <th><input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
-               $$('.checkbox').each(function(value, index) {
-                  value.checked = $('header_checkbox').checked;
-               });
-               } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
-             /></th>
-             <th onMouseOver="$('name_search_filter').show();$('redirect_to_browse').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_browse').writeAttribute('value', 'false');">
-               Name
-               <div id="name_search_filter" class="filter_list" style="display:none;">
-                 <%= hidden_field_tag :redirect_to_browse, nil, :id => :redirect_to_browse %>
-                 <%= hidden_field_tag :pagination, params[:pagination] %>
-                 Search: <%= text_field_tag :search %>
-               </div>
-             </th>
-             <th>Size</th>
-             <th>Type</th>
-             <th>Last modified</th>
-             <th>Registered?</th>
-             <th>Note</th>
-         </tr>
+     <% if params[:search] %>
+       <div class="dp_browse_filter_div">
+         Filtering: <strong><%= params[:search] %></strong> 
+         <small>
+           <%= link_to_remote 'x', {:url  => {:action  => :browse, :pagination  => params[:pagination] }, :method  => 'get'}, {:class  => 'action_link'} %>
+         </small>
+       </div>
+     <% end %>
+   </td>
 
-         <% for fi in @fileinfolist
-               fi_name     = fi.name
-               fi_size     = fi.size
-               fi_type     = fi.symbolic_type
-               fi_mtime    = fi.mtime
+</tr>
 
-               fi_userfile = fi.userfile
-               fi_ok       = fi.state_ok
-               fi_message  = fi.message
-          %>
-             <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
 
-               <% if fi_ok %>
-                 <td><%= check_box_tag("basenames[]",fi_name, false, :class  => "checkbox") %></td>
-               <% else %>
-                 <td></td>
-               <% end %>
+<tr>
+  <th><input type='checkbox' id="header_checkbox" onclick="
+       try {
+       $$('.checkbox').each(function(value, index) {
+         value.checked = $('header_checkbox').checked;
+         });
+       } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"/>
+  </th>
+  <th onMouseOver="$('name_search_filter').show();$('redirect_to_browse').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_browse').writeAttribute('value', 'false');">
+    Name
+    <div id="name_search_filter" class="filter_list" style="display:none;">
+      Search: <%= text_field_tag :search %>
+      <%= hidden_field_tag :redirect_to_browse, nil, :id => :redirect_to_browse %>
+      <%= hidden_field_tag :pagination, params[:pagination] %>
+    </div>
+  </th>
+  <th>Size</th>
+  <th>Type</th>
+  <th>Last modified</th>
+  <th>Registered?</th>
+  <th>Note</th>
+</tr>
 
-               <td class="left"><%= h(fi_name) %></td>
 
-               <td><%= h(fi_size) %></td>
+<% @fileinfolist.each do |fi| %>
+  <%
+     fi_name     = fi.name
+     fi_size     = fi.size
+     fi_type     = fi.symbolic_type
+     fi_mtime    = fi.mtime
 
-               <% if fi_userfile %>
-                 <td><%= h(fi_userfile.class.to_s) %></td>
-               <% else %>
-                  <% if ! fi_ok %>
-                    <td>Conflict?</td>
-                  <% elsif fi_type == :regular %>
-                    <td>SingleFile</td>
-                  <% elsif fi_type == :directory %>
-                    <td><%= select_tag("directorytypes[]",
-                           options_for_select([
-                              [ "Directory as...", "Unset-#{fi_name}" ],
-                              [ "FileCollection",  "FileCollection-#{fi_name}" ],
-                              [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                           ])) %>
-                    </td>
-                  <% elsif fi_type == :symlink %>
-                    <td><%= select_tag("directorytypes[]",
-                           options_for_select([
-                              [ "Symbolic link as...", "Unset-#{fi_name}" ],
-                              [ "SingleFile",      "SingleFile-#{fi_name}" ],
-                              [ "FileCollection",  "FileCollection-#{fi_name}" ],
-                              [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                           ])) %>
-                    </td>
-                  <% end %>
-               <% end %>
+     fi_userfile = fi.userfile
+     fi_ok       = fi.state_ok
+     fi_message  = fi.message
+  %>
+  <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
 
-               <td><%= h(to_localtime(Time.at(fi_mtime).to_s,:datetime)) %></td>
+    <% if fi_ok %>
+      <td><%= check_box_tag("basenames[]",fi_name, false, :class  => "checkbox") %></td>
+    <% else %>
+      <td></td>
+    <% end %>
 
-               <% if fi_userfile %>
-                 <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => fi_userfile.id } %></td>
-               <% else %>
-                 <td>No</td>
-               <% end %>
-               <td><%= h(fi_message) %></td>
-             </tr>
-         <% end %>
+    <td class="left"><%= h(fi_name) %></td>
+
+    <td><%= h(fi_size) %></td>
+
+    <% if fi_userfile %>
+      <td><%= h(fi_userfile.class.to_s) %></td>
+    <% else %>
+       <% if ! fi_ok %>
+         <td><%= red_if(true,"Unacceptable?") %></td>
+       <% elsif fi_type == :regular %>
+         <td>SingleFile</td>
+       <% elsif fi_type == :directory %>
+         <td><%= select_tag("directorytypes[]",
+                options_for_select([
+                   [ "Directory as...", "Unset-#{fi_name}" ],
+                   [ "FileCollection",  "FileCollection-#{fi_name}" ],
+                   [ "CivetCollection", "CivetCollection-#{fi_name}" ]
+                ])) %>
+         </td>
+       <% elsif fi_type == :symlink %>
+         <td><%= select_tag("directorytypes[]",
+                options_for_select([
+                   [ "Symbolic link as...", "Unset-#{fi_name}" ],
+                   [ "SingleFile",      "SingleFile-#{fi_name}" ],
+                   [ "FileCollection",  "FileCollection-#{fi_name}" ],
+                   [ "CivetCollection", "CivetCollection-#{fi_name}" ]
+                ])) %>
+         </td>
+       <% end %>
+    <% end %>
+
+    <td><%= h(to_localtime(Time.at(fi_mtime).to_s,:datetime)) %></td>
+
+    <% if fi_userfile %>
+      <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => fi_userfile.id } %></td>
+    <% else %>
+      <td>No</td>
+    <% end %>
+    <td><%= h(fi_message) %></td>
+  </tr>
+
+<% end %> <!-- each fileinfo -->

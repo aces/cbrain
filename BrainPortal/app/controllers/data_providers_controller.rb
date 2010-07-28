@@ -333,7 +333,7 @@ class DataProvidersController < ApplicationController
       format.html
       format.js do
         render :update do |page|
-          page[:browse_table].replace_html :partial  => "dp_browse_table"
+          page[:dp_browse_table].replace_html :partial  => "dp_browse_table"
         end
       end
     end
@@ -615,25 +615,13 @@ class DataProvidersController < ApplicationController
   end
 
   def get_ssh_public_keys #:nodoc:
-
     # Get SSH key for this BrainPortal
     home = CBRAIN::Rails_UserHome
-    portal_ssh_key = `cat #{home}/.ssh/id_rsa.pub`.strip
+    portal_ssh_key = (File.read("#{home}/.ssh/id_rsa.pub") rescue "").strip
     portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
     keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
+    # Get those of all other Bourreaux
     keys += Bourreau.all.map{ |b| ["Execution Server '#{b.name}'", b.ssh_public_key] }
-    # Get SSH keys for each Bourreau
-    # Bourreau.all.each do |b|
-    #   next unless b.can_be_accessed_by?(current_user)
-    #   name = b.name
-    #   ssh_key = "This Execution Server is DOWN!"
-    #   if b.is_alive?
-    #     info = b.info
-    #     ssh_key = info.ssh_public_key
-    #   end
-    #   keys << [ "Execution Server '#{name}'", ssh_key ]
-    # end
-
     keys
   end
 

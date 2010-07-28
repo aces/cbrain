@@ -1,108 +1,81 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
--%>
-
 <%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
 
-<div class = "generalcontent">
+<% title "Edit #{@bourreau.name}" %>
 
-   <% title "Edit #{@bourreau.name}" %>
+<h2>Edit <%= @bourreau.name %></h2>
 
-   <h2>Edit <%= @bourreau.name %></h2>
+<div class="generalbox">
 
-   <div class = "generalcontent">
+   <%= error_messages_for :bourreau %>
 
-   <div class = "generalbox">
+   <% form_for @bourreau.class.to_s.underscore.to_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
-      <%= error_messages_for :bourreau %>
+      <p><label for="name">Name</label><br/>
+      <%= f.text_field :name %></p>
 
-      <% form_for @bourreau.class.to_s.underscore.to_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+      <p><label for="description">Description</label><br/>
+      <%= f.text_field :description %></p>
+      
+      <div class="Bourreau" style="display:none">
+        <p><label for="user_id">Owner</label><br/>
+        <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
 
-         <p><label for="name">Name</label><br/>
-         <%= f.text_field :name %></p>
+        <p><label for="group_id">Group</label><br/>
+        <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
 
-         <p><label for="description">Description</label><br/>
-         <%= f.text_field :description %></p>
-         
-         <div class="Bourreau" style="display:none">
-           <p><label for="user_id">Owner</label><br/>
-           <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
+        <p><label for="online">Status</label><br/>
+        <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
-           <p><label for="group_id">Group</label><br/>
-           <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
+        <p><label>ActiveResource Configuration</label><br/>
+        <div class="groupentry">
+            <p><label for="actres_host">Hostname</label><br/>
+            <%= f.text_field :actres_host %></p>
 
-           <p><label for="online">Status</label><br/>
-           <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
+            <p><label for="actres_port">Port Number</label><br/>
+            <%= f.text_field :actres_port %></p>
+        </div>
+      </div>
 
-           <p><label>ActiveResource Configuration</label><br/>
-           <div class="groupentry">
+      <p><label>SSH Remote Control Configuration</label><br/>
 
-               <p><label for="actres_host">Hostname</label><br/>
-               <%= f.text_field :actres_host %></p>
+      <div class="groupentry">
+          <p><label for="ssh_control_host">Hostname</label><br/>
+          <%= f.text_field :ssh_control_host %></p>
 
-               <p><label for="actres_port">Port Number</label><br/>
-               <%= f.text_field :actres_port %></p>
+          <p><label for="ssh_control_user">Username</label><br/>
+          <%= f.text_field :ssh_control_user %></p>
 
-           </div>
-         </div>
+          <p><label for="ssh_control_port">Port Number</label><br/>
+          <%= f.text_field :ssh_control_port %></p>
 
-           <p><label>SSH Remote Control Configuration</label><br/>
-           <div class="groupentry">
+          <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
+          <%= f.text_field :ssh_control_rails_dir %></p>
+      </div>
+        
+      <div class="Bourreau" style="display:none">
+        <p><label>Tunneling Configuration</label><br/>
+        <div class="groupentry">
+            <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
+            <%= f.text_field :tunnel_mysql_port %></p>
 
-               <p><label for="ssh_control_host">Hostname</label><br/>
-               <%= f.text_field :ssh_control_host %></p>
+            <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
+            <%= f.text_field :tunnel_actres_port %></p>
+        </div>
+      </div>
 
-               <p><label for="ssh_control_user">Username</label><br/>
-               <%= f.text_field :ssh_control_user %></p>
+      <p><label>Cache Management Configuration</label><br/>
+      <div class="groupentry">
+          <p><label for="cache_trust_expire">Cache Expiration Timeout (in seconds)</label><br/>
+          <%= f.text_field :cache_trust_expire %></p>
+      </div>
 
-               <p><label for="ssh_control_port">Port Number</label><br/>
-               <%= f.text_field :ssh_control_port %></p>
+      <p><%= submit_tag 'Update' %></p>
 
-               <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
-               <%= f.text_field :ssh_control_rails_dir %></p>
+   <% end -%>
 
-           </div>
-           
-         <div class="Bourreau" style="display:none">
-           <p><label>Tunneling Configuration</label><br/>
-           <div class="groupentry">
+   <%= button_to 'Cancel', bourreaux_path, :method => :get %>
 
-               <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
-               <%= f.text_field :tunnel_mysql_port %></p>
+</div> <!-- End class="generalbox" -->
 
-               <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
-               <%= f.text_field :tunnel_actres_port %></p>
-
-           </div>
-         </div>
-
-
-
-         <p><label>Cache Management Configuration</label><br/>
-         <div class="groupentry">
-
-             <p><label for="cache_trust_expire">Cache Expiration Timeout (in seconds)</label><br/>
-             <%= f.text_field :cache_trust_expire %></p>
-
-         </div>
-
-         <p><%= submit_tag 'Update' %></p>
-
-      <% end -%>
-
-      <%= button_to 'Cancel', bourreaux_path, :method => :get %>
-
-   </div> <!-- End class="generalbox" -->
-
-   <%= render :partial => "notes" %>
-
-</div> <!-- End class="generalcontent" -->
+<%= render :partial => "notes" %>

@@ -10,48 +10,42 @@
 #
 
 -%>
-<div class = "generalcontent">
 
   <% title 'Execution Servers' %>
 
-  <div class = 'help_button_drop_down'>
-           <% button_with_dropdown_menu(:title => "Help") do %>
-             <a class = "overlay_link" data-url ="/doc/server/view_server.html">Execution Servers</a>
-           <% end %>     
+  <div class="menu_bar menu_bar_left">
+    <% if check_role(:admin) || check_role(:site_manager)%>
+      <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new', :content_id => "new_bourreau" }, {:id => "new_bourreau_button"}) %>
+      <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
+    <% end %>
+    <% button_with_dropdown_menu(:title => "Help") do %>
+       <a class = "overlay_link" data-url ="/doc/server/view_server.html">Execution Servers</a>
+    <% end %>     
   </div>
   
-  <% if check_role(:admin) || check_role(:site_manager)%>
-      <div class="menu_bar">
-          <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new'}, {:id => "new_bourreau_button"}) %>
-          <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text-icon" } %>
-      </div> <!-- End class="menu_bar" -->
+  <br>
 
-   <% end %>
-   <br>
-   <div id="show_details_link" style="display:inline;">
+  <div id="show_details_link" style="display:inline;">
     <%= 
-        link_to_function 'Show Details', {:class  => 'action_link', :id => "show_details_link"} do |page|
-          page.select('.resource_details').each{ |el| el.show  }
-          page['hide_details_link'].show
-          page['show_details_link'].hide
-        end 
-        %>
-    </div>
-    <div id="hide_details_link" style="display:none;">
-        <%= 
-        link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
-          page.select('.resource_details').each{ |el| el.hide  }
-          page['show_details_link'].show
-          page['hide_details_link'].hide      
-        end 
-            %>
-    </div>
+       link_to_function 'Show Details', {:class  => 'action_link', :id => "show_details_link"} do |page|
+         page.select('.resource_details').each { |el| el.show  }
+         page['hide_details_link'].show
+         page['show_details_link'].hide
+       end 
+     %>
+   </div>
+
+   <div id="hide_details_link" style="display:none;">
+     <%= 
+       link_to_function 'Hide Details', {:class  => 'action_link', :id =>'hide_details_link'} do |page|
+         page.select('.resource_details').each { |el| el.hide  }
+         page['show_details_link'].show
+         page['hide_details_link'].hide      
+       end 
+     %>
+   </div>
     
-   <div id = "bourreau_info">
-  
-     <% ajax_element({:element  => "table", :url => url_for(:action => :index, :table_contents => true)}, {:class  => "resource_list", :id  => "bourreau_table"}) do %>
-       <tr><td class="loading_message">Loading...</td></tr>
-     <% end %>
-  
-  </div>
-</div>  <!-- End class="generalcontent" -->
+   <% ajax_element({:element  => "table", :url => url_for(:action => :index, :table_contents => true)}, {:class  => "resource_list", :id  => "bourreau_table"}) do %>
+     <tr><td class="loading_message">Loading...</td></tr>
+   <% end %>
+

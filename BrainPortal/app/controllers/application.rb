@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
   include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
-  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size
+  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if
   helper        :all # include all helpers, all the time
 
   filter_parameter_logging :password, :login, :email, :full_name, :role
@@ -304,6 +304,31 @@ class ApplicationController < ActionController::Base
     else
       sprintf "%d bytes", size
     end 
+  end
+
+  # Returns one of two things depending on +condition+:
+  # If +condition+ is FALSE, returns +string1+
+  # If +condition+ is TRUE, returns +string2+ colorized in red.
+  # If no +string2+ is supplied, then it will be considered to
+  # be the same as +string1+.
+  # Options can be use to specify other colors (as :color1 and
+  # :color2, respectively)
+  #
+  # Examples:
+  #
+  #     red_if( ! is_alive? , "Alive", "Down!" )
+  #
+  #     red_if( num_matches == 0, "#{num_matches} found" )
+  def red_if(condition,string1,string2 = string1, options = { :color2 => 'red' } )
+    if condition
+      color = options[:color2] || 'red'
+      string = string2 || string1
+    else
+      color = options[:color1]
+      string = string1
+    end
+    return string unless color
+    return "<font color=\"#{color}\">#{string}</font>" # maybe use a div?
   end
 
 end

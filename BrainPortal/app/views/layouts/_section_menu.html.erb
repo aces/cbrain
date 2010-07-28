@@ -1,0 +1,70 @@
+
+<!-- ************* -->
+<!-- PARTIAL: MENU -->
+<!-- ************* -->
+
+<div id="header">
+
+  <div id="mni_logo"></div>
+  <h1>CBRAIN <%= CBRAIN::Redmine_Version %> <%= yield :title %></h1>
+
+    <% if current_user %>
+      <%= render :partial => 'layouts/section_menu_project_select' %>
+    <% end %>
+
+    <div id="main-menu">
+
+      <% if current_user %>
+         <ul>      
+            <li <%= set_selected(params[:controller], :userfiles) %>>
+              <%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %>
+            </li>
+            <li <%= set_selected(params[:controller], :tasks) %>>
+              <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
+            </li>
+            <li <%= set_selected(params[:controller], :groups) %>>
+              <%= link_to 'Projects', groups_path %>
+            </li>
+            <li <%= set_selected(params[:controller], :data_providers) %>>
+              <%= link_to 'Data Providers', data_providers_path %>
+            </li>
+            <li <%= set_selected(params[:controller], :bourreaux) %>>
+              <%= link_to 'Servers', bourreaux_path %>
+            </li>               
+            <li <%= set_selected(params[:controller], :feedbacks) %>>
+              <%= link_to 'Feedback', feedbacks_path %>
+            </li>
+            <li <%= set_selected(params[:controller], :messages) %>>
+              <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
+            </li>
+            <li <%= set_selected(params[:controller], :tools) %>>
+              <%= link_to 'Tools', tools_path %>
+            </li>
+        
+            <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
+              <li <%= set_selected(params[:controller], :users) %>>
+                <%= link_to 'Users', users_path %>
+              </li>
+            <% end %>
+
+            <% if current_user.has_role?(:admin) %>
+              <li <%= set_selected(params[:controller], :sites) %>>
+                <%= link_to 'Sites', sites_path %>
+              </li>  
+               
+              <li <%= set_selected(params[:controller], :logged_exception) %>>
+                <%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %>
+              </li>
+            <% end %>
+
+            <% if current_user.site %>
+              <li <%= set_selected(params[:controller], :user_site_show) %>>
+                <%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %>
+              </li> 
+            <% end %>
+         </ul>
+      <% end %>               
+
+    </div>  <!-- End id="main-menu" -->
+</div>   <!-- End id="header" -->   
+

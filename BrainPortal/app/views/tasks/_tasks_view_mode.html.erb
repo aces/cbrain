@@ -1,0 +1,8 @@
+
+<% if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at' %>
+  <strong>Currently in Batch View</strong>
+<% else %>
+  <%= link_to_remote 'Switch to Batch View', {:url  => {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', :dir  => 'DESC'}}}, :method  => 'get'}, {:class  => 'action_link'} %>
+  <%= set_order_icon('cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+<% end %>
+

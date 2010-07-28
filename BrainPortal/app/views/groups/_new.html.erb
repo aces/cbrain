@@ -1,4 +1,4 @@
-				   
+
 <%
 
 #
@@ -11,38 +11,34 @@
 
 -%>
 
-<br>
+<% form_for :group, @group, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
+  <%= f.error_messages %>
 
-<div id="new_group">
-      <% form_for :group, @group, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <% if current_user.has_role?(:admin) %>
+    <p><label for="role">Site</label><br/>
+     <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+  <% end %>
 
-        <%= f.error_messages %>
+  <% if current_user.has_role?(:user) %>
+    <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
+  <% else %>
+    <label for="users">Users in project:</label>
+    <table class="button_table">
+       <% for user in @users %>
+           <tr>
+             <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+             <td class="left_align"><%= h(user.full_name) -%></td>
+           </tr>
+       <% end %>
+    </table>
+  <% end %>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
 
-        <p>
-          <%= f.label :name %><br />
-          <%= f.text_field :name %>
-        </p>
-        <% if current_user.has_role?(:admin) %>
-          <p><label for="role">Site</label><br/>
-           <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
-        <% end %>
-
-        <% if current_user.has_role?(:user) %>
-          <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
-        <% else %>
-          <label for="users">Users in project:</label>
-          <table id = "button_table">
-             <% for user in @users %>
-                 <tr>
-                   <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
-                   <td class="left_align"><%= h(user.full_name) -%></td>
-                 </tr>
-             <% end %>
-          </table>
-        <% end %>
-        <p>
-          <%= f.submit "Create" %>
-        </p>
-      <% end %>
-</div>

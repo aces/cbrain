@@ -7,7 +7,9 @@
 #
 
 -%>
-<% unless current_user.available_conversion_tools.blank? %>  <br>
+<% unless current_user.available_conversion_tools.blank? %>
+
+   <br>
   
    <%= select_tag(
      "conversion_operation", 
@@ -24,8 +26,10 @@
    
    <span id="bourreau_select">
    </span>
+
    <br>
    <br>
+
    <%= submit_tag("Apply Operation", :class  => "ajax_submit_button", 
                                      "data-url"  => url_for({:controller  => :tasks, :action  => :new}),
                                      "data-method"  => :get,
@@ -41,6 +45,7 @@
    <% end %>
    <br>
 <% end %>
+
 <br>
 
 

@@ -177,16 +177,28 @@ class BourreauxController < ApplicationController
   end
   
   def refresh_ssh_keys #:nodoc:
+    refreshed_bourreaux = []
+    skipped_bourreaux   = []
+
     RemoteResource.find_all_accessible_by_user(current_user).each do |b|
       if b.is_alive?
         info = b.info
         ssh_key = info.ssh_public_key
+        b.ssh_public_key = ssh_key
+        b.save
+        refreshed_bourreaux << b.name
+      else
+        skipped_bourreaux << b.name
       end
-      b.ssh_public_key = ssh_key
-      b.save
     end
     
-    flash[:notice] = "Server ssh public keys have been refreshed."
+    if refreshed_bourreaux.size > 0
+      flash[:notice] = "SSH public keys have been refreshed for these Servers: " + refreshed_bourreaux.join(", ") + "\n"
+    end
+    if skipped_bourreaux.size > 0
+      flash[:error]  = "These Servers are not alive and SSH keys couldn't be updated: " + skipped_bourreaux.join(", ") + "\n"
+    end
+    
     redirect_to :action  => :index
   end
 

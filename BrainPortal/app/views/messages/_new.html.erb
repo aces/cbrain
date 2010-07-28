@@ -1,45 +1,49 @@
-<div class="generalcontent">
 
-<div id= "new_message">
+<% remote_form_for :message, @message, :url => { :action => "create" } do |f| %>
 
-  <% remote_form_for :message, @message, :url => { :action => "create" } do |f| %>
-    <%= f.error_messages %>
-    
-    <p>
-      To: <%= group_select("group_id", :groups  => current_user.available_groups.reject{ |g|  g.name == 'everyone' if current_user.has_role?(:site_manager) }.sort_by(&:name), :selector => @message) %>
-    </p>
-    <p>
-      <%= f.label :critical %>
-      <%= f.check_box :critical %>
-    </p>
-    <p>
-      <%= f.label :send_email, "Send E-mail" %>
-      <%= check_box_tag "message[send_email]", 1, true %>
-    </p>
-    <p>
-      <%= f.label :header %><br />
-      <%= f.text_field :header %>
-    </p>
-    <p>
-      <%= f.label :description %><br />
-      <%= f.text_area :description, :rows => 5 %>
-    </p>
-    <p>
-      <%= f.label :variable_text %><br />
-      <%= f.text_area :variable_text, :rows => 5 %>
-    </p>
-    <p>
-      <%= f.label :message_type %><br />
-      <%= f.select :message_type, ["system", "notice", "error"] %>
-    </p>
-    <p>
-      <%= f.label :expiry %> (Current time: <%= to_localtime(Time.now, :datetime) %>)<br>
-      <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
-    </p>
-    <br>
-    <p>
-      <%= f.submit "Create" %>
-    </p>
-  <% end %>
-</div>
-</div>
+  <%= f.error_messages %>
+  
+  <p>
+    To: <%= group_select(:group_id,
+            {
+              :groups  => current_user.available_groups.reject{ |g| g.name == 'everyone' if current_user.has_role?(:site_manager) }.sort_by(&:name),
+              :selector => @message
+            },
+            { :include_blank => true }
+            )
+        %>
+  </p>
+  <p>
+    <%= f.label :critical %>
+    <%= f.check_box :critical %>
+  </p>
+  <p>
+    <%= f.label :send_email, "Send E-mail" %>
+    <%= check_box_tag "message[send_email]", 1, true %>
+  </p>
+  <p>
+    <%= f.label :header %><br />
+    <%= f.text_field :header %>
+  </p>
+  <p>
+    <%= f.label :description %><br />
+    <%= f.text_area :description, :rows => 5 %>
+  </p>
+  <p>
+    <%= f.label :variable_text %><br />
+    <%= f.text_area :variable_text, :rows => 5 %>
+  </p>
+  <p>
+    <%= f.label :message_type %><br />
+    <%= f.select :message_type, ["system", "notice", "error"] %>
+  </p>
+  <p>
+    <%= f.label :expiry %> (Current time: <%= to_localtime(Time.now, :datetime) %>)<br>
+    <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
+  </p>
+  <br>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+

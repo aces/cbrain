@@ -1,22 +1,28 @@
+
 <%= f.error_messages %>
+
 <p>
  Tool Name: 
  <%= f.text_field :name %>
 </p>
+
 <p>
-  <span title="PortalTask subclass to which this tool is associated.">
+  <span title="PortalTask subclass which implements this tool.">
     CbrainTask Class: 
      <%= f.text_field :cbrain_task_class %>
   </span>
 </p>
+
 <p>
  Belongs to:
  <%= user_select "tool[user_id]", @tool %>
 </p>
+
 <p>
  Belongs to group:
  <%= group_select "tool[group_id]", @tool %>
 </p>
+
 <p>
   Installed on the following execution servers: <br/>
   <% for bourreau in Bourreau.find_all_accessible_by_user(current_user) %>
@@ -24,16 +30,19 @@
     <%= bourreau.name %>
   <% end %>
 </p>
+
 <p>
   <%= f.label :category %>: 
   <%= f.select :category, Tool::Categories %>  
 </p>
+
 <p>
   Description:<br>
   <%= f.text_area :description %>
 </p>
+
 <p>
   Text for select box on the userfiles page:
   <%= f.text_field :select_menu_text %>
 </p>
-<br>
+
