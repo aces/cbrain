@@ -39,20 +39,14 @@
     <th>Group</th>
     <th>Bourreau</th>
     <th>Category</th>
-   
-      <% form_tag({:controller => :tools, :action => :delete_tools}, :method => :delete) do %>
-          <% if current_user.has_role?(:admin) %>
-              <th colspan="2">Operations</th>
-                <th class = "ck_box_delete"> <%= submit_button("Delete Tools", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected tools?')"}) 
-          %></th>
-        <% end %>
-    
+     <% if current_user.has_role?(:admin) %>
+     	<th colspan="3">Operations</th>
+	 <% end %>
   </tr>
 
   <% for tool in @tools %>
     <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
   <% end %>
-<% end %>
 
 </table>
 
