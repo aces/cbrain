@@ -72,6 +72,22 @@ class MessagesController < ApplicationController
       end
     end
   end
+  
+  #Delete the selected feedback.
+  def delete_messages
+    message_list = params[:message_ids] || []
+    deleted_count = 0
+    
+    message_list.each do |message_item|
+      message_obj = Message.find(message_item)
+      deleted_count += 1
+      message_obj.destroy
+    end
+    
+    flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n" 
+    redirect_to :action => :index
+  end
+
 
   # DELETE /messages/1
   # DELETE /messages/1.xml
