@@ -1,7 +1,5 @@
 
-<thead>
-<tr>    
-    <tr>
+  <tr>    
       <th>
 	<input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
             $$('.userfiles_checkbox').each(function(value, index) {
@@ -9,17 +7,17 @@
             });
             } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.userfiles_checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
           />
-    </th> 
-    <th>
-            <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+      </th> 
+      <th>
+        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       
-       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
+      <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
         <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
-       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
+      <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
         <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
         <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
@@ -46,8 +44,8 @@
          <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
     </tr>
-  </thead>
-  <tbody>
-       <%= render :partial => 'userfiles/userfile', :collection  => @userfiles %>                   
-  </tbody>
-  
+
+    <% @userfiles.each do |userfile| %>
+       <%= render :partial => 'userfiles/userfile_table_row', :locals => { :userfile => userfile } %>
+    <% end %>
+
