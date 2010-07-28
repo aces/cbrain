@@ -1,0 +1,72 @@
+
+<%
+
+#
+# CBRAIN Project
+#
+# $Id$
+#
+
+-%>
+
+<% if userfile.available? %>
+  <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
+<% else %>
+  <tr class="list-unavailable row_highlight" title="This file is unavailable due to its provider being offline">
+<% end %>
+
+   <td>
+     <% if userfile.available? %>
+      <%= check_box_tag("file_ids[]", userfile.id.to_s, false, :class  => 'userfiles_checkbox') %>
+     <% else %>
+      <input type='checkbox' DISABLED />
+     <% end %>
+
+   </td>
+   
+   <td class="left">
+      <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if (userfile.level || 0) > 0 -%>
+      <% if userfile.is_a? FileCollection %>
+        <%= image_tag "/images/folder_icon_solid.png" %>
+      <% else %>
+        <%= image_tag "/images/file_icon.png" %>
+      <% end %>
+      <%= link_to userfile.name, userfile_path(userfile) %>
+      <%= userfile.pretty_type %>    
+      <% userfile.sync_status.each do |syncstat| %>
+        <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
+      <% end %>
+      <% if userfile.formats.size > 0 %>
+        <br>
+        Formats: <%= userfile.formats.map { |u| link_to_userfile_if_accessible(u,current_user,:name => u.format_name) }.join(", ") %>
+      <% end %>
+   </td>
+   <% unless current_session[:userfiles_details] == 'off' %>
+   <td class="userfiles_details"><%= h userfile.user.login  %></td>
+   <td class="userfiles_details">
+      <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
+         <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
+      </span>
+   </td>
+   <% end %>
+
+   <% if userfile.size != nil %>
+      <td><span title="<%= userfile.size %> bytes"><%= h(userfile.format_size) -%></span></td>
+   <% else %>
+     <td><font color="red">unknown</font></td>
+   <% end %>
+   <td><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></td>
+   <% if userfile.group != nil %>
+     <% unless current_project %>
+        <td><%= h userfile.group.name -%></td>
+     <% end %>
+     <td><%= userfile.group_writable ? 'Read/Write' : 'Read Only' -%></td>
+   <% else %>
+     <td/><td/>
+   <% end %>
+   <% unless current_session[:userfiles_details] == 'off' %>
+     <td class="userfiles_details">
+        <%= userfile.data_provider.name %>
+     </td>
+   <% end %>
+</tr>
