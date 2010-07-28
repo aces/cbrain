@@ -14,22 +14,18 @@
   </td>
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
     <% unless mess.read %>
-    <%= 
-        link_to_remote  'Mark&nbsp;as&nbsp;Read',
+    <%= link_to_remote  'Mark&nbsp;as&nbsp;Read',
                       {:url  => message_path(mess, :read  => true),
                        :method  => 'put',
                        :before  => "$$('#message_display_#{mess.id}').invoke('update', '<td colspan=\"11\" style=\"color:red; text-align:center;\">Updating...</td>');"
                        },
                       {:class => 'action_link'}
-      %>&nbsp;&nbsp;&nbsp;&nbsp;<% end %><%= 
-        link_to_remote  'Delete',
-                      {:url  => message_path(mess),
-                       :method  => 'delete',
-                       :confirm => 'Are you sure?',
-                       :before  => "$$('#message_display_#{mess.id}').invoke('update', '<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
-                       },
-                      {:class => 'action_link'}
       %>
-  </td>
+      &nbsp;&nbsp;&nbsp;&nbsp;          
+      <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
+        <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>
+   </td>
+   <% end %>      
+   </td>
 </tr>
 
