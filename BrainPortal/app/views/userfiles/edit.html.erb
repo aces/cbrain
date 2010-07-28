@@ -69,12 +69,12 @@
     </tr>
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Group:</th>
+      <th class="right_align">Project:</th>
       <td><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Group permission on file:</th>
+      <th class="right_align">Project Access:</th>
       <td><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
       <td></td>
     </tr>
