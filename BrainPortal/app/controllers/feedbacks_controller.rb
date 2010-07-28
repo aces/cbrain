@@ -84,21 +84,6 @@ class FeedbacksController < ApplicationController
     end
   end
 
-  #Delete the selected feedback.
-   def delete_feedback
-     feedback_list    = params[:feedback_ids] || []
-     deleted_count      = 0
-      
-     feedback_list.each do |feedback_item|
-      feedback_obj = Feedback.find(feedback_item)
-      deleted_count += 1
-      feedback_obj.destroy
-     end 
-  
-     flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n"
-     redirect_to :action => :index
-  end
-
   # DELETE /feedbacks/1
   # DELETE /feedbacks/1.xml
   def destroy #:nodoc:
