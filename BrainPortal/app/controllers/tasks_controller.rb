@@ -148,6 +148,7 @@ class TasksController < ApplicationController
     @task.params      = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id = params[:bourreau_id]
     @task.user_id     = current_user.id
+    @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
 
     # Filter list of files as provided by the get request
     @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write) rescue []
@@ -231,7 +232,7 @@ class TasksController < ApplicationController
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id     = current_user.id
-    @task.group_id    = current_session[:active_group_id]
+    @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
