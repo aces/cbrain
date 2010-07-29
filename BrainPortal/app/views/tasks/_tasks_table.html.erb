@@ -4,23 +4,14 @@
 
 
     <th> 
-       <input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
-         $$('.checkbox').each(function(value, index) {
-            value.checked = $('header_checkbox').checked;
-         });
-         } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
-       />
+       <input type='checkbox' class="select_all" data-checkbox-class="task_checkbox"/>
     </th>
 
 
 
     <th id="task_type_header" onMouseOver="$('task_filters_list').show()" onMouseOut="$('task_filters_list').hide()">
-      <%= link_to_remote  "Task Name", :url  =>  {
-                                         :controller  => :tasks, 
-                                         :action  => :index, 
-                                         :tasks  => {:sort  => {:order  => 'cbrain_tasks.type', :dir  => set_dir('cbrain_tasks.type', @filter_params["sort"])}}
-                                       }, 
-                                       :method  => 'get'  
+      <%= link_to "Task Name", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.type', :dir  => set_dir('cbrain_tasks.type', @filter_params["sort"])}} }, 
+                                       "data-datatype"  => 'script', :class  => "ajax_link"  
       %>
       <%= set_order_icon('cbrain_tasks.type', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
       <% unless @task_types.blank? %>
@@ -36,12 +27,8 @@
 
 
     <th onMouseOver="$('description_filters_list').show()" onMouseOut="$('description_filters_list').hide()">
-       <%= link_to_remote  "Description", :url  =>  {
-                                             :controller  => :tasks, 
-                                             :action  => :index, 
-                                             :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}}
-                                           }, 
-                                           :method  => 'get'
+       <%= link_to "Description", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}} }, 
+                                  "data-datatype"  => 'script', :class  => "ajax_link"
        %>
         <%= set_order_icon('cbrain_tasks.description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
         <% unless @task_descriptions.blank? %>
@@ -57,12 +44,8 @@
 
 
     <th onMouseOver="$('owner_filters_list').show()" onMouseOut="$('owner_filters_list').hide()">
-       <%= link_to_remote  "Owner", :url  =>  {
-                                       :controller  => :tasks, 
-                                       :action  => :index, 
-                                       :tasks  => {:sort  => {:order  => 'users.login', :dir  => set_dir('users.login', @filter_params["sort"])}}
-                                     }, 
-                                     :method  => 'get'  
+       <%= link_to  "Owner", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'users.login', :dir  => set_dir('users.login', @filter_params["sort"])}} }, 
+                              "data-datatype"  => 'script', :class  => "ajax_link"  
        %>
        <%= set_order_icon('users.login', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
        <% if current_user.has_role?(:admin) && !@task_owners.blank? %>
@@ -79,19 +62,17 @@
 
     <% unless current_project %>
       <th>
-       Project
+        <%= link_to "Project", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'groups.name', :dir  => set_dir('groups.name', @filter_params["sort"])}} }, 
+                                 "data-datatype"  => 'script', :class  => "ajax_link"
+         %>
       </th>
     <% end %>
 
 
 
     <th onMouseOver="$('bourreau_filters_list').show()" onMouseOut="$('bourreau_filters_list').hide()">
-      <%= link_to_remote  "Execution Server", :url  =>  {
-                                                :controller  => :tasks, 
-                                                :action  => :index, 
-                                                :tasks  => {:sort  => {:order  => 'remote_resources.name', :dir  => set_dir('remote_resources.name', @filter_params["sort"])}}
-                                              }, 
-                                              :method  => 'get'  
+      <%= link_to  "Execution Server", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'remote_resources.name', :dir  => set_dir('remote_resources.name', @filter_params["sort"])}} }, 
+                                                "data-datatype"  => 'script', :class  => "ajax_link"
       %>
       <%= set_order_icon('remote_resources.name', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
       <% unless @bourreaux.blank? %>
@@ -107,12 +88,8 @@
 
 
     <th onMouseOver="$('status_filters_list').show()" onMouseOut="$('status_filters_list').hide()">
-       <%= link_to_remote  "Current Status", :url  =>  {
-                                               :controller  => :tasks, 
-                                               :action  => :index, 
-                                               :tasks  => {:sort  => {:order  => 'cbrain_tasks.status', :dir  => set_dir('cbrain_tasks.status', @filter_params["sort"])}}
-                                             }, 
-                                             :method  => 'get'  
+       <%= link_to "Current Status", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.status', :dir  => set_dir('cbrain_tasks.status', @filter_params["sort"])}} }, 
+                                       "data-datatype"  => 'script', :class  => "ajax_link"  
        %>
        <%= set_order_icon('cbrain_tasks.status', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
        <% unless @task_status.blank? %>
@@ -128,12 +105,8 @@
 
 
     <th>
-      <%= link_to_remote  "Time Submitted", :url  =>  {
-                                              :controller  => :tasks, 
-                                              :action  => :index, 
-                                              :tasks  => {:sort  => {:order  => 'cbrain_tasks.created_at', :dir  => set_dir('cbrain_tasks.created_at', @filter_params["sort"])}}
-                                            }, 
-                                            :method  => 'get'  
+      <%= link_to  "Time Submitted", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.created_at', :dir  => set_dir('cbrain_tasks.created_at', @filter_params["sort"])}} }, 
+                                              "data-datatype"  => 'script', :class  => "ajax_link"
       %>
       <%= set_order_icon('cbrain_tasks.created_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
     </th>
@@ -141,12 +114,8 @@
 
 
     <th>
-      <%= link_to_remote  "Last Updated", :url  =>  {
-                                          :controller  => :tasks, 
-                                          :action  => :index, 
-                                          :tasks  => {:sort  => {:order  => 'cbrain_tasks.updated_at', :dir  => set_dir('cbrain_tasks.updated_at', @filter_params["sort"])}}
-                                        }, 
-                                        :method  => 'get'  
+      <%= link_to  "Last Updated", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.updated_at', :dir  => set_dir('cbrain_tasks.updated_at', @filter_params["sort"])}} }, 
+                                     "data-datatype"  => 'script', :class  => "ajax_link"
       %>
       <%= set_order_icon('cbrain_tasks.updated_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
     </th>

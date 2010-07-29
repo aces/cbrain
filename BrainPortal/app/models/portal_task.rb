@@ -63,28 +63,6 @@ class PortalTask < CbrainTask
     # handled by the Bourreau Workers.
   }
 
-  # Prepare everything before a save.
-  def save #:nodoc:
-    cb_error "Attempt to save a CbrainTask without a status!" if self.status.blank?
-    res = super
-    if self.status == 'New'
-      @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
-      @statistic.update_stats
-    end
-    res
-  end
-
-  # Prepare everything before a save.
-  def save! #:nodoc:
-    cb_error "Attempt to save a CbrainTask without a status!" if self.status.blank?
-    res = super
-    if self.status == 'New'
-      @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
-      @statistic.update_stats
-    end
-    res
-  end
-
   #######################################################
   # Task Launch API
   #######################################################

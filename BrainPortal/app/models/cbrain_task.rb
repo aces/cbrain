@@ -26,7 +26,11 @@ class CbrainTask < ActiveRecord::Base
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id
+  validates_presence_of :group_id
   validates_presence_of :status
+  
+  before_validation     :set_group
+  before_create         :record_statistics
 
   # Pseudo Attributes (not saved in DB)
   attr_accessor :cluster_stdout, :cluster_stderr
@@ -86,7 +90,6 @@ class CbrainTask < ActiveRecord::Base
   RESTART_STATUS   = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
                        "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
   OTHER_STATUS     = [ "Preset" ]
-
 
   ##################################################################
   # Utility Methods
@@ -449,6 +452,28 @@ class CbrainTask < ActiveRecord::Base
     rr_rev = rrinfo.starttime_revision
     self.addlog("#{rr.class} rev. #{rr_rev}", :caller_level => 1 )
   end
-
+  
+  
+  ##################################################################
+  # Lifecycle hooks
+  ##################################################################
+  private
+  def set_group
+    unless self.group_id
+      return true unless self.user_id
+      owner = self.user
+      unless owner
+        errors.add(:base, "user_id does not point to an existing user.")
+        return false
+      end
+    
+      self.group_id = owner.own_group.id
+    end
+  end
+   
+  def record_statistics #:nodoc:
+    @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
+    @statistic.update_stats
+  end
 end
 

@@ -5,11 +5,11 @@
     <div class="dp_browse_pages">
       <%= will_paginate @fileinfolist %>
       <% if @fileinfolist.total_entries > 50 %>
-        <%= link_to_remote "Toggle Pagination", :url  => {:controller  => :data_providers, 
-                                                          :action  => :browse,
-                                                          :pagination => set_toggle(params[:pagination])
-                                                          }, 
-                                                :method  => 'get' 
+        <%= link_to "Toggle Pagination", {:controller  => :data_providers, 
+                                          :action  => :browse,
+                                          :pagination => set_toggle(params[:pagination])
+                                         }, 
+                                         "data-datatype"  => 'script', :class  => "ajax_link" 
          %>
          <br>
        <% end %>
@@ -30,13 +30,7 @@
 
 
 <tr>
-  <th><input type='checkbox' id="header_checkbox" onclick="
-       try {
-       $$('.checkbox').each(function(value, index) {
-         value.checked = $('header_checkbox').checked;
-         });
-       } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"/>
-  </th>
+  <th><input type='checkbox' class="select_all" data-checkbox-class="checkbox"/></th>
   <th onMouseOver="$('name_search_filter').show();$('redirect_to_browse').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_browse').writeAttribute('value', 'false');">
     Name
     <div id="name_search_filter" class="filter_list" style="display:none;">

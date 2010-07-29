@@ -1,13 +1,6 @@
 
   <tr>    
-      <th>
-	<input type='checkbox' class="checkbox" id="header_checkbox" onclick="try {
-            $$('.userfiles_checkbox').each(function(value, index) {
-               value.checked = $('header_checkbox').checked;
-            });
-            } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.userfiles_checkbox\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
-          />
-      </th> 
+      <th><input type='checkbox' class="select_all" data-checkbox-class="userfiles_checkbox"/></th> 
       <th>
         <%= link_to  "Filename", {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
         <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>

@@ -2,7 +2,7 @@
 <% for task in @tasks %>
   <% if(@bourreau_status[task.bourreau.id])%>
      <tr class="<%= cycle('list-odd', 'list-even')%> row_highlight">
-     <td><%= check_box_tag("tasklist[]", task.id, false, :class => "checkbox") %></td>
+     <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox") %></td>
   <% else %>
       <tr class="list-unavailable row_highlight" title="This task is on an Execution Server that is OFFLINE.">
       <td></td>

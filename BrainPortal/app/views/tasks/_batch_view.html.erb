@@ -5,12 +5,7 @@
 
   <tr class="batch_job_header row_highlight">
     <td>
-      <input type="checkbox" class="checkbox" id="task_header_checkbox_<%= tasks.first.id %>" onclick="try {
-        $$('.task_checkbox_<%= tasks.first.id %>').each(function(value, index) {
-           value.checked = $('task_header_checkbox_<%= tasks.first.id %>').checked;
-        });
-        } catch (e) { alert('RJS error:\n\n' + e.toString()); alert('$$(\'.task_checkbox_<%= tasks.first.id %>\').each(function(value, index) {\nvalue.checked = true;\n});'); throw e }; return true;"
-      />
+      <input type="checkbox" class="task_checkbox select_all" id="task_header_checkbox_<%= tasks.first.id %>" data-checkbox-class="task_checkbox_<%= tasks.first.id %>"/>
     </td>
     <td class="left">
       <% if launch_time %>
@@ -41,7 +36,7 @@
 
   <% for task in tasks %>
     <tr class="<%= cycle('list-odd', 'list-even')%> row_highlight batch_listing_<%= tasks.first.id %>" <%= tasks.size > 1 ? "style=\"display:none\"" : "" %>>
-      <td><%= check_box_tag("tasklist[]", task.id, false, :class => "checkbox task_checkbox_#{tasks.first.id}") %></td>
+      <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox task_checkbox_#{tasks.first.id}") %></td>
       <td class="left"><%= tasks.size > 1 ? "&nbsp;&nbsp;&#x21b3;" : "" -%><%= link_to task.name, :controller => :tasks, :action => :show, :id => task.id -%></td>
       <td><%= h(crop_text_to(30, task.description)) %></td>
       <td><%= h(task.user.login) %></td>

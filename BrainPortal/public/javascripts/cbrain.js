@@ -130,7 +130,7 @@ jQuery(
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
 
    jQuery(".ajax_link").live("click", function(element){
-     link = jQuery(this);
+     var link = jQuery(this);
      var data_type = link.attr("data-datatype");
      var url = link.attr("href");
      var method = link.attr("data-method");
@@ -148,6 +148,15 @@ jQuery(
       return false;
    });
 
+   jQuery(".select_all").live("click", function(){
+     var header_box = jQuery(this);
+     var checkbox_class = header_box.attr("data-checkbox-class");
+     
+     jQuery('.' + checkbox_class).each(function(index, element) {
+        element.checked = header_box.attr("checked");
+      });
+   });
+   
    /////////////////////////////////////////////////////////////////////
    //
    // Form hijacking helpers
@@ -174,7 +183,7 @@ jQuery(
    //key is pressed.
    jQuery(".search_box").live("keypress", function(event){
      if(event.keyCode == 13){
-       text_field = jQuery(this);
+       var text_field = jQuery(this);
        var data_type = text_field.attr("data-datatype");
        if(!data_type) data_type = "script";
        var url = text_field.attr("data-url");
@@ -201,8 +210,8 @@ jQuery(
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
    jQuery(".ajax_submit_button").live("click", function(){
-     button = jQuery(this);
-     commit = button.attr("value");
+     var button = jQuery(this);
+     var commit = button.attr("value");
      var data_type = button.attr("data-datatype");
      var url = button.attr("data-url");
      var method = button.attr("data-method");
@@ -302,7 +311,7 @@ jQuery(
    //to the rest of the page). If the "data-replace" attribute is set to "true"
    //the entire element will be replace an not just its contents.
    jQuery(".ajax_element").each(function (index,element){
-     current_element = jQuery(element);
+     var current_element = jQuery(element);
      var url = current_element.attr("data-url");
      var error_message = current_element.attr("data-error");
      var replace = current_element.attr("data-replace");
@@ -332,7 +341,7 @@ jQuery(
    //it fetches javascript from the server that will be executed
    //update the page.
    jQuery(".script_loader").each(function (index,element){
-     current_element = jQuery(element);
+     var current_element = jQuery(element);
      current_element.css("display", "none");
      var url = current_element.attr("data-url");
      jQuery.ajax({
