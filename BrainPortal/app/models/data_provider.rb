@@ -565,6 +565,7 @@ class DataProvider < ActiveRecord::Base
         type = entry.ftype.to_sym
         next unless types.include?(type)
         #next if file_name == "." || file_name == ".."
+        next if is_excluded?(file_name)
 
         fileinfo               = FileInfo.new
         fileinfo.name          = file_name
@@ -1073,6 +1074,18 @@ class DataProvider < ActiveRecord::Base
     end
     return "" if excludes.blank?
     excludes + " --delete-excluded"
+  end
+
+  # Utility method that returns true if pathname matches
+  # one of the excluded patterns configured for the rails
+  # application in the constant array CBRAIN::DataProvider_IgnorePatterns
+  def is_excluded?(pathname) #:nodoc:
+    return false if CBRAIN::DataProvider_IgnorePatterns.empty?
+    as_string = pathname.to_s
+    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+      return true if File.fnmatch(pattern,as_string)
+    end
+    false
   end
 
   # This utility method escapes properly any string such that

@@ -125,6 +125,7 @@ class SshDataProvider < DataProvider
         type = attributes.symbolic_type
         next if type != :regular && type != :directory && type != :symlink
         next if entry.name == "." || entry.name == ".."
+        next if is_excluded?(entry.name) # in DataProvider
 
         fileinfo               = FileInfo.new
         fileinfo.name          = entry.name
@@ -187,6 +188,7 @@ class SshDataProvider < DataProvider
         type = attributes.symbolic_type
         next unless types.include?(type)
         #next if entry.name == "." || entry.name == ".."
+        next if is_excluded?(entry.name) # in DataProvider
 
         fileinfo               = FileInfo.new
         if entry.name =~ /^#{userfile.name}/
@@ -248,6 +250,6 @@ class SshDataProvider < DataProvider
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master.ssh_shared_options("auto") # ControlMaster=auto
   end
-  
+
 end
 
