@@ -17,11 +17,11 @@
     <th>Site</th>
     <th colspan="3"/>
   </tr>
-  <tr><th class="subtitle" COLSPAN="7">System Groups</th></tr>
+  <tr><th class="subtitle" COLSPAN="7">System Projects</th></tr>
    <% for group in @system_groups %>
      <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
    <% end %>
-  <tr><th class="subtitle" COLSPAN="7">Work Groups</th></tr>
+  <tr><th class="subtitle" COLSPAN="7">Work Projects</th></tr>
    <% for group in @work_groups %>
      <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
    <% end %>
