@@ -1,20 +1,9 @@
-<%
-
-#
-# CBRAIN Project
-#
-# File manager main layout
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
--%>
 
 <% title 'Files' %>
 
+<!-- **************************************************************************** -->
 <!-- CELL #1 : The two menu button lines, the pagination, and the userfiles table -->
+<!-- **************************************************************************** -->
 
 <div class="display_cell" id="userfiles_menus_and_filelist">
 
@@ -58,7 +47,9 @@
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 
+<!-- ********************* -->
 <!-- CELL #2 : The SIDEBAR -->
+<!-- ********************* -->
 
 <div class="display_cell sidebar">   
   <%= render :partial => "userfiles/sidebar" %>

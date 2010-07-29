@@ -1,3 +1,4 @@
+
 <%= 
     grouped_options = grouped_options_for_select(groups.group_by{ |gr| gr.class.to_s.underscore.humanize}.collect {|entry| [entry.first, entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id.to_s]}] }, 
                                                  selected || current_user.own_group.id.to_s)
@@ -7,4 +8,5 @@
       grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
     end
     select_tag parameter_name, grouped_options, select_tag_options
- %>
+%>
+

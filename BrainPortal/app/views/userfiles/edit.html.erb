@@ -1,16 +1,4 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Tarek Sherif
-#
-# $Id$
-#
-
--%>
-
 <% title "Edit File" %>
 
 <h2>Edit File: <%= link_to @userfile.name, userfile_path(@userfile) %></h2>
@@ -144,5 +132,4 @@
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
 
 </div> <!-- generalbox -->
-
 

@@ -1,16 +1,4 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Tarek Sherif
-#
-# $Id: new.html.erb 429 2009-08-17 21:50:15Z tsherif $
-#
-
--%>
-
 <%= error_messages_for :user %>
 
 <% form_for :user, @user, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
@@ -55,4 +43,4 @@
   </div>
   
 <% end %>
-  
+

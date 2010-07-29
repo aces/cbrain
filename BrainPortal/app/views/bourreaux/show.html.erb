@@ -1,23 +1,11 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
--%>
-
 <% title 'Execution Server Info' %>
 
 <h2>Information for <%= @bourreau.name %></h2>
 
 <%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
 
-<div class= "generalbox">
+<div class="generalbox">
     
   <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
     <div class="menu_bar menu_bar_left">

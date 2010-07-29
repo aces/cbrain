@@ -1,10 +1,3 @@
-<%
-#
-# CBRAIN Project
-#
-# $Id$
-#
-%>
 
 <h5><%= link_to_remote "Toggle Details", {:url => {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %></h5>
 

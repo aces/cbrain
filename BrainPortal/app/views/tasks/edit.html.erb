@@ -32,7 +32,13 @@
 
 
 
-<h2>Task Parameters:</h2>
+<h2>Task Parameters
+  <% help_doc = "/doc/tasks/#{@task.name.underscore}_options.html" %>
+  <% if File.exists?( RAILS_ROOT + "/public" + help_doc ) %>
+    <a class="overlay_link task_help_link" data-url="<%= help_doc %>">Help</a>
+  <% end %>
+  :
+</h2>
 
 <div class="generalbox" style="float: none;">
 <%= render :partial => "tasks/cbrain_task/#{@task.name.underscore}",
@@ -45,3 +51,4 @@
 <center><%= submit_tag "Save modified task #{@task.name}" %></center>
 
 <% end %>
+

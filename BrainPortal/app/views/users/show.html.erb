@@ -1,52 +1,40 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Tarek Sherif
-#
-# $Id$
-#
-
--%>
-
 <%= javascript_tag "var current_options = null;" %>
 
 <% title "Account Info"%>
 
 <h2>Account details for <%= h @user.full_name %></h2>
 
-<div class = "splitleft">
+<div class="splitleft">
 
    <table>
      <tr class="list-even">
-        <td class = "title"><b>Name:</b></td>
-        <td class = "tabletext"><%=h @user.full_name %></td>
+        <td class="title"><b>Name:</b></td>
+        <td class="tabletext"><%=h @user.full_name %></td>
      </tr>
      <tr class="list-even">
-        <td class = "title"><b>Login:</b></td>
-        <td class = "tabletext"><%=h @user.login %></td>
+        <td class="title"><b>Login:</b></td>
+        <td class="tabletext"><%=h @user.login %></td>
      </td>
      <tr class="list-even">
-         <td class = "title"><b>Role:</b></td>
-         <td class = "tabletext"><%=h @user.role.humanize %></td>
+         <td class="title"><b>Role:</b></td>
+         <td class="tabletext"><%=h @user.role.humanize %></td>
      </tr>
      <tr class="list-even">
-        <td class = "title"><b>Email:</b></td>
-        <td class = "tabletext"><%=h @user.email %></td>
+        <td class="title"><b>Email:</b></td>
+        <td class="tabletext"><%=h @user.email %></td>
      </tr>
      <tr class="list-even">
-          <td class = "title"><b>Site:</b></td>
-          <td class = "tabletext"><%=h @user.site.name rescue "(None)" %></td>
+          <td class="title"><b>Site:</b></td>
+          <td class="tabletext"><%=h @user.site.name rescue "(None)" %></td>
        </tr>
      <tr class="list-even">
-        <td class = "title"><b>Default Execution Server: </b></td>
-        <td class = "tabletext"><%= h @default_bourreau %>  </td>
+        <td class="title"><b>Default Execution Server: </b></td>
+        <td class="tabletext"><%= h @default_bourreau %>  </td>
      </tr>
      <tr class="list-even">
-        <td class = "title"><b> Default Data Provider:</b></td>
-        <td class = "tabletext"><%=h @default_data_provider %></td>
+        <td class="title"><b> Default Data Provider:</b></td>
+        <td class="tabletext"><%=h @default_data_provider %></td>
      </td>
    </table>
 
@@ -56,8 +44,8 @@
       </tr>
 
       <tr>
-        <th class = "subtitle">Name</th>
-        <th class = "subtitle">Members</th>
+        <th class="subtitle">Name</th>
+        <th class="subtitle">Members</th>
       </tr>
   
    <% (@user.groups.sort { |g1,g2| g1.name <=> g2.name }).each do |group| %>
@@ -69,7 +57,7 @@
 
 </div>
 
-<div class = "splitright">
+<div class="splitright">
    <div id="account_info" style="display: none;">
       <%= render :partial => "account_info" %>   
    </div>

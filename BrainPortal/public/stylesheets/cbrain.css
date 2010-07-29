@@ -330,6 +330,13 @@ a:hover {
     text-decoration: none !important;
 }
 
+.task_help_link {
+    font-size: 0.8em;
+    text-decoration: none;
+    vertical-align: +1px;
+    color: blue;
+}
+
 
 
 /* % ######################################################### */

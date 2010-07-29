@@ -1,14 +1,4 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# $Id: new.html.erb 457 2009-09-02 20:36:49Z tsherif $
-#
-
--%>
-
 <% form_for :feedback, @feedback, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"}  do |f| -%>
 
   <%= f.error_messages %>

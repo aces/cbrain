@@ -1,16 +1,4 @@
 
-<%
-
-#
-# CBRAIN Project
-#
-# Original author: Pierre Rioux
-#
-# $Id$
-#
-
--%>
-
 <% title 'Data Providers' %>
 
 <div class="menu_bar menu_bar_left">
@@ -20,7 +8,7 @@
   <% end %>    
 
   <% button_with_dropdown_menu(:title => "Help") do %>
-    <a class = "overlay_link" data-url = "/doc/data_providers/data_provider_info.html">Data Provider</a>
+    <a class="overlay_link" data-url = "/doc/data_providers/data_provider_info.html">Data Provider</a>
   <% end %>     
     
 </div>
@@ -144,7 +132,7 @@
 <P>
 
 <div id="disk_usage">   
-  <% on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => "<span class='loading_message'>Loading...</span>"}) do %>
+  <% on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => '<span class="loading_message">Loading...</span>'}) do %>
     <a href="#" class="action_link">Click here to view disk usage statistics</a>
   <% end %>
 </div>
