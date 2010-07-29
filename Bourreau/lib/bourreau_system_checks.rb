@@ -79,11 +79,16 @@ class BourreauSystemChecks < CbrainChecker
     CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
       raise "Configuration error: the pattern '#{pattern}' in 'DataProvider_IgnorePatterns' is not acceptable." if
         pattern.blank? ||
+        pattern == "*" ||
         ! pattern.is_a?(String) ||
-        pattern =~ /\*\*|\// ||
-        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*]+$/ # very strict! other special characters can cause shell side-effects!
+        pattern =~ /\*\*/ ||
+        pattern =~ /\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
     end
 
+    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+      puts "C>\t- DataProvider exclude pattern: '#{pattern}'"
+    end
   end
   
 
