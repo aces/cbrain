@@ -8,24 +8,17 @@
           <% unless projects["WorkGroup"].blank? %>
             Projects<br>
             <% for group in projects["WorkGroup"] %>
-              <%= 
-                  link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], 
-                                                                              :redirect_action  => params[:action], 
-                                                                              :redirect_id  => params[:id]), 
-                                                     {:method  => :post}
+              <%= link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], :redirect_action  => params[:action], :redirect_id  => params[:id]), {:method  => :post}
               %>
               <br>
             <% end %>
             <br>
           <% end %>
           <% unless projects["SystemGroup"].blank? %>
-            System Groups<br>
+            System Projects<br>
             <% for group in projects["SystemGroup"] %>
               <%= 
-                  link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], 
-                                                                              :redirect_action  => params[:action], 
-                                                                              :redirect_id  => params[:id]), 
-                                                     {:method  => :post}
+                  link_to "Switch to #{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], :redirect_action  => params[:action], :redirect_id  => params[:id]), {:method  => :post}
               %>
               <br>
             <% end %>
