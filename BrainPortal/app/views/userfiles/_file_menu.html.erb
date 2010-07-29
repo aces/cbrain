@@ -1,4 +1,4 @@
-
+<span class="button_set">
 <% button_with_dropdown_menu(:title => "Download Files") do %>
   Specify Download File Name (optional):
   <%= text_field_tag :specified_filename %>
@@ -34,6 +34,16 @@
                                  "data-method"  => :post) %>
 <% end %>
 
+<%= submit_button("Delete Files", {:name => "commit", 
+                                   :onclick => "return confirm('Are you sure you want to delete the selected files?');", 
+                                   :class  => "ajax_submit_button", 
+                                   "data-url"  => url_for({:action  => :delete_files}),
+                                   "data-method"  => :delete}) 
+%>
+
+
+
+
 <%= submit_button("Create Collection", {:name => "commit", 
                                         :class  => "ajax_submit_button", 
                                         "data-url"  => url_for({:action  => :create_collection}),
@@ -42,10 +52,6 @@
 
 <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
 
-<%= submit_button("Delete Files", {:name => "commit", 
-                                   :onclick => "return confirm('Are you sure you want to delete the selected files?');", 
-                                   :class  => "ajax_submit_button", 
-                                   "data-url"  => url_for({:action  => :delete_files}),
-                                   "data-method"  => :delete}) 
-%>
+
+</span>
 

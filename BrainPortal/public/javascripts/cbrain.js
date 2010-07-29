@@ -1,17 +1,17 @@
 var macacc;
 var brainbrowser;
 
-        
+
 jQuery(
  function() {
-   
+
    /////////////////////////////////////////////////////////////////////
    //
-   // UI Helper Methods see application_helper.rb for corresponding 
+   // UI Helper Methods see application_helper.rb for corresponding
    // helpers.
    //
    /////////////////////////////////////////////////////////////////////
-   
+
    //All elements with the accordion class will be changed to accordions.
    jQuery(".accordion").accordion({
      active: false,
@@ -36,7 +36,7 @@ jQuery(
      helper: 'clone',
      revert: 'invalid'
    });
-     
+
    jQuery(".sortable_list ul, sortable_list li").disableSelection();
 
    //Tab Bar, div's of type tabs become tab_bars
@@ -49,7 +49,7 @@ jQuery(
      var content_width = parseInt(jQuery(element).children('.dialog').attr('data-width'));
      var dialog = jQuery(this).children(".dialog")
      dialog.remove().appendTo("body");
-     
+
      dialog.dialog({ autoOpen: false,
          modal: true,
          position: "center",
@@ -87,21 +87,26 @@ jQuery(
        text.show();
      };
      input_field.change(save_function);
-   
+
      jQuery(save_link).click(save_function);
-   
-   
+
+
      jQuery(this).children().filter("span").click(function(event){
        input_field.val(text.html());
        text.hide();
        input_field.show();
        save_link.show();
      });
-   
+
    });
 
+   //Turns the element into a button looking thing
    jQuery(".button").button();
-   
+
+   //Makes a button set, buttons that are glued together
+   jQuery(".button_set").buttonset();
+
+
    jQuery(".button_with_drop_down").children(".button_menu").button({
      icons: {
        secondary: 'ui-icon-triangle-1-s'
@@ -119,11 +124,11 @@ jQuery(
 
 
    jQuery(".button_with_drop_down > div.drop_down_menu").hide();
-   
+
    //Highlighting on ressource list tables.
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
-   
+
    jQuery(".ajax_link").live("click", function(element){
      link = jQuery(this);
      var data_type = link.attr("data-datatype");
@@ -132,25 +137,25 @@ jQuery(
      var target = link.attr("data-target");
      if(!data_type) data_type = "html";
      if(!method) method = "GET";
-     
-     jQuery.ajax({ 
+
+     jQuery.ajax({
         type: method,
         url: url,
         dataType: data_type,
-        target: target, 
+        target: target,
       });
-      
+
       return false;
    });
-   
+
    /////////////////////////////////////////////////////////////////////
    //
    // Form hijacking helpers
    //
    /////////////////////////////////////////////////////////////////////
-   
+
    //Forms with the class "ajax_form" will be submitted as ajax requrests.
-   //Datatype and target can be set with appropriate "data" attributes. 
+   //Datatype and target can be set with appropriate "data" attributes.
    jQuery(".ajax_form").live("submit", function(){
      var data_type = jQuery(this).attr("data-datatype");
      var target = jQuery(this).attr("data-target");
@@ -163,11 +168,11 @@ jQuery(
      });
      return false;
    });
-   
-   //Allows a textfield to submit an ajax request independantly of 
+
+   //Allows a textfield to submit an ajax request independantly of
    //the surrounding form. Submission is triggered when the ENTER
    //key is pressed.
-   jQuery(".search_box").live("keypress", function(event){ 
+   jQuery(".search_box").live("keypress", function(event){
      if(event.keyCode == 13){
        text_field = jQuery(this);
        var data_type = text_field.attr("data-datatype");
@@ -176,22 +181,22 @@ jQuery(
        var method = text_field.attr("data-method");
        if(!method) method = "GET";
        var target = text_field.attr("data-target");
-               
-               
+
+
        var parameters = {};
        parameters[text_field.attr("id")] = text_field.attr("value");
-     
-       jQuery.ajax({ 
+
+       jQuery.ajax({
          type: method,
          url: url,
          dataType: data_type,
-         target: target, 
+         target: target,
          data: parameters
        });
        return false;
      }
    });
-   
+
    //Allows for the creation of form submit buttons that can highjack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
@@ -205,29 +210,29 @@ jQuery(
      enclosing_form = button.closest("form");
      if(!data_type) data_type = enclosing_form.attr("data-datatype");
      if(!data_type) data_type = "html";
-     
+
      if(!url) url = enclosing_form.attr("action");
-     
+
      if(!method) method = enclosing_form.attr("data-method");
-     if(!method) method = "POST";          
-               
+     if(!method) method = "POST";
+
      enclosing_form.ajaxSubmit({
        url: url,
        type: method,
        dataType: data_type,
-       target: target, 
+       target: target,
        data: { commit : commit },
        resetForm: false
        }
      );
      return false;
    });
-       
+
    //UNFINISHED: DO NOT USE
    //Attempting to create a form for the userfiles page that
    //can pull in inputs from elsewhere on the page (outside the
    //form).
-   //Currently the problem is that the Prototype library is 
+   //Currently the problem is that the Prototype library is
    //interfering with some functionality that this function needs.
    //If we migrate away from Prototype, it should work.
    jQuery(".userfiles_partial_form").live("submit", function(){
@@ -238,9 +243,9 @@ jQuery(
        var method = current_form.attr("data-method");
        if(!data_type) data_type = "html";
        if(!method) method = "POST";
-       
+
        commit = this.commit.value;
-       
+
           var post_data = { commit : commit, iamjs: "YES" };
            var file_ids = new Array();
            jQuery('.userfiles_checkbox:checked').each(function(index, element){
@@ -258,10 +263,10 @@ jQuery(
          target: target,
          resetForm: true
        });
-       
+
        return false;
    });
-   
+
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
    jQuery("#jiv_submit").click(function(){
      var data_type = jQuery(this).attr("data-datatype");
@@ -321,8 +326,8 @@ jQuery(
        timeout: 50000
  	   });
    });
-   
-   //See script_loader() in application_helper.rb 
+
+   //See script_loader() in application_helper.rb
    //Similar to above except that instead of loading html
    //it fetches javascript from the server that will be executed
    //update the page.
@@ -365,7 +370,7 @@ jQuery(
      }else{
        replace_elem.html(before_content);
      }
-   
+
      onclick_elem.removeClass("ajax_onclick_show_element");
      onclick_elem.unbind('click');
      onclick_elem.addClass("ajax_onclick_hide_element");
@@ -392,7 +397,7 @@ jQuery(
        async: true,
        timeout: 50000
      });
-   
+
    };
 
    //For loading content into an element after it is clicked.
@@ -410,7 +415,7 @@ jQuery(
 
    jQuery(".ajax_onclick_show_element").live("click", ajax_onclick_show);
    jQuery(".ajax_onclick_hide_element").live("click", ajax_onclick_hide);
-   
+
 
    /////////////////////////////////////////////////////////////////////
    //
