@@ -15,18 +15,6 @@ class TagsController < ApplicationController
   Revision_info = "$Id$"
 
   before_filter :login_required
-  
-  # GET /tags
-  # GET /tags.xml
-  def index #:nodoc:
-    cb_error "Tags 'index' page not available anymore."
-  end
-
-  # GET /tags/1
-  # GET /tags/1.xml
-  def show #:nodoc:
-    cb_error "Tags 'show' page not available anymore."
-  end
 
   # GET /tags/1/edit
   def edit #:nodoc:
@@ -82,7 +70,7 @@ class TagsController < ApplicationController
     if current_session.userfiles_tag_filters
       current_session.userfiles_tag_filters.delete @tag.name
     end
-    @destroyed = @tag.destroy
+    @tag.destroy
 
     respond_to do |format|
       format.html { redirect_to userfiles_path }

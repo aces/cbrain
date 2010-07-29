@@ -141,7 +141,7 @@ class UsersController < ApplicationController
     @user.destroy
     @destroyed = true
     respond_to do |format|
-      format.js
+      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'user' }}
       format.xml  { head :ok }
     end
   end

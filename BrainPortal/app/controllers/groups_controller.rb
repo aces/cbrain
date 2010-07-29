@@ -108,10 +108,10 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.xml
   def destroy  #:nodoc:
     @group = current_user.available_groups(params[:id])
-    @destroyed = @group.destroy
+    @group.destroy
 
     respond_to do |format|
-      format.js
+      format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'group' }}
       format.xml  { head :ok }
     end
   end

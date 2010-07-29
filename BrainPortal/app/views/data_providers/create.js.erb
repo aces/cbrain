@@ -1,16 +1,9 @@
 <% if @provider.errors.empty? %>
-  <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-    if(jQuery('#flash_notice').length > 0){
-      jQuery('#flash_notice').html("<%= flash[:notice].gsub(/\n/,'<BR>') %>");
-    }else{
-      jQuery('#content').prepend(jQuery("<p class=\"notice\" id=\"flash_notice\"><%= flash[:notice].gsub(/\n/,'<BR>') %></p>"));
-    }
-    <% flash.discard(:notice) %>
-    jQuery('#<%= @provider.is_browsable? ? "user" : "cbrain" %>_data_provider_table').append(jQuery("<%= escape_javascript(render :partial => "data_provider_table_row", :locals  => {:data_provider  => @provider}) %>"));
-    jQuery("#errorExplanation").remove();
-    jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
-    jQuery('#new_data_provider_button').click();
-  <% end %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#<%= @provider.is_browsable? ? "user" : "cbrain" %>_data_provider_table').append(jQuery("<%= escape_javascript(render :partial => "data_provider_table_row", :locals  => {:data_provider  => @provider}) %>"));
+  jQuery("#errorExplanation").remove();
+  jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
+  jQuery('#new_data_provider_button').click();
 <% else %>
-    jQuery('#new_data_provider').html("<%= escape_javascript(render :partial  => "new") %>");
+  jQuery('#new_data_provider').html("<%= escape_javascript(render :partial  => "new") %>");
 <% end %>

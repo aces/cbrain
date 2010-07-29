@@ -1,4 +1,0 @@
-if @destroyed
-  page["tag_#{@tag.id}"].remove
-end
-page[:message_display].replace_html :partial  => 'layouts/message_display'

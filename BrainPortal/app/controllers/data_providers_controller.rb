@@ -147,21 +147,20 @@ class DataProvidersController < ApplicationController
   def destroy #:nodoc:
     id         = params[:id]
     @user      = current_user
-    @provider  = DataProvider.find(id)
-    @destroyed = false
+    @data_provider  = DataProvider.find(id)
 
-    unless @provider.userfiles.empty?
+    unless @data_provider.userfiles.empty?
       flash[:error] = "You cannot remove a provider that has still files registered on it."
+      @data_provider.errors.add(:base, "You cannot remove a provider that has still files registered on it.")
       respond_to do |format|
         format.html {redirect_to :action => :show, :id => id}
-        format.js
+        format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}
       end
       return
     end
 
-    if @provider.has_owner_access?(current_user)
-      @provider.destroy
-      @destroyed = true
+    if @data_provider.has_owner_access?(current_user)
+      @data_provider.destroy
       flash[:notice] = "Provider successfully deleted."
     else
       flash[:error] = "You cannot remove a provider that you do not own."
@@ -169,7 +168,7 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html {redirect_to :action  => :index}
-      format.js
+      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}
     end
   end
   

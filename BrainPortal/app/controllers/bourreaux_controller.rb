@@ -166,7 +166,7 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html {redirect_to :action  => :index}
-      format.js
+      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'bourreau' }}
     end
 
   end

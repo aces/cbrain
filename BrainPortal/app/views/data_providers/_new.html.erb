@@ -2,7 +2,7 @@
 <%= error_messages_for :provider %>
 
 <div class="splitleft">
-  <% remote_form_for :data_provider, @provider, :url => { :action => "create" } do |f| -%>
+  <% form_for :data_provider, @provider, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
   <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
 

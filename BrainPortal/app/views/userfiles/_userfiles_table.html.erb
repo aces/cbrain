@@ -9,38 +9,38 @@
           />
       </th> 
       <th>
-        <%= link_to_remote  "Filename", :url  =>  {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+        <%= link_to  "Filename", {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
         <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       
       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-        <%= link_to_remote  "Owner", :url  =>  {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :method  => 'get'  %>
+        <%= link_to "Owner", {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
         <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-        <%= link_to_remote  "Creation Date", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= link_to  "Creation Date", userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
         <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-        <%= link_to_remote  "Size", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= link_to  "Size", userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
         <%= set_order_icon('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <th>
-         <%= link_to_remote  "Tags", :url  =>  userfiles_path(:userfiles_sort_order  => 'tags.name', :userfiles_sort_dir  => set_dir_old('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+         <%= link_to  "Tags", userfiles_path(:userfiles_sort_order  => 'tags.name', :userfiles_sort_dir  => set_dir_old('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
          <%= set_order_icon('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
       <% unless current_project %>
         <th>
-          <%= link_to_remote  "Project", :url  =>  userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+          <%= link_to  "Project", userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
           <%= set_order_icon('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
         </th>
       <% end %>
       <th>
-        <%= link_to_remote  "Project Access", :url  =>  userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= link_to  "Project Access", userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
          <%= set_order_icon('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
        <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-        <%= link_to_remote  "Provider", :url  =>  userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :method  => 'get'  %>
+        <%= link_to  "Provider", userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), "data-datatype"  => 'script', :class  => "ajax_link"  %>
          <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
       </th>
     </tr>

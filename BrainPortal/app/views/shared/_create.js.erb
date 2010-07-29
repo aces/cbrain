@@ -1,16 +1,9 @@
 <% if eval("@#{model_name}").errors.empty? %>
-  <% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-    if(jQuery('#flash_notice').length > 0){
-      jQuery('#flash_notice').html("<%= flash[:notice].gsub(/\n/,'<BR>') %>");
-    }else{
-      jQuery('#content').prepend(jQuery("<p class=\"notice\" id=\"flash_notice\"><%= flash[:notice].gsub(/\n/,'<BR>') %></p>"));
-    }
-    <% flash.discard(:notice) %>
-    jQuery('#<%= model_name %>_table').append(jQuery("<%= escape_javascript(render :partial => "#{model_name.pluralize}/#{model_name}_table_row", :locals  => eval("{:#{model_name}  => @#{model_name}}")) %>"));
-    jQuery("#errorExplanation").remove();
-    jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
-    jQuery('#new_<%= model_name %>_button').click();
-  <% end %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#<%= model_name %>_table').append(jQuery("<%= escape_javascript(render :partial => "#{model_name.pluralize}/#{model_name}_table_row", :locals  => eval("{:#{model_name}  => @#{model_name}}")) %>"));
+  jQuery("#errorExplanation").remove();
+  jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
+  jQuery('#new_<%= model_name %>_button').click();
 <% else %>
     jQuery('#new_<%= model_name %>').html("<%= escape_javascript(render :partial  => "#{model_name.pluralize}/new") %>");
 <% end %>

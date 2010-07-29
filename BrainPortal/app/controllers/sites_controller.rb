@@ -85,10 +85,10 @@ class SitesController < ApplicationController
   # DELETE /sites/1.xml
   def destroy #:nodoc:
     @site = Site.find(params[:id])
-    @destroyed = @site.destroy
+    @site.destroy
 
     respond_to do |format|
-      format.js
+      format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'site' }}
       format.xml  { head :ok }
     end
   end

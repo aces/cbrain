@@ -124,6 +124,25 @@ jQuery(
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
    
+   jQuery(".ajax_link").live("click", function(element){
+     link = jQuery(this);
+     var data_type = link.attr("data-datatype");
+     var url = link.attr("href");
+     var method = link.attr("data-method");
+     var target = link.attr("data-target");
+     if(!data_type) data_type = "html";
+     if(!method) method = "GET";
+     
+     jQuery.ajax({ 
+        type: method,
+        url: url,
+        dataType: data_type,
+        target: target, 
+      });
+      
+      return false;
+   });
+   
    /////////////////////////////////////////////////////////////////////
    //
    // Form hijacking helpers

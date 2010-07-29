@@ -18,7 +18,7 @@
 <div class = "generalbox">
 
    <%= error_messages_for :provider %>
-
+   
    <% form_for :data_provider, @provider, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
       <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
