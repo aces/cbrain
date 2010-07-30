@@ -847,6 +847,10 @@ pre {
     margin-left: 2em;
 }
 
+.menu_bar_right{
+    margin-left: 70em;
+}
+
 
 
 /* % ######################################################### */
@@ -1211,6 +1215,11 @@ td.system_display {
 td.right_side {
     border-width: 0.2em 0.2em 0.2em 0;
     text-align: right;
+}
+
+td.right_side_centered {
+    border-width: 0.2em 0.2em 0.2em 0;
+    text-align: center;
 }
 
 td.left_side {

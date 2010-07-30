@@ -1,19 +1,30 @@
 
 <% title 'CBRAIN Messaging Center' %>
 
-<div class="menu_bar menu_bar_left">
+
+<span class="menu_bar menu_bar_left">
+<span class="button_set">
+        
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
     <% button_with_dropdown_menu({:title => 'Leave Message', :partial => 'new', :content_id => 'new_message' }, {:id => "new_message_button"}) %>
   <% end %>
 
   <% button_with_dropdown_menu(:title => "Help") do %>
     <a class="overlay_link" data-url = "/doc/messages/message_info.html">Messages</a>
-  <% end %>     
-</div>
+  <% end %> 
+</span>
 
-<P>
+<div id= "enclosing_tag">
+
+<% form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete) do %>
+
+<span class = "menu_bar menu_bar_right">
+   <%= submit_button("Delete Message", {:name => "commit", :onclick => "return confirm('Are you sure you want to delete the selected message entries?')"}) %>
+</span>
+</span>
 
 <table class="resource_list" id="message_table">
    <%= render :partial => 'message_table' %>
+ <% end %>
 </table>
-
+<div>
