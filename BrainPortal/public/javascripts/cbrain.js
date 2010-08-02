@@ -151,12 +151,12 @@ jQuery(
    jQuery(".select_all").live("click", function(){
      var header_box = jQuery(this);
      var checkbox_class = header_box.attr("data-checkbox-class");
-     
+
      jQuery('.' + checkbox_class).each(function(index, element) {
         element.checked = header_box.attr("checked");
       });
    });
-   
+
    /////////////////////////////////////////////////////////////////////
    //
    // Form hijacking helpers
@@ -216,7 +216,7 @@ jQuery(
      var url = button.attr("data-url");
      var method = button.attr("data-method");
      var target = button.attr("data-target");
-     enclosing_form = button.closest("form");
+     var enclosing_form = button.closest("form");
      if(!data_type) data_type = enclosing_form.attr("data-datatype");
      if(!data_type) data_type = "html";
 
@@ -237,6 +237,11 @@ jQuery(
      return false;
    });
 
+   jQuery('.external_submit_button').live('click', function(e) {
+					    var form=document.getElementById(jQuery(this).attr('data-associated-form'));
+					    form.submit();
+					  });
+
    //UNFINISHED: DO NOT USE
    //Attempting to create a form for the userfiles page that
    //can pull in inputs from elsewhere on the page (outside the
@@ -245,7 +250,7 @@ jQuery(
    //interfering with some functionality that this function needs.
    //If we migrate away from Prototype, it should work.
    jQuery(".userfiles_partial_form").live("submit", function(){
-     current_form = jQuery(this);
+     var current_form = jQuery(this);
      try{
        var data_type = current_form.attr("data-datatype");
        var target = current_form.attr("data-target");
@@ -275,6 +280,8 @@ jQuery(
 
        return false;
    });
+
+
 
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
    jQuery("#jiv_submit").click(function(){
