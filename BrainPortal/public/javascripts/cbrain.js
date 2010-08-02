@@ -240,7 +240,7 @@ jQuery(
    jQuery('.external_submit_button').live('click', function(e) {
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
-     if(config_message) {
+     if(confirm_message) {
        if(confirm(confirm_message)) {
 	 form.submit();
        }
