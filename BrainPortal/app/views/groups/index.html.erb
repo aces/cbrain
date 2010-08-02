@@ -10,20 +10,32 @@
 </div>
 
 <table id="group_table" class="resource_list">
+
+  <tr><th colspan="7">System Projects</th></tr>
   <tr>
-    <th>Name</th>
-    <th>Type</th>
-    <th>Members</th>
-    <th>Site</th>
-    <th colspan="3"/>
+    <th class="subtitle">Name</th>
+    <th class="subtitle">Type</th>
+    <th class="subtitle">Members</th>
+    <th class="subtitle">Site</th>
+    <th class="subtitle" colspan="3"/>
   </tr>
-  <tr><th class="subtitle" COLSPAN="7">System Projects</th></tr>
-   <% for group in @system_groups %>
-     <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
-   <% end %>
-  <tr><th class="subtitle" COLSPAN="7">Work Projects</th></tr>
-   <% for group in @work_groups %>
-     <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
-   <% end %>
+
+  <% for group in @system_groups %>
+    <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
+  <% end %>
+
+  <tr><th colspan="7">Work Projects</th></tr>
+  <tr>
+    <th class="subtitle">Name</th>
+    <th class="subtitle">Type</th>
+    <th class="subtitle">Members</th>
+    <th class="subtitle">Site</th>
+    <th class="subtitle" colspan="3"/>
+  </tr>
+
+  <% for group in @work_groups %>
+    <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
+  <% end %>
+
 </table>
 

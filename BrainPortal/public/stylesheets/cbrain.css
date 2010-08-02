@@ -242,6 +242,18 @@ table.resource_list td.checkbox {
     text-align: center;
 }
 
+table.resource_list tr.subtitle {
+    background-color: #05A3D6;
+}
+
+table.resource_list th.subtitle {
+    background-color: #05A3D6;
+}
+
+table.resource_list td.subtitle {
+    background-color: #05A3D6;
+}
+
 
 
 /* % ############################################## */
