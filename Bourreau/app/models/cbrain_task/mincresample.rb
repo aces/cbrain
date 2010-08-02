@@ -31,11 +31,11 @@ class CbrainTask::Mincresample < ClusterTask
 
     params[:data_provider_id] = mincfile.data_provider_id if params[:data_provider_id].blank?
 
-    if(params[:transformation_id])
+    unless (params[:transformation_id].blank?)
       process_input_files(params[:transformation_id])
     end
     
-    if(params[:like_id])
+    unless (params[:like_id].blank?)
       process_input_files(params[:like_id])
     end
      
