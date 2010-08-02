@@ -131,7 +131,7 @@ class Userfile < ActiveRecord::Base
   def self.tree_sort(userfiles)
     grouped_files = userfiles.group_by(&:parent_id)
     
-    result = grouped_files.delete(nil)
+    result = grouped_files.delete(nil) || []
     keys = grouped_files.keys
     num_keys = keys.size
     upper_limit = (num_keys * (num_keys - 1))/2
