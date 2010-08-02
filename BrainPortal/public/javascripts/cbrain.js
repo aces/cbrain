@@ -238,9 +238,18 @@ jQuery(
    });
 
    jQuery('.external_submit_button').live('click', function(e) {
-					    var form=document.getElementById(jQuery(this).attr('data-associated-form'));
-					    form.submit();
-					  });
+     var form=document.getElementById(jQuery(this).attr('data-associated-form'));
+     var confirm_message = jQuery(this).attr('data-confirm');
+     if(config_message) {
+       if(confirm(confirm_message)) {
+	 form.submit();
+       }
+     }
+     else {
+       form.submit();
+     }
+     return false;
+    });
 
    //UNFINISHED: DO NOT USE
    //Attempting to create a form for the userfiles page that
@@ -258,7 +267,7 @@ jQuery(
        if(!data_type) data_type = "html";
        if(!method) method = "POST";
 
-       commit = this.commit.value;
+       var commit = this.commit.value;
 
           var post_data = { commit : commit, iamjs: "YES" };
            var file_ids = new Array();
