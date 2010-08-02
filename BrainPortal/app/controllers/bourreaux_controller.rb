@@ -19,7 +19,7 @@ class BourreauxController < ApplicationController
   before_filter :manager_role_required, :except  => [:index, :show, :row_data]
    
   def index #:nodoc:
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user, :order  => "remote_resources.type")
+    @bourreaux = RemoteResource.find_all_accessible_by_user(current_user, :order  => "remote_resources.type DESC, remote_resources.id")
     
     if params[:table_contents]
       render :partial  => "bourreaux_table_contents"
