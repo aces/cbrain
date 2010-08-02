@@ -5,7 +5,7 @@
 
 <h2>Account details for <%= h @user.full_name %></h2>
 
-<div class="splitleft">
+<div class="display_cell">
 
    <table>
      <tr class="list-even">
@@ -38,26 +38,9 @@
      </td>
    </table>
 
-   <table>
-      <tr>
-        <th colspan="2">Groups</th>
-      </tr>
-
-      <tr>
-        <th class="subtitle">Name</th>
-        <th class="subtitle">Members</th>
-      </tr>
-  
-   <% (@user.groups.sort { |g1,g2| g1.name <=> g2.name }).each do |group| %>
-     <tr class=<%= cycle("list-even", "list-odd")%> >
-       <td><%=h group.name %></td>
-       <td><%=  group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
-   <% end %>
-   </table>
-
 </div>
 
-<div class="splitright">
+<div class="display_cell" style="padding: 1em;">
    <div id="account_info" style="display: none;">
       <%= render :partial => "account_info" %>   
    </div>
@@ -96,5 +79,34 @@
 
 </div>
 
+<P>
+
+<div class="display_row">
+
+   <table>
+      <tr>
+        <th colspan="2">Projects</th>
+      </tr>
+
+      <tr>
+        <th class="subtitle">Name</th>
+        <th class="subtitle">Members</th>
+      </tr>
+  
+   <% (@user.groups.sort { |g1,g2| g1.name <=> g2.name }).each do |group| %>
+     <% next if group.name == 'everyone' %>
+     <tr class=<%= cycle("list-even", "list-odd")%> >
+       <td><%= h(group.name) %></td>
+       <td><%= group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
+     </tr>
+   <% end %>
+
+   </table>
+
+</div>
+
+<P>
+
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+
 
