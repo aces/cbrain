@@ -847,10 +847,6 @@ pre {
     margin-left: 2em;
 }
 
-.menu_bar_right{
-    margin-left: 70em;
-}
-
 
 
 /* % ######################################################### */
@@ -1217,11 +1213,6 @@ td.right_side {
     text-align: right;
 }
 
-td.right_side_centered {
-    border-width: 0.2em 0.2em 0.2em 0;
-    text-align: center;
-}
-
 td.left_side {
     border-width: 0.2em 0em 0.2em 0.2em;
     text-align: left;
@@ -1239,9 +1230,7 @@ td.middle {
 /* % ######################################################### */
 
 #message_table {
-    width: 976px;
-    margin-left: 9px;
-
+    margin-left: 2em;
 }
 
 #message_table td {

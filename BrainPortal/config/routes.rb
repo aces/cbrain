@@ -15,7 +15,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :user_preferences
   map.resources :feedbacks,      :collection => { :delete_feedback => :delete }
   map.resources :tags
-  map.resources :messages
+  map.resources :messages,       :collection => { :delete_messages => :delete }
 
   # Standard CRUD resources, with extra methods
   map.resources :users,          :member => { :switch  => :post }, :collection  => {:request_password  => :get, :send_password  => :post }

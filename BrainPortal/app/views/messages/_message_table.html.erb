@@ -2,7 +2,7 @@
 <tr>
     <th>Message</th>
     <th>Last Updated</th>
-    <th colspan = "2"></th>
+    <th></th>
 </tr>
 
 <% for mess in @messages %>
@@ -12,3 +12,4 @@
 <% if @messages.nil? || @messages.empty? %>
   <tr class="list-odd"><td colspan="3">There are no Messages in this list.</td></tr>
 <% end %>
+
