@@ -67,7 +67,9 @@ class UserfilesController < ApplicationController
     if current_session.userfiles_sort_order == "tree_sort"
       @userfiles = Userfile.tree_sort(@userfiles)
     end
-
+    
+    @userfiles_total = @userfiles.size
+    
     if current_session.paginate?
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
     end
