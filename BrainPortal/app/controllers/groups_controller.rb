@@ -36,6 +36,10 @@ class GroupsController < ApplicationController
       format.xml  { render :xml => @groups }
     end
   end
+  
+  def show
+    @group = current_user.available_groups(params[:id])
+  end
 
   # GET /groups/1/edit
   def edit  #:nodoc:

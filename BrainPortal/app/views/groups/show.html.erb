@@ -1,0 +1,20 @@
+<% title "Project Info" %>
+
+<h2>Project details for <%= h @group.name %></h2>
+
+<div class="generalbox">
+  <table>
+    <tr>
+        <th>Name</th>
+        <td><%= h(@group.name) %></h1>
+    </tr>
+    <tr>
+        <th>Members</th>
+        <td><%= @group.users.collect{ |m| link_if_admin(m.login, user_path(m))}.sort{|a, b| a.casecmp(b)}.join("<br>") %></h1>
+    </tr>
+    <tr>
+        <th>Site</th>
+        <td><%= @group.site.name if @group.site %></h1>
+    </tr>
+  </table>
+</div>
