@@ -1,0 +1,44 @@
+
+<table class="simple">
+
+  <tr>
+    <td>
+      <strong>Execution server:</strong>
+    </td>
+    <td>
+      <%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available", :disabled => (! @task.new_record? ) } %>
+    </td>
+
+    <td>
+      <strong>Description:</strong>
+    </td>
+    <td>
+      <%= text_field_tag "cbrain_task[description]", @task.description, :size => 30 %>
+    </td>
+
+    <td rowspan="2">
+      <strong>Save results to:</strong>
+    </td>
+    <td rowspan="2">
+      <%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <strong>Owner:</strong>
+    </td>
+    <td>
+      <%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin)) } %>
+    </td>
+
+    <td>
+      <strong>Project:</strong>
+    </td>
+    <td>
+      <%= group_select "cbrain_task[group_id]", @task.group_id %>
+    </td>
+  </tr>
+
+</table>
+

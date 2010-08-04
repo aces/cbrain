@@ -231,8 +231,8 @@ class TasksController < ApplicationController
     # A brand new task object!
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
-    @task.user_id     = current_user.id
-    @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
+    @task.user_id     ||= current_user.id
+    @task.group_id    ||= current_session[:active_group_id] || current_user.own_group.id
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
@@ -463,8 +463,8 @@ class TasksController < ApplicationController
     @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true} )
 
     # Find the list of Bourreaux that are both available and support the tool
-    @tool      = Tool.find_by_cbrain_task_class(@task.class.to_s)
-    @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    tool       = Tool.find_by_cbrain_task_class(@task.class.to_s)
+    @bourreaux = tool.bourreaux.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
 
     # Presets
     unless @task.class.properties[:no_presets]

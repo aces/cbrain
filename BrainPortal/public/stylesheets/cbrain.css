@@ -273,6 +273,7 @@ table.resource_list td.subtitle {
 .simple td {
     border: 0px;
     text-align: left;
+    padding: 1px 1em 1px 1em;
 }
 
 

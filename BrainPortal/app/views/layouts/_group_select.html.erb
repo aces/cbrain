@@ -1,7 +1,22 @@
 
 <%= 
-    grouped_options = grouped_options_for_select(groups.group_by{ |gr| gr.class.to_s.underscore.humanize}.collect {|entry| [entry.first, entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id.to_s]}] }, 
-                                                 selected || current_user.own_group.id.to_s)
+    grouped_by_classes = groups.group_by { |gr| gr.class.to_s.underscore.humanize }
+
+    category_grouped = {}
+    grouped_by_classes.each do |entry|
+      group_category_name = entry.first
+      group_category_name.sub!(/ group/," project")
+      group_pairs         = entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id.to_s]}
+      category_grouped[group_category_name] = group_pairs
+    end
+
+    ordered_category_grouped = []
+    [ "Work project", "Site project", "User project", "System project" ].each do |proj|
+       ordered_category_grouped << [ proj , category_grouped.delete(proj) ] if category_grouped[proj]
+    end
+
+    grouped_options = grouped_options_for_select ordered_category_grouped, selected || current_user.own_group.id.to_s
+
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true

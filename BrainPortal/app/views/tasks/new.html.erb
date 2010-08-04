@@ -15,11 +15,7 @@
 
 <h2>Task Control:</h2>
 
-<strong>Execution server:</strong>&nbsp;<%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available" } %>
-
-<strong>Description:</strong>&nbsp;<%= text_field_tag "cbrain_task[description]", @task.description, :size => 30 %>
-
-<strong>Save results to:</strong>&nbsp;<%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
+<%= render :partial => 'tasks/control' %>
 
 
 

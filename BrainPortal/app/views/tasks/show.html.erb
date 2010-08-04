@@ -98,7 +98,12 @@
    
       <tr>
           <th>Owner</th>
-          <td><%= h(User.find_by_id((@task.user_id) || 1).login) -%></td>
+          <td><%= h(begin @task.user.login rescue "User ##{@task.user_id.inspect}" end) -%></td>
+      </tr>
+   
+      <tr>
+          <th>Project</th>
+          <td><%= h(begin @task.group.name rescue "Project ##{@task.group_id.inspect}" end) -%></td>
       </tr>
    
       <tr>
