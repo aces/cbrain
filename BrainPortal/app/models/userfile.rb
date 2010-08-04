@@ -56,7 +56,7 @@ class Userfile < ActiveRecord::Base
   has_many                :children,
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
-                          
+                                                    
   validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
   validates_presence_of   :name
   validates_presence_of   :user_id
@@ -64,7 +64,9 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :group_id
   validate                :validate_associations
   
-  before_destroy          :erase_or_unregister, :format_tree_update, :update_children
+  before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
+  
+  attr_writer             :level
 
   def site
     @site ||= self.user.site
@@ -128,11 +130,21 @@ class Userfile < ActiveRecord::Base
     self.save
   end
 
+  #Sort a list of files in "tree order" where
+  #parents are listed just before their children.
   def self.tree_sort(userfiles)
     grouped_files = userfiles.group_by(&:parent_id)
+    id_hash = userfiles.index_by(&:id)
     
     result = grouped_files.delete(nil) || []
     keys = grouped_files.keys
+    keys.each do |k|
+      unless id_hash[k]
+        new_roots = grouped_files.delete(k)
+        result += new_roots
+      end
+    end
+    result.each { |f| f.level = 0 }
     num_keys = keys.size
     upper_limit = (num_keys * (num_keys - 1))/2
     
@@ -411,30 +423,47 @@ class Userfile < ActiveRecord::Base
     
     self.parent_id = userfile.id
     self.save!
-    self.set_level!
-    
+        
     true
   end
 
-  def set_level!
-    if self.parent_id.nil?
-      self.level = 0
-    else
-      self.level = self.parent.level + 1
-    end
-    self.save!
-    
-    self.children.each {|c| c.set_level!}
-  end
+  # def set_level!
+  #   if self.parent_id.nil?
+  #     self.level = 0
+  #   elsif !self.parent
+  #     self.parent_id = nil
+  #     self.level = 0
+  #   elsif self.parent.level.nil?
+  #     self.parent.set_level!
+  #     return
+  #   else
+  #     self.level = self.parent.level + 1
+  #   end
+  #   self.save!
+  #   
+  #   self.children.each {|c| c.set_level!}
+  # end
   
   def descendants
-    result = []
-     self.children.each do |child|
-       result << child
-       result += child.descendants
-     end
-     
-     result
+    result = [self]
+    self.children.each do |child|
+      result << child
+      result += child.descendants
+    end
+    
+    result
+  end
+  
+  def level
+    return @level if @level
+    
+    if self.parent && self.parent.level
+      @level = self.parent.level + 1
+    else
+      @level = 0
+    end
+    
+    @level
   end
   
   
@@ -641,12 +670,11 @@ class Userfile < ActiveRecord::Base
     end
   end
   
-  def update_children
+  def nullify_children
     self.children.each do |c|
       c.parent_id = nil
-      c.set_level!
       c.save!
-    end
+    end    
   end
    
 end

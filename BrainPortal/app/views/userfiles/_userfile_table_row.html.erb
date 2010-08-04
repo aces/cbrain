@@ -28,7 +28,7 @@
       <% end %>
       <% if userfile.formats.size > 0 %>
         <br>
-        Formats: <%= userfile.formats.map { |u| link_to_userfile_if_accessible(u,current_user,:name => u.format_name) }.join(", ") %>
+        <%= "&nbsp;" * (userfile.level * 5) %> Formats: <%= userfile.formats.map { |u| link_to_userfile_if_accessible(u,current_user,:name => u.format_name) }.join(", ") %>
       <% end %>
    </td>
    <% unless current_session[:userfiles_details] == 'off' %>
