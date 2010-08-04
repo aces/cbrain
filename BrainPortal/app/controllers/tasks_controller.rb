@@ -188,7 +188,7 @@ class TasksController < ApplicationController
   end
 
   def edit #:nodoc:
-    @task       = current_user.cbrain_tasks.find(params[:id])
+    @task       = current_user.available_tasks.find(params[:id])
     @toolname   = @task.name
 
     if @task.status !~ /Completed|Failed/
@@ -305,7 +305,7 @@ class TasksController < ApplicationController
     flash[:error]  = ""
 
     id = params[:id]
-    @task = current_user.cbrain_tasks.find(id)
+    @task = current_user.available_tasks.find(id)
 
     # Save old params and update the current task to reflect
     # the form's content.
