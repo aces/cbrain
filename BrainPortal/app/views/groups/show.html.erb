@@ -3,6 +3,14 @@
 <h2>Project details for <%= h @group.name %></h2>
 
 <div class="generalbox">
+  <% if @group.is_a?(WorkGroup) && @group.can_be_edited_by?(current_user)%>
+    <div class="menu_bar menu_bar_left">
+      <%= link_to 'Switch', switch_group_path(@group), :class => "button", :method  => :post %>
+      <%= link_to 'Edit', edit_group_path(@group), { :method => :get, :class => "button" } %>
+      <%= link_to 'Delete', group_path(@group), { :confirm => 'Are you sure?', :method => :delete, :class => "button" } %>
+    </div>
+  <% end %>
+  <P>
   <table>
     <tr>
         <th>Name</th>
