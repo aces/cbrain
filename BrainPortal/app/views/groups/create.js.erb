@@ -1,0 +1,9 @@
+<% if @group.errors.empty? %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#<%= @group.is_a?(WorkGroup) ? "work" : "system" %>_project_table').append(jQuery("<%= escape_javascript(render :partial => "group_table_row", :locals  => {:group  => @group}) %>"));
+  jQuery("#errorExplanation").remove();
+  jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
+  jQuery('#new_group_button').click();
+<% else %>
+  jQuery('#new_group').html("<%= escape_javascript(render :partial  => "new") %>");
+<% end %>

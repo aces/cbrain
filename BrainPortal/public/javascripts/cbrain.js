@@ -159,12 +159,16 @@ jQuery(
      var confirm_message = button.attr('data-confirm');
      var delete_selector = button.attr("data-delete-selector");
      var delete_text = button.attr("data-delete-text");
+     var data_method = button.attr("data-method");
      if(!data_type) data_type = "script";
+     if(!data_method) data_method = "DELETE";
      
-     if(!confirm(confirm_message)){
-       return false;
-     };
-     
+     if(confirm_message){
+        if(!confirm(confirm_message)){
+          return false;
+        };
+     }
+    
      if(delete_selector){
        if(!delete_text){
          delete_text = "";
@@ -174,7 +178,7 @@ jQuery(
       
      jQuery.ajax({
        url: url,
-       type: "DELETE",
+       type: data_method,
        dataType: data_type,
        target: target,
        resetForm: false
@@ -254,6 +258,7 @@ jQuery(
      var url = button.attr("data-url");
      var method = button.attr("data-method");
      var target = button.attr("data-target");
+     var confirm_message = button.attr('data-confirm');
      var enclosing_form = button.closest("form");
      if(!data_type) data_type = enclosing_form.attr("data-datatype");
      if(!data_type) data_type = "html";
@@ -262,6 +267,12 @@ jQuery(
 
      if(!method) method = enclosing_form.attr("data-method");
      if(!method) method = "POST";
+     
+     if(confirm_message){
+         if(!confirm(confirm_message)){
+           return false;
+         };
+     }
 
      enclosing_form.ajaxSubmit({
        url: url,
@@ -341,7 +352,7 @@ jQuery(
          jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
          	show: "puff",
          	modal: true,
-   	        position: 'center',
+   	      position: 'center',
          	width: 800,
          	height: 500,
          	close: function(){

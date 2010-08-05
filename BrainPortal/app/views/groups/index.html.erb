@@ -9,7 +9,9 @@
    <% end %>     
 </div>
 
-<table id="group_table" class="resource_list">
+<p>
+
+<table id="work_project_table" class="resource_list">
 
   <tr><th colspan="6">Projects</th></tr>
   <tr>
@@ -22,7 +24,11 @@
   <% for group in @work_groups %>
     <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
   <% end %>
+</table>
 
+<p>
+
+<table id="system_project_table" class="resource_list">
   <tr><th colspan="6">System Projects</th></tr>
   <tr>
     <th class="subtitle">Name</th>

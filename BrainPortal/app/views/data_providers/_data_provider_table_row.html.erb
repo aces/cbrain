@@ -16,15 +16,12 @@
   </td>
   <td>
      <% if data_provider.has_owner_access?(current_user) %>
-     <%= 
-        link_to_remote  'Delete',
-                      {:url  => data_provider_path(data_provider),
-                       :method  => 'delete',
-                       :confirm => 'Are you sure?',
-                       :before  => "$('data_provider_#{data_provider.id}').update('<td colspan=\"11\" style=\"color:red; text-align:center;\">Deleting...</td>');"
-                       },
-                      {:class => 'action_link'}
-      %>
+       <%= 
+           link_to 'Delete', data_provider_path(data_provider), :class  => "action_link delete_button", 
+                                                                "data-confirm"  => 'Are you sure?', 
+                                                                "data-delete-selector"  => "#data_provider_#{data_provider.id}",
+                                                                "data-delete-text"  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
+       %>
      <% end %>
   </td>
   <td>

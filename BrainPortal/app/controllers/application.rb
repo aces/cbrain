@@ -99,11 +99,7 @@ class ApplicationController < ActionController::Base
       end
       respond_to do |format|
         format.html { redirect_to cbm.redirect || default_redirect }
-        format.js do
-          render :update do |page|
-            page.redirect_to cbm.redirect || default_redirect
-          end
-        end
+        format.js   { render :partial  => "shared/flash_update" } 
         format.xml  { render :xml => {:error  => cbm.message}, :status => :unprocessable_entity }
       end
     rescue => e
