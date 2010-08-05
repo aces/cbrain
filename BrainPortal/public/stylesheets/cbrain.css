@@ -1321,8 +1321,8 @@ td.middle {
 /* ######################################################### */
 
 #jiv_option_div {
-   margin-left: 65px;
-   width: 415px;
+   padding: 1em;
+   width: 100%;
 }
 
 

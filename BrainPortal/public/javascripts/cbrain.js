@@ -303,9 +303,9 @@ jQuery(
          jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
          	show: "puff",
          	modal: true,
-   	      position: 'center',
-         	width: 400,
-         	height: 300,
+   	        position: 'center',
+         	width: 800,
+         	height: 500,
          	close: function(){
          	  jQuery(this).remove();
          	}
