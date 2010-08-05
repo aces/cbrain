@@ -2,5 +2,5 @@
 <% if eval("@#{model_name}").errors.empty? %>
   jQuery("#<%= "#{model_name}_#{eval("@#{model_name}.id")}" %>").remove();
 <% else %>
-  jQuery("#<%= "#{model_name}_#{eval("@#{model_name}.id")}" %>").html("<%= escape_javascript(render :partial => "#{model_name.pluralize}/#{model_name}_table_row", :locals  => eval("{:#{model_name}  => @#{model_name}}")) %>");
+  jQuery("#<%= "#{model_name}_#{eval("@#{model_name}.id")}" %>").replaceWith("<%= escape_javascript(render :partial => "#{model_name.pluralize}/#{model_name}_table_row", :locals  => eval("{:#{model_name}  => @#{model_name}}")) %>");
 <% end %>
