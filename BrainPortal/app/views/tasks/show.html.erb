@@ -85,6 +85,11 @@
           <th>Current Status</th>
           <td><%= h(@task.status) %></td>
       </tr>
+
+      <tr>
+          <th>Current Run Number</th>
+          <td><%= h(@task.run_number) %></td>
+      </tr>
    
       <tr>
           <th>Time Submitted</th>
@@ -176,6 +181,21 @@
       <tr>
         <th colspan="2">Cluster Job's Captured Output</th>
       </tr>
+
+      <% if @task.run_number > 1 %>
+        <tr>
+          <th colspan="2" class="subtitle">
+            Other runs: <% 1.upto(@task.run_number) do |rn| %>
+              <% if rn == @run_number.to_i %>
+                <%= rn %>
+              <% else %>
+                <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
+              <% end %>
+            <% end %>
+          </th>
+        </tr>
+      <% end %>
+
 
       <tr>
         <td class="left_align" colspan="2">

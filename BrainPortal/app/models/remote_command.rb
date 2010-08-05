@@ -50,7 +50,7 @@ class RemoteCommand < RestrictedHash
      # -------- ALTER TASKS PARAMETERS --------
 
      # Tasks affected, as a string of comma-separated task IDs.
-     # Used by the command 'alter_tasks'
+     # Used by the command 'alter_tasks' and 'get_task_outpus'.
      :task_ids,
 
      # A new task status for the tasks affected by 'alter_tasks'
@@ -62,6 +62,7 @@ class RemoteCommand < RestrictedHash
 
      # -------- GET TASK OUTPUTS PARAMETERS --------
      # Uses :task_ids with a single ID expected in it
+     :run_number,      # supplied by queryier
      :cluster_stdout,  # filled by receiver
      :cluster_stderr,  # filled by receiver
 

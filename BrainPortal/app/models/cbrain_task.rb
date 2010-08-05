@@ -153,8 +153,8 @@ class CbrainTask < ActiveRecord::Base
   end
 
   # A string, in format "#{task_id}-#{run_number}"
-  def run_id
-    "#{self.id}-#{self.run_number}"
+  def run_id(run_number=nil)
+    "#{self.id}-#{run_number || self.run_number}"
   end
 
 

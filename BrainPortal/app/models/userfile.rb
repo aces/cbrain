@@ -226,7 +226,7 @@ class Userfile < ActiveRecord::Base
       when 'file'
         case term
         when 'minc'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)",  "%.mnc"])
+          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? or userfiles.name LIKE ?)",  "%.mnc", "%.mnc.gz", "%.mnc.Z" ])
         when 'cw5'
           scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
         when 'flt'

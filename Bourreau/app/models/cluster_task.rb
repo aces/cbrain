@@ -682,13 +682,13 @@ class ClusterTask < CbrainTask
   # Returns nil if the work directory has not yet been
   # created, or no longer exists. The file itself is not
   # garanteed to exist, either.
-  def stdout_cluster_filename
+  def stdout_cluster_filename(run_number=nil)
     workdir = self.cluster_workdir
     return nil unless workdir
     if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
       "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
     else
-      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id}" # New official convention
+      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}" # New official convention
     end
   end
 
@@ -696,13 +696,13 @@ class ClusterTask < CbrainTask
   # Returns nil if the work directory has not yet been
   # created, or no longer exists. The file itself is not
   # garanteed to exist, either.
-  def stderr_cluster_filename
+  def stderr_cluster_filename(run_number=nil)
     workdir = self.cluster_workdir
     return nil unless workdir
     if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
       "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
     else
-      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id}" # New official convention
+      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}" # New official convention
     end
   end
 
@@ -713,17 +713,19 @@ class ClusterTask < CbrainTask
   # otherise it's too expensive to do it every time. The
   # pseudo attributes :cluster_stdout and :cluster_stderr
   # are not really part of the task's ActiveRecord model.
-  def capture_job_out_err
+  def capture_job_out_err(run_number=nil)
+     self.cluster_stdout=nil
+     self.cluster_stderr=nil
      return if self.new_record?
-     stdoutfile = self.stdout_cluster_filename
-     stderrfile = self.stderr_cluster_filename
+     stdoutfile = self.stdout_cluster_filename(run_number)
+     stderrfile = self.stderr_cluster_filename(run_number)
      if stdoutfile && File.exist?(stdoutfile)
-        io = IO.popen("tail -100 #{stdoutfile}","r")
+        io = IO.popen("tail -1000 #{stdoutfile}","r")
         self.cluster_stdout = io.read
         io.close
      end
      if stderrfile && File.exist?(stderrfile)
-        io = IO.popen("tail -100 #{stderrfile}","r")
+        io = IO.popen("tail -1000 #{stderrfile}","r")
         self.cluster_stderr = io.read
         io.close
      end

@@ -99,10 +99,11 @@ class TasksController < ApplicationController
     task_id     = params[:id]
 
     @task              = CbrainTask.find(task_id)
+    @run_number        = params[:run_number] || @task.run_number
 
     begin
       bourreau           = @task.bourreau
-      control            = bourreau.send_command_get_task_outputs(task_id)
+      control            = bourreau.send_command_get_task_outputs(task_id,@run_number)
       @task.cluster_stdout = control.cluster_stdout
       @task.cluster_stderr = control.cluster_stderr
     rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
@@ -234,6 +235,10 @@ class TasksController < ApplicationController
     @task.user_id     ||= current_user.id
     @task.group_id    ||= current_session[:active_group_id] || current_user.own_group.id
 
+    # Security checks
+    @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
+
     # Log revision number of portal.
     @task.addlog_current_resource_revision
 
@@ -313,6 +318,10 @@ class TasksController < ApplicationController
     new_att      = params[:cbrain_task] || {}
     @task.attributes = new_att # just updates without saving
     restore_untouchable_attributes(@task,old_params)
+
+    # Security checks
+    @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
