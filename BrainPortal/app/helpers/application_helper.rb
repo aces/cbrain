@@ -67,6 +67,12 @@ module ApplicationHelper
     return string[0,length-3] + "..."
   end
 
+  # Produces a pretty 'delete' symbol (used mostly for removing
+  # active filters)
+  def delete_icon
+    "&nbsp;<font color=\"red\">&otimes</font>"
+  end
+
 
 
   #################################################################################

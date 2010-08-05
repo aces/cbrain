@@ -104,6 +104,10 @@
 
 
 
+    <th>Run Number</th>
+
+
+
     <th>
       <%= link_to  "Time Submitted", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.created_at', :dir  => set_dir('cbrain_tasks.created_at', @filter_params["sort"])}} }, 
                                               "data-datatype"  => 'script', :class  => "ajax_link"
@@ -131,6 +135,6 @@
 <% end %>
         
 <% if @tasks.blank? %>
-  <tr class="list-odd"><td colspan="<%= 8 + (current_project ? 0 : 1) %>">There are no tasks in this list.</td></tr>
+  <tr class="list-odd"><td colspan="<%= 9 + (current_project ? 0 : 1) %>">There are no tasks in this list.</td></tr>
 <% end %>
 

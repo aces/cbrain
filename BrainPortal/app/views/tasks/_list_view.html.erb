@@ -15,6 +15,7 @@
     <% end %>
     <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
     <td><%= h(task.status) %></td>
+    <td><%= h(task.run_number) %></td>
     <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
     <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
   </tr>

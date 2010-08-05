@@ -22,7 +22,7 @@
     </td>
     <td><%= h(crop_text_to(30, tasks.first.description)) %></td>
     <td><%= h(tasks.first.user.login) %></td>
-    <td colspan="<%= current_project ? "4" : "5" %>">
+    <td colspan="<%= current_project ? "5" : "6" %>">
       <% if launch_time %>
         <%= pluralize(tasks.size, "job")%> launched at <%= to_localtime(launch_time,:datetime) %>
       <% else %>
@@ -45,6 +45,7 @@
       <% end %>
       <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
       <td><%= h(task.status) %></td>
+      <td><%= h(task.run_number) %></td>
       <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>
       <td><%= h(to_localtime(task.updated_at.to_s,:datetime)) -%></td>
     </tr>
