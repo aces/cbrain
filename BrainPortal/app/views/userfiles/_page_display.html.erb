@@ -1,8 +1,10 @@
 
-<h5><%= link_to_remote "Toggle Details", {:url => {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %></h5>
+<h5><%= link_to_remote (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
+        {:url => {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %></h5>
 
 <% if @userfiles_total > @userfiles_per_page %>
-  <h5><%= link_to_remote "Toggle Pagination", :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %></h5>
+  <h5><%= link_to_remote (session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
+          :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %></h5>
 <% end %>
 
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>

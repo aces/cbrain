@@ -70,7 +70,7 @@ module ApplicationHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<font color=\"red\">&otimes</font>"
+    "&nbsp;<font color=\"red\">&otimes</font>&nbsp;"
   end
 
 
@@ -232,7 +232,7 @@ module ApplicationHelper
     end
   end
 
-  # Creates a link to the edit page of a +userfile+, as long
+  # Creates a link to the show page of a +userfile+, as long
   # as the +user+ has access to it. By default, +user+ is
   # current_user.
   #
@@ -248,7 +248,7 @@ module ApplicationHelper
   #
   # +options+ can contain a :name for
   # the link (the default is the userfile's name) and a
-  # :path (the default is the edit path).
+  # :path (the default is the show path).
   def link_to_userfile_if_accessible(userfile, user = current_user, options = {})
     return "(None)" if userfile.blank?
     unless userfile.is_a?(Userfile)
@@ -256,7 +256,7 @@ module ApplicationHelper
       return "(Deleted/Non-existing file)" if userfile.blank?
     end
     name = options[:name] || userfile.name
-    path = options[:path] || edit_userfile_path(userfile)
+    path = options[:path] || userfile_path(userfile)
     if userfile.available? && userfile.can_be_accessed_by?(user)
       link_to(name, path)
     else
