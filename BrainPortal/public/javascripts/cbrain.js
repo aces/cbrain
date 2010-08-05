@@ -147,6 +147,42 @@ jQuery(
 
       return false;
    });
+   
+   //Allows for the creation of form submit buttons that can highjack
+   //the form and send its contents elsewhere, changing the datatype,
+   //target, http method as needed.
+   jQuery(".delete_button").live("click", function(){
+     var button = jQuery(this);
+     var data_type = button.attr("data-datatype");
+     var url = button.attr("href");
+     var target = button.attr("data-target");
+     var confirm_message = button.attr('data-confirm');
+     var delete_selector = button.attr("data-delete-selector");
+     var delete_text = button.attr("data-delete-text");
+     if(!data_type) data_type = "script";
+     
+     if(!confirm(confirm_message)){
+       return false;
+     };
+     
+     if(delete_selector){
+       if(!delete_text){
+         delete_text = "";
+       }
+       jQuery(delete_selector).html(delete_text);
+     }
+      
+     jQuery.ajax({
+       url: url,
+       type: "DELETE",
+       dataType: data_type,
+       target: target,
+       resetForm: false
+       }
+     );
+     return false;
+   }); 
+   
 
    jQuery(".select_all").live("click", function(){
      var header_box = jQuery(this);
@@ -166,13 +202,16 @@ jQuery(
    //Forms with the class "ajax_form" will be submitted as ajax requrests.
    //Datatype and target can be set with appropriate "data" attributes.
    jQuery(".ajax_form").live("submit", function(){
-     var data_type = jQuery(this).attr("data-datatype");
-     var target = jQuery(this).attr("data-target");
+     var current_form = jQuery(this);
+     var data_type = current_form.attr("data-datatype");
+     var target = current_form.attr("data-target");
      if(!data_type) data_type = "html";
-     jQuery(this).ajaxSubmit({
+     current_form.ajaxSubmit({
        type: "POST",
        dataType: data_type,
-       target: jQuery(target),
+       success: function(data){
+         jQuery(target).html(data);
+       },
        resetForm: true
      });
      return false;
@@ -190,7 +229,6 @@ jQuery(
        var method = text_field.attr("data-method");
        if(!method) method = "GET";
        var target = text_field.attr("data-target");
-
 
        var parameters = {};
        parameters[text_field.attr("id")] = text_field.attr("value");
@@ -242,15 +280,15 @@ jQuery(
      var confirm_message = jQuery(this).attr('data-confirm');
      if(confirm_message) {
        if(confirm(confirm_message)) {
-	 form.submit();
+	       form.submit();
        }
      }
      else {
        form.submit();
      }
      return false;
-    });
-
+   });
+    
    //UNFINISHED: DO NOT USE
    //Attempting to create a form for the userfiles page that
    //can pull in inputs from elsewhere on the page (outside the
