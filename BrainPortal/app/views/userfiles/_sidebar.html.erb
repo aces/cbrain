@@ -7,7 +7,6 @@
   <% form_tag({:controller  => :userfiles, :action => "index"}, :method => "get") do %>
     <h5>Search by filename</h5>
     <div id="name_search_filter">
-         <%= hidden_field_tag :userfiles_search_type, "name_search" %>
          <%= text_field_tag :userfiles_search_term, nil, :class  => "search_box", "data-url"  => userfiles_path(:userfiles_search_type => "name_search") %>
     </div>
   <% end %>
@@ -17,13 +16,7 @@
     <div id="current_filters">
         <%= render :partial => 'userfiles/current_filters' %>
     </div>
-    <%= link_to_remote 'clear',
-        {
-          :url    => { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter },
-          :method => 'get'
-        },
-        { :class  => 'action_link' }
-     %>
+    <%= link_to 'clear', { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter }, "data-datatype"  => 'script', :class  => "ajax_link action_link" %>
 </div>
 
 <div class="accordion">

@@ -13,14 +13,14 @@
          %>
          <br>
        <% end %>
-       <%= link_to_remote 'Refresh list of files', :url  => browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), :method  => :get %>
+       <%= link_to 'Refresh list of files', browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), "data-datatype"  => 'script', :class  => "ajax_link" %>
      </div>
             
      <% if params[:search] %>
        <div class="dp_browse_filter_div">
          Filtering: <strong><%= params[:search] %></strong> 
          <small>
-           <%= link_to_remote 'x', {:url  => {:action  => :browse, :pagination  => params[:pagination] }, :method  => 'get'}, {:class  => 'action_link'} %>
+           <%= link_to delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, "data-datatype"  => 'script', :class  => "ajax_link" %>
          </small>
        </div>
      <% end %>
@@ -31,12 +31,10 @@
 
 <tr>
   <th><input type='checkbox' class="select_all" data-checkbox-class="checkbox"/></th>
-  <th onMouseOver="$('name_search_filter').show();$('redirect_to_browse').writeAttribute('value', 'true');" onMouseOut="$('name_search_filter').hide();$('redirect_to_browse').writeAttribute('value', 'false');">
+  <th onMouseOver="jQuery('#name_search_filter').show()" onMouseOut="jQuery('#name_search_filter').hide();">
     Name
     <div id="name_search_filter" class="filter_list" style="display:none;">
-      Search: <%= text_field_tag :search %>
-      <%= hidden_field_tag :redirect_to_browse, nil, :id => :redirect_to_browse %>
-      <%= hidden_field_tag :pagination, params[:pagination] %>
+      Search: <%= text_field_tag :search, nil, :class  => "search_box", "data-url"  => browse_data_provider_path(:pagination  => params[:pagination])  %>
     </div>
   </th>
   <th>Size</th>

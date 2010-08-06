@@ -43,13 +43,7 @@
       <%= render :partial => 'tasks/current_filters' %>
     </div>
     <small>
-      <%= link_to_remote 'clear',
-          {
-            :url  => { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } },
-            :method  => 'get'
-          },
-          { :class  => 'action_link' }
-       %>
+      <%= link_to 'clear', { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } }, "data-datatype"  => 'script', :class  => "ajax_link" %>
     </small>
 </div>
 

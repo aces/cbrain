@@ -7,18 +7,18 @@
      
 <ul class="filter_menu">
 
-  <li><%= link_to_remote 'All Files', :url  => {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, 
-                                      :method  => 'get'
+  <li><%= link_to 'All Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, 
+                                "data-datatype"  => 'script', :class  => "ajax_link"
        %> 
   </li> 
 
-  <li><%= link_to_remote 'MINC Files', :url  => {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :minc}, 
-                                 :method  => 'get'
+  <li><%= link_to 'MINC Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :minc}, 
+                                 "data-datatype"  => 'script', :class  => "ajax_link"
   %> 
   </li>
 
-  <li><%= link_to_remote 'JIV Files', :url  => {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :jiv},
-                                 :method  => 'get'
+  <li><%= link_to 'JIV Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :jiv},
+                                "data-datatype"  => 'script', :class  => "ajax_link"
   %> 
   </li>
  
@@ -26,9 +26,7 @@
 
     <li class="custom_filter">
       <b>
-      <%= link_to_remote crop_text_to(15, filter.name),
-           :url     => { :controller  => :userfiles, :action  => :index, :userfiles_custom_filter  => filter.id },
-           :method  => 'get'
+      <%= link_to crop_text_to(15, filter.name), { :controller  => :userfiles, :action  => :index, :userfiles_custom_filter  => filter.id }, "data-datatype"  => 'script', :class  => "ajax_link"
       %>
       </b>
       <small><small>

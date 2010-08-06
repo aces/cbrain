@@ -5,13 +5,13 @@
     <% @filter_params["filters"].each do |key, value| %>
         <li>
           <% if key == "bourreau_id" %>
-            <%= crop_text_to(20, Bourreau.find(value).name) %><%= link_to_remote delete_icon, :url  => {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+            <%= crop_text_to(20, Bourreau.find(value).name) %><%= link_to delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
           <% elsif key == "user_id" %>
-            <%= crop_text_to(20, User.find(value).login) %><%= link_to_remote delete_icon, :url  => {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>   
+            <%= crop_text_to(20, User.find(value).login) %><%= link_to delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, "data-datatype"  => 'script', :class  => "ajax_link"  %>   
             <% elsif key == "custom_filter" %>
-               <%= crop_text_to(20, TaskCustomFilter.find(value).name) %><%= link_to_remote delete_icon, :url  => {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+               <%= crop_text_to(20, TaskCustomFilter.find(value).name) %><%= link_to delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
           <% else %>
-            <%= crop_text_to(20, value.sub(/^CbrainTask::/, "")) %><%= link_to_remote delete_icon, :url  => {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :method  => 'get'  %>
+            <%= crop_text_to(20, value.sub(/^CbrainTask::/, "")) %><%= link_to delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, "data-datatype"  => 'script', :class  => "ajax_link"  %>
           <% end %>
         </li>
     <% end %>

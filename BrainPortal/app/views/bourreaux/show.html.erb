@@ -3,7 +3,7 @@
 
 <h2>Information for <%= @bourreau.name %></h2>
 
-<%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
+<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}').show();})" %>
 
 <div class="generalbox">
     

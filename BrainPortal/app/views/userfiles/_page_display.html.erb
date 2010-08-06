@@ -1,16 +1,29 @@
 
-<h5><%= link_to_remote (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
-        {:url => {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, :method => 'get'} %></h5>
+<h5>
+  <%= 
+    link_to (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
+            {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, 
+            "data-datatype"  => 'script', :class  => "ajax_link" 
+  %>
+</h5>
 
 <% if @userfiles_total > @userfiles_per_page %>
-  <h5><%= link_to_remote (session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
-          :url => userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])), :method => 'get' %></h5>
+  <h5>
+    <%= link_to (session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
+                userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])),
+                "data-datatype"  => 'script', :class  => "ajax_link"
+    %>
+  </h5>
 <% end %>
 
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-  <%= link_to_remote session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", :url => userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), :method => 'get' %><br>
+  <%= link_to session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", 
+              userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), 
+              "data-datatype"  => 'script', :class  => "ajax_link" 
+  %>
+  <br>
 <% end %>
 
-<%= link_to_remote "Tree view", :url => {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'tree_sort'}, :method => 'get' %>
+<%= link_to "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'tree_sort'}, "data-datatype"  => 'script', :class  => "ajax_link" %>
 <%= set_order_icon('tree_sort', current_session[:userfiles_sort_order]) %>
 

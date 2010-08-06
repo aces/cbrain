@@ -8,12 +8,8 @@
 <ul class="filter_menu">
   <% TaskCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
     <li class="custom_filter">
-      <%= link_to_remote crop_text_to(15, filter.name),
-          :url  => { :controller => :tasks,
-                     :action     => :index,
-                     :tasks      => { :filters => { :custom_filter  => filter.id } }
-                   },
-          :method => 'get'
+      <%= link_to crop_text_to(15, filter.name), { :controller => :tasks, :action     => :index, :tasks      => { :filters => { :custom_filter  => filter.id } } },
+                                                 "data-datatype"  => 'script', :class  => "ajax_link"
       %>
       <small><small>
         <%= link_to 'Edit', edit_custom_filter_path(filter) %>

@@ -1,5 +1,5 @@
 
-<%= javascript_tag "document.observe('dom:loaded', function() {$$('.#{@bourreau.class}').each(function(value, index) {value.show();});})" %>
+<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}').show();})" %>
 
 <% title "Edit #{@bourreau.name}" %>
 

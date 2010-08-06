@@ -1,5 +1,5 @@
 
-<tr id="message_display_<%= mess.id %>" class="<%= cycle("list-odd", "list-even") %> row_highlight">
+<tr class=" message_display_<%= mess.id %> <%= cycle("list-odd", "list-even") %> row_highlight">
 
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> left_side">
     <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>&nbsp;
@@ -20,13 +20,13 @@
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
 
     <% unless mess.read %>
-      <%= link_to_remote  'Mark&nbsp;as&nbsp;Read',
-                      {:url  => message_path(mess, :read  => true),
-                       :method  => 'put',
-                       :before  => "$$('#message_display_#{mess.id}').invoke('update', '<td colspan=\"3\" style=\"color:red; text-align:center;\">Updating...</td>');"
-                       },
-                      {:class => 'action_link'}
-      %>&nbsp;&nbsp;&nbsp;&nbsp;
+      <%= 
+        link_to  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => true),
+                 :class => 'delete_button action_link', 
+                 "data-method"  => "PUT",
+                 "data-delete-selector"  => ".message_display_#{mess.id}", 
+                 "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
+      %>
     <% end %>
 
   </td>

@@ -9,7 +9,7 @@
 
 
 
-    <th id="task_type_header" onMouseOver="$('task_filters_list').show()" onMouseOut="$('task_filters_list').hide()">
+    <th id="task_type_header" onMouseOver="jQuery('#task_filters_list').show()" onMouseOut="jQuery('#task_filters_list').hide()">
       <%= link_to "Task Name", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.type', :dir  => set_dir('cbrain_tasks.type', @filter_params["sort"])}} }, 
                                        "data-datatype"  => 'script', :class  => "ajax_link"  
       %>
@@ -18,7 +18,12 @@
         <br>
         <ul class="filter_list" id="task_filters_list" style="display:none;">
            <% @task_types.sort.each do |task_type| %>
-              <li><%= link_to_remote h(crop_text_to(20, task_type.sub(/^CbrainTask::/, ""))), :url  => {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, :method  => 'get' %> </li> 
+              <li>
+                <%= 
+                  link_to h(crop_text_to(20, task_type.sub(/^CbrainTask::/, ""))), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
+                                                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
+                %> 
+              </li> 
            <% end %>
          </ul>
       <% end %>
@@ -26,7 +31,7 @@
 
 
 
-    <th onMouseOver="$('description_filters_list').show()" onMouseOut="$('description_filters_list').hide()">
+    <th onMouseOver="jQuery('#description_filters_list').show()" onMouseOut="jQuery('#description_filters_list').hide()">
        <%= link_to "Description", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}} }, 
                                   "data-datatype"  => 'script', :class  => "ajax_link"
        %>
@@ -35,7 +40,12 @@
          <br>
            <ul class="filter_list" id="description_filters_list" style="display:none;">
               <% @task_descriptions.sort.each do |task_desc| %>
-                 <li><%= link_to_remote h(crop_text_to(40, task_desc)), :url  => {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:description  => task_desc}}}, :method  => 'get' %> </li> 
+                 <li>
+                   <%= 
+                     link_to h(crop_text_to(40, task_desc)), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:description  => task_desc}}}, 
+                                                              "data-datatype"  => 'script', :class  => "ajax_link" 
+                   %>
+                 </li> 
               <% end %>
             </ul>
          <% end  %>
@@ -43,7 +53,7 @@
 
 
 
-    <th onMouseOver="$('owner_filters_list').show()" onMouseOut="$('owner_filters_list').hide()">
+    <th onMouseOver="jQuery('#owner_filters_list').show()" onMouseOut="jQuery('#owner_filters_list').hide()">
        <%= link_to  "Owner", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'users.login', :dir  => set_dir('users.login', @filter_params["sort"])}} }, 
                               "data-datatype"  => 'script', :class  => "ajax_link"  
        %>
@@ -52,7 +62,12 @@
          <br>
            <ul class="filter_list" id="owner_filters_list" style="display:none;">
               <% @task_owners.sort_by(&:login).each do |task_owner| %>
-                 <li><%= link_to_remote h(task_owner.login), :url  => {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, :method  => 'get' %> </li> 
+                 <li>
+                   <%= 
+                      link_to h(task_owner.login), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, 
+                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
+                    %>
+                 </li> 
               <% end %>
            </ul>
         <% end %>
@@ -70,7 +85,7 @@
 
 
 
-    <th onMouseOver="$('bourreau_filters_list').show()" onMouseOut="$('bourreau_filters_list').hide()">
+    <th onMouseOver="jQuery('#bourreau_filters_list').show()" onMouseOut="jQuery('#bourreau_filters_list').hide()">
       <%= link_to  "Execution Server", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'remote_resources.name', :dir  => set_dir('remote_resources.name', @filter_params["sort"])}} }, 
                                                 "data-datatype"  => 'script', :class  => "ajax_link"
       %>
@@ -79,7 +94,12 @@
          <br>
            <ul class="filter_list" id="bourreau_filters_list" style="display:none;">
               <% @bourreaux.sort_by(&:name).each do |bourreau| %>
-                 <li><%= link_to_remote h(bourreau.name), :url  => {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:bourreau_id  => bourreau.id}}}, :method  => 'get' %> </li> 
+                 <li>
+                    <%= 
+                        link_to h(bourreau.name),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:bourreau_id  => bourreau.id}}}, 
+                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
+                    %>
+                 </li> 
               <% end %>
            </ul>
       <% end %>
@@ -87,7 +107,7 @@
 
 
 
-    <th onMouseOver="$('status_filters_list').show()" onMouseOut="$('status_filters_list').hide()">
+    <th onMouseOver="jQuery('#status_filters_list').show()" onMouseOut="jQuery('#status_filters_list').hide()">
        <%= link_to "Current Status", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.status', :dir  => set_dir('cbrain_tasks.status', @filter_params["sort"])}} }, 
                                        "data-datatype"  => 'script', :class  => "ajax_link"  
        %>
@@ -96,7 +116,12 @@
          <br>
            <ul class="filter_list" id="status_filters_list" style="display:none;">
               <% @task_status.sort.each do |task_status| %>
-                 <li><%= link_to_remote h(task_status), :url  => {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, :method  => 'get' %> </li> 
+                 <li>
+                   <%= 
+                       link_to h(task_status),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
+                                                 "data-datatype"  => 'script', :class  => "ajax_link" 
+                   %>
+                 </li> 
               <% end %>
            </ul>
        <% end %>

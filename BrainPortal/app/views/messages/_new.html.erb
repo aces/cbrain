@@ -1,5 +1,5 @@
 
-<% remote_form_for :message, @message, :url => { :action => "create" } do |f| %>
+<% form_for :message, @message, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| %>
 
   <%= f.error_messages %>
   
