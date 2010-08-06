@@ -210,6 +210,10 @@ class User < ActiveRecord::Base
       @available_users = [self]
     end
   end
+
+  def can_be_accessed_by?(user)
+    user.available_users.include?(self)
+  end
   
   # Returns the SystemGroup associated with the user; this is a
   # group with the same name as the user.

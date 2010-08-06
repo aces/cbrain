@@ -49,6 +49,10 @@ class Group < ActiveRecord::Base
   def own_group
     self
   end
+
+  def can_be_accessed_by?(user)
+    user.available_groups.include?(self)
+  end
   
   #Can this group be edited by +user+?
   #

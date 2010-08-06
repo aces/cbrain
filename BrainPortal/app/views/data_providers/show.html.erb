@@ -46,12 +46,12 @@
 
       <tr>
           <th>Owner</th>
-          <td><%= h(@provider.user.login) %></td>
+          <td><%= link_to_user_if_accessible(@provider.user) %></td>
       </tr>
 
       <tr>
           <th>Group</th>
-          <td><%= h(@provider.group.name) %></td>
+          <td><%= link_to_group_if_accessible(@provider.group) %></td>
       </tr>
 
       <tr>
