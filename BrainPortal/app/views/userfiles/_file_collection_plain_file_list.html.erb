@@ -3,20 +3,7 @@
    <tr class="list-odd">
      <th>
        <% if @userfile.is_locally_synced? %>
-           &nbsp;
-           <%= link_to_function '&#10004;' do |page|
-               page.select(".collection_checkbox").each do |check_box|
-                 check_box.checked=true
-               end
-             end
-           %>
-           &nbsp;
-           <%= link_to_function '<big>&times;</big>' do |page|
-               page.select(".collection_checkbox").each do |check_box|
-                 check_box.checked=false
-               end
-             end
-           %>
+          <input type='checkbox' class="select_all" data-checkbox-class="collection_checkbox"/>
        <% end %>
      </th>
      <th>File</th>
