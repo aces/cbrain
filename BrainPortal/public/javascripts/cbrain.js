@@ -213,8 +213,10 @@ jQuery(
      current_form.ajaxSubmit({
        type: "POST",
        dataType: data_type,
-       success: function(data){
-         jQuery(target).html(data);
+       success: function(data, status, xhr){
+         if(target){
+           jQuery(target).html(data);
+         }       
        },
        resetForm: true
      });
