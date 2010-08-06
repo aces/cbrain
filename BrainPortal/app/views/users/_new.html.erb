@@ -31,7 +31,7 @@
     <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
   
     <br/>
-    <label for="groups">Groups</label>
+    <label for="groups">Projects</label>
     <table>
        <% for group in @groups %>
            <tr>

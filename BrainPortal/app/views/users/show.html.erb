@@ -26,7 +26,7 @@
      </tr>
      <tr class="list-even">
           <td class="title"><b>Site:</b></td>
-          <td class="tabletext"><%=h @user.site.name rescue "(None)" %></td>
+          <td class="tabletext"><%= link_to_site_if_accessible(@user.site) %></td>
        </tr>
      <tr class="list-even">
         <td class="title"><b>Default Execution Server: </b></td>
@@ -96,8 +96,8 @@
    <% (@user.groups.sort { |g1,g2| g1.name <=> g2.name }).each do |group| %>
      <% next if group.name == 'everyone' %>
      <tr class=<%= cycle("list-even", "list-odd")%> >
-       <td><%= h(group.name) %></td>
-       <td><%= group.users.map{|u| h(u.full_name)}.join("<br>") %></td>
+       <td><%= link_to_group_if_accessible(group) %></td>
+       <td><%= group.users.map{|u| link_to_user_if_accessible(u,nil,:name => u.full_name)}.join("<br>") %></td>
      </tr>
    <% end %>
 
@@ -108,5 +108,4 @@
 <P>
 
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
-
 

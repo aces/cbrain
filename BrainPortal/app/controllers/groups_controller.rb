@@ -15,6 +15,7 @@ class GroupsController < ApplicationController
   Revision_info="$Id$"
 
   before_filter :login_required
+
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:    
@@ -24,11 +25,11 @@ class GroupsController < ApplicationController
     #For new panel
     @group = WorkGroup.new
     if current_user.has_role? :admin
-      @users = User.all.reject{|u| u.login == 'admin'}
+      @users = User.all.reject{|u| u.login == 'admin'}.sort { |a,b| a.login <=> b.login }
     elsif current_user.has_role? :site_manager
       @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
     else
-      @users = current_user.own_group
+      @users = [ current_user ]
     end
 
     respond_to do |format|

@@ -9,11 +9,11 @@
   <% end %>
     <td class="left"><%= link_to task.name, :controller => :tasks, :action => :show, :id => task.id  %></td>
     <td><%= h(crop_text_to(30, task.description)) %></td>
-    <td><%= h(task.user.login) %></td>
+    <td><%= link_to_user_if_accessible(task.user) %></td>
     <% unless current_project %>
-      <td><%= h(task.group.name) rescue "" %></td>
+      <td><%= link_to_group_if_accessible(task.group) %></td>
     <% end %>
-    <td><%= link_if_admin(task.bourreau.name, bourreau_path(task.bourreau)) %></td>
+    <td><%= link_to_bourreau_if_accessible(task.bourreau) %></td>
     <td><%= h(task.status) %></td>
     <td><%= h(task.run_number) %></td>
     <td><%= h(to_localtime(task.created_at.to_s,:datetime)) -%></td>

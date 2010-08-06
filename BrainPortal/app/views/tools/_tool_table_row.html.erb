@@ -1,9 +1,9 @@
 
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>" title="<%= h tool.description %>">
   <td><%=h tool.name %></td>
-  <td><%=h tool.user.login %>
-  <td><%=h tool.group.name %></td>
-  <td><%= tool.bourreaux{g.name == bourreau.name}.sort{|a, b| a.name.casecmp(b.name)}.map{|g| link_to(g.name, bourreau_path(g))}.join("<br>") %></td>
+  <td><%= link_to_user_if_accessible(tool.user) %>
+  <td><%= link_to_group_if_accessible(tool.group) %></td>
+  <td><%= tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.map{|b| link_to_bourreau_if_accessible(b)}.join("<br>") %></td>
   <td><%=h tool.category %></td>
   <% if current_user.has_role?(:admin) %>
     <td><%= link_to 'Edit', edit_tool_path(tool), :class  => "action_link" %></td>

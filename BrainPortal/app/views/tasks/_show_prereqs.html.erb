@@ -12,7 +12,7 @@
    otaskname = otask ? "#{otask.name}@#{otask.bname_tid}" : "(DestroyedTask)/#{tid}"
 %>
   <tr>
-    <td><%= otask ? (link_to otaskname, "/tasks/show/#{tid}") : h(otaskname) %></td>
+    <td><%= otask ? (link_to otaskname, task_path(tid)) : h(otaskname) %></td>
     <td><%= h(state) %></td>
   </tr>
 <% end %>

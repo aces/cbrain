@@ -6,7 +6,7 @@ module GroupsHelper  #:nodoc:
   #otherwise displays +text+ as static text.
   def work_group_link(group, text, url)
     if group.is_a? WorkGroup
-      link_to text, url
+      link_to_group_if_accessible(group,nil,{ :name =>  text, :path => url })
     else
       text
     end

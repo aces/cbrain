@@ -28,14 +28,14 @@
     <th>Remote Resources</th>
   </tr>
   <tr>
-    <td><%= @site.users.all.sort{|a, b| a.login.casecmp(b.login)}.map{|u| link_to(h(u.login), user_path(u))}.join("<br>") %></td>
-    <td><%= @site.groups.all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
-    <td><%= @site.data_providers_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
-    <td><%= @site.remote_resources_find_all.collect(&:name).sort{|a, b| a.casecmp(b)}.join("<br>") %></td>
+    <td><%= @site.users.all.sort{|a, b| a.login.casecmp(b.login)}.map{|u| link_to_user_if_accessible(u)}.join("<br>") %></td>
+    <td><%= @site.groups.all.sort{|a, b| a.name.casecmp(b.name)}.map{|g| link_to_group_if_accessible(g)}.join("<br>") %></td>
+    <td><%= @site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}.map{|d| link_to_data_provider_if_accessible(d)}.join("<br>") %></td>
+    <td><%= @site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}.map{|r| link_to_bourreau_if_accessible(r)}.join("<br>") %></td>
   </tr>
 </table>
 
-<P>
+<p>
 
 <% if check_role(:admin) %>
   <%= link_to 'Edit', edit_site_path(@site), :class => 'action_link' %><br>

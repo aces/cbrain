@@ -1273,49 +1273,6 @@ td.middle {
 
 
 
-/* % ######################################################### */
-/* % Statistics Index TOFIX NOT USED */
-/* % ######################################################### */
-
-.stat_list {
-    clear: both;
-    margin-right: auto;
-    margin-left: auto;
-    width: 50%;
-}
-
-.stat_list th {
-    border: 0px;
-    background-color: #0471B4;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.stat_list th a {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.stat_list th a:link {
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.stat_list td {
-    border: 0px;
-    text-align: center;
-    padding-left: 2em;
-    padding-right: 2em;
-    white-space: nowrap;
-}
-
-
-
 /* ######################################################### */
 /* JIV Browser Styles */
 /* ######################################################### */

@@ -150,8 +150,8 @@ class DataProvidersController < ApplicationController
     @data_provider  = DataProvider.find(id)
 
     unless @data_provider.userfiles.empty?
-      flash[:error] = "You cannot remove a provider that has still files registered on it."
-      @data_provider.errors.add(:base, "You cannot remove a provider that has still files registered on it.")
+      flash[:error] = "You cannot remove a provider that still has files registered on it."
+      @data_provider.errors.add(:base, "You cannot remove a provider that still has files registered on it.")
       respond_to do |format|
         format.html {redirect_to :action => :show, :id => id}
         format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}

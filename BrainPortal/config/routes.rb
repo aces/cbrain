@@ -51,9 +51,12 @@ ActionController::Routing::Routes.draw do |map|
   map.jiv         '/jiv',                 :controller => 'jiv',      :action => 'index'
   map.jiv_display '/jiv/show',            :controller => 'jiv',      :action => 'show'
   
-  # Individual maps
-  map.connect 'tasks/:action',                  :controller => 'tasks'
-  map.connect 'tasks/:action/:id',              :controller => 'tasks'
+  # Individual task maps
+  map.connect 'tasks/:action',            :controller => 'tasks'
+  map.connect 'tasks/:action/:id',        :controller => 'tasks'
+  map.task    '/tasks/show/:id',          :controller => 'tasks',    :action => 'show' # to create task_path()
+
+  # Other individual maps
   map.connect "logged_exceptions/:action/:id",  :controller => "logged_exceptions" 
 
   # The priority is based upon order of creation: first created -> highest priority.

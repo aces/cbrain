@@ -75,7 +75,7 @@
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
            <tr>
-             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= link_to_task_if_accessible(task) %></td>
              <td><%= task.updated_at %></td>
            </tr>
          <% end %>
@@ -96,7 +96,7 @@
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
            <tr>
-             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= link_to_task_if_accessible(task) %></td>
              <td><%= task.updated_at %></td>
            </tr>
          <% end %>
@@ -117,7 +117,7 @@
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
            <tr>
-             <td><%= link_to h(task.name), :controller => :tasks, :action => :show, :id => task.id %></td>
+             <td><%= link_to_task_if_accessible(task) %></td>
              <td><%= task.updated_at %></td>
            </tr>
          <% end %>

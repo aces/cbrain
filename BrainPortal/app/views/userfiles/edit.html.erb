@@ -1,7 +1,7 @@
 
 <% title "Edit File" %>
 
-<h2>Edit File: <%= link_to @userfile.name, userfile_path(@userfile) %></h2>
+<h2>Edit File: <%= link_to_userfile_if_accessible(@userfile) %></h2>
 
 <div class="generalbox">
 
