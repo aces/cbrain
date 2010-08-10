@@ -101,14 +101,12 @@
   
   
   <P>
-   <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
-<a class="overlay_link" data-url = "/doc/tasks/civetqc_results.html">Civet QC Legend</a><br>
-  <% end %>
+   
   <% if @userfile.is_locally_synced? %>
     <%= display_contents(@userfile) %>
     <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
    
-      <a class="overlay_link" data-url = "/doc/userfiles/civetqc_results.html">Tool Information</a>
+      <a class="overlay_link" data-url = "/doc/userfiles/civetqc_results.html">Civet QC Legend</a>
         <div id="userfile_contents_display" class="loading_message">
         
           <strong>QC</strong><br><br>
