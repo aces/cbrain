@@ -238,13 +238,20 @@ class CbrainTask::Civet < ClusterTask
     # criterion for detecting failed tasks.
 
     # Let's make sure it ran OK, test #2
-    #logfiles = Dir.entries("#{out_dsid}/logs")
-    #badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?|running|lock)$/i }
-    #unless badnews.empty?
-    #  self.addlog("Error: this CIVET run did not complete successfully.")
-    #  self.addlog("We found these files in 'logs' : #{badnews.sort.join(', ')}")
-    #  return false
-    #end
+    logfiles = Dir.entries("#{out_dsid}/logs")
+    running  = logfiles.select { |lf| lf =~ /\.(running|lock)$/i }
+    unless running.empty?
+      self.addlog("Error: it seems this CIVET run is still processing!")
+      self.addlog("We found these files in 'logs' : #{running.sort.join(', ')}")
+      self.addlog("Trigger the recovery code to force a cleanup and a restart.")
+      return false
+    end
+    badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?)$/i }
+    unless badnews.empty?
+      self.addlog("Warning: not all subtasks of this CIVET completed successfully.")
+      self.addlog("We found these files in 'logs' : #{badnews.sort.join(', ')}")
+      self.addlog("This result set might therefore be only partial, but we'll proceed in saving it.")
+    end
 
     # Create new CivetCollection
     civetresult = safe_userfile_find_or_new(CivetCollection,
@@ -308,6 +315,28 @@ class CbrainTask::Civet < ClusterTask
     return false if value.is_a?(String)  and value == "0"
     return false if value.is_a?(Numeric) and value == 0
     return true
+  end
+
+  # Overrides the placeholder method in the module RecoverableTask
+  def recover_from_cluster_failure #:nodoc:
+    params       = self.params || {}
+    file0        = params[:file_args]["0"] # we require this single entry for info on the data files
+    prefix       = file0[:prefix] || "unkpref2"
+    dsid         = file0[:dsid]   || "unkdsid2"
+
+    # Where we find this subject's results
+    out_dsid = "civet_out/#{dsid}"
+
+    logfiles = Dir.entries("#{out_dsid}/logs")
+    badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?|running|lock)$/i }
+    if badnews.empty?
+      self.addlog("No 'failed' files found in logs.")
+    else
+      self.addlog("Removing these files in 'logs' : #{badnews.sort.join(', ')}")
+      badnews.each { |bn| File.unlink("#{out_dsid}/logs/#{bn}") rescue true }
+    end
+
+    true
   end
 
 end

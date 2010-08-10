@@ -259,7 +259,7 @@ class TasksController < ApplicationController
       initialize_common_form_values  # We call this just for getting @bourreaux
       if @bourreaux.size == 0
         flash[:error] += "No Execution Server available right now for this task?"
-        redirect_to :action  => :new, :file_ids => @task.file_ids, :toolname => @toolname
+        redirect_to :action  => :new, :file_ids => @task.params[:interface_userfile_ids], :toolname => @toolname
         return
       else
         @task.bourreau_id = @bourreaux[rand(@bourreaux.size)].id

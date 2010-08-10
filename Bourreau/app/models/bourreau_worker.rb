@@ -160,7 +160,9 @@ class BourreauWorker < Worker
         task.addlog_context(self,"Attempting to run recovery method '#{recover_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrecover = task.send(recover_method)  # custom recovery method written by task programmer
+          canrecover = Dir.chdir(task.cluster_workdir) do
+            task.send(recover_method)  # custom recovery method written by task programmer
+          end
         rescue => ex
           task.addlog_exception(ex,"Recovery method '#{recover_method}' raised an exception:")
           canrecover = false
@@ -204,7 +206,9 @@ class BourreauWorker < Worker
         task.addlog_context(self,"Attempting to run restart method '#{restart_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrestart = task.send(restart_method)  # custom restart preparation method written by task programmer
+          canrestart = Dir.chdir(task.cluster_workdir) do
+            task.send(restart_method)  # custom restart preparation method written by task programmer
+          end
         rescue => ex
           task.addlog_exception(ex,"Restart preparation method '#{restart_method}' raised an exception:")
           canrestart = false

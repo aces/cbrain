@@ -55,7 +55,7 @@ class SshDataProvider < DataProvider
     # It's IMPORTANT that the source be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
-    cb_error "Error syncing userfile to local cache: rsync returned: #{text}" unless text.blank?
+    cb_error "Error syncing userfile to local cache: rsync returned:\n#{text}" unless text.blank?
     true
   end
 
@@ -69,7 +69,7 @@ class SshDataProvider < DataProvider
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
-    cb_error "Error syncing userfile to data provider: rsync returned: #{text}" unless text.blank?
+    cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
     true
   end
 
