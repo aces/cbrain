@@ -70,7 +70,7 @@ module ApplicationHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<font color=\"red\">&otimes</font>&nbsp;"
+    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes</span>&nbsp;"
   end
 
 

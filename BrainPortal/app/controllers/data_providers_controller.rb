@@ -330,11 +330,7 @@ class DataProvidersController < ApplicationController
     
     respond_to do |format|
       format.html
-      format.js do
-        render :update do |page|
-          page[:dp_browse_table].replace_html :partial  => "dp_browse_table"
-        end
-      end
+      format.js
     end
 
   end

@@ -203,7 +203,7 @@ jQuery(
    //
    /////////////////////////////////////////////////////////////////////
 
-   //Forms with the class "ajax_form" will be submitted as ajax requrests.
+   //Forms with the class "ajax_form" will be submitted as ajax requests.
    //Datatype and target can be set with appropriate "data" attributes.
    jQuery(".ajax_form").live("submit", function(){
      var current_form = jQuery(this);
@@ -213,7 +213,7 @@ jQuery(
      current_form.ajaxSubmit({
        type: "POST",
        dataType: data_type,
-       success: function(data, status, xhr){
+       success: function(data){
          if(target){
            jQuery(target).html(data);
          }       

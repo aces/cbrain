@@ -61,19 +61,12 @@ class MessagesController < ApplicationController
       format.js do
         prepare_messages
         @messages = current_user.messages.all(:order  => "last_sent DESC")
-        
-        render :update do |page|
-          page[:message_menu_tab].title = pluralize(@unread_message_count, "unread message")
-          page.replace_html :message_display, :partial  => 'layouts/message_display'
-          page << "if($('message_table')){"
-          page.replace_html :message_table,   :partial  => 'message_table'
-          page << "}"        
-        end
+         render :action  => "update_tables"
       end
     end
   end
   
-  #Delete the selected feedback.
+  #Delete multiple messages.
   def delete_messages
     message_list = params[:message_ids] || []
     deleted_count = 0
@@ -88,7 +81,6 @@ class MessagesController < ApplicationController
     redirect_to :action => :index
   end
 
-
   # DELETE /messages/1
   # DELETE /messages/1.xml
   def destroy #:nodoc:
@@ -100,15 +92,7 @@ class MessagesController < ApplicationController
     @messages = current_user.messages.all(:order  => "last_sent DESC")
     
     respond_to do |format|
-      format.js do
-        render :update do |page|
-          page[:message_menu_tab].title = pluralize(@unread_message_count, "unread message")
-          page.replace_html :message_display, :partial  => 'layouts/message_display'
-          page << "if($('message_table')){"
-          page.replace_html :message_table,   :partial  => 'message_table'
-          page << "}"
-        end
-      end
+      format.js { render :action  => "update_tables" }
       format.xml  { head :ok }
     end
   end

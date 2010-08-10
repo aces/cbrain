@@ -17,11 +17,8 @@
      </div>
             
      <% if params[:search] %>
-       <div class="dp_browse_filter_div">
-         Filtering: <strong><%= params[:search] %></strong> 
-         <small>
-           <%= link_to delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, "data-datatype"  => 'script', :class  => "ajax_link" %>
-         </small>
+       <div id="current_filters">
+         Filtering: <strong><%= params[:search] %></strong><%= link_to delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, "data-datatype"  => 'script', :class  => "ajax_link" %>
        </div>
      <% end %>
    </td>

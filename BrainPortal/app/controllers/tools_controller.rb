@@ -131,11 +131,7 @@ class ToolsController < ApplicationController
       @tool.destroy                                           
                                                               
       respond_to do |format|                                  
-        format.js do                                          
-          render :update do |page|                            
-            page["tool_#{@tool.id}"].remove                   
-          end                                                 
-        end                                                   
+        format.js { render :text  => "jQuery('#tool_#{@tool.id}').remove();" }                                          
         format.xml  { head :ok }                              
       end                                                     
   end
