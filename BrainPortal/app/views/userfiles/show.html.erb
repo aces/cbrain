@@ -96,14 +96,21 @@
 
   <% if @userfile.can_be_accessed_by?(current_user) %>
     <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
+  
   <% end %>
-
+  
+  
   <P>
-
+   <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
+<a class="overlay_link" data-url = "/doc/tasks/civetqc_results.html">Civet QC Legend</a><br>
+  <% end %>
   <% if @userfile.is_locally_synced? %>
     <%= display_contents(@userfile) %>
     <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
+   
+      <a class="overlay_link" data-url = "/doc/userfiles/civetqc_results.html">Tool Information</a>
         <div id="userfile_contents_display" class="loading_message">
+        
           <strong>QC</strong><br><br>
           <% ajax_element({:url  => url_for(:action  => :content, :qc_file  => "base")}) do %>
      <span class="loading_message">Loading...</span>
