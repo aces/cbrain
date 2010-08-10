@@ -7,12 +7,8 @@
      "conversion_operation", 
      ' <option value="">Select a Conversion Operation</option>' +
        current_user.available_conversion_tools.inject("") { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
-        :onchange  => remote_function(:url  => {:controller  => :tools, :action  => :bourreau_select},
-                                      :with  => "'cbrain_task_class='+value",
-                                      :method  => :get,
-                                      :before => "$('bourreau_select').update('<span style=\\'color:red\\'>Loading...</span>');",
-                                      :update => "bourreau_select"
-                                      )
+        :class  => "request_on_change", "data-url"  => url_for(:controller  => :tools, :action  => :bourreau_select), 
+        "data-target"  => "#bourreau_select", "data-update-text"  => "<span class='warning'>Loading...</span>"
     ) 
     %>
    
@@ -28,7 +24,7 @@
                                      "data-datatype"  => "script") %>
    <br><br>
     
-   <% else %>
+<% else %>
     <br>
    <% if current_user.has_role? :admin %>
        <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>

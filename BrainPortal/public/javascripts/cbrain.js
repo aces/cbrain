@@ -196,6 +196,36 @@ jQuery(
         element.checked = header_box.attr("checked");
       });
    });
+   
+   jQuery(".request_on_change").live("change", function(){
+     var input_element = jQuery(this);
+     var current_value = input_element.attr("value");
+     var url = input_element.attr("data-url");
+     var method = input_element.attr("data-method");
+     var target = input_element.attr("data-target");
+     var data_type = input_element.attr("data-datatype");
+     var update_text = input_element.attr("data-update-text");
+     if(!method) method = "GET";
+     if(!data_type) data_type = "html";
+     
+     if(target && update_text){
+       jQuery(target).html(update_text);
+     }
+      
+     jQuery.ajax({
+       url : url,
+       type : method,
+       dataType : data_type,
+       success: function(data){
+          if(target){
+            jQuery(target).html(data);
+          }       
+        },
+       data : {current_value : current_value}
+     });
+     
+     return false;
+   });
 
    /////////////////////////////////////////////////////////////////////
    //

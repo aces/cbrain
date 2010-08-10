@@ -28,7 +28,7 @@ class ToolsController < ApplicationController
   end
   
   def bourreau_select #:nodoc:
-    @tool = current_user.available_tools.find_by_cbrain_task_class(params[:cbrain_task_class])
+    @tool = current_user.available_tools.find_by_cbrain_task_class(params[:current_value])
     @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
     
     respond_to do |format|
