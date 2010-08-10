@@ -6,7 +6,7 @@
 <div id="header">
 
   <div id="mni_logo"></div>
-  <h1>CBRAIN <%= CBRAIN::Redmine_Version %> <%= yield :title %></h1>
+  <h1>CBRAIN <%= yield :title %></h1>
 
     <% if current_user %>
       <%= render :partial => 'layouts/section_menu_project_select' %>
