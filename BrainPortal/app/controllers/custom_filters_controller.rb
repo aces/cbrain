@@ -38,10 +38,10 @@ class CustomFiltersController < ApplicationController
   def create #:nodoc:
     filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
     @custom_filter = filter_class.new(params[:custom_filter])
-    @custom_filter.data = params[:data]
+    @custom_filter.data.merge! params[:data]
     
     @custom_filter.user_id = current_user.id
-        
+    
     respond_to do |format|
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
@@ -61,7 +61,7 @@ class CustomFiltersController < ApplicationController
     filter_name = @custom_filter.name
     
     params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
-    @custom_filter.data = params[:data]
+    @custom_filter.data.merge! params[:data]
     
     respond_to do |format|
       if @custom_filter.save

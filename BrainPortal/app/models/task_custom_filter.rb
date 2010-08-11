@@ -82,6 +82,6 @@ class TaskCustomFilter < CustomFilter
   
   #Return +scope+ modified to filter the CbrainTask entry's created_at date.
   def scope_created_date(scope)
-    scope.scoped(:conditions  => ["DATE(cbrain_tasks.created_at) #{self.data["created_date_type"]} ?", self.data["created_date_term"]])
+    scope.scoped(:conditions  => ["DATE(cbrain_tasks.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["created_date_term"]])
   end
 end

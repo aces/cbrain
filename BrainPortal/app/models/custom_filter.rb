@@ -42,7 +42,7 @@ class CustomFilter < ActiveRecord::Base
   belongs_to    :user
     
   validates_presence_of   :name
-  validates_uniqueness_of :name, :scope  => :user_id
+  validates_uniqueness_of :name, :scope  => [:user_id, :type]
   validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
     
@@ -71,5 +71,27 @@ class CustomFilter < ActiveRecord::Base
   #Virtual attribute for mass assigning to the data hash.
   def data=(new_data)
     self.write_attribute(:data, new_data)
+  end
+  
+  private
+  
+  #Convert number codes for inequalities into 
+  #the string representation:
+  # 0: "="
+  # 1: "<"
+  # 2: ">"
+  def inequality_type(number_code)
+    case number_code.to_s
+    when "1"
+      "<"
+    when "2"
+      ">"
+    when "<"   #Next two cases to maintain compatibility with 
+      "<"      #the old format.
+    when ">"
+      ">"
+    else
+      "="
+    end
   end
 end

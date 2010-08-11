@@ -79,12 +79,12 @@ class UserfileCustomFilter < CustomFilter
   
   #Return +scope+ modified to filter the Userfile entry's creation date.
   def scope_date(scope)
-    scope.scoped(:conditions  => ["DATE(userfiles.created_at) #{self.data["created_date_type"]} ?", self.data["date_term"]])
+    scope.scoped(:conditions  => ["DATE(userfiles.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["date_term"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's size.
   def scope_size(scope)
-    scope.scoped(:conditions  => ["userfiles.size #{self.data["size_type"]} ?", (self.data["size_term"].to_i * 1000)])
+    scope.scoped(:conditions  => ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_i * 1000)])
   end
   
   #Return +scope+ modified to filter the Userfile entry's owner.
