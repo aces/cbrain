@@ -1,5 +1,4 @@
-
-<tr class=" message_display_<%= mess.id %> <%= cycle("list-odd", "list-even") %> row_highlight">
+<tr class=" message_display_<%= mess.id %> <%= "#{cycle("list-odd", "list-even")} row_highlight" if mess.read? %>">
 
   <td class="<%= "#{mess.message_type}_display" unless mess.read? %> left_side">
     <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>&nbsp;
