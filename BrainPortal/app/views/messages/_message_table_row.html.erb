@@ -28,7 +28,14 @@
                  "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
       %>
     <% end %>
-
+    &nbsp;
+    <%= 
+       link_to  'Delete',  message_path(mess),
+                :class => 'delete_button action_link', 
+                "data-method"  => "DELETE",
+                "data-delete-selector"  => ".message_display_#{mess.id}", 
+                "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Deleting...</td>"
+    %>
   </td>
 
 </tr>
