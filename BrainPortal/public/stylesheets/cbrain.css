@@ -549,7 +549,12 @@ pre {
     text-decoration:none;
 }
 
+#account #home_credits {
+    display: inline;
+}
+
 #account #loggedas {
+    display: inline;
     float: right;
     margin-right: 0.5em;
     color: #ffffff;
@@ -664,9 +669,10 @@ pre {
 .main-content {
     background-color: #FFFFFF;
     margin-right: auto;
-    margin-left: 10px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-right: 1em;
+    margin-left: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 
