@@ -14,16 +14,16 @@ module ApplicationHelper
     content_for(:title)  { ' - ' + page_title }
   end
 
-  def add_tool_tip(message, &block)
+  def add_tool_tip(message, element='span', &block)
     content = capture(&block)
     
     if message.blank?
       concat(content)
       return
     end
-    concat("<span title='#{message}'>")
+    concat("<#{element} title='#{message}'>")
     concat(content)
-    concat("</span>")
+    concat("</#{element}>")
   end
  
   def string_if(condition, content)

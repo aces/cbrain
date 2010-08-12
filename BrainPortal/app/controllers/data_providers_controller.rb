@@ -262,7 +262,7 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = get_recent_provider_list_all(params[:refresh])
     rescue => e
-      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist ot is locked?' #emacs fails to parse this properly so I switched to single quotes. 
+      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes. 
 
       redirect_to :action => :index
       return

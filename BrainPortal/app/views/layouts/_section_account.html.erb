@@ -11,12 +11,12 @@
       <%= link_to 'My Account', current_user %>
     <% end %>
     <a class="credits" href="/">Credits</a>
-    Rev:&nbsp;<%= CBRAIN::Redmine_Version %>&nbsp;(<%= $CBRAIN_StartTime_Revision %>)
+    Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>
 
   <span id="loggedas">
     <% if current_user %>
-      Logged in as <%=h current_user.full_name %>
+      Logged in as <%= h current_user.full_name %>
       <a href="/logout">Sign out</a>
     <% else %>
       <a href="/login">Sign in</a>
