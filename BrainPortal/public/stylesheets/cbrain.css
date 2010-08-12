@@ -298,11 +298,15 @@ h1.warning {
 }
 
 .no_wrap {
-   white-space:nowrap!important;
+   white-space: nowrap !important;
+}
+
+.wrap {
+   white-space: normal !important;
 }
 
 .left {
-    text-align: left!important;
+    text-align: left !important;
 }
 
 .left_align {

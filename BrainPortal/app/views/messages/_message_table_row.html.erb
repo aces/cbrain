@@ -1,22 +1,22 @@
 <tr class=" message_display_<%= mess.id %> <%= "#{cycle("list-odd", "list-even")} row_highlight" if mess.read? %>">
 
-  <td class="<%= "#{mess.message_type}_display" unless mess.read? %> left_side">
+  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>left_side wrap">
     <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>&nbsp;
     <%= 
       link_to_function Message.parse_markup( h(mess.header) ) do |page|
         page["message_table_details_#{mess.id}"].toggle
       end 
     %>
-    <div id="message_table_details_<%= mess.id %>" style="display:none">
+    <div id="message_table_details_<%= mess.id %>" class="no_wrap" style="display:none">
       <%= render :partial  => 'layouts/message_details', :locals  => {:mess  => mess} %>
     </div>
   </td>
 
-  <td class="<%= "#{mess.message_type}_display" unless mess.read? %> middle">
+  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>middle">
     <%= to_localtime(mess.last_sent, :datetime) %>
   </td>
 
-  <td class="<%= "#{mess.message_type}_display" unless mess.read? %> right_side">
+  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>right_side">
 
     <% unless mess.read %>
       <%= 

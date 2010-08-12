@@ -183,7 +183,7 @@ class Message < ActiveRecord::Base
     # Message for developers/admin
     Message.send_message(User.find_all_by_role("admin"),
       :message_type  => :error,
-      :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}: #{exception.message}\n",
+      :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
       :description   => "An internal error occured inside the CBRAIN code.\n"     +
                         "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n",
