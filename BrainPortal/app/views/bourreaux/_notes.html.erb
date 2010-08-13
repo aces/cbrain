@@ -1,20 +1,6 @@
 
 <div class="alone_per_line">
-  <%= 
-    link_to_function "Show configuration notes", {:id  => 'show_info', :class  => 'action_link'} do |page|
-      page['notesbody'].show
-      page['show_info'].hide
-      page['hide_info'].show
-    end
-   %>
-
-   <%= 
-     link_to_function "Hide configuration notes", {:id  => 'hide_info', :style  => 'display:none', :class  => 'action_link'} do |page|
-       page['notesbody'].hide
-       page['show_info'].show
-       page['hide_info'].hide
-     end
-    %>
+  <%= show_hide_toggle "Show configuration notes", "#notesbody", :class  => 'action_link', :alternate_text  => "Hide configuration notes" %>
 </div>
 
 <br>

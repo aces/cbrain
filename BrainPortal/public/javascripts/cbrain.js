@@ -121,7 +121,22 @@ jQuery(
      	        menu.hide();
    });
 
-
+   jQuery(".show_toggle").live("click", function(){
+     var current_element = jQuery(this);
+     var target_element = jQuery(current_element.attr("data-target"));
+     var alternate_text = current_element.attr("data-alternate-text");
+     if(alternate_text){
+       current_text = current_element.html();
+       current_element.attr("data-alternate-text", current_text);
+       current_element.html(alternate_text);
+     }
+     if(target_element.is(":visible")){
+       target_element.hide();
+     }else{
+       target_element.show();
+     }
+     return false;  
+   });
 
    jQuery(".button_with_drop_down > div.drop_down_menu").hide();
 

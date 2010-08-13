@@ -13,11 +13,7 @@
   <p><label for="type">Type</label><br/>
   <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %></p>
 
-  <%= 
-      link_to_function "Data Provider Type Information", :class  => 'action_link' do |page|
-        page[:data_provider_classes].toggle
-      end
-   %>  
+  <%= show_hide_toggle "Data Provider Type Information", "#data_provider_classes", :class  => 'action_link' %>  
 
   <div id="data_provider_classes" style="display:none">
 

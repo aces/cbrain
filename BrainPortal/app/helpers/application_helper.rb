@@ -727,4 +727,19 @@ module ApplicationHelper
     return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
   end
   
+  def show_hide_toggle(text, target, options = {})
+    element_type = options.delete(:element_type) || "a"
+    options["data-target"] = target
+    alternate_text = options.delete(:alternate_text)
+    if alternate_text
+      options["data-alternate-text"] = alternate_text
+    end
+    
+    options[:class] ||= ""
+    options[:class] +=  " show_toggle"
+    
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+    return" <#{element_type} #{atts}>#{text}</#{element_type}>"
+  end
+  
 end

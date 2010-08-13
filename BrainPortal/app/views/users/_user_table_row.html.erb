@@ -1,6 +1,6 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
-  <td><%= h(user.full_name) %></td>
+  <td class="left"><%= h(user.full_name) %></td>
   <td><%= link_to_user_if_accessible(user) %></td>
   <td><%=h user.email %></td>
   <% groups = user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.sort{|a, b| a.name.casecmp(b.name)} %>

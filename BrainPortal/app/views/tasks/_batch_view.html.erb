@@ -9,15 +9,9 @@
     </td>
     <td class="left">
       <% if launch_time %>
-        <%= link_to_function "#{tasks.first.name} (Batch)" do |page|
-                page.select(".batch_listing_#{tasks.first.id}").each{ |el| el.toggle }
-            end
-        %>
+        <%= show_hide_toggle  "#{tasks.first.name} (Batch)", ".batch_listing_#{tasks.first.id}" %>
       <% else %>
-        <%= link_to_function "(Various)" do |page|
-                page.select(".batch_listing_#{tasks.first.id}").each{ |el| el.toggle }
-            end
-        %>
+        <%= show_hide_toggle  "(Various)", ".batch_listing_#{tasks.first.id}" %>
       <% end %>
     </td>
     <td><%= h(crop_text_to(30, tasks.first.description)) %></td>
@@ -30,7 +24,6 @@
       <% end %>
     </td>
   </tr>
-
   <% end %>
 
 

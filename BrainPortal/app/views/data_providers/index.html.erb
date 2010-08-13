@@ -15,26 +15,8 @@
       
 <p>
   
-<div id="cbrain_show_details_link" style="display:inline">
-  <%= 
-  link_to_function 'Show Details', {:class  => 'action_link'} do |page|
-    page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.show  }
-    page['cbrain_show_details_link'].hide
-    page['cbrain_hide_details_link'].show      
-  end 
-  %>
-</div>
-    
-<div id="cbrain_hide_details_link" style="display:none">
-  <%= 
-  link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
-    page.select('#cbrain_data_provider_table .provider_details').each{ |el| el.hide  }
-    page['cbrain_show_details_link'].show
-    page['cbrain_hide_details_link'].hide      
-  end 
-  %>
-</div>
-
+<%= show_hide_toggle "Show Details", "#cbrain_data_provider_table .provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
+  
 <%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
 
 <table class="resource_list" id="cbrain_data_provider_table">
@@ -72,27 +54,9 @@
 
 </table>
 
-<P>
-
-<div id="user_show_details_link" style="display:inline">
-  <%= 
-  link_to_function 'Show Details', {:class  => 'action_link'} do |page|
-    page.select('#user_data_provider_table .provider_details').each{ |el| el.show  }
-    page['user_show_details_link'].hide
-    page['user_hide_details_link'].show      
-  end 
-  %>
-</div>
-    
-<div id="user_hide_details_link" style="display:none">
-  <%= 
-  link_to_function 'Hide Details', {:class  => 'action_link'} do |page|
-    page.select('#user_data_provider_table .provider_details').each{ |el| el.hide  }
-    page['user_show_details_link'].show
-    page['user_hide_details_link'].hide      
-  end 
-  %>
-</div><!-- End id="hide_details_link" -->
+<P><br>
+  
+<%= show_hide_toggle "Show Details", "#user_data_provider_table .provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
   
 <table class="resource_list" id="user_data_provider_table">
 

@@ -55,9 +55,7 @@ module UserfilesHelper
   #e.g. images, text, xml)
   def display_contents(userfile)
     before_content = '<div id="userfile_contents_display">'
-    before_content += link_to_function '<strong>Contents</strong>' do |page|
-      page[:userfile_contents_display_toggle].toggle
-    end
+    before_content += show_hide_toggle '<strong>Contents</strong>', "#userfile_contents_display_toggle"
     
     content = ""
     after_content = '</div>'
