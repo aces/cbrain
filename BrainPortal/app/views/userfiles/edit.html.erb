@@ -68,7 +68,7 @@
     <% if current_user.has_role? :admin %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
-      <td><%= link_to @userfile.data_provider.name, edit_data_provider_path(@userfile.data_provider) %>
+      <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= h(@userfile.data_provider.class.to_s) %> )
       </td>
       <td>

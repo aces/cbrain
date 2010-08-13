@@ -48,12 +48,12 @@
 
     <tr>
       <th>Owner</th>
-      <td class="left_align"><%= h(@bourreau.user.login) %></td>
+      <td class="left_align"><%= link_to_user_if_accessible(@bourreau.user) %></td>
     </tr>
 
     <tr>
-      <th>Group</th>
-      <td class="left_align"><%= h(@bourreau.group.name) %></td>
+      <th>Project</th>
+      <td class="left_align"><%= link_to_group_if_accessible(@bourreau.group) %></td>
     </tr>
 
     <tr>

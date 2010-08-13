@@ -12,7 +12,7 @@
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
-      <td><%= @userfile.user.login %></td>
+      <td><%= link_to_user_if_accessible(@userfile.user) %></td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -24,19 +24,17 @@
       </td>
     </tr>  
 
-    <%if @userfile.is_a? SingleFile %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Parent:</th>
-        <td><%=h @userfile.parent.name rescue ""%></td>
-        <td></td>
-      </tr>
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th class="right_align">Parent:</th>
+      <td><%= link_to_userfile_if_accessible(@userfile.parent) %></td>
+      <td></td>
+    </tr>
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Children:</th>
-        <td><%=h @userfile.parent.name rescue ""%></td>
-        <td></td>
-      </tr>
-    <% end %> <!-- singlefile -->
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th class="right_align">Children:</th>
+      <td><%= @userfile.children.sort {|a,b| a.name.casecmp(b.name)}.map {|u| link_to_userfile_if_accessible(u)}.join("<br>") %></td>
+      <td></td>
+    </tr>
  
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Created at:</th>
@@ -51,8 +49,8 @@
     </tr>
  
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Group:</th>
-      <td><%= h @userfile.group.name %></td>
+      <th class="right_align">Project:</th>
+      <td><%= link_to_group_if_accessible(@userfile.group) %></td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -64,7 +62,7 @@
     <% if current_user.has_role? :admin %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
-      <td><%= link_to @userfile.data_provider.name, edit_data_provider_path(@userfile.data_provider) %>
+      <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= h(@userfile.data_provider.class.to_s) %> )
       </td>
       <td>

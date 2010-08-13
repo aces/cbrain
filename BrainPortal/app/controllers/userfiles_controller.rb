@@ -141,6 +141,12 @@ class UserfilesController < ApplicationController
   end
   
   def show
+    session[:full_civet_display] ||= 'on'
+
+    if params[:full_civet_display]
+      session[:full_civet_display] = params[:full_civet_display]
+    end
+
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     @log  = @userfile.getlog rescue nil
   end

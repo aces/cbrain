@@ -4,9 +4,11 @@
 <!-- ********************* -->
 
 <div id="main" class="main-content">
-  <div id="message_display">
-    <%= render :partial => 'layouts/message_display' %>
-  </div>
+  <% unless params[:action] == "index" && params[:controller] == "messages" %>
+    <div id="message_display">
+      <%= render :partial => 'layouts/message_display' %>
+    </div>
+  <% end %>
   <%= yield :layout %>
 </div>  <!-- End id="main" -->
 

@@ -78,7 +78,7 @@
 
       <tr>
           <th>Execution Server</th>
-          <td><%= h(@task.bourreau.name) %></td>
+          <td><%= link_to_bourreau_if_accessible(@task.bourreau) %></td>
       </tr>
 
       <tr>
@@ -103,12 +103,12 @@
    
       <tr>
           <th>Owner</th>
-          <td><%= h(begin @task.user.login rescue "User ##{@task.user_id.inspect}" end) -%></td>
+          <td><%= link_to_user_if_accessible(@task.user) -%></td>
       </tr>
    
       <tr>
           <th>Project</th>
-          <td><%= h(begin @task.group.name rescue "Project ##{@task.group_id.inspect}" end) -%></td>
+          <td><%= link_to_group_if_accessible(@task.group) -%></td>
       </tr>
    
       <tr>
