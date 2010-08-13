@@ -211,7 +211,7 @@ class User < ActiveRecord::Base
     end
   end
 
-  def can_be_accessed_by?(user)
+  def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
     user.available_users.include?(self)
   end
   

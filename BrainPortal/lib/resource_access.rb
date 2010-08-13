@@ -35,7 +35,8 @@ module ResourceAccess
   end
   
   # Returns true if +user+ can access this resource.
-  def can_be_accessed_by?(user)
+  # The +access_requested+ params is not used right now (reserved for future extension).
+  def can_be_accessed_by?(user, access_requested = :read)
     return true if self.user_id == user.id || user.has_role?(:admin)
     return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
     user.group_ids.include?(group_id)
