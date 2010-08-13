@@ -337,11 +337,6 @@ a {
     text-decoration:underline;
 }
 
-a:hover {
-    color: #fff;
-    background-color:#000;
-}
-
 .action_link {
     color: blue !important;
     text-decoration: none !important;
@@ -607,8 +602,8 @@ pre {
 #main-menu li {
     float: left;
     list-style-type: none;
-    margin: 0px 2px 0px 0px;
-    padding: 0px 0px 0px 0px;
+    margin: 0;
+    padding: 0;
     white-space: nowrap;
 }
 
@@ -672,11 +667,8 @@ pre {
 
 .main-content {
     background-color: #FFFFFF;
-    margin-right: auto;
-    margin-right: 1em;
-    margin-left: 1em;
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin: 0;
+    padding: 1em;
 }
 
 
