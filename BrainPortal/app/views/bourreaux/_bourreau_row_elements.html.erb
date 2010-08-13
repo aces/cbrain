@@ -11,7 +11,7 @@
 
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_to_bourreau_if_accessible(bour) %></td>
-<td class="resource_details" style="display:none">Code:&nbsp;<%= h(diskrev) %>&nbsp;Live:&nbsp;<%= h(runrev) %></td>
+<td class="resource_details" style="display:none"><%= red_if(diskrev.to_s != runrev.to_s,"Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}") %></td>
 <td class="resource_details" style="display:none"><%= link_to_user_if_accessible(bour.user) %></td>
 <td><%= link_to_group_if_accessible(bour.group) %></td>
 <td class="resource_details" style="display:none"><%= link_to_site_if_accessible(bour.site_affiliation) %></td>
