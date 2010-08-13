@@ -38,22 +38,25 @@
   
   <div class="generalbox">
     <p>
-      <strong>Login:</strong> <%= h(current_user.login) %>
+      <strong>Login:</strong> <%= link_to_user_if_accessible(current_user) %>
     </p>
     <p>
-      <strong>Site:</strong> <%= h(current_user.site.name) rescue "No Site Assigned"%>
+      <strong>Full&nbsp;Name:</strong> <%= current_user.full_name %>
     </p>
     <p>
-       <strong>Groups you belong to:</strong>  <%= h(@groups) %>
+      <strong>Site:</strong> <%= link_to_site_if_accessible(current_user.site) %>
+    </p>
+    <p>
+       <strong>Projects you belong to:</strong>  <%= @groups.map { |g| link_to_group_if_accessible(g) }.join(", ") %>
     </p>
     <p>
        <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
     </p>
    <p>
-    <strong>Default Data Provider:</strong> <%= h(@default_data_provider) %>
+    <strong>Default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
    </p>
     <p>
-      <strong>Default Execution Server:</strong> <%= h(@default_bourreau) %>
+      <strong>Default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
     </p>
   </div>
 

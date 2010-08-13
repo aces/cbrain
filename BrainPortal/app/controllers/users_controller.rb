@@ -47,13 +47,15 @@ class UsersController < ApplicationController
     cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
 
     if current_user.has_role? :admin
-      @groups = WorkGroup.find(:all)
+      @groups = WorkGroup.find(:all)  # used for 'new' form
     elsif current_user.has_role? :site_manager
-      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})  # used for 'new' form
+    else
+      @groups = current_user.groups # defensive; not used normally for ordinary users
     end
     
-    @default_data_provider  = @user.user_preference.data_provider.name rescue "(Unset)"
-    @default_bourreau       = @user.user_preference.bourreau.name      rescue "(Unset)"
+    @default_data_provider  = @user.user_preference.data_provider rescue nil
+    @default_bourreau       = @user.user_preference.bourreau      rescue nil
     @log                    = @user.getlog()
 
     respond_to do |format|
