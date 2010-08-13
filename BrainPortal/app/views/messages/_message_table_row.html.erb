@@ -18,9 +18,17 @@
 
   <td class="<%= "#{mess.message_type}_display " unless mess.read? %>right_side">
 
-    <% unless mess.read %>
+    <% if mess.read %>
       <%= 
-        link_to  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => true),
+        link_to  'Mark&nbsp;as&nbsp;Unread',  message_path(mess, :read => "false"),
+                 :class => 'delete_button action_link', 
+                 "data-method"  => "PUT",
+                 "data-delete-selector"  => ".message_display_#{mess.id}", 
+                 "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
+      %>
+    <% else %>
+      <%= 
+        link_to  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => "true"),
                  :class => 'delete_button action_link', 
                  "data-method"  => "PUT",
                  "data-delete-selector"  => ".message_display_#{mess.id}", 
