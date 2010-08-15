@@ -250,7 +250,7 @@ class DataProvider < ActiveRecord::Base
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?
-    return false if self.online == false
+    return false if self.online? == false
     
     #set time of death or set to offline is past 1 hour
     alive_flag = impl_is_alive?
@@ -273,13 +273,13 @@ class DataProvider < ActiveRecord::Base
       return true
     end
 
-    cb_error "Error: is_alive? is returning a non truth that is true" 
+    cb_error "Error: is_alive? for provider #{self.name} is returning a non truth that is true" 
   end
 
   # Raises an exception if is_alive? is +false+, otherwise
   # it returns +true+.
   def is_alive!
-    cb_error "Error: data provider is not accessible right now." unless self.is_alive?
+    cb_error "Error: provider #{self.name} is not accessible right now." unless self.is_alive?
     true
   end
 
@@ -313,8 +313,8 @@ class DataProvider < ActiveRecord::Base
   # Synchronizes the content of +userfile+ as stored
   # on the provider into the local cache.
   def sync_to_cache(userfile)
-    cb_error "Error: provider is offline."      unless self.online
-    cb_error "Error: provider is not syncable." if     self.not_syncable?
+    cb_error "Error: provider #{self.name} is offline."      unless self.online?
+    cb_error "Error: provider #{self.name} is not syncable." if     self.not_syncable?
     SyncStatus.ready_to_copy_to_cache(userfile) do
       impl_sync_to_cache(userfile)
     end
@@ -323,9 +323,9 @@ class DataProvider < ActiveRecord::Base
   # Synchronizes the content of +userfile+ from the
   # local cache back to the provider.
   def sync_to_provider(userfile)
-    cb_error "Error: provider is offline."      unless self.online
-    cb_error "Error: provider is read_only."    if     self.read_only
-    cb_error "Error: provider is not syncable." if     self.not_syncable?
+    cb_error "Error: provider #{self.name} is offline."      unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."    if     self.read_only?
+    cb_error "Error: provider #{self.name} is not syncable." if     self.not_syncable?
     SyncStatus.ready_to_copy_to_dp(userfile) do
       impl_sync_to_provider(userfile)
     end
@@ -345,8 +345,8 @@ class DataProvider < ActiveRecord::Base
   # Note that this method is already called for you
   # when invoking cache_writehandle(userfile).
   def cache_prepare(userfile)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if     self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     SyncStatus.ready_to_modify_cache(userfile) do
       mkdir_cache_subdirs(userfile)
     end
@@ -358,7 +358,7 @@ class DataProvider < ActiveRecord::Base
   # The value returned is a Pathname object, so be careful
   # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
-    cb_error "Error: provider is offline."   unless self.online
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cache_full_pathname(userfile)
   end
   
@@ -373,7 +373,7 @@ class DataProvider < ActiveRecord::Base
   #     content = fh.read
   #   end
   def cache_readhandle(userfile, rel_path = nil)
-    cb_error "Error: provider is offline."   unless self.online
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
     sync_to_cache(userfile)
     full_path = cache_full_path(userfile)
@@ -414,8 +414,8 @@ class DataProvider < ActiveRecord::Base
   #     end
   #   end
   def cache_writehandle(userfile, rel_path = nil)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
@@ -437,8 +437,8 @@ class DataProvider < ActiveRecord::Base
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
     cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile." if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
@@ -455,8 +455,8 @@ class DataProvider < ActiveRecord::Base
       else
         FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && File.directory?(dest.to_s)
       end
-      rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} '#{localpath}#{needslash}' '#{dest}' 2>&1")
-      cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
+      rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
+      cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
   end
@@ -473,8 +473,8 @@ class DataProvider < ActiveRecord::Base
   # a existing subdirectory /a/b/c/, then 'c' will be erased and
   # replaced by a file.
   def cache_copy_to_local_file(userfile,localpath)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     sync_to_cache(userfile)
     source = cache_full_path(userfile)
     return true if source.to_s == localpath.to_s
@@ -486,15 +486,15 @@ class DataProvider < ActiveRecord::Base
     else
       FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && File.directory?(localpath.to_s)
     end
-    rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} '#{source}#{needslash}' '#{localpath}' 2>&1")
-    cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}'; rsync reported: #{rsyncout}" unless rsyncout.blank?
+    rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
+    cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     true
   end
 
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
-    # cb_error "Error: provider is offline."   unless self.online
+    # cb_error "Error: provider #{self.name} is offline."   unless self.online?
     SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/ProviderName/username/34/45/basename"
@@ -530,8 +530,9 @@ class DataProvider < ActiveRecord::Base
   # to be used on FileCollections to gather information about the individual files
   # in the collection.
   def cache_collection_index(userfile, directory = :all, allowed_types = :regular)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: userfile is not cached." unless userfile.is_locally_cached?
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: userfile #{userfile.name} with ID #{userfile.id} is not cached." unless
+        userfile.is_locally_cached?
     list = []
     
     if allowed_types.is_a? Array
@@ -603,8 +604,8 @@ class DataProvider < ActiveRecord::Base
 
   # Deletes the content of +userfile+ on the provider side.
   def provider_erase(userfile)
-    cb_error "Error: provider is offline." unless self.online
-    cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_erase(userfile)
     end
@@ -616,8 +617,8 @@ class DataProvider < ActiveRecord::Base
   # provider is performed first. The method returns
   # true if the rename operation was successful.
   def provider_rename(userfile,newname)
-    cb_error "Error: provider is offline."   unless self.online
-    cb_error "Error: provider is read_only." if self.read_only
+    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     return true if newname == userfile.name
     return false unless Userfile.is_legal_filename?(newname)
     target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
@@ -633,10 +634,10 @@ class DataProvider < ActiveRecord::Base
   # update the +userfile+'s data_provider_id and
   # save it back to the DB!
   def provider_move_to_otherprovider(userfile,otherprovider)
-    cb_error "Error: provider #{self.name} is offline."            unless self.online
-    cb_error "Error: provider #{self.name} is read_only."          if self.read_only
-    cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
-    cb_error "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
+    cb_error "Error: provider #{self.name} is offline."            unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."          if     self.read_only?
+    cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
+    cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
     return true if self.id == otherprovider.id
     target_exists = Userfile.find(:first,
         :conditions => { :name             => userfile.name,
@@ -668,9 +669,9 @@ class DataProvider < ActiveRecord::Base
   # +otherprovider+. Returns the newly created file.
   # Optionally, rename the file at the same time.
   def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil)
-    cb_error "Error: provider #{self.name} is offline."            unless self.online
-    cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online
-    cb_error "Error: provider #{otherprovider.name} is read_only." if otherprovider.read_only
+    cb_error "Error: provider #{self.name} is offline."            unless self.online?
+    cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
+    cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
     return true  if self.id == otherprovider.id
     return false if newname && ! Userfile.is_legal_filename?(newname)
     return false unless userfile.id # must be a fully saved file
@@ -741,8 +742,8 @@ class DataProvider < ActiveRecord::Base
   #
   # Note that not all data providers are meant to be browsable.
   def provider_list_all(user=nil)
-    cb_error "Error: provider is offline."       unless self.online
-    cb_error "Error: provider is not browsable." unless self.is_browsable?
+    cb_error "Error: provider #{self.name} is offline."       unless self.online?
+    cb_error "Error: provider #{self.name} is not browsable." unless self.is_browsable?
     impl_provider_list_all(user)
   end
 
@@ -758,7 +759,7 @@ class DataProvider < ActiveRecord::Base
   # When called, the method accesses the provider's side
   # and returns an array of FileInfo objects. 
   def provider_collection_index(userfile, *args)
-    cb_error "Error: provider #{self.name} is offline." unless self.online
+    cb_error "Error: provider #{self.name} is offline." unless self.online?
     impl_provider_collection_index(userfile, *args)
   end
 
@@ -768,7 +769,7 @@ class DataProvider < ActiveRecord::Base
   # it locally. This method is meant as a workaround for
   # exceptional situations when syncing is not welcome.
   def provider_readhandle(userfile, *args, &block)
-    cb_error "Error: provider #{self.name} is offline." unless self.online
+    cb_error "Error: provider #{self.name} is offline." unless self.online?
     if userfile.is_locally_synced?
       cache_readhandle(userfile, *args, &block)
     else

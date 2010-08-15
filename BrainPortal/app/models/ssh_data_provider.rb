@@ -54,8 +54,9 @@ class SshDataProvider < DataProvider
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the source be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
-    text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
+    text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache: rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" unless File.exist?(localfull)
     true
   end
 
@@ -68,8 +69,11 @@ class SshDataProvider < DataProvider
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
-    text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"")
+    text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
+    ssh_opts = self.ssh_shared_options
+    text = bash_this("ssh -x -n #{ssh_opts} \"test -e #{shell_escape(remotefull)} && echo DestIsOk\"")
+    cb_error "Error syncing userfile to data provider: no destination file found after rsync?\nTest for #{shell_escape(remotefull)} returned: '#{text}'" unless text =~ /DestIsOk/
     true
   end
 
