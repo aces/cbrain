@@ -15,13 +15,13 @@
 # need to be set once by calling the class
 # method allowed_keys() .
 #
-# Values can be saved to, and retrieved from the record using
+# Attribute values can be saved to, and retrieved from the record using
 # two equivalent syntax:
 #
-#   obj.fieldname   = value
-#   obj[:fieldname] = value
-#   value = obj.fieldname
-#   value = obj[:fieldname]
+#   obj.myattr   = value
+#   obj[:myattr] = value
+#   value = obj.myattr
+#   value = obj[:myattr]
 class RestrictedHash < Hash
 
    Revision_info="$Id$"
@@ -34,7 +34,7 @@ class RestrictedHash < Hash
    # symbols or strings).
    def self.allowed_keys=(keys_list)
      # Hashing it all
-     @allowed_keys = keys_list.inject({}) { |keys,field| keys[field] = true; keys }
+     @allowed_keys = keys_list.inject({}) { |keys,myattr| keys[myattr] = true; keys }
    end
 
    # Returns the list of allowed keys for your hash,
@@ -44,16 +44,16 @@ class RestrictedHash < Hash
      @allowed_keys.keys
    end
 
-   # Returns true if +field+ is one of the allowed keys
+   # Returns true if +myattr+ is one of the allowed keys
    # in this restricted hash class.
-   def self.key_is_allowed?(field)
-     @allowed_keys[field]
+   def self.key_is_allowed?(myattr)
+     @allowed_keys[myattr]
    end
 
-   # Returns true if +field+ is one of the allowed keys
+   # Returns true if +myattr+ is one of the allowed keys
    # in this restricted hash object.
-   def key_is_allowed?(field)
-     self.class.key_is_allowed?(field)
+   def key_is_allowed?(myattr)
+     self.class.key_is_allowed?(myattr)
    end
 
    # Unlike a normal hash, this class allows easy
@@ -70,43 +70,50 @@ class RestrictedHash < Hash
      merge!(attributes)
    end
 
-   def []=(field,val) #:nodoc:
-     field = field.to_sym if field.is_a?(String)
-     cb_error "Illegal field '#{field}'." unless key_is_allowed?(field)
-     super(field,val)
+   # Implements the hash syntax for setting attributes
+   def []=(myattr,val) #:nodoc:
+     myattr = myattr.to_sym if myattr.is_a?(String)
+     cb_error "Illegal attribute '#{myattr}'." unless key_is_allowed?(myattr)
+     super(myattr,val)
    end
 
-   def [](field) #:nodoc:
-     cb_error "Illegal field '#{field}'." unless key_is_allowed?(field)
-     super(field)
+   # Implements the hash syntax for getting attributes
+   def [](myattr) #:nodoc:
+     cb_error "Illegal attribute '#{myattr}'." unless key_is_allowed?(myattr)
+     super(myattr)
    end
 
+   # For compatibility method with the Hash class
    def merge!(attributes={}) #:nodoc:
-     attributes.each do |field, val|
-       self[field]=val
+     attributes.each do |myattr, val|
+       self[myattr]=val
      end
      self
    end
 
+   # For compatibility method with the Hash class
    def merge(attributes={}) #:nodoc:
      mynew = self.dup
-     attributes.each do |field, val|
-       mynew[field]=val
+     attributes.each do |myattr, val|
+       mynew[myattr]=val
      end
      mynew
    end
 
-   # Returns a XML version of the hash, with the root tag
+   # Returns a XML version of the restricted hash, with the root tag
    # being the class name.
    def to_xml(options = {})
      super(options.dup.merge({ :root => self.class }))
    end
 
+   # Implements the method syntax for accessing attributes:
+   #   puts obj.myattr
+   #   obj.myattr = value
    def method_missing(name,*args) #:nodoc:
-     # name will be provided by ruby as :field or :field=
-     field = name.to_s
-     if field.sub!(/=$/,"")
-       self[field.to_sym] = args[0]
+     # 'name' will be provided by Ruby as :myattr or :myattr=
+     myattr = name.to_s
+     if myattr.sub!(/=$/,"")
+       self[myattr.to_sym] = args[0]
      else
        self[name]
      end
