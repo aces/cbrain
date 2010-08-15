@@ -17,7 +17,6 @@ namespace :doc do
      rdoc.rdoc_files.include('lib/cbrain_checker.rb')
      rdoc.rdoc_files.include('lib/cbrain_exception.rb')
      rdoc.rdoc_files.include('lib/cbrain_task_form_builder.rb')
-     rdoc.rdoc_files.include('lib/cbrain_task_logging.rb')
      rdoc.rdoc_files.include('lib/cbrain_transition_exception.rb')
      rdoc.rdoc_files.include('lib/portal_sanity_checks.rb')
      rdoc.rdoc_files.include('lib/portal_system_checks.rb')
