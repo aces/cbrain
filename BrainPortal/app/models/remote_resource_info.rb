@@ -40,7 +40,7 @@ class RemoteResourceInfo < RestrictedHash
      :ssh_public_key,
 
      # Svn info (Rails app)
-     :revision,             # FRom 'svn info' on disk AT QUERYTIME
+     :revision,             # From 'svn info' on disk AT QUERYTIME
      :lc_author,            # From 'svn info' on disk AT QUERYTIME
      :lc_rev,               # From 'svn info' on disk AT QUERYTIME
      :lc_date,              # From 'svn info' on disk AT QUERYTIME

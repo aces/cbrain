@@ -412,7 +412,10 @@ class RemoteResource < ActiveRecord::Base
   # usually better to call the info method instead, which will
   # cache the result if necessary. See also the class method
   # of the same name if you're interested in the information
-  # about the current Rails application.
+  # about the current Rails application (which will be
+  # called anyway if you call this instance method on the
+  # remote resource object which represents the current Rails
+  # app).
   def remote_resource_info
 
     # In case we're asking about the CURRENT Rails
@@ -430,7 +433,7 @@ class RemoteResource < ActiveRecord::Base
         info = RemoteResourceInfo.new(control_info.attributes)
       end
     rescue => ex
-      # oops, it's dead
+      # Oops, it's dead
       #puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
       #puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
     end
@@ -448,7 +451,7 @@ class RemoteResource < ActiveRecord::Base
   # not been cached yet.
   def info
     return @info if @info
-    @info = RemoteResourceInfo.dummy_record unless is_alive? 
+    @info = RemoteResourceInfo.dummy_record unless is_alive? # is_alive?() fills @info as a side effect
     @info
   end
 
