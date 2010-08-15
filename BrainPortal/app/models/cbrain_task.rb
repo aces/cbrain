@@ -92,6 +92,17 @@ class CbrainTask < ActiveRecord::Base
   OTHER_STATUS     = [ "Preset" ]
 
   ##################################################################
+  # Core Object Methods
+  ##################################################################
+
+  # Automatically register the task's version when new() is invoked.
+  def initialize(arguments = {}) #:nodoc:
+    super(arguments)
+    baserev = Revision_info
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
+  end
+
+  ##################################################################
   # Utility Methods
   ##################################################################
 

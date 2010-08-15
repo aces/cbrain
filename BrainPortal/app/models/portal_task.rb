@@ -63,6 +63,19 @@ class PortalTask < CbrainTask
     # handled by the Bourreau Workers.
   }
 
+  ##################################################################
+  # Core Object Methods
+  ##################################################################
+
+  # Automatically register the task's version when new() is invoked.
+  def initialize(arguments = {}) #:nodoc:
+    super(arguments)
+    baserev = Revision_info
+    subrev  = self.revision_info
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
+    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
+  end
+
   #######################################################
   # Task Launch API
   #######################################################
