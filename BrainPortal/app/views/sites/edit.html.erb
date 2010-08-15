@@ -23,7 +23,7 @@
           <td>Regular User</td>
           <td>Site Manager</td>
         </tr>
-        <% for user in User.all %>
+        <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
           <tr>
             <td class="left_align"><%= h(user.full_name) -%></td>
             <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
@@ -34,9 +34,9 @@
     </div>
 
     <div class="display_cell">
-      <label for="groups">Groups</label>
+      <label for="groups">Projects</label>
       <table class="button_table">
-        <% for group in WorkGroup.all %>
+        <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
           <tr>
             <td class="left_align"><%= h(group.name) -%></td>
             <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>

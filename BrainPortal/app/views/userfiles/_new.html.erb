@@ -16,13 +16,13 @@
     <%= hidden_field_tag 'userfile[group_id]', current_project.id %>
   <% else %>
     <P>
-    Group or project for uploaded file:<br>
+    Project for uploaded file:<br>
     <%= collection_select(:userfile, :group_id, @user_groups, :id, :name, {}, :class => :group) %>
   <% end %>
 
   <P>
 
-  Group permissions:<BR>
+  Project permissions:<BR>
   <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
 
   <P>
