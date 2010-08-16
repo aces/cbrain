@@ -93,8 +93,30 @@
   <P>
 
   <% if @userfile.can_be_accessed_by?(current_user) %>
-    <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
+    <% unless @userfile.is_locally_synced? %>
+
+      <P>
+
+      <% if @sync_status =~ /^To/ %>
+        <% if @userfile.is_a?(FileCollection) %>
+          <p>This Collection is currently being synchronized.</p>
+        <% else %>
+          <p>This file is currently being synchronized.</p>
+        <% end %>
+      <% elsif ! (@userfile.data_provider.not_syncable?) %>
+        <% if @userfile.is_a?(FileCollection) %>
+          <p>This Collection is not currently synchronized.<BR>
+        <% else %>
+          <p>This file is not currently synchronized.<BR>
+        <% end %>
+        Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
+        to start the synchronization process.<br>
+        Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+        </p>
+      <% end %>
+    <% end %>
   
+    <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
   <% end %>
   
   

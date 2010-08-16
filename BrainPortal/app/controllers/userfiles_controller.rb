@@ -142,12 +142,17 @@ class UserfilesController < ApplicationController
   
   def show
     session[:full_civet_display] ||= 'on'
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    
+    # This allows the user to manually trigger the syncing to the Portal's cache
+    @sync_status = 'ProvNewer' # same terminology as in SyncStatus
+    state = @userfile.local_sync_status
+    @sync_status = state.status if state
 
     if params[:full_civet_display]
       session[:full_civet_display] = params[:full_civet_display]
     end
 
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     @log  = @userfile.getlog rescue nil
   end
   
@@ -195,7 +200,7 @@ class UserfilesController < ApplicationController
        end # spawn
      end
      
-     redirect_to :action  => :edit
+     redirect_to :action  => :show
   end
 
   # POST /userfiles

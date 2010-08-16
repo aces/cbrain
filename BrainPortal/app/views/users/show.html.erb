@@ -41,42 +41,22 @@
 </div>
 
 <div class="display_cell" style="padding: 1em;">
-   <div id="account_info" style="display: none;">
-      <%= render :partial => "account_info" %>   
-   </div>
+  <div class="accordion">
+     <h3><a href="#">Edit Account Info</a></h3>
+     <div>
+       <%= render :partial => "account_info" %>   
+     </div>
 
-   <div id="preferences" style="display: none;">
-      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
-   </div>
+     <h3><a href="#">Change Password</a></h3>
+     <div>
+       <%= render :partial => "change_password" %>   
+     </div>
 
-   <div id="change_password" style="display: none;">
-      <%= render :partial => "change_password" %>   
-   </div>
-
-   <%= 
-      link_to_function 'Edit Account Info', :class  => 'action_link' do |page|
-         page << "if(current_options) {Effect.BlindUp(current_options);}"
-         page << "current_options = 'account_info';"
-         page['account_info'].visual_effect(:blind_down)
-      end
-   %>
-   <br>
-   <%= 
-      link_to_function 'Change Password', :class  => 'action_link' do |page|
-         page << "if(current_options) {Effect.BlindUp(current_options);}"
-         page << "current_options = 'change_password';"
-         page['change_password'].visual_effect(:blind_down)
-      end
-   %>
-   <br>
-   <%= 
-      link_to_function 'Edit Preferences', :class  => 'action_link' do |page|
-         page << "if(current_options) {Effect.BlindUp(current_options);}"
-         page << "current_options = 'preferences';"
-         page['preferences'].visual_effect(:blind_down)
-      end
-   %>
-
+     <h3><a href="#">Edit Preferences</a></h3>
+     <div>
+       <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>  
+     </div>
+  </div>
 </div>
 
 <P>

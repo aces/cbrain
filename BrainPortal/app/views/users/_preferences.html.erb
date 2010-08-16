@@ -1,15 +1,5 @@
 
-<h3>
-   Account preferences for <%= @user.login %>
-   <small><small>
-      <%= 
-         link_to_function 'close', :class  => 'action_link' do |page|
-            page << "current_options = null;"
-            page['preferences'].visual_effect(:blind_up)
-         end
-      %>
-   </small></small>
-</h3>
+<h3>Account preferences for <%= @user.login %></h3>
 
 <% form_for(user_preference) do |f| %>
   <%= f.error_messages %>
@@ -39,6 +29,4 @@
 <% end %>  <!-- End form -->
 
 <%= button_to 'Reset to Defaults', user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
-
-<hr>
 

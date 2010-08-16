@@ -734,6 +734,14 @@ module ApplicationHelper
     if alternate_text
       options["data-alternate-text"] = alternate_text
     end
+    slide_effect = options.delete(:slide_effect)
+    if slide_effect
+      options["data-slide-effect"] = true
+    end
+    slide_duration = options.delete(:slide_duration)
+    if slide_duration
+      options["data-slide-duration"] = slide_duration
+    end
     
     options[:class] ||= ""
     options[:class] +=  " show_toggle"

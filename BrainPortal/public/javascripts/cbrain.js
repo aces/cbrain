@@ -6,6 +6,24 @@ jQuery(
  function() {
 
    /////////////////////////////////////////////////////////////////////
+    //
+    // Ajax Pagination
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    jQuery(".pagination a").live("click", function(){
+      link = jQuery(this);
+      url = link.attr("href");
+      pagination_div = link.closest(".pagination");
+      pagination_div.html(" Loading... <BR>");
+      jQuery.ajax({
+        url: url,
+        dataType: "script"
+      });
+      return false;
+    });
+
+   /////////////////////////////////////////////////////////////////////
    //
    // UI Helper Methods see application_helper.rb for corresponding
    // helpers.
@@ -125,15 +143,29 @@ jQuery(
      var current_element = jQuery(this);
      var target_element = jQuery(current_element.attr("data-target"));
      var alternate_text = current_element.attr("data-alternate-text");
+     var slide_effect   = current_element.attr("data-slide-effect");
+     var slide_duration   = current_element.attr("data-slide-duration");  
+     if(slide_duration != 'slow' && slide_duration != 'fast'){
+       slide_duration = parseInt(slide_duration);
+     }
+     
      if(alternate_text){
        current_text = current_element.html();
        current_element.attr("data-alternate-text", current_text);
        current_element.html(alternate_text);
      }
      if(target_element.is(":visible")){
-       target_element.hide();
+       if(slide_effect){
+         target_element.slideUp(slide_duration);
+       }else{
+         target_element.hide();
+       }
      }else{
-       target_element.show();
+       if(slide_effect){
+          target_element.slideDown(slide_duration);
+        }else{
+          target_element.show();
+        }
      }
      return false;  
    });
@@ -254,9 +286,12 @@ jQuery(
      var current_form = jQuery(this);
      var data_type = current_form.attr("data-datatype");
      var target = current_form.attr("data-target");
+     var method = current_form.attr("data-method");
+     if(!method) method = "POST";
      if(!data_type) data_type = "html";
+     
      current_form.ajaxSubmit({
-       type: "POST",
+       type: method,
        dataType: data_type,
        success: function(data){
          if(target){
