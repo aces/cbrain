@@ -186,12 +186,27 @@ class CbrainTask::Civet < ClusterTask
     self.addlog("Full CIVET command:\n  #{civet_command.gsub(/ -/, "\n  -")}")
 
     return [
+      "echo =====================",
+      "echo Setting up QUARANTINE",
+      "echo =====================",
       "source #{CBRAIN::Quarantine_dir}/init.sh",
       "export PATH=\"#{CBRAIN::CIVET_dir}:$PATH\"",
-      "echo \"\";echo Showing ENVIRONMENT",
+      "echo \"\"",
+      "echo =====================",
+      "echo Showing ENVIRONMENT",
+      "echo =====================",
       "env | sort",
-      "echo \"\";echo Starting CIVET",
+      "echo \"\"",
+      "echo =====================",
+      "echo Showing LIMITS",
+      "echo =====================",
+      "ulimit -a",
+      "echo \"\"",
+      "echo =====================",
+      "echo Starting CIVET",
+      "echo =====================",
       "echo Command: #{civet_command}",
+      "echo \"\"",
       "#{civet_command}"
     ]
 

@@ -357,9 +357,6 @@ class ClusterTask < CbrainTask
     cb_error "Expected Task object to be in 'Setting Up' state." unless
       self.status == 'Setting Up'
 
-    # This used to be run in background, but now that
-    # we have a worker subprocess, we no longer need
-    # to have a spawn occur here.
     begin
       self.addlog("Setting Up.")
       self.make_cluster_workdir
@@ -800,7 +797,7 @@ class ClusterTask < CbrainTask
     # In this case, only the 'Setting Up' and 'Post Processing' states
     # are actually performed.
     if commands.nil? || commands.size == 0
-      self.addlog("No BASH commands associated with this task. Jumping to state 'Post Processing'.")
+      self.addlog("No BASH commands associated with this task. Jumping to state 'Data Ready'.")
       self.status = "Data Ready"  # Will trigger Post Processing later on.
       self.save
       return true
@@ -849,7 +846,7 @@ class ClusterTask < CbrainTask
     impl_author  = impl_revinfo.svn_id_author
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
-    self.addlog("Implementation in file '#{impl_file}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
+    self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
@@ -858,8 +855,9 @@ class ClusterTask < CbrainTask
     self.cluster_jobid = jobid
     self.status        = "Queued"
     self.addlog("Queued as job ID '#{jobid}'.")
-    return true
+    self.save
 
+    return true
   end
 
 
