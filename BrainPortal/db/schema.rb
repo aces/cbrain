@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100804180925) do
+ActiveRecord::Schema.define(:version => 20100817171827) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -78,6 +78,7 @@ ActiveRecord::Schema.define(:version => 20100804180925) do
     t.datetime "updated_at"
     t.datetime "time_of_death"
     t.boolean  "not_syncable",  :default => false
+    t.string   "time_zone"
   end
 
   create_table "feedbacks", :force => true do |t|
@@ -169,6 +170,7 @@ ActiveRecord::Schema.define(:version => 20100804180925) do
     t.integer  "cache_trust_expire",    :default => 0
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
+    t.string   "time_zone"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -291,6 +293,7 @@ ActiveRecord::Schema.define(:version => 20100804180925) do
     t.string   "role"
     t.integer  "site_id"
     t.boolean  "password_reset"
+    t.string   "time_zone"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"

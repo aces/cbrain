@@ -21,35 +21,14 @@
 
 <table class="resource_list" id="cbrain_data_provider_table">
 
-  <tr>
-    <th colspan="1"/>                                               <!-- name -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
-    <th colspan="1"/>                                               <!-- group -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
-    <th colspan="3">CBRAIN Official Storage</th>                    <!-- online alive mode -->
-    <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
-    <th colspan="3"/>                                               <!-- operations -->
-  </tr>
-
-  <tr>
-    <th>Provider Name</th>
-    <th class="provider_details" style="display:none">Owner</th>
-    <th>Project</th>
-    <th class="provider_details" style="display:none">Site</th>
-    <th>Online?</th>
-    <th>Alive?</th>
-    <th>Mode</th>
-    <th class="provider_details" style="display:none">Syncability</th>
-    <th class="provider_details" style="display:none">Description</th>
-    <th colspan="3">Operations</th>
-  </tr>
+  <%= render :partial => 'data_provider_table_headers' %>
 
   <% for prov in @providers["CBRAIN Official Storage"].sort_by(&:name) %>
     <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
   <% end %>
       
   <% if @providers["CBRAIN Official Storage"].nil? || @providers["CBRAIN Official Storage"].empty? %>
-    <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
+    <tr class="list-odd"><td colspan="13">There are no providers in this list.</td></tr>
   <% end %>
 
 </table>
@@ -60,28 +39,7 @@
   
 <table class="resource_list" id="user_data_provider_table">
 
-  <tr>
-    <th colspan="1"/>                                               <!-- name -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
-    <th colspan="1"/>                                               <!-- group -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
-    <th colspan="3">User Storage</th>                               <!-- online alive mode -->
-    <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
-    <th colspan="3"/>                                               <!-- operations -->
-  </tr>
-
-  <tr>
-    <th>Provider Name</th>
-    <th class="provider_details" style="display:none">Owner</th>
-    <th>Project</th>
-    <th class="provider_details" style="display:none">Site</th>
-    <th>Online?</th>
-    <th>Alive?</th>
-    <th>Mode</th>
-    <th class="provider_details" style="display:none">Syncability</th>
-    <th class="provider_details" style="display:none">Description</th>
-    <th colspan="3">Operations</th>
-  </tr>
+  <%= render :partial => 'data_provider_table_headers' %>
 
   <% for prov in @providers["User Storage"].sort_by(&:name) %>
     <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>

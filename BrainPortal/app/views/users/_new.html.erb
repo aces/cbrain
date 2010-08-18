@@ -12,6 +12,13 @@
   
     <p><label for="email">Email</label><br/>
     <%= f.text_field :email %></p>
+
+    <p><label for="time_zone">Time Zone</label><br/>
+    <%= f.time_zone_select :time_zone,
+        ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i }.each { |t| puts t.name },
+        { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+          :include_blank => true }
+    %></p>
     
     <p><label for="role">Role</label><br/>
     <%= f.select :role, roles_for_user(current_user), {} %> </p>

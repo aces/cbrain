@@ -1,5 +1,5 @@
 
-<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}').show();})" %>
+<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
 
 <% title "Edit #{@bourreau.name}" %>
 
@@ -17,7 +17,7 @@
       <p><label for="description">Description</label><br/>
       <%= f.text_field :description %></p>
       
-      <div class="Bourreau" style="display:none">
+      <div class="Bourreau_Specific" style="display:none">
         <p><label for="user_id">Owner</label><br/>
         <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
 
@@ -28,6 +28,7 @@
         <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
         <p><label>ActiveResource Configuration</label><br/>
+
         <div class="groupentry">
             <p><label for="actres_host">Hostname</label><br/>
             <%= f.text_field :actres_host %></p>
@@ -53,7 +54,7 @@
           <%= f.text_field :ssh_control_rails_dir %></p>
       </div>
         
-      <div class="Bourreau" style="display:none">
+      <div class="Bourreau_Specific" style="display:none">
         <p><label>Tunneling Configuration</label><br/>
         <div class="groupentry">
             <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>

@@ -14,6 +14,47 @@ class PortalSystemChecks < CbrainChecker
 
 
 
+  #Checks for a proper timezone configuration in Rails' environment.
+  def self.a009_check_if_timezone_configured
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking for proper time zone configuration..."
+    #-----------------------------------------------------------------------------
+    
+    if ! Time.zone.blank?
+      puts "C>\t- Time zone set to '#{Time.zone.name}'."
+    else
+      print <<-"TZ_ERROR"
+C>
+C> Error: Time Zone configuration incomplete!
+C>
+C> For this application to work, you must make sure that the
+C> Rails application has the proper time zone configured
+C> in this file:
+C>
+C>   #{RAILS_ROOT}/config/environment.rb
+C>
+C> Edit the file and change this line so it says:
+C>
+C>   config.time_zone = "your time zone name"
+C>
+C> The full list of time zone names can be obtained by
+C> running the rake task:
+C>
+C>   rake time:zones:all
+C>
+C> and a more particular subset of acceptable names
+C> for your current machine can be seen by running
+C>
+C>   rake time:zones:local
+C>
+      TZ_ERROR
+      Kernel.exit(1)
+    end
+  end
+    
+
+
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations
 

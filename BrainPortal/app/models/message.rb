@@ -217,7 +217,7 @@ class Message < ActiveRecord::Base
     current_text = self.variable_text
     current_text = "" if current_text.blank?
     if varlines.size > 0
-      timestamp    = Time.now.strftime("[%Y-%m-%d %H:%M:%S]")
+      timestamp    = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z]")
       current_text += timestamp + " " + varlines[0] + "\n"
       varlines.shift
       current_text += varlines.join("\n") + "\n" if varlines.size > 0

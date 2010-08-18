@@ -93,12 +93,12 @@
    
       <tr>
           <th>Time Submitted</th>
-          <td><%= h(to_localtime(@task.created_at.to_s,:datetime)) -%></td>
+          <td><%= h(to_localtime(@task.created_at,:datetime)) -%></td>
       </tr>
    
       <tr>
           <th>Last Updated</th>
-          <td><%= h(to_localtime(@task.updated_at.to_s,:datetime)) -%></td>
+          <td><%= h(to_localtime(@task.updated_at,:datetime)) -%></td>
       </tr>
    
       <tr>

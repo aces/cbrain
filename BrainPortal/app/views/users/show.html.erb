@@ -7,56 +7,48 @@
 
 <div class="display_cell">
 
+  <div>
+
    <table>
      <tr class="list-even">
-        <td class="title"><b>Name:</b></td>
-        <td class="tabletext"><%=h @user.full_name %></td>
+       <td class="title"><b>Name:</b></td>
+       <td class="tabletext"><%=h @user.full_name %></td>
      </tr>
      <tr class="list-even">
-        <td class="title"><b>Login:</b></td>
-        <td class="tabletext"><%=h @user.login %></td>
+       <td class="title"><b>Login:</b></td>
+       <td class="tabletext"><%=h @user.login %></td>
      </td>
      <tr class="list-even">
-         <td class="title"><b>Role:</b></td>
-         <td class="tabletext"><%=h @user.role.humanize %></td>
+       <td class="title"><b>Role:</b></td>
+       <td class="tabletext"><%=h @user.role.humanize %></td>
      </tr>
      <tr class="list-even">
-        <td class="title"><b>Email:</b></td>
-        <td class="tabletext"><%=h @user.email %></td>
+       <td class="title"><b>Email:</b></td>
+       <td class="tabletext"><%=h @user.email %></td>
      </tr>
      <tr class="list-even">
-          <td class="title"><b>Site:</b></td>
-          <td class="tabletext"><%= link_to_site_if_accessible(@user.site) %></td>
-       </tr>
-     <tr class="list-even">
-        <td class="title"><b>Default Execution Server: </b></td>
-        <td class="tabletext"><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
+       <td class="title"><b>Site:</b></td>
+       <td class="tabletext"><%= link_to_site_if_accessible(@user.site) %></td>
      </tr>
      <tr class="list-even">
-        <td class="title"><b>Default Data Provider:</b></td>
-        <td class="tabletext"><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
+       <td class="title"><b>Time Zone:</b></td>
+       <td class="tabletext"><%= h(@user.time_zone || "(Unset)") %></td>
+     </tr>
+     <tr class="list-even">
+       <td class="title"><b>Default Execution Server: </b></td>
+       <td class="tabletext"><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
+     </tr>
+     <tr class="list-even">
+       <td class="title"><b>Default Data Provider:</b></td>
+       <td class="tabletext"><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
      </td>
    </table>
 
-</div>
+  </div>
 
-<div class="display_cell" style="padding: 1em;">
-  <% build_accordion do |acc| %>
-    <% acc.section "Edit Account Info" do %>
-      <%= render :partial => "account_info" %>   
-    <% end %>
-    <% acc.section "Change Password" do %>
-      <%= render :partial => "change_password" %>   
-    <% end %>
-    <% acc.section "Edit Preferences" do %>
-      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
-    <% end %>
-  <% end %>
-</div>
+  <P>
 
-<P>
-
-<div class="display_row">
+  <div>
 
    <table>
       <tr>
@@ -80,6 +72,22 @@
 
    </table>
 
+  </div>
+
+</div>
+
+<div class="display_cell" style="padding: 1em;">
+  <% build_accordion do |acc| %>
+    <% acc.section "Edit Account Info" do %>
+      <%= render :partial => "account_info" %>   
+    <% end %>
+    <% acc.section "Change Password" do %>
+      <%= render :partial => "change_password" %>   
+    <% end %>
+    <% acc.section "Edit Preferences" do %>
+      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
+    <% end %>
+  <% end %>
 </div>
 
 <P>

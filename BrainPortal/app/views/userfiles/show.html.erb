@@ -38,13 +38,13 @@
  
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Created at:</th>
-      <td><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
+      <td><%=h(to_localtime(@userfile.created_at,:datetime)) %></td>
       <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Modified at:</th>
-      <td><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
+      <td><%=h(to_localtime(@userfile.updated_at,:datetime)) %></td>
       <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
     </tr>
  
@@ -59,7 +59,6 @@
       <td></td>
     </tr>
 
-    <% if current_user.has_role? :admin %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
       <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
@@ -71,10 +70,12 @@
           <% end %>
       </td>
     </tr>
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Local Data Provider (cache) path:</th>
-      <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
-    </tr>
+
+    <% if current_user.has_role? :admin %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+        <th class="right_align">Local Data Provider (cache) path:</th>
+        <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
+      </tr>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
         <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th class="right_align">Remote SSH Data Provider path:</th>
@@ -82,6 +83,7 @@
         </tr>
       <% end %>
     <% end %>
+
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Tags:</th>
       <td colspan="2">

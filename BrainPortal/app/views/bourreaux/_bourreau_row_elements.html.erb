@@ -15,6 +15,7 @@
 <td class="resource_details" style="display:none"><%= link_to_user_if_accessible(bour.user) %></td>
 <td><%= link_to_group_if_accessible(bour.group) %></td>
 <td class="resource_details" style="display:none"><%= link_to_site_if_accessible(bour.site_affiliation) %></td>
+<td class="resource_details" style="display:none"><%= h(bour.time_zone || "(Unset)") %></td>
 <td><%= red_if( ! bour.online,      "Yes", "Offline" ) %></td>
 <td><%= red_if( info.name == "???", "Yes", "Down!"   ) %></td>
 
@@ -37,7 +38,7 @@
           link_to 'Delete', bourreau_path(bour), :class  => "action_link delete_button", 
                                                  "data-confirm"  => 'Are you sure?', 
                                                  "data-delete-selector"  => "#bourreau_#{bour.id}",
-                                                 "data-delete-text"  => "<td colspan='15' style='color:red; text-align:center'>Deleting...</td>"
+                                                 "data-delete-text"  => "<td colspan='16' style='color:red; text-align:center'>Deleting...</td>"
       %>
      <% end %>
   </td>

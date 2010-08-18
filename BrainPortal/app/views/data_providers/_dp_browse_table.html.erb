@@ -92,7 +92,7 @@
        <% end %>
     <% end %>
 
-    <td><%= h(to_localtime(Time.at(fi_mtime).to_s,:datetime)) %></td>
+    <td><%= h(to_localtime(Time.at(fi_mtime),:datetime)) %></td>
 
     <% if fi_userfile %>
       <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'edit', :id => fi_userfile.id } %></td>

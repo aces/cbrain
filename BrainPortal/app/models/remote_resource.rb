@@ -355,6 +355,7 @@ class RemoteResource < ActiveRecord::Base
     @@host_name      ||= Socket.gethostname
     @@host_ip        ||= ""
     @@host_uname     ||= `uname -a`.strip
+    time_zone_name     = Time.zone ? Time.zone.name : ""
 
     if @@host_ip == ""
       hostinfo = ( Socket.gethostbyname(@@host_name) rescue [ nil, nil, nil, "\000\000\000\000" ] )
@@ -393,6 +394,7 @@ class RemoteResource < ActiveRecord::Base
       :host_ip            => @@host_ip,
       :host_uname         => @@host_uname,
       :host_uptime        => host_uptime,
+      :rails_time_zone    => time_zone_name,
       :ssh_public_key     => @@ssh_public_key,
 
       # Svn info
@@ -403,6 +405,12 @@ class RemoteResource < ActiveRecord::Base
       :starttime_revision => $CBRAIN_StartTime_Revision
 
     )
+
+    # Cache the time zone name in the current resource.
+    if ! time_zone_name.blank? && (myself.time_zone.blank? || myself.time_zone != time_zone_name)
+      myself.time_zone = time_zone_name
+      myself.save
+    end
 
     return info
   end

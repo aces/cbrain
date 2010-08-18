@@ -120,9 +120,6 @@ module SelectBoxHelper
     end 
     render :partial => 'layouts/bourreau_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :bourreaux  => bourreaux, :select_tag_options => select_tag_options}
   end
-  
 
 end
-
-
 

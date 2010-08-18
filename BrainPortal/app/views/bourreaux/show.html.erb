@@ -3,7 +3,7 @@
 
 <h2>Information for <%= @bourreau.name %></h2>
 
-<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}').show();})" %>
+<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
 
 <div class="generalbox">
     
@@ -54,6 +54,16 @@
     <tr>
       <th>Project</th>
       <td class="left_align"><%= link_to_group_if_accessible(@bourreau.group) %></td>
+    </tr>
+
+    <tr>
+      <th>Site</th>
+      <td class="left_align"><%= link_to_site_if_accessible(@bourreau.site_affiliation) %></td>
+    </tr>
+
+    <tr>
+      <th>Time Zone</th>
+      <td class="left_align"><%= h(@bourreau.time_zone || "(Unset)") %></td>
     </tr>
 
     <tr>
@@ -172,17 +182,17 @@
       <tr>
         <th>Server uptime</th>
         <td class="left_align">
-          Up since: <%= h(@info.uptime.to_i.ago.to_s(:db)) %><br>
+          Up since: <%= h(to_localtime(@info.uptime.to_i.ago,:datetime)) %><br>
           (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
         </td>
       </tr>
 
-      <tr class="Bourreau" style="display:none">
+      <tr class="Bourreau_Specific" style="display:none">
         <th>Worker PIDs</th>
         <td class="left_align"><%= @info.worker_pids %></td>
       </tr>
 
-      <tr class="Bourreau" style="display:none">
+      <tr class="Bourreau_Specific" style="display:none">
         <th>Worker Revision Info</th>
         <td class="left_align">
           <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
@@ -191,12 +201,12 @@
         </td>
       </tr>
 
-      <tr class="Bourreau" style="display:none">
+      <tr class="Bourreau_Specific" style="display:none">
         <th>Number of tasks (running/max)</th>
         <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
       </tr>
 
-      <tr class="Bourreau" style="display:none">
+      <tr class="Bourreau_Specific" style="display:none">
         <th>Execution Server Cluster Management System</th>
         <td class="left_align">
           Type: <%= h(@info.bourreau_cms) %><br>
@@ -215,7 +225,7 @@
 
   <P>
 
-  <table class="Bourreau" style="display:none">
+  <table class="Bourreau_Specific" style="display:none">
     <tr>
       <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
     </tr>

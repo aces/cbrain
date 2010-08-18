@@ -34,8 +34,8 @@
    <% unless current_session[:userfiles_details] == 'off' %>
    <td class="userfiles_details"><%= link_to_user_if_accessible(userfile.user) %></td>
    <td class="userfiles_details">
-      <span title="<%= h (userfile.created_at.localtime.strftime("%A %B %d, %Y at %H:%M:%S"))%>">
-         <%= h(to_localtime(userfile.created_at.to_s,:date)) -%>
+      <span title="<%= h (userfile.created_at.in_time_zone.strftime("%A %B %d, %Y at %H:%M:%S %Z"))%>">
+         <%= h(to_localtime(userfile.created_at,:date)) -%>
       </span>
    </td>
    <% end %>

@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :set_session, :only  => :index
   before_filter :password_reset
-  around_filter :catch_cbrain_message
+  around_filter :catch_cbrain_message, :activate_user_time_zone
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
@@ -38,6 +38,19 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
+
+  # This method wraps ALL other controller methods
+  # into a sandbox where the value for Time.zone is
+  # temporarily switched to the current user's time zone,
+  # if it is defined. Otherwise, the Rails application's
+  # time zone as defined in config.environment.rb is used.
+  def activate_user_time_zone #:nodoc:
+    if current_user && ! current_user.time_zone.blank? && ActiveSupport::TimeZone[current_user.time_zone]
+      Time.use_zone(ActiveSupport::TimeZone[current_user.time_zone]) { yield }
+    else
+      yield
+    end
+  end
 
   #Prevents pages from being cached in the browser. 
   #This prevents users from being able to access pages after logout by hitting
@@ -199,14 +212,15 @@ class ApplicationController < ActionController::Base
   # Date/Time Helpers
   #################################################################################
   
-  #Converts any time string to the format 'yyyy-mm-dd hh:mm:ss'.
+  #Converts any time string or object to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime, what = :date)
-     loctime = Time.parse(stringtime.to_s).localtime
+     loctime = stringtime.is_a?(Time) ? stringtime : Time.parse(stringtime.to_s)
+     loctime = loctime.in_time_zone # uses the user's time zone, or the system if not set. See activate_user_time_zone()
      if what == :date || what == :datetime
        date = loctime.strftime("%Y-%m-%d")
      end
      if what == :time || what == :datetime
-       time = loctime.strftime("%H:%M:%S")
+       time = loctime.strftime("%H:%M:%S %Z")
      end
      case what
        when :date
@@ -275,8 +289,13 @@ class ApplicationController < ActionController::Base
     final
   end
 
+  # Returns +pastdate+ as as pretty date or datetime with an
+  # amount of time elapsed since then expressed in parens
+  # just after it, e.g.,
+  #
+  #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
   def pretty_past_date(pastdate, what = :datetime)
-    loctime = Time.parse(pastdate.to_s).localtime
+    loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
     elapsed = pretty_elapsed(Time.now - loctime)
     "#{locdate} (#{elapsed} ago)"

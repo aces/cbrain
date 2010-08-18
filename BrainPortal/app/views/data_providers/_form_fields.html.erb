@@ -9,6 +9,15 @@
   <%= f.text_field :description %></p>
 </span>
 
+<span title="Time zone where this data provider is located.">
+  <p><label for="time_zone">Time Zone</label><br/>
+  <%= f.time_zone_select :time_zone, 
+      ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i }.each { |t| puts t.name },
+      { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+        :include_blank => true }
+  %></p>
+</span>
+
 <span title="Type of data provider.">
   <p><label for="type">Type</label><br/>
   <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %></p>

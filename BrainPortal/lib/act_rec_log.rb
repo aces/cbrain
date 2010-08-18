@@ -185,7 +185,7 @@ module ActRecLog
       lines.pop while lines.size > 0 && lines[-1] == ""
   
       message = lines.join("\n") + "\n"
-      log += Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + message
+      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + message
       while log.size > 65500 && log =~ /\n/   # TODO: archive ?
         log.sub!(/^[^\n]*\n/,"")
       end
@@ -318,7 +318,7 @@ module ActRecLog
     myid    = self.id
     myclass = self.class.to_s
     return nil unless myid
-    message = Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + "#{myclass} revision " +
+    message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{myclass} revision " +
               self.revision_info.svn_id_pretty_rev_author_date + "\n"
 
     arl = ActiveRecordLog.create( :ar_id    => myid,

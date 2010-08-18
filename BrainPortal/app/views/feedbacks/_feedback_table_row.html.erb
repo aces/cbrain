@@ -2,7 +2,7 @@
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="feedback_<%= feedback.id %>">
   <td><%=link_to h(feedback.summary), feedback %></td>
   <td><%= link_to_user_if_accessible(feedback.user) %></td>
-  <td><%= h(to_localtime(feedback.created_at.to_s,:datetime)) %></td>
+  <td><%= h(to_localtime(feedback.created_at,:datetime)) %></td>
 
   <% if current_user.has_role?(:admin) || current_user.id == feedback.user_id %>
      <td><%= link_to 'Edit', edit_feedback_path(feedback), :class  => 'action_link' %></td>

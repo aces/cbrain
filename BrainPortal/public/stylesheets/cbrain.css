@@ -180,7 +180,7 @@ th.subtitle {
 
 td.tabletext {
     text-align: left;
-    text-indent: 10px;
+    padding: 0 1em;
 }
 
 tr.list-even {

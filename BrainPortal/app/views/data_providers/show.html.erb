@@ -55,6 +55,16 @@
       </tr>
 
       <tr>
+          <th>Site</th>
+          <td><%= link_to_site_if_accessible(@provider.site) %></td>
+      </tr>
+
+      <tr>
+          <th>Time Zone</th>
+          <td><%= h(@provider.time_zone || "(Unset)") %></td>
+      </tr>
+
+      <tr>
           <th>Status</th>
           <td><%= h(@provider.online ? "Online" : "Offline") %></td>
       </tr>

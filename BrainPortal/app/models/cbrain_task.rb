@@ -385,7 +385,7 @@ class CbrainTask < ActiveRecord::Base
     lines.pop while lines.size > 0 && lines[-1] == ""
     message = lines.join("\n") + "\n"
     log +=
-      Time.now.strftime("[%Y-%m-%d %H:%M:%S] ") + calling_method + message
+      Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
     self.log = log
   end
 
@@ -468,7 +468,9 @@ class CbrainTask < ActiveRecord::Base
   ##################################################################
   # Lifecycle hooks
   ##################################################################
+
   private
+
   def set_group
     unless self.group_id
       return true unless self.user_id
@@ -486,5 +488,6 @@ class CbrainTask < ActiveRecord::Base
     @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
     @statistic.update_stats
   end
+
 end
 

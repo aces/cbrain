@@ -8,7 +8,7 @@
 
    <tr>
       <td> <%= link_to_user_if_accessible(@feedback.user) %> </td>
-      <td> <%= h(to_localtime(@feedback.created_at.to_s,:datetime)) %> </td>
+      <td> <%= h(to_localtime(@feedback.created_at,:datetime)) %> </td>
    </tr>
 
    <tr>

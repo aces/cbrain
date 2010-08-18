@@ -44,13 +44,13 @@
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Created at:</th>
-      <td><%=h(to_localtime(@userfile.created_at.to_s,:datetime)) %></td>
+      <td><%=h(to_localtime(@userfile.created_at,:datetime)) %></td>
       <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Modified at:</th>
-      <td><%=h(to_localtime(@userfile.updated_at.to_s,:datetime)) %></td>
+      <td><%=h(to_localtime(@userfile.updated_at,:datetime)) %></td>
       <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
     </tr>
    
