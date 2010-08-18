@@ -73,7 +73,12 @@ class BourreauWorker < Worker
       task_group = by_user[user_id].shuffle # go through tasks in random order
       while task_group.size > 0
         task               = task_group.pop
-        process_task(task) unless task.updated_at > 20.seconds.ago # this can take a long time...
+        unless task.updated_at > 20.seconds.ago
+          timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
+          Time.use_zone(timezone) do
+            process_task(task) # this can take a long time...
+          end
+        end
         break if stop_signal_received?
       end # each task
       break if stop_signal_received?
