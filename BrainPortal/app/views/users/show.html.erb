@@ -41,22 +41,17 @@
 </div>
 
 <div class="display_cell" style="padding: 1em;">
-  <div class="accordion">
-     <h3><a href="#">Edit Account Info</a></h3>
-     <div>
-       <%= render :partial => "account_info" %>   
-     </div>
-
-     <h3><a href="#">Change Password</a></h3>
-     <div>
-       <%= render :partial => "change_password" %>   
-     </div>
-
-     <h3><a href="#">Edit Preferences</a></h3>
-     <div>
-       <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>  
-     </div>
-  </div>
+  <% build_accordion do |acc| %>
+    <% acc.section "Edit Account Info" do %>
+      <%= render :partial => "account_info" %>   
+    <% end %>
+    <% acc.section "Change Password" do %>
+      <%= render :partial => "change_password" %>   
+    <% end %>
+    <% acc.section "Edit Preferences" do %>
+      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
+    <% end %>
+  <% end %>
 </div>
 
 <P>

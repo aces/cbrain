@@ -47,14 +47,12 @@
     </small>
 </div>
 
-<div class="accordion">
-  <h3><a href="#">Filter Tasks</a></h3>
-  <div>
+<% build_accordion do |acc| %>
+  <% acc.section "Filter Tasks" do %>
     <%= render :partial => 'tasks/filters' %>
-  </div>
-  <h3><a href="#">Help</a></h3>
-  <div class="help_button_drop_down">
+  <% end %>
+  <% acc.section "Help" do %>
     <a class="overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
-  </div>
-</div>
+  <% end %>
+<% end %>
 

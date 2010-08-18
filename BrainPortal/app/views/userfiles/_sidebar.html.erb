@@ -19,24 +19,20 @@
     <%= link_to 'clear', { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter }, "data-datatype"  => 'script', :class  => "ajax_link action_link" %>
 </div>
 
-<div class="accordion">
-
-  <h3><a href="#">Filter Files</a></h3>
-  <div>
+<% build_accordion do |acc| %>
+  <% acc.section "Filter Files" do %>
     <%= render :partial => 'userfiles/filters' %>
     <%= render :partial => 'userfiles/tag_table_sidebar' %>
     <div>
       <%= render :partial => "tags/new", :object => @tag %>
     </div>
-  </div>
+  <% end %>
 
-  <h3><a href="#">Upload File</a></h3>
-  <div>
+  <% acc.section "Upload File" do %>
     <%= render :partial => "userfiles/new" %> 
-  </div>
+  <% end %>
 
-  <h3><a href="#">Help</a></h3>
-  <div class="help_button_drop_down">
+  <% acc.section "Help" do %>
         <a class="overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
         <br>
         <a class="overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
@@ -44,7 +40,5 @@
         <a class="overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats</a>
         <br>
         <a class="overlay_link" data-url = "/doc/userfiles/jiv_viewer.html">Jiv Viewer Info</a>
-  </div>
-
-</div>
-
+  <% end %>
+<% end %>

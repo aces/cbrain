@@ -92,8 +92,6 @@ jQuery(
 
    });
 
-
-
    jQuery(".inline_edit_field").each(function() {
      var input_field = jQuery(this).children().filter("span").children().filter("input").hide();
      var save_link = jQuery(this).children().filter(".inplace_edit_field_save").hide();
