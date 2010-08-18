@@ -12,7 +12,7 @@
 require 'lib/bourreau_system_checks.rb'
 
 #-----------------------------------------------------------------------------
-puts "C> CBRAIN Bourreau validation starting, " + Time.zone.now.to_s
+puts "C> CBRAIN Bourreau validation starting, " + Time.now.to_s
 #-----------------------------------------------------------------------------
 
 # Checking to see if this command requires validation or not
