@@ -74,9 +74,9 @@ class TasksController < ApplicationController
     @filter_params["sort"]["order"] ||= 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
     @filter_params["sort"]["dir"]   ||= 'DESC'
 
-    scope = scope.scoped(:joins  => [:bourreau, :user, :group], 
-                         :readonly  => false, 
-                         :order => "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}" )
+    scope = scope.scoped(:include  => [:bourreau, :user, :group], 
+                         :readonly => false, 
+                         :order    => "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}" )
 
     @tasks = scope
     
