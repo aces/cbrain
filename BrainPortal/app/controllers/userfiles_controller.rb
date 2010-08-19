@@ -507,9 +507,7 @@ class UserfilesController < ApplicationController
       word_moved = 'copied'
     end
 
-
-
-    data_provider_id = params[:data_provider_id]#Regexp.last_match[1].to_i
+    data_provider_id = params[:data_provider_id]
     new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
 
     unless new_provider
@@ -520,28 +518,36 @@ class UserfilesController < ApplicationController
 
     CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
       moved_list  = []
-      failed_list = []
+      failed_list = {}
       filelist.each do |id|
-        u = Userfile.find(id)
-        next unless u
-        orig_provider = u.data_provider
-        next if orig_provider.id == data_provider_id
         begin
+          u = Userfile.find_accessible_by(id, current_user, :readonly => (task == 'copy'))
+          next unless u
+          orig_provider = u.data_provider
+          next if orig_provider.id == data_provider_id
+          res = nil
           if task == 'move'
+            raise "Not owner." unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider)
           else
+            # NOTE! DO NOT SAVE 'u' HERE, WE CHANGE THE ATTRIBUTES SO
+            # THAT THE COPY METHOD WILL CHECK FOR COLLISIONS BUT THEY
+            # SHOULD NOT STAY LIKE THAT! (FOR SAFETY, WE HAVE :readonly IN EFFECT)
+            u.user_id    = current_user.id
+            u.group_id   = current_project ? current_project.id : current_user.own_group.id
+            u.created_at = Time.now
             res = u.provider_copy_to_otherprovider(new_provider)
+            u=Userfile.find(id) # RELOAD IT AND CLEAR :readonly !
           end
-          if res
-            u.save
-            u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
-            moved_list << u
-          else
-            failed_list << u
-          end
+          raise "File collision: there is already such a file on the other provider." unless res
+          u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
+          res.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'" if task == 'copy'
+          u.save
+          moved_list << u
         rescue => e
-          u.addlog "Could not #{word_move} from data provider '#{orig_provider.name}' to '#{new_provider.name}': #{e.message}"
-          failed_list << u
+          err_message = e.message
+          failed_list[err_message] ||= []
+          failed_list[err_message] << u
         end
       end
 
@@ -554,10 +560,15 @@ class UserfilesController < ApplicationController
       end
 
       if failed_list.size > 0
+        report = ""
+        failed_list.each do |message,userfiles|
+          report += "Failed because: #{message}\n"
+          report += userfiles.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]\n" }.join("")
+        end
         Message.send_message(current_user,
                             :message_type  => 'error', 
-                            :header  => "Some files could not be #{word_moved} to #{new_provider.name}",
-                            :variable_text  => "List:\n" + failed_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
+                            :header        => "Some files could not be #{word_moved} to #{new_provider.name}",
+                            :variable_text => report
                             )
       end
 
@@ -705,7 +716,7 @@ class UserfilesController < ApplicationController
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
-    flash[:error] += "You don't have appropriate permissions to #{action_name} the selected files.".humanize
+    flash[:error] += "You don't have appropriate permissions to apply the selected action to this set of files."
 
     redirect_to :action => :index, :format => request.format.to_sym
   end

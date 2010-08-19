@@ -15,13 +15,13 @@
       
 <p>
   
-<%= show_hide_toggle "Show Details", "#cbrain_data_provider_table .provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
+<%= show_hide_toggle "Show Details", ".provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
   
 <%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
 
 <table class="resource_list" id="cbrain_data_provider_table">
 
-  <%= render :partial => 'data_provider_table_headers' %>
+  <%= render :partial => 'data_provider_table_headers', :locals => { :table_title => 'Official CBRAIN Storage' } %>
 
   <% for prov in @providers["CBRAIN Official Storage"].sort_by(&:name) %>
     <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>
@@ -35,11 +35,9 @@
 
 <P><br>
   
-<%= show_hide_toggle "Show Details", "#user_data_provider_table .provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
-  
 <table class="resource_list" id="user_data_provider_table">
 
-  <%= render :partial => 'data_provider_table_headers' %>
+  <%= render :partial => 'data_provider_table_headers', :locals => { :table_title => 'User Storage' } %>
 
   <% for prov in @providers["User Storage"].sort_by(&:name) %>
     <%= render :partial => 'data_provider_table_row', :locals  => {:data_provider  => prov} %>

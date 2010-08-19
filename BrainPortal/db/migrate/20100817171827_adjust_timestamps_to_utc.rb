@@ -120,7 +120,7 @@ class AdjustTimestampsToUtc < ActiveRecord::Migration
       cols_to_adjust = []
       columns.each do |col|
         next if col.type != :datetime
-        puts "\t-> Found datatime attribute:\t#{col.name}"
+        puts "\t-> Found datetime attribute:\t#{col.name}"
         cols_to_adjust << col
       end
 

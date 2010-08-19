@@ -147,6 +147,7 @@ class ApplicationController < ActionController::Base
     end
     
     return unless current_user
+    return unless request.format.to_sym == :html
     
     @display_messages = []
     
