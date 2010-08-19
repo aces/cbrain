@@ -1,17 +1,13 @@
 
 <tr>
-
-
-
     <th> 
-       <input type='checkbox' class="select_all" data-checkbox-class="task_checkbox"/>
+       <%= select_all_checkbox "task_checkbox" %>
     </th>
 
 
-
     <th id="task_type_header" onMouseOver="jQuery('#task_filters_list').show()" onMouseOut="jQuery('#task_filters_list').hide()">
-      <%= link_to "Task Name", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.type', :dir  => set_dir('cbrain_tasks.type', @filter_params["sort"])}} }, 
-                                       "data-datatype"  => 'script', :class  => "ajax_link"  
+      <%= ajax_link "Task Name", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.type', :dir  => set_dir('cbrain_tasks.type', @filter_params["sort"])}} }, 
+                                       :datatype  => 'script'
       %>
       <%= set_order_icon('cbrain_tasks.type', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
       <% unless @task_types.blank? %>
@@ -20,8 +16,8 @@
            <% @task_types.sort.each do |task_type| %>
               <li>
                 <%= 
-                  link_to h(crop_text_to(20, task_type.sub(/^CbrainTask::/, ""))), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
-                                                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
+                  ajax_link h(crop_text_to(20, task_type.sub(/^CbrainTask::/, ""))), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
+                                                                                    :datatype  => 'script'
                 %> 
               </li> 
            <% end %>
@@ -32,8 +28,8 @@
 
 
     <th onMouseOver="jQuery('#description_filters_list').show()" onMouseOut="jQuery('#description_filters_list').hide()">
-       <%= link_to "Description", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}} }, 
-                                  "data-datatype"  => 'script', :class  => "ajax_link"
+       <%= ajax_link "Description", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}} }, 
+                                  :datatype  => 'script'
        %>
         <%= set_order_icon('cbrain_tasks.description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
         <% unless @task_descriptions.blank? %>
@@ -41,10 +37,7 @@
            <ul class="filter_list" id="description_filters_list" style="display:none;">
               <% @task_descriptions.sort.each do |task_desc| %>
                  <li>
-                   <%= 
-                     link_to h(crop_text_to(40, task_desc)), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:description  => task_desc}}}, 
-                                                              "data-datatype"  => 'script', :class  => "ajax_link" 
-                   %>
+                   <%= ajax_link h(crop_text_to(40, task_desc)), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:description  => task_desc}}}, :datatype  => 'script' %>
                  </li> 
               <% end %>
             </ul>
@@ -54,8 +47,8 @@
 
 
     <th onMouseOver="jQuery('#owner_filters_list').show()" onMouseOut="jQuery('#owner_filters_list').hide()">
-       <%= link_to  "Owner", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'users.login', :dir  => set_dir('users.login', @filter_params["sort"])}} }, 
-                              "data-datatype"  => 'script', :class  => "ajax_link"  
+       <%= ajax_link  "Owner", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'users.login', :dir  => set_dir('users.login', @filter_params["sort"])}} }, 
+                              :datatype  => 'script'
        %>
        <%= set_order_icon('users.login', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
        <% if current_user.has_role?(:admin) && !@task_owners.blank? %>
@@ -63,10 +56,7 @@
            <ul class="filter_list" id="owner_filters_list" style="display:none;">
               <% @task_owners.sort_by(&:login).each do |task_owner| %>
                  <li>
-                   <%= 
-                      link_to h(task_owner.login), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, 
-                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
-                    %>
+                   <%= ajax_link h(task_owner.login), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, :datatype  => 'script' %>
                  </li> 
               <% end %>
            </ul>
@@ -77,8 +67,8 @@
 
     <% unless current_project %>
       <th>
-        <%= link_to "Project", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'groups.name', :dir  => set_dir('groups.name', @filter_params["sort"])}} }, 
-                                 "data-datatype"  => 'script', :class  => "ajax_link"
+        <%= ajax_link "Project", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'groups.name', :dir  => set_dir('groups.name', @filter_params["sort"])}} }, 
+                                 :datatype  => 'script'
          %>
       </th>
     <% end %>
@@ -86,8 +76,8 @@
 
 
     <th onMouseOver="jQuery('#bourreau_filters_list').show()" onMouseOut="jQuery('#bourreau_filters_list').hide()">
-      <%= link_to  "Execution Server", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'remote_resources.name', :dir  => set_dir('remote_resources.name', @filter_params["sort"])}} }, 
-                                                "data-datatype"  => 'script', :class  => "ajax_link"
+      <%= ajax_link  "Execution Server", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'remote_resources.name', :dir  => set_dir('remote_resources.name', @filter_params["sort"])}} }, 
+                                                :datatype  => 'script'
       %>
       <%= set_order_icon('remote_resources.name', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
       <% unless @bourreaux.blank? %>
@@ -96,8 +86,8 @@
               <% @bourreaux.sort_by(&:name).each do |bourreau| %>
                  <li>
                     <%= 
-                        link_to h(bourreau.name),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:bourreau_id  => bourreau.id}}}, 
-                                                    "data-datatype"  => 'script', :class  => "ajax_link" 
+                        ajax_link h(bourreau.name),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:bourreau_id  => bourreau.id}}}, 
+                                                    :datatype  => 'script'
                     %>
                  </li> 
               <% end %>
@@ -108,8 +98,8 @@
 
 
     <th onMouseOver="jQuery('#status_filters_list').show()" onMouseOut="jQuery('#status_filters_list').hide()">
-       <%= link_to "Current Status", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.status', :dir  => set_dir('cbrain_tasks.status', @filter_params["sort"])}} }, 
-                                       "data-datatype"  => 'script', :class  => "ajax_link"  
+       <%= ajax_link "Current Status", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.status', :dir  => set_dir('cbrain_tasks.status', @filter_params["sort"])}} }, 
+                                       :datatype  => 'script'
        %>
        <%= set_order_icon('cbrain_tasks.status', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
        <% unless @task_status.blank? %>
@@ -118,8 +108,8 @@
               <% @task_status.sort.each do |task_status| %>
                  <li>
                    <%= 
-                       link_to h(task_status),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
-                                                 "data-datatype"  => 'script', :class  => "ajax_link" 
+                       ajax_link h(task_status),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
+                                                 :datatype  => 'script'
                    %>
                  </li> 
               <% end %>
@@ -134,8 +124,8 @@
 
 
     <th>
-      <%= link_to  "Time Submitted", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.created_at', :dir  => set_dir('cbrain_tasks.created_at', @filter_params["sort"])}} }, 
-                                              "data-datatype"  => 'script', :class  => "ajax_link"
+      <%= ajax_link  "Time Submitted", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.created_at', :dir  => set_dir('cbrain_tasks.created_at', @filter_params["sort"])}} }, 
+                                              :datatype  => 'script'
       %>
       <%= set_order_icon('cbrain_tasks.created_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
     </th>
@@ -143,8 +133,8 @@
 
 
     <th>
-      <%= link_to  "Last Updated", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.updated_at', :dir  => set_dir('cbrain_tasks.updated_at', @filter_params["sort"])}} }, 
-                                     "data-datatype"  => 'script', :class  => "ajax_link"
+      <%= ajax_link  "Last Updated", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.updated_at', :dir  => set_dir('cbrain_tasks.updated_at', @filter_params["sort"])}} }, 
+                                     :datatype  => 'script'
       %>
       <%= set_order_icon('cbrain_tasks.updated_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
     </th>

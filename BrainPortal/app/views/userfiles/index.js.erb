@@ -1,20 +1,4 @@
-<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-   if(jQuery('#flash_notice').length > 0){
-     jQuery('#flash_notice').html("<%= flash[:notice].gsub(/\n/,'<BR>') %>");
-   }else{
-     jQuery('#main').prepend(jQuery("<p class=\"notice\" id=\"flash_notice\"><%= flash[:notice].gsub(/\n/,'<BR>') %></p>"));
-   }
-    <% flash.discard(:notice) %>
-<% end %>
-<% if ! flash[:error].nil? && ! flash[:error].empty? %>
-   if(jQuery('#flash_error').length > 0){
-     jQuery('#flash_error').html("<%= flash[:error].gsub(/\n/,'<BR>') %>");
-   }else{
-     jQuery('#main').prepend(jQuery("<p class=\"error\" id=\"flash_error\"><%= flash[:error].gsub(/\n/,'<BR>') %></p>"));
-   }
-    <% flash.discard(:error) %>
-<% end %>
-
+<%= render :partial  => "shared/flash_update" %>
 jQuery("#current_filters").html("<%= escape_javascript(render(:partial => 'current_filters')) %>")
 jQuery("#userfiles_table").html("<%= escape_javascript(render(:partial => 'userfiles_table')) %>")
 jQuery("#page_display").html("<%= escape_javascript(render(:partial => 'page_display')) %>")

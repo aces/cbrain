@@ -3,7 +3,7 @@
    <tr class="list-odd">
      <th>
        <% if @userfile.is_locally_synced? %>
-          <input type='checkbox' class="select_all" data-checkbox-class="collection_checkbox"/>
+          <%= select_all_checkbox"collection_checkbox" %>
        <% end %>
      </th>
      <th>File</th>

@@ -2,7 +2,16 @@
 <% if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at' %>
   <strong>Currently in Batch View</strong>
 <% else %>
-  <%= link_to 'Switch to Batch View', {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', :dir  => 'DESC'}}}, "data-datatype"  => 'script', :class  => "ajax_link action_link" %>
-  <%= set_order_icon('cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+  <h5>
+    <%= ajax_link 'Switch to Batch View', {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', :dir  => 'DESC'}}}, :datatype  => 'script' %>
+  </h5>
 <% end %>
 
+<% if @total_tasks > @tasks_per_page %>
+  <h5>
+    <%= ajax_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
+                {:controller  => :tasks, :action  => :index, :tasks  => {:pagination  => set_toggle(@filter_params["pagination"])}},
+                :datatype  => 'script'
+    %>
+  </h5>
+<% end %>

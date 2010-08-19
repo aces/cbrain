@@ -1,29 +1,29 @@
 
 <h5>
   <%= 
-    link_to (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
+    ajax_link (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
             {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, 
-            "data-datatype"  => 'script', :class  => "ajax_link" 
+            :datatype  => 'script'
   %>
 </h5>
 
 <% if @userfiles_total > @userfiles_per_page %>
   <h5>
-    <%= link_to (session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
+    <%= ajax_link (current_session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
                 userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])),
-                "data-datatype"  => 'script', :class  => "ajax_link"
+                :datatype  => 'script'
     %>
   </h5>
 <% end %>
 
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-  <%= link_to session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", 
+  <%= ajax_link current_session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", 
               userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), 
-              "data-datatype"  => 'script', :class  => "ajax_link" 
+              :datatype  => 'script'
   %>
   <br>
 <% end %>
 
-<%= link_to "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'tree_sort'}, "data-datatype"  => 'script', :class  => "ajax_link" %>
+<%= ajax_link "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'tree_sort'}, :datatype  => 'script' %>
 <%= set_order_icon('tree_sort', current_session[:userfiles_sort_order]) %>
 

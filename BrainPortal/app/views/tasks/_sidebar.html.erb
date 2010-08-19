@@ -1,4 +1,3 @@
-
 <div id="task_view_mode">
   <%= render :partial => 'tasks/tasks_view_mode' %>
 </div>
@@ -43,7 +42,7 @@
       <%= render :partial => 'tasks/current_filters' %>
     </div>
     <small>
-      <%= link_to 'clear', { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } }, "data-datatype"  => 'script', :class  => "ajax_link" %>
+      <%= ajax_link 'clear', { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } }, :datatype  => 'script' %>
     </small>
 </div>
 

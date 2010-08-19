@@ -5,7 +5,7 @@
 
   <tr class="batch_job_header row_highlight">
     <td>
-      <input type="checkbox" class="task_checkbox select_all" id="task_header_checkbox_<%= tasks.first.id %>" data-checkbox-class="task_checkbox_<%= tasks.first.id %>"/>
+      <%= select_all_checkbox "task_checkbox_#{tasks.first.id}", :id  => "task_header_checkbox_#{tasks.first.id}", :class  => "task_checkbox" %>
     </td>
     <td class="left">
       <% if launch_time %>

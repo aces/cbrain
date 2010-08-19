@@ -7,27 +7,20 @@
      
 <ul class="filter_menu">
 
-  <li><%= link_to 'All Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, 
-                                "data-datatype"  => 'script', :class  => "ajax_link"
-       %> 
+  <li><%= ajax_link 'All Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, :datatype  => 'script' %> 
   </li> 
 
-  <li><%= link_to 'MINC Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :minc}, 
-                                 "data-datatype"  => 'script', :class  => "ajax_link"
-  %> 
+  <li><%= ajax_link 'MINC Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :minc}, :datatype  => 'script' %> 
   </li>
 
-  <li><%= link_to 'JIV Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :jiv},
-                                "data-datatype"  => 'script', :class  => "ajax_link"
-  %> 
+  <li><%= ajax_link 'JIV Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :jiv}, :datatype  => 'script' %> 
   </li>
  
   <% UserfileCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
 
     <li class="custom_filter">
       <b>
-      <%= link_to crop_text_to(15, filter.name), { :controller  => :userfiles, :action  => :index, :userfiles_custom_filter  => filter.id }, "data-datatype"  => 'script', :class  => "ajax_link"
-      %>
+      <%= ajax_link crop_text_to(15, filter.name), { :controller  => :userfiles, :action  => :index, :userfiles_custom_filter  => filter.id }, :datatype  => 'script' %>
       </b>
       <small><small>
          <%= link_to 'Edit', edit_custom_filter_path(filter) %> 

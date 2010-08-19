@@ -2,7 +2,7 @@
 <% current_user.tags.each do |tag| %> 
   <% tag_name = tag.name %>
     <li>
-      <%= link_to crop_text_to(15, tag.name), {:action  => :index, :userfiles_tag_filter => tag.name }, "data-datatype"  => 'script', :class  => "ajax_link" %>
+      <%= ajax_link crop_text_to(15, tag.name), {:action  => :index, :userfiles_tag_filter => tag.name }, :datatype  => 'script' %>
       <small>
           <%= link_to 'Edit', edit_tag_path(tag) %>
           <%= link_to 'Delete', tag, :confirm => "Are you sure you want to delete tag '#{tag.name}'?", :method => :delete %> 

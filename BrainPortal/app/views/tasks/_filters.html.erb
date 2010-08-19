@@ -8,9 +8,7 @@
 <ul class="filter_menu">
   <% TaskCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
     <li class="custom_filter">
-      <%= link_to crop_text_to(15, filter.name), { :controller => :tasks, :action     => :index, :tasks      => { :filters => { :custom_filter  => filter.id } } },
-                                                 "data-datatype"  => 'script', :class  => "ajax_link"
-      %>
+      <%= ajax_link crop_text_to(15, filter.name), { :controller => :tasks, :action => :index, :tasks => { :filters => { :custom_filter  => filter.id } } }, :datatype  => 'script' %>
       <small><small>
         <%= link_to 'Edit', edit_custom_filter_path(filter) %>
         <%= link_to 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete %>

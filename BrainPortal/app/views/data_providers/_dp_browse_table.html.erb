@@ -5,20 +5,15 @@
     <div class="dp_browse_pages">
       <%= will_paginate @fileinfolist %>
       <% if @fileinfolist.total_entries > 50 %>
-        <%= link_to "Toggle Pagination", {:controller  => :data_providers, 
-                                          :action  => :browse,
-                                          :pagination => set_toggle(params[:pagination])
-                                         }, 
-                                         "data-datatype"  => 'script', :class  => "ajax_link" 
-         %>
-         <br>
-       <% end %>
-       <%= link_to 'Refresh list of files', browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), "data-datatype"  => 'script', :class  => "ajax_link" %>
+        <%= ajax_link "Toggle Pagination", {:controller  => :data_providers, :action  => :browse, :pagination => set_toggle(params[:pagination])}, :datatype  => "script" %>
+        <br>
+      <% end %>
+      <%= ajax_link 'Refresh list of files', browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), :datatype  => 'script' %>
      </div>
             
      <% if params[:search] %>
        <div id="current_filters">
-         Filtering: <strong><%= params[:search] %></strong><%= link_to delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, "data-datatype"  => 'script', :class  => "ajax_link" %>
+         Filtering: <strong><%= params[:search] %></strong><%= ajax_link delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, :datatype  => 'script' %>
        </div>
      <% end %>
    </td>
@@ -27,7 +22,7 @@
 
 
 <tr>
-  <th><input type='checkbox' class="select_all" data-checkbox-class="checkbox"/></th>
+  <th><%= select_all_checkbox "checkbox" %></th>
   <th onMouseOver="jQuery('#name_search_filter').show()" onMouseOut="jQuery('#name_search_filter').hide();">
     Name
     <div id="name_search_filter" class="filter_list" style="display:none;">

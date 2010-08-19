@@ -16,7 +16,7 @@
     <div id="current_filters">
         <%= render :partial => 'userfiles/current_filters' %>
     </div>
-    <%= link_to 'clear', { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter }, "data-datatype"  => 'script', :class  => "ajax_link action_link" %>
+    <%= ajax_link 'clear', { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter }, :datatype => 'script', :class  => "action_link" %>
 </div>
 
 <% build_accordion do |acc| %>

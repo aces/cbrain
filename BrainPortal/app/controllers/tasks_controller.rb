@@ -80,8 +80,20 @@ class TasksController < ApplicationController
 
     @tasks = scope
     
+    page = (params[:page] || 1).to_i
+    @tasks_per_page = 20
+    @filter_params["pagination"] ||= "on"
+    @per_page = @filter_params["pagination"] == "on" ? @tasks_per_page : 999_999_999
+    
     if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       @tasks = @tasks.group_by(&:launch_time)
+    end
+    
+    @total_tasks = @tasks.size
+    @tasks = WillPaginate::Collection.create(page, @per_page) do |pager|
+      pager.replace(@tasks.slice((page-1) * @per_page, @per_page))
+      pager.total_entries = @total_tasks
+      pager
     end
     
     @bourreau_status = {}

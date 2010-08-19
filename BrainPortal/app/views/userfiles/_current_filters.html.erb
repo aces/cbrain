@@ -4,17 +4,17 @@
 <ul class="filter_menu">
     <% session[:userfiles_basic_filters].each do |filter|%>
        <li>
-         <%= crop_text_to(20, filter) %><%= link_to delete_icon, userfiles_path(:userfiles_remove_basic_filter  => filter), "data-datatype"  => 'script', :class  => "ajax_link" %>
+         <%= crop_text_to(20, filter) %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_basic_filter  => filter), :datatype  => 'script' %>
        </li>
     <% end %>
     <% session[:userfiles_custom_filters].each do |filter|%>
        <li>
-         <%= crop_text_to(20, "custom:#{filter}") %><%= link_to delete_icon, userfiles_path(:userfiles_remove_custom_filter  => filter), "data-datatype"  => 'script', :class  => "ajax_link"  %>
+         <%= crop_text_to(20, "custom:#{filter}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_custom_filter  => filter), :datatype  => 'script' %>
        </li>
     <% end %>
     <% session[:userfiles_tag_filters].each do |filter|%>
         <li>
-          <%= crop_text_to(20, "tag:#{filter}") %><%= link_to delete_icon, userfiles_path(:userfiles_remove_tag_filter  => filter), "data-datatype"  => 'script', :class  => "ajax_link"  %>
+          <%= crop_text_to(20, "tag:#{filter}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_tag_filter  => filter), :datatype  => 'script' %>
         </li>
     <% end %>
 </ul>

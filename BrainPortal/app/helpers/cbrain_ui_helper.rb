@@ -316,5 +316,37 @@ module CbrainUiHelper
     concat(content)
     concat('</div>')
   end
+  
+  def ajax_link(name, url, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " ajax_link"
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options.delete(:method)
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options["data-target"] = target
+    end
+    
+    link_to name, url, options 
+  end
+  
+  def select_all_checkbox(checkbox_class, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " select_all"
+    
+    options["data-checkbox-class"] = checkbox_class
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    
+    "<input type='checkbox' #{atts}/>"
+  end
 
 end
