@@ -32,16 +32,6 @@
                                   :datatype  => 'script'
        %>
         <%= set_order_icon('cbrain_tasks.description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
-        <% unless @task_descriptions.blank? %>
-         <br>
-           <ul class="filter_list" id="description_filters_list" style="display:none;">
-              <% @task_descriptions.sort.each do |task_desc| %>
-                 <li>
-                   <%= ajax_link h(crop_text_to(40, task_desc)), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:description  => task_desc}}}, :datatype  => 'script' %>
-                 </li> 
-              <% end %>
-            </ul>
-         <% end  %>
     </th>
 
 
