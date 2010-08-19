@@ -20,7 +20,7 @@ class TasksController < ApplicationController
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
 
     if current_project
-      scope = CbrainTask.scoped(:conditions  => {:group_id  => current_project.id})
+      scope = CbrainTask.scoped(:conditions  => {:group_id  => current_project.id}, :include => [ :user, :group ] )
     else
       scope = current_user.available_tasks
     end

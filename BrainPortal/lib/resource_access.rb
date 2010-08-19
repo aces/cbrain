@@ -39,7 +39,7 @@ module ResourceAccess
   def can_be_accessed_by?(user, access_requested = :read)
     return true if self.user_id == user.id || user.has_role?(:admin)
     return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
-    user.group_ids.include?(group_id)
+    user.is_member_of_group(group_id)
   end
 
   #Returns whether or not +user+ has owner access to this

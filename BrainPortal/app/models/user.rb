@@ -168,8 +168,11 @@ class User < ActiveRecord::Base
   
   #Return the list of groups available to this user based on role.
   def available_groups(arg1 = :all, options = {})
+    cache_key = arg1.inspect + options.inspect
+    @all_group_list ||= {}
+    return @all_group_list[cache_key] if @all_group_list[cache_key]
     if self.has_role? :admin
-      Group.find(arg1, options)
+      @all_group_list[cache_key] = Group.find(arg1, options)
     elsif self.has_role? :site_manager
       site_groups = self.site.groups.find(arg1, options.clone) rescue []
       site_groups = [site_groups] unless site_groups.is_a?(Array) 
@@ -182,15 +185,16 @@ class User < ActiveRecord::Base
        
       all_groups = site_groups | self_groups
       all_groups = all_groups.first if all_groups.size == 1
-      return all_groups
+      @all_group_list[cache_key] = all_groups
     else                  
-      self.groups.find(arg1, options)
+      @all_group_list[cache_key] = self.groups.find(arg1, options)
     end
+    @all_group_list[cache_key]
   end
   
   def available_tasks
     @available_tasks ||= if self.has_role? :admin
-                         CbrainTask.scoped({})
+                         CbrainTask.scoped({ :include => [ :user, :group ] })
                        elsif self.has_role? :site_manager
                          CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
                        else
@@ -223,6 +227,13 @@ class User < ActiveRecord::Base
 
   # An alias for system_group()
   alias own_group system_group
+
+  # Returns true if the user belongs to the +group_id+ (or a Group)
+  def is_member_of_group(group_id)
+     group_id = group_id.id if group_id.is_a?(Group)
+     @group_ids_hash ||= self.group_ids.index_by { |gid| gid }
+     @group_ids_hash[group_id] ? true : false
+  end
 
   protected
 

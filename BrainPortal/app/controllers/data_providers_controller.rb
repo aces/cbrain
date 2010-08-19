@@ -320,6 +320,7 @@ class DataProvidersController < ApplicationController
     end
 
     page = (params[:page] || 1).to_i
+    params[:pagination] ||= "on"
     @per_page = params[:pagination] == "on" ? 50 : 999_999_999
 
     @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
