@@ -109,6 +109,10 @@ class UsersController < ApplicationController
     if params[:user][:password]
       params[:user][:password_reset] = false
     end
+
+    if params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]]
+      params[:user][:time_zone] = nil # change "" to nil
+    end
       
     respond_to do |format|
       if @user.update_attributes(params[:user])

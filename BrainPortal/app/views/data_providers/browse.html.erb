@@ -11,22 +11,29 @@
 
   <P>
 
-  <%= submit_tag 'Unregister files' %>
-  <%= submit_tag 'Register files' %>
+  <div style="white-space: nowrap;">
 
-  <strong>Optional:</strong> when registering, automatically...
+    <%= submit_tag 'Unregister files' %>
+    <%= submit_tag 'Register files' %>
 
-  <%= select_tag :auto_do,
-      options_for_select([ [ "... do nothing else!", "" ],
-                           [ "... move the files to Data Provider ->", "MOVE" ],
-                           [ "... copy the files to Data Provider ->", "COPY" ]
-                         ])
-  %>
-  <%= data_provider_select :other_data_provider_id,
-      { :data_providers => DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } },
-      { :include_blank => "(Select another Data Provider)" }
-  %>
-        
+    <strong>Optional:</strong> when registering, automatically...
+
+    <%= group_select :other_group_id, {}, { :include_blank => "... assign them to project ..." } %>
+
+    <%= select_tag :auto_do,
+        options_for_select([ [ "... do nothing else!", "" ],
+                             [ "... move the files to Data Provider ->", "MOVE" ],
+                             [ "... copy the files to Data Provider ->", "COPY" ]
+                           ])
+    %>
+
+    <%= data_provider_select :other_data_provider_id,
+        { :data_providers => DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } },
+        { :include_blank => "(Select another Data Provider)" }
+    %>
+
+  </div>
+
 <% end %>
 
 
