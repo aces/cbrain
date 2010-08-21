@@ -24,7 +24,7 @@
         <table class="button_table">
            <% for user in @users %>
                <tr>
-                 <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
+                 <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id)) %></td>
                  <td class="left_align"><%= h(user.full_name) -%></td>
                </tr>
            <% end %>
