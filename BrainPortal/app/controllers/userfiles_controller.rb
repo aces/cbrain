@@ -545,9 +545,11 @@ class UserfilesController < ApplicationController
           u.save
           moved_list << u
         rescue => e
-          err_message = e.message
-          failed_list[err_message] ||= []
-          failed_list[err_message] << u
+          if u.is_a?(Userfile)
+            err_message = e.message
+            failed_list[err_message] ||= []
+            failed_list[err_message] << u
+          end
         end
       end
 

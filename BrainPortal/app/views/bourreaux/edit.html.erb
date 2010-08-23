@@ -1,5 +1,5 @@
 
-<%= javascript_tag "document.observe('dom:loaded', function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
+<%= javascript_tag "jQuery(function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
 
 <% title "Edit #{@bourreau.name}" %>
 
