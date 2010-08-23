@@ -45,7 +45,7 @@ class CbrainTask::Nii2mnc < ClusterTask
     int_sign     = params[:voxel_int_signity] || ""
     order        = params[:space_ordering]    || ""
 
-    cb_error "Unexpected voxel type"     if voxel_type !~ /^(short|word|int|float|double|default)$/
+    cb_error "Unexpected voxel type"     if voxel_type !~ /^(byte|short|int|float|double|default)$/
     cb_error "Unexpected voxel int sign" if int_sign   !~ /^(signed|unsigned|default)$/
     cb_error "Unexpected space ordering" if order      !~ /^(sagittal|transverse|coronal|xyz|yxz|zxy|default)$/
 
