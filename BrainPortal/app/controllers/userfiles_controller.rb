@@ -286,7 +286,7 @@ class UserfilesController < ApplicationController
         Message.send_message(current_user,
                              :message_type  => 'notice', 
                              :header  => "SingleFile Uploaded", 
-                             :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}/edit]]"
+                             :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}]]"
                              )
       end # spawn
       
@@ -474,7 +474,7 @@ class UserfilesController < ApplicationController
         Message.send_message(current_user,
                             :message_type  => 'notice', 
                             :header  => "Collections Merged", 
-                            :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}/edit]]"
+                            :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                             )
       else
         Message.send_message(current_user,
@@ -521,7 +521,7 @@ class UserfilesController < ApplicationController
       failed_list = {}
       filelist.each do |id|
         begin
-          u = Userfile.find_accessible_by(id, current_user, :readonly => (task == 'copy'))
+          u = Userfile.find_accessible_by_user(id, current_user, :readonly => (task == 'copy'))
           next unless u
           orig_provider = u.data_provider
           next if orig_provider.id == data_provider_id
@@ -549,6 +549,8 @@ class UserfilesController < ApplicationController
             err_message = e.message
             failed_list[err_message] ||= []
             failed_list[err_message] << u
+          else
+            raise e
           end
         end
       end
@@ -557,7 +559,7 @@ class UserfilesController < ApplicationController
         Message.send_message(current_user,
                             :message_type  => 'notice', 
                             :header  => "Files #{word_moved} to #{new_provider.name}",
-                            :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}/edit]]\n" }.join("")
+                            :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]\n" }.join("")
                             ) 
       end
 
