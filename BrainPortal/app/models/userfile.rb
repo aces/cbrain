@@ -63,6 +63,7 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
   validate                :validate_associations
+  validate                :validate_filename
   
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
@@ -646,6 +647,12 @@ class Userfile < ActiveRecord::Base
     end
     unless Group.find(:first, :conditions => {:id => self.group_id})
       errors.add(:group, "does not exist.")
+    end
+  end
+
+  def validate_filename
+    unless Userfile.is_legal_filename?(self.name)
+      errors.add(:name, "contains invalid characters.")
     end
   end
   

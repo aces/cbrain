@@ -241,6 +241,12 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
+    unless Userfile.is_legal_filename?(basename)
+      flash[:error] = "This filename, '#{basename}', is not acceptable. It contains invalid characters."
+      redirect_to redirect_path
+      return
+    end
+
     tmpcontentfile         = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}"
 
     # Decide what to do with the raw data
