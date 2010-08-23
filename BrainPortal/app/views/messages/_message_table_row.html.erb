@@ -1,7 +1,7 @@
 <tr class=" message_display_<%= mess.id %> <%= "#{cycle("list-odd", "list-even")} row_highlight" if mess.read? %>">
 
   <td class="<%= "#{mess.message_type}_display " unless mess.read? %>left_side wrap">
-    <% if params[:action] == "index" && params[:controller] == "messages" %>
+    <% if render_for == :index %>
       <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>
     <% end %>
     &nbsp;

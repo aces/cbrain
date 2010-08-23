@@ -5,7 +5,7 @@
 </tr>
 
 <% for mess in @messages %>
-  <%= render :partial => 'message_table_row', :locals  => {:mess  => mess} %>
+  <%= render :partial => 'message_table_row', :locals  => { :mess  => mess, :render_for => :index } %>
 <% end %>
 
 <% if @messages.nil? || @messages.empty? %>
