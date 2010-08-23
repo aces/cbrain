@@ -242,6 +242,19 @@ jQuery(
       });
    });
    
+   jQuery(".select_master").live("change", function(){
+     var master_select = jQuery(this);
+     var select_class = master_select.attr("data-select-class");
+     var selection = master_select.find(":selected").text();
+
+     jQuery('.' + select_class).each(function(index, elem){
+       jQuery(elem).find("option").attr("selected", false).each(function(index, elem){
+         var element = jQuery(elem);
+         if(element.html() == selection) element.attr("selected", "selected");
+       });
+     });
+   });
+   
    jQuery(".request_on_change").live("change", function(){
      var input_element = jQuery(this);
      var current_value = input_element.attr("value");

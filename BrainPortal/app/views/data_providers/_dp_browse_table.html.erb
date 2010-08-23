@@ -30,7 +30,10 @@
     </div>
   </th>
   <th>Size</th>
-  <th>Type</th>
+  <th>
+    Type<br>
+    <%= master_select("type_select", ["All directories as...", "FileCollection", "CivetCollection"]) %>
+  </th>
   <th>Last modified</th>
   <th>Registered?</th>
   <th>Note</th>
@@ -73,7 +76,7 @@
                    [ "Directory as...", "Unset-#{fi_name}" ],
                    [ "FileCollection",  "FileCollection-#{fi_name}" ],
                    [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                ])) %>
+                ]), :class  => "type_select") %>
          </td>
        <% elsif fi_type == :symlink %>
          <td><%= select_tag("directorytypes[]",
@@ -82,7 +85,7 @@
                    [ "SingleFile",      "SingleFile-#{fi_name}" ],
                    [ "FileCollection",  "FileCollection-#{fi_name}" ],
                    [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                ])) %>
+                ]), :class  => "type_select") %>
          </td>
        <% end %>
     <% end %>

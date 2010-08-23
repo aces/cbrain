@@ -348,5 +348,16 @@ module CbrainUiHelper
     
     "<input type='checkbox' #{atts}/>"
   end
-
+  
+  def master_select(select_class, select_options, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " select_master"
+    
+    options["data-select-class"] = select_class
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    
+    result =  "<select #{atts}>\n"
+    result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
+    result += "</select>"
+  end
 end
