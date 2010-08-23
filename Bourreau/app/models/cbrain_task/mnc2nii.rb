@@ -48,7 +48,7 @@ class CbrainTask::Mnc2nii < ClusterTask
     cachename   = mincfile.cache_full_path
     basename    = cachename.basename.to_s
 
-    cb_error "Unexpected voxel type"     if voxel_type !~ /^(short|word|int|float|double|default)$/
+    cb_error "Unexpected voxel type"     if voxel_type !~ /^(byte|short|int|float|double|default)$/
     cb_error "Unexpected voxel int sign" if int_sign   !~ /^(signed|unsigned|default)$/
 
     if voxel_type == "default"
@@ -58,7 +58,7 @@ class CbrainTask::Mnc2nii < ClusterTask
     end
 
     voxel_sign = ""
-    if voxel_type =~ /^(short|word|int)$/ && int_sign =~ /^(signed|unsigned)$/
+    if voxel_type =~ /^(byte|short|int)$/ && int_sign =~ /^(signed|unsigned)$/
       voxel_sign = "-#{int_sign}"
     end
 
