@@ -119,7 +119,6 @@ class FileCollection < Userfile
     #   return false
     # end
     
-    #self.size = IO.popen("du -s #{self.name}","r") { |fh| fh.readline.split[0].to_i}
     self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
     self.num_files = self.list_files.size
     self.save!

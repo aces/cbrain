@@ -100,6 +100,8 @@ class CbrainTask::Fdf2dcm < ClusterTask
 
     return true if numok > 0 && numfail == 0
     false
+  ensure
+    io.close if io
   end
   # Todo: implement the restartable and recoverable ability
   

@@ -57,15 +57,15 @@ class CbrainTask::Dcm2mnc < ClusterTask
     dicom_col   = Userfile.find(dicom_colid)
     user_id     = self.user_id
 
-    io = IO.popen("find results -type f -name \"*.mnc\" -print","r")
+    io = IO.popen("find results -type f -name \"*.mnc*\" -print","r")
 
     numfail = 0
     numok   = 0
 
     mincfiles = []
     io.each_line do |file|
-      next unless file.match(/\.mnc\s*$/)
-      file = file.sub(/\n$/,"")
+      next unless file.match(/\.mnc(.gz)?\s*$/i)
+      file.sub!(/\s+$/,"")
       basename = File.basename(file)
       mincfile = safe_userfile_find_or_new(SingleFile,
         :name             => basename,
@@ -93,6 +93,8 @@ class CbrainTask::Dcm2mnc < ClusterTask
 
     return true if numok > 0 && numfail == 0
     false
+  ensure
+    io.close if io
   end
 
 end
