@@ -3,15 +3,15 @@
 
    <br>
   
-   <%= select_tag(
-     "conversion_operation", 
-     ' <option value="">Select a Conversion Operation</option>' +
-       current_user.available_conversion_tools.inject("") { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
-        :class  => "request_on_change", "data-url"  => url_for(:controller  => :tools, :action  => :bourreau_select), 
-        "data-target"  => "#bourreau_select", "data-update-text"  => "<span class='warning'>Loading...</span>"
-    ) 
+    <%= ajax_onchange_select(
+       "conversion_operation", 
+        current_user.available_conversion_tools.inject('<option value="">Select a Conversion Operation</option>') { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
+          :url  => url_for(:controller  => :tools, :action  => :bourreau_select), 
+          :target  => "#bourreau_select", 
+          :update_text  => "<span class='warning'>Loading...</span>"
+      ) 
     %>
-   
+    
    <span id="bourreau_select">
    </span>
 

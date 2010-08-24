@@ -315,8 +315,9 @@ class DataProvidersController < ApplicationController
     end
 
     if params[:search]
+      search_term = params[:search].to_s.downcase
       params[:page] = 1
-      @fileinfolist = @fileinfolist.select{|file| file.name =~ /#{params[:search]}/}
+      @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
     page = (params[:page] || 1).to_i

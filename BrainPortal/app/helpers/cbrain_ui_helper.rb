@@ -360,4 +360,36 @@ module CbrainUiHelper
     result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
     result += "</select>"
   end
+  
+  def ajax_onchange_select(name, option_tags, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " request_on_change"
+    
+    url = options.delete(:url)
+    if url
+      options["data-url"] = url
+    end
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options.delete(:method)
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options["data-target"] = target
+    end
+    
+    update_text = options.delete(:update_text)
+    if update_text
+      options["data-update-text"] = update_text
+    end
+    
+    select_tag(name, option_tags, options)
+  end
 end
