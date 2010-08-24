@@ -18,6 +18,7 @@ class UserfilesController < ApplicationController
 
   before_filter :login_required
   around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider]
+
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
@@ -140,7 +141,7 @@ class UserfilesController < ApplicationController
   
   end
   
-  def show
+  def show #:nodoc:
     session[:full_civet_display] ||= 'on'
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
@@ -187,6 +188,8 @@ class UserfilesController < ApplicationController
     @log  = @userfile.getlog rescue nil
   end
   
+  # Triggers a background synchronization of a file to the
+  # Portal's local cache
   def sync_to_cache #:nodoc:
      @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
      state = @userfile.local_sync_status
@@ -424,6 +427,8 @@ class UserfilesController < ApplicationController
     end
   end
   
+  # Updated tags, groups or group-writability flags for several
+  # userfiles.
   def update_multiple
     filelist    = params[:file_ids] || []
     operation = case params[:commit].to_s
@@ -623,7 +628,6 @@ class UserfilesController < ApplicationController
       return
     end
     
-       
     filelist    = params[:file_ids] || []
     
     specified_filename = params[:specified_filename]
@@ -709,8 +713,105 @@ class UserfilesController < ApplicationController
     redirect_to :action  => :index
   end
 
+  # Compress or uncompress a set of userfiles; only supported
+  # for SingleFiles.
+  def compress 
+    filelist    = params[:file_ids] || []
+    
+    to_compress        = []
+    to_uncompress      = []
+    skipped_messages   = {}
+
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+
+      unless userfile.is_a?(SingleFile)
+        (skipped_messages["Not a SingleFile"] ||= []) << userfile
+        next
+      end
+      if userfile.data_provider.read_only?
+        (skipped_messages["Data Provider not writable"] ||= []) << userfile
+        next
+      end
+
+      basename = userfile.name
+
+      if basename =~ /\.gz$/i
+        destbase = basename.sub(/\.gz$/i,"")
+      else
+        destbase = basename + ".gz"
+      end
+
+      if Userfile.find(:first, :conditions => {
+                                 :name             => destbase,
+                                 :user_id          => userfile.user_id,
+                                 :data_provider_id => userfile.data_provider_id
+                               })
+        (skipped_messages["Filename collision"] ||= []) << userfile
+        next
+      end
+
+      if basename =~ /\.gz$/i
+        to_uncompress << [ userfile, :uncompress, destbase ]
+      else
+        to_compress   << [ userfile, :compress,   destbase ]
+      end
+
+    end
+
+    if to_compress.size > 0 || to_uncompress.size > 0
+      CBRAIN.spawn_with_active_records(current_user, "Compression") do
+        error_messages = ""
+        done_ok = []
+        (to_compress + to_uncompress).each do |u_triplet|
+          userfile,do_what,destbase = *u_triplet
+          begin
+            if ! userfile.provider_rename(destbase)
+              error_messages += "Could not do basic renaming to #{destbase}'.\n"
+              next
+            end
+            userfile.sync_to_cache
+            SyncStatus.ready_to_modify_cache(userfile) do
+              full_after = userfile.cache_full_path.to_s
+              full_tmp   = "#{full_after}+#{$$}+#{Time.now.to_i}"
+              command = (do_what == :compress) ? "gzip" : "gunzip"
+              system("#{command} -c < '#{full_after}' > '#{full_tmp}'")
+              File.rename(full_tmp,full_after) # crush it
+            end
+            userfile.sync_to_provider
+            done_ok << userfile
+          rescue => e
+            error_messages += "Internal error (un)compresssing for '#{userfile.name}': #{e.message}.\n";
+          end
+        end
+        Message.send_message(current_user,
+                             :message_type => 'notice',
+                             :header       => "Finished compressing or uncompressing files." + (error_messages.blank? ? "" : " (with some errors)"),
+                             :variable_text => done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join(", ") + "\n" + error_messages
+                            )
+      end # spawn
+    end # if anything to do
+  
+    info_message = ""
+    if to_compress.size > 0
+      info_message += "#{@template.pluralize(to_compress.size, "files")} being compressed in background.\n"
+    end
+    if to_uncompress.size > 0
+      info_message += "#{@template.pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
+    end
+    skipped_messages.each do |mess,userfiles|
+      info_message += "Warning: some files were skipped; Reason: #{mess}; Files: "
+      info_message += userfiles.map { |u| "#{u.name}" }.join(", ") + "\n"
+    end
+
+    flash[:notice] = info_message unless info_message.blank?
+    
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+
   private
   
+  # Verify that all files selected for an operation
+  # are accessible by the current user.
   def permission_check
     if params[:file_ids].blank?
       flash[:error] = "No file selected? Selection cleared.\n"

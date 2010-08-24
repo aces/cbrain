@@ -543,6 +543,7 @@ class Userfile < ActiveRecord::Base
   # See the description in class DataProvider
   def sync_to_provider
     self.data_provider.sync_to_provider(self)
+    self.set_size!
   end
 
   # See the description in class DataProvider

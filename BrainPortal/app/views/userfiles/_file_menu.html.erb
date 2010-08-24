@@ -1,11 +1,11 @@
 <span class="button_set">
-<% button_with_dropdown_menu(:title => "Download Files") do %>
+<% button_with_dropdown_menu(:title => "Download") do %>
   Specify Download File Name (optional):
   <%= text_field_tag :specified_filename %>
   <%= submit_tag("Download Files", {:class  => "ajax_submit_button", "data-method"  => :get}) %>
 <% end %>
 
-<% button_with_dropdown_menu(:title => "Update File Attributes") do %>
+<% button_with_dropdown_menu(:title => "Update Attributes") do %>
     <h4>Tags</h4>
     <%= render :partial => 'userfiles/tag_table'%>
     <hr>
@@ -24,7 +24,7 @@
                                         "data-method"  => :put) %> 
 <% end %>
 
-<% button_with_dropdown_menu(:title => "Move/Copy Files")  do %>
+<% button_with_dropdown_menu(:title => "Move/Copy")  do %>
     <%= data_provider_select("data_provider_id") %>
     <%= submit_tag("Move Files", :class  => "ajax_submit_button", 
                                  "data-url"  => url_for({:action  => :change_provider}),
@@ -34,11 +34,18 @@
                                  "data-method"  => :post) %>
 <% end %>
 
-<%= submit_button("Delete Files", {:name => "commit", 
-                                   "data-confirm" => "Are you sure you want to delete the selected files", 
+<%= submit_button("Delete", { :name => "commit", 
+                                   "data-confirm" => "Are you sure you want to delete the selected files?",
                                    :class  => "ajax_submit_button", 
                                    "data-url"  => url_for({:action  => :delete_files}),
                                    "data-method"  => :delete}) 
+%>
+
+<%= submit_button("(Un)compress", { :name => "commit", 
+                                   "data-confirm" => "Are you sure you want to compress or uncompress the selected files?", 
+                                   :class  => "ajax_submit_button", 
+                                   "data-url"  => url_for({:action  => :compress }),
+                                   "data-method"  => :post}) 
 %>
 
 
