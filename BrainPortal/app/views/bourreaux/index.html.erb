@@ -11,9 +11,11 @@
     <% end %>     
   </div>
   
-  <br>
+  <P>
 
   <%= show_hide_toggle "Show Details", ".resource_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
+
+  <P>
     
   <% ajax_element({:element  => "table", :url => url_for(:action => :index, :table_contents => true)}, {:class  => "resource_list", :id  => "bourreau_table"}) do %>
     <tr><td class="loading_message">Loading...</td></tr>
