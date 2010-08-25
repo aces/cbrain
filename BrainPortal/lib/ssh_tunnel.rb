@@ -51,26 +51,31 @@ class SshTunnel
   include Sys  # for ProcTable
 
   Revision_info="$Id$"
-  # Kernel.at_exit { SshTunnel.destroy_all } # BAD when multiple instances!
+
+  IS_ALIVE_TIMEOUT     = 30
+  Debug                = false
+  CONTROL_SOCKET_DIR_1 = "#{RAILS_ROOT}/tmp/sockets"
+  CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master tunnel to a
   # remote host (there can only be a single tunnel for
   # each triplet [user,host,port] so we might as well remember
   # the objects in the class).
-  def self.find(remote_user,remote_host,remote_port=22)
+  def self.find(remote_user,remote_host,remote_port=22,category=nil)
     remote_port ||= 22
     @@ssh_tunnels ||= {}
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
+    key = "#{category}/#{key}" if category && category.to_s =~ /^\w+$/
     @@ssh_tunnels[key]
   end
 
   # This method is like find() except that it will create
   # the necessary control object if necessary.
-  def self.find_or_create(remote_user,remote_host,remote_port=22)
+  def self.find_or_create(remote_user,remote_host,remote_port=22,category=nil)
     remote_port ||= 22
-    tunnelobj = self.find(remote_user,remote_host,remote_port) ||
-                self.new( remote_user,remote_host,remote_port)
+    tunnelobj = self.find(remote_user,remote_host,remote_port,category) ||
+                self.new( remote_user,remote_host,remote_port,category)
     tunnelobj
   end
 
@@ -108,7 +113,7 @@ class SshTunnel
   # find() class method. This means that projects using
   # this library do not have to save the control object
   # anywhere.
-  def initialize(remote_user,remote_host,remote_port=22)
+  def initialize(remote_user,remote_host,remote_port=22,category=nil)
 
     remote_port ||= 22
     if remote_port && remote_port.is_a?(String)
@@ -125,20 +130,24 @@ class SshTunnel
       remote_host =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
     raise "SSH tunnel's \"port\" is not a port number." unless
       remote_port.is_a?(Fixnum) && remote_port > 0 && remote_port < 65535
+    raise "SSH tunnel's \"category\" is not a simple identifer." unless
+      category.nil? || (category.is_a?(String) && category =~ /^\w+$/)
 
-    @user = remote_user
-    @host = remote_host
-    @port = remote_port
+    @user     = remote_user
+    @host     = remote_host
+    @port     = remote_port
+    @category = category
 
     raise "This tunnel spec is already registered with the class." if
-      self.class.find(@user,@host,@port)
+      self.class.find(@user,@host,@port,@category)
 
     @pid             = nil
     @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
     @reverse_tunnels = []   # [ 1234, "some.host", 4566 ]
 
     # Register it
-    @key = "#{@user}@#{@host}:#{@port}"
+    @simple_key = @key = "#{@user}@#{@host}:#{@port}"
+    @key = "#{@category}/#{@key}" if @category && @category.to_s =~ /^\w+$/
     @@ssh_tunnels[@key] = self
 
     # Check to see if a process already manage the master
@@ -286,6 +295,7 @@ class SshTunnel
     self.properly_registered?
     return false unless self.read_pidfile
 
+    debugTrace("STOP: #{$$} Killing master for #{@key}.")
     Process.kill("TERM",@pid) rescue true
     @pid = nil
     self.delete_pidfile
@@ -305,13 +315,50 @@ class SshTunnel
     sshcmd = "ssh -x -n #{shared_options} " +
              "echo OK-#{Process.pid}"
 
+    # Prepare a subprocess that will tell us
+    # we waited too long for an answer.
+    my_pid      = $$
+    signal_name = "SIGURG"
+    alarm_pid = Process.fork do
+      (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
+      Signal.trap("TERM") do
+        debugTrace("Alarm subprocess #{$$} for #{@key}: told to exit with TERM.")
+        Kernel.exit!
+      end
+      Signal.trap("EXIT") do
+        debugTrace("Alarm subprocess #{$$} for #{@key}: exiting.")
+      end
+      debugTrace("Alarm subprocess #{$$} for #{@key}: Waiting at #{Time.now}.")
+      Kernel.sleep(IS_ALIVE_TIMEOUT)
+      debugTrace("Alarm subprocess #{$$} for #{@key}: Notifying master of timeout at #{Time.now}.")
+      Process.kill(signal_name,my_pid)
+      Kernel.exit!
+    end
+    Process.detach(alarm_pid)
+
+    old_handler = Signal.trap(signal_name) do
+      debugTrace("Master program for #{@key}: Got timeout notification. Killing master.")
+      self.stop rescue true # just give up and kill the SSH master!
+    end
+
     begin
+      debugTrace("Master checking is_alive for #{@key} with alarm: #{alarm_pid}")
       okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
-      return true if okout =~ /OK-#{Process.pid}/
+      return true if okout =~ /OK-#{Process.pid}/ && ! @pid.blank?
       return false
     rescue
       return false
+    ensure
+      if alarm_pid
+        debugTrace("Master shutting down ALARM subprocess for #{@key}: #{alarm_pid}")
+        #Kernel.sleep(2)
+        #Process.kill("TERM",alarm_pid) rescue true
+        Process.kill("KILL",alarm_pid) rescue true # radically
+      end
+      if old_handler && signal_name
+        Signal.trap(signal_name,old_handler) rescue true # restore it
+      end
     end
   end
 
@@ -411,8 +458,7 @@ class SshTunnel
   # really necessary.
   def destroy
     self.stop
-    key = "#{@user}@#{@host}:#{@port}"
-    @@ssh_tunnels.delete key
+    @@ssh_tunnels.delete @key
     true
   end
 
@@ -420,10 +466,21 @@ class SshTunnel
 
   # Returns the path to the SSH ControlPath socket.
   def control_path #:nodoc:
-    base  = "ssh_master.#{@user}@#{@host}:#{@port}"
-    local = "#{RAILS_ROOT}/tmp/sockets/#{base}" # prefered location
-    return local if local.size < 100 # limitation in control path length in ssh
-    "/tmp/#{base}" # alternative, hopefully shorter than 100!
+    simple_base = base = "ssh_ctrl.#{@simple_key}"
+    base      = "#{@category}/#{simple_base}" if @category
+    sock_dir  = "#{CONTROL_SOCKET_DIR_1}"
+    sock_path = "#{sock_dir}/#{base}" # prefered location
+    if sock_path.size >= 100 # limitation in control path length in ssh
+      sock_dir  = "#{CONTROL_SOCKET_DIR_2}"
+      sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 100!
+    end
+    if @category
+      cat_dir = "#{sock_dir}/#{@category}"
+      unless File.directory?(cat_dir)
+        Dir.mkdir(cat_dir,0700) # prepare subdir for category
+      end
+    end
+    sock_path
   end
 
   def pidfile_path #:nodoc:
@@ -494,7 +551,7 @@ class SshTunnel
 
   # Checks that the current instance is the one registered
   def properly_registered? #:nodoc:
-    found = self.class.find(@user,@host,@port)
+    found = self.class.find(@user,@host,@port,@category)
     raise "This tunnel is no longer registered with the class." unless found
     raise "This tunnel object does not match the object registered in the class!" if
       found.object_id != self.object_id
@@ -530,6 +587,11 @@ class SshTunnel
     append_op     = redir_op
     append_op    += redir_op if options[do_append_key] && redir_op == '>'
     "#{fd}#{append_op}#{shell_escape(file)}"
+  end
+
+  def debugTrace(message)
+    return unless Debug
+    STDERR.puts("\e[1;33m#{message}\e[0m")
   end
 
 end

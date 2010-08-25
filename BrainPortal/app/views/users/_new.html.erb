@@ -25,7 +25,7 @@
     
     <p><label for="time_zone">Time Zone</label><br/>
     <%= f.time_zone_select :time_zone,
-        ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i }.each { |t| puts t.name },
+        ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
         { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
           :include_blank => true }
     %></p>

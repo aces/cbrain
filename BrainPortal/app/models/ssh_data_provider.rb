@@ -26,7 +26,7 @@ class SshDataProvider < DataProvider
 
   def impl_is_alive? #:nodoc:
     ssh_opts = self.ssh_shared_options
-    ssh_opts.sub!(/ConnectTimeout=\d+/,"ConnectTimeout=1")
+    return false unless @master.is_alive?
     dir  = shell_escape(self.remote_dir)
     text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
     return(text.blank? ? true : false);
@@ -250,7 +250,7 @@ class SshDataProvider < DataProvider
   # command running in the background (which will be started if
   # necessary).
   def ssh_shared_options
-    @master ||= SshTunnel.find_or_create(remote_user,remote_host,remote_port)
+    @master ||= SshTunnel.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master.ssh_shared_options("auto") # ControlMaster=auto
   end
