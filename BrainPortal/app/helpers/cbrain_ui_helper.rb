@@ -87,7 +87,7 @@ module CbrainUiHelper
         "<span class=\"current_text\">#{initial}</span>"+
         "<input name=\"#{name}\" />"+
       "</span>" +
-      "<a class=\"inplace_edit_field_save\" >save</a>"+
+      "<a class=\"inplace_edit_field_save\">Save</a>"+
     "</div>" 
   end
 
@@ -277,6 +277,9 @@ module CbrainUiHelper
   #The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})
     element_type = options.delete(:element_type) || "a"
+    if element_type.downcase == "a"
+      options["href"] ||= "#"
+    end
     options["data-target"] = target
     alternate_text = options.delete(:alternate_text)
     if alternate_text
