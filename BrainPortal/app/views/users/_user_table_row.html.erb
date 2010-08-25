@@ -7,6 +7,8 @@
   <td><%= groups.map{|g| work_group_link g, h(g.name), group_path(g)}.join('<BR>') %></td>
   <td><%=h user.role.humanize %></td>
   <td><%= link_to_site_if_accessible(user.site) %></td>
+  <td><%= h user.city %></td>
+  <td><%= h user.country %></td>
   <td><%= h(user.time_zone || "(Unset)") %></td>
   <td><%=h user.userfiles.count %></td>
   <% unless user.login == 'admin' %>

@@ -82,7 +82,7 @@ class User < ActiveRecord::Base
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id, :password_reset, :time_zone
+  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id, :password_reset, :time_zone, :city, :country
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
@@ -171,6 +171,7 @@ class User < ActiveRecord::Base
     cache_key = arg1.inspect + options.inspect
     @all_group_list ||= {}
     return @all_group_list[cache_key] if @all_group_list[cache_key]
+    
     if self.has_role? :admin
       @all_group_list[cache_key] = Group.find(arg1, options)
     elsif self.has_role? :site_manager
@@ -203,16 +204,22 @@ class User < ActiveRecord::Base
   end
   
   #Return the list of users under this user's control based on role.
-  def available_users
-    return @available_users if @available_users
+  def available_users(arg1 = :all, options = {})
+    return [self] if self.has_role? :user
+    
+    cache_key = arg1.inspect + options.inspect
+    @all_user_list ||= {}
+    return @all_user_list[cache_key] if @all_user_list[cache_key]
     
     if self.has_role? :admin
-      @available_users = User.all
+      @all_user_list[cache_key] = User.find(arg1, options)
     elsif self.has_role? :site_manager
-      @available_users = self.site.users.all
+      @all_user_list[cache_key] = self.site.users.find(arg1, options)
     else
-      @available_users = [self]
+      cb_error "Unknown role!"
     end
+    
+    @all_user_list[cache_key]
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:

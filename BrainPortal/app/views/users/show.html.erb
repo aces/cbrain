@@ -31,6 +31,14 @@
        <td class="tabletext"><%= link_to_site_if_accessible(@user.site) %></td>
      </tr>
      <tr class="list-even">
+       <td class="title"><b>City:</b></td>
+       <td class="tabletext"><%= h(@user.city) %></td>
+     </tr>
+     <tr class="list-even">
+        <td class="title"><b>Country:</b></td>
+        <td class="tabletext"><%= h(@user.country) %></td>
+      </tr>
+     <tr class="list-even">
        <td class="title"><b>Time Zone:</b></td>
        <td class="tabletext"><%= h(@user.time_zone || "(Unset)") %></td>
      </tr>

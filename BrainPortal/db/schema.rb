@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100817171827) do
+ActiveRecord::Schema.define(:version => 20100825194219) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -294,6 +294,8 @@ ActiveRecord::Schema.define(:version => 20100817171827) do
     t.integer  "site_id"
     t.boolean  "password_reset"
     t.string   "time_zone"
+    t.string   "city"
+    t.string   "country"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"

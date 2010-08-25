@@ -102,11 +102,11 @@ module ApplicationHelper
   #Toggles the direction of the arrow depending on whether the order is 
   #ascending or descending.
   def set_order_icon(location, current_order, current_dir = nil)
-    return if current_order == nil
+    return "" if current_order == nil
     
     #order, direction = session_order.sub("type, ", "").split
     
-    return unless location == current_order
+    return "" unless location == current_order
     
     if location == 'tree_sort' || location == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       icon = '<font color="Red">&nbsp;&bull;</font>'
@@ -117,7 +117,6 @@ module ApplicationHelper
       end
     end
     
-    icon
+    icon || ""
   end
-  
 end

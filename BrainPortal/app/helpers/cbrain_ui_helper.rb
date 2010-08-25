@@ -395,4 +395,12 @@ module CbrainUiHelper
     
     select_tag(name, option_tags, options)
   end
+  
+  def ajax_sort_link(name, sort_column, options = {})
+    controller = options.delete(:controller) || params[:controller]
+    action = options.delete(:action) || params[:actions]
+    url = { :controller  => controller, :action  => action, controller  => {:sort  => {:order  => sort_column, :dir  => set_dir(sort_column, @filter_params["sort"])}} }
+    link_options = options.reverse_merge(:datatype  => 'script')
+    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_column, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
+  end
 end

@@ -19,11 +19,12 @@ class UsersController < ApplicationController
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
   
   def index #:nodoc:
-    if current_user.has_role? :admin
-      @users = User.find(:all, :include => :groups, :order  => "users.full_name" )
-    elsif current_user.has_role? :site_manager
-      @users = current_user.site.users.find(:all, :include => :groups, :order  => "users.full_name")
-    end
+    @filter_params["sort"]["order"] ||= 'users.full_name'
+    @filter_params["sort"]["dir"]   ||= ''
+    
+    sort_order = "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}"
+    
+    @users = current_user.available_users(:all, :include => [:groups, :site], :order  => sort_order )
     
     #For the 'new' panel
     @user = User.new(:site_id => current_user.site_id)
@@ -35,6 +36,7 @@ class UsersController < ApplicationController
     
     respond_to do |format|
       format.html # index.html.erb
+      format.js
       format.xml  { render :xml => @users }
     end
   end
