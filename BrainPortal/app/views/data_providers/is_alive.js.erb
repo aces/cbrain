@@ -1,3 +1,0 @@
-<% for provider in @providers %>
-  jQuery("#is_alive_<%= provider.id %>").html('<%= red_if( ! provider.is_alive?, "Yes", "No" ) %>');
-<% end %>

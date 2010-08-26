@@ -173,6 +173,35 @@ module CbrainUiHelper
     "<div data-url=\"#{url}\" #{atts}></div>" 
   end
   
+  #Staggered load elements request their content one at a time.
+  def staggered_loading(element, url, options={}, &block) 
+    options[:class] ||= ""
+    options[:class] +=  " staggered_loader"
+    
+    options["data-url"] = url
+    
+    error_message = options.delete(:error_message)
+    if error_message
+      options["data-error"] = h(error_message)
+    end
+    
+    replace = options.delete(:replace)
+    if replace
+      options["data-replace"] = replace
+    end
+     
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+    if block_given?
+      initial_content=capture(&block)
+    else
+      initial_content = ""
+    end
+    
+    concat("<#{element} #{atts}>") 
+    concat(initial_content)
+    concat("</#{element}>")
+  end
+  
  
   ###############################################################
   # Creates an html element which will have its or another element's 

@@ -6,7 +6,9 @@
   <td class="provider_details" style="display:none"><%= link_to_site_if_accessible(data_provider.site) %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.time_zone || "(Unset)") %></td>
   <td><%= data_provider.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
-  <td id="is_alive_<%= data_provider.id %>"><span class="loading_message">Checking...</span></td>
+  <% staggered_loading "td", url_for(:action  => :is_alive, :id  => data_provider.id), :error_message  => "<span class=\"warning\">???</span>" do %>
+    <span class="loading_message">Checking...</span>
+  <% end %>
   <td><%= h(data_provider.read_only    ? "Read Only"    : "Read/Write") %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
   <td class="provider_details" style="display:none"><%= h(data_provider.description) %></td>

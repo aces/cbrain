@@ -508,6 +508,40 @@ jQuery(
        timeout: 50000
      });
    });
+   
+   var staggered_load_elements = jQuery(".staggered_loader");
+   staggered_loading(0, staggered_load_elements);
+   
+   function staggered_loading(index, element_array){
+      if(index >= element_array.length) return;
+      
+      var current_element = jQuery(element_array[index]);
+      var url = current_element.attr("data-url");
+      var error_message = current_element.attr("data-error");
+      var replace = current_element.attr("data-replace");
+      jQuery.ajax({
+        dataType: 'html',
+        url: url,
+        target: current_element,
+        timeout: 50000,
+        success: function(data) {
+            if(replace == "true"){
+              current_element.replaceWith(data);
+            }else{
+              current_element.html(data);
+            }
+        },
+        error: function(e) {
+          if(!error_message){
+            error_message = "Error loading element";
+          }
+          current_element.html("<span class='loading_message'>"+ error_message +"</span>");
+        },
+        complete: function(e) {
+          staggered_loading(index+1, element_array)
+        }
+      });
+    }
 
    //For loading content into an element after it is clicked.
    //See on_click_ajax_replace() in application_helper.rb

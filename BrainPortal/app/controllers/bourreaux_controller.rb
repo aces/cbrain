@@ -20,12 +20,6 @@ class BourreauxController < ApplicationController
    
   def index #:nodoc:
     @bourreaux = RemoteResource.find_all_accessible_by_user(current_user, :order  => "remote_resources.type DESC, remote_resources.id")
-    
-    if params[:table_contents]
-      render :partial  => "bourreaux_table_contents"
-    else
-      render :action  => "index"
-    end
   end
   
   def show #:nodoc:

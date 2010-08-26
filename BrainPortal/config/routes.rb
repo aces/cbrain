@@ -27,8 +27,8 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :bourreaux,      :member     => { :start => :post, :stop => :post, :row_data  => :get },
                                  :collection => { :refresh_ssh_keys => :post } 
 
-  map.resources :data_providers, :member     => { :browse  => :get,  :register   => :post },
-                                 :collection => { :cleanup => :post, :disk_usage => :get, :is_alive => :get }
+  map.resources :data_providers, :member     => { :browse  => :get,  :register   => :post, :is_alive => :get },
+                                 :collection => { :cleanup => :post, :disk_usage => :get }
 
   map.resources :userfiles,      :member     => { :content => :get,  :sync_to_cache => :post, :extract_from_collection  => :post }, 
                                  :collection => { :download          => :get, 

@@ -19,8 +19,6 @@
 
 <p>
   
-<%= script_loader( :url  => url_for(:action  => :is_alive, :data_provider_ids  => @all_providers.map(&:id)), "data-datatype"  => "script") %>
-
 <table class="resource_list" id="cbrain_data_provider_table">
 
   <%= render :partial => 'data_provider_table_headers', :locals => { :table_title => 'Official CBRAIN Storage' } %>

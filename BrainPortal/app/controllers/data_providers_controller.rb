@@ -173,7 +173,8 @@ class DataProvidersController < ApplicationController
   end
   
   def is_alive #:nodoc:
-    @providers = DataProvider.find_accessible_by_user(params[:data_provider_ids], current_user)
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)        
+    render :text  => red_if( ! @provider.is_alive?, "Yes", "No" )
   end
   
   def disk_usage #:nodoc:
