@@ -69,6 +69,20 @@ class Session
     )
   end
   
+  def self.recent_activity(n = 10, options = {})
+    scope = User.scoped(options)
+    last_sessions = CGI::Session::ActiveRecordStore::Session.find(:all, :conditions => "sessions.user_id IS NOT NULL", :order  => "sessions.updated_at DESC")
+    entries = []
+    
+    last_sessions.each do |sess|
+      break if entries.size > n
+      user = User.find(sess.user_id)
+      entries << {:user  => user, :last_access  => sess.updated_at}
+    end
+    
+    entries
+  end
+  
   def clear_data!
     @session.data.each do |k,v|
       @session[k] = nil

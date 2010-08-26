@@ -37,7 +37,6 @@ class SessionsController < ApplicationController
       redirect_back_or_default('/home')
       current_user.addlog("Logged in from #{request.remote_ip}")
       portal.addlog("User #{current_user.login} logged in from #{request.remote_ip}")
-      #flash[:notice] = "Logged in successfully."
     else
       flash[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
@@ -52,7 +51,8 @@ class SessionsController < ApplicationController
     portal.addlog("User #{current_user.login} logged out") if current_user
     self.current_user.forget_me if logged_in?
     cookies.delete :auth_token
-    reset_session
+    session[:user_id] = nil
+    #reset_session
     flash[:notice] = "You have been logged out."
     redirect_to new_session_path
   end
