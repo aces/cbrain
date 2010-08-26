@@ -9,7 +9,7 @@
 
 <div class="display_cell">
 
-  <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
+  <% if current_user.has_role?(:admin) %>
     <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
 
     <div class="generalbox no_wrap">
