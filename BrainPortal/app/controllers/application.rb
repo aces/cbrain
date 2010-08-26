@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
   filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
+  before_filter :check_if_locked
   before_filter :prepare_messages
   before_filter :set_session, :only  => :index
   before_filter :password_reset
@@ -138,14 +139,16 @@ class ApplicationController < ActionController::Base
   # CBRAIN Messaging System Filters
   ########################################################################
 
-  def prepare_messages
-
+  def check_if_locked
     if BrainPortal.current_resource.portal_locked?
       flash.now[:error] ||= ""
       flash.now[:error] += "\n" unless flash.now[:error].blank?
       flash.now[:error] += "This portal is currently locked for maintenance."
     end
+  end
     
+  def prepare_messages
+
     return unless current_user
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
     

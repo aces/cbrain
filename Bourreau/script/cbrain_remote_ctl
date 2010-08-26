@@ -106,7 +106,7 @@ usage(basename) if ARGV[0] != "start" || ARGV[1] != "-e" || ARGV[3] != "-p"
 if File.exist?(pidfile)
   pid = File.read(pidfile).to_i
   # TODO make check for running process platform-independent
-  fatal("The Rails app seems to be already running. Kill it first.") if File.exist?("/proc/#{pid}")
+  fatal("The Rails app seems to be running already (PID=#{pid}). Kill it first.") if File.exist?("/proc/#{pid}")
   File.unlink(pidfile) rescue true
 end
 
