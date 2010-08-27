@@ -1,10 +1,13 @@
 
+<% tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore %>
+
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>" title="<%= h tool.description %>">
   <td><%=h tool.name %></td>
   <td><%= link_to_user_if_accessible(tool.user) %>
   <td><%= link_to_group_if_accessible(tool.group) %></td>
   <td><%= tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.map{|b| link_to_bourreau_if_accessible(b)}.join("<br>") %></td>
   <td><%=h tool.category %></td>
+
   <% if current_user.has_role?(:admin) %>
     <td><%= link_to 'Edit', edit_tool_path(tool), :class  => "action_link" %></td>
     <td>
@@ -15,16 +18,16 @@
                                               "data-delete-text"  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
        %>
     </td>
-  <% else %>
-    <td colspan="2"></td>
   <% end %>
     
-    <td><a class="overlay_link" data-url = "/doc/tasks/<%=h tool.cbrain_task_class.from(12).downcase%>_options.html">Help</a>
-    </td>
-    <% if tool.cbrain_task_class.from(12).downcase == "civet" %>
-        <td><a class="overlay_link" data-url = "/doc/userfiles/civet_info/civet_info.html">Info</a></td>
-    <% else %>
-        <td></td>
-    <% end %>
+  <td><a class="overlay_link" data-url = "/doc/tasks/<%= tool_plain_name %>_options.html">Help</a>
+  </td>
+  <% info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html" %>
+  <% if File.exist?( RAILS_ROOT + "/public" + info_path ) %>
+      <td><a class="overlay_link" data-url = "<%= info_path %>">Info</a></td>
+  <% else %>
+      <td></td>
+  <% end %>
+
 </tr>
 

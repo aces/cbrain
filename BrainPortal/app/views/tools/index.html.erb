@@ -27,8 +27,10 @@
     <th>Project</th>
     <th>Execution Server</th>
     <th>Category</th>
-    <th colspan="2">Operations</th>
-    <th colspan ="2"></th>
+    <% if current_user.has_role?(:admin) %>
+      <th colspan="2">Operations</th>
+    <% end %>
+    <th colspan ="2">Help/Info</th>
   </tr>
    
   <% for tool in @tools %>
