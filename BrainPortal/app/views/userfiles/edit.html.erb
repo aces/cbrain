@@ -16,7 +16,7 @@
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
-      <td><%= user_select("userfile[user_id]", {:selector => @userfile}, :disabled => !@userfile.data_provider.allow_file_owner_change?) %></td>
+      <td><%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %></td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">

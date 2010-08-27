@@ -19,7 +19,7 @@
       
       <div class="Bourreau_Specific" style="display:none">
         <p><label for="user_id">Owner</label><br/>
-        <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
+        <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin) } ) %></p>
 
         <p><label for="group_id">Project</label><br/>
         <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>

@@ -131,7 +131,7 @@
 
 <span title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
   <p><label for="user_id">Owner</label><br/>
-    <%= user_select("data_provider[user_id]", :selector => @provider) %>
+    <%= user_select("data_provider[user_id]", { :selector => @provider }, { :disabled => ! current_user.has_role?(:admin) } ) %>
   </p>
 </span>
 

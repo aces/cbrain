@@ -3,7 +3,7 @@
 
 <% form_for :user, @user, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
 
-  <div class="splitleft">
+  <div class="display_cell">
     <p><label for="full_name">Full Name</label><br/>
     <%= f.text_field :full_name %></p>
   
@@ -33,21 +33,19 @@
     <p><label for="role">Role</label><br/>
     <%= f.select :role, roles_for_user(current_user), {} %> </p>
     
+    <p><label for="role">Site</label><br/>
+    <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+  
     <p><label for="password">Password</label><br/>
     <%= f.password_field :password %></p>
   
     <p><label for="password_confirmation">Confirm Password</label><br/>
     <%= f.password_field :password_confirmation %></p>
     
-    <br><br>
     <p><%= submit_tag 'Create User' %></p>
   </div>
   
-  <div class="splitright">
-    <p><label for="role">Site</label><br/>
-    <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
-  
-    <br/>
+  <div class="display_cell">
     <label for="groups">Projects</label>
     <table>
        <% for group in @groups %>
