@@ -532,7 +532,9 @@ class UserfilesController < ApplicationController
       failed_list = {}
       filelist.each do |id|
         begin
-          u = Userfile.find_accessible_by_user(id, current_user, :readonly => (task == 'copy'))
+          u = Userfile.find_accessible_by_user(id, current_user,
+                            :readonly         => (task == 'copy'),
+                            :access_requested => (task == 'copy' ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
           next if orig_provider.id == data_provider_id
