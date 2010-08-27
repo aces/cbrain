@@ -7,7 +7,7 @@
   <% form_tag({:controller  => :userfiles, :action => "index"}, :method => "get") do %>
     <h5>Search by filename</h5>
     <div id="name_search_filter">
-         <%= text_field_tag :userfiles_search_term, nil, :class  => "search_box", "data-url"  => userfiles_path(:userfiles_search_type => "name_search") %>
+      <%= ajax_search_box :userfiles_search_term, userfiles_path(:userfiles_search_type => "name_search") %>
     </div>
   <% end %>
 </div>

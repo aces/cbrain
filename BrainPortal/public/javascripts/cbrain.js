@@ -201,9 +201,8 @@ jQuery(
      var data_type = button.attr("data-datatype");
      var url = button.attr("href");
      var target = button.attr("data-target");
+     var target_text = button.attr("data-target-text");
      var confirm_message = button.attr('data-confirm');
-     var delete_selector = button.attr("data-delete-selector");
-     var delete_text = button.attr("data-delete-text");
      var data_method = button.attr("data-method");
      if(!data_type) data_type = "script";
      if(!data_method) data_method = "DELETE";
@@ -214,18 +213,17 @@ jQuery(
         };
      }
     
-     if(delete_selector){
-       if(!delete_text){
-         delete_text = "";
+     if(target){
+       if(!target_text){
+         target_text = "";
        }
-       jQuery(delete_selector).html(delete_text);
+       jQuery(target).html(target_text);
      }
       
      jQuery.ajax({
        url: url,
        type: data_method,
        dataType: data_type,
-       target: target,
        resetForm: false
        }
      );
@@ -334,7 +332,11 @@ jQuery(
          type: method,
          url: url,
          dataType: data_type,
-         target: target,
+         success: function(data){
+           if(target){
+             jQuery(target).html(data);
+           }       
+         },
          data: parameters
        });
        return false;

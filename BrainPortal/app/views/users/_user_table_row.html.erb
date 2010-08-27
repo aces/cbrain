@@ -14,10 +14,10 @@
   <% unless user.login == 'admin' %>
     <td>
       <%= 
-           link_to 'Delete', user_path(user), :class  => "action_link delete_button", 
-                                                         "data-confirm"  => 'Are you sure?', 
-                                                         "data-delete-selector"  => "#user_#{user.id}",
-                                                         "data-delete-text"  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
+           delete_button 'Delete', user_path(user), :class  => "action_link", 
+                                                    :confirm  => 'Are you sure?', 
+                                                    :target  => "#user_#{user.id}",
+                                                    :target_text  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
       %>
     </td>
     <td><%= link_to 'Switch', switch_user_path(user), :class => 'action_link', :method  => :post %></td>

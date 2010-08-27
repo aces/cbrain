@@ -1,7 +1,7 @@
 
 <%= error_messages_for :bourreau %>
 
-<% form_for :bourreau, @bourreau, :url => { :action => "create" }, :html  => {:class  => "ajax_form", "data-datatype" => "script"} do |f| -%>
+<% ajax_form_for :bourreau, @bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
    <div class="display_cell">
      <p><label for="name">Name</label><br/>
@@ -11,10 +11,10 @@
      <%= f.text_field :description %></p>
 
      <p><label for="user_id">Owner</label><br/>
-     <%= user_select("bourreau[user_id]", :selector => @bourreau) %></p>
+     <%= user_select("bourreau[user_id]", @bourreau) %></p>
 
      <p><label for="group_id">Project</label><br/>
-     <%= group_select("bourreau[group_id]", {:selector => @bourreau}) %></p>
+     <%= group_select("bourreau[group_id]", @bourreau) %></p>
 
      <p><label for="online">Status</label><br/>
      <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>

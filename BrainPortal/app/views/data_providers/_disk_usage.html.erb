@@ -4,7 +4,7 @@
 <!-- For Data Providers -->
 <!-- *********************************** -->
 
-<% form_tag(url_for(:action  => :cleanup),  :class  => "ajax_form", "data-target"  => "#disk_usage") do %>
+<% ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
 
   <h3>Disk Usage Statistics for Data Providers</h3>
  
@@ -158,7 +158,7 @@
 <!-- Refresh form -->
 <!-- *********************************** -->
 
-<% form_tag(url_for(:action  => :disk_usage),  :class  => "ajax_form", "data-target"  => "#disk_usage", "data-method"  => "GET") do %>
+<% ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
   Files reported under the <em>Caches</em> columns were last accessed
   <%= select_tag("cache_older", options_for_select( @offset_times, @cache_older )) %>
   <%= submit_tag 'Refresh' %>

@@ -24,6 +24,14 @@ class DataProvidersController < ApplicationController
     @providers["User Storage"] ||= []
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
+    
+    #For new form
+    provider_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    @provider = DataProvider.new( :user_id   => current_user.id,
+                                  :group_id  => provider_group_id,
+                                  :online    => true,
+                                  :read_only => false
+                                )
   end
 
   # GET /data_providers/1

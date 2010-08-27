@@ -8,10 +8,10 @@
      <td><%= link_to 'Edit', edit_feedback_path(feedback), :class  => 'action_link' %></td>
      <td>
        <%= 
-          link_to 'Delete', feedback_path(feedback), :class  => "action_link delete_button", 
-                                                     "data-confirm"  => 'Are you sure?', 
-                                                     "data-delete-selector"  => "#feedback_#{feedback.id}",
-                                                     "data-delete-text"  => "<td colspan='5' style='color:red; text-align:center'>Deleting...</td>"
+          delete_button 'Delete', feedback_path(feedback), :class  => "action_link", 
+                                                           :confirm  => 'Are you sure?', 
+                                                           :target  => "#feedback_#{feedback.id}",
+                                                           :target_text  => "<td colspan='5' style='color:red; text-align:center'>Deleting...</td>"
         %>
      </td>
   <% else %>

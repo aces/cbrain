@@ -5,7 +5,7 @@
   <%= render :partial  => "pagination" %>
 </div>
 
-<% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :class  => :ajax_form, "data-datatype"  => "script") do %>
+<% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
 
   <div class="display_cell" id="tasks_div">
     <table class="resource_list" id="tasks_table">

@@ -120,6 +120,32 @@ module CbrainUiHelper
     concat("</div>")
   end
   
+  def ajax_search_box(name, url, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " search_box"
+    
+    options["data-url"] = url
+    
+    default_value = options.delete(:default)
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options.delete(:method)
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options["data-target"] = target
+    end
+    
+    text_field_tag(name, default_value, options)
+  end
+  
  
   ###############################################################
   # Creates an html element which will have it's content updated 
@@ -371,6 +397,38 @@ module CbrainUiHelper
     link_to name, url, options 
   end
   
+  def delete_button(name, url, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " delete_button"
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options.delete(:method)
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options["data-target"] = target
+    end
+    
+    target_text = options.delete(:target_text)
+    if target_text
+      options["data-target-text"] = target_text
+    end
+    
+    confirm = options.delete(:confirm)
+    if confirm
+      options["data-confirm"] = confirm
+    end
+    
+    link_to name, url, options
+  end
+  
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
     options[:class] +=  " select_all"
@@ -393,14 +451,11 @@ module CbrainUiHelper
     result += "</select>"
   end
   
-  def ajax_onchange_select(name, option_tags, options = {})
+  def ajax_onchange_select(name, url, option_tags, options = {})
     options[:class] ||= ""
     options[:class] +=  " request_on_change"
     
-    url = options.delete(:url)
-    if url
-      options["data-url"] = url
-    end
+    options["data-url"] = url
     
     data_type = options.delete(:datatype)
     if data_type
@@ -432,4 +487,62 @@ module CbrainUiHelper
     link_options = options.reverse_merge(:datatype  => 'script')
     ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_column, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
   end
+  
+  
+  ###########################################
+  #
+  # Ajax form helpers
+  #
+  ###########################################
+  
+  def ajax_form_tag(url_for_options = {}, options = {}, *parameters_for_url, &block)
+    options[:class] ||= ""
+    options[:class] +=  " ajax_form"
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options[:method] #NOTE: not deleted, so it can still be used by rails
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options["data-target"] = target
+    end
+    
+    form_tag(url_for_options, options, *parameters_for_url, &block)
+  end
+  
+  def ajax_form_for(record_or_name_or_array, *args, &proc)
+    options = args.extract_options!
+    
+    options[:html] ||= {}
+    
+    options[:html][:class] ||= ""
+    options[:html][:class] +=  " ajax_form"
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options[:html]["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options.delete(:method)  #NOTE: not deleted, so it can still be used by rails
+    if method
+      options[:html]["data-method"] = method.to_s.upcase
+    end
+    
+    target = options.delete(:target)
+    if target
+      options[:html]["data-target"] = target
+    end
+    
+    args << options
+    
+    form_for(record_or_name_or_array, *args, &proc)
+  end
+  
 end

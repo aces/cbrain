@@ -20,10 +20,10 @@
   <td>
      <% if data_provider.has_owner_access?(current_user) %>
        <%= 
-           link_to 'Delete', data_provider_path(data_provider), :class  => "action_link delete_button", 
-                                                                "data-confirm"  => 'Are you sure?', 
-                                                                "data-delete-selector"  => "#data_provider_#{data_provider.id}",
-                                                                "data-delete-text"  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
+           delete_button 'Delete', data_provider_path(data_provider), :class  => "action_link", 
+                                                                      :confirm  => 'Are you sure?', 
+                                                                      :target  => "#data_provider_#{data_provider.id}",
+                                                                      :target_text  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
        %>
      <% end %>
   </td>

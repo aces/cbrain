@@ -143,17 +143,17 @@
 
 <span title="Is this data provider currently available for use?">
   <p><label for="online">Status</label><br/>
-  <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>  
+  <%= f.select :online, { "Online" => true, "Offline" => false } %></p>  
 </span>
 
 <span title="Is this data provider writable or read-only?">
   <p><label for="read_only">Mode</label><br/>
-  <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, :prompt => "Select mode" %></p>
+  <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }%></p>
 </span>
 
 <span title="Is this data provider syncable?">
   <p><label for="not_syncable">Syncability</label><br/>
-  <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true }, :prompt => "Select syncability" %></p>
+  <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true } %></p>
 </span>
 
 <div class="groupentry">

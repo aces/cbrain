@@ -63,7 +63,7 @@ module SelectBoxHelper
     else
       sel = selector.to_s
     end
-  
+
     render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups, :select_tag_options => select_tag_options}
   end
   

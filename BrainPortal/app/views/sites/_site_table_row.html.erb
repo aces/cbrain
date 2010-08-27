@@ -7,10 +7,10 @@
   <td><%= link_to 'Edit', edit_site_path(site), :class  => 'action_link' %></td>
   <td>
     <%= 
-         link_to 'Delete', site_path(site), :class  => "action_link delete_button", 
-                                            "data-confirm"  => 'Are you sure?', 
-                                            "data-delete-selector"  => "#site_#{site.id}",
-                                            "data-delete-text"  => "<td colspan='6' style='color:red; text-align:center'>Deleting...</td>"
+         delete_button 'Delete', site_path(site), :class  => "action_link", 
+                                                  :confirm  => 'Are you sure?', 
+                                                  :target  => "#site_#{site.id}",
+                                                  :target_text  => "<td colspan='6' style='color:red; text-align:center'>Deleting...</td>"
      %>
   </td>
 </tr>

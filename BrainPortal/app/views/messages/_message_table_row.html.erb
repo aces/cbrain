@@ -20,28 +20,28 @@
 
     <% if mess.read %>
       <%= 
-        link_to  'Mark&nbsp;as&nbsp;Unread',  message_path(mess, :read => "false"),
-                 :class => 'delete_button action_link', 
-                 "data-method"  => "PUT",
-                 "data-delete-selector"  => ".message_display_#{mess.id}", 
-                 "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
+         delete_button 'Mark&nbsp;as&nbsp;Unread',  message_path(mess, :read => "false"),
+                 :class => 'action_link', 
+                 :method  => "PUT",
+                 :target  => ".message_display_#{mess.id}", 
+                 :target_text  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
       %>
     <% else %>
       <%= 
-        link_to  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => "true"),
-                 :class => 'delete_button action_link', 
-                 "data-method"  => "PUT",
-                 "data-delete-selector"  => ".message_display_#{mess.id}", 
-                 "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
+        delete_button  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => "true"),
+                 :class => 'action_link', 
+                 :method  => "PUT",
+                 :target  => ".message_display_#{mess.id}", 
+                 :target_text  => "<td colspan='3' style='color:red; text-align:center;'>Updating...</td>"
       %>
     <% end %>
     &nbsp;
     <%= 
-       link_to  'Delete',  message_path(mess),
-                :class => 'delete_button action_link', 
-                "data-method"  => "DELETE",
-                "data-delete-selector"  => ".message_display_#{mess.id}", 
-                "data-delete-text"  => "<td colspan='3' style='color:red; text-align:center;'>Deleting...</td>"
+       delete_button  'Delete',  message_path(mess),
+                :class => 'action_link', 
+                :method  => "DELETE",
+                :target  => ".message_display_#{mess.id}", 
+                :target_text  => "<td colspan='3' style='color:red; text-align:center;'>Deleting...</td>"
     %>
   </td>
 

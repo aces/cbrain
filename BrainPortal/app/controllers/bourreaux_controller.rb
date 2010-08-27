@@ -20,6 +20,13 @@ class BourreauxController < ApplicationController
    
   def index #:nodoc:
     @bourreaux = RemoteResource.find_all_accessible_by_user(current_user, :order  => "remote_resources.type DESC, remote_resources.id")
+    
+    #For the new form
+    bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    @bourreau = Bourreau.new( :user_id   => current_user.id,
+                              :group_id  => bourreau_group_id,
+                              :online    => true
+                            )
   end
   
   def show #:nodoc:
@@ -75,19 +82,6 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html { render :action => :edit }
-      format.xml  { render :xml => @bourreau }
-    end
-
-  end
-
-  def new  #:nodoc:
-    @bourreau = Bourreau.new( :user_id   => current_user.id,
-                              :group_id  => Group.find_by_name(current_user.login).id,
-                              :online    => true
-                            )
-
-    respond_to do |format|
-      format.html { render :action => :new }
       format.xml  { render :xml => @bourreau }
     end
 

@@ -26,7 +26,7 @@
   <th onMouseOver="jQuery('#name_search_filter').show()" onMouseOut="jQuery('#name_search_filter').hide();">
     Name
     <div id="name_search_filter" class="filter_list" style="display:none;">
-      Search: <%= text_field_tag :search, nil, :class  => "search_box", "data-url"  => browse_data_provider_path(:pagination  => params[:pagination])  %>
+      Search: <%= ajax_search_box :search, browse_data_provider_path(:pagination  => params[:pagination]) %>
     </div>
   </th>
   <th>Size</th>
