@@ -177,6 +177,7 @@ C>
     # Note that SelfRemoteResourceId is used by SyncStatus methods.
     
     CBRAIN.const_set('SelfRemoteResourceId',bourreau.id)
+    bourreau.update_attributes( :online => true )
 
   end
 

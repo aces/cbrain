@@ -155,6 +155,7 @@ C>
                                     :conditions => { :cache_md5 => dp_cache_md5 })
     if brainportal
       CBRAIN.const_set("SelfRemoteResourceId",brainportal.id)
+      brainportal.update_attributes( :online => true )
     else
       #----------------------------------------------------------------------------------------
       puts "C> \t- BrainPortal not registered in database, please run this"
