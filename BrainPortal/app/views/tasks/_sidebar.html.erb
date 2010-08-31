@@ -51,7 +51,7 @@
     <%= render :partial => 'tasks/filters' %>
   <% end %>
   <% acc.section "Help" do %>
-    <a class="overlay_link" data-url = "/doc/tasks/task_info.html">Task Info</a>
+    <%= overlay_ajax_link "Task Info", "/doc/tasks/task_info.html" %>
   <% end %>
 <% end %>
 

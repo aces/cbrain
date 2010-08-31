@@ -124,7 +124,7 @@
   
   <% if @userfile.is_a?(CivetCollection) || @userfile.is_a?(CivetStudy) %>
       <br><br>
-      <a class="overlay_link" data-url = "/doc/userfiles/civet_directories.html">Civet Directories Decrypted</a>
+      <%= overlay_ajax_link "Civet Directories Decrypted", "/doc/userfiles/civet_directories.html" %>
       <br>
   <% end %>
   <P>
@@ -132,8 +132,7 @@
   <% if @userfile.is_locally_synced? %>
     <%= display_contents(@userfile) %>
     <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
-   
-      <a class="overlay_link" data-url = "/doc/userfiles/civetqc_results.html">Civet QC Legend</a>
+      <%= overlay_ajax_link "Civet QC Legend", "/doc/userfiles/civetqc_results.html" %>
       
       <div id="userfile_contents_display" class="loading_message">
         

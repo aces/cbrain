@@ -20,14 +20,13 @@
     </td>
   <% end %>
     
-  <td><a class="overlay_link" data-url = "/doc/tasks/<%= tool_plain_name %>_options.html">Help</a>
+  <td><%= overlay_ajax_link "Help", "/doc/tasks/#{ tool_plain_name }_options.html" %>
   </td>
   <% info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html" %>
-  <% if File.exist?( RAILS_ROOT + "/public" + info_path ) %>
-      <td><a class="overlay_link" data-url = "<%= info_path %>">Info</a></td>
-  <% else %>
-      <td></td>
-  <% end %>
-
+  <td>
+    <% if File.exist?( RAILS_ROOT + "/public" + info_path ) %>
+        <%= overlay_ajax_link "Info", info_path %></td>
+    <% end %>
+  </td>
 </tr>
 

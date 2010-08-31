@@ -6,9 +6,7 @@
     <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new', :content_id => "new_bourreau" }, {:id => "new_bourreau_button"}) %>
     <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
   <% end %>
-  <% button_with_dropdown_menu(:title => "Help") do %>
-     <a class="overlay_link" data-url ="/doc/server/view_server.html">Execution Servers</a>
-  <% end %>     
+  <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
 <P>

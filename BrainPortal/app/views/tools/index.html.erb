@@ -12,9 +12,7 @@
 
   <% end %>
 
-  <% button_with_dropdown_menu(:title => "Help") do %>
-    <a class="overlay_link" data-url = "/doc/tool/tool_info.html">Tool Information</a>
-  <% end %>     
+  <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button" %>
 </div> 
 
 <P>

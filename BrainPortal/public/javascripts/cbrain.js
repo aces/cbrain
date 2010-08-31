@@ -64,8 +64,11 @@ jQuery(
    //Overlay dialogs
    //See overlay_dialog_with_button()
    jQuery(".overlay_dialog").each( function(index,element){
-     var content_width = parseInt(jQuery(element).children('.dialog').attr('data-width'));
-     var dialog = jQuery(this).children(".dialog")
+     var enclosing_div = jQuery(this);
+     var dialog_link = enclosing_div.children('.overlay_content_link');
+     var dialog = enclosing_div.children(".overlay_content")
+     var content_width = parseInt(dialog_link.attr('data-width'));
+     
      dialog.remove().appendTo("body");
 
      dialog.dialog({ autoOpen: false,
@@ -75,13 +78,15 @@ jQuery(
          width: content_width
      });
 
-     var button = jQuery(this).children(".dialog_button").click(function(){dialog.dialog('open')});
+     dialog_link.click(function(){dialog.dialog('open')});
+     
+     return false;
    });
 
    //Links with class "overlay_link" will create an overlay with content loaded
    //from "data-url".
-   jQuery(".overlay_link").click( function() {
-     var url=jQuery(this).attr('data-url');
+   jQuery(".overlay_ajax_link").click( function() {
+     var url=jQuery(this).attr('href');
      var dialog = jQuery("<div></div>").load(url).appendTo(jQuery("body")).dialog({
      	show: "puff",
      	modal: true,
@@ -89,7 +94,8 @@ jQuery(
      	width: 800,
      	height: 600
      });
-
+     
+     return false;
    });
 
    jQuery(".inline_edit_field").each(function() {

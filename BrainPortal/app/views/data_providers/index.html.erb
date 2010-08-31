@@ -7,10 +7,7 @@
     <% button_with_dropdown_menu({:title => 'Create New Data Provider', :content_id => 'new_data_provider', :partial => 'new'}, {:id => "new_data_provider_button"}) %>
   <% end %>    
 
-  <% button_with_dropdown_menu(:title => "Help") do %>
-    <a class="overlay_link" data-url = "/doc/data_providers/data_provider_info.html">Data Provider</a>
-  <% end %>     
-    
+  <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>
       
 <p>

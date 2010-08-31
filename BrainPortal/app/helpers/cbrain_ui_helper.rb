@@ -79,11 +79,11 @@ module CbrainUiHelper
   
   def inplace_edit_field(options)
     name = options[:name]
-    label = options[:label]
+    field_label = options[:label]
     initial = options[:initial_value] || ""
     "<div class=\"inline_edit_field\">"+
       "<span>"+
-        "#{label}:  "+
+        "#{field_label}:  "+
         "<span class=\"current_text\">#{initial}</span>"+
         "<input name=\"#{name}\" />"+
       "</span>" +
@@ -92,31 +92,26 @@ module CbrainUiHelper
   end
 
   #Create an overlay dialog box with a link as the button
-  def overlay_dialog_with_button(options,html_opts={},&block)
-    partial = options[:partial]
-    name = options[:name]
-    button_text = options[:button_text]
-    width = options[:width] || ""
-    if partial
-      content = render :partial  => partial
-    else
-      content = capture(&block)
-    end
+  def overlay_content_link(name, options = {}, &block)
+    options[:class] ||= ""
+    options[:class] +=  " overlay_content_link"
     
+    options[:href] ||= "#"
     
-    html_opts[:class] ||= ""
-    html_opts[:class] +=  " dialog"
+    width = options.delete :width
     if width
-      html_opts["data-width"] = width
+      options["data-width"] = width
     end
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    
+    content = capture(&block)
 
     concat("<div class=\"overlay_dialog\">")
-    concat("<div id=\"#{name}\" #{atts}>")
+    concat("<a #{atts}>#{name}</a>")
+    concat("<div class=\"overlay_content\">")
     concat(content)
     concat("</div>")
-    concat("<a class=\"dialog_button button\">#{button_text}</a>")
     concat("</div>")
   end
   
@@ -375,6 +370,41 @@ module CbrainUiHelper
     concat('</div>')
   end
   
+  def select_all_checkbox(checkbox_class, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " select_all"
+    
+    options["data-checkbox-class"] = checkbox_class
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    
+    "<input type='checkbox' #{atts}/>"
+  end
+  
+  def master_select(select_class, select_options, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " select_master"
+    
+    options["data-select-class"] = select_class
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    
+    result =  "<select #{atts}>\n"
+    result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
+    result += "</select>"
+  end
+  
+  ###########################################
+  #
+  # Ajax widgets
+  #
+  ###########################################
+  
+  def overlay_ajax_link(name, url, options = {})
+    options[:class] ||= ""
+    options[:class] +=  " overlay_ajax_link"
+        
+    link_to name, url, options
+  end
+  
   def ajax_link(name, url, options = {})
     options[:class] ||= ""
     options[:class] +=  " ajax_link"
@@ -429,28 +459,6 @@ module CbrainUiHelper
     link_to name, url, options
   end
   
-  def select_all_checkbox(checkbox_class, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " select_all"
-    
-    options["data-checkbox-class"] = checkbox_class
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
-    
-    "<input type='checkbox' #{atts}/>"
-  end
-  
-  def master_select(select_class, select_options, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " select_master"
-    
-    options["data-select-class"] = select_class
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
-    
-    result =  "<select #{atts}>\n"
-    result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
-    result += "</select>"
-  end
-  
   def ajax_onchange_select(name, url, option_tags, options = {})
     options[:class] ||= ""
     options[:class] +=  " request_on_change"
@@ -487,7 +495,6 @@ module CbrainUiHelper
     link_options = options.reverse_merge(:datatype  => 'script')
     ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_column, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
   end
-  
   
   ###########################################
   #

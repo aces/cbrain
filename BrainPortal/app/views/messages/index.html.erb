@@ -6,9 +6,7 @@
     <% button_with_dropdown_menu({:title => 'Leave Message', :partial => 'new', :content_id => 'new_message' }, {:id => "new_message_button"}) %>
   <% end %>
 
-  <% button_with_dropdown_menu(:title => "Help") do %>
-    <a class="overlay_link" data-url = "/doc/messages/message_info.html">Messages</a>
-  <% end %> 
+  <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 
   <%= submit_button("Delete Checked Messages", {:class => "external_submit_button", "data-associated-form" => "message_form", :name => "commit", "data-confirm" => "Are you sure you want to delete the selected messages?" }) %>
 </div>

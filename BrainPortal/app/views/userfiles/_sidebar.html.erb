@@ -33,13 +33,13 @@
   <% end %>
 
   <% acc.section "Help" do %>
-        <a class="overlay_link" data-url ="/doc/userfiles/file_info.html">Files Info</a>
+        <%= overlay_ajax_link "Files Info", "/doc/userfiles/file_info.html" %>
         <br>
-        <a class="overlay_link" data-url ="/doc/userfiles/tools_overview.html">Tools Info</a>
+        <%= overlay_ajax_link "Tools Info", "/doc/userfiles/tools_overview.html" %>
         <br>
-        <a class="overlay_link" data-url ="/doc/userfiles/file_formats_overview.html">File Formats Info</a>
+        <%= overlay_ajax_link "File Formats Info", "/doc/userfiles/file_formats_overview.html" %>
         <br>
-        <a class="overlay_link" data-url = "/doc/userfiles/jiv_viewer.html">Jiv Viewer Info</a>
+        <%= overlay_ajax_link "Jiv Viewer Info", "/doc/userfiles/jiv_viewer.html" %>
         <br><br>
         For more documentation on tools, please refer to the Tools tab.
         <br>

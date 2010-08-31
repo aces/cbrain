@@ -2,9 +2,7 @@
 <h2>Information about site '<%= @site.name %>'</h2>
 
 <div class="menu_bar menu_bar_left">
-  <% button_with_dropdown_menu(:title => "Help") do %>
-    <a class="overlay_link" data-url ="/doc/sites/site_info.html">Site Information</a>
-  <% end %>     
+  <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>    
 </div>
     
 <P>
