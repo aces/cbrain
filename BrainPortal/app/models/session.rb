@@ -63,15 +63,24 @@ class Session
   def self.active_users(options = {})
     scope = User.scoped(options)
     scope.scoped(
-        :conditions => {:id => CGI::Session::ActiveRecordStore::Session.find(:all, 
+        :conditions => {:id => session_class.find(:all, 
                                     :conditions => ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
                                     ).map(&:user_id)}
     )
   end
   
+  def self.count(options = {})
+    scope = session_class.scoped({})
+    scope.count
+  end
+  
+  def self.session_class
+    CGI::Session::ActiveRecordStore::Session
+  end
+  
   def self.recent_activity(n = 10, options = {})
     scope = User.scoped(options)
-    last_sessions = CGI::Session::ActiveRecordStore::Session.find(:all, :conditions => "sessions.user_id IS NOT NULL", :order  => "sessions.updated_at DESC")
+    last_sessions = session_class.find(:all, :conditions => "sessions.user_id IS NOT NULL", :order  => "sessions.updated_at DESC")
     entries = []
     
     last_sessions.each do |sess|

@@ -6,38 +6,42 @@
 </script>
 
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
+<% if current_user.has_role?(:admin) %>
 
-<div class="display_cell">
+  <div class="display_cell">
 
-  <% if current_user.has_role?(:admin) %>
-    <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
+      <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
 
-    <div class="generalbox no_wrap">
-      <% if @active_users %>
-        <p>
-          <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
-        </p>
-        <p><strong>Recent Activity:</strong></p>
-        <% Session.recent_activity.each do |entry| %>
-          <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
-        <% end %>
-      <% end %>
-      <br>
-      <% if current_user.has_role? :admin %>
-        <% form_tag home_path do %>
-          <% if BrainPortal.current_resource.portal_locked? %>
-            <%= hidden_field_tag :lock_portal, "unlock" %>
-            <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
-          <% else %>
-            <%= hidden_field_tag :lock_portal, "lock" %>
-            <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
+      <div class="generalbox no_wrap">
+        <% if @active_users %>
+          <p>
+            <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
+          </p>
+          <p><strong>Recent Activity:</strong></p>
+          <% Session.recent_activity.each do |entry| %>
+            <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
           <% end %>
-        <% end %>  
-      <% end %>
-    </div>
-  <% end %>
+        <% end %>
+        <br>
+        There are currently <%= Session.count %> entries in the sessions table.<br>
+        <% form_tag home_path do %>
+          Clear sessions older than <%= select_tag :clear_sessions, options_for_select(@offset_times) %>
+          <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
+        <% end %>
+        <br>
+          <% form_tag home_path do %>
+            <% if BrainPortal.current_resource.portal_locked? %>
+              <%= hidden_field_tag :lock_portal, "unlock" %>
+              <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
+            <% else %>
+              <%= hidden_field_tag :lock_portal, "lock" %>
+              <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
+            <% end %>
+          <% end %>  
+      </div>
 
-</div>
+  </div>
+<% end %>
 
 <div class="display_cell">
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>

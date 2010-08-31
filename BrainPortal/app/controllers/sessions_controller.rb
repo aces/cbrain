@@ -51,7 +51,7 @@ class SessionsController < ApplicationController
     portal.addlog("User #{current_user.login} logged out") if current_user
     self.current_user.forget_me if logged_in?
     cookies.delete :auth_token
-    session[:user_id] = nil
+    current_session.clear_data!
     #reset_session
     flash[:notice] = "You have been logged out."
     redirect_to new_session_path

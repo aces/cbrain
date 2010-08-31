@@ -193,7 +193,7 @@ class DataProvidersController < ApplicationController
       [ "Anytime",           0.seconds.to_i ],
       [ "One hour ago",      1.hour.to_i    ],
       [ "Six hours ago",     6.hour.to_i    ],
-      [ "One day ago",       6.day.to_i     ],
+      [ "One day ago",       1.day.to_i     ],
       [ "One week ago",      1.week.to_i    ],
       [ "Two weeks ago",     2.week.to_i    ],
       [ "One month ago",     1.month.to_i   ],
