@@ -103,16 +103,18 @@ module CbrainUiHelper
       options["data-width"] = width
     end
     
+    element = options.delete(:enclosing_element) || "div"
+    
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
     content = capture(&block)
 
-    concat("<div class=\"overlay_dialog\">")
+    concat("<#{element} class=\"overlay_dialog\">")
     concat("<a #{atts}>#{name}</a>")
     concat("<div class=\"overlay_content\">")
     concat(content)
     concat("</div>")
-    concat("</div>")
+    concat("</#{element}>")
   end
   
   def ajax_search_box(name, url, options = {})
