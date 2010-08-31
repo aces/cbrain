@@ -1,7 +1,7 @@
 
-<%= javascript_tag "jQuery(function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
-
 <% title "Edit #{@bourreau.name}" %>
+
+<% is_bourreau = @bourreau.is_a?(Bourreau) %>
 
 <h2>Edit <%= @bourreau.name %></h2>
 
@@ -15,27 +15,25 @@
       <%= f.text_field :name %></p>
 
       <p><label for="description">Description</label><br/>
-      <%= f.text_field :description %></p>
+      <%= f.text_area :description, :rows => 10 %></p>
       
-      <div class="Bourreau_Specific" style="display:none">
-        <p><label for="user_id">Owner</label><br/>
-        <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin) } ) %></p>
+      <p><label for="user_id">Owner</label><br/>
+      <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin) } ) %></p>
 
-        <p><label for="group_id">Project</label><br/>
-        <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
+      <p><label for="group_id">Project</label><br/>
+      <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
 
-        <p><label for="online">Status</label><br/>
-        <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
+      <p><label for="online">Status</label><br/>
+      <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
-        <p><label>ActiveResource Configuration</label><br/>
+      <p><label>ActiveResource Configuration</label><br/>
 
-        <div class="groupentry">
-            <p><label for="actres_host">Hostname</label><br/>
-            <%= f.text_field :actres_host %></p>
+      <div class="groupentry">
+          <p><label for="actres_host">Hostname</label><br/>
+          <%= f.text_field :actres_host %></p>
 
-            <p><label for="actres_port">Port Number</label><br/>
-            <%= f.text_field :actres_port %></p>
-        </div>
+          <p><label for="actres_port">Port Number</label><br/>
+          <%= f.text_field :actres_port %></p>
       </div>
 
       <p><label>SSH Remote Control Configuration</label><br/>
@@ -50,19 +48,19 @@
           <p><label for="ssh_control_port">Port Number</label><br/>
           <%= f.text_field :ssh_control_port %></p>
 
-          <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
+          <p><label for="ssh_control_rails_dir">Rails Server Directory</label><br/>
           <%= f.text_field :ssh_control_rails_dir %></p>
       </div>
         
-      <div class="Bourreau_Specific" style="display:none">
-        <p><label>Tunneling Configuration</label><br/>
-        <div class="groupentry">
-            <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
-            <%= f.text_field :tunnel_mysql_port %></p>
+      <p><label>Tunneling Configuration</label><br/>
+      <div class="groupentry">
+        <% if is_bourreau %>
+          <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
+          <%= f.text_field :tunnel_mysql_port %></p>
+        <% end %>
 
-            <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
-            <%= f.text_field :tunnel_actres_port %></p>
-        </div>
+        <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
+        <%= f.text_field :tunnel_actres_port %></p>
       </div>
 
       <p><label>Cache Management Configuration</label><br/>

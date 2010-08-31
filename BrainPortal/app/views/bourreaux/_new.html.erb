@@ -8,7 +8,7 @@
      <%= f.text_field :name %></p>
 
      <p><label for="description">Description</label><br/>
-     <%= f.text_field :description %></p>
+     <%= f.text_area :description, :rows => 10 %></p>
 
      <p><label for="user_id">Owner</label><br/>
      <%= user_select("bourreau[user_id]", @bourreau) %></p>
@@ -45,7 +45,7 @@
           <p><label for="ssh_control_port">Port Number</label><br/>
           <%= f.text_field :ssh_control_port %></p>
 
-          <p><label for="ssh_control_rails_dir">Remote Execution Server RAILS directory</label><br/>
+          <p><label for="ssh_control_rails_dir">Rails Server Directory</label><br/>
           <%= f.text_field :ssh_control_rails_dir %></p>
 
       </div>

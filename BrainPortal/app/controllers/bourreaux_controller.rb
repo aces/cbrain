@@ -36,17 +36,24 @@ class BourreauxController < ApplicationController
 
     @info = @bourreau.info
 
-    @user_id_name = {}
-    User.all.each { |user| @user_id_name[user.id] = user.login }
-    
+    myusers = current_user.available_users
+
+    @statuses = { 'TOTAL' => 0 }
     @user_tasks_info = {}
+
+    @user_id_name = {}
+    myusers.each do |user|
+      @user_id_name[user.id] = user.login
+      @user_tasks_info[user.login] ||= {}
+      @user_tasks_info[user.login]['TOTAL'] = 0
+    end
+    
     begin
-       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id })
+       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id, :user_id => @user_id_name.keys })
     rescue
        tasks = []
     end
 
-    @statuses = { 'TOTAL' => 0 }
     tasks.each do |t|
       user_id = t.user_id.to_i
       name    = @user_id_name[user_id] || "User-#{user_id}"

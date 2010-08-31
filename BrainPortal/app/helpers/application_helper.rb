@@ -73,6 +73,23 @@ module ApplicationHelper
     "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;"
   end
 
+  # Takes a +description+ (a string with possibly multiple lines) and shows
+  # the first line only; other lines if present will be made accessible
+  # by an appended link called '(more)' in an overlay.
+  def pretty_description(description=nil)
+    return "" if description.blank?
+    raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
+    header = Regexp.last_match[1].strip
+    body   = Regexp.last_match[2].strip
+    return h(header) if body.blank?
+
+    h(header) + " " + capture do
+      overlay_content_link("(more)", :width => 600, :enclosing_element => 'span' ) do
+        "<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>"
+      end
+    end
+  end
+
   #################################################################################
   # Resource Listing Helpers
   #################################################################################

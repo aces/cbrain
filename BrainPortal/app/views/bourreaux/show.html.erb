@@ -3,7 +3,7 @@
 
 <h2>Information for <%= @bourreau.name %></h2>
 
-<%= javascript_tag "jQuery(function() {jQuery('.#{@bourreau.class}_Specific').show();})" %>
+<% is_bourreau = @bourreau.is_a?(Bourreau) %>
 
 <div class="generalbox">
     
@@ -39,7 +39,7 @@
 
     <tr>
       <th>Description</th>
-      <td class="left_align"><%= h(@bourreau.description) %></td>
+      <td class="left_align"><%= pretty_description(@bourreau.description) %></td>
     </tr>
 
     <tr>
@@ -107,7 +107,7 @@
       </tr>
 
       <tr>
-        <th>Execution Server Rails HOME</th>
+        <th>Rails Server Directory</th>
         <td class="left_align"><%= h(@bourreau.ssh_control_rails_dir) %></td>
       </tr>
 
@@ -115,10 +115,12 @@
         <th colspan="2" class="subtitle">Tunneling Configuration</th>
       </tr>
 
+      <% if is_bourreau %>
       <tr>
         <th>Database Server Remote Tunnel Port</th>
         <td class="left_align"><%= h(@bourreau.tunnel_mysql_port) %></td>
       </tr>
+      <% end %>
 
       <tr>
         <th>ActiveResource Remote Tunnel Port</th>
@@ -187,12 +189,13 @@
         </td>
       </tr>
 
-      <tr class="Bourreau_Specific" style="display:none">
+      <% if is_bourreau %>
+      <tr>
         <th>Worker PIDs</th>
         <td class="left_align"><%= @info.worker_pids %></td>
       </tr>
 
-      <tr class="Bourreau_Specific" style="display:none">
+      <tr>
         <th>Worker Revision Info</th>
         <td class="left_align">
           <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
@@ -201,21 +204,22 @@
         </td>
       </tr>
 
-      <tr class="Bourreau_Specific" style="display:none">
+      <tr>
         <th>Number of tasks (running/max)</th>
         <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
       </tr>
 
-      <tr class="Bourreau_Specific" style="display:none">
+      <tr>
         <th>Execution Server Cluster Management System</th>
         <td class="left_align">
           Type: <%= h(@info.bourreau_cms) %><br>
           Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
         </td>
       </tr>
+      <% end %>
 
       <tr>
-        <th>Execution Server SSH Public Key</th>
+        <th>SSH Public Key</th>
         <td class="left_align"><SMALL><SMALL><PRE class="ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
       </tr>
 
@@ -223,9 +227,11 @@
 
   </table>
 
+  <% if is_bourreau %>
+
   <P>
 
-  <table class="Bourreau_Specific" style="display:none">
+  <table>
     <tr>
       <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
     </tr>
@@ -250,6 +256,8 @@
       <% end %>
     <tr>
   </table>
+
+  <% end %>
 
   <P>
 
