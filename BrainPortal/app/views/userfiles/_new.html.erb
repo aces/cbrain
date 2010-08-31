@@ -33,6 +33,14 @@
  
   Data provider for uploaded file:<BR>
   <%= data_provider_select :data_provider_id, { :data_providers => @data_providers } %>
+  <% overlay_content_link("(info)", :enclosing_element => 'span', :width => 600) do %>
+    <h1>Data Providers Descriptions</h1>
+    <% DataProvider.find_all_accessible_by_user(current_user).each do |dp| %>
+      <h3><%= h(dp.name) %></h3>
+      <pre><%= dp.description.blank? ? "(No description)" : h(dp.description) %></pre>
+    <% end %>
+  <% end %>
+
   <P>
 
   <%= submit_tag("Upload file") %>
