@@ -78,9 +78,10 @@ jQuery(
          width: content_width
      });
 
-     dialog_link.click(function(){dialog.dialog('open')});
-     
-     return false;
+     dialog_link.click(function(){
+       dialog.dialog('open');
+       return false; 
+     });
    });
 
    //Links with class "overlay_link" will create an overlay with content loaded
