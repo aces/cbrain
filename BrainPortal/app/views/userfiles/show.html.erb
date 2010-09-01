@@ -134,11 +134,11 @@
     <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
       <%= overlay_ajax_link "Civet QC Legend", "/doc/userfiles/civetqc_results.html" %>
       
-      <div id="userfile_contents_display" class="loading_message">
+        <div id="userfile_contents_display" class="loading_message">
         
           <strong>QC</strong><br><br>
-          <% ajax_element({:url  => url_for(:action  => :content, :qc_file  => "base")}) do %>
-     <span class="loading_message">Loading...</span>
+          <% ajax_element(url_for(:action  => :content, :qc_file  => "base")) do %>
+            <span class="loading_message">Loading...</span>
           <% end %>
           <br>
           <div id="qc_data">
@@ -150,7 +150,7 @@
   <P>
 
   <% if @userfile.is_a?(FileCollection) %>
-    <% ajax_element({:url  => content_userfile_path(@userfile)}, {:class  => "loading_message"}) do %>
+    <% ajax_element(content_userfile_path(@userfile), :class  => "loading_message") do %>
       <br>
       Loading...
       <br>

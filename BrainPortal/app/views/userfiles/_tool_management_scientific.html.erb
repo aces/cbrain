@@ -8,7 +8,7 @@
      url_for(:controller  => :tools, :action  => :bourreau_select), 
      current_user.available_scientific_tools.inject('<option value="">Select a Scientific Operation</option>') { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
         :target  => "#bourreau_select2", 
-        :update_text  => "<span class='warning'>Loading...</span>"
+        :target_text  => "<span class='warning'>Loading...</span>"
     ) 
   %>
   
@@ -17,10 +17,9 @@
   
   <br>
   <br>
-  <%= submit_tag("Apply Operation", :class  => "ajax_submit_button", 
-                                    "data-url"  => url_for({:controller  => :tasks, :action  => :new}),
-                                    "data-method"  => :get,
-                                    "data-datatype"  => "script") %>
+  <%= hijacker_submit_button("Apply Operation", :url  => url_for(:controller  => :tasks, :action  => :new),
+                                                :method  => :get,
+                                                :datatype  => "script") %>
   <br><br>
 <% else %>
   <br>

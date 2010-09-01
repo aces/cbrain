@@ -2,7 +2,7 @@
 <% title 'Projects' %>
   
 <div class="menu_bar menu_bar_left">
-   <% button_with_dropdown_menu({:title => 'Create Project', :partial => 'new', :content_id => 'new_group' }, {:id => "new_group_button"}) %>
+   <% button_with_dropdown_menu('Create Project', :partial => 'new', :content_id => 'new_group', :button_id => "new_group_button") %>
    <%= link_to "Remove Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :button %>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>       
 </div>

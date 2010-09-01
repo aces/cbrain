@@ -127,8 +127,8 @@
     
       <tr>
          <td colspan="2">
-         <% tab_bar do |tb| %>
-           <% tb.tab(:name => "Summary") do %>
+         <% build_tabs do |tb| %>
+           <% tb.tab("Summary") do %>
              <% begin %>
                <%= render :partial => "tasks/show_params/#{@task.name.underscore}", :locals => { :task => @task, :params => @task.params } %>
              <% rescue ActionView::MissingTemplate %>
@@ -138,7 +138,7 @@
                <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
              <% end %>
            <% end %>
-           <% tb.tab(:name => "Raw") do %>
+           <% tb.tab("Raw") do %>
              <pre><%= h(@task.params.to_yaml :root => "Params") -%></pre>
            <% end %>
          <% end %>
@@ -199,11 +199,11 @@
 
       <tr>
         <td class="left_align" colspan="2">
-          <% tab_bar do |tb| %>
-            <% tb.tab(:name => "Standard Out") do %>
+          <% build_tabs do |tb| %>
+            <% tb.tab("Standard Out") do %>
               <pre class="standard_out"><%= h(prettystdout) -%></pre>
             <% end %>
-            <% tb.tab(:name => "Standard Error") do %>
+            <% tb.tab("Standard Error") do %>
               <pre class="standard_out"><%= h(prettystderr) -%></pre>
             <% end %>
           <% end %>

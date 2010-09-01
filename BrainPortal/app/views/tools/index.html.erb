@@ -2,7 +2,7 @@
 <div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) %>
             
-    <% button_with_dropdown_menu({:title => 'Create New Tool', :partial => 'new', :content_id => 'new_tool' }, {:id => "new_tool_button"}) %>
+    <% button_with_dropdown_menu('Create New Tool', :partial => 'new', :content_id => 'new_tool', :button_id => "new_tool_button") %>
        
     <span title="Registers all subclasses of PortalTask as Tools">
       <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>

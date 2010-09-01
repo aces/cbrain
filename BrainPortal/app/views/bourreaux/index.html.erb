@@ -3,7 +3,7 @@
 
 <div class="menu_bar menu_bar_left">
   <% if check_role(:admin) || check_role(:site_manager)%>
-    <% button_with_dropdown_menu({:title => 'Create New Server', :partial => 'new', :content_id => "new_bourreau" }, {:id => "new_bourreau_button"}) %>
+    <% button_with_dropdown_menu('Create New Server', :partial => 'new', :content_id => "new_bourreau", :button_id => "new_bourreau_button") %>
     <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
   <% end %>
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>

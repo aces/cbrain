@@ -2,7 +2,7 @@
   <div id="active_project_div">
 
     <h1>Active Project:</h1> 
-      <% button_with_dropdown_menu({:title => (current_project ? current_project.name : "None")}, {:id  => "header_project_menu"})  do %>
+      <% button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu")  do %>
         <div id="project_menu_items">
           <% projects = current_user.available_groups.group_by{|p| p.class.to_s == "WorkGroup" ? "WorkGroup" : "SystemGroup"} %>
           <% unless projects["WorkGroup"].blank? %>
