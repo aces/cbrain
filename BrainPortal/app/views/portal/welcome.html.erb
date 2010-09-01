@@ -79,13 +79,13 @@
 
 
 <div class="display_cell">
-  <h1><%= link_to "Tasks", :controller  => :tasks,  :action  => :index %></h1>
+  <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
 
    <div id="completed_task_summary" class="task_summary">
      <div class="task_summary_count">
        Completed tasks: <%= @tasks_by_status[:completed].size %>
        <P>
-       <%= link_to "Go to Index Page", :controller  => :tasks,  :action  => :index, :tasks  => {:filters => {:status  => :completed}} %>
+       <%= link_to "Go to Index Page", :controller  => :tasks, :action  => :index, :tasks  => {:filters => {:status  => :completed}} %>
      </div>
      <% unless @tasks_by_status[:completed].blank? %>
        <table class="task_summary_table">

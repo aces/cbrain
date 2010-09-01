@@ -1,6 +1,8 @@
 
 <% @tasks.each do |launch_time, tasks| %>
 
+  <% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+
   <% if tasks.size > 1 %>
 
   <tr class="batch_job_header row_highlight">
@@ -9,9 +11,9 @@
     </td>
     <td class="left">
       <% if launch_time %>
-        <%= show_hide_toggle  "#{tasks.first.name} (Batch)", ".batch_listing_#{tasks.first.id}" %>
+        <%= show_hide_toggle  "#{tasks.first.name} (Batch)", ".batch_listing_#{launch_time_id}" %>
       <% else %>
-        <%= show_hide_toggle  "(Various)", ".batch_listing_#{tasks.first.id}" %>
+        <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
       <% end %>
     </td>
     <td><%= h(crop_text_to(30, tasks.first.description)) %></td>
@@ -28,20 +30,12 @@
 
 
   <% for task in tasks %>
-    <tr class="<%= cycle('list-odd', 'list-even')%> row_highlight batch_listing_<%= tasks.first.id %>" <%= tasks.size > 1 ? "style=\"display:none\"" : "" %>>
-      <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox task_checkbox_#{tasks.first.id}") %></td>
-      <td class="left"><%= tasks.size > 1 ? "&nbsp;&nbsp;&#x21b3;" : "" -%><%= link_to_task_if_accessible(task) -%></td>
-      <td><%= h(crop_text_to(30, task.description)) %></td>
-      <td><%= link_to_user_if_accessible(task.user) %></td>
-      <% unless current_project %>
-        <td><%= link_to_group_if_accessible(task.group) %></td>
-      <% end %>
-      <td><%= link_to_bourreau_if_accessible(task.bourreau) %></td>
-      <td><%= h(task.status) %></td>
-      <td><%= h(task.run_number) %></td>
-      <td><%= h(to_localtime(task.created_at,:datetime)) -%></td>
-      <td><%= h(to_localtime(task.updated_at,:datetime)) -%></td>
-    </tr>
+    <%= render :partial => 'task_table_row',
+               :locals  => { :task             => task,
+                             :task_available   => @bourreau_status[task.bourreau.id] ? true : false,
+                             :is_child         => (tasks.size > 1),
+                           }
+    %>
   <% end %>
 
 <% end %>

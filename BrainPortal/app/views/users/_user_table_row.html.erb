@@ -4,7 +4,7 @@
   <td><%= link_to_user_if_accessible(user) %></td>
   <td><%=h user.email %></td>
   <% groups = user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.sort{|a, b| a.name.casecmp(b.name)} %>
-  <td><%= groups.map{|g| work_group_link g, h(g.name), group_path(g)}.join('<BR>') %></td>
+  <td><%= groups.map{|g| link_to_group_if_accessible(g)}.join('<BR>') %></td>
   <td><%=h user.role.humanize %></td>
   <td><%= link_to_site_if_accessible(user.site) %></td>
   <td><%= h user.city %></td>

@@ -1,8 +1,8 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="group_<%= group.id %>">
-  <td><%= link_to h(group.name), group_path(group) %></td>
+  <td class="left"><%= link_to_group_if_accessible group %></td>
   <td><%= change_to_project_name(group.class.name) %></td>
-  <td><%= link_to(group.site.name, site_path(group.site)) rescue "(Unassigned)" %></td>
+  <td><%= link_to_site_if_accessible(group.site) %></td>
   <td><%= link_to 'Switch', switch_group_path(group), :class => 'action_link', :method  => :post %></td>
   <% if group.is_a?(WorkGroup) && group.can_be_edited_by?(current_user)%>
     <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>

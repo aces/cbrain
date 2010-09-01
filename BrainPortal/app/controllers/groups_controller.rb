@@ -19,8 +19,8 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:    
-    @system_groups = current_user.available_groups(:all, :conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type")
-    @work_groups = current_user.available_groups(:all, :conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type")
+    @system_groups = current_user.available_groups(:all, :conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @work_groups = current_user.available_groups(:all, :conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
     
     #For new panel
     @group = WorkGroup.new
