@@ -1,9 +1,7 @@
-<h1>Files</h1>
-<br>
-<h3>Viewing Files</h3>
-The <b>Files</b> tab, called the file manager, is a link to an interface that displays a list of files, file details and a file management menu bar at the top of the page.  The file management menu bar consists of seven tabs.  More details can be displayed for each file by selecting the <b>Toggle Details</b> button. Jiv Files are shown as links under files with Jiv files as children resulting from a minc2jiv operation.  Additionally Files highlighted in pink are unavailable.  Each individual file has a details page that can be accessed by clicking on that particular file.
+<h1>Files</h1><h3>How to View Files</h3>
+The <b>Files</b> tab, called the file manager, is a link to an interface that displays a list of files, file details and a file management menu bar at the top of the page.  The file management menu bar consists of nine tabs.  More details can be displayed for each file by selecting the <b>Show Details</b> button. Jiv Files are shown as links under files as children resulting from a minc2jiv operation.  Additionally, files highlighted in pink are unavailable.  Each individual file has a details page that can be accessed by clicking on that particular file.
 <br><br>
-The synchronization symbols, which list the status of a file, are shown at the bottom of the files page and include:
+Each execution server has a cache or storage area set aside for files that have been transferred and executed on that execution server. Files are permanently stored on <b>Data Providers</b>.  The synchronization symbols, which list the status of a file, are displayed beside the file.  These symbols indicate where copies of the files are stored on available clusters.  This is useful, allowing a user to navigate to the <b>Data Providers</b> tab click on the <b>Click here to view disk usage statistics</b> link, select a cache and clean up the cache.  This action deletes any files being stored on the selected cache ensuring the privacy of the files.  Additionally, these symbols can be useful by indicating where files are already stored, allowing a user to execute other tasks on them using the same execution server.  This speeds up execution time and prevents copies of files from being transferred and stored on other execution servers needlessly.  Placing your mouse pointer over the symbol displays more information about the execution server and other file details.  A legend of the symbols are shown at the bottom of the files page and include:
 
 <ul>
 <li><b>ProvNewer</b>
@@ -19,7 +17,7 @@ The synchronization symbols, which list the status of a file, are shown at the b
 	
 <li><b>InSync</b><br>
     <ul>
-        <li>Indicates that the file contains a synched version of the data provider’s content.</li>
+        <li>Indicates that the file contains a synched version of the data provider's content.</li>
     </ul>
 </li>
 <li>
@@ -39,90 +37,88 @@ The synchronization symbols, which list the status of a file, are shown at the b
 	</ul>
 </li>
 </ul>
-<h3>Sidebar</h3>
-<p>The sidebar provides the options to <b>Toggle Details</b>, <b>Show all files on the system</b> and <b>Tree View</b>.  The <b>Toggle Details</b> button allows the user to see more details of the files.  <b>Tree View</b> gives the user the ability view the parent and child files hierarchically.
-<br>    
-A user can search by filename. Additionally, <b>Active Filters</b> list filters currently applied to files, which can be removed by clicking on the 'x' beside the applied filter.
+<br><br>
+<h3>How to Filter Files</h3>
+<p>The filter files drop down, located on the sidebar, allows a user to filter their files by filter or by tag (as shown below).  A tag can be created and used to "tag" a file.    
 <br>
 <br>
-<b>Filter Files Drop Down</b>
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/filter_dropdown.png">
+<p>A user can create a custom filter, as shown below.  This allows a user to filter by filename, creation date, size, owner, project, data provider and tags.</p>
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/custom_filter.png">
 <br>
-<p>The filter files drop down allows a user to filter their files by type or by tag (as shown below).  A tag can be created and used to "tag" a file.  Files can be searched by filters and tags.  This drop down allows a user to filter files either by the preset filters or by custom filters.   
+<br>
+<b>Active Filters</b> located on the sidebar lists filters currently applied to files, which can be removed by clicking on the 'x' beside the applied filter.
 <br>
 <br>
-<img src="/doc/userfiles/filter_dropdown.png"><br><br>
+<h3>How to Upload a File</h3>
+The <b>Upload File</b> drop down on the sidebar allows a user to upload individual files and compressed files with sizes up to 250MB.  The interface is shown below and a user can browse for files on their local computer, assign tags to the uploaded file, projects and project permissions, archive options (for zip and tar files) and CBRAIN will store the file on the specified data provider.  Note that the compressed files cannot have folders within them.  Compressed files have the option to be saved as it is, extracted or a file collection may be generated.  The preferred method for uploading large files to CBRAIN is through the data providers tab using file registration.<br><br>
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/upload_file_dropdown.png"><br><br>
 
-<b></b>
-<p>A user can also create a custom filter, as shown below.  This allows a user to filter by filename, creation date, size, owner, group, data provider and tags.</p><br>
-
-<img src="/doc/userfiles/custom_filter.png"><br><br>
-
-<b>Upload File</b>
+<h3>How to Download Files</h3>
+To download files, a user can select the files and click <b>Download</b>.  If there is more than one file to be downloaded, then a tarball containing the files is created. A filename maybe specified.
 <br>
-The <b>Upload File</b> drop down allows a user to upload individual files and compressed files with sizes up to 250MB.  The interface is shown below.  You can browse for files on your local computer, assign tags to the uploaded file, groups and group file permissions, archive options (for zip and tar files) and CBRAIN will store the file.  Note that the compressed files cannot have folders within it.  Compressed files have the option to be saved as it is, extracted or a file collection of the compressed files may be generated.  The preferred method for uploading files to CBRAIN is through the data providers tab.<br>
-<br>
-<br>
-<img src="/doc/userfiles/upload_file_dropdown.png"><br><br>
 <br>
 
-<b>Help</b>
-<br>
-The help drop down provides information about the files interface.
-<br>
-<br>
-<h3>File Menu Bar</h3>
-<br>
-<b>Downloading Files</b>
-<br>
-To download files, select the files and click download files.  If there is more than one file to be downloaded, then a tarball containing the files is created. 
-<br>
-<br>
-<b>Organizing Files</b>
-<br>
-The tags feature, shown below under the <b>Update Attributes</b>, button provides the ability to organize files.  It allows a user to apply customized tags to files in order to organize them and make them easily searchable (see below).  Just select the file, the tag and click on the button <b>Update Tags</b>.</p><br>
-
-<img src="/doc/userfiles/update_attributes_dropdown.png"><br>
+<h3>How to Organize Files</h3>
+The tags feature, shown below under the <b>Update Attributes</b>, button provides the ability to organize files.  It allows a user to apply customized tags to files in order to organize them and make them easily searchable (see below).  Select the file, the tag and click on the button <b>Update Tags</b>.</p><br><br>
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/update_attributes_dropdown.png"><br>
     
-<p>The <b>Update Attributes</b> button also provides the ability to modify projects that a file belongs to.  Projects can be changed by selecting the file and clicking <b>Update Projects</b>.  Project permissions can also be updated by selecting the file along with selecting the desired project permission.</p>
+<p>The <b>Update Attributes</b> button also provides the ability to modify projects that a file belongs to.  Projects can be changed by selecting the file and clicking <b>Update Projects</b>.  Project permissions can also be updated by selecting the file along with selecting the desired project permission and clicking <b>Update Permissions</b>.</p>
 
-<b>Groups</b>
+<h3>How to Uncompress/Compress Files</h3>
+Select the files to be compressed and select the <b>(Un)Compress</b> button on the file menu.  Should it be necessary to uncompress a file, select the file then select the <b>(Un)Compress</b> button.
+<br> 
 <br>
-Groups facilitate the sharing of files between users.  There are four types of groups which are subsets of projects and include: system groups, site groups, user groups and work groups.
+
+<h3>How to Share Files</h3>
+Projects facilitate the sharing of files between users.  There are four types of projects: system projects, site projects, user projects and work projects.
 <br>
 <ul>
-<li><b>System Groups</b></li>
+<li><b>System Projects</b></li>
     <ul>
-        <li>Every user on CBRAIN is automatically a member of the system group everyone.</li>
+        <li>Every user on CBRAIN is automatically a member of the system project everyone.</li>
     </ul>
-<li><b>Site Groups</b></li>
+<li><b>Site Project</b></li>
     <ul>
-        <li>Each site has a site group automatically associated with it.</li>
+        <li>Each site has a site project automatically associated with it.</li>
     </ul>
-<li><b>User Groups</b></li>    
+<li><b>User Projects</b></li>    
     <ul>
-        <li>Every user on CBRAIN is automatically assigned a group, that only they are a member of, specified by that user's username.</li>
+        <li>Every user on CBRAIN is automatically assigned a project, that only they are a member of, specified by that user's username.</li>
     </ul>
-<li><b>Work Groups</b></li>
+<li><b>Work Projects</b></li>
     <ul>
-        <li>A work group is a type of group and also a project that can be created by anyone.</li>
+        <li>A work project is a type of project that can be created by anyone.</li>
     </ul>
 </ul>
 
-    File permissions are managed through projects.  Project files are files that can be shared between members of a project.  Users can be members of any project that either the site manager or the CBRAIN administrator assigned to them or that they created themselves. A file can only belong to one project but a user can belong to many projects.  Project permissions can be set by selecting the file, <b>Update Files Attributes</b>, the project and the permissions.<br><br>
-
-<b>Creating a Collection</b><br>
-   The <b>Create Collection</b> button on the files menu allows a user to select files and create a file collection.<br>
-
-<br><b>Moving and Copying Files</b><br>
-    Files can be selected and moved or copied from one data provider to another using the <b>Move/Copy Files</b> button on the files menu.<br>
+    File permissions are managed through projects.  Project files are files that can be shared between members of a project.  Users can be members of any project that either the site manager or the CBRAIN administrator has assigned to them or that they created themselves. A file can only belong to one project but a user can belong to many projects.  Project permissions can be set by selecting the file, <b>Update Files Attributes</b>, the project and the permissions.
+<br>
 <br>
 
-<b>Using Tools</b><br>
-    
-    The <b>Conversion Tool</b> and <b>Scientific Tool</b> drop downs on the file management menu provide a drop down selection of conversion and scientific operations respectively that can be applied to files as tasks. When a tool is selected from the drop down menu, another select box appears to specify an execution server to complete the task.  Execution servers that have that particular tool available and that you have sufficient privileges to access, will be presented as possible selections along with an option to select a cluster to execute the task randomly.  For some tools, you must select files and the desired tool to be brought to an option selection page.  An example tool option page is shown below.<br><br>
-    
-<img src="/doc/userfiles/civet_tool_options.png"><br>
-    
-    <p>Once a task has completed, the resulting files are placed in the files list on the <b>Files</b> tab page.  For example, once a Civet task has been run using the <b>Civet Tool</b> a <b>Civet Collection</b> is returned.  Clicking on that particular resulting Civet Collection from a Civet task brings you to the file details page (see below).  Through this page you can see the details of the civet collection, change the group, group permissions and update the tags associated with a file.  The <b>Contents</b> link displays the Civet output image file.  Also the link <b>Display full CIVET file list</b> displays all the files in the Civet Collection, which can be extracted individually.</p>
+<h3>How to Create a Collection</h3>
+The <b>Create Collection</b> button on the files menu allows a user to select files and create a collection.  A collection is simply a group of files.
+<br>
+<br>
 
-<img src="/doc/userfiles/civet_collection_details.png"><br>
+<h3>How to Create a Study</h3>
+When multiple Civet results are combined using the task <b>CivetCombiner</b> a <b>Study</b> is created.  Before launching a Civet task, if a user selects Combine Civet results into a Civet Study as part of the options and specifies a name, a 
+<b>Study</b> will be created. The purpose of the <b>Study</b> is to be able to launch the <b>Civet QC</b> task on multiple Civet results.
+<br>
+<br>
+
+<h3>How to Move and Copy Files</h3>
+Files can be selected and moved or copied from one data provider to another using the <b>Move/Copy Files</b> button on the files menu.<br>
+<br>
+
+<h3>How to Use and Access Tools</h3>
+    
+    The <b>Conversion Tool</b> and <b>Scientific Tool</b> drop downs on the file management menu provide a drop down selection of conversion and scientific tools respectively that can be applied to files as tasks. When a tool is selected from the drop down menu, another select box appears to specify an execution server to complete the task.  Execution servers that have that particular tool available and that you have sufficient privileges to access, will be presented as possible selections along with an option to select a cluster to execute the task randomly.  For some tools, you must select files and the desired tool to be brought to an option selection page.  An example tool option selection page is shown below.
+<br>
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/civet_tool_options.png"><br>
+    
+<p>Once a task has completed, the resulting files are placed in the files list on the <b>Files</b> tab page.  For example, once a Civet task has been run using the <b>Civet Tool</b> a <b>Civet Collection</b> is returned.  Clicking on that particular resulting Civet Collection from a Civet task brings you to the file details page (see below).  Through this page you can see the details of the Civet Collection and there is a link to edit the file.  The <b>Contents</b> link displays the Civet output image files.  Also the link <b>Display full CIVET file list</b> displays all the files in the Civet Collection, which can be extracted individually.</p>
+
+<img src="/Users/angela/work/cbrain/BrainPortal/public/doc/userfiles/civet_collection_details.png">
+<br>
+<br>
