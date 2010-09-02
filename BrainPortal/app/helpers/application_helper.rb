@@ -76,14 +76,15 @@ module ApplicationHelper
   # Takes a +description+ (a string with possibly multiple lines) and shows
   # the first line only; other lines if present will be made accessible
   # by an appended link called '(more)' in an overlay.
-  def pretty_description(description=nil)
+  def overlay_description(description=nil, options={})
     return "" if description.blank?
     raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
     header = Regexp.last_match[1].strip
     body   = Regexp.last_match[2].strip
-    return h(header) if body.blank?
+    cropped_header = crop_text_to(options[:header_width] || 50,header)
+    return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
-    h(header) + " " + capture do
+    h(cropped_header) + " " + capture do
       overlay_content_link("(more)", :width => 600, :enclosing_element => 'span' ) do
         "<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>"
       end

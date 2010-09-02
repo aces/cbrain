@@ -16,7 +16,7 @@
         <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
       <% end %>
     </td>
-    <td><%= h(crop_text_to(30, tasks.first.description)) %></td>
+    <td><%= overlay_description(tasks.first.description, :header_width => 35) %></td>
     <td><%= h(tasks.first.user.login) %></td>
     <td colspan="<%= current_project ? "5" : "6" %>">
       <% if launch_time %>

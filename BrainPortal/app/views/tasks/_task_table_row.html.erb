@@ -15,7 +15,7 @@
     <td></td>
 <% end %>
     <td class="left"><%= is_child ? "&nbsp;&nbsp;&#x21b3;" : ""%><%= link_to_task_if_accessible(task) %></td>
-    <td><%= h(crop_text_to(30, task.description)) %></td>
+    <td><%= overlay_description(task.description, :header_width => 35) %></td>
     <td><%= link_to_user_if_accessible(task.user) %></td>
     <% unless current_project %>
       <td><%= link_to_group_if_accessible(task.group) %></td>

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100825194219) do
+ActiveRecord::Schema.define(:version => 20100902180412) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -73,7 +73,7 @@ ActiveRecord::Schema.define(:version => 20100825194219) do
     t.string   "remote_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
+    t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
@@ -156,7 +156,7 @@ ActiveRecord::Schema.define(:version => 20100825194219) do
     t.string   "actres_dir"
     t.boolean  "online"
     t.boolean  "read_only"
-    t.string   "description"
+    t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "ssh_control_user"

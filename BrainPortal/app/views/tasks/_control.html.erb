@@ -3,39 +3,31 @@
 
   <tr>
     <td>
-      <strong>Execution server:</strong>
-    </td>
-    <td>
+      <strong>Execution server:</strong><br>
       <%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available", :disabled => (! @task.new_record? ) } %>
     </td>
 
     <td>
-      <strong>Description:</strong>
-    </td>
-    <td>
-      <%= text_field_tag "cbrain_task[description]", @task.description, :size => 30 %>
+      <strong>Save results to:</strong><br>
+      <%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
     </td>
 
     <td rowspan="2">
-      <strong>Save results to:</strong>
+      <strong>Description:</strong><br>
+      <%= text_area_tag "cbrain_task[description]", @task.description, :rows => 4, :cols => 35 %><br>
+      <small>(This first line should be a summary, and the rest are your notes)</small>
     </td>
-    <td rowspan="2">
-      <%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
-    </td>
+
   </tr>
 
   <tr>
     <td>
-      <strong>Owner:</strong>
-    </td>
-    <td>
+      <strong>Owner:</strong><br>
       <%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin)) } %>
     </td>
 
     <td>
-      <strong>Project:</strong>
-    </td>
-    <td>
+      <strong>Project:</strong><br>
       <%= group_select "cbrain_task[group_id]", @task.group_id %>
     </td>
   </tr>
