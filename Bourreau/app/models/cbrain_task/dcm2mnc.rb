@@ -94,7 +94,9 @@ class CbrainTask::Dcm2mnc < ClusterTask
     return true if numok > 0 && numfail == 0
     false
   ensure
-    io.close if io
+    if io
+      io.close rescue true
+    end
   end
 
 end
