@@ -88,7 +88,7 @@ jQuery(
    //from "data-url".
    jQuery(".overlay_ajax_link").click( function() {
      var url=jQuery(this).attr('href');
-     var dialog = jQuery("<div></div>").load(url).appendTo(jQuery("body")).dialog({
+     var dialog = jQuery("<div style=\"display: none;\"></div>").load(url).appendTo(jQuery("body")).dialog({
      	show: "puff",
      	modal: true,
       position: 'center',

@@ -165,7 +165,7 @@ module CbrainUiHelper
 
     concat("<#{element} class=\"overlay_dialog\">")
     concat("<a #{atts}>#{name}</a>")
-    concat("<div class=\"overlay_content\">")
+    concat("<div class=\"overlay_content\" style=\"display: none;\">")
     concat(content)
     concat("</div>")
     concat("</#{element}>")
