@@ -22,6 +22,7 @@
                              { :selector =>  user_preference.data_provider_id },
                              { :include_blank => true } )
     %>
+    <%= overlay_data_providers_descriptions() %>
   </p>
   <p>
     <%= f.submit "Save Preferences" %>

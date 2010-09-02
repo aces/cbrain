@@ -8,8 +8,9 @@
     </td>
 
     <td>
-      <strong>Save results to:</strong><br>
-      <%= data_provider_select :data_provider_id.to_la, @task.params[:data_provider_id], { :include_blank => "Data provider of input files" } %>
+      <strong>Save results to:</strong>
+      <%= overlay_data_providers_descriptions(@data_providers) %><br>
+      <%= data_provider_select :data_provider_id.to_la, { :selector => @task.params[:data_provider_id], :data_providers => @data_providers } , { :include_blank => "Data provider of input files" } %>
     </td>
 
     <td rowspan="2">

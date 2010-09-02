@@ -479,7 +479,7 @@ class TasksController < ApplicationController
   # Some useful variables for the views for 'new' and 'edit'
   def initialize_common_form_values #:nodoc:
 
-    @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true} )
+    @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
 
     # Find the list of Bourreaux that are both available and support the tool
     tool       = Tool.find_by_cbrain_task_class(@task.class.to_s)

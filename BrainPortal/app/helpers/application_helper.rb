@@ -91,6 +91,24 @@ module ApplicationHelper
     end
   end
 
+  # Creates a link called "(info)" that presents as an overlay
+  # the set of descriptions for the data providers given in argument.
+  def overlay_data_providers_descriptions(data_providers = nil)
+    data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
+    paragraphs = data_providers.collect do |dp|
+      "<h3>#{h(dp.name)}</h3>\n" +
+      "<pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>\n"
+    end
+    all_descriptions = "<h1>Data Providers Descriptions</h1>\n" + paragraphs.join("")
+    capture do
+       overlay_content_link("(info)", :enclosing_element => 'span', :width => 600) do
+         all_descriptions
+       end
+    end
+  end
+
+
+
   #################################################################################
   # Resource Listing Helpers
   #################################################################################
