@@ -111,7 +111,7 @@ class PortalSanityChecks < CbrainChecker
       
       pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
       User.create!(
-                   :full_name             => "Admin",
+                   :full_name             => "Administrator",
                    :login                 => "admin",
                    :password              => pwdduh,
                    :password_confirmation => pwdduh,

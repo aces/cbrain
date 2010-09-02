@@ -4,6 +4,6 @@ class ChangeTimeOfDeathForDataProviderToDatetime < ActiveRecord::Migration
   end
 
   def self.down
-    change_column :data_providers, :time_of_deat, :date
+    change_column :data_providers, :time_of_death, :date
   end
 end

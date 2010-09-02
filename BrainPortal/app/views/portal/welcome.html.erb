@@ -13,11 +13,14 @@
       <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
 
       <div class="generalbox no_wrap">
+        <p>
+          <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
+        </p>
         <% if @active_users %>
           <p>
-            <strong>Users Currently Online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
+            <strong>Users currently online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
           </p>
-          <p><strong>Recent Activity:</strong></p>
+          <p><strong>Recent activity:</strong></p>
           <% Session.recent_activity.each do |entry| %>
             <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
           <% end %>
