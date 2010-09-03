@@ -79,20 +79,28 @@ class CbrainTask::Civet < ClusterTask
       colpath = collection.cache_full_path.to_s
 
       t1ext   = t1_name.match(/.gz$/i) ? ".gz" : ""
-      safe_symlink("#{colpath}/#{t1_name}","mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}")
+      t1sym   = "mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}"
+      safe_symlink("#{colpath}/#{t1_name}",t1sym)
+      return false unless validate_minc_file(t1sym)
 
       if file0[:multispectral] || file0[:spectral_mask]
         if t2_name
           t2ext = t2_name.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink("#{colpath}/#{t2_name}","mincfiles/#{prefix}_#{dsid}_t2.mnc#{t2ext}")
+          t2sym = "mincfiles/#{prefix}_#{dsid}_t2.mnc#{t2ext}"
+          safe_symlink("#{colpath}/#{t2_name}",t2sym)
+          return false unless validate_minc_file(t2sym)
         end
         if pd_name
           pdext = pd_name.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink("#{colpath}/#{pd_name}","mincfiles/#{prefix}_#{dsid}_pd.mnc#{pdext}")
+          pdsym = "mincfiles/#{prefix}_#{dsid}_pd.mnc#{pdext}"
+          safe_symlink("#{colpath}/#{pd_name}",pdsym)
+          return false unless validate_minc_file(pdsym)
         end
         if mk_name
           mkext = mk_name.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink("#{colpath}/#{mk_name}","mincfiles/#{prefix}_#{dsid}_mask.mnc#{mkext}")
+          mksym = "mincfiles/#{prefix}_#{dsid}_mask.mnc#{mkext}"
+          safe_symlink("#{colpath}/#{mk_name}",mksym)
+          return false unless validate_minc_file(mksym)
         end
       end
 
@@ -101,7 +109,9 @@ class CbrainTask::Civet < ClusterTask
       t1_name     = t1.name
       t1cachename = t1.cache_full_path.to_s
       t1ext       = t1_name.match(/.gz$/i) ? ".gz" : ""
-      safe_symlink(t1cachename,"mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}")
+      t1sym       = "mincfiles/#{prefix}_#{dsid}_t1.mnc#{t1ext}"
+      safe_symlink(t1cachename,t1sym)
+      return false unless validate_minc_file(t1sym)
 
       if file0[:multispectral] || file0[:spectral_mask]
         if t2_id
@@ -109,7 +119,9 @@ class CbrainTask::Civet < ClusterTask
           t2cachefile.sync_to_cache
           t2cachename = t2cachefile.cache_full_path.to_s
           t2ext = t2cachename.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink(t2cachename,"mincfiles/#{prefix}_#{dsid}_t2.mnc#{t2ext}")
+          t2sym = "mincfiles/#{prefix}_#{dsid}_t2.mnc#{t2ext}"
+          safe_symlink(t2cachename,t2sym)
+          return false unless validate_minc_file(t2sym)
         end
 
         if pd_id
@@ -117,7 +129,9 @@ class CbrainTask::Civet < ClusterTask
           pdcachefile.sync_to_cache
           pdcachename = pdcachefile.cache_full_path.to_s
           pdext = pdcachename.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink(pdcachename,"mincfiles/#{prefix}_#{dsid}_pd.mnc#{pdext}")
+          pdsym = "mincfiles/#{prefix}_#{dsid}_pd.mnc#{pdext}"
+          safe_symlink(pdcachename,pdsym)
+          return false unless validate_minc_file(pdsym)
         end
 
         if mk_id
@@ -125,7 +139,9 @@ class CbrainTask::Civet < ClusterTask
           mkcachefile.sync_to_cache
           mkcachename = mkcachefile.cache_full_path.to_s
           mkext = mkcachename.match(/.gz$/i) ? ".gz" : ""
-          safe_symlink(mkcachename,"mincfiles/#{prefix}_#{dsid}_mask.mnc#{mkext}")
+          mksym = "mincfiles/#{prefix}_#{dsid}_mask.mnc#{mkext}"
+          safe_symlink(mkcachename,mksym)
+          return false unless validate_minc_file(mksym)
         end
       end # if multispectral or spectral_mask
     end # MODE B
@@ -246,7 +262,7 @@ class CbrainTask::Civet < ClusterTask
     unless File.directory?(out_dsid)
       self.addlog("Error: this CIVET run did not complete successfully.")
       self.addlog("We couldn't find the result subdirectory '#{out_dsid}' !")
-      return false
+      return false # Failed On Cluster
     end
 
     # Next block commented-out until we find a better
@@ -259,10 +275,17 @@ class CbrainTask::Civet < ClusterTask
       self.addlog("Error: it seems this CIVET run is still processing!")
       self.addlog("We found these files in 'logs' : #{running.sort.join(', ')}")
       self.addlog("Trigger the recovery code to force a cleanup and a restart.")
-      return false
+      return false # Failed On Cluster
     end
     badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?)$/i }
     unless badnews.empty?
+      failed_t1_trigger = "#{dsid}_nuc_t1_native.failed"
+      if badnews.include?(failed_t1_trigger)
+         self.addlog("Error: it seems this CIVET run could not process your T1 file!")
+         self.addlog("We found this file in 'logs' : #{failed_t1_trigger}")
+         self.addlog("The input file is probably not a proper MINC file, there's not much we can do.")
+         return false # Failed On Cluster
+      end
       self.addlog("Warning: not all subtasks of this CIVET completed successfully.")
       self.addlog("We found these files in 'logs' : #{badnews.sort.join(', ')}")
       self.addlog("This result set might therefore be only partial, but we'll proceed in saving it.")
@@ -351,6 +374,18 @@ class CbrainTask::Civet < ClusterTask
       badnews.each { |bn| File.unlink("#{out_dsid}/logs/#{bn}") rescue true }
     end
 
+    true
+  end
+
+  # Makes a quick check to ensure the input files
+  # are really MINC files.
+  def validate_minc_file(path) #:nodoc:
+    text = IO.popen("mincinfo #{path} 2>&1") { |io| io.read }
+    base = File.basename(path)
+    if text !~ /^file: /
+       self.addlog("Error: it seems one the input file '#{base}' we prepared is not a MINC file?!?")
+       return false
+    end
     true
   end
 

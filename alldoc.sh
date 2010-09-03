@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# ---------------------------------------------
+# CBRAIN Local Documentation Generator
+# By Pierre Rioux
+#
+# $Id$
+# ---------------------------------------------
+
 echo "This script will generate or refresh a local directory"
 echo "of HTML pages containing the CBRAIN APIs."
 echo ""
