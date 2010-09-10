@@ -1,6 +1,4 @@
 
-<%% title '<%= class_name %> Parameters' %>
-
 <%%
 # Use this template to create the content of the form
 # for your task. You only need to provide the input
@@ -10,8 +8,8 @@
 # This partial has access to the following variables:
 #
 #    form   -  The form black variable provided by form_for()
-#              in new.html.erb; this variable is almost never
-#              used in the current design.
+#              in new.html.erb; this variable can be used
+#              with the CBRAIN params helper methods
 #
 #    @task  -  Your current task object
 #
@@ -21,19 +19,30 @@
 # params hash table and default to the current values found
 # there:
 #
-#   1) Use the .to_la method on Symbols or Strings to
-#      generate the proper Rails variable name path.
+#   1) Using the CBRAIN helper methods: (see CbrainTaskFormBuilder)
 #
-#   2) Access params[] to get the current values.
+#     Call the methods on the 'form' variable; pass it a
+#     symbol that will be the key to the params hash.
 #
-# Examples:
+#   Examples:
 #
-#   text_field_tag  :filename.to_la, params[:filename]
+#     form.params_text_field :filename
 #
-#   check_box_tag   :confirm.to_la, 1, params[:confirm]
+#     form.params_check_box  :confirm
 #
-#   etc.
-#   
+#   2) Building the tags explicitely:
+#
+#     a) Use the .to_la method on Symbols or Strings to
+#        generate the proper Rails variable name path.
+#
+#     b) Access params[] to get the current values.
+#
+#   Examples:
+#
+#     text_field_tag  :filename.to_la, params[:filename]
+#
+#     check_box_tag   :confirm.to_la, 1, params[:confirm]
+#
 -%>
 
 <H3>SAMPLE FORM CONTENT:<H3>

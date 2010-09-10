@@ -7,7 +7,7 @@ class ClusterTaskGenerator < Rails::Generator::NamedBase
       m.template "portal_task_model.rb", "app/models/cbrain_task/#{file_name}.rb"
       m.template "partial.html.erb",     "app/views/tasks/cbrain_task/_#{file_name}.html.erb"
       m.template "show_params.html.erb", "app/views/tasks/show_params/_#{file_name}.html.erb"
-      m.template "task_options.html",    "public/doc/tasks/#{file_name}.html"
+      m.template "task_options.html",    "public/doc/tasks/#{file_name}_options.html"
     end
     task_manifest
   end
