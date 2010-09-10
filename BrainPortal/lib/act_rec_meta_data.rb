@@ -162,8 +162,15 @@ module ActRecMetaData
 
     # Returns all the MetaDataStore objects associated
     # with the current ActiveRecord object.
-    def all #:nodoc:
+    def all
       self.md_cache.values
+    end
+
+    # Reloads the meta data information associated
+    # with the current ActiveRecord object.
+    def reload
+      self.reload_cache
+      true
     end
 
 
@@ -224,7 +231,7 @@ module ActRecMetaData
   def meta
     cb_error "Cannot manage metadata on the metadata store itself!" if self.is_a?(MetaDataStore)
     cb_error "Cannot manage metadata on an object that hasn't been saved yet." unless self.id
-    @meta ||= MetaDataHandler.new(self.id, self.class.to_s)
+    @_cbrain_meta ||= MetaDataHandler.new(self.id, self.class.to_s)
   end
 
   # Destroy the metadata associated with an ActiveRecord.
@@ -234,7 +241,7 @@ module ActRecMetaData
   def destroy_all_meta_data
     return true if self.is_a?(MetaDataStore)
     allmeta = self.meta.all
-    @meta = nil
+    @_cbrain_meta = nil
     return true unless allmeta
     allmeta.each { |m| m.destroy_without_callbacks }
     true
