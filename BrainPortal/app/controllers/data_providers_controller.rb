@@ -88,6 +88,9 @@ class DataProvidersController < ApplicationController
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
 
+    add_meta = params[:meta] || {}
+    add_meta[:must_move] ||= nil # it's a checkbox
+
     errors = {}
   
     if subtype.empty?
@@ -105,6 +108,9 @@ class DataProvidersController < ApplicationController
     
     if errors.empty?
       @provider.save
+      add_meta.each do |metakey,val|
+        @provider.meta[metakey] = val
+      end
     else
       errors.each do |attr, msg|
         @provider.errors.add(attr, msg)
@@ -130,6 +136,9 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find(id)
 
+    add_meta = params[:meta] || {}
+    add_meta[:must_move] ||= nil # it's a checkbox
+
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        redirect_to :action => :index
@@ -142,6 +151,9 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(fields)
 
     if @provider.errors.empty?
+      add_meta.each do |metakey,val|
+        @provider.meta[metakey] = val
+      end
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."
     else
@@ -364,6 +376,17 @@ class DataProvidersController < ApplicationController
     dirtypes  = params[:directorytypes] || []
     do_unreg  = params[:commit] =~ /unregister/i
 
+    # Automatic MOVE or COPY operation?
+    move_or_copy = params[:auto_do]                || ""
+    other_provid = params[:other_data_provider_id] || nil
+    new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
+    past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
+    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !do_unreg
+      flash[:error] = "Error: you selected to automatically #{move_or_copy} your files but did not specify a destination Data Provider."
+      redirect_to :action => :browse
+      return
+    end
+    
     @fileinfolist = get_recent_provider_list_all(params[:refresh])
 
     base2info = {}
@@ -453,12 +476,6 @@ class DataProvidersController < ApplicationController
       flash[:notice] += "No files affected.\n"
     end
 
-    # Automatic MOVE or COPY operation?
-    move_or_copy = params[:auto_do]                || ""
-    other_provid = params[:other_data_provider_id] || nil
-    new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
-    past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
-    
     # Nothing else do to if no automatic operation required.
     if (move_or_copy != "MOVE" && move_or_copy != "COPY") || !new_dp || newly_registered_userfiles.size == 0
       if newly_registered_userfiles.size > 0

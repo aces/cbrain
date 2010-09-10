@@ -159,8 +159,7 @@
 </span>
 
 <div class="groupentry">
-  <br>
-  <strong>Info for Remote Data Providers</strong>
+  <strong>SSH parameters for remote Data Providers</strong>
   <span title="Name of the remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
     <p><label for="remote_host">Remote Hostname</label><br/>
     <%= f.text_field :remote_host %></p>
@@ -182,3 +181,10 @@
   <%= f.text_field :remote_dir %></p>
 </span>
 
+<div class="groupentry">
+  <strong>Other properties</strong>
+  <p><label>Files MUST be copied/moved upon registration</label>
+  <%= check_box_tag 'meta[must_move]', "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
+  <small>(Only for browsable Data Providers)</small>
+  <p>
+</div>

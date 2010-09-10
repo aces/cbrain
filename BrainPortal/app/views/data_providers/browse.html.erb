@@ -20,12 +20,13 @@
 
     <%= group_select :other_group_id, {}, { :include_blank => "... assign them to project ..." } %>
 
-    <%= select_tag :auto_do,
-        options_for_select([ [ "... do nothing else!", "" ],
-                             [ "... move the files to Data Provider ->", "MOVE" ],
-                             [ "... copy the files to Data Provider ->", "COPY" ]
-                           ])
+    <% auto_do_options = [
+                            [ "... move the files to Data Provider ->", "MOVE" ],
+                            [ "... copy the files to Data Provider ->", "COPY" ]
+                         ]
+      auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move]
     %>
+    <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
 
     <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } %>
     <%= data_provider_select :other_data_provider_id,
