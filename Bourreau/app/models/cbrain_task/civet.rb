@@ -380,10 +380,11 @@ class CbrainTask::Civet < ClusterTask
   # Makes a quick check to ensure the input files
   # are really MINC files.
   def validate_minc_file(path) #:nodoc:
+    return true  # patch
     text = IO.popen("mincinfo #{path} 2>&1") { |io| io.read }
     base = File.basename(path)
     if text !~ /^file: /
-       self.addlog("Error: it seems one the input file '#{base}' we prepared is not a MINC file?!?")
+       self.addlog("Error: it seems one of the input file '#{base}' we prepared is not a MINC file?!?")
        return false
     end
     true
