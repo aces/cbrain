@@ -89,6 +89,7 @@ class UserfilesController < ApplicationController
     end
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    @data_providers = @data_providers.select { |dp| ! dp.meta[:no_uploads] }
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
     @preferred_bourreau_id = current_user.user_preference.bourreau_id
     

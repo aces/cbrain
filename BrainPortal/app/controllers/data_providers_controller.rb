@@ -88,9 +88,6 @@ class DataProvidersController < ApplicationController
     fields    = params[:data_provider]
     subtype   = fields.delete(:type)
 
-    add_meta = params[:meta] || {}
-    add_meta[:must_move] ||= nil # it's a checkbox
-
     errors = {}
   
     if subtype.empty?
@@ -108,8 +105,9 @@ class DataProvidersController < ApplicationController
     
     if errors.empty?
       @provider.save
-      add_meta.each do |metakey,val|
-        @provider.meta[metakey] = val
+      add_meta = params[:meta] || {}
+      [:must_move, :no_uploads].each do |metakey|
+        @provider.meta[metakey] = add_meta[metakey]
       end
     else
       errors.each do |attr, msg|
@@ -136,9 +134,6 @@ class DataProvidersController < ApplicationController
     id        = params[:id]
     @provider = DataProvider.find(id)
 
-    add_meta = params[:meta] || {}
-    add_meta[:must_move] ||= nil # it's a checkbox
-
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        redirect_to :action => :index
@@ -151,8 +146,9 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(fields)
 
     if @provider.errors.empty?
-      add_meta.each do |metakey,val|
-        @provider.meta[metakey] = val
+      add_meta = params[:meta] || {}
+      [:must_move, :no_uploads].each do |metakey|
+        @provider.meta[metakey] = add_meta[metakey]
       end
       redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."

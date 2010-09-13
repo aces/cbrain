@@ -184,7 +184,9 @@
 <div class="groupentry">
   <strong>Other properties</strong>
   <p><label>Files MUST be copied/moved upon registration</label>
-  <%= check_box_tag 'meta[must_move]', "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
+  <%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
   <small>(Only for browsable Data Providers)</small>
+  <p><label>Cannot be used for uploading files in the file manager</label>
+  <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
   <p>
 </div>
