@@ -27,7 +27,7 @@
   <td>-</td>
 <% end %>
 
-<td class="resource_details" style="display:none"><%= h(bour.description) %></td>
+<td class="resource_details" style="display:none"><%= overlay_description(bour.description) %></td>
 
 <% if bour.has_owner_access?(current_user) %>
 
