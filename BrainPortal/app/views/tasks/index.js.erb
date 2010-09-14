@@ -1,5 +1,7 @@
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#tasks_table").html("<%= escape_javascript(render(:partial => 'tasks_table')) %>")
-jQuery("#task_view_mode").html("<%= escape_javascript(render(:partial => 'tasks_view_mode')) %>")
-jQuery("#current_filters").html("<%= escape_javascript(render(:partial => 'current_filters')) %>")
-jQuery("#pagination").html("<%= escape_javascript(render(:partial => 'pagination')) %>")
+var new_table = jQuery("<%= escape_javascript(render(:partial => 'tasks_table')) %>");
+jQuery("#tasks_table").html(new_table);
+new_table.trigger("new_content");
+jQuery("#task_view_mode").html("<%= escape_javascript(render(:partial => 'tasks_view_mode')) %>");
+jQuery("#current_filters").html("<%= escape_javascript(render(:partial => 'current_filters')) %>");
+jQuery("#pagination").html("<%= escape_javascript(render(:partial => 'pagination')) %>");

@@ -1,69 +1,17 @@
 var macacc;
 var brainbrowser;
 
-
-jQuery(
- function() {
-
-   /////////////////////////////////////////////////////////////////////
-    //
-    // Ajax Pagination
-    //
-    /////////////////////////////////////////////////////////////////////
-
-    jQuery(".pagination a").live("click", function(){
-      link = jQuery(this);
-      url = link.attr("href");
-      pagination_div = link.closest(".pagination");
-      pagination_div.html(" Loading... <BR>");
-      jQuery.ajax({
-        url: url,
-        dataType: "script"
-      });
-      return false;
-    });
-
-   /////////////////////////////////////////////////////////////////////
-   //
-   // UI Helper Methods see application_helper.rb for corresponding
-   // helpers.
-   //
-   /////////////////////////////////////////////////////////////////////
-
-   //All elements with the accordion class will be changed to accordions.
-   jQuery(".accordion").accordion({
-     active: false,
-     collapsible: true,
-     autoHeight: false}
-   );
-
-
-   //Sortable list of elements
-   jQuery(".sortable_list").sortable();
-   jQuery(".sortable_list").disableSelection();
-
-   jQuery(".slider_field").each( function() {
-     var slider_text_field = jQuery(this).children().filter("input");
-     jQuery(this).children().filter(".slider").slider({ change: function(event,ui) {
-       jQuery(slider_text_field).val(ui.value);
-     }});
-   });
-
-   jQuery(".draggable_element").draggable({
-     connectToSortable: '#sortable',
-     helper: 'clone',
-     revert: 'invalid'
-   });
-
-   jQuery(".sortable_list ul, sortable_list li").disableSelection();
-
-   //Tab Bar, div's of type tabs become tab_bars
-   // See TabBar class
-   jQuery(".tabs").tabs();
-
+//Behaviours for newly loaded content that isn't triggered
+//by the user.
+//
+//This is for behaviours that can not be bound to live.
+//
+//NOTE: DO NOT USE .live() or .delegate() in here.
+function load_behaviour(event){
+   loaded_element = jQuery(event.target);
    //Overlay dialogs
    //See overlay_dialog_with_button()
-   jQuery(".overlay_dialog").each( function(index,element){
+   loaded_element.find(".overlay_dialog").each( function(index,element){
      var enclosing_div = jQuery(this);
      var dialog_link = enclosing_div.children('.overlay_content_link');
      var dialog = enclosing_div.children(".overlay_content")
@@ -83,23 +31,46 @@ jQuery(
        return false; 
      });
    });
+   
+   /////////////////////////////////////////////////////////////////////
+   //
+   // UI Helper Methods see application_helper.rb for corresponding
+   // helpers.
+   //
+   /////////////////////////////////////////////////////////////////////
 
-   //Links with class "overlay_link" will create an overlay with content loaded
-   //from "data-url".
-   jQuery(".overlay_ajax_link").click( function() {
-     var url=jQuery(this).attr('href');
-     var dialog = jQuery("<div style=\"display: none;\"></div>").load(url).appendTo(jQuery("body")).dialog({
-     	show: "puff",
-     	modal: true,
-      position: 'center',
-     	width: 800,
-     	height: 600
-     });
-     
-     return false;
+   //All elements with the accordion class will be changed to accordions.
+   loaded_element.find(".accordion").accordion({
+     active: false,
+     collapsible: true,
+     autoHeight: false}
+   );
+
+
+   //Sortable list of elements
+   loaded_element.find(".sortable_list").sortable();
+   loaded_element.find(".sortable_list").disableSelection();
+
+   loaded_element.find(".slider_field").each( function() {
+     var slider_text_field = jQuery(this).children().filter("input");
+     jQuery(this).children().filter(".slider").slider({ change: function(event,ui) {
+       jQuery(slider_text_field).val(ui.value);
+     }});
    });
 
-   jQuery(".inline_edit_field").each(function() {
+   loaded_element.find(".draggable_element").draggable({
+     connectToSortable: '#sortable',
+     helper: 'clone',
+     revert: 'invalid'
+   });
+
+   loaded_element.find(".sortable_list ul, sortable_list li").disableSelection();
+   
+   //Tab Bar, div's of type tabs become tab_bars
+   // See TabBar class
+   loaded_element.find(".tabs").tabs();
+   
+   loaded_element.find(".inline_edit_field").each(function() {
      var input_field = jQuery(this).children().filter("span").children().filter("input").hide();
      var save_link = jQuery(this).children().filter(".inplace_edit_field_save").hide();
      var text = jQuery(this).children().filter("span").children().filter(".current_text");
@@ -124,24 +95,154 @@ jQuery(
    });
 
    //Turns the element into a button looking thing
-   jQuery(".button").button();
+   loaded_element.find(".button").button();
 
    //Makes a button set, buttons that are glued together
-   jQuery(".button_set").buttonset();
+   loaded_element.find(".button_set").buttonset();
 
 
-   jQuery(".button_with_drop_down").children(".button_menu").button({
+   loaded_element.find(".button_with_drop_down").children(".button_menu").button({
      icons: {
        secondary: 'ui-icon-triangle-1-s'
      }
    }).toggle(function(event){
                var menu = jQuery(this).siblings(".drop_down_menu");
-               jQuery(".drop_down_menu:visible").siblings(".button_menu").click();
+               loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
      	        menu.show();
              },
              function(event){
      	        var menu = jQuery(this).siblings(".drop_down_menu");
      	        menu.hide();
+   });
+   
+   /////////////////////////////////////////////////////////////////////
+    //
+    // Delayed loading of content
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    //See ajax_element() in application_helper.rb
+    //The ajax element will have its contents loaded by the response from an
+    //ajax request (so the element's conents will be loaded later with respect
+    //to the rest of the page). If the "data-replace" attribute is set to "true"
+    //the entire element will be replace an not just its contents.
+    loaded_element.find(".ajax_element").each(function (index,element){
+      var current_element = jQuery(element);
+      var url = current_element.attr("data-url");
+      var error_message = current_element.attr("data-error");
+      var replace = current_element.attr("data-replace");
+      jQuery.ajax({
+        type: 'GET',
+        url: url,
+        dataType: 'html',
+        success: function(data) {
+            var new_content = jQuery(data);
+            if(replace == "true"){
+              current_element.replaceWith(new_content);
+            }else{
+              current_element.html(new_content);
+            }
+            new_content.trigger("new_content");
+        },
+        error: function(e) {
+          if(!error_message){
+            error_message = "Error loading element";
+          }
+          current_element.html("<span class='loading_message'>"+ error_message +"</span>");
+        },
+        timeout: 50000
+  	   });
+    });
+
+    //See script_loader() in application_helper.rb
+    //Similar to above except that instead of loading html
+    //it fetches javascript from the server that will be executed
+    //update the page.
+    loaded_element.find(".script_loader").each(function (index,element){
+      var current_element = jQuery(element);
+      current_element.css("display", "none");
+      var url = current_element.attr("data-url");
+      jQuery.ajax({
+        dataType: 'script',
+        url: url,
+        timeout: 50000
+      });
+    });
+
+    var staggered_load_elements = loaded_element.find(".staggered_loader");
+    staggered_loading(0, staggered_load_elements);
+
+    function staggered_loading(index, element_array){
+       if(index >= element_array.length) return;
+
+       var current_element = jQuery(element_array[index]);
+       var url = current_element.attr("data-url");
+       var error_message = current_element.attr("data-error");
+       var replace = current_element.attr("data-replace");
+       jQuery.ajax({
+         dataType: 'html',
+         url: url,
+         target: current_element,
+         timeout: 50000,
+         success: function(data) {
+             var new_content = jQuery(data);
+             if(replace == "true"){
+               current_element.replaceWith(new_content);
+             }else{
+               current_element.html(new_content);
+             }
+             new_content.trigger("new_content");
+         },
+         error: function(e) {
+           if(!error_message){
+             error_message = "Error loading element";
+           }
+           current_element.html("<span class='loading_message'>"+ error_message +"</span>");
+         },
+         complete: function(e) {
+           staggered_loading(index+1, element_array)
+         }
+       });
+     }
+   
+}
+
+jQuery(
+ function() {
+   jQuery("body").bind("new_content", load_behaviour);
+   jQuery("body").trigger("new_content");
+
+   /////////////////////////////////////////////////////////////////////
+    //
+    // Ajax Pagination
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    jQuery(".pagination a").live("click", function(){
+      link = jQuery(this);
+      url = link.attr("href");
+      pagination_div = link.closest(".pagination");
+      pagination_div.html(" Loading... <BR>");
+      jQuery.ajax({
+        url: url,
+        dataType: "script"
+      });
+      return false;
+    });
+
+   //Links with class "overlay_link" will create an overlay with content loaded
+   //from "data-url".
+   jQuery(".overlay_ajax_link").live("click", function() {
+     var url=jQuery(this).attr('href');
+     var dialog = jQuery("<div style=\"display: none;\"></div>").load(url).appendTo(jQuery("body")).dialog({
+     	show: "puff",
+     	modal: true,
+      position: 'center',
+     	width: 800,
+     	height: 600
+     });
+     
+     return false;
    });
 
    jQuery(".show_toggle").live("click", function(){
@@ -194,7 +295,13 @@ jQuery(
         type: method,
         url: url,
         dataType: data_type,
-        target: target,
+        success: function(data){
+            if(target){
+              var new_content = jQuery(data);
+              jQuery(target).html(data);
+              new_content.trigger("new_content");
+            }       
+          }
       });
 
       return false;
@@ -281,7 +388,9 @@ jQuery(
        dataType : data_type,
        success: function(data){
           if(target){
+            var new_content = jQuery(data);
             jQuery(target).html(data);
+            new_content.trigger("new_content");
           }       
         },
        data : {current_value : current_value}
@@ -311,7 +420,9 @@ jQuery(
        dataType: data_type,
        success: function(data){
          if(target){
+           var new_content = jQuery(data);
            jQuery(target).html(data);
+           new_content.trigger("new_content");
          }       
        },
        resetForm: true
@@ -341,7 +452,9 @@ jQuery(
          dataType: data_type,
          success: function(data){
            if(target){
+             var new_content = jQuery(data);
              jQuery(target).html(data);
+             new_content.trigger("new_content");
            }       
          },
          data: parameters
@@ -444,7 +557,7 @@ jQuery(
 
 
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
-   jQuery("#jiv_submit").click(function(){
+   jQuery("#jiv_submit").live("click", function(){
      var data_type = jQuery(this).attr("data-datatype");
      jQuery(this).closest("form").ajaxSubmit({
        url: "/jiv",
@@ -465,92 +578,6 @@ jQuery(
      });
      return false;
    });
-
-   /////////////////////////////////////////////////////////////////////
-   //
-   // Delayed loading of content
-   //
-   /////////////////////////////////////////////////////////////////////
-
-   //See ajax_element() in application_helper.rb
-   //The ajax element will have its contents loaded by the response from an
-   //ajax request (so the element's conents will be loaded later with respect
-   //to the rest of the page). If the "data-replace" attribute is set to "true"
-   //the entire element will be replace an not just its contents.
-   jQuery(".ajax_element").each(function (index,element){
-     var current_element = jQuery(element);
-     var url = current_element.attr("data-url");
-     var error_message = current_element.attr("data-error");
-     var replace = current_element.attr("data-replace");
-     jQuery.ajax({
-       type: 'GET',
-       url: url,
-       dataType: 'html',
-       success: function(data) {
-           if(replace == "true"){
-             current_element.replaceWith(data);
-           }else{
-             current_element.html(data);
-           }
-       },
-       error: function(e) {
-         if(!error_message){
-           error_message = "Error loading element";
-         }
-         current_element.html("<span class='loading_message'>"+ error_message +"</span>");
-       },
-       timeout: 50000
- 	   });
-   });
-
-   //See script_loader() in application_helper.rb
-   //Similar to above except that instead of loading html
-   //it fetches javascript from the server that will be executed
-   //update the page.
-   jQuery(".script_loader").each(function (index,element){
-     var current_element = jQuery(element);
-     current_element.css("display", "none");
-     var url = current_element.attr("data-url");
-     jQuery.ajax({
-       dataType: 'script',
-       url: url,
-       timeout: 50000
-     });
-   });
-   
-   var staggered_load_elements = jQuery(".staggered_loader");
-   staggered_loading(0, staggered_load_elements);
-   
-   function staggered_loading(index, element_array){
-      if(index >= element_array.length) return;
-      
-      var current_element = jQuery(element_array[index]);
-      var url = current_element.attr("data-url");
-      var error_message = current_element.attr("data-error");
-      var replace = current_element.attr("data-replace");
-      jQuery.ajax({
-        dataType: 'html',
-        url: url,
-        target: current_element,
-        timeout: 50000,
-        success: function(data) {
-            if(replace == "true"){
-              current_element.replaceWith(data);
-            }else{
-              current_element.html(data);
-            }
-        },
-        error: function(e) {
-          if(!error_message){
-            error_message = "Error loading element";
-          }
-          current_element.html("<span class='loading_message'>"+ error_message +"</span>");
-        },
-        complete: function(e) {
-          staggered_loading(index+1, element_array)
-        }
-      });
-    }
 
    //For loading content into an element after it is clicked.
    //See on_click_ajax_replace() in application_helper.rb
@@ -592,6 +619,7 @@ jQuery(
          new_data.attr("data-parents", parents);
          new_data.addClass(parents);
          before_content.replaceWith(new_data);
+         new_data.trigger("new_content");
          onclick_elem.find(".ajax_onclick_show_child").hide();
          onclick_elem.find(".ajax_onclick_hide_child").show();
        },
@@ -600,6 +628,7 @@ jQuery(
          new_data.attr("data-parents", parents);
          new_data.addClass(parents);
          before_content.replaceWith(new_data);
+         new_data.trigger("new_content");
          onclick_elem.find(".ajax_onclick_show_child").hide();
          onclick_elem.find(".ajax_onclick_hide_child").show();
  	    },

@@ -103,8 +103,7 @@ class DataProvidersController < ApplicationController
     
     @provider = subclass.new(fields)
     
-    if errors.empty?
-      @provider.save
+    if errors.empty? && @provider.save
       add_meta = params[:meta] || {}
       [:must_move, :no_uploads].each do |metakey|
         @provider.meta[metakey] = add_meta[metakey]

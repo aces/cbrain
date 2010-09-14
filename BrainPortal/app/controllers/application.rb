@@ -346,8 +346,10 @@ class ApplicationController < ActionController::Base
       color = options[:color1]
       string = string1
     end
-    return string unless color
-    return "<font color=\"#{color}\">#{string}</font>" # maybe use a div?
+    if color
+      color = "style=\"color:#{color}\""
+    end
+    return "<span #{color}>#{string}</span>"
   end
 
 end
