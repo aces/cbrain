@@ -19,6 +19,14 @@
       <small>(This first line should be a summary, and the rest are your notes)</small>
     </td>
 
+    <td>
+      <strong>Tool version:</strong>
+      <% if @tool_configs_select.size > 0 %>
+        <%= select_tag "cbrain_task[tool_config_id]", options_for_select(@tool_configs_select, @task.tool_config_id.to_s) %>
+      <% else %>
+        <strong>Default</strong>
+      <% end %>
+    </td>
   </tr>
 
   <tr>
@@ -31,6 +39,8 @@
       <strong>Project:</strong><br>
       <%= group_select "cbrain_task[group_id]", @task.group_id %>
     </td>
+
+    <td></td>
   </tr>
 
 </table>

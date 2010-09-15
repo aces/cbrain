@@ -360,6 +360,7 @@ class ClusterTask < CbrainTask
     begin
       self.addlog("Setting Up.")
       self.make_cluster_workdir
+      self.apply_tool_config_environment
       Dir.chdir(self.cluster_workdir) do
         if ! self.setup  # as defined by subclass
           self.addlog("Failed to setup: 'false' returned by setup().")
@@ -394,6 +395,7 @@ class ClusterTask < CbrainTask
     # to have a spawn occur here.
     begin
       self.addlog("Starting asynchronous postprocessing.")
+      self.apply_tool_config_environment
       saveok = false
       Dir.chdir(self.cluster_workdir) do
         # Call the subclass-provided save_results()
@@ -784,6 +786,21 @@ class ClusterTask < CbrainTask
   # Cluster Task Creation Methods
   ##################################################################
 
+  # Apply the environment variables configured in
+  # the ToolConfig objects in effect for this job.
+  def apply_tool_config_environment
+    # Find the tool configuration in effect
+    # We need three objects, each can be nil.
+    bourreau_glob_config = ToolConfig.find(:first, :conditions => { :bourreau_id => self.bourreau_id, :tool_id => nil     })
+    tool                 = self.tool
+    tool_glob_config     = ToolConfig.find(:first, :conditions => { :bourreau_id => nil,              :tool_id => tool.id })
+    tool_config          = self.tool_config
+
+    bourreau_glob_config.apply_environment(:extended) if bourreau_glob_config
+    tool_glob_config.apply_environment(:extended)     if tool_glob_config
+    tool_config.apply_environment(:extended)          if tool_config
+  end
+
   # Submit the actual job request to the cluster management software.
   # Expects that the WD has already been changed.
   def submit_cluster_job
@@ -803,24 +820,39 @@ class ClusterTask < CbrainTask
       return true
     end
 
+    # Find the tool configuration in effect
+    # We need three objects, each can be nil.
+    bourreau_glob_config = ToolConfig.find(:first, :conditions => { :bourreau_id => self.bourreau_id, :tool_id => nil     })
+    tool                 = self.tool
+    tool_glob_config     = ToolConfig.find(:first, :conditions => { :bourreau_id => nil,              :tool_id => tool.id })
+    tool_config          = self.tool_config
+    self.addlog("Tool Version: #{tool_config.short_description}") if tool_config
+
     # Create a bash command script out of the text
     # lines supplied by the subclass
+    script = <<-QSUB_SCRIPT
+#!/bin/sh
+
+# Script created automatically by #{self.class.to_s}
+# #{Revision_info}
+
+# Global Bourreau initialization section
+#{CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n")}
+
+#{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
+#{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
+#{tool_config          ? tool_config.to_bash_prologue          : ""}
+
+# CBRAIN initializations
+export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
+
+# CbrainTask commands section
+#{commands.join("\n")}
+
+    QSUB_SCRIPT
     qsubfile = QSUB_SCRIPT_BASENAME + ".#{self.run_id}.sh"
     File.open(qsubfile,"w") do |io|
-      io.write(
-        "#!/bin/sh\n" +
-        "\n" +
-        "# Script created automatically by #{self.class.to_s}\n" +
-        "# #{Revision_info}\n" +
-        "\n" +
-        "# Global Bourreau initialization section\n" +
-        CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n") + "\n" +
-        "\n" +
-        "# User commands section\n" +
-        "export PATH=\"#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH\"\n" +
-        commands.join("\n") +
-        "\n"
-      )
+      io.write( script )
     end
 
     # Create the cluster job object

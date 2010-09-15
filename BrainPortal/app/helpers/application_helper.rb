@@ -75,7 +75,7 @@ module ApplicationHelper
 
   # Takes a +description+ (a string with possibly multiple lines) and shows
   # the first line only; other lines if present will be made accessible
-  # by an appended link called '(more)' in an overlay.
+  # through a link called '(more)' which launches an overlay.
   def overlay_description(description=nil, options={})
     return "" if description.blank?
     raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/

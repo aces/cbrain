@@ -58,7 +58,7 @@ class CbrainTask::Diagnostics < PortalTask
     params     = self.params
     numfiles   = params[:interface_userfile_ids].size
     num_copies = params[:num_copies]
-    desc       = params[:description] || ""
+    desc       = self.description || ""
 
     task_list = []
     num_copies.times do |i|

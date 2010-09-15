@@ -1,0 +1,33 @@
+
+<% title 'Edit Tool Configuration' %>
+
+<h2>Edit Tool Configuration</h2>
+
+<div class="generalbox">
+
+  <strong>Important note:</strong>
+  <% if @tool_config.tool_id %>
+    This form applies to tool <strong><%= @tool_config.tool.name %></strong>
+  <% else %>
+    This form applies to <strong>ALL tools</strong>
+  <% end %>
+
+  <% if @tool_config.bourreau_id.blank? %>
+    running on <strong>ALL Execution Servers</strong>.<br>
+  <% else %>
+    running on Execution Server <strong><%= h(@tool_config.bourreau.name) %></strong>.
+  <% end %>
+
+  <p>
+
+   <% form_for :tool_config, @tool_config, :url => { :controller => :tool_configs, :action => :update, :id => (@tool_config.id || "NEW") }, :html  => { :method  => :put } do |f| %>
+     <%= f.error_messages %>
+
+     <%= render :partial => 'form_fields' %>
+
+     <p>
+     <%= submit_tag "Save Configuration" %>
+     </p>
+   <% end %>
+</div>
+

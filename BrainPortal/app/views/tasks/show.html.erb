@@ -77,6 +77,11 @@
       </tr>
 
       <tr>
+          <th>Tool Version </th>
+          <td class="left_align"><%= @task.tool_config ? overlay_description(@task.tool_config.description) : "Default" %></td>
+      </tr>
+
+      <tr>
           <th>Execution Server</th>
           <td><%= link_to_bourreau_if_accessible(@task.bourreau) %></td>
       </tr>

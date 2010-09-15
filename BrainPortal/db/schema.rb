@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100902180412) do
+ActiveRecord::Schema.define(:version => 20100915194340) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(:version => 20100902180412) do
     t.integer  "share_wd_tid"
     t.integer  "run_number"
     t.integer  "group_id"
+    t.integer  "tool_config_id"
   end
 
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
@@ -234,6 +235,16 @@ ActiveRecord::Schema.define(:version => 20100902180412) do
   create_table "tags_userfiles", :id => false, :force => true do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
+  end
+
+  create_table "tool_configs", :force => true do |t|
+    t.text     "description"
+    t.integer  "tool_id"
+    t.integer  "bourreau_id"
+    t.text     "env_hash"
+    t.text     "script_prologue"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "tools", :force => true do |t|

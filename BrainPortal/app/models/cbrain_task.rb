@@ -23,6 +23,7 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :bourreau
   belongs_to            :user
   belongs_to            :group
+  belongs_to            :tool_config
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id
@@ -119,6 +120,14 @@ class CbrainTask < ActiveRecord::Base
     mybourreau = self.bourreau.name rescue "(Unknown)"
     myid       = self.id            ||     "(NoId)"
     "#{self.name}@#{mybourreau}/#{myid}"
+  end
+
+  # Returns the Tool object associated with the task.
+  # Unfortunately, there isn't a clear association between
+  # a task and a tool; it's based on the class name stored
+  # in the one of the tool's attribute.
+  def tool
+    Tool.find(:first, :conditions => { :cbrain_task_class => self.class.to_s })
   end
 
 

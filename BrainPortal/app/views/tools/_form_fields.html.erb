@@ -24,14 +24,6 @@
 </p>
 
 <p>
-  Installed on the following execution servers: <br/>
-  <% for bourreau in Bourreau.find_all_accessible_by_user(current_user) %>
-    <%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %>
-    <%= bourreau.name %>
-  <% end %>
-</p>
-
-<p>
   <%= f.label :category %>: 
   <%= f.select :category, Tool::Categories %>  
 </p>
@@ -45,4 +37,39 @@
   Text for select box on the userfiles page:
   <%= f.text_field :select_menu_text %>
 </p>
+
+<% if @tool %>
+<p>
+  Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
+</p>
+<p>
+  Versions installed on the following execution servers:<br/>
+  <table class="simple">
+    <tr>
+      <th>Execution Server</th>
+      <th>Enabled?</th>
+      <th>Versions Configuration</th>
+    </tr>
+    <% for bourreau in @bourreaux %>
+      <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
+        <td><%= link_to_bourreau_if_accessible(bourreau) %></td>
+        <td><%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %></td>
+        <td>
+          <table class="simple">
+          <% ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => @tool.id }).each do |tc| %>
+            <tr>
+            <td><%= overlay_description(tc.description) %></td>
+            <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
+            <td><%= link_to "Show", tool_config_path(tc) %></td>
+            <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.short_description}'?", :method => :delete %></td>
+            </tr>
+          <% end %>
+            <tr><td colspan="4"><%= link_to "Add new", new_tool_config_path( :tool_id => @tool.id, :bourreau_id => bourreau.id ) %></td></tr>
+          </table>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</p>
+<% end %>
 

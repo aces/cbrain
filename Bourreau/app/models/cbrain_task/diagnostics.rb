@@ -38,6 +38,10 @@ class CbrainTask::Diagnostics < ClusterTask
       self.addlog "This task is copy #{params[:copy_number]} of #{params[:copy_total]}."
     end
 
+    %w[ CBRAIN_GLOBAL_BOURREAU_CONFIG_ID CBRAIN_GLOBAL_TOOL_CONFIG_ID CBRAIN_TOOL_CONFIG_ID ].each do |var|
+       self.addlog("Environment check: #{var}=#{ENV[var] || "(Unset)"}")
+    end
+
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
       unless u
@@ -140,6 +144,10 @@ class CbrainTask::Diagnostics < ClusterTask
     user_id      = self.user_id
 
     self.addlog "Starting diagnostics postprocessing."
+
+    %w[ CBRAIN_GLOBAL_BOURREAU_CONFIG_ID CBRAIN_GLOBAL_TOOL_CONFIG_ID CBRAIN_TOOL_CONFIG_ID ].each do |var|
+       self.addlog("Environment check: #{var}=#{ENV[var] || "(Unset)"}")
+    end
 
     if mybool(params[:cluster_crash])
       params[:cluster_crash]=nil if mybool(params[:crash_will_reset])

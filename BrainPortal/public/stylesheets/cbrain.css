@@ -433,6 +433,11 @@ pre {
     max-width: 80em;
 }
 
+.script_preview {
+    border: solid black;
+    background-color: #EEEEEE;
+}
+
 
 
 /* % ######################################################### */

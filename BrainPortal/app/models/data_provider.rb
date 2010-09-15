@@ -914,7 +914,7 @@ class DataProvider < ActiveRecord::Base
 
   # This method returns the revision number of the last time
   # the caching system was initialized. If the revision
-  # number is unknown, then a strning value of "0" is returned and
+  # number is unknown, then a string value of "0" is returned and
   # the method will immediately store the current revision
   # number. The value is stored in a file at the top of the
   # caching system's directory structure.

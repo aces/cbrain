@@ -482,7 +482,7 @@ class TasksController < ApplicationController
     @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
 
     # Find the list of Bourreaux that are both available and support the tool
-    tool       = Tool.find_by_cbrain_task_class(@task.class.to_s)
+    tool       = @task.tool
     @bourreaux = tool.bourreaux.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
 
     # Presets
@@ -502,6 +502,18 @@ class TasksController < ApplicationController
       #@own_presets = [ [ "Personal1", "1" ], [ "Personal2", "2" ] ]
       #@all_presets = [ [ "Site Presets", [ [ "Dummy1", "1" ], [ "Dummy2", "2" ] ] ], [ "Personal Presets", @own_presets ] ]
     end
+
+    # Tool Configurations
+    valid_bourreau_ids = @bourreaux.index_by &:id
+    valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing task have more limited choices.
+    @tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => tool.id }) || []
+    @tool_configs.reject! { |tc| tc.bourreau_id.blank? || ! valid_bourreau_ids[tc.bourreau_id] }
+    @tool_configs_select = @tool_configs.map do |tc| 
+      bn   = tc.bourreau.name
+      desc = tc.short_description
+      [ "On #{bn}: #{desc}", tc.id.to_s ]
+    end
+    @tool_configs_select << [ "On any: Default", "" ] if @tool_configs_select.size == 0 || ! @task.id
 
   end
 

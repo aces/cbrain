@@ -1,0 +1,43 @@
+
+<% title 'Show Tool Configuration' %>
+
+<h2>Show Tool Configuration</h2>
+
+<div class="generalbox">
+
+  Configurations shown here:
+  <UL>
+    <% if @bourreau_glob_config %>
+      <LI>
+        For <strong>ALL tools</strong> running on Execution Server <strong><%= h(@bourreau_glob_config.bourreau.name) %></strong>
+        <%= link_to "Edit", edit_tool_config_path(@bourreau_glob_config) %>
+      </LI>
+    <% end %>
+    <% if @tool_glob_config %>
+      <LI>
+        For tool <strong><%= h(@tool_glob_config.tool.name) %></strong> running on <strong>ALL Execution Servers</strong>
+        <%= link_to "Edit", edit_tool_config_path(@tool_glob_config) %>
+      </LI>
+    <% end %>
+    <% if @tool_config %>
+      <LI>
+        For tool <strong><%= h(@tool_config.tool.name) %></strong> running on Execution Server <strong><%= h(@tool_config.bourreau.name) %></strong> configured as version: <%= overlay_description(@tool_config.description) %>
+        <%= link_to "Edit", edit_tool_config_path(@tool_config) %>
+      </LI>
+    <% end %>
+  </UL>
+
+  <p>
+  <strong>Important note:</strong>
+  This section displays the full BASH initialization prologue script for the configurations
+  listed above.
+  <% if ( (@tool_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@bourreau_glob_config ? 1 : 0) ) > 1 %>
+    <br>
+    Several distinct configurations are involved and shown in order of execution.
+  <% end %>
+  </p>
+
+  <pre class="script_preview"><%= h(@boureau_glob_config.to_bash_prologue) if @boureau_glob_config %><%= h(@tool_glob_config.to_bash_prologue) if @tool_glob_config %><%= h(@tool_config.to_bash_prologue) if @tool_config %></pre>
+
+</div>
+

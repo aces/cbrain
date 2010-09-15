@@ -71,6 +71,11 @@
           <%= f.text_field :cache_trust_expire %></p>
       </div>
 
+      <% if is_bourreau %>
+      <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
+      </p>
+      <% end %>
+
       <p><%= submit_tag 'Update' %></p>
 
    <% end -%>
