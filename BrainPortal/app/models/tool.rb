@@ -50,6 +50,13 @@ class Tool < ActiveRecord::Base
     end
     bourreau_list.slice(rand(bourreau_list.size)).id
   end
+
+  # Returns the single ToolConfig object that describes the configuration
+  # for this tool for all Bourreaux, or nil if it doesn't exist.
+  def global_tool_config
+    @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
+      { :tool_id => self.id, :bourreau_id => nil } )
+  end
   
   private
   
@@ -57,4 +64,5 @@ class Tool < ActiveRecord::Base
     self.select_menu_text ||= "Launch #{self.name}"
     self.description ||= "#{self.name}"
   end
+
 end

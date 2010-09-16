@@ -791,9 +791,8 @@ class ClusterTask < CbrainTask
   def apply_tool_config_environment
     # Find the tool configuration in effect
     # We need three objects, each can be nil.
-    bourreau_glob_config = ToolConfig.find(:first, :conditions => { :bourreau_id => self.bourreau_id, :tool_id => nil     })
-    tool                 = self.tool
-    tool_glob_config     = ToolConfig.find(:first, :conditions => { :bourreau_id => nil,              :tool_id => tool.id })
+    bourreau_glob_config = self.bourreau.global_tool_config
+    tool_glob_config     = self.tool.global_tool_config
     tool_config          = self.tool_config
 
     bourreau_glob_config.apply_environment(:extended) if bourreau_glob_config
@@ -822,9 +821,8 @@ class ClusterTask < CbrainTask
 
     # Find the tool configuration in effect
     # We need three objects, each can be nil.
-    bourreau_glob_config = ToolConfig.find(:first, :conditions => { :bourreau_id => self.bourreau_id, :tool_id => nil     })
-    tool                 = self.tool
-    tool_glob_config     = ToolConfig.find(:first, :conditions => { :bourreau_id => nil,              :tool_id => tool.id })
+    bourreau_glob_config = self.bourreau.global_tool_config
+    tool_glob_config     = self.tool.global_tool_config
     tool_config          = self.tool_config
     self.addlog("Tool Version: #{tool_config.short_description}") if tool_config
 

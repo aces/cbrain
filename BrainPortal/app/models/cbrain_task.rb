@@ -125,9 +125,9 @@ class CbrainTask < ActiveRecord::Base
   # Returns the Tool object associated with the task.
   # Unfortunately, there isn't a clear association between
   # a task and a tool; it's based on the class name stored
-  # in the one of the tool's attribute.
+  # in one of the tool's attribute.
   def tool
-    Tool.find(:first, :conditions => { :cbrain_task_class => self.class.to_s })
+    @tool_cache ||= Tool.find(:first, :conditions => { :cbrain_task_class => self.class.to_s })
   end
 
 

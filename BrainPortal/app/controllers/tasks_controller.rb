@@ -506,7 +506,7 @@ class TasksController < ApplicationController
     # Tool Configurations
     valid_bourreau_ids = @bourreaux.index_by &:id
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing task have more limited choices.
-    @tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => tool.id }) || []
+    @tool_configs = tool.tool_configs # all of them, too much actually
     @tool_configs.reject! { |tc| tc.bourreau_id.blank? || ! valid_bourreau_ids[tc.bourreau_id] }
     @tool_configs_select = @tool_configs.map do |tc| 
       bn   = tc.bourreau.name
