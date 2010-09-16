@@ -72,8 +72,7 @@ class RemoteResource < ActiveRecord::Base
   # Returns the RemoteResource object representing
   # the current Rails application.
   def self.current_resource
-    #@@current_resource ||= self.find(CBRAIN::SelfRemoteResourceId)
-    self.find(CBRAIN::SelfRemoteResourceId)
+    @current_resource ||= self.find(CBRAIN::SelfRemoteResourceId) # CLASS INSTANCE VAR!
   end
 
   # Returns a copy of the Rails DB configuration hash currently

@@ -34,7 +34,7 @@ class CbrainTask < ActiveRecord::Base
   before_create         :record_statistics
 
   # Pseudo Attributes (not saved in DB)
-  attr_accessor :cluster_stdout, :cluster_stderr
+  attr_accessor :cluster_stdout, :cluster_stderr, :script_text
 
   # The attribute 'params' is a serialized hash table
   # containing job-specific parameters; it's up to each

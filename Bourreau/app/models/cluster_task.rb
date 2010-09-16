@@ -375,7 +375,7 @@ class ClusterTask < CbrainTask
     script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
     script += tool_glob_config.to_bash_prologue     if tool_glob_config
     script += tool_config.to_bash_prologue          if tool_config
-    script += "\n" + command
+    script += "\n\n" + command + "\n\n"
     File.open(scriptfile,"w") { |fh| fh.write(script) }
 
     # Execute and capture
@@ -731,6 +731,13 @@ class ClusterTask < CbrainTask
   # Cluster Job's STDOUT And STDERR Files Methods
   ##################################################################
 
+  # Returns a basename for the QSUB script for the task.
+  # This is not a full path, just filename relative to the work directory.
+  # The file itself is not garanteed to exist, either.
+  def qsub_script_basename(run_number=nil)
+    QSUB_SCRIPT_BASENAME + ".#{self.run_id(run_number)}.sh"
+  end
+
   # Returns the filename for the job's captured STDOUT
   # Returns nil if the work directory has not yet been
   # created, or no longer exists. The file itself is not
@@ -767,11 +774,13 @@ class ClusterTask < CbrainTask
   # pseudo attributes :cluster_stdout and :cluster_stderr
   # are not really part of the task's ActiveRecord model.
   def capture_job_out_err(run_number=nil)
-     self.cluster_stdout=nil
-     self.cluster_stderr=nil
+     self.cluster_stdout = nil
+     self.cluster_stderr = nil
+     self.script_text    = nil
      return if self.new_record?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
+     scriptfile = Pathname.new(self.cluster_workdir) + self.qsub_script_basename(run_number)
      if stdoutfile && File.exist?(stdoutfile)
         io = IO.popen("tail -1000 #{stdoutfile}","r")
         self.cluster_stdout = io.read
@@ -782,6 +791,10 @@ class ClusterTask < CbrainTask
         self.cluster_stderr = io.read
         io.close
      end
+     if scriptfile && File.exist?(scriptfile.to_s)
+        self.script_text = File.read(scriptfile.to_s) rescue ""
+     end
+     true
   end
 
 
@@ -883,6 +896,7 @@ class ClusterTask < CbrainTask
 # #{Revision_info}
 
 # Global Bourreau initialization section
+# TODO: REMOVE!
 #{CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n")}
 
 #{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
@@ -892,11 +906,12 @@ class ClusterTask < CbrainTask
 # CBRAIN initializations
 export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
 
-# CbrainTask commands section
+# CbrainTask '#{self.name}' commands section
+
 #{commands.join("\n")}
 
     QSUB_SCRIPT
-    qsubfile = QSUB_SCRIPT_BASENAME + ".#{self.run_id}.sh"
+    qsubfile = self.qsub_script_basename
     File.open(qsubfile,"w") do |io|
       io.write( script )
     end

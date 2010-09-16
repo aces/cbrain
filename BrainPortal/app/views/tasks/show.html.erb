@@ -182,6 +182,7 @@
    <%
       prettystdout = @task.cluster_stdout || "(None)"
       prettystderr = @task.cluster_stderr || "(None)"
+      prettyscript = @task.script_text    || "(None)"
    %>
       <tr>
         <th colspan="2">Cluster Job's Captured Output</th>
@@ -210,6 +211,11 @@
             <% end %>
             <% tb.tab("Standard Error") do %>
               <pre class="standard_out"><%= h(prettystderr) -%></pre>
+            <% end %>
+            <% if current_user.has_role?(:admin) %>
+              <% tb.tab("Script") do %>
+                <pre class="script_preview"><%= h(prettyscript) %></pre>
+              <% end %>
             <% end %>
           <% end %>
         </td>

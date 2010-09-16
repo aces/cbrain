@@ -319,11 +319,13 @@ class Bourreau < RemoteResource
     task = CbrainTask.find(task_id)
     run_number = command.run_number || task.run_number
     task.capture_job_out_err(run_number)
-    command.cluster_stdout=task.cluster_stdout
-    command.cluster_stderr=task.cluster_stderr
+    command.cluster_stdout = task.cluster_stdout
+    command.cluster_stderr = task.cluster_stderr
+    command.script_text    = task.script_text
   rescue => e
-    command.cluster_stdout="Bourreau Exception: #{e.class} #{e.message}\n"
-    command.cluster_stderr="Bourreau Exception:\n#{e.backtrace.join("\n")}\n"
+    command.cluster_stdout = "Bourreau Exception: #{e.class} #{e.message}\n"
+    command.cluster_stderr = "Bourreau Exception:\n#{e.backtrace.join("\n")}\n"
+    command.script_text    = ""
   end
 
   private

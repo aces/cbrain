@@ -116,10 +116,12 @@ class TasksController < ApplicationController
       control            = bourreau.send_command_get_task_outputs(task_id,@run_number)
       @task.cluster_stdout = control.cluster_stdout
       @task.cluster_stderr = control.cluster_stderr
+      @task.script_text    = control.script_text
     rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
       flash.now[:notice] = "Warning: the Execution Server '#{bourreau.name}' for this task is not available right now."
       @task.cluster_stdout = "Execution Server is DOWN!"
       @task.cluster_stderr = "Execution Server is DOWN!"
+      @task.script_text    = nil
     end
 
     respond_to do |format|

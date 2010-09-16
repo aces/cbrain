@@ -65,6 +65,7 @@ class RemoteCommand < RestrictedHash
      :run_number,      # supplied by queryier
      :cluster_stdout,  # filled by receiver
      :cluster_stderr,  # filled by receiver
+     :script_text,     # filled by receiver
 
      # -------- CLEAN CACHE PARAMETERS --------
 

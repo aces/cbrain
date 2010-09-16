@@ -3,12 +3,12 @@
 
   <tr>
     <td>
-      <strong>Execution server:</strong><br>
+      <strong>Execution&nbsp;server:</strong><br>
       <%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available", :disabled => (! @task.new_record? ) } %>
     </td>
 
     <td>
-      <strong>Save results to:</strong>
+      <strong>Save&nbsp;results&nbsp;to:</strong>
       <%= overlay_data_providers_descriptions(@data_providers) %><br>
       <%= data_provider_select :data_provider_id.to_la, { :selector => @task.params[:data_provider_id], :data_providers => @data_providers } , { :include_blank => "Data provider of input files" } %>
     </td>
@@ -20,7 +20,7 @@
     </td>
 
     <td>
-      <strong>Tool version:</strong>
+      <strong>Tool&nbsp;version:</strong>
       <% if @tool_configs_select.size > 0 %>
         <%= select_tag "cbrain_task[tool_config_id]", options_for_select(@tool_configs_select, @task.tool_config_id.to_s) %>
       <% else %>
