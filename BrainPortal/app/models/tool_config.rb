@@ -88,6 +88,8 @@ class ToolConfig < ActiveRecord::Base
 
       DESC_HEADER
       if ! desc.blank?
+        desc.gsub!(/\r\n/,"\n")
+        desc.gsub!(/\r/,"\n")
         desc_array = desc.split(/\n/).collect { |line| "# #{line}" }
         script += desc_array.join("\n") + "\n\n"
       end
@@ -114,6 +116,8 @@ class ToolConfig < ActiveRecord::Base
 #---------------------------------------------------
 
     SCRIPT_HEADER
+    prologue.gsub!(/\r\n/,"\n")
+    prologue.gsub!(/\r/,"\n")
     prologue += "\n" unless prologue =~ /\n$/
 
     script += prologue
