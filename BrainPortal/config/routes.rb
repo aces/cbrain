@@ -31,13 +31,15 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :data_providers, :member     => { :browse  => :get,  :register   => :post, :is_alive => :get },
                                  :collection => { :cleanup => :post, :disk_usage => :get }
 
-  map.resources :userfiles,      :member     => { :content => :get,  :sync_to_cache => :post, :extract_from_collection  => :post }, 
-                                 :collection => { :download          => :get, 
-                                                  :delete_files      => :delete, 
-                                                  :create_collection => :post,
-                                                  :update_multiple   => :put,
-                                                  :change_provider   => :post,
-                                                  :compress          => :post }
+  map.resources :userfiles,      :member     => { :content => :get, :sync_to_cache => :post, :extract_from_collection  => :post }, 
+                                 :collection => { :download             => :get,
+                                                  :new_parent_child     => :get,
+                                                  :create_parent_child  => :post,
+                                                  :delete_files         => :delete, 
+                                                  :create_collection    => :post,
+                                                  :update_multiple      => :put,  
+                                                  :change_provider      => :post, 
+                                                  :compress             => :post }
 
   # Redirect for polymorphisms
   map.resources :single_files,            :controller => :userfiles  

@@ -105,6 +105,33 @@ class UserfilesController < ApplicationController
     end
   end
 
+  def new_parent_child
+    if params[:file_ids].blank?
+      render :text  => "<span class=\"warning\">You must select at least one file to which you have write access.</span>"
+      return
+    end
+    
+    @userfiles = Userfile.find_accessible_by_user(params[:file_ids], current_user)
+    
+    render :action  => :new_parent_child, :layout  => false
+  end
+  
+  def create_parent_child
+    parent_id = params[:parent_id]
+    child_ids = params[:child_ids]
+    
+    if parent_id.blank? || child_ids.blank?
+      flash[:error] = "Must have both parent and children selected for this operation."
+    else
+      child_ids.delete(parent_id)
+      @children = Userfile.find_accessible_by_user(params[:child_ids], current_user)
+      @parent = Userfile.find_accessible_by_user(params[:parent_id], current_user)
+      @children.each { |c| c.move_to_child_of(@parent) }
+    end
+    
+    redirect_to :action => :index
+  end
+
   ####################################################
   # Provides a way of accessing file contents in a way that is intelligent and customizable 
   # for each type of file supported in the platform

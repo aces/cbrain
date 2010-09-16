@@ -475,10 +475,9 @@ module CbrainUiHelper
   #+options+ same as for link_to
   #
   def overlay_ajax_link(name, url, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " overlay_ajax_link"
-        
-    link_to name, url, options
+    options[:overlay] = true
+    
+    ajax_link name, url, options
   end
   
   #Create a link that will submin an ajax_request to +url+
@@ -510,6 +509,21 @@ module CbrainUiHelper
     target = options.delete(:target)
     if target
       options["data-target"] = target
+    end
+    
+    overlay = options.delete(:overlay)
+    if overlay && overlay.to_s.downcase != "false"
+      options["data-target"] = "__OVERLAY__"
+    end
+    
+    width = options.delete(:width)
+    if width
+      options["data-width"] = width
+    end
+    
+    height = options.delete(:height)
+    if height
+      options["data-height"] = height
     end
     
     link_to name, url, options 
@@ -708,9 +722,24 @@ module CbrainUiHelper
       options["data-target"] = target
     end
     
+    overlay = options.delete(:overlay)
+    if overlay && overlay.to_s.downcase != "false"
+      options["data-target"] = "__OVERLAY__"
+    end
+    
     confirm = options.delete(:confirm)
     if confirm
       options["data-confirm"] = confirm
+    end
+    
+    width = options.delete(:width)
+    if width
+      options["data-width"] = width
+    end
+    
+    height = options.delete(:height)
+    if height
+      options["data-height"] = height
     end
     
     submit_tag(name, options)

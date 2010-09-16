@@ -14,9 +14,17 @@
       <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
       <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
       <P>
-      Project permission update: 
+      Project Permission Update: 
       <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
       <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+      <hr>
+      Update Parent-Child Relationships:
+      <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
+                                                   :overlay => true,
+                                                   :width  => 600,
+                                                   :height  => 100, 
+                                                   :method  => :get) 
+      %>
   <% end %>
 
   <% button_with_dropdown_menu("Move/Copy")  do %>
@@ -36,9 +44,6 @@
                                               :class  => "button", 
                                               :method  => :post) 
   %>
-
-
-
 
   <%= hijacker_submit_button("Create Collection", :url  => url_for(:action  => :create_collection),
                                                   :class  => "button", 

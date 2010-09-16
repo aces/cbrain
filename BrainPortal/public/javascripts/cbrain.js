@@ -1,6 +1,31 @@
 var macacc;
 var brainbrowser;
 
+function modify_target(data, target, options){
+  if(!options) options = {};
+  
+  if(target){
+    var new_content = jQuery(data);
+    if(target == "__OVERLAY__"){
+      width = parseInt(options["width"] || 800);
+      height = parseInt(options["height"] || 500);
+      jQuery("<div></div>").html(new_content).appendTo(jQuery("body")).dialog({
+       	show: "puff",
+       	modal: true,
+        position: 'center',
+       	width: width,
+       	height: height,
+       	close: function(){
+       	  jQuery(this).remove();
+       	}
+       });
+    }else{
+      jQuery(target).html(data);
+    }
+    new_content.trigger("new_content");
+  }
+}
+
 //Behaviours for newly loaded content that isn't triggered
 //by the user.
 //
@@ -230,21 +255,6 @@ jQuery(
       return false;
     });
 
-   //Links with class "overlay_link" will create an overlay with content loaded
-   //from "data-url".
-   jQuery(".overlay_ajax_link").live("click", function() {
-     var url=jQuery(this).attr('href');
-     var dialog = jQuery("<div style=\"display: none;\"></div>").load(url).appendTo(jQuery("body")).dialog({
-     	show: "puff",
-     	modal: true,
-      position: 'center',
-     	width: 800,
-     	height: 600
-     });
-     
-     return false;
-   });
-
    jQuery(".show_toggle").live("click", function(){
      var current_element = jQuery(this);
      var target_element = jQuery(current_element.attr("data-target"));
@@ -288,6 +298,9 @@ jQuery(
      var url = link.attr("href");
      var method = link.attr("data-method");
      var target = link.attr("data-target");
+     var other_options = {};
+     if(link.attr("data-width")) other_options["width"] = link.attr("data-width");
+     if(link.attr("data-height")) other_options["height"] = link.attr("data-height");
      if(!data_type) data_type = "html";
      if(!method) method = "GET";
 
@@ -296,12 +309,8 @@ jQuery(
         url: url,
         dataType: data_type,
         success: function(data){
-            if(target){
-              var new_content = jQuery(data);
-              jQuery(target).html(data);
-              new_content.trigger("new_content");
-            }       
-          }
+           modify_target(data, target, other_options);
+         }
       });
 
       return false;
@@ -387,11 +396,7 @@ jQuery(
        type : method,
        dataType : data_type,
        success: function(data){
-          if(target){
-            var new_content = jQuery(data);
-            jQuery(target).html(data);
-            new_content.trigger("new_content");
-          }       
+         modify_target(data, target);     
         },
        data : {current_value : current_value}
      });
@@ -419,11 +424,7 @@ jQuery(
        type: method,
        dataType: data_type,
        success: function(data){
-         if(target){
-           var new_content = jQuery(data);
-           jQuery(target).html(data);
-           new_content.trigger("new_content");
-         }       
+         modify_target(data, target);     
        },
        resetForm: true
      });
@@ -451,11 +452,7 @@ jQuery(
          url: url,
          dataType: data_type,
          success: function(data){
-           if(target){
-             var new_content = jQuery(data);
-             jQuery(target).html(data);
-             new_content.trigger("new_content");
-           }       
+           modify_target(data, target);     
          },
          data: parameters
        });
@@ -473,6 +470,9 @@ jQuery(
      var url = button.attr("data-url");
      var method = button.attr("data-method");
      var target = button.attr("data-target");
+     var other_options = {};
+     if(button.attr("data-width")) other_options["width"] = button.attr("data-width");
+     if(button.attr("data-height")) other_options["height"] = button.attr("data-height");
      var confirm_message = button.attr('data-confirm');
      var enclosing_form = button.closest("form");
      if(!data_type) data_type = enclosing_form.attr("data-datatype");
@@ -493,7 +493,9 @@ jQuery(
        url: url,
        type: method,
        dataType: data_type,
-       target: target,
+       success: function(data){
+         modify_target(data, target, other_options);
+       },
        data: { commit : commit },
        resetForm: false
        }
@@ -553,8 +555,6 @@ jQuery(
 
        return false;
    });
-
-
 
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
    jQuery("#jiv_submit").live("click", function(){
