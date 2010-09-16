@@ -342,6 +342,54 @@ class ClusterTask < CbrainTask
     end
   end
 
+  # This method is the equivalent of running a system() call
+  # with the output captured, but where the supplied command
+  # will be executed within the full environment context defined
+  # for the task (that is, environment variables AND bash
+  # prologues will have been executed before the +command+ ).
+  # The +command+ itself can be a multi line script if needed,
+  # as it will be appended to a longer script that wil be passed
+  # to bash. The method returns an array of two strings,
+  # the STDOUT and STDERR produced by the internally
+  # generated script.
+  #
+  # Note that the script is executed in the task's work
+  # directory, even though its text is stored in "/tmp".
+  def tool_config_system(command)
+
+    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+
+    # Defines tmp file paths
+    scriptfile = "/tmp/tool_script.#{$$}.#{Time.now.to_i}"
+    outfile    = "#{scriptfile}.out"
+    errfile    = "#{scriptfile}.err"
+
+    # Find the tool configuration in effect
+    # We need three objects, each can be nil.
+    bourreau_glob_config = self.bourreau.global_tool_config
+    tool_glob_config     = self.tool.global_tool_config
+    tool_config          = self.tool_config
+
+    # Build script
+    script  = ""
+    script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
+    script += tool_glob_config.to_bash_prologue     if tool_glob_config
+    script += tool_config.to_bash_prologue          if tool_config
+    script += "\n" + command
+    File.open(scriptfile,"w") { |fh| fh.write(script) }
+
+    # Execute and capture
+    system("/bin/bash '#{scriptfile}' </dev/null >'#{outfile}' 2>'#{errfile}'")
+    out = File.read(outfile) rescue ""
+    err = File.read(errfile) rescue ""
+    return [ out, err ]
+
+  ensure
+    File.unlink(scriptfile) rescue true
+    File.unlink(outfile)    rescue true
+    File.unlink(errfile)    rescue true
+  end
+
 
 
   ##################################################################
