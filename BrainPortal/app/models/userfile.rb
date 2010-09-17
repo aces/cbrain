@@ -468,7 +468,30 @@ class Userfile < ActiveRecord::Base
   end
   
   
+  ##############################################
+  # Sequential traversal methods.
+  ##############################################
+  
+  def next_available_file(user, options = {})
+    userfiles = Userfile.find_all_accessible_by_user(user, options)
+    return nil if userfiles.empty?
+    return nil if self.id >= userfiles.last.id
+    
+    file = userfiles.find{ |u| u.id > self.id }
+    
+    file
+  end
 
+  def previous_available_file(user, options = {})
+    userfiles = Userfile.find_all_accessible_by_user(user, options)
+    return nil if userfiles.empty?
+    return nil if self.id <= userfiles.first.id
+    
+    file = userfiles[userfiles.rindex{ |u| u.id < self.id }]
+
+    file
+  end
+  
   ##############################################
   # Synchronization Status Access Methods
   ##############################################
@@ -506,7 +529,7 @@ class Userfile < ActiveRecord::Base
     SyncStatus.find(:first, :conditions => {
       :userfile_id        => self.id,
       :remote_resource_id => CBRAIN::SelfRemoteResourceId
-      } )
+    } )
   end
 
   # Returns whether this userfile's contents has been

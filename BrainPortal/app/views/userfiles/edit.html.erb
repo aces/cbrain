@@ -5,6 +5,9 @@
 
 <div class="generalbox">
 
+  <%= file_link_table(@userfile, :class  => "action_link", :access_requested  => :write) %>
+  <br>
+
 <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
 
   <%= f.error_messages %>
@@ -64,7 +67,12 @@
       <td><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
       <td></td>
     </tr>
-
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th class="right_align">Tags:</th>
+      <td colspan="2">
+        <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
+      </td>
+    </tr>
     <% if current_user.has_role? :admin %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
@@ -88,12 +96,16 @@
         </tr>
       <% end %>
     <% end %>
-
+    
   </table>
 
   <P>
   
-  <%= render :partial => 'tags_edit_table', :locals  => {:tags => @tags} %>
+  <% if current_user.tags %>
+    <select name="tag_ids[]" multiple="multiple" style="width:150px" >
+    <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+    </select>
+  <% end %>
   
   <P>
 

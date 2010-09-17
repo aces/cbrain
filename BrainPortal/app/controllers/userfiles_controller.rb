@@ -442,7 +442,7 @@ class UserfilesController < ApplicationController
            end
         end
         flash[:notice] += "#{@userfile.name} successfully updated."
-        format.html { redirect_to(userfiles_url) }
+        format.html { redirect_to(:action  => 'edit') }
         format.xml  { head :ok }
       else
         flash[:error] += "#{@userfile.name} has NOT been updated."
@@ -489,7 +489,8 @@ class UserfilesController < ApplicationController
       flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(success_count, "files")}."
     end
     
-    redirect_to :action => :index, :format => request.format.to_sym
+    redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+    redirect_to redirect_action
   end
   
   #Create a collection from the selected files.
