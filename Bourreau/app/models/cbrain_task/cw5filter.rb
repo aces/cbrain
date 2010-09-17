@@ -77,7 +77,6 @@ class CbrainTask::Cw5filter < ClusterTask
     end
     
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "cw5filter -o #{out_name} -p probe.mls -f filter.flt #{input_file.name}"
     ]  
     

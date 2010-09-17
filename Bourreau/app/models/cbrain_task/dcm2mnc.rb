@@ -46,7 +46,6 @@ class CbrainTask::Dcm2mnc < ClusterTask
     params       = self.params
     use_coord = params[:use_coordinates].blank? ? "" : "-usecoordinates"
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "dcm2mnc #{use_coord} dicom_col results",
     ]
   end

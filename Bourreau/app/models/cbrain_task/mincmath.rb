@@ -54,7 +54,6 @@ class CbrainTask::Mincmath < ClusterTask
     self.addlog("Here we go mincmath #{add} #{params[:nocheck_dimensions]} #{file_names} #{out_name}")
 
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "mincmath #{add} #{no_check_d} #{file_names} #{out_name}",
       "true"
     ]

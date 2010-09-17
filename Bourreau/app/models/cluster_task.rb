@@ -895,10 +895,6 @@ class ClusterTask < CbrainTask
 # Script created automatically by #{self.class.to_s}
 # #{Revision_info}
 
-# Global Bourreau initialization section
-# TODO: REMOVE!
-#{CBRAIN::EXTRA_BASH_INIT_CMDS.join("\n")}
-
 #{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
 #{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
 #{tool_config          ? tool_config.to_bash_prologue          : ""}

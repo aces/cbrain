@@ -73,7 +73,6 @@ class CbrainTask::Mnc2nii < ClusterTask
     end
 
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "echo \"Command: #{command}\"",
       command
     ]

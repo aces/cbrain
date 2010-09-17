@@ -63,7 +63,6 @@ class CbrainTask::Nii2mnc < ClusterTask
     File.unlink(mincbase) rescue true
 
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "echo \"Command: #{command}\"",
       command
     ]

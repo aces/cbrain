@@ -50,7 +50,6 @@ class CbrainTask::Mincaverage < ClusterTask
     weights = params[:weights].blank? ? "" : "-weights #{params[:interface_userfile_ids].map{|id| params[:weights][id.to_s]}.join(",")}"
             
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "mincaverage #{file_names} #{out_name} #{normalize} #{copy_header} #{avg_dim} #{sdfile} #{weights}",
     ]
   end

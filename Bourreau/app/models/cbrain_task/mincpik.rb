@@ -53,7 +53,6 @@ class CbrainTask::Mincpik < ClusterTask
         self.addlog("Here we go mincpik #{slice} #{scale} #{width} #{depth} #{image_range} #{image_color} #{slicing_options} #{mincfile_name} #{out_name}")        
         
         [
-          "source #{CBRAIN::Quarantine_dir}/init.sh",
           "mincpik #{slice} #{scale} #{width} #{depth} #{image_range} #{image_color} #{slicing_options} #{mincfile_name} #{out_name}",
           "true"
         ]

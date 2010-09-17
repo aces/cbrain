@@ -83,7 +83,6 @@ class CbrainTask::Mincresample < ClusterTask
 
     self.addlog("mincresample #{resample_sinc} #{resample_tid} #{resample_like} #{resample_t} #{mincfile_name} #{out_name}")
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "mincresample #{resample_sinc} #{resample_tid} #{resample_like} #{resample_t} #{mincfile_name} #{out_name}",
       "true"
     ]

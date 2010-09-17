@@ -115,7 +115,6 @@ class CbrainTask::Cw5 < ClusterTask
     end
 
     [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
       "#{cw5_command}"
     ]
   end

@@ -111,8 +111,6 @@ class CbrainTask::CivetQc < ClusterTask
     self.addlog("Full CIVET QC command:\n  #{civetqc_command.gsub(/ -/, "\n  -")}")
 
     return [
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
-      "export PATH=\"#{CBRAIN::CIVET_dir}:$PATH\"",
       "echo \"\";echo Showing ENVIRONMENT",
       "env | sort",
       "echo \"\";echo Starting CIVET QC",

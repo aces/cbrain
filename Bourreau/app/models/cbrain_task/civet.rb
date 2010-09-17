@@ -203,12 +203,6 @@ class CbrainTask::Civet < ClusterTask
 
     return [
       "echo =====================",
-      "echo Setting up QUARANTINE",
-      "echo =====================",
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
-      "export PATH=\"#{CBRAIN::CIVET_dir}:$PATH\"",
-      "echo \"\"",
-      "echo =====================",
       "echo Showing ENVIRONMENT",
       "echo =====================",
       "env | sort",
@@ -380,11 +374,15 @@ class CbrainTask::Civet < ClusterTask
   # Makes a quick check to ensure the input files
   # are really MINC files.
   def validate_minc_file(path) #:nodoc:
-    return true  # patch
-    text = IO.popen("mincinfo #{path} 2>&1") { |io| io.read }
+    outerr = self.tool_config_system("mincinfo #{path} 2>&1")
+    out    = outerr[0]
     base = File.basename(path)
-    if text !~ /^file: /
+    if File.symlink?(path)
+      base = File.basename(File.readlink(path)) rescue base
+    end
+    if out !~ /^file: /m
        self.addlog("Error: it seems one of the input file '#{base}' we prepared is not a MINC file?!?")
+       self.addlog("Output of 'mincinfo':\n#{out}") if ! out.blank?
        return false
     end
     true

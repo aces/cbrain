@@ -45,10 +45,6 @@ class CbrainTask::Minc2jiv < ClusterTask
   def cluster_commands #:nodoc:
     params       = self.params
     [
-      "# The darn quarantine init resets the path",
-      "CURPATH=\"$PATH\"",
-      "source #{CBRAIN::Quarantine_dir}/init.sh",
-      "export PATH=\"$PATH:$CURPATH\"",
       "minc2jiv.pl -force -output_path . in.mnc"
     ]
   end
