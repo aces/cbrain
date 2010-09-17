@@ -37,10 +37,6 @@ class CBRAIN
   # Local bourreau constants 
   CLUSTER_sharedir         = "/your/cluster/shared/dir" # a writable directory also visible from all cluster nodes
 
-  # Software installation paths (must be visible from the cluster nodes)
-  Quarantine_dir           = "/your/civet/quarantine/dir"
-  CIVET_dir                = "/your/civet/dir"
-  
   # Name of current Bourreau application.
   # It's important that the name match one of the names
   # of the configured Bourreau ActiveRecord (the superclass is
@@ -58,18 +54,6 @@ class CBRAIN
   # Extra qsub args needed for your local cluster; their
   # syntax depend on your cluster management system. Default is ""
   EXTRA_QSUB_ARGS          = ""
-
-  # Extra bash commands to be executed at the beginning of each
-  # task; this is the perfect place to set up/adjust the PATH,
-  # LD_LIBRARY_PATH etc. Note that:
-  # 1- these lines are executed BEFORE anything else in task's script.
-  # 2- newline characters will automatically be appended to each string
-  #    in this array.
-  EXTRA_BASH_INIT_CMDS     = [
-      "# bash line 1",
-      "# bash line 2",
-      "# bash line 3 ..."
-  ]
 
   # Parameters for Bourreau Workers
   BOURREAU_WORKERS_INSTANCES      = 3  # More workers => more monitoring processes on frontend.
