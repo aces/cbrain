@@ -26,7 +26,7 @@ class CbrainTask::Bedpostx < ClusterTask
     safe_symlink(collection.cache_full_path,"input")
 
     # TODO: replace with a call to program 'bedpostx_datacheck' ?
-    expected_input = [ "data", "nodif_brain_mask", "bvecs", "bvals" ]
+    expected_input = [ "bvecs", "bvals" ]
     errors = 0
     expected_input.each do |base|
       next if File.exist?("input/#{base}")
