@@ -104,8 +104,8 @@ class ToolConfig < ActiveRecord::Base
     ENV_HEADER
     env.each do |name,val|
       name.strip!
-      val.gsub!(/'/,"'\''")
-      script += "export #{name}='#{val}'\n"
+      #val.gsub!(/'/,"'\''")
+      script += "export #{name}="#{val}"\n"
     end
     script += "\n" if env.size > 0
 

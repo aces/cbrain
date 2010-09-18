@@ -22,8 +22,7 @@
     <% 1.upto(5) do %>
       <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
     <% end %>
-    <small>These are fixed strings, all special characters wil be escaped so they cannot refer to other
-           environment variables or execute BASH code.</small>
+    <small>In the generated script, the values shown here will be placed in double quotes automatically.</small>
     </p>
   </span>
 
