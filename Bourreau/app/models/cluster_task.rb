@@ -780,7 +780,7 @@ class ClusterTask < CbrainTask
      return if self.new_record?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
-     scriptfile = Pathname.new(self.cluster_workdir) + self.qsub_script_basename(run_number)
+     scriptfile = Pathname.new(self.cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
         io = IO.popen("tail -1000 #{stdoutfile}","r")
         self.cluster_stdout = io.read
