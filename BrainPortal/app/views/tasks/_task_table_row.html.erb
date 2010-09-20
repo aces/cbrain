@@ -9,7 +9,7 @@
 
 <% if task_available %>
   <tr class="<%= cycle('list-odd', 'list-even')%> row_highlight batch_listing_<%= launch_time_id %>" <%= is_child ? "style=\"display:none\"" : "" %>>
-    <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox_#{launch_time_id}") %></td>
+    <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox task_checkbox_#{launch_time_id}") %></td>
 <% else %>
   <tr class="list-unavailable                     row_highlight batch_listing_<%= launch_time_id %>" <%= is_child ? "style=\"display:none\"" : "" %> title="This task is on an Execution Server that is OFFLINE.">
     <td></td>
