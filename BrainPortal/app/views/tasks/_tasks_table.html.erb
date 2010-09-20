@@ -50,8 +50,16 @@
 
 
     <% unless current_project %>
-      <th>
+      <th onMouseOver="jQuery('#project_filters_list').show()" onMouseOut="jQuery('#project_filters_list').hide()">
         <%= ajax_sort_link "Project", 'groups.name' %>
+        <br>
+           <ul class="filter_list" id="project_filters_list" style="display:none;">
+              <% @task_projects.sort_by(&:name).each do |task_project| %>
+                 <li>
+                   <%= ajax_link h(task_project.name), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
+                 </li> 
+              <% end %>
+           </ul>
       </th>
     <% end %>
 

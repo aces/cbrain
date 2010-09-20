@@ -34,10 +34,12 @@ class TasksController < ApplicationController
     #Used to create filters
     @task_types = []
     @task_owners = []
+    @task_projects = []
     @task_status = []
     scope.find(:all).each do |task|
       @task_types |= [task.class.to_s]
       @task_owners |= [task.user]
+      @task_projects |= [task.group]
       @task_status |= [task.status]
     end
     

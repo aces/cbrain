@@ -5,13 +5,15 @@
     <% @filter_params["filters"].each do |key, value| %>
         <li>
           <% if key == "bourreau_id" %>
-            <%= crop_text_to(20, Bourreau.find(value).name) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script' %>
+            <%= crop_text_to(30, "Bourreau: #{Bourreau.find(value).name}") %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script' %>
           <% elsif key == "user_id" %>
-            <%= crop_text_to(20, User.find(value).login) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script'  %>   
-            <% elsif key == "custom_filter" %>
-               <%= crop_text_to(20, TaskCustomFilter.find(value).name) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script'  %>
+            <%= crop_text_to(30, "User: #{User.find(value).login}") %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script'  %> 
+          <% elsif key == "group_id" %>
+            <%= crop_text_to(30, "Project: #{Group.find(value).name}") %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script'  %>  
+          <% elsif key == "custom_filter" %>
+            <%= crop_text_to(30, TaskCustomFilter.find(value).name) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script'  %>
           <% else %>
-            <%= crop_text_to(20, value.sub(/^CbrainTask::/, "")) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script' %>
+            <%= crop_text_to(30, value.sub(/^CbrainTask::/, "")) %><%= ajax_link delete_icon, {:controller  => :tasks, :action  => :index, :tasks => {:remove_filter  => key}}, :datatype  => 'script' %>
           <% end %>
         </li>
     <% end %>

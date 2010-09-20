@@ -134,6 +134,9 @@ module CbrainUiHelper
     "</div>" 
   end
   
+  #Create a tooltip that displays html when mouseovered.
+  #Text of the icon is provided as an argument.
+  #Html to be displayed on mouseover is given as a block.
   def html_tool_tip(text = "<span class=\"action_link\">?</span>", &block)
     @@html_tool_tip_id ||= 0
     @@html_tool_tip_id += 1
