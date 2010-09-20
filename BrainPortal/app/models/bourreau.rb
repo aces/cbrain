@@ -15,7 +15,7 @@ class Bourreau < RemoteResource
   
   has_many :user_preferences,  :dependent => :nullify
   has_many :cbrain_tasks
-  has_many :tool_configs
+  has_many :tool_configs, :dependent => :destroy
   has_and_belongs_to_many :tools
 
   attr_accessor :operation_messages # no need to store in DB

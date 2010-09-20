@@ -35,7 +35,7 @@ class Tool < ActiveRecord::Base
   belongs_to              :user
   belongs_to              :group
   has_and_belongs_to_many :bourreaux
-  has_many                :tool_configs
+  has_many                :tool_configs, :dependent => :destroy
   
   validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
   validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
