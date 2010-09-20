@@ -1,9 +1,8 @@
-
-<td>
-  <% if @userfile.is_locally_synced? %>
-     <%= string_if(file.symbolic_type == :regular, check_box_tag("file_ids[]", file.name, false, :class  => "collection_checkbox")) %>
-  <% end %>
-</td>
+<% if @userfile.is_locally_synced? %>
+  <td>
+    <%= string_if(file.symbolic_type == :regular, check_box_tag("file_ids[]", file.name, false, :class  => "collection_checkbox")) %>  
+  </td>
+<% end %>
 
 <td class="left">
     <%= "&nbsp" * 6 * file.depth %>

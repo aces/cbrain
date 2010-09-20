@@ -1,11 +1,11 @@
  
 <table class="plain_file_list" class="resource_list">
    <tr class="list-odd">
+     <% if @userfile.is_locally_synced? %>
      <th>
-       <% if @userfile.is_locally_synced? %>
-          <%= select_all_checkbox"collection_checkbox" %>
-       <% end %>
+       <%= select_all_checkbox"collection_checkbox" %>
      </th>
+     <% end %>
      <th>File</th>
      <th>Size</th>
    </tr>
