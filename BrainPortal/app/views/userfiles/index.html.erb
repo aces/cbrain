@@ -22,6 +22,39 @@
             <%= render :partial => 'userfiles/tool_management_conversion' %>
           
       <% end %>
+      <% button_with_dropdown_menu("Download") do %>
+        Specify Download File Name (optional):
+        <%= text_field_tag :specified_filename %>
+        <%= hijacker_submit_button("Download Files", :method  => :get) %>
+      <% end %>
+
+      <% button_with_dropdown_menu("Update Attributes") do %>
+          <h4>Tags</h4>
+          <%= render :partial => 'userfiles/tag_table'%>
+          <hr>
+          <h4>Projects</h4>
+          Change Project: 
+          <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+          <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
+          <P>
+          Project Permission Update: 
+          <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+          <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+          <hr>
+          Update Parent-Child Relationships:
+          <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
+                                                       :overlay => true,
+                                                       :width  => 600,
+                                                       :height  => 100, 
+                                                       :method  => :get) 
+          %>
+      <% end %>
+
+      <% button_with_dropdown_menu("Move/Copy")  do %>
+          <%= data_provider_select("data_provider_id") %>
+          <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
+          <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
+      <% end %>
      </span>
   </div>
   
