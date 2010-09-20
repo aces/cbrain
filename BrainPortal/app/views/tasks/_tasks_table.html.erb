@@ -35,7 +35,7 @@
 
     <th onMouseOver="jQuery('#owner_filters_list').show()" onMouseOut="jQuery('#owner_filters_list').hide()">
        <%= ajax_sort_link "Owner", 'users.login' %>
-       <% if current_user.has_role?(:admin) && !@task_owners.blank? %>
+       <% unless @task_owners.blank? %>
          <br>
            <ul class="filter_list" id="owner_filters_list" style="display:none;">
               <% @task_owners.sort_by(&:login).each do |task_owner| %>
@@ -52,14 +52,16 @@
     <% unless current_project %>
       <th onMouseOver="jQuery('#project_filters_list').show()" onMouseOut="jQuery('#project_filters_list').hide()">
         <%= ajax_sort_link "Project", 'groups.name' %>
-        <br>
-           <ul class="filter_list" id="project_filters_list" style="display:none;">
-              <% @task_projects.sort_by(&:name).each do |task_project| %>
-                 <li>
-                   <%= ajax_link h(task_project.name), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
-                 </li> 
-              <% end %>
-           </ul>
+        <% unless @task_projects.blank? %>
+          <br>
+          <ul class="filter_list" id="project_filters_list" style="display:none;">
+             <% @task_projects.sort_by(&:name).each do |task_project| %>
+                <li>
+                  <%= ajax_link h(task_project.name), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
+                </li> 
+             <% end %>
+          </ul>
+        <% end %>
       </th>
     <% end %>
 

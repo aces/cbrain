@@ -25,10 +25,8 @@ class TasksController < ApplicationController
       scope = current_user.available_tasks
     end
     
-    if current_user.has_role? :admin
-      unless @filter_params["filters"]["user_id"].blank?
-        scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
-      end
+    unless @filter_params["filters"]["user_id"].blank?
+      scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
     end
     
     #Used to create filters
