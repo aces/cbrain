@@ -125,4 +125,16 @@ class ToolConfig < ActiveRecord::Base
     script
   end
 
+  # Returns true if the object has no environment variables
+  # and its script is blank or only contains blank lines or
+  # comments.
+  def is_trivial?
+    return false if (self.env_hash || {}).size > 0
+    text = self.script_prologue
+    return true if text.blank?
+    text_array = text.split(/\n/).reject { |line| line =~ /^\s*#|^\s*$/ }
+    return true if text_array.size == 0
+    false
+  end
+
 end

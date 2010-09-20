@@ -346,21 +346,21 @@ class RemoteResource < ActiveRecord::Base
   # For remote Rails applications, the instance method
   # with the same name can be called.
   def self.remote_resource_info
-    myself             = self.current_resource
-    home               = CBRAIN::Rails_UserHome
-    host_uptime        = `uptime 2>/dev/null`.strip   # TODO make more robust
-    elapsed            = Time.now.localtime - CBRAIN::Startup_LocalTime
-    @@ssh_public_key ||= `cat #{home}/.ssh/id_rsa.pub 2>/dev/null`   # TODO make more robust
-    @@host_name      ||= Socket.gethostname
-    @@host_ip        ||= ""
-    @@host_uname     ||= `uname -a`.strip
-    time_zone_name     = Time.zone ? Time.zone.name : ""
+    myself            = self.current_resource
+    home              = CBRAIN::Rails_UserHome
+    host_uptime       = `uptime 2>/dev/null`.strip   # TODO make more robust
+    elapsed           = Time.now.localtime - CBRAIN::Startup_LocalTime
+    @ssh_public_key ||= `cat #{home}/.ssh/id_rsa.pub 2>/dev/null`   # TODO make more robust
+    @host_name      ||= Socket.gethostname
+    @host_ip        ||= ""
+    @host_uname     ||= `uname -a`.strip
+    time_zone_name    = Time.zone ? Time.zone.name : ""
 
-    if @@host_ip == ""
-      hostinfo = ( Socket.gethostbyname(@@host_name) rescue [ nil, nil, nil, "\000\000\000\000" ] )
+    if @host_ip == ""
+      hostinfo = ( Socket.gethostbyname(@host_name) rescue [ nil, nil, nil, "\000\000\000\000" ] )
       hostinfo[3].each_byte do |b|
-        @@host_ip += "." unless @@host_ip.blank?
-        @@host_ip += b.to_s
+        @host_ip += "." unless @host_ip.blank?
+        @host_ip += b.to_s
       end
     end
 
@@ -389,12 +389,12 @@ class RemoteResource < ActiveRecord::Base
       :uptime             => elapsed,
 
       # Host info
-      :host_name          => @@host_name,
-      :host_ip            => @@host_ip,
-      :host_uname         => @@host_uname,
+      :host_name          => @host_name,
+      :host_ip            => @host_ip,
+      :host_uname         => @host_uname,
       :host_uptime        => host_uptime,
       :rails_time_zone    => time_zone_name,
-      :ssh_public_key     => @@ssh_public_key,
+      :ssh_public_key     => @ssh_public_key,
 
       # Svn info
       :revision           => revinfo['Revision'],
@@ -457,6 +457,7 @@ class RemoteResource < ActiveRecord::Base
   # This method automatically calls update_info if the information has
   # not been cached yet.
   def info
+    return self.class.remote_resource_info if self.id == CBRAIN::SelfRemoteResourceId # no caching for local
     return @info if @info
     @info = RemoteResourceInfo.dummy_record unless is_alive? # is_alive?() fills @info as a side effect
     @info

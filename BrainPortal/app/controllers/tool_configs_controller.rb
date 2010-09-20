@@ -84,7 +84,9 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    @tool_config.attributes = form_tool_config.attributes
+    [ :description, :script_prologue ].each do |att|
+       @tool_config[att] = form_tool_config[att]
+    end
 
     @tool_config.env_hash = {}
     envlist = params[:env_list] || []

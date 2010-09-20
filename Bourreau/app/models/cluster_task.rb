@@ -560,13 +560,38 @@ class ClusterTask < CbrainTask
 
   #Terminate the task (if it's currently in an appropriate state.)
   def terminate
-    return unless self.status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
-    begin
+    cur_status = self.status
+
+    # Cluster job termination
+    if cur_status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
       Scir::Session.session_cache.terminate(self.cluster_jobid)
       self.status = "Terminated"
-    rescue
-      # nothing to do
+      return true
     end
+
+    # Stuck or lost jobs executing Ruby code
+    if self.updated_at < 8.hours.ago && cur_status.match(/^(Setting Up|Post Processing|Recovering|Restarting)/)
+      case cur_status
+        when "Setting Up"
+          self.status = "Failed To Setup"
+        when "Post Processing"
+          self.status = "Failed To PostProcess"
+        when /(Recovering|Restarting) (\S+)/
+          fromwhat = Regexp.last_match[1]
+          self.status = "Failed To Setup"       if fromwhat == 'Setup'
+          self.status = "Failed On Cluster"     if fromwhat == 'Cluster'
+          self.status = "Failed To PostProcess" if fromwhat == 'PostProcess'
+        else
+          self.status = "Terminated"
+      end
+      self.addlog("Terminating a task that is too old and stuck at '#{cur_status}'; now at '#{self.status}'")
+      return true
+    end
+
+    # Otherwise, we don't do nothin'
+    return false
+  rescue
+    false
   end
 
   #Suspend the task (if it's currently in an appropriate state.)
@@ -885,7 +910,12 @@ class ClusterTask < CbrainTask
     bourreau_glob_config = self.bourreau.global_tool_config
     tool_glob_config     = self.tool.global_tool_config
     tool_config          = self.tool_config
-    self.addlog("Tool Version: #{tool_config.short_description}") if tool_config
+    bourreau_glob_config = nil if bourreau_glob_config.is_trivial?
+    tool_glob_config     = nil if tool_glob_config.is_trivial?
+    tool_config          = nil if tool_config.is_trivial?
+    self.addlog("Bourreau Global Config: ID=#{bourreau_glob_config.id}")                if bourreau_glob_config
+    self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                        if tool_glob_config
+    self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.short_description}") if tool_config
 
     # Create a bash command script out of the text
     # lines supplied by the subclass

@@ -171,7 +171,6 @@ class TasksController < ApplicationController
       return
     end
     
-    
     @task.params[:interface_userfile_ids] = @files.map &:id
 
     # Other common instance variables, such as @data_providers and @bourreaux
@@ -244,8 +243,8 @@ class TasksController < ApplicationController
     # A brand new task object!
     @toolname         = params[:toolname]
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
-    @task.user_id     ||= current_user.id
-    @task.group_id    ||= current_session[:active_group_id] || current_user.own_group.id
+    @task.user_id   ||= current_user.id
+    @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
 
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
@@ -269,6 +268,9 @@ class TasksController < ApplicationController
     # Choose a Bourreau if none selected
     if @task.bourreau_id.blank?
       initialize_common_form_values  # We call this just for getting @bourreaux
+      if @task.tool_config && @task.tool_config.bourreau
+        @bourreaux = [ @task.tool_config.bourreau ] # use the one in tool_config
+      end
       if @bourreaux.size == 0
         flash[:error] += "No Execution Server available right now for this task?"
         redirect_to :action  => :new, :file_ids => @task.params[:interface_userfile_ids], :toolname => @toolname
@@ -278,7 +280,7 @@ class TasksController < ApplicationController
       end
     end
 
-    # TODO @task validation here !
+    # TODO validate @task here and if anything is wrong, render :new again
 
     # Custom initializing
     messages = ""

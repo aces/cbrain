@@ -22,6 +22,8 @@ class BourreauWorker < Worker
     ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
+    rr = RemoteResource.current_resource
+    worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
   end
 
   # Calls process_task() regularly on any task that is active.
