@@ -22,7 +22,9 @@
 <% if isbourreau %>
   <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>
   <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
+  <td><%= @num_running %>
 <% else %>
+  <td>-</td>
   <td>-</td>
   <td>-</td>
 <% end %>
@@ -38,7 +40,7 @@
           delete_button 'Delete', bourreau_path(bour), :class  => "action_link", 
                                                        :confirm  => 'Are you sure?', 
                                                        :target  => "#bourreau_#{bour.id}",
-                                                       :target_text  => "<td colspan='16' style='color:red; text-align:center'>Deleting...</td>"
+                                                       :target_text  => "<td colspan='17' style='color:red; text-align:center'>Deleting...</td>"
       %>
      <% end %>
   </td>
