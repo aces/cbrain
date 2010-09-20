@@ -147,15 +147,8 @@ module CbrainUiHelper
   # <% end %>
   #
   def overlay_content_link(name, options = {}, &block)
-    options[:class] ||= ""
-    options[:class] +=  " overlay_content_link"
-    
+    options_setup("overlay_content_link", options)
     options[:href] ||= "#"
-    
-    width = options.delete :width
-    if width
-      options["data-width"] = width
-    end
     
     element = options.delete(:enclosing_element) || "div"
     
@@ -346,20 +339,8 @@ module CbrainUiHelper
   #[:replace] whether the entire element should be replaced (as
   #           opposed to just the content).
   def staggered_loading(element, url, options={}, &block) 
-    options[:class] ||= ""
-    options[:class] +=  " staggered_loader"
-    
+    options_setup("staggered_loader", options)
     options["data-url"] = url
-    
-    error_message = options.delete(:error_message)
-    if error_message
-      options["data-error"] = h(error_message)
-    end
-    
-    replace = options.delete(:replace)
-    if replace
-      options["data-replace"] = replace
-    end
      
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
     if block_given?
@@ -445,27 +426,10 @@ module CbrainUiHelper
   #          page.
   #All other options treated as HTML attributes.
   def ajax_search_box(name, url, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " search_box"
+    options_setup("search_box", options)
     
-    options["data-url"] = url
-    
+    options["data-url"] = url  
     default_value = options.delete(:default)
-    
-    data_type = options.delete(:datatype)
-    if data_type
-      options["data-datatype"] = data_type.to_s.downcase
-    end
-    
-    method = options.delete(:method)
-    if method
-      options["data-method"] = method.to_s.upcase
-    end
-    
-    target = options.delete(:target)
-    if target
-      options["data-target"] = target
-    end
     
     text_field_tag(name, default_value, options)
   end
@@ -493,38 +457,7 @@ module CbrainUiHelper
    #          page.
    #All other options treated as HTML attributes.
   def ajax_link(name, url, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " ajax_link"
-    
-    data_type = options.delete(:datatype)
-    if data_type
-      options["data-datatype"] = data_type.to_s.downcase
-    end
-    
-    method = options.delete(:method)
-    if method
-      options["data-method"] = method.to_s.upcase
-    end
-    
-    target = options.delete(:target)
-    if target
-      options["data-target"] = target
-    end
-    
-    overlay = options.delete(:overlay)
-    if overlay && overlay.to_s.downcase != "false"
-      options["data-target"] = "__OVERLAY__"
-    end
-    
-    width = options.delete(:width)
-    if width
-      options["data-width"] = width
-    end
-    
-    height = options.delete(:height)
-    if height
-      options["data-height"] = height
-    end
+    options_setup("ajax_link", options)
     
     link_to name, url, options 
   end
@@ -540,33 +473,7 @@ module CbrainUiHelper
   #               prior to sending the request.
   #[:confirm] Confirm message to display before sending the request.
   def delete_button(name, url, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " delete_button"
-    
-    data_type = options.delete(:datatype)
-    if data_type
-      options["data-datatype"] = data_type.to_s.downcase
-    end
-    
-    method = options.delete(:method)
-    if method
-      options["data-method"] = method.to_s.upcase
-    end
-    
-    target = options.delete(:target)
-    if target
-      options["data-target"] = target
-    end
-    
-    target_text = options.delete(:target_text)
-    if target_text
-      options["data-target-text"] = target_text
-    end
-    
-    confirm = options.delete(:confirm)
-    if confirm
-      options["data-confirm"] = confirm
-    end
+    options_setup("delete_button", options)
     
     link_to name, url, options
   end
@@ -582,30 +489,9 @@ module CbrainUiHelper
   #               prior to sending the request.
   #All other options treated as HTML attributes.
   def ajax_onchange_select(name, url, option_tags, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " request_on_change"
+    options_setup("request_on_change", options)
     
     options["data-url"] = url
-    
-    data_type = options.delete(:datatype)
-    if data_type
-      options["data-datatype"] = data_type.to_s.downcase
-    end
-    
-    method = options.delete(:method)
-    if method
-      options["data-method"] = method.to_s.upcase
-    end
-    
-    target = options.delete(:target)
-    if target
-      options["data-target"] = target
-    end
-    
-    update_text = options.delete(:target_text)
-    if update_text
-      options["data-target-text"] = update_text
-    end
     
     select_tag(name, option_tags, options)
   end
@@ -699,8 +585,29 @@ module CbrainUiHelper
   #         the request is sent.
   #[:confirm] Confirm message to display before sending the request.
   def hijacker_submit_button(name, options = {})
+    options_setup("ajax_submit_button", options)
+    
+    submit_tag(name, options)
+  end
+  
+  #A submit button that can be outside the form it submits,
+  #which is defined by +form_id+.
+  #
+  #Options:
+  #[:confirm] Confirm message to display before sending the request.
+  def external_submit_button(name, form_id, options = {})
+    options_setup("external_submit_button", options)
+    
+    options["data-associated-form"] = form_id
+    
+    submit_tag(name, options)
+  end
+  
+  private
+  
+  def options_setup(element_class, options)
     options[:class] ||= ""
-    options[:class] +=  " ajax_submit_button"
+    options[:class] +=  " #{element_class}"
     
     url = options.delete(:url)
     if url
@@ -720,6 +627,11 @@ module CbrainUiHelper
     target = options.delete(:target)
     if target
       options["data-target"] = target
+    end
+    
+    update_text = options.delete(:target_text)
+    if update_text
+      options["data-target-text"] = update_text
     end
     
     overlay = options.delete(:overlay)
@@ -742,26 +654,14 @@ module CbrainUiHelper
       options["data-height"] = height
     end
     
-    submit_tag(name, options)
-  end
-  
-  #A submit button that can be outside the form it submits,
-  #which is defined by +form_id+.
-  #
-  #Options:
-  #[:confirm] Confirm message to display before sending the request.
-  def external_submit_button(name, form_id, options = {})
-    options[:class] ||= ""
-    options[:class] +=  " external_submit_button"
-    
-    options["data-associated-form"] = form_id
-    
-    confirm = options.delete(:confirm)
-    if confirm
-      options["data-confirm"] = confirm
+    error_message = options.delete(:error_message)
+    if error_message
+      options["data-error"] = h(error_message)
     end
     
-    submit_tag(name, options)
+    replace = options.delete(:replace)
+    if replace
+      options["data-replace"] = replace
+    end
   end
-  
 end
