@@ -133,7 +133,25 @@ module CbrainUiHelper
       "<a class=\"inplace_edit_field_save\">Save</a>"+
     "</div>" 
   end
-
+  
+  def html_tool_tip(text = "<span class=\"action_link\">?</span>", &block)
+    @@html_tool_tip_id ||= 0
+    @@html_tool_tip_id += 1
+    
+    content = capture(&block)
+    
+    concat("<span id=\"#{@@html_tool_tip_id}\"")
+    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', '#{@@html_tool_tip_id}', 30, 0);\"")
+    concat("onmouseout=\"xstooltip_hide('tootip_#{@@html_tool_tip_id}');\"") 
+    concat(">")
+    concat(text)
+    concat("</span>")
+    
+    concat("<div id=\"tootip_#{@@html_tool_tip_id}\" class=\"xstooltip\">")
+    concat(content)
+    concat("</div>")
+  end
+  
   #Create an overlay dialog box with a link as the button.
   #Content is provided through a block.
   #Options: 

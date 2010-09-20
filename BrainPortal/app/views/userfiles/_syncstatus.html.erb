@@ -1,18 +1,8 @@
-
-<div id="sync_status_tooltip_<%= syncstat.id %>" class="xstooltip">
+<% html_tool_tip status_html_symbol(syncstat.status) do %>
   <%= syncstat.remote_resource.class.to_s + " '" + syncstat.remote_resource.name + "' : " + status_html_symbol(syncstat.status) + " (" + syncstat.status + ")" %>
   <% if syncstat.status == 'InSync' -%>
     <br>
     Last Synchronized Date: <%= pretty_past_date syncstat.synced_at %><br>
     Last Accessed Date:     <%= pretty_past_date syncstat.accessed_at %>
   <% end -%>
-</div>
-
-<span 
-  id="sync_status_<%= syncstat.id %>"
-  onmouseover="xstooltip_show('sync_status_tooltip_<%= syncstat.id %>', 'sync_status_<%= syncstat.id %>', 10, 0);"
-  onmouseout="xstooltip_hide('sync_status_tooltip_<%= syncstat.id %>');" 
->
-  <%= status_html_symbol(syncstat.status) %>
-</span>
-
+<% end %>
