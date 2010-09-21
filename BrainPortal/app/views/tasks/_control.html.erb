@@ -3,8 +3,8 @@
 
   <tr>
     <td>
-      <strong>Execution&nbsp;server:</strong><br>
-      <%= bourreau_select "cbrain_task[bourreau_id]", { :selector => @task.bourreau_id, :bourreaux => @bourreaux } , { :include_blank => "Any Available", :disabled => (! @task.new_record? ) } %>
+      <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
+      <%= select_tag :bid_tcid, grouped_options_for_select(@tool_configs_select, "#{@task.bourreau_id},#{@task.tool_config_id}") %>
     </td>
 
     <td>
@@ -18,15 +18,6 @@
       <%= text_area_tag "cbrain_task[description]", @task.description, :rows => 4, :cols => 35 %><br>
       <small>(This first line should be a summary, and the rest are your notes)</small>
     </td>
-
-    <td>
-      <strong>Tool&nbsp;version:</strong>
-      <% if @tool_configs_select.size > 0 %>
-        <%= select_tag "cbrain_task[tool_config_id]", options_for_select(@tool_configs_select, @task.tool_config_id.to_s) %>
-      <% else %>
-        <strong>Default</strong>
-      <% end %>
-    </td>
   </tr>
 
   <tr>
@@ -39,8 +30,6 @@
       <strong>Project:</strong><br>
       <%= group_select "cbrain_task[group_id]", @task.group_id %>
     </td>
-
-    <td></td>
   </tr>
 
 </table>

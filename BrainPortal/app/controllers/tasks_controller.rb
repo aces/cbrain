@@ -162,6 +162,11 @@ class TasksController < ApplicationController
     @task.bourreau_id = params[:bourreau_id]
     @task.user_id     = current_user.id
     @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
+    if @task.bourreau_id
+      tool = @task.tool
+      lastest_toolconfig = ToolConfig.find(:last, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
+      @task.tool_config_id = lastest_toolconfig.id if lastest_toolconfig
+    end
 
     # Filter list of files as provided by the get request
     @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write) rescue []
@@ -245,6 +250,12 @@ class TasksController < ApplicationController
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
+
+    # Decode the selection box with combined bourreau_id and tool_config_id
+    bid_tcid = params[:bid_tcid] || "," # comma important
+    bid,tcid = bid_tcid.split(",")
+    @task.bourreau_id    = bid.to_i  if bid
+    @task.tool_config_id = tcid.to_i if tcid
 
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
@@ -336,6 +347,12 @@ class TasksController < ApplicationController
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
     @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
+
+    # Decode the selection box with combined bourreau_id and tool_config_id
+    bid_tcid = params[:bid_tcid] || "," # comma important
+    bid,tcid = bid_tcid.split(",")
+    #@task.bourreau_id    = bid.to_i  if bid # we no not change the bourreau_id
+    @task.tool_config_id = tcid.to_i if tcid
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
@@ -509,15 +526,26 @@ class TasksController < ApplicationController
 
     # Tool Configurations
     valid_bourreau_ids = @bourreaux.index_by &:id
-    valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing task have more limited choices.
-    @tool_configs = tool.tool_configs # all of them, too much actually
-    @tool_configs.reject! { |tc| tc.bourreau_id.blank? || ! valid_bourreau_ids[tc.bourreau_id] }
-    @tool_configs_select = @tool_configs.map do |tc| 
-      bn   = tc.bourreau.name
-      desc = tc.short_description
-      [ "On #{bn}: #{desc}", tc.id.to_s ]
+    valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing tasks have more limited choices.
+    all_tool_configs   = tool.tool_configs # all of them, too much actually
+    all_tool_configs.reject! { |tc| tc.bourreau_id.blank? || ! valid_bourreau_ids[tc.bourreau_id] }
+
+    @tool_configs_select = []   # [ [ groupname, [ [pair], [pair] ] ], [ groupname, [ [pair], [pair] ] ] ]
+    ordered_bourreaux = valid_bourreau_ids.values.sort { |a,b| a.name <=> b.name }
+    ordered_bourreaux.each do |bourreau|
+      bourreau_name   = bourreau.name
+      my_tool_configs = all_tool_configs.select { |tc| tc.bourreau_id == bourreau.id }
+      pairlist        = []
+      if my_tool_configs.size == 0
+        pairlist << [ "Default", "#{bourreau.id}," ] # the comma is important in the string!
+      else
+        my_tool_configs.each do |tc|
+          desc = tc.short_description
+          pairlist << [ desc, "#{bourreau.id},#{tc.id.to_s}" ]
+        end
+      end
+      @tool_configs_select << [ "On #{bourreau_name}:", pairlist ]
     end
-    @tool_configs_select << [ "On any: Default", "" ] if @tool_configs_select.size == 0 || ! @task.id
 
   end
 
@@ -529,8 +557,11 @@ class TasksController < ApplicationController
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
         old_params = @task.params.clone
-        @task.params = preset.params
+        @task.params         = preset.params
         restore_untouchable_attributes(@task,old_params)
+        @task.group_id       = preset.group_id       if preset.group_id
+        @task.bourreau_id    = preset.bourreau_id    if preset.bourreau_id
+        @task.tool_config_id = preset.tool_config_id if preset.tool_config_id
         flash[:notice] += "Loaded preset '#{preset.description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
