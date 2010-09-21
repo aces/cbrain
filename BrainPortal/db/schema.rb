@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100915194340) do
+ActiveRecord::Schema.define(:version => 20100921174526) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -241,7 +241,7 @@ ActiveRecord::Schema.define(:version => 20100915194340) do
     t.text     "description"
     t.integer  "tool_id"
     t.integer  "bourreau_id"
-    t.text     "env_hash"
+    t.text     "env_array"
     t.text     "script_prologue"
     t.datetime "created_at"
     t.datetime "updated_at"

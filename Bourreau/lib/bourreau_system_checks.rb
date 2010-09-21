@@ -320,10 +320,10 @@ script when CBRAIN was upgraded.
            next
          end
          tc = ToolConfig.new(myattributes)
-         env_hash = {}
-         env_hash["MNI_QUARANTINE_ROOT"] = CBRAIN::Quarantine_dir
-         env_hash["MNI_CIVET_ROOT"]      = CBRAIN::CIVET_dir if toolname =~ /civet/i
-         tc.env_hash = env_hash
+         env_array = []
+         env_array << [ "MNI_QUARANTINE_ROOT", CBRAIN::Quarantine_dir ]
+         env_array << [ "MNI_CIVET_ROOT"],     CBRAIN::CIVET_dir      ] if toolname =~ /civet/i
+         tc.env_array = env_array
          if tc.save
            puts "Created"
          else

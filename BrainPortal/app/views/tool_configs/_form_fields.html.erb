@@ -16,7 +16,9 @@
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
   <span title="Environment variables needed for this <%= context %>">
     <p><label>Environment variables needed for this <%= context %>:</label><br/>
-    <% @tool_config.env_hash.each do |env_name,env_value| %>
+    <% @tool_config.env_array.each do |env_name_value| %>
+      <% env_name  = env_name_value[0] %>
+      <% env_value = env_name_value[1] %>
       <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
     <% end %>
     <% 1.upto(5) do %>

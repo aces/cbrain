@@ -40,7 +40,7 @@ class ToolConfigsController < ApplicationController
     @tool_config   = ToolConfig.find(:first, :conditions => { :tool_id => tool_id, :bourreau_id => bourreau_id } ) if tool_id.blank? || bourreau_id.blank?
     @tool_config ||= ToolConfig.new(                        { :tool_id => tool_id, :bourreau_id => bourreau_id } )
 
-    @tool_config.env_hash ||= {}
+    @tool_config.env_array ||= []
 
     respond_to do |format|
       format.html { render :action => :edit }
@@ -51,7 +51,7 @@ class ToolConfigsController < ApplicationController
   def edit
     id           = params[:id]
     @tool_config = ToolConfig.find(id)
-    @tool_config.env_hash ||= {}
+    @tool_config.env_array ||= []
       
     respond_to do |format|
       format.html # edit.html.erb
@@ -88,7 +88,7 @@ class ToolConfigsController < ApplicationController
        @tool_config[att] = form_tool_config[att]
     end
 
-    @tool_config.env_hash = {}
+    @tool_config.env_array = []
     envlist = params[:env_list] || []
     envlist.each do |keyval|
        env_name = keyval[:name].strip
@@ -99,7 +99,7 @@ class ToolConfigsController < ApplicationController
        elsif env_val !~ /\S/
          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")
        else
-         @tool_config.env_hash[env_name] = env_val
+         @tool_config.env_array << [ env_name, env_val ]
        end
     end
 

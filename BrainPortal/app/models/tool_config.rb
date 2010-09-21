@@ -25,7 +25,7 @@ class ToolConfig < ActiveRecord::Base
 
   Revision_info="$Id$"
   
-  serialize      :env_hash
+  serialize      :env_array
 
   belongs_to     :bourreau     # can be nil; it means it applies to all bourreaux
   belongs_to     :tool         # can be nil; it means it applies to all tools
@@ -45,7 +45,7 @@ class ToolConfig < ActiveRecord::Base
   # set of variables provided by +extended_environement+ will be
   # applied instead.
   def apply_environment(use_extended = false)
-    env = (use_extended ? self.extended_environment : self.env_hash) || {}
+    env = (use_extended ? self.extended_environment : self.env_array) || []
     env.each do |name,val|
       ENV[name.to_s]=val.to_s
     end
@@ -55,10 +55,10 @@ class ToolConfig < ActiveRecord::Base
   # Returns the set of environment variables as stored in
   # the object, plus a few artificial ones. See the code.
   def extended_environment
-    env = (self.env_hash || {}).dup
-    env["CBRAIN_GLOBAL_TOOL_CONFIG_ID"]     = self.id.to_s if self.bourreau_id.blank?
-    env["CBRAIN_GLOBAL_BOURREAU_CONFIG_ID"] = self.id.to_s if self.tool_id.blank?
-    env["CBRAIN_TOOL_CONFIG_ID"]            = self.id.to_s if ! self.tool_id.blank? && ! self.bourreau_id.blank?
+    env = (self.env_array || []).dup
+    env << [ "CBRAIN_GLOBAL_TOOL_CONFIG_ID",     self.id.to_s ] if self.bourreau_id.blank?
+    env << [ "CBRAIN_GLOBAL_BOURREAU_CONFIG_ID", self.id.to_s ] if self.tool_id.blank?
+    env << [ "CBRAIN_TOOL_CONFIG_ID",            self.id.to_s ] if ! self.tool_id.blank? && ! self.bourreau_id.blank?
     env
   end
 
@@ -95,14 +95,16 @@ class ToolConfig < ActiveRecord::Base
       end
     end
 
-    env = self.env_hash || {}
+    env = self.env_array || []
     script += <<-ENV_HEADER
 #---------------------------------------------------
 # Environment variables:#{env.size == 0 ? " (NONE DEFINED)" : ""}
 #---------------------------------------------------
 
     ENV_HEADER
-    env.each do |name,val|
+    env.each do |name_val|
+      name = name_val[0]
+      val  = name_val[1]
       name.strip!
       #val.gsub!(/'/,"'\''")
       script += "export #{name}=\"#{val}\"\n"
@@ -129,7 +131,7 @@ class ToolConfig < ActiveRecord::Base
   # and its script is blank or only contains blank lines or
   # comments.
   def is_trivial?
-    return false if (self.env_hash || {}).size > 0
+    return false if (self.env_array || []).size > 0
     text = self.script_prologue
     return true if text.blank?
     text_array = text.split(/\n/).reject { |line| line =~ /^\s*#|^\s*$/ }
