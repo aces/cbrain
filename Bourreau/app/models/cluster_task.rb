@@ -910,9 +910,9 @@ class ClusterTask < CbrainTask
     bourreau_glob_config = self.bourreau.global_tool_config
     tool_glob_config     = self.tool.global_tool_config
     tool_config          = self.tool_config
-    bourreau_glob_config = nil if bourreau_glob_config.is_trivial?
-    tool_glob_config     = nil if tool_glob_config.is_trivial?
-    tool_config          = nil if tool_config.is_trivial?
+    bourreau_glob_config = nil if bourreau_glob_config && bourreau_glob_config.is_trivial?
+    tool_glob_config     = nil if tool_glob_config     && tool_glob_config.is_trivial?
+    tool_config          = nil if tool_config          && tool_config.is_trivial?
     self.addlog("Bourreau Global Config: ID=#{bourreau_glob_config.id}")                if bourreau_glob_config
     self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                        if tool_glob_config
     self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.short_description}") if tool_config
