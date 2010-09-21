@@ -322,7 +322,7 @@ script when CBRAIN was upgraded.
          tc = ToolConfig.new(myattributes)
          env_array = []
          env_array << [ "MNI_QUARANTINE_ROOT", CBRAIN::Quarantine_dir ]
-         env_array << [ "MNI_CIVET_ROOT"],     CBRAIN::CIVET_dir      ] if toolname =~ /civet/i
+         env_array << [ "MNI_CIVET_ROOT",      CBRAIN::CIVET_dir      ] if toolname =~ /civet/i
          tc.env_array = env_array
          if tc.save
            puts "Created"
