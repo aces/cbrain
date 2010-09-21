@@ -39,12 +39,11 @@ class ToolsController < ApplicationController
     
     respond_to do |format|
       format.html do 
-        render :layout  => false, 
-               :partial => 'layouts/bourreau_select', 
-               :locals  => { :parameter_name  => "bourreau_id", 
-                             :selected  => current_user.user_preference.bourreau_id.to_s, 
-                             :bourreaux  => @bourreaux,
-                             :select_tag_options  => {:include_blank  => "Random Selection"}}
+        render :text  => ApplicationController.helpers.bourreau_select("bourreau_id", 
+                                                                         {:selector  => current_user.user_preference.bourreau_id.to_s,
+                                                                          :bourreaux  => @bourreaux},
+                                                                         {:include_blank  => "Random Selection"}
+                                                                        )
       end
       format.xml  { render :xml => @bourreaux }
     end
