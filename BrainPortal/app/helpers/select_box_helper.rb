@@ -34,13 +34,20 @@ module SelectBoxHelper
     users    = options[:user] || current_user.available_users
   
     if selector.respond_to?(:user_id)
-      sel = selector.user_id.to_s
+      selected = selector.user_id.to_s
     elsif selector.is_a?(User)
-      sel = selector.id.to_s
+      selected = selector.id.to_s
     else
-      sel = selector.to_s
-    end 
-    render :partial => 'layouts/user_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :users  => users, :select_tag_options => select_tag_options}
+      selected = selector.to_s
+    end
+    grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id.to_s ] }, selected || current_user.id.to_s)
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+    end
+    
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard groups select box for selecting a group id for a form.
@@ -57,14 +64,37 @@ module SelectBoxHelper
     groups    = options[:groups] || current_user.available_groups
   
     if selector.respond_to?(:group_id)
-      sel = selector.group_id.to_s
+      selected = selector.group_id.to_s
     elsif selector.is_a?(Group)
-      sel = selector.id.to_s
+      selected = selector.id.to_s
     else
-      sel = selector.to_s
+      selected = selector.to_s
+    end
+    
+    grouped_by_classes = groups.group_by { |gr| gr.class.to_s.underscore.humanize }
+
+    category_grouped = {}
+    grouped_by_classes.each do |entry|
+      group_category_name = entry.first
+      group_category_name.sub!(/ group/," project")
+      group_pairs         = entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id.to_s]}
+      category_grouped[group_category_name] = group_pairs
     end
 
-    render :partial => 'layouts/group_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :groups  => groups, :select_tag_options => select_tag_options}
+    ordered_category_grouped = []
+    [ "Work project", "Site project", "User project", "System project" ].each do |proj|
+       ordered_category_grouped << [ proj , category_grouped.delete(proj) ] if category_grouped[proj]
+    end
+
+    grouped_options = grouped_options_for_select ordered_category_grouped, selected || current_user.own_group.id.to_s
+
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+    end
+    
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard data provider select box for selecting a data provider id for a form.
@@ -85,13 +115,23 @@ module SelectBoxHelper
     data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
   
     if selector.respond_to?(:data_provider_id)
-      sel = selector.data_provider_id.to_s
+      selected = selector.data_provider_id.to_s
     elsif selector.is_a?(DataProvider)
-      sel = selector.id.to_s
+      selected = selector.id.to_s
     else
-      sel = selector.to_s
+      selected = selector.to_s
     end 
-    render :partial => 'layouts/data_provider_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :data_providers  => data_providers, :select_tag_options => select_tag_options}
+    
+    grouped_dps     = data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
+    grouped_options = grouped_options_for_select(grouped_dps.collect {|pair| [pair.first, pair.last.sort_by(&:name).map{|dp| [dp.name, dp.id.to_s]}] }, 
+                      selected)
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+    end
+    
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard bourreau select box for selecting a bourreau id for a form.
@@ -112,13 +152,25 @@ module SelectBoxHelper
     bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
   
     if selector.respond_to?(:bourreau_id)
-      sel = selector.bourreau_id.to_s
+      selected = selector.bourreau_id.to_s
     elsif selector.is_a?(Bourreau)
-      sel = selector.id.to_s
+      selected = selector.id.to_s
     else
-      sel = selector.to_s
+      selected = selector.to_s
     end 
-    render :partial => 'layouts/bourreau_select', :locals  => { :parameter_name  => parameter_name, :selected  => sel, :bourreaux  => bourreaux, :select_tag_options => select_tag_options}
+    if bourreaux && bourreaux.size > 0
+      options = options_for_select(bourreaux.sort_by(&:name).map {|b| [b.name, b.id.to_s]}, 
+                        selected)
+      blank_label = select_tag_options.delete(:include_blank)
+      if blank_label
+        blank_label = "" if blank_label == true
+        options = "<option value=\"\">#{blank_label}</option>" + options
+      end
+      
+      select_tag parameter_name, options, select_tag_options
+    else
+      "<strong style=\"color:red\">No Execution Servers Available</strong>"
+    end
   end
 
 end
