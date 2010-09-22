@@ -994,6 +994,14 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
   # the attribute :share_wd_tid, then that other
   # task's work directory will be used instead.
   def make_cluster_workdir
+
+    # Test to see if it already exists; if so, use it.
+    current = self.cluster_workdir
+    if ! current.blank?
+      return true if File.directory?(current)
+      self.cluster_workdir = nil # nihilate it
+    end
+
     # Use the work directory of another task
     otask_id = self.share_wd_tid
     if ! otask_id.blank?
@@ -1013,6 +1021,8 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     self.cluster_workdir = (CBRAIN::CLUSTER_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.cluster_workdir}'.")
     Dir.mkdir(self.cluster_workdir,0700) unless File.directory?(self.cluster_workdir)
+
+    true
   end
 
   # Remove the directory created to run the job.
