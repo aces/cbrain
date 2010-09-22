@@ -116,6 +116,8 @@ class AdjustTimestampsToUtc < ActiveRecord::Migration
       puts "============================================"
       puts "\n"
 
+      begin
+
       columns = model.columns
       cols_to_adjust = []
       columns.each do |col|
@@ -151,6 +153,12 @@ class AdjustTimestampsToUtc < ActiveRecord::Migration
       end
 
       puts "\t-> Finished updating #{cnt} objects..."
+
+      rescue
+
+        puts "\t-> Error. Maybe the table doesn't exist. Never mind. Skipped."
+
+      end
 
     end
 
