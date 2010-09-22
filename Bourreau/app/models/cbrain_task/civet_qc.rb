@@ -19,7 +19,6 @@ class CbrainTask::CivetQc < ClusterTask
 
   def setup #:nodoc:
     params       = self.params
-    user_id      = self.user_id
 
     # Get the ID of the study; it can be given directly
     # in the params, or indirecly through another task ID
@@ -96,7 +95,6 @@ class CbrainTask::CivetQc < ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
-    user_id      = self.user_id
 
     study_id = params[:study_id]
     study = CivetStudy.find(study_id)
@@ -122,7 +120,6 @@ class CbrainTask::CivetQc < ClusterTask
   
   def save_results #:nodoc:
     params       = self.params
-    user_id      = self.user_id
 
     # Check for some common error conditions.
     stderr = File.read(self.stderr_cluster_filename) rescue ""

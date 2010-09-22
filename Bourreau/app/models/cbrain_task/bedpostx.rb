@@ -76,8 +76,6 @@ class CbrainTask::Bedpostx < ClusterTask
 
     outfile = safe_userfile_find_or_new(FileCollection,
       :name             => "#{collection.name}.#{self.run_id}.bedpostX",
-      :user_id          => self.user_id,
-      :group_id         => self.group_id,
       :data_provider_id => params[:data_provider_id],
       :task             => self.name
     )

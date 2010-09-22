@@ -56,7 +56,6 @@ class CbrainTask::Mincresample < ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
-    user_id      = self.user_id
     
     mincfile_name  = Userfile.find(params[:mincfile_id]).name
     like_file      = params[:like_id]
@@ -90,10 +89,8 @@ class CbrainTask::Mincresample < ClusterTask
 
   def save_results #:nodoc:
     params       = self.params
-    user_id      = self.user_id
     mincfile_id = params[:mincfile_id] 
     mincfile = Userfile.find(mincfile_id)
-    group_id = mincfile.group_id
     out_name = params[:out_name]
     
 
@@ -104,8 +101,6 @@ class CbrainTask::Mincresample < ClusterTask
 
     outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
-      :user_id          => user_id,
-      :group_id         => group_id,
       :data_provider_id => params[:data_provider_id],
       :task             => "Mincresample"
     )

@@ -259,13 +259,17 @@ class ClusterTask < CbrainTask
   # report or a result file, for instance.
   # +klass+ must be a class that is a subclass of
   # Userfile, and +attlist+ must be an attribute list
-  # containing at the minimum :name, :data_provider_id,
-  # :user_id and :group_id.
+  # containing at the minimum :name and :data_provider_id.
+  # The :user_id and :group_id default to the task's.
   def safe_userfile_find_or_new(klass,attlist)
     cb_error "Class for file must be a subclass of Userfile." unless
       klass < Userfile
     cb_error "Attribute list missing a required attribute." unless
       [ :name, :data_provider_id, :user_id].all? { |i| attlist.has_key?(i) }
+    unless attlist.has_key?(:user_id)
+      cb_error "Cannot assign user to file." unless self.user_id
+      attlist[:user_id] = self.user_id
+    end
     unless attlist.has_key?(:group_id)
       cb_error "Cannot assign group to file." unless self.group_id
       attlist[:group_id] = self.group_id

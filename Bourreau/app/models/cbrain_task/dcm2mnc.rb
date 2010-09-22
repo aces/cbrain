@@ -54,7 +54,6 @@ class CbrainTask::Dcm2mnc < ClusterTask
     params      = self.params
     dicom_colid = params[:dicom_colid]  # the ID of a FileCollection
     dicom_col   = Userfile.find(dicom_colid)
-    user_id     = self.user_id
 
     io = IO.popen("find results -type f -name \"*.mnc*\" -print","r")
 
@@ -68,8 +67,6 @@ class CbrainTask::Dcm2mnc < ClusterTask
       basename = File.basename(file)
       mincfile = safe_userfile_find_or_new(SingleFile,
         :name             => basename,
-        :user_id          => user_id,
-        :group_id         => dicom_col.group_id,
         :data_provider_id => params[:data_provider_id],
         :task             => "Dcm2mnc"
       )

@@ -126,15 +126,12 @@ class CbrainTask::CivetCombiner < ClusterTask
 
   def cluster_commands #:nodoc:
     params       = self.params
-    user_id      = self.user_id
 
     nil   # Special case: no cluster job.
   end
   
   def save_results #:nodoc:
     params       = self.params
-    user_id      = self.user_id
-    user         = User.find(user_id)
     provid       = params[:data_provider_id]
     newname      = params[:civet_study_name]
     prefix       = params[:prefix] # set in setup() above
@@ -144,8 +141,6 @@ class CbrainTask::CivetCombiner < ClusterTask
     # and in the darkness bind them
     newstudy = safe_userfile_find_or_new(CivetStudy,
       :name             => newname,
-      :user_id          => user_id,
-      :group_id         => user.own_group.id,
       :data_provider_id => provid
     )
 

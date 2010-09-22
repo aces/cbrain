@@ -226,8 +226,6 @@ class CbrainTask::Civet < ClusterTask
     params       = self.params
     file0        = params[:file_args]["0"] # we require this single entry for info on the data files
 
-    user_id      = self.user_id
-
     prefix           = file0[:prefix] || "unkpref2"
     dsid             = file0[:dsid]   || "unkdsid2"
     data_provider_id = params[:data_provider_id]
@@ -246,8 +244,6 @@ class CbrainTask::Civet < ClusterTask
       t1_id           = file0[:t1_id]
       source_userfile = SingleFile.find(t1_id)
     end
-
-    group_id = source_userfile.group_id 
 
     # Where we find this subject's results
     out_dsid = "civet_out/#{dsid}"
@@ -288,8 +284,6 @@ class CbrainTask::Civet < ClusterTask
     # Create new CivetCollection
     civetresult = safe_userfile_find_or_new(CivetCollection,
       :name             => dsid + "-" + uniq_run,
-      :user_id          => user_id,
-      :group_id         => group_id,
       :data_provider_id => data_provider_id,
       :task             => "Civet"
     )

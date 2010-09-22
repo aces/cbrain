@@ -85,9 +85,7 @@ class CbrainTask::Mnc2nii < ClusterTask
     cachename   = mincfile.cache_full_path
     basename    = cachename.basename.to_s
     shortbase   = basename.sub(/\.mi?nc(\.g?z)?$/i,"")
-    group_id    = mincfile.group_id
 
-    user_id          = self.user_id
     data_provider_id = params[:data_provider_id]
 
     out_files = Dir.glob("*.{img,hdr,nii,nia}")
@@ -101,8 +99,6 @@ class CbrainTask::Mnc2nii < ClusterTask
       self.addlog("Found raw output file '#{file}'.")
       niifile = safe_userfile_find_or_new(SingleFile,
         :name             => shortbase + File.extname(file),
-        :user_id          => user_id,
-        :group_id         => group_id,
         :data_provider_id => data_provider_id,
         :task             => "Mnc2nii"
       )

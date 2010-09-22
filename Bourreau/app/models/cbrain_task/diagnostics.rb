@@ -29,7 +29,6 @@ class CbrainTask::Diagnostics < ClusterTask
   # the performance (and success or failure).
   def setup #:nodoc:
     params       = self.params || {}
-    user_id      = self.user_id
 
     file_ids     = params[:interface_userfile_ids] || []
 
@@ -81,7 +80,6 @@ class CbrainTask::Diagnostics < ClusterTask
   # several parameters about the environment.
   def cluster_commands #:nodoc:
     params       = self.params || {}
-    user_id      = self.user_id
 
     file_ids      = params[:interface_userfile_ids] || []
 
@@ -141,7 +139,6 @@ class CbrainTask::Diagnostics < ClusterTask
   # of the cluster job's STDOUT and STDERR.
   def save_results #:nodoc:
     params       = self.params || {}
-    user_id      = self.user_id
 
     self.addlog "Starting diagnostics postprocessing."
 
@@ -157,15 +154,11 @@ class CbrainTask::Diagnostics < ClusterTask
 
     # Stuff needed for report
     dp_id   = params[:data_provider_id]
-    myuser  = User.find(user_id)
-    mygroup = myuser.own_group
     report  = nil
 
     if dp_id  # creating the report is optional
       report = safe_userfile_find_or_new(SingleFile,
             :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
-            :user_id          => myuser.id,
-            :group_id         => mygroup.id,
             :data_provider_id => dp_id,
             :task             => 'Bourreau Diagnostics'
       )

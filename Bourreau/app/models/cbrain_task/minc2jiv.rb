@@ -51,11 +51,9 @@ class CbrainTask::Minc2jiv < ClusterTask
 
   def save_results #:nodoc:
     params       = self.params
-    user_id      = self.user_id
 
     mincfile_id     = params[:mincfile_id]
     mincfile        = Userfile.find(mincfile_id)
-    group_id        = mincfile.group_id
     
     params.delete(:jiv_file_id)
 
@@ -71,8 +69,6 @@ class CbrainTask::Minc2jiv < ClusterTask
 
     jiv_file = safe_userfile_find_or_new(JivFile,
       :name             => orig_plainbasename + ".jiv",
-      :user_id          => user_id,
-      :group_id         => group_id,
       :data_provider_id => params[:data_provider_id],
       :task             => "Minc2jiv"
     )

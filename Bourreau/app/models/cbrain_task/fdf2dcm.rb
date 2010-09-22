@@ -58,8 +58,6 @@ class CbrainTask::Fdf2dcm < ClusterTask
     params       = self.params
     fdf_colid    = params[:fdf_colid] # the ID of a FileCollection
     fdf_col      = Userfile.find(fdf_colid)
-    user_id      = self.user_id
-    group_id     = fdf_col.group_id
 
     io = IO.popen("find results -type f -name \"*.dcm\" -print","r") 
                   
@@ -73,8 +71,6 @@ class CbrainTask::Fdf2dcm < ClusterTask
         
         dcmfile  = safe_userfile_find_or_new(SingleFile,
           :name             => basename,
-          :user_id          => user_id,
-          :group_id         => group_id,
           :data_provider_id => params[:data_provider_id],
           :task             => "Fdf2dcm"
         )

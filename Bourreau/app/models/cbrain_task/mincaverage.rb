@@ -56,9 +56,6 @@ class CbrainTask::Mincaverage < ClusterTask
 
   def save_results #:nodoc:
     params       = self.params
-    user_id      = self.user_id
-    user         = User.find(user_id)
-    group_id     = SystemGroup.find_by_name(user.login).id
     out_name     = params[:out_name]
     
 
@@ -70,8 +67,6 @@ class CbrainTask::Mincaverage < ClusterTask
 
     outfile = safe_userfile_find_or_new(SingleFile,
       :name             => out_name,
-      :user_id          => user_id,
-      :group_id         => group_id,
       :data_provider_id => params[:data_provider_id],
       :task             => "Mincaverage"
     )
@@ -90,8 +85,6 @@ class CbrainTask::Mincaverage < ClusterTask
     if params[:sdfile]
       sdfile = safe_userfile_find_or_new(SingleFile,
         :name             => "sd_#{out_name}",
-        :user_id          => user_id,
-        :group_id         => group_id,
         :data_provider_id => params[:data_provider_id],
         :task             => "Mincaverage"
       )

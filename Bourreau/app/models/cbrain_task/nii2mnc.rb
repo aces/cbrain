@@ -79,8 +79,6 @@ class CbrainTask::Nii2mnc < ClusterTask
     end
 
     mincfile = safe_userfile_find_or_new(SingleFile,
-      :user_id          => self.user.id,
-      :group_id         => self.user.own_group.id,
       :name             => mincbase,
       :data_provider_id => params[:data_provider_id]
     )
