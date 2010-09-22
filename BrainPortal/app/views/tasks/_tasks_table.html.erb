@@ -10,10 +10,11 @@
       <% unless @task_types.blank? %>
         <br>
         <ul class="filter_list" id="task_filters_list" style="display:none;">
-           <% @task_types.sort.each do |task_type| %>
+           <% @task_types.keys.sort.each do |task_type| %>
               <li>
+                <% num_occur = @task_types[task_type] %>
                 <%= 
-                  ajax_link h(crop_text_to(20, task_type.sub(/^CbrainTask::/, ""))), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
+                  ajax_link h(crop_text_to(20, task_type.sub(/^CbrainTask::/, "") + " (#{num_occur})" )), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
                                                                                     :datatype  => 'script'
                 %> 
               </li> 
@@ -38,9 +39,10 @@
        <% unless @task_owners.blank? %>
          <br>
            <ul class="filter_list" id="owner_filters_list" style="display:none;">
-              <% @task_owners.sort_by(&:login).each do |task_owner| %>
+              <% @task_owners.keys.sort_by(&:login).each do |task_owner| %>
                  <li>
-                   <%= ajax_link h(task_owner.login), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, :datatype  => 'script' %>
+                   <% num_occur = @task_owners[task_owner] %>
+                   <%= ajax_link h(task_owner.login + " (#{num_occur})"), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, :datatype  => 'script' %>
                  </li> 
               <% end %>
            </ul>
@@ -55,9 +57,10 @@
         <% unless @task_projects.blank? %>
           <br>
           <ul class="filter_list" id="project_filters_list" style="display:none;">
-             <% @task_projects.sort_by(&:name).each do |task_project| %>
+             <% @task_projects.keys.sort_by(&:name).each do |task_project| %>
                 <li>
-                  <%= ajax_link h(task_project.name), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
+                  <% num_occur = @task_projects[task_project] %>
+                  <%= ajax_link h(task_project.name + " (#{num_occur})"), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
                 </li> 
              <% end %>
           </ul>
@@ -91,10 +94,11 @@
       <% unless @task_status.blank? %>
         <br>
           <ul class="filter_list" id="status_filters_list" style="display:none;">
-             <% @task_status.sort.each do |task_status| %>
+             <% @task_status.keys.sort.each do |task_status| %>
                 <li>
+                  <% num_occur = @task_status[task_status] %>
                   <%= 
-                      ajax_link h(task_status),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
+                      ajax_link h(task_status + " (#{num_occur})"),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
                                                 :datatype  => 'script'
                   %>
                 </li> 

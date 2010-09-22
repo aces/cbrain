@@ -30,15 +30,20 @@ class TasksController < ApplicationController
     end
     
     #Used to create filters
-    @task_types = []
-    @task_owners = []
-    @task_projects = []
-    @task_status = []
+    @task_types    = {}
+    @task_owners   = {}
+    @task_projects = {}
+    @task_status   = {}
     scope.find(:all).each do |task|
-      @task_types |= [task.class.to_s]
-      @task_owners |= [task.user]
-      @task_projects |= [task.group]
-      @task_status |= [task.status]
+      next if task.status == 'Preset' || task.status == 'SitePreset'
+      @task_types[task.class.to_s] ||= 0
+      @task_types[task.class.to_s]  += 1
+      @task_owners[task.user]      ||= 0
+      @task_owners[task.user]       += 1
+      @task_projects[task.group]   ||= 0
+      @task_projects[task.group]    += 1
+      @task_status[task.status]    ||= 0
+      @task_status[task.status]     += 1
     end
     
     @filter_params["filters"].each do |att, val|
