@@ -137,3 +137,32 @@ class String
   end
 
 end
+
+class Array
+
+  # Converts the array into a complex hash.
+  # Runs the given block, passing it each of the
+  # elements of the array; the block must return
+  # a key that will be given to build a hash table.
+  # The values of the hash table will be the list of
+  # elements of the original array for which the block
+  # returned the same key. The method returns the
+  # final hash.
+  #
+  #   [0,1,2,3,4,5,6].hashed_partition { |n| n % 3 }
+  #
+  # will return
+  #
+  #   { 0 => [0,3,6], 1 => [1,4], 2 => [2,5] }
+  def hashed_partition
+    partitions = {}
+    self.each do |elem|
+       key = yield(elem)
+       partitions[key] ||= []
+       partitions[key] << elem
+    end
+    partitions
+  end
+
+end
+

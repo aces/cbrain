@@ -223,7 +223,8 @@ class User < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    user.available_users.include?(self)
+    @can_be_accessed_cache       ||= {}
+    @can_be_accessed_cache[user] ||= user.available_users.include?(self)
   end
   
   # Returns the SystemGroup associated with the user; this is a

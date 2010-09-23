@@ -51,7 +51,8 @@ class Group < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    user.available_groups.include?(self)
+    @can_be_accessed_cache       ||= {}
+    @can_be_accessed_cache[user] ||= user.available_groups.include?(self)
   end
   
   #Can this group be edited by +user+?

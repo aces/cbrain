@@ -134,7 +134,7 @@ class Userfile < ActiveRecord::Base
   #Sort a list of files in "tree order" where
   #parents are listed just before their children.
   def self.tree_sort(userfiles)
-    grouped_files = userfiles.group_by(&:parent_id)
+    grouped_files = userfiles.all.hashed_partition(&:parent_id)
     id_hash = userfiles.index_by(&:id)
     
     result = grouped_files.delete(nil) || []

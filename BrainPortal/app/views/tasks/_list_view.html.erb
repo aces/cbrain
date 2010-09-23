@@ -1,5 +1,5 @@
 
-<% for task in @tasks %>
+<% for task in @paginated_list %>
     <%= render :partial => 'task_table_row',
                :locals  => { :task             => task,
                              :task_available   => @bourreau_status[task.bourreau.id] ? true : false,

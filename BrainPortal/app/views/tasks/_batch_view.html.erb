@@ -1,6 +1,6 @@
 
-<% @tasks.each do |launch_time, tasks| %>
-
+<% @paginated_list.each do |launch_time| %>
+  <% tasks = @tasks[launch_time] %>
   <% launch_time_id = launch_time ? launch_time.to_i : 0 %>
 
   <% if tasks.size > 1 %>

@@ -88,13 +88,22 @@ class TasksController < ApplicationController
     @filter_params["pagination"] ||= "on"
     @per_page = @filter_params["pagination"] == "on" ? @tasks_per_page : 999_999_999
     
+    pagination_list = @tasks
+
     if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
-      @tasks = @tasks.group_by(&:launch_time)
+      seen_keys    = {}
+      pagination_list = []
+      @tasks = @tasks.all.hashed_partition do |task|
+        lt               = task.launch_time
+        pagination_list << lt unless seen_keys[lt]
+        seen_keys[lt]    = true
+        lt
+      end
     end
     
     @total_tasks = @tasks.size
-    @tasks = WillPaginate::Collection.create(page, @per_page) do |pager|
-      pager.replace(@tasks.slice((page-1) * @per_page, @per_page))
+    @paginated_list = WillPaginate::Collection.create(page, @per_page) do |pager|
+      pager.replace(pagination_list.slice((page-1) * @per_page, @per_page))
       pager.total_entries = @total_tasks
       pager
     end
