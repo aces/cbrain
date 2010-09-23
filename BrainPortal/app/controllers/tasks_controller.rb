@@ -113,7 +113,7 @@ class TasksController < ApplicationController
   def show #:nodoc:
     task_id     = params[:id]
 
-    @task              = CbrainTask.find(task_id)
+    @task              = current_user.available_tasks.find(task_id)
     @run_number        = params[:run_number] || @task.run_number
 
     begin
@@ -429,7 +429,7 @@ class TasksController < ApplicationController
       tasklist.each do |task_id|
 
         begin
-          task = CbrainTask.find(task_id)
+          task = current_user.available_tasks.find(task_id)
         rescue
           sent_failed += 1
           next
