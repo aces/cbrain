@@ -67,7 +67,8 @@ class Userfile < ActiveRecord::Base
   
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
-  attr_writer             :level
+  attr_accessor           :level
+  attr_accessor           :tree_children
 
   def site
     @site ||= self.user.site
@@ -136,34 +137,64 @@ class Userfile < ActiveRecord::Base
     self.save
   end
 
-  #Sort a list of files in "tree order" where
-  #parents are listed just before their children.
-  def self.tree_sort(userfiles)
-    grouped_files = userfiles.to_a.hashed_partition(&:parent_id)
-    id_hash = userfiles.index_by(&:id)
-    
-    result = grouped_files.delete(nil) || []
-    keys = grouped_files.keys
-    keys.each do |k|
-      unless id_hash[k]
-        new_roots = grouped_files.delete(k)
-        result += new_roots
+  # Sort a list of files in "tree order" where
+  # parents are listed just before their children.
+  # It also keeps the original list's ordering
+  # at each level. The method will set the :level
+  # pseudo attribute too, with 0 for the top level.
+  def self.tree_sort(userfiles = [])
+    userfiles = userfiles.to_a
+    top_list  = []
+    seen      = {}
+    by_id     = userfiles.index_by { |u| u.tree_children = nil; u.id } # WE NEED TO USE THIS INSTEAD OF .parent !!!
+
+    # Contruct tree
+    userfiles.each do |file|
+      current  = file # probably not necessary
+      track_id = file.id # to detect loops
+      while ! seen[current]
+        seen[current] = track_id
+        parent_id     = current.parent_id
+        parent        = by_id[parent_id] # cannot use current.parent, as this would destroy its :tree_children
+        if (! parent) || (seen[parent] && seen[parent] == track_id) # top, or loop
+          top_list << current
+          break
+        end
+        parent.tree_children ||= []
+        parent.tree_children << current
+        current = parent
       end
     end
-    result.each { |f| f.level = 0 }
-    num_keys = keys.size
-    upper_limit = (num_keys * (num_keys - 1))/2
-    
-    keys.each do |k|
-      index = result.index{ |p| p.id == k}
-      if index
-        result.insert(index + 1, *grouped_files[k])
-      else
-        keys.push(k) unless keys.last == k || keys.size > upper_limit
-      end
+
+    # Flatten tree
+    result = []
+    top_list.each do |file|
+      file.level = 0
+      result << file
+      result += file.all_tree_children(1)
     end
-    
-    result || []
+      
+    result
+  end
+
+  # Returns an array will all children or subchildren
+  # of the userfile, as contructed by tree_sort.
+  # Optionally, sets the :level pseudo attribute
+  # to all current children, increasing it down
+  # the tree.
+  def all_tree_children(level = nil) #:nodoc:
+    return [] if self.tree_children.blank?
+    result = []
+    self.tree_children.each do |child|
+      child.level = level if level
+      result << child
+      result += child.all_tree_children(level ? level+1 : nil) if child.tree_children # the 'if' optimizes one recursion out
+    end
+    result
+  end
+
+  def level
+    @level ||= 0
   end
 
   #Produces the list of files to display for a paginated Userfile index
@@ -433,23 +464,6 @@ class Userfile < ActiveRecord::Base
     true
   end
 
-  # def set_level!
-  #   if self.parent_id.nil?
-  #     self.level = 0
-  #   elsif !self.parent
-  #     self.parent_id = nil
-  #     self.level = 0
-  #   elsif self.parent.level.nil?
-  #     self.parent.set_level!
-  #     return
-  #   else
-  #     self.level = self.parent.level + 1
-  #   end
-  #   self.save!
-  #   
-  #   self.children.each {|c| c.set_level!}
-  # end
-  
   def descendants
     result = [self]
     self.children.each do |child|
@@ -460,18 +474,7 @@ class Userfile < ActiveRecord::Base
     result
   end
   
-  def level
-    return @level if @level
-    
-    if self.parent && self.parent.level
-      @level = self.parent.level + 1
-    else
-      @level = 0
-    end
-    
-    @level
-  end
-  
+
   
   ##############################################
   # Sequential traversal methods.
