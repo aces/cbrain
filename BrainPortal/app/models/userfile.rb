@@ -143,10 +143,10 @@ class Userfile < ActiveRecord::Base
   # at each level. The method will set the :level
   # pseudo attribute too, with 0 for the top level.
   def self.tree_sort(userfiles = [])
-    userfiles = userfiles.to_a
-    top_list  = []
-    seen      = {}
+    top       = Userfile.new( :parent_id => -999_999_999 ) # Dummy, to collect top level
+    userfiles = userfiles.to_a + [ top ] # Note: so that by_id[nil] returns 'top'
     by_id     = userfiles.index_by { |u| u.tree_children = nil; u.id } # WE NEED TO USE THIS INSTEAD OF .parent !!!
+    seen      = {}
 
     # Contruct tree
     userfiles.each do |file|
@@ -154,27 +154,18 @@ class Userfile < ActiveRecord::Base
       track_id = file.id # to detect loops
       while ! seen[current]
         seen[current] = track_id
-        parent_id     = current.parent_id
-        parent        = by_id[parent_id] # cannot use current.parent, as this would destroy its :tree_children
-        if (! parent) || (seen[parent] && seen[parent] == track_id) # top, or loop
-          top_list << current
-          break
-        end
+        parent_id     = current.parent_id # Can be nil! by_id[nil] will return 'top' 
+        parent        = by_id[parent_id] # Cannot use current.parent, as this would destroy its :tree_children
+        break if (! parent) || (seen[parent] && seen[parent] == track_id) # top, or loop
         parent.tree_children ||= []
         parent.tree_children << current
         current = parent
+        break if current == top
       end
     end
 
     # Flatten tree
-    result = []
-    top_list.each do |file|
-      file.level = 0
-      result << file
-      result += file.all_tree_children(1)
-    end
-      
-    result
+    top.all_tree_children(0) # sets top children's levels to '0'
   end
 
   # Returns an array will all children or subchildren
