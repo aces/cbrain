@@ -73,13 +73,17 @@ class TasksController < ApplicationController
       scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
     end
 
+    sort_order = @filter_params["sort"]["order"]
+    sort_dir   = @filter_params["sort"]["dir"]
     # Set sort order and make it persistent.
-    @filter_params["sort"]["order"] ||= 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
-    @filter_params["sort"]["dir"]   ||= 'DESC'
+    if !sort_order || sort_order == "cbrain_tasks.batch"
+      sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+      sort_dir   = 'DESC'
+    end
 
     scope = scope.scoped(:include  => [:bourreau, :user, :group], 
                          :readonly => false, 
-                         :order    => "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}" )
+                         :order    => "#{sort_order} #{sort_dir}" )
 
     @tasks = scope
     
@@ -88,9 +92,10 @@ class TasksController < ApplicationController
     @filter_params["pagination"] ||= "on"
     @per_page = @filter_params["pagination"] == "on" ? @tasks_per_page : 999_999_999
     
+    
     pagination_list = @tasks
 
-    if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+    if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
       seen_keys    = {}
       pagination_list = []
       @tasks = @tasks.all.hashed_partition do |task|

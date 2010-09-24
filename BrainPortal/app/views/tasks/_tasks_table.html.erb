@@ -6,7 +6,7 @@
 
 
     <th id="task_type_header" onMouseOver="jQuery('#task_filters_list').show()" onMouseOut="jQuery('#task_filters_list').hide()">
-      <%= ajax_sort_link "Task Name", 'cbrain_tasks.type' %>
+      <%= ajax_sort_link "Task Name", 'CbrainTask', 'type' %>
       <% unless @task_types.blank? %>
         <br>
         <ul class="filter_list" id="task_filters_list" style="display:none;">
@@ -26,16 +26,13 @@
 
 
     <th onMouseOver="jQuery('#description_filters_list').show()" onMouseOut="jQuery('#description_filters_list').hide()">
-       <%= ajax_link "Description", { :controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.description', :dir  => set_dir('cbrain_tasks.description', @filter_params["sort"])}} }, 
-                                  :datatype  => 'script'
-       %>
-        <%= set_order_icon('cbrain_tasks.description', @filter_params["sort"]["order"], @filter_params["sort"]["dir"]) %>
+       <%= ajax_sort_link "Description", 'CbrainTask', 'description' %>
     </th>
 
 
 
     <th onMouseOver="jQuery('#owner_filters_list').show()" onMouseOut="jQuery('#owner_filters_list').hide()">
-       <%= ajax_sort_link "Owner", 'users.login' %>
+       <%= ajax_sort_link "Owner", 'User', 'login' %>
        <% unless @task_owners.blank? %>
          <br>
            <ul class="filter_list" id="owner_filters_list" style="display:none;">
@@ -53,7 +50,7 @@
 
     <% unless current_project %>
       <th onMouseOver="jQuery('#project_filters_list').show()" onMouseOut="jQuery('#project_filters_list').hide()">
-        <%= ajax_sort_link "Project", 'groups.name' %>
+        <%= ajax_sort_link "Project", 'Group', 'name' %>
         <% unless @task_projects.blank? %>
           <br>
           <ul class="filter_list" id="project_filters_list" style="display:none;">
@@ -71,7 +68,7 @@
 
 
     <th onMouseOver="jQuery('#bourreau_filters_list').show()" onMouseOut="jQuery('#bourreau_filters_list').hide()">
-      <%= ajax_sort_link "Execution Server", 'remote_resources.name' %>
+      <%= ajax_sort_link "Execution Server", 'RemoteResource', 'name' %>
       <% unless @bourreaux.blank? %>
          <br>
            <ul class="filter_list" id="bourreau_filters_list" style="display:none;">
@@ -90,7 +87,7 @@
 
 
     <th onMouseOver="jQuery('#status_filters_list').show()" onMouseOut="jQuery('#status_filters_list').hide()">
-      <%= ajax_sort_link "Current Status", 'cbrain_tasks.status' %>
+      <%= ajax_sort_link "Current Status", 'CbrainTask', 'status' %>
       <% unless @task_status.blank? %>
         <br>
           <ul class="filter_list" id="status_filters_list" style="display:none;">
@@ -114,20 +111,20 @@
 
 
     <th>
-      <%= ajax_sort_link "Time Submitted", 'cbrain_tasks.created_at' %>
+      <%= ajax_sort_link "Time Submitted", 'CbrainTask', 'created_at' %>
     </th>
 
 
 
     <th>
-      <%= ajax_sort_link "Last Updated", 'cbrain_tasks.updated_at' %>
+      <%= ajax_sort_link "Last Updated", 'CbrainTask', 'updated_at' %>
     </th>
 
 </tr>
 
 
 
-<% if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at' %>
+<% if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' %>
   <%= render :partial => 'tasks/batch_view'  %>
 <% else %>
   <%= render :partial => 'tasks/list_view' %>

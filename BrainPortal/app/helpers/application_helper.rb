@@ -127,7 +127,7 @@ module ApplicationHelper
     sort_order = sort_params["dir"]
     
     if(current_order.to_s == prev_order.to_s)
-      sort_order == 'DESC' ? '' : 'DESC'
+      sort_order.to_s.upcase == 'DESC' ? '' : 'DESC'
     end
   end
   
@@ -137,14 +137,16 @@ module ApplicationHelper
   #
   #Toggles the direction of the arrow depending on whether the order is 
   #ascending or descending.
-  def set_order_icon(location, current_order, current_dir = nil)
-    return "" if current_order == nil
+  def set_order_icon(loc, current_order, current_dir = nil)
+    return "" if current_order == nil    
     
-    #order, direction = session_order.sub("type, ", "").split
+    table_name, table_col = loc.strip.split(".")
+    table_name = table_name.tableize
+    location = table_name + "." + table_col
     
     return "" unless location == current_order
     
-    if location == 'tree_sort' || location == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+    if location == 'userfiles.tree_sort' || location == 'cbrain_tasks.batch'
       icon = '<font color="Red">&nbsp;&bull;</font>'
     else
       icon = '<font color="Red">&nbsp;&dArr;</font>'

@@ -129,6 +129,11 @@ class CbrainTask < ActiveRecord::Base
   def tool
     @tool_cache ||= Tool.find(:first, :conditions => { :cbrain_task_class => self.class.to_s })
   end
+  
+  # Define sort orders that don't refer to actual columns in the table.
+  def self.pseudo_sort_columns
+    ["batch"]
+  end
 
 
 

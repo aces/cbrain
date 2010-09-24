@@ -33,7 +33,7 @@
   </th>
    <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
     <%= ajax_link  "Provider", userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-     <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+    <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>
 </tr>
 

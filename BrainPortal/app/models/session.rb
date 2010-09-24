@@ -40,7 +40,6 @@ class Session
     @session[:userfiles_tag_filters] ||= []
     @session[:userfiles_custom_filters] ||= []
     @session[:userfiles_pagination] ||= 'on'
-    @session[:userfiles_sort_order] ||= 'tree_sort'
     @session[:userfiles_details] ||= 'off'
     
     controller = params[:controller]
@@ -123,8 +122,8 @@ class Session
     end
     
     if params[:userfiles_sort_order] && !params[:page]
-      @session[:userfiles_sort_order] = params[:userfiles_sort_order]
-      @session[:userfiles_sort_dir] = params[:userfiles_sort_dir]
+      @session[:userfiles_sort_order] = sanitize_sort_order(params[:userfiles_sort_order])
+      @session[:userfiles_sort_dir] = sanitize_sort_dir(params[:userfiles_sort_dir])
     end
         
     if params[:userfiles_pagination]
@@ -143,9 +142,9 @@ class Session
       else
         params[controller].each do |k, v|
           if @session[controller.to_sym][k].respond_to? :merge!
-            @session[controller.to_sym][k].merge!(params[controller][k] || {})
+            @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
           else
-            @session[controller.to_sym][k] = params[controller][k]
+            @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
           end
         end
       end
@@ -185,6 +184,45 @@ class Session
   #*Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
   def method_missing(key, *args)
     @session[key.to_sym]
+  end
+  
+  private
+  
+  def sanitize_params(k, param)
+    key = k.to_sym
+    
+    if key == :sort
+      param["order"] = sanitize_sort_order(param["order"])
+      param["dir"] = sanitize_sort_dir(param["dir"])
+    end
+    
+    param
+  end
+  
+  def sanitize_sort_order(order)
+    table, column = order.strip.split(".")
+    table = table.tableize
+    
+    unless ActiveRecord::Base.connection.tables.include?(table)
+      cb_error "Invalid sort table: #{table}."
+    end
+    
+    klass = Class.const_get table.classify
+    
+    unless klass.column_names.include?(column) ||
+        (klass.respond_to?(:pseudo_sort_columns) && klass.pseudo_sort_columns.include?(column))
+      cb_error "Invalid sort column: #{table}.#{column}"
+    end
+    
+    "#{table}.#{column}"
+  end
+  
+  def sanitize_sort_dir(dir)
+    if dir.to_s.strip.upcase == "DESC"
+      "DESC"
+    else
+      ""
+    end
   end
   
 end

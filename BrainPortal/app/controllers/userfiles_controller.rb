@@ -51,7 +51,8 @@ class UserfilesController < ApplicationController
       :include  => [:tags, {:user => :site}, :data_provider, :group, { :sync_status => :remote_resource } ]
     )
     
-    unless current_session.userfiles_sort_order == "tree_sort"
+    current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort'
+    unless current_session.userfiles_sort_order == "userfiles.tree_sort"
       scope = scope.scoped(:order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}")
     end
     
@@ -65,7 +66,7 @@ class UserfilesController < ApplicationController
       @userfiles = @userfiles.select { |file| file.get_format fmt.sub(/^format:/, "") }
     end
 
-    if current_session.userfiles_sort_order == "tree_sort"
+    if current_session.userfiles_sort_order == "userfiles.tree_sort"
       @userfiles = Userfile.tree_sort(@userfiles)
     end
     

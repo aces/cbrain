@@ -520,12 +520,13 @@ module CbrainUiHelper
   #Sort links meant specifically for sorting tables.
   #Controller and action for the request can be defined in the options hash, or
   #they default to the current page.
-  def ajax_sort_link(name, sort_column, options = {})
+  def ajax_sort_link(name, sort_table, sort_column, options = {})
+    sort_order = sort_table.strip.tableize + "." + sort_column.strip
     controller = options.delete(:controller) || params[:controller]
     action = options.delete(:action) || params[:actions]
-    url = { :controller  => controller, :action  => action, controller  => {:sort  => {:order  => sort_column, :dir  => set_dir(sort_column, @filter_params["sort"])}} }
+    url = { :controller  => controller, :action  => action, controller  => {:sort  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort"])}} }
     link_options = options.reverse_merge(:datatype  => 'script')
-    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_column, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
+    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
   end
   
   ###########################################

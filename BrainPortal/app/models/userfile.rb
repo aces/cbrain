@@ -73,6 +73,11 @@ class Userfile < ActiveRecord::Base
     @site ||= self.user.site
   end
   
+  # Define sort orders that don't refer to actual columns in the table.
+  def self.pseudo_sort_columns
+    ["tree_sort"]
+  end
+  
   #Format size for display in the view.
   #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
   def format_size

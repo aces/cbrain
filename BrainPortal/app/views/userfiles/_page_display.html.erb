@@ -24,6 +24,6 @@
   <br>
 <% end %>
 
-<%= ajax_link "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'tree_sort'}, :datatype  => 'script' %>
-<%= set_order_icon('tree_sort', current_session[:userfiles_sort_order]) %>
+<%= ajax_link "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'Userfile.tree_sort'}, :datatype  => 'script' %>
+<%= set_order_icon('Userfile.tree_sort', current_session[:userfiles_sort_order]) %>
 

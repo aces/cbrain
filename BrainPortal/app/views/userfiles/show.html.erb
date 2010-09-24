@@ -117,20 +117,12 @@
       <P>
 
       <% if @sync_status =~ /^To/ %>
-        <% if @userfile.is_a?(FileCollection) %>
-          <p>This Collection is currently being synchronized.</p>
-        <% else %>
-          <p>This file is currently being synchronized.</p>
-        <% end %>
+        <p>This data is currently being synchronized.</p>
       <% elsif ! (@userfile.data_provider.not_syncable?) %>
-        <% if @userfile.is_a?(FileCollection) %>
-          <p>This Collection is not currently synchronized.<BR>
-        <% else %>
-          <p>This file is not currently synchronized.<BR>
-        <% end %>
+        <p>This data is not currently synchronized.<BR>
         Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
         to start the synchronization process.<br>
-        Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+        This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
         </p>
       <% end %>
     <% end %>

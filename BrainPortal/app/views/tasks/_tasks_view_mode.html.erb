@@ -1,9 +1,9 @@
 
-<% if @filter_params["sort"]["order"] == 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at' %>
+<% if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' %>
   <strong>Currently in Batch View</strong>
 <% else %>
   <h5>
-    <%= ajax_link 'Switch to Batch View', {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at', :dir  => 'DESC'}}}, :datatype  => 'script' %>
+    <%= ajax_link 'Switch to Batch View', {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'CbrainTask.batch'}}}, :datatype  => 'script' %>
   </h5>
 <% end %>
 
