@@ -104,6 +104,7 @@ class CbrainTask::Nii2mnc < ClusterTask
     u = Userfile.find(id)
     self.addlog("Created mincfile '#{mincbase}'")
     self.addlog_to_userfiles_these_created_these( [ u ], [ mincfile ] )
+    mincfile.move_to_child_of(u)
 
     true
   end
