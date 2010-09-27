@@ -445,7 +445,7 @@ class Userfile < ActiveRecord::Base
   ##############################################
 
   def move_to_child_of(userfile)
-    if self.descendants.include? userfile
+    if self.id == userfile.id || self.descendants.include?(userfile)
       raise ActiveRecord::ActiveRecordError, "A userfile cannot become the child of one of its own descendants." 
     end
     
@@ -455,18 +455,20 @@ class Userfile < ActiveRecord::Base
     true
   end
 
-  def descendants
-    result = [self]
+  def descendants(seen = {})
+    result     = []
+    seen[self] = true
     self.children.each do |child|
+      next if seen[child] # defensive, against loops
+      seen[child] = true
       result << child
-      result += child.descendants
+      result += child.descendants(seen)
     end
-    
     result
   end
-  
 
-  
+
+
   ##############################################
   # Sequential traversal methods.
   ##############################################
