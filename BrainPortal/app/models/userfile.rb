@@ -153,14 +153,15 @@ class Userfile < ActiveRecord::Base
       current  = file # probably not necessary
       track_id = file.id # to detect loops
       while ! seen[current]
+        break if current == top
         seen[current] = track_id
         parent_id     = current.parent_id # Can be nil! by_id[nil] will return 'top' 
         parent        = by_id[parent_id] # Cannot use current.parent, as this would destroy its :tree_children
-        break if (! parent) || (seen[parent] && seen[parent] == track_id) # top, or loop
+        parent      ||= top
+        break if seen[parent] && seen[parent] == track_id # loop
         parent.tree_children ||= []
         parent.tree_children << current
         current = parent
-        break if current == top
       end
     end
 
@@ -220,9 +221,9 @@ class Userfile < ActiveRecord::Base
   def self.get_filter_name(type, term)
     case type
     when 'name_search'
-      'name:' + term
+      term.blank? ? nil : 'name:' + term
     when 'tag_search'
-      'tag:' + term
+      term.blank? ? nil : 'tag:' + term
     when 'jiv'
       'format:jiv'
     when 'minc'
