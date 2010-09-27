@@ -62,10 +62,23 @@ class CbrainTask::Nii2mnc < ClusterTask
 
     File.unlink(mincbase) rescue true
 
-    [
+    commands = [
       "echo \"Command: #{command}\"",
       command
     ]
+
+    if params[:rectify_cosines] == "1"
+      commands += [
+        "",
+        "# Rectify cosines",
+        "",
+        "minc_modify_header -dinsert xspace:direction_cosines=1,0,0 #{mincbase}",
+        "minc_modify_header -dinsert yspace:direction_cosines=0,1,0 #{mincbase}",
+        "minc_modify_header -dinsert zspace:direction_cosines=0,0,1 #{mincbase}",
+      ]
+    end
+
+    return commands
   end
   
   # See CbrainTask.txt
