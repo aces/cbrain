@@ -50,8 +50,8 @@ Rails::Initializer.run do |config|
   # (by default production uses :info, the others :debug)
   # config.log_level = :debug
 
-  # DO NOT USE config.time_zone. TIME ZONE SHOULD BE SET IN config/initializers/time_zone.rb
-  # CREATE OR EDIT THAT FILE AND ADD THE LINE: CBRAIN.time_zone = 'your time zone'
+  # DO NOT USE config.time_zone. TIME ZONE SHOULD BE SET IN config/initializers/config_portal.rb
+  # FOR INSTRUCTIONS ON HOW TO EDIT THE FILE, SEE config/initializers/config_portal.rb.TEMPLATE
 
   # Your secret key for verifying cookie session data integrity.
   # If you change this key, all old sessions will become invalid!
