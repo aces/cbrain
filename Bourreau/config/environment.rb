@@ -40,16 +40,14 @@ Rails::Initializer.run do |config|
   # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
 
   # Add additional load paths for your own custom dirs
-  # config.load_paths += %W( #{RAILS_ROOT}/extras )
+  config.load_paths << "#{RAILS_ROOT}/app/models/userfiles"
 
   # Force all environments to use the same logger level
   # (by default production uses :info, the others :debug)
   # config.log_level = :debug
 
-  # Make Time.zone default to the specified zone, and make Active Record store time values
-  # in the database in UTC, and return them converted to the specified local zone.
-  # Run "rake -D time" for a list of tasks for finding time zone names. Comment line to use default local time.
-  #config.time_zone = 'Eastern Time (US & Canada)'
+  # DO NOT USE config.time_zone. TIME ZONE SHOULD BE SET IN config/initializers/config_portal.rb
+  # FOR INSTRUCTIONS ON HOW TO EDIT THE FILE, SEE config/initializers/config_portal.rb.TEMPLATE
 
   # Your secret key for verifying cookie session data integrity.
   # If you change this key, all old sessions will become invalid!

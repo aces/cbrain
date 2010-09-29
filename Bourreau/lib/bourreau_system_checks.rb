@@ -35,11 +35,11 @@ C> For this application to work, you must make sure that the
 C> Rails application has the proper time zone configured
 C> in this file:
 C>
-C>   #{RAILS_ROOT}/config/environment.rb
+C>   #{RAILS_ROOT}/config/initializers/config_bourreau.rb
 C>
-C> Edit the file and change this line so it says:
-C>
-C>   config.time_zone = "your time zone name"
+C> For instructions on how to edit the file, see:
+C> 
+C>   #{RAILS_ROOT}/config/initializers/config_bourreau.rb.TEMPLATE
 C>
 C> The full list of time zone names can be obtained by
 C> running the rake task:

@@ -61,4 +61,6 @@ class CBRAIN
   BOURREAU_WORKERS_LOG_TO         = 'separate' # 'none', 'stdout', 'stderr', 'separate', 'combined', 'bourreau'
   BOURREAU_WORKERS_VERBOSE        = false # prints info for each task updated!
 
+  # Set the time zone for the application. 
+  self.time_zone = 'your time zone'
 end

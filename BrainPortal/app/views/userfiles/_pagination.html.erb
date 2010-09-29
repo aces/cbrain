@@ -1,3 +1,4 @@
+Number of files: <%= @userfiles_total %>
 <% if session[:userfiles_pagination] == 'on' %>
    <%= will_paginate @userfiles %>
 <% end %>

@@ -434,6 +434,12 @@ class UserfilesController < ApplicationController
 
     attributes[:name] = old_name # we must NOT rename the file yet
 
+    if params[:file_type]
+      unless @userfile.update_file_type(params[:file_type])
+        flash[:error] += "\nCould not update file format."
+      end
+    end
+
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
     respond_to do |format|
       if @userfile.update_attributes(attributes)
@@ -467,6 +473,8 @@ class UserfilesController < ApplicationController
                      ["update_attributes", {:group_id => params[:userfile][:group_id]}]
                    when "Update Permissions" 
                      ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
+                   when "Update File Type"
+                     ["update_file_type", params[:file_type]]
                 end
     
 
@@ -487,7 +495,7 @@ class UserfilesController < ApplicationController
       flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{@template.pluralize(success_count, "files")}."
     end
     if failure_count > 0
-      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(success_count, "files")}."
+      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(failure_count, "files")}."
     end
     
     redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}

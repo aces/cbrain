@@ -32,7 +32,8 @@
   <th>Size</th>
   <th>
     Type<br>
-    <%= master_select("type_select", ["All directories as...", "FileCollection", "CivetCollection"]) %>
+    <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_types) %><br>
+    <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_types) %>
   </th>
   <th>Last modified</th>
   <th>Registered?</th>
@@ -69,23 +70,29 @@
        <% if ! fi_ok %>
          <td><%= red_if(true,"Unacceptable?") %></td>
        <% elsif fi_type == :regular %>
-         <td>SingleFile</td>
+         <td>
+           <%= 
+             select_tag("filetypes[]",
+               options_for_select(SingleFile.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}.unshift([ "File as...", "Unset-#{fi_name}" ])), 
+               :class  => "file_select")
+           %>
+         </td>
        <% elsif fi_type == :directory %>
-         <td><%= select_tag("directorytypes[]",
-                options_for_select([
-                   [ "Directory as...", "Unset-#{fi_name}" ],
-                   [ "FileCollection",  "FileCollection-#{fi_name}" ],
-                   [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                ]), :class  => "type_select") %>
+         <td>
+          <%= 
+            select_tag("filetypes[]",
+                options_for_select(FileCollection.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}.unshift([ "Directory as...", "Unset-#{fi_name}" ])), 
+                :class  => "directory_select")
+          %>
          </td>
        <% elsif fi_type == :symlink %>
-         <td><%= select_tag("directorytypes[]",
+         <td><%= select_tag("filetypes[]",
                 options_for_select([
                    [ "Symbolic link as...", "Unset-#{fi_name}" ],
                    [ "SingleFile",      "SingleFile-#{fi_name}" ],
                    [ "FileCollection",  "FileCollection-#{fi_name}" ],
                    [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                ]), :class  => "type_select") %>
+                ])) %>
          </td>
        <% end %>
     <% end %>

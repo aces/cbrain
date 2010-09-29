@@ -119,45 +119,14 @@ module UserfilesHelper
     end
   end
   
-  #Display the contents o.f a file to a view (meaning of contents depends on the type of file,
-  #e.g. images, text, xml)
-  def display_contents(userfile)
-    before_content = '<div id="userfile_contents_display">'
-    before_content += show_hide_toggle '<strong>Contents</strong>', "#userfile_contents_display_toggle"
-    
-    content = ""
-    after_content = '</div>'
-    
-    if userfile.is_a? CivetCollection
-       clasp_file  = userfile.list_files.find { |f| f.name =~ /clasp\.png$/ }
-       verify_file = userfile.list_files.find { |f| f.name =~ /verify\.png$/}
-       if clasp_file
-         content =  "<h3>Clasp</h3>"
-         content += image_tag url_for(:action  => :content, :collection_file  => clasp_file.name)
-       end
-       
-       if verify_file
-         content += "<br><h3>Verify</h3>"
-         content += image_tag url_for(:action  => :content, :collection_file  => verify_file.name)
-       end
-    else
-      file_name = userfile.name
-      case file_name
-      when /(\.txt|\.xml|\.log)$/
-        content = '<PRE>' + h(File.read(userfile.cache_full_path)) + '</PRE>'
-      when /(\.jpe?g|\.gif|\.png)$/
-        content = image_tag "/userfiles/#{userfile.id}/content#{$1}"
-      end
-    end
-    
-    if content.blank? 
-      before_content = ""
-      content = ""
-      after_content = ""
-    else
-      content = '<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>' + content + '</div>'
-    end
-    
-    before_content + content + after_content
+  #Create a collapsable "Content" box for userfiles show page.
+  def content_viewer(&block)
+    concat('<div id="userfile_contents_display">')
+    concat(show_hide_toggle '<strong>Contents</strong>', "#userfile_contents_display_toggle")
+    concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
+    concat(capture(&block))
+    concat('</div>')
+    concat('</div>')
   end
+  
 end

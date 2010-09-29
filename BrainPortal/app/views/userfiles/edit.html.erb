@@ -18,6 +18,12 @@
       <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th class="right_align">Format:</th>
+      <td colspan="2">
+        <%= select_tag "file_type", options_for_select(@userfile.valid_file_types.map{ |c| [c, c]  }, @userfile.class.name) %>
+      </td>
+    </tr class="list-odd">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
       <td><%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %></td>
       <td></td>
@@ -117,26 +123,17 @@
 
 
 <% unless @userfile.is_locally_synced? %>
-
-  <P>
-
-  <% if @sync_status =~ /^To/ %>
-    <% if @userfile.is_a?(FileCollection) %>
-      <p>This Collection is currently being synchronized.</p>
-    <% else %>
-      <p>This file is currently being synchronized.</p>
+    <P>
+    
+    <% if @sync_status =~ /^To/ %>
+      <p>This data is currently being synchronized.</p>
+    <% elsif ! (@userfile.data_provider.not_syncable?) %>
+      <p>This data is not currently synchronized.<BR>
+      Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
+      to start the synchronization process.<br>
+      This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+      </p>
     <% end %>
-  <% elsif ! (@userfile.data_provider.not_syncable?) %>
-    <% if @userfile.is_a?(FileCollection) %>
-      <p>This Collection is not currently synchronized.<BR>
-    <% else %>
-      <p>This file is not currently synchronized.<BR>
-    <% end %>
-    Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
-    to start the synchronization process.<br>
-    Synchronizing to the local cache will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
-    </p>
-  <% end %>
 <% end %>
 
   <P>

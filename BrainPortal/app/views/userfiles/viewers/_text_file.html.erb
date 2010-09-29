@@ -1,0 +1,5 @@
+<% if @userfile.is_locally_synced? %>
+  <% content_viewer do %>
+    <PRE><%= h(File.read(@userfile.cache_full_path)) %></PRE>
+  <% end %>
+<% end %>  

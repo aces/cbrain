@@ -14,6 +14,10 @@
       <td colspan="2"><%= h @userfile.name %></td>
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
+      <th class="right_align">Format:</th>
+      <td colspan="2"><%= @userfile.class.name.underscore.humanize %></td>
+    </tr class="list-odd">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
       <td><%= link_to_user_if_accessible(@userfile.user) %></td>
       <td></td>
@@ -130,40 +134,8 @@
     <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
   <% end %>
   
-  
-  <% if @userfile.is_a?(CivetCollection) || @userfile.is_a?(CivetStudy) %>
-      <br><br>
-      <%= overlay_ajax_link "Civet Directories Decrypted", "/doc/userfiles/civet_directories.html" %>
-      <br>
-  <% end %>
-  <P>
-   
-  <% if @userfile.is_locally_synced? %>
-    <%= display_contents(@userfile) %>
-    <% if @userfile.is_a?(CivetStudy) && @userfile.list_files(".", :directory).find{ |dir| dir.name[-3, 3] == "/QC" }%>
-      <%= overlay_ajax_link "Civet QC Legend", "/doc/userfiles/civetqc_results.html" %>
-      
-        <div id="userfile_contents_display" class="loading_message">
-        
-          <strong>QC</strong><br><br>
-          <% ajax_element(url_for(:action  => :content, :qc_file  => "base")) do %>
-            <span class="loading_message">Loading...</span>
-          <% end %>
-          <br>
-          <div id="qc_data">
-          </div>
-        </div>
-    <% end %>
-  <% end %>
-
-  <P>
-
-  <% if @userfile.is_a?(FileCollection) %>
-    <% ajax_element(content_userfile_path(@userfile), :class  => "loading_message") do %>
-      <br>
-      Loading...
-      <br>
-    <% end %>
+  <% if File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{@userfile.class.name.underscore}.html.erb") %>
+    <%= render :partial  => "userfiles/viewers/#{@userfile.class.name.underscore}" %>
   <% end %>
 
   <P>

@@ -262,7 +262,7 @@ class DataProvidersController < ApplicationController
 
   #Browse the files of a data provider.
   #This action is only available for data providers that are browsable.
-  #Both regidstered and unregistered files will appear in the list. 
+  #Both registered and unregistered files will appear in the list. 
   def browse
     @user     = current_user
     id        = params[:id]
@@ -286,7 +286,7 @@ class DataProvidersController < ApplicationController
 
     # Let's add three more custom attributes:
     # - the userfile if the file is already registered
-    # - the state_ok flag that tell whether or not it's OK to register/deregister
+    # - the state_ok flag that tell whether or not it's OK to register/unregister
     # - a message.
     if @fileinfolist.size > 0
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
@@ -368,7 +368,7 @@ class DataProvidersController < ApplicationController
     end
 
     basenames = params[:basenames] || []
-    dirtypes  = params[:directorytypes] || []
+    filetypes  = params[:filetypes] || []
     do_unreg  = params[:commit] =~ /unregister/i
 
     # Automatic MOVE or COPY operation?
@@ -388,7 +388,7 @@ class DataProvidersController < ApplicationController
     @fileinfolist.each { |fi| base2info[fi.name] = fi }
 
     base2type = {}
-    dirtypes.select { |typebase| ! typebase.empty? }.each do |typebase|
+    filetypes.select { |typebase| ! typebase.empty? }.each do |typebase|
       next unless typebase.match(/^(\w+)-(\S+)$/)
       type = $1
       base = $2
@@ -428,7 +428,7 @@ class DataProvidersController < ApplicationController
       fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
-        if subtype == "Unset" || (subtype != "SingleFile" && subtype != "FileCollection" && subtype != "CivetCollection")
+        if subtype == "Unset" || (!Userfile.send(:subclasses).map(&:name).include?(subtype))
           flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
           num_skipped += 1
           next
@@ -436,7 +436,7 @@ class DataProvidersController < ApplicationController
       end
 
       size = 0
-      if subtype == "SingleFile" # TODO what if it's a directory?
+      if SingleFile.valid_file_types.include?(subtype) # TODO what if it's a directory?
         size = fileinfo.size rescue 0
       end
 

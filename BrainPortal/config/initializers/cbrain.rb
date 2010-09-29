@@ -209,6 +209,8 @@ end  # End of CBRAIN class
 
 unless Rails.configuration.time_zone.blank?
   puts "C> Time zone already initialized. Remove line \"config.time_zone = 'your time zone'\" from environment.rb (or other environment file)."
-  puts "C> Configure time zone in #{RAILS_ROOT}/config/initializer/config_portal.rb (see config_portal.rb.TEMPLATE)"
+  puts "C> Configure time zone in #{RAILS_ROOT}/config/initializers/" +
+           (RAILS_ROOT =~ /Bourreau$/ ? "config_bourreau.rb" : "config_portal.rb") + 
+           " (see " + (RAILS_ROOT =~ /Bourreau$/ ? "config_bourreau.rb" : "config_portal.rb") + ".TEMPLATE)."
   Kernel.exit(1)
 end

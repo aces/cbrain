@@ -79,6 +79,44 @@ class Userfile < ActiveRecord::Base
     ["tree_sort"]
   end
   
+  #File extension for this file (helps sometimes in building urls).
+  def file_extension
+    self.name.scan(/\.[^\.]+$/).last
+  end
+  
+  #Classes this type of file can be converted to.
+  #Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
+  def self.valid_file_types
+    return @valid_file_types if @valid_file_types
+    
+    base_class = self
+    base_class = SingleFile if self <= SingleFile
+    base_class = FileCollection if self <= FileCollection
+    
+    @valid_file_types = base_class.send(:subclasses).unshift(base_class).map(&:name)
+  end
+  
+  #Instance version of the class method.
+  def valid_file_types
+    self.class.valid_file_types
+  end
+  
+  #Checks validity according to valid_file_types.
+  def is_valid_file_type?(type)
+    self.valid_file_types.include? type
+  end
+  
+  #Updates the class (type attribute) of this file if +type+ is 
+  #valid according to valid_file_types.
+  def update_file_type(type)
+    if self.is_valid_file_type?(type)
+      self.type = type
+      self.save
+    else
+      false
+    end
+  end
+  
   #Format size for display in the view.
   #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
   def format_size
@@ -136,6 +174,7 @@ class Userfile < ActiveRecord::Base
     self.tag_ids = (all_tags - current_user_tags) + ((tags || []).collect(&:to_i) & user.tag_ids)
     self.save
   end
+
 
   # Sort a list of files in "tree order" where
   # parents are listed just before their children.
