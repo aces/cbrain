@@ -33,5 +33,7 @@ class CBRAIN
   # simple patterns with at most SINGLE asterisks ("*") and no
   # slashes ("/") or unprintable characters.
   DataProvider_IgnorePatterns = [ ".DS_Store" ]
-    
+  
+  # Set the time zone for the application. 
+  self.time_zone = 'your time zone'  
 end

@@ -197,13 +197,18 @@ class CBRAIN
   end
   
   def self.time_zone=(zone)
-    Rails.configuration.time_zone = zone
-    Rails::Initializer.new(Rails.configuration).initialize_time_zone
+    begin
+      Rails.configuration.time_zone = zone
+      Rails::Initializer.new(Rails.configuration).initialize_time_zone
+    rescue => e
+      raise e.message.gsub "config", "CBRAIN"
+    end
   end
 
 end  # End of CBRAIN class
 
 unless Rails.configuration.time_zone.blank?
-  raise "Time zone already initialized. Remove line \"config.time_zone = 'your time zone'\" from environment.rb (or elsewhere)." + 
-        " Modify or create #{RAILS_ROOT}/config/initializer/time_zone.rb and add the line \"CBRAIN.time_zone = 'your time zone'\" to set application time zone."
+  puts "C> Time zone already initialized. Remove line \"config.time_zone = 'your time zone'\" from environment.rb (or other environment file)."
+  puts "C> Configure time zone in #{RAILS_ROOT}/config/initializer/config_portal.rb (see config_portal.rb.TEMPLATE)"
+  Kernel.exit(1)
 end
