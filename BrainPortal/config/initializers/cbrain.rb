@@ -204,5 +204,6 @@ class CBRAIN
 end  # End of CBRAIN class
 
 unless Rails.configuration.time_zone.blank?
-  raise "Time zone already initialized. Modify or create #{RAILS_ROOT}/config/initializer/time_zone.rb and add the line \"CBRAIN.time_zone = 'your time zone'\" to set application time zone."
+  raise "Time zone already initialized. Remove line \"config.time_zone = 'your time zone'\" from environment.rb (or elsewhere)." + 
+        " Modify or create #{RAILS_ROOT}/config/initializer/time_zone.rb and add the line \"CBRAIN.time_zone = 'your time zone'\" to set application time zone."
 end
