@@ -195,6 +195,14 @@ class CBRAIN
     reader.close # Parent is done reading subchild's PID from child
     subchildpid
   end
+  
+  def self.time_zone=(zone)
+    Rails.configuration.time_zone = zone
+    Rails::Initializer.new(Rails.configuration).initialize_time_zone
+  end
 
 end  # End of CBRAIN class
 
+unless Rails.configuration.time_zone.blank?
+  raise "Time zone already initialized. Modify or create #{RAILS_ROOT}/config/initializer/time_zone.rb and add the line \"CBRAIN.time_zone = 'your time zone'\" to set application time zone."
+end
