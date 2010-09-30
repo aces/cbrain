@@ -3,9 +3,8 @@ var brainbrowser;
 
 function modify_target(data, target, options){
   if(!options) options = {};
-  
-  if(target){
-    var new_content = jQuery(data);
+  var new_content = jQuery(data);
+  if(target){ 
     if(target == "__OVERLAY__"){
       width = parseInt(options["width"] || 800);
       height = parseInt(options["height"] || 500);
@@ -20,7 +19,7 @@ function modify_target(data, target, options){
        	}
        });
     }else{
-      jQuery(target).html(data);
+      jQuery(target).html(new_content);
     }
     new_content.trigger("new_content");
   }

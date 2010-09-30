@@ -170,6 +170,13 @@ class UserfilesController < ApplicationController
   
   end
   
+  def display
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    viewer = params[:viewer]
+    
+    render :partial  => "userfiles/viewers/#{viewer}"
+  end
+  
   def show #:nodoc:
     session[:full_civet_display] ||= 'on'
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
@@ -178,6 +185,11 @@ class UserfilesController < ApplicationController
     @sync_status = 'ProvNewer' # same terminology as in SyncStatus
     state = @userfile.local_sync_status
     @sync_status = state.status if state
+    @default_viewer = @userfile.viewers.first
+    
+    if @default_viewer.blank? && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{@userfile.class.name.underscore}.html.erb")
+      @default_viewer = @userfile.class.name.underscore
+    end
 
     if params[:full_civet_display]
       session[:full_civet_display] = params[:full_civet_display]

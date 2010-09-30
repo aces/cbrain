@@ -134,10 +134,23 @@
     <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
   <% end %>
   
-  <% if File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{@userfile.class.name.underscore}.html.erb") %>
-    <%= render :partial  => "userfiles/viewers/#{@userfile.class.name.underscore}" %>
-  <% end %>
-
+  <P>
+  
+  <% if @userfile.viewers && @userfile.viewers.size > 1 %>
+    <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer" do %>
+      <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.to_s.humanize, v.to_s] }, @userfile.class.name.underscore) %>
+      <%= submit_tag "Change View" %>
+    <% end %>
+  <% end  %>
+  
+  <P>
+    
+  <div id="userfile_viewer">
+    <% if @default_viewer %>
+      <%= render :partial  => "userfiles/viewers/#{@default_viewer}" %>
+    <% end %>
+  </div>
+    
   <P>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>

@@ -117,6 +117,19 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  #List of viewers that can be used with a given file type.
+  #If left undefined in a subclass, the default will be a viewer with the name
+  #<file type underscored>.
+  #Each viewer name should match a file views/userfiles/viewers/_<viewer name>.html.erb
+  #(though the viewer name should NOT include the underscore or ".html.erb")
+  #These viewer partials should be able to render with just the @userfile variable representing
+  #the file to be rendered.
+  #
+  #Note: order is important in that the first viewer listed will be considered the default.
+  def viewers
+    []
+  end
+  
   #Format size for display in the view.
   #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
   def format_size

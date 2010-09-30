@@ -1,5 +1,2 @@
-<% ajax_element(content_userfile_path(@userfile), :class  => "loading_message") do %>
-  <br>
-  Loading...
-  <br>
-<% end %>
+<%= render :partial  => "userfiles/viewers/file_collection_form", :locals  => {:collection_partial  => "file_collection_plain_file_list"} %>
+
