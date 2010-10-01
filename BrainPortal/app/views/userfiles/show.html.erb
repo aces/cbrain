@@ -135,10 +135,10 @@
   <% end %>
   
   <P>
-  
+    
   <% if @userfile.viewers && @userfile.viewers.size > 1 %>
     <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer" do %>
-      <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.to_s.humanize, v.to_s] }, @userfile.class.name.underscore) %>
+      <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
       <%= submit_tag "Change View" %>
     <% end %>
   <% end  %>
@@ -147,7 +147,7 @@
     
   <div id="userfile_viewer">
     <% if @default_viewer %>
-      <%= render :partial  => "userfiles/viewers/#{@default_viewer}" %>
+      <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
     <% end %>
   </div>
     

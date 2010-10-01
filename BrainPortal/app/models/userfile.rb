@@ -70,6 +70,51 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :level
   attr_accessor           :tree_children
 
+  class Viewer
+    attr_reader :name, :partial
+    
+    def initialize(viewer)
+      atts = viewer
+      unless atts.is_a? Hash
+        atts = {:name  => viewer.to_s.clone, :partial => viewer.to_s.clone}
+      end
+      initialize_from_hash(atts)
+    end
+    
+    def initialize_from_hash(atts = {})
+      unless atts.has_key?(:name) || atts.has_key?(:partial)
+        cb_error("Viewer must have either name or partial defined.")
+      end
+      
+      @name       = atts[:name]       || atts[:partial].to_s.clone
+      @partial    = atts[:partial]    || atts[:name].to_s.clone   
+      @condition  = atts[:condition]
+    end
+    
+    def valid_for?(userfile)
+      if @condition && @condition.respond_to?(:call)
+        @condition.call(userfile)
+      else
+        true
+      end
+    end
+    
+    def ==(other)
+      return false unless other.is_a? Viewer
+      self.name == other.name
+    end
+  end
+
+  def viewers
+    class_viewers = self.class.class_viewers
+    
+    @viewers = class_viewers.select { |v| v.valid_for?(self) }
+  end
+  
+  def find_viewer(name)
+    self.viewers.find{ |v| v.name == name}
+  end
+
   def site
     @site ||= self.user.site
   end
@@ -115,19 +160,6 @@ class Userfile < ActiveRecord::Base
     else
       false
     end
-  end
-  
-  #List of viewers that can be used with a given file type.
-  #If left undefined in a subclass, the default will be a viewer with the name
-  #<file type underscored>.
-  #Each viewer name should match a file views/userfiles/viewers/_<viewer name>.html.erb
-  #(though the viewer name should NOT include the underscore or ".html.erb")
-  #These viewer partials should be able to render with just the @userfile variable representing
-  #the file to be rendered.
-  #
-  #Note: order is important in that the first viewer listed will be considered the default.
-  def viewers
-    []
   end
   
   #Format size for display in the view.
@@ -719,6 +751,39 @@ class Userfile < ActiveRecord::Base
 
 
   private
+  
+  def self.has_viewer(*new_viewers)
+    unless @ancerstors_set
+      if self.superclass.respond_to? :class_viewers
+        @ancestor_viewers = self.superclass.class_viewers
+      end
+      @ancestor_viewers ||= []
+      @ancerstors_set = true
+    end
+    @class_viewers ||= []
+    
+    new_viewers.map!{ |v| Viewer.new(v) }
+    new_viewers.each{ |v| add_viewer(v) }
+  end
+  
+  def self.has_viewers(*new_viewers)
+    self.has_viewer(*new_viewers)
+  end
+  
+  def self.add_viewer(viewer)
+    if self.class_viewers.find{ |v| v == viewer  }
+      cb_error "Redefinition of viewer in class #{self.name}."
+    end
+    
+    @class_viewers << viewer
+  end
+  
+  def self.class_viewers
+    class_v    = (@class_viewers    || []).clone
+    ancestor_v = (@ancestor_viewers || []).clone
+    
+    class_v + ancestor_v
+  end
   
   def validate_associations
     unless DataProvider.find(:first, :conditions => {:id => self.data_provider_id})

@@ -21,6 +21,8 @@ class FileCollection < Userfile
   
   Revision_info="$Id$"
   
+  has_viewer :name  => "File Collection", :partial  => "file_collection"
+  
   def content(options) #:nodoc
     
     begin

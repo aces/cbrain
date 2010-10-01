@@ -171,9 +171,20 @@ class UserfilesController < ApplicationController
   
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    viewer = params[:viewer]
+    viewer_name = params[:viewer]
+    viewer      = @userfile.find_viewer(params[:viewer])
     
-    render :partial  => "userfiles/viewers/#{viewer}"
+    if viewer
+      partial = viewer.partial
+    elsif viewer_name =~ /[\w\/]+/ && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{viewer_name}.#{request.format.to_sym}.erb")
+      partial = viewer_name
+    end
+    
+    if partial
+      render :partial  => "userfiles/viewers/#{partial}"
+    else
+      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
+    end
   end
   
   def show #:nodoc:
@@ -187,7 +198,8 @@ class UserfilesController < ApplicationController
     @default_viewer = @userfile.viewers.first
     
     if @default_viewer.blank? && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{@userfile.class.name.underscore}.html.erb")
-      @default_viewer = @userfile.class.name.underscore
+      partial = @userfile.class.name.underscore
+      @default_viewer = Userfile::Viewer.new :name => partial.humanize, :partial  => partial
     end
 
     if params[:full_civet_display]
