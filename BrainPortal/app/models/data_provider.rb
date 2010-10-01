@@ -758,9 +758,9 @@ class DataProvider < ActiveRecord::Base
   #
   # When called, the method accesses the provider's side
   # and returns an array of FileInfo objects. 
-  def provider_collection_index(userfile, *args)
+  def provider_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
-    impl_provider_collection_index(userfile, *args)
+    impl_provider_collection_index(userfile, directory, allowed_types)
   end
 
   # Opens a filehandle to the remote data file and supplies
@@ -854,7 +854,7 @@ class DataProvider < ActiveRecord::Base
     raise "Error: method not yet implemented in subclass."
   end
   
-  def impl_provider_collection_index(userfile, *args) #:nodoc:
+  def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
   

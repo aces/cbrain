@@ -11,16 +11,16 @@
 # Unlike other models, the set of ToolConfigs is not
 # arbitrary. They fit in three categories:
 #
-#   * A single tool config represents the the initialization
+#   * A single tool config object represents the initialization
 #     needed by a particular tool on all bourreaux; it
 #     has a tool_id and no bourreau_id
-#   * A single tool config represents the the initialization
+#   * A single tool config object represents the initialization
 #     needed by a particular bourreau for all tools; it
 #     has a bourreau_id and no tool_id
-#   * A set of 'versionning' tool configs have both
-#     a tool_id and a bourreau_id
+#   * A set of 'versioning' tool config objects have both
+#     a tool_id and a bourreau_id; they represent all
+#     available versions of a tool on a particular bourreau.
 #
-# 
 class ToolConfig < ActiveRecord::Base
 
   Revision_info="$Id$"

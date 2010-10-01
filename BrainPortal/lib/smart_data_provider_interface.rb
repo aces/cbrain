@@ -110,8 +110,8 @@ module SmartDataProviderInterface
     @provider.cache_erase(userfile)
   end
 
-  def cache_collection_index(userfile, *args) #:nodoc:
-    @provider.cache_collection_index(userfile, *args)
+  def cache_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
+    @provider.cache_collection_index(userfile, directory, allowed_types)
   end
 
   def provider_erase(userfile) #:nodoc:
@@ -134,8 +134,8 @@ module SmartDataProviderInterface
     @provider.provider_list_all(user)
   end
 
-  def provider_collection_index(userfile, *args) #:nodoc:
-    @provider.provider_collection_index(userfile, *args)
+  def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
+    @provider.provider_collection_index(userfile, directory, allowed_types)
   end
 
 end

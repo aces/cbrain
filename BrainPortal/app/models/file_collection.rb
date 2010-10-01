@@ -102,25 +102,11 @@ class FileCollection < Userfile
     super + " (#{self.num_files} files)"
   end
   
-  #Checks whether the size attributes (size and num_files) have been set.
-  def size_set?
-    ! (self.size.blank? || self.num_files.blank?)
-  end
-  
-  #Calculates and sets the size attribute.
-  def set_size
-    self.set_size! unless self.size_set?
-  end
-
-  #Calculates and sets the size attribute (active recount forced)
+  # Calculates and sets the size attribute (active recount forced)
   def set_size!
-    # local_sync = self.local_sync_status
-    # unless local_sync && local_sync.status == "InSync"
-    #   return false
-    # end
-    
-    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
-    self.num_files = self.list_files.size
+    allfiles       = self.list_files(:all, :regular) || []
+    self.size      = allfiles.inject(0){ |total, file_entry|  total += ( file_entry.size || 0 ); total }
+    self.num_files = allfiles.size
     self.save!
     
     true

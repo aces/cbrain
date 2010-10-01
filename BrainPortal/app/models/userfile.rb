@@ -469,22 +469,22 @@ class Userfile < ActiveRecord::Base
     @file_list ||= {}
    
     @file_list[args.dup] ||= if self.is_locally_cached?
-                            self.cache_collection_index(*args)
-                         else
-                           self.provider_collection_index(*args)
-                         end
+                               self.cache_collection_index(*args)
+                             else
+                               self.provider_collection_index(*args)
+                             end
   end
   
-  #Checks whether the size attribute(s) have been set.
-  #(Abstract: should be redefined in subclass).
-  def size_set?
-    raise "size_set? called on Userfile. Should only be called in a subclass."
-  end
-  
-  #Calculates and sets.
-  #(Abstract: should be redefined in subclass).
+  # Calculates and sets the size attribute unless
+  # it's already set.
   def set_size
-    raise "set_size called on Userfile. Should only be called in a subclass."
+    self.set_size! if self.size.blank?
+  end 
+
+  # Calculates and sets.
+  # (Abstract: should be redefined in subclass).
+  def set_size!
+    raise "set_size! called on Userfile. Should only be called in a subclass."
   end
 
   # Returns a simple keyword identifying the type of
@@ -579,8 +579,9 @@ class Userfile < ActiveRecord::Base
   # the content of this userfile on the local RAILS
   # application's DataProvider cache. Returns nil if
   # no SyncStatus object currently exists for the file.
-  def local_sync_status
-    SyncStatus.find(:first, :conditions => {
+  def local_sync_status(refresh = false)
+    @syncstat = nil if refresh
+    @syncstat ||= SyncStatus.find(:first, :conditions => {
       :userfile_id        => self.id,
       :remote_resource_id => CBRAIN::SelfRemoteResourceId
     } )
@@ -589,9 +590,12 @@ class Userfile < ActiveRecord::Base
   # Returns whether this userfile's contents has been
   # synced to the local cache.
   def is_locally_synced?
-    self.sync_to_cache if self.data_provider.is_fast_syncing?
     syncstat = self.local_sync_status
-    syncstat && syncstat.status == 'InSync'
+    return true if syncstat && syncstat.status == 'InSync'
+    return false unless self.data_provider.is_fast_syncing?
+    syncstat = self.local_sync_status(:refresh)
+    return true if syncstat && syncstat.status == 'InSync'
+    false
   end
   
   # Returns whether this userfile's contents has been
@@ -660,8 +664,8 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
-  def provider_collection_index(*args)
-    self.data_provider.provider_collection_index(self, *args)
+  def provider_collection_index(directory = :all, allowed_types = :regular)
+    self.data_provider.provider_collection_index(self, directory, allowed_types)
   end
 
   # See the description in class DataProvider
@@ -699,8 +703,8 @@ class Userfile < ActiveRecord::Base
   # entry.
   #
   # Information is requested from the cache (not the actual data provider).
-  def cache_collection_index(*args)
-    self.data_provider.cache_collection_index(self, *args)
+  def cache_collection_index(directory = :all, allowed_types = :regular)
+    self.data_provider.cache_collection_index(self, directory, allowed_types)
   end
   
   # Returns true if the data provider for the content of

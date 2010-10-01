@@ -76,7 +76,6 @@ class UserfilesController < ApplicationController
       @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
     end
 
-    @search_term = params[:userfiles_search_term] if params[:userfiles_search_type] == 'name_search'
     @user_tags = current_user.tags.find(:all)
     if current_user.has_role? :admin
       @user_groups = Group.find(:all, :order => "type")

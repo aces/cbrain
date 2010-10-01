@@ -1,45 +1,8 @@
-#Helpers for resource links.
+# Helpers for resource links.
 module ResourceLinkHelper
 
   Revision_info="$Id"
   
-  #################################################################################
-  # Link Helpers
-  #################################################################################
-  
-  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-  #the current user has a role of *admin*. Otherwise, +name+ will be 
-  #displayed as static text.
-  def link_if_admin(name, path)
-    if check_role(:admin)
-      link_to(name, path)
-    else
-      name
-    end
-  end
-  
-  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-  #the current user has a role of *admin* or <b>site manager</b>. Otherwise, +name+ will be 
-  #displayed as static text.
-  def link_if_manager(name, path)
-    if check_role(:admin) || check_role(:site_manager)
-      link_to(name, path)
-    else
-      name
-    end
-  end
-  
-  #Creates a link labeled +name+ to the url +path+ *if* *and* *only* *if*
-  #the current user has access to +resource+. Otherwise, +name+ will be 
-  #displayed as static text.
-  def link_if_has_access(resource, name, path)
-    if resource.can_be_accessed_by?(current_user)
-      link_to(name, path)
-    else
-      name
-    end
-  end
-
   # Creates a link to the show page of a +userfile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is
   # current_user.

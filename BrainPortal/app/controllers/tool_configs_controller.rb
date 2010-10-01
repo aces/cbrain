@@ -29,7 +29,13 @@ class ToolConfigsController < ApplicationController
       { :tool_id => nil,            :bourreau_id => config.bourreau_id }) if config.bourreau_id
   end
 
-  # We need tool_id (not blank) and bourreau_id (can be blank)
+  # The 'new' action is special in this controller.
+  #
+  # We need tool_id and bourreau_id as params; one or the other can be
+  # nil but not both. A single potentially pre-existing object
+  # will be accessed per pair of tool_id and bourreau_id when one of
+  # them is nil. A brand new object is created when they are both
+  # provided.
   def new
     tool_id     = params[:tool_id]
     bourreau_id = params[:bourreau_id]
@@ -48,7 +54,7 @@ class ToolConfigsController < ApplicationController
     end
   end
 
-  def edit
+  def edit #:nodoc:
     id           = params[:id]
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []

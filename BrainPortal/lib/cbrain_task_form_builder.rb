@@ -13,13 +13,13 @@ require 'action_view/helpers/form_helper'
 # The +paramspath+ can be a simple symbol or more complex paths
 # into the params structure; for instance
 #
-#    Value for paramspath    Accesses inside the CbrainTask
-#    ----------------------- ------------------------------------
-#    :abc                    params[:abc]
-#    "abc"                   params[:abc]
-#    "myhash[abc]"           params[:myhash][:abc]
-#    "myarray[3]"            params[:myarray][3]
-#    "anarray[]"             params[:anarray]
+#    Value for paramspath    CbrainTask's params    Final HTML Tag Variable
+#    ----------------------- ---------------------- --------
+#    :abc                    params[:abc]           cbrain_task[params][abc]
+#    "abc"                   params[:abc]           cbrain_task[params][abc]
+#    "myhash[abc]"           params[:myhash][:abc]  cbrain_task[params][myhash][abc]
+#    "myarray[3]"            params[:myarray][3]    cbrain_task[params][myarray][3]
+#    "anarray[]"             params[:anarray]       cbrain_task[params][anarray][]
 # 
 # Basically, when generating the input tags, the paramspath is
 # automatically transformed into the string returned by calling

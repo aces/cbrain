@@ -67,7 +67,7 @@ class MessagesController < ApplicationController
   end
   
   #Delete multiple messages.
-  def delete_messages
+  def delete_messages #:nodoc:
     message_list = params[:message_ids] || []
     deleted_count = 0
     

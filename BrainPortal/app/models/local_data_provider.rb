@@ -54,8 +54,8 @@ class LocalDataProvider < DataProvider
     self.cache_readhandle(userfile, *args)
   end
 
-  def impl_provider_collection_index(userfile, *args) #:nodoc:
-    self.cache_collection_index(userfile, *args)
+  def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
+    self.cache_collection_index(userfile, directory, allowed_types)
   end
 
   protected

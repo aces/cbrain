@@ -589,7 +589,7 @@ class SshTunnel
     "#{fd}#{append_op}#{shell_escape(file)}"
   end
 
-  def debugTrace(message)
+  def debugTrace(message) #:nodoc:
     return unless Debug
     STDERR.puts("\e[1;33m#{message}\e[0m")
   end

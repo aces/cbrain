@@ -38,7 +38,7 @@ class GroupsController < ApplicationController
     end
   end
   
-  def show
+  def show #:nodoc:
     @group = current_user.available_groups(params[:id])
   end
 

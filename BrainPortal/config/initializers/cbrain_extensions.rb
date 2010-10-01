@@ -115,6 +115,8 @@ class Symbol
   # Used by views for CbrainTasks to transform a
   # symbol sych as :abc into a path to a variable
   # inside the params[] hash, as "cbrain_task[params][abc]".
+  #
+  # CBRAIN adds a similar method in the String class.
   def to_la
     "cbrain_task[params][#{self}]"
   end
@@ -127,6 +129,8 @@ class String
   # string sych as "abc" or "abc[def]" into a path to a
   # variable inside the params[] hash, as in
   # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]"
+  #
+  # CBRAIN adds a similar method in the Symbol class.
   def to_la
     key = self
     if key =~ /^(\w+)/

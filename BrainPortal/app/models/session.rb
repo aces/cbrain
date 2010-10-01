@@ -76,6 +76,10 @@ class Session
   def self.session_class
     CGI::Session::ActiveRecordStore::Session
   end
+
+  def self.all
+    self.session_class.all
+  end
   
   def self.recent_activity(n = 10, options = {})
     scope = User.scoped(options)
@@ -103,7 +107,7 @@ class Session
     controller = params[:controller]
 
     #TODO: It would be nice if userfiles used the generalized system.
-    filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])   
+    filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])
     if params[:userfiles_search_type] == 'unfilter'
       @session[:userfiles_basic_filters] = []
       @session[:userfiles_tag_filters] = []
