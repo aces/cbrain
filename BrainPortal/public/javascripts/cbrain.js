@@ -416,8 +416,14 @@ jQuery(
      var data_type = current_form.attr("data-datatype");
      var target = current_form.attr("data-target");
      var method = current_form.attr("data-method");
+     var reset_form = current_form.attr("data-reset-form");
      if(!method) method = "POST";
      if(!data_type) data_type = "html";
+     if(reset_form == "false"){
+       reset_form = false;
+     } else {
+       reset_form = true;
+     }
      
      current_form.ajaxSubmit({
        type: method,
@@ -425,7 +431,7 @@ jQuery(
        success: function(data){
          modify_target(data, target);     
        },
-       resetForm: true
+       resetForm: reset_form
      });
      return false;
    });

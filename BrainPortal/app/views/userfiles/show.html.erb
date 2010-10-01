@@ -137,7 +137,7 @@
   <P>
     
   <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-    <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer" do %>
+    <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
       <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
       <%= submit_tag "Change View" %>
     <% end %>

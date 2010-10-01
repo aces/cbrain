@@ -559,6 +559,11 @@ module CbrainUiHelper
       options["data-target"] = target
     end
     
+    reset_form = options.delete(:reset_form)
+    unless reset_form.nil?
+      options["data-reset-form"] = reset_form
+    end
+    
     form_tag(url_for_options, options, *parameters_for_url, &block)
   end
   
@@ -588,6 +593,11 @@ module CbrainUiHelper
     target = options.delete(:target)
     if target
       options[:html]["data-target"] = target
+    end
+    
+    reset_form = options.delete(:reset_form)
+    unless reset_form.nil?
+      options[:html]["data-reset-form"] = reset_form
     end
     
     args << options
