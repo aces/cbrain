@@ -175,13 +175,13 @@ class UserfilesController < ApplicationController
     viewer      = @userfile.find_viewer(params[:viewer])
     
     if viewer
-      partial = viewer.partial
+      @partial = viewer.partial
     elsif viewer_name =~ /[\w\/]+/ && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{viewer_name}.#{request.format.to_sym}.erb")
-      partial = viewer_name
+      @partial = viewer_name
     end
     
-    if partial
-      render :partial  => "userfiles/viewers/#{partial}"
+    if @partial
+      render :action  => :display, :layout  => false
     else
       render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
     end

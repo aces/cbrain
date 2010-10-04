@@ -76,7 +76,7 @@ class Userfile < ActiveRecord::Base
     def initialize(viewer)
       atts = viewer
       unless atts.is_a? Hash
-        atts = {:name  => viewer.to_s.clone, :partial => viewer.to_s.clone}
+        atts = {:name  => viewer.to_s.underscore.humanize, :partial => viewer.to_s.clone}
       end
       initialize_from_hash(atts)
     end
@@ -88,7 +88,7 @@ class Userfile < ActiveRecord::Base
       
       @name       = atts[:name]       || atts[:partial].to_s.clone
       @partial    = atts[:partial]    || atts[:name].to_s.clone   
-      @condition  = atts[:condition]
+      @condition  = atts[:if]
     end
     
     def valid_for?(userfile)

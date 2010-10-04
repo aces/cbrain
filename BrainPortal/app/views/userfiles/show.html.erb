@@ -146,9 +146,11 @@
   <P>
     
   <div id="userfile_viewer">
-    <% if @default_viewer %>
-      <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
-    <% end %>
+    <div class="display_userfile">   
+      <% if @default_viewer %>
+        <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+      <% end %>
+    </div>
   </div>
     
   <P>
