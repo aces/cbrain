@@ -7,7 +7,7 @@
   </h5>
 <% end %>
 
-<% if @total_tasks > @tasks_per_page %>
+<% if @total_entries > @tasks_per_page %>
   <h5>
     <%= ajax_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
                 {:controller  => :tasks, :action  => :index, :tasks  => {:pagination  => set_toggle(@filter_params["pagination"])}},

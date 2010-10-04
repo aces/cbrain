@@ -1,8 +1,8 @@
 
 <% title 'Tasks' %>
 
-<div id="pagination">
-  <%= render :partial  => "pagination" %>
+<div id="pagination" class="pagination">
+  <%= render :partial => "pagination" %>
 </div>
 
 <% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>

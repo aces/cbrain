@@ -94,6 +94,7 @@ class TasksController < ApplicationController
     
     
     pagination_list = @tasks
+    @total_tasks = @tasks.size
 
     if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
       seen_keys    = {}
@@ -105,11 +106,12 @@ class TasksController < ApplicationController
         lt
       end
     end
+
+    @total_entries = @tasks.size
     
-    @total_tasks = @tasks.size
     @paginated_list = WillPaginate::Collection.create(page, @per_page) do |pager|
       pager.replace(pagination_list.slice((page-1) * @per_page, @per_page))
-      pager.total_entries = @total_tasks
+      pager.total_entries = @total_entries
       pager
     end
     
