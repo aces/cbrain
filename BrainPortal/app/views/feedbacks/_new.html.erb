@@ -1,14 +1,24 @@
 
+You can use this form to leave feedback for the developers.
+
+<P>
+
+<strong>Important Note:</strong>
+Any and all feedback you leave is <em>public</em>, and can be seen
+by all the other users too!
+
+<P>
+
 <% ajax_form_for :feedback, @feedback, :url => { :action => "create" }, :datatype => "script"  do |f| -%>
 
   <%= f.error_messages %>
   <p>
     <%= f.label :summary %><br />
-    <%= f.text_field :summary %>
+    <%= f.text_field :summary, :size => 80 %>
   </p>
   <p>
     <%= f.label :details %><br />
-    <%= f.text_area :details %>
+    <%= f.text_area :details, :cols => 80 %>
   </p>
   <p>
     <%= f.submit "Create" %>
