@@ -485,7 +485,7 @@ class CbrainTask < ActiveRecord::Base
 
   private
 
-  def set_group
+  def set_group #:nodoc:
     unless self.group_id
       return true unless self.user_id
       owner = self.user

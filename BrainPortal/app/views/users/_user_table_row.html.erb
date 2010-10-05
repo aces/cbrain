@@ -11,6 +11,7 @@
   <td><%= h user.country %></td>
   <td><%= h(user.time_zone || "(Unset)") %></td>
   <td><%=h user.userfiles.count %></td>
+  <td><%=h user.cbrain_tasks.count %></td>
   <% unless user.login == 'admin' %>
     <td>
       <%= 
