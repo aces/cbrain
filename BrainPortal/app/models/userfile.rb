@@ -76,7 +76,7 @@ class Userfile < ActiveRecord::Base
     def initialize(viewer)
       atts = viewer
       unless atts.is_a? Hash
-        atts = {:name  => viewer.to_s.underscore.humanize, :partial => viewer.to_s.clone}
+        atts = { :name  => viewer.to_s.underscore.humanize, :partial => viewer.to_s.clone, :if => :is_locally_synced? }
       end
       initialize_from_hash(atts)
     end
@@ -86,17 +86,24 @@ class Userfile < ActiveRecord::Base
         cb_error("Viewer must have either name or partial defined.")
       end
       
-      @name       = atts[:name]       || atts[:partial].to_s.clone
-      @partial    = atts[:partial]    || atts[:name].to_s.clone   
-      @condition  = atts[:if]
+      name       = atts.delete(:name)
+      partial    = atts.delete(:partial)
+      att_if     = atts.delete(:if)      || []
+      cb_error "Unknown viewer option: '#{atts.keys.first}'." unless atts.empty?
+
+      @conditions = []
+      @name       = name      || partial.to_s.clone
+      @partial    = partial   || name.to_s.clone   
+      att_if = [ att_if ] unless att_if.is_a?(Array)
+      att_if.each do |method|
+        cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)
+        @conditions << method.to_proc
+      end
     end
     
     def valid_for?(userfile)
-      if @condition && @condition.respond_to?(:call)
-        @condition.call(userfile)
-      else
-        true
-      end
+      return true if @conditions.empty?
+      @conditions.all? { |condition| condition.call(userfile) }
     end
     
     def ==(other)
@@ -625,6 +632,7 @@ class Userfile < ActiveRecord::Base
     syncstat = self.local_sync_status
     return true if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
+    self.sync_to_cache
     syncstat = self.local_sync_status(:refresh)
     return true if syncstat && syncstat.status == 'InSync'
     false
