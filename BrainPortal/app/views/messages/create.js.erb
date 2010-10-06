@@ -1,8 +1,8 @@
 try{
   jQuery("#new_message_button").click();
   jQuery("#new_message").find("form").resetForm();
-  var new_display = jQuery("<%= escape_javascript(render :partial  => 'layouts/message_display') %>");
-  var new_table = jQuery("<%= escape_javascript(render :partial  => 'message_table') %>");
+  var new_display = jQuery("<%= h(render :partial  => 'layouts/message_display') %>");
+  var new_table = jQuery("<%= h(render :partial  => 'message_table') %>");
   jQuery("#message_display").html(new_display);
   jQuery("#message_table").html(new_table);
   new_display.trigger("new_content");

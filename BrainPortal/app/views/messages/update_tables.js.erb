@@ -1,6 +1,6 @@
 jQuery("#message_menu_tab").attr("title", "<%= pluralize(@unread_message_count, "unread message") %>");
-jQuery("#message_display").html("<%= escape_javascript(render :partial  => 'layouts/message_display') %>");
+jQuery("#message_display").html("<%= h(render :partial  => 'layouts/message_display') %>");
 message_table = jQuery('#message_table');
 if(message_table){
-  message_table.html("<%= escape_javascript(render :partial  => 'message_table') %>")
+  message_table.html("<%= h(render :partial  => 'message_table') %>")
 }
