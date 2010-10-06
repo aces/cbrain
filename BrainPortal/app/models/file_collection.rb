@@ -21,7 +21,7 @@ class FileCollection < Userfile
   
   Revision_info="$Id$"
   
-  has_viewer :name  => "File Collection", :partial  => "file_collection"
+  has_viewer :file_collection
   
   def content(options) #:nodoc
     
@@ -44,10 +44,6 @@ class FileCollection < Userfile
         else
           { :file => "public/404.html", :status => "404" }
         end
-      elsif options[:collection_dir].blank?
-        return { :partial  => 'file_collection'}
-      else
-        return {:partial => 'directory_contents', :locals  => {:file_list  => self.list_files(options[:collection_dir], [:regular, :directory])}}
       end
     rescue  => e
       if e.is_a?(Net::SFTP::Exception) || e.message =~ /Net::SFTP/

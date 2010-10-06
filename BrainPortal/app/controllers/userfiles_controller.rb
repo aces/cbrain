@@ -171,24 +171,31 @@ class UserfilesController < ApplicationController
   
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    viewer_name = params[:viewer]
-    viewer      = @userfile.find_viewer(params[:viewer])
-    
+    viewer_name = params[:viewerx] || params[:viewer]
+    viewer      = @userfile.find_viewer(viewer_name)
+
     if viewer
       @partial = viewer.partial
-    elsif viewer_name =~ /[\w\/]+/ && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{viewer_name}.#{request.format.to_sym}.erb")
-      @partial = viewer_name
+    elsif viewer_name =~ /[\w\/]+/
+      viewer_path = viewer_name.split("/")
+      viewer_name = viewer_path.pop
+      if File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
+        @partial = viewer_path.push(viewer_name).join("/")
+      end
     end
     
     if @partial
-      render :action  => :display, :layout  => false
+      if params[:apply_div] == "false"
+        render  :partial  => "userfiles/viewers/#{@partial}"
+      else
+        render :action  => :display, :layout  => false
+      end
     else
-      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
+      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewerx]}.</div>", :status  => "404"
     end
   end
   
   def show #:nodoc:
-    session[:full_civet_display] ||= 'on'
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
     # This allows the user to manually trigger the syncing to the Portal's cache
@@ -202,21 +209,11 @@ class UserfilesController < ApplicationController
       @default_viewer = Userfile::Viewer.new :name => partial.humanize, :partial  => partial
     end
 
-    if params[:full_civet_display]
-      session[:full_civet_display] = params[:full_civet_display]
-    end
-
     @log  = @userfile.getlog rescue nil
   end
   
   # GET /userfiles/1/edit
   def edit  #:nodoc:
-    session[:full_civet_display] ||= 'on'
-
-    if params[:full_civet_display]
-      session[:full_civet_display] = params[:full_civet_display]
-    end
-
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
     # This allows the user to manually trigger the syncing to the Portal's cache

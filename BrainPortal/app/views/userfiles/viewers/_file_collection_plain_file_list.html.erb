@@ -9,6 +9,6 @@
      <th>File</th>
      <th>Size</th>
    </tr>
-   <%= render :partial => 'directory_contents', :locals  => {:file_list  => @userfile.list_files(".", [:regular, :directory])} %>
+   <%= render :partial => 'userfiles/viewers/directory_contents', :locals  => {:file_list  => @userfile.list_files(".", [:regular, :directory])} %>
 
 </table>

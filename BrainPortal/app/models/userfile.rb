@@ -76,7 +76,7 @@ class Userfile < ActiveRecord::Base
     def initialize(viewer)
       atts = viewer
       unless atts.is_a? Hash
-        atts = { :name  => viewer.to_s.underscore.humanize, :partial => viewer.to_s.clone, :if => :is_locally_synced? }
+        atts = { :name  => viewer.to_s.underscore.titleize, :partial => viewer.to_s.underscore }
       end
       initialize_from_hash(atts)
     end
@@ -761,21 +761,17 @@ class Userfile < ActiveRecord::Base
   private
   
   def self.has_viewer(*new_viewers)
-    unless @ancerstors_set
-      if self.superclass.respond_to? :class_viewers
-        @ancestor_viewers = self.superclass.class_viewers
-      end
-      @ancestor_viewers ||= []
-      @ancerstors_set = true
-    end
-    @class_viewers ||= []
-    
     new_viewers.map!{ |v| Viewer.new(v) }
     new_viewers.each{ |v| add_viewer(v) }
   end
   
   def self.has_viewers(*new_viewers)
     self.has_viewer(*new_viewers)
+  end
+  
+  def self.reset_viewers
+    @ancestor_viewers = []
+    @class_viewers    = []
   end
   
   def self.add_viewer(viewer)
@@ -787,8 +783,15 @@ class Userfile < ActiveRecord::Base
   end
   
   def self.class_viewers
-    class_v    = (@class_viewers    || []).clone
-    ancestor_v = (@ancestor_viewers || []).clone
+    unless @ancestor_viewers
+      if self.superclass.respond_to? :class_viewers
+        @ancestor_viewers = self.superclass.class_viewers
+      end
+    end
+    @ancestor_viewers ||= []
+    @class_viewers    ||= []
+    class_v    = (@class_viewers).clone
+    ancestor_v = (@ancestor_viewers).clone
     
     class_v + ancestor_v
   end
