@@ -157,4 +157,18 @@ module ApplicationHelper
     
     icon || ""
   end
+
+
+
+  #################################################################################
+  # Javascript helpers
+  #################################################################################
+  
+  # Escape a string containing HTML code so that it is a valid
+  # javascript constant string; the string will be quoted
+  # with single quotes (') on each end.
+  def html_for_js(string)
+    "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
+  end
+
 end

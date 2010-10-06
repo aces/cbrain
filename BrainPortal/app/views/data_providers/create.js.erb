@@ -1,11 +1,11 @@
 <% if @provider.errors.empty? %>
   <%= render :partial  => "shared/flash_update" %>
-  var new_row = jQuery("<%= h(render :partial => "data_provider_table_row", :locals  => {:data_provider  => @provider}) %>")
+  var new_row = jQuery(<%= html_for_js(render :partial => "data_provider_table_row", :locals  => {:data_provider  => @provider}) %>)
   jQuery('#<%= @provider.is_browsable? ? "user" : "cbrain" %>_data_provider_table').append(new_row);
   new_row.trigger("new_content");
   jQuery("#errorExplanation").remove();
   jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
   jQuery('#new_data_provider_button').click();
 <% else %>
-  jQuery('#new_data_provider').html("<%= h(render :partial  => "new") %>");
+  jQuery('#new_data_provider').html(<%= html_for_js(render :partial  => "new") %>);
 <% end %>

@@ -1,5 +1,5 @@
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#current_filters").html("<%= h(render(:partial => 'current_filters')) %>")
-jQuery("#userfiles_table").html("<%= h(render(:partial => 'userfiles_table')) %>")
-jQuery("#page_display").html("<%= h(render(:partial => 'page_display')) %>")
-jQuery("#pagination").html("<%= h(render(:partial => 'pagination')) %>")
+jQuery("#current_filters").html(<%= html_for_js(render(:partial => 'current_filters')) %>);
+jQuery("#userfiles_table").html(<%= html_for_js(render(:partial => 'userfiles_table')) %>);
+jQuery("#page_display").html(<%= html_for_js(render(:partial => 'page_display')) %>);
+jQuery("#pagination").html(<%= html_for_js(render(:partial => 'pagination')) %>);
