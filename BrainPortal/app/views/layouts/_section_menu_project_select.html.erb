@@ -1,6 +1,11 @@
+  <% if current_user.site %>
+      <div id = "site_div">
+          <h1>Site: <%= "#{current_user.site.name}" %></h1>
+      </div>
+  <% end %>
 
   <div id="active_project_div">
-
+    
     <h1>Active Project:</h1> 
       <% button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu")  do %>
         <div id="project_menu_items">
