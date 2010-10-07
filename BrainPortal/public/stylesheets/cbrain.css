@@ -645,19 +645,19 @@ pre {
 }
 
 #active_project_div h1 {
-  font-size: 1.4em;
+  font-size: 1.2em;
   color: #000;
 }
 
 #site_div{
-  padding-top: 0.5em;
+  padding-top: 0.10em;
   font-size: 1.2em;
   margin-left: 9em;
 }
 
 #site_div h1{
   color: #000;
-  font-size: 1.4em;
+  font-size: 1.2em;
 }
 
 #header_project_menu {
