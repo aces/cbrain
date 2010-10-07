@@ -164,11 +164,27 @@ module ApplicationHelper
   # Javascript helpers
   #################################################################################
   
+  HTML_FOR_JS_ESCAPE_MAP = {
+  #  '"'     => '\\"',    # wrong, we leave it as is
+  #  '</'    => '<\/',    # wrong too
+    '\\'    => '\\\\',
+    "\r\n"  => '\n',
+    "\n"    => '\n',
+    "\r"    => '\n',
+    "'"     => "\\'"
+  }
+
   # Escape a string containing HTML code so that it is a valid
   # javascript constant string; the string will be quoted
   # with single quotes (') on each end.
+  # There exists a helper in module ActionView::Helpers::JavaScriptHelper
+  # called escape_javascript(), but it also escapes some character sequences
+  # that create problems within Javascript code intended to substitute
+  # HTML in a document.
   def html_for_js(string)
-    "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
+    # "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
+    return "''" unless string
+    "'" + (string.gsub(/(\\|\r?\n|[\n\r"'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } ) + "'"
   end
 
 end
