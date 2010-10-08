@@ -16,6 +16,12 @@
   </h5>
 <% end %>
 
+<h5>
+  <%= ajax_link (current_session[:userfiles_tree_sort] == 'off' ? "Enable Tree View" : "Disable Tree View"), 
+                {:controller  => :userfiles, :action => :index, :userfiles_tree_sort => set_toggle(current_session[:userfiles_tree_sort])}, 
+                :datatype  => 'script' %>
+</h5>
+
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
   <%= ajax_link current_session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", 
               userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), 
@@ -24,6 +30,4 @@
   <br>
 <% end %>
 
-<%= ajax_link "Tree view", {:controller  => :userfiles, :action => :index, :userfiles_sort_order => 'Userfile.tree_sort'}, :datatype  => 'script' %>
-<%= set_order_icon('Userfile.tree_sort', current_session[:userfiles_sort_order]) %>
 

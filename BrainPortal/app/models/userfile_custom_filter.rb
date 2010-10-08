@@ -31,6 +31,7 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_user(scope)  unless self.data["user_id"].blank?
     scope = scope_group(scope) unless self.data["group_id"].blank?
     scope = scope_dp(scope)    unless self.data["data_provider_id"].blank?
+    scope = scope_type(scope)  unless self.data["type"].blank?
     scope
   end
   
@@ -100,6 +101,11 @@ class UserfileCustomFilter < CustomFilter
   #Return +scope+ modified to filter the Userfile entry's data provider.
   def scope_dp(scope)
     scope.scoped(:conditions  => ["userfiles.data_provider_id = ?", self.data["data_provider_id"]])
+  end
+  
+  #Return +scope+ modified to filter the Userfile entry's type.
+  def scope_type(scope)
+    scope.scoped(:conditions  => {:type  =>  self.data["type"]})
   end
   
 end

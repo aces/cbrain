@@ -323,10 +323,8 @@ class Userfile < ActiveRecord::Base
       term.blank? ? nil : 'name:' + term
     when 'tag_search'
       term.blank? ? nil : 'tag:' + term
-    when 'jiv'
-      'format:jiv'
-    when 'minc'
-      'format:minc'
+    when 'format'
+      term.blank? ? nil : 'format:' + term
     when 'cw5'
       'file:cw5'
     when 'flt'

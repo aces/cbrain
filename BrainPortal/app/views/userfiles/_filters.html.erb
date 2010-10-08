@@ -1,21 +1,26 @@
-
-<%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %>
-
-<P>
-
-<h4>By Filter</h4>
+<h4>By Type</h4>
      
 <ul class="filter_menu">
 
   <li><%= ajax_link 'All Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, :datatype  => 'script' %> 
   </li> 
+  
+  <% SingleFile.send(:subclasses).each do |sf| %>
+    <li><%= ajax_link sf.name.underscore.titleize.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => sf.name}, :datatype  => 'script' %> 
+    </li>
+  <% end %>
+  
+  <% FileCollection.send(:subclasses).each do |fc| %>
+    <li><%= ajax_link fc.name.underscore.titleize.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => fc.name}, :datatype  => 'script' %> 
+    </li>
+  <% end %>
+</ul>
 
-  <li><%= ajax_link 'MINC Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :minc}, :datatype  => 'script' %> 
-  </li>
+<h4>By Custom Filter</h4>
 
-  <li><%= ajax_link 'JIV Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :jiv}, :datatype  => 'script' %> 
-  </li>
- 
+<%= link_to 'Create Custom Filter', new_custom_filter_path(:type  => 'userfile') %>
+
+<ul class="filter_menu">
   <% UserfileCustomFilter.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
 
     <li class="custom_filter">
@@ -29,6 +34,6 @@
     </li>
 
   <% end %>
-
 </ul>
+
 

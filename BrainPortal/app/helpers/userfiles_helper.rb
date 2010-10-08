@@ -10,8 +10,8 @@ module UserfilesHelper
   
   #Indents children files in the Userfile index table *if* the 
   #current ordering is 'tree view'.
-  def tree_view_icon(order, level)
-    if order == 'userfiles.tree_sort'
+  def tree_view_icon(tree_sort, level)
+    if tree_sort == 'on'
       '&nbsp' * 4 * level + '&#x21b3;'
     end
   end

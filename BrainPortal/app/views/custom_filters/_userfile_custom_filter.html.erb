@@ -7,16 +7,22 @@
      
 </p>
 <p>
+   File Format:<br>
+   
+      <%= select :data, :type, Userfile.send(:subclasses).map(&:to_s).sort.map{ |u| [u.underscore.titleize, u] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
+   
+</p>
+<p>
    Creation Date:<br>
    
-       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', 1], ['On', 0], ['After', 2]], :selected => @custom_filter.data["created_date_type"]  %>
+       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => @custom_filter.data["created_date_type"]  %>
        <%= date_select "custom_filter[date_term]", :date_term, :default  => Date.parse(@custom_filter.data["date_term"] || Time.now.to_s) %>
    
 </p>
 <p>
    Size:<br>
    
-       <%= select :data, :size_type, [["Don't filter size", ''], ['=', 0], ['<', 1], ['>', 2]], :selected  => @custom_filter.data["size_type"] %>
+       <%= select :data, :size_type, [["Don't filter size", ''], ['=', "0"], ['<', "1"], ['>', "2"]], :selected  => @custom_filter.data["size_type"] %>
        <%= text_field_tag "data[size_term]", @custom_filter.data["size_term"] %> kb
    
 </p>

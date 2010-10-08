@@ -39,6 +39,8 @@ class Session
     @session[:userfiles_basic_filters] ||= []
     @session[:userfiles_tag_filters] ||= []
     @session[:userfiles_custom_filters] ||= []
+    @session[:userfiles_sort_order] ||= 'userfiles.name'
+    @session[:userfiles_tree_sort] ||= 'on'
     @session[:userfiles_pagination] ||= 'on'
     @session[:userfiles_details] ||= 'off'
     
@@ -115,7 +117,7 @@ class Session
     else
       @session[:userfiles_basic_filters] |= [filter] unless filter.blank?
       @session[:userfiles_tag_filters] |= [params[:userfiles_tag_filter]] unless params[:userfiles_tag_filter].blank?
-      @session[:userfiles_custom_filters] |= [CustomFilter.find(params[:userfiles_custom_filter]).name] unless params[:userfiles_custom_filter].blank?
+      @session[:userfiles_custom_filters] |= [UserfileCustomFilter.find(params[:userfiles_custom_filter]).name] unless params[:userfiles_custom_filter].blank?
       @session[:userfiles_basic_filters].delete params[:userfiles_remove_basic_filter] if params[:userfiles_remove_basic_filter]
       @session[:userfiles_custom_filters].delete params[:userfiles_remove_custom_filter] if params[:userfiles_remove_custom_filter]
       @session[:userfiles_tag_filters].delete params[:userfiles_remove_tag_filter] if params[:userfiles_remove_tag_filter]
@@ -129,7 +131,11 @@ class Session
       @session[:userfiles_sort_order] = sanitize_sort_order(params[:userfiles_sort_order])
       @session[:userfiles_sort_dir] = sanitize_sort_dir(params[:userfiles_sort_dir])
     end
-        
+    
+    if params[:userfiles_tree_sort]
+      @session[:userfiles_tree_sort] = params[:userfiles_tree_sort]
+    end
+    
     if params[:userfiles_pagination]
       @session[:userfiles_pagination] = params[:userfiles_pagination]
     end

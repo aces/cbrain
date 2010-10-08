@@ -15,7 +15,7 @@
    </td>
    
    <td class="left">
-      <%= tree_view_icon(current_session[:userfiles_sort_order], userfile.level) if (userfile.level || 0) > 0 -%>
+      <%= tree_view_icon(current_session[:userfiles_tree_sort], userfile.level) if (userfile.level || 0) > 0 -%>
       <% if userfile.is_a? FileCollection %>
         <%= image_tag "/images/folder_icon_solid.png" %>
       <% else %>

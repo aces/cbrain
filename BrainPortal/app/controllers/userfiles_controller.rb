@@ -24,7 +24,7 @@ class UserfilesController < ApplicationController
   def index #:nodoc:
     custom_filters = current_session.userfiles_custom_filters
     custom_filter_tags = []
-    custom_filters.each{ |filter| custom_filter_tags |= CustomFilter.find_by_name(filter).tags}
+    custom_filters.each{ |filter| custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags}
 
     name_filters = current_session.userfiles_basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
     format_filters, name_filters = name_filters.partition{|f| f =~ /^format:/} 
@@ -66,7 +66,7 @@ class UserfilesController < ApplicationController
       @userfiles = @userfiles.select { |file| file.has_format? fmt.sub(/^format:/, "") }
     end
 
-    if current_session.userfiles_sort_order == "userfiles.tree_sort"
+    if current_session[:userfiles_tree_sort] == "on"
       @userfiles = Userfile.tree_sort(@userfiles)
     end
     
