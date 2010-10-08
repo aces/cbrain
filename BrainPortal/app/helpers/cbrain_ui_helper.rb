@@ -559,6 +559,21 @@ module CbrainUiHelper
       options["data-target"] = target
     end
     
+    overlay = options.delete(:overlay)
+    if overlay && overlay.to_s.downcase != "false"
+      options["data-target"] = "__OVERLAY__"
+    end
+    
+    width = options.delete(:width)
+    if width
+      options["data-width"] = width
+    end
+    
+    height = options.delete(:height)
+    if height
+      options["data-height"] = height
+    end
+    
     reset_form = options.delete(:reset_form)
     unless reset_form.nil?
       options["data-reset-form"] = reset_form
@@ -593,6 +608,21 @@ module CbrainUiHelper
     target = options.delete(:target)
     if target
       options[:html]["data-target"] = target
+    end
+    
+    overlay = options.delete(:overlay)
+    if overlay && overlay.to_s.downcase != "false"
+      options[:html]["data-target"] = "__OVERLAY__"
+    end
+    
+    width = options.delete(:width)
+    if width
+      options[:html]["data-width"] = width
+    end
+    
+    height = options.delete(:height)
+    if height
+      options[:html]["data-height"] = height
     end
     
     reset_form = options.delete(:reset_form)

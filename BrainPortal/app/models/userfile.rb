@@ -199,6 +199,14 @@ class Userfile < ActiveRecord::Base
     @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact 
   end
   
+  def has_format?(f)
+    if self.get_format(f)
+      true
+    else
+      false
+    end
+  end
+  
   def get_format(f)
     return self if self.format_name.to_s.downcase == f.to_s.downcase || self.class.name == f
     
@@ -318,7 +326,7 @@ class Userfile < ActiveRecord::Base
     when 'jiv'
       'format:jiv'
     when 'minc'
-      'file:minc'
+      'format:minc'
     when 'cw5'
       'file:cw5'
     when 'flt'
@@ -345,8 +353,6 @@ class Userfile < ActiveRecord::Base
         scope = custom_filter.filter_scope(scope)
       when 'file'
         case term
-        when 'minc'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? or userfiles.name LIKE ?)",  "%.mnc", "%.mnc.gz", "%.mnc.Z" ])
         when 'cw5'
           scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
         when 'flt'

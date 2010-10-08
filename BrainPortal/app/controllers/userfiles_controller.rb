@@ -63,7 +63,7 @@ class UserfilesController < ApplicationController
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
 
     format_filters.each do |fmt|
-      @userfiles = @userfiles.select { |file| file.get_format fmt.sub(/^format:/, "") }
+      @userfiles = @userfiles.select { |file| file.has_format? fmt.sub(/^format:/, "") }
     end
 
     if current_session.userfiles_sort_order == "userfiles.tree_sort"
