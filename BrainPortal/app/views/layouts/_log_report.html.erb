@@ -3,8 +3,9 @@
   # This partial displays an object's log
   # It requires two args, the 'log' and a 'title'
 %>
-
 <% unless log.blank? %>
+<% build_accordion do |acc| %>
+  <% acc.section h(title) do %>
   <table class="log_table">
     <tr>
       <th><%= title.blank? ? "Processing Log" : h(title) %></th>
@@ -14,4 +15,5 @@
     </tr>
   </table>
 <% end %>
-
+<% end %>
+<% end %>
