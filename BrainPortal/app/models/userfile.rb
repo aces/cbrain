@@ -530,10 +530,14 @@ class Userfile < ActiveRecord::Base
     raise "set_size! called on Userfile. Should only be called in a subclass."
   end
 
+  def self.pretty_type
+    self.name.underscore.titleize
+  end
+
   # Returns a simple keyword identifying the type of
   # the userfile; used mostly by the index view.
   def pretty_type
-    "(???)"
+    self.class.pretty_type
   end
 
   ##############################################

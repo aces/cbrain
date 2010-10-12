@@ -12,8 +12,4 @@ class TextFile < SingleFile
 
   Revision_info="$Id$"
   
-  def pretty_type
-    "(Text)"
-  end
-  
 end

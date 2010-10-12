@@ -173,17 +173,6 @@ class FileCollection < Userfile
       @dir_list.sort! { |a,b| a <=> b }
     end
   end  
-  
-  #Format size for display (make it more human-readable).
-  # def format_size
-  #   "#{self.size || "?"} files" 
-  # end
-  
-  # Returns a simple keyword identifying the type of
-  # the userfile; used mostly by the index view.
-  def pretty_type
-    "(Collection)"
-  end
 
   #Mathieu Desrosiers
   #remove unwanted .DS_Store file and "._" files from a packages if there is some

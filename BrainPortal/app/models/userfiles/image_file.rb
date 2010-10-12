@@ -12,8 +12,4 @@ class ImageFile < SingleFile
 
   Revision_info="$Id$"
   
-  def pretty_type
-    "(Image)"
-  end
-  
 end

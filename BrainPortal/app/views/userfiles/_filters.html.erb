@@ -6,12 +6,12 @@
   </li> 
   
   <% SingleFile.send(:subclasses).each do |sf| %>
-    <li><%= ajax_link sf.name.underscore.titleize.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => sf.name}, :datatype  => 'script' %> 
+    <li><%= ajax_link sf.pretty_type.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => sf.name}, :datatype  => 'script' %> 
     </li>
   <% end %>
   
   <% FileCollection.send(:subclasses).each do |fc| %>
-    <li><%= ajax_link fc.name.underscore.titleize.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => fc.name}, :datatype  => 'script' %> 
+    <li><%= ajax_link fc.pretty_type.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_search_type => :format, :userfiles_search_term  => fc.name}, :datatype  => 'script' %> 
     </li>
   <% end %>
 </ul>
