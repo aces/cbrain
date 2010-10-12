@@ -1,19 +1,19 @@
 #
 # CBRAIN Project
 #
-# ImageFile model
+# XMLFile model
 #
 # Original author: Tarek Sherif
 #
 # $Id$
 #
 
-class ImageFile < SingleFile
+class XMLFile < TextFile
 
   Revision_info="$Id$"
   
   def self.file_name_pattern
-    /\.(jpe?g|gif|png)$/i
+    /\.xml$/i
   end
   
 end

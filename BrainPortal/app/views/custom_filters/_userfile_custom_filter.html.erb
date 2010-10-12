@@ -9,7 +9,7 @@
 <p>
    File Format:<br>
    
-      <%= select :data, :type, Userfile.send(:subclasses).map(&:to_s).sort.map{ |u| [u.underscore.titleize, u] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
+      <%= select :data, :type, Userfile.send(:subclasses).sort_by(&:name).map{ |u| [u.pretty_type, u.name] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
    
 </p>
 <p>

@@ -76,7 +76,7 @@ class Userfile < ActiveRecord::Base
     def initialize(viewer)
       atts = viewer
       unless atts.is_a? Hash
-        atts = { :name  => viewer.to_s.underscore.titleize, :partial => viewer.to_s.underscore }
+        atts = { :name  => viewer.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2'), :partial => viewer.to_s.underscore }
       end
       initialize_from_hash(atts)
     end
@@ -530,12 +530,19 @@ class Userfile < ActiveRecord::Base
     raise "set_size! called on Userfile. Should only be called in a subclass."
   end
 
-  def self.pretty_type
-    self.name.underscore.titleize
+  #Should return a regex pattern to identify filenames that match a given
+  #userfile subclass
+  def self.file_name_pattern
+    nil
   end
 
-  # Returns a simple keyword identifying the type of
-  # the userfile; used mostly by the index view.
+  #Human-readable version of a userfile class name. Can be overridden
+  #if necessary in subclasses.
+  def self.pretty_type
+    @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
+  end
+
+  # Convenience instance method that calls the class method.
   def pretty_type
     self.class.pretty_type
   end

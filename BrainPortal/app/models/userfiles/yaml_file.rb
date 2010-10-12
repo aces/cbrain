@@ -1,19 +1,19 @@
 #
 # CBRAIN Project
 #
-# ImageFile model
+# YAMLFile model
 #
 # Original author: Tarek Sherif
 #
 # $Id$
 #
 
-class ImageFile < SingleFile
+class YAMLFile < TextFile
 
   Revision_info="$Id$"
   
   def self.file_name_pattern
-    /\.(jpe?g|gif|png)$/i
+    /\.yml$/i
   end
-  
+
 end

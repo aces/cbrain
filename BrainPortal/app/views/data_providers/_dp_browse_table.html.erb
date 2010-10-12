@@ -73,7 +73,7 @@
          <td>
            <%= 
              select_tag("filetypes[]",
-               options_for_select(SingleFile.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}.unshift([ "File as...", "Unset-#{fi_name}" ])), 
+               options_for_select(SingleFile.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)), 
                :class  => "file_select")
            %>
          </td>
@@ -81,18 +81,9 @@
          <td>
           <%= 
             select_tag("filetypes[]",
-                options_for_select(FileCollection.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}.unshift([ "Directory as...", "Unset-#{fi_name}" ])), 
+                options_for_select(FileCollection.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)), 
                 :class  => "directory_select")
           %>
-         </td>
-       <% elsif fi_type == :symlink %>
-         <td><%= select_tag("filetypes[]",
-                options_for_select([
-                   [ "Symbolic link as...", "Unset-#{fi_name}" ],
-                   [ "SingleFile",      "SingleFile-#{fi_name}" ],
-                   [ "FileCollection",  "FileCollection-#{fi_name}" ],
-                   [ "CivetCollection", "CivetCollection-#{fi_name}" ]
-                ])) %>
          </td>
        <% end %>
     <% end %>
