@@ -4,7 +4,11 @@
     <%= ajax_link  "Filename", {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :datatype  => 'script'  %>
     <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>
-
+  <th>
+      <%= ajax_link "Type", userfiles_path(:userfiles_sort_order => 'userfiles.type',
+         :userfiles_sort_dir  => set_dir_old('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
+      <%= set_order_icon('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+  </th>
   <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
     <%= ajax_link "Owner", {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :datatype  => 'script'  %>
     <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
@@ -12,11 +16,6 @@
   <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
     <%= ajax_link  "Creation Date", userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
     <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-  </th>
-  <th>
-    <%= ajax_link "Type", userfiles_path(:userfiles_sort_order => 'userfiles.type',
-       :userfiles_sort_dir  => set_dir_old('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-    <%= set_order_icon('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>
   <th>  
     <%= ajax_link  "Size", userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
