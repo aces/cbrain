@@ -22,7 +22,6 @@
         <%= image_tag "/images/file_icon.png" %>
       <% end %>
       <%= link_to_userfile_if_accessible(userfile) %>
-      <%= userfile.pretty_type %>    
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
       <% end %>
@@ -30,6 +29,9 @@
         <br>
         <%= "&nbsp;" * (userfile.level * 5) %> Formats: <%= userfile.formats.map { |u| link_to_userfile_if_accessible(u,current_user,:name => u.format_name) }.join(", ") %>
       <% end %>
+   </td>
+   <td>
+    <%= userfile.pretty_type %>
    </td>
    <% unless current_session[:userfiles_details] == 'off' %>
    <td class="userfiles_details"><%= link_to_user_if_accessible(userfile.user) %></td>

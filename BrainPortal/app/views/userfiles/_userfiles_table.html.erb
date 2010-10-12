@@ -14,6 +14,11 @@
     <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>
   <th>
+    <%= ajax_link "Type", userfiles_path(:userfiles_sort_order => 'userfiles.type',
+       :userfiles_sort_dir  => set_dir_old('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
+    <%= set_order_icon('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+  </th>
+  <th>  
     <%= ajax_link  "Size", userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
     <%= set_order_icon('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>

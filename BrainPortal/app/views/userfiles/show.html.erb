@@ -14,8 +14,8 @@
       <td colspan="2"><%= h @userfile.name %></td>
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Format:</th>
-      <td colspan="2"><%= @userfile.class.name.underscore.humanize %></td>
+      <th class="right_align">Type:</th>
+      <td colspan="2"><%= @userfile.pretty_type %></td>
     </tr class="list-odd">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
