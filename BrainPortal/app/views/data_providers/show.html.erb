@@ -5,7 +5,7 @@
 
 <div class="generalbox">
 
-   <table>
+   <table class="property_list">
 
       <tr>
         <th colspan="2" class="subtitle">Implementation information</th>
@@ -13,7 +13,7 @@
 
       <tr>
           <th>Name</th>
-          <td><%= h(@provider.name) %></h1>
+          <td><%= h(@provider.name) %></td>
       </tr>
 
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
@@ -107,10 +107,9 @@
 
       <% end %>
 
-
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
          <tr>
-            <td align="center" colspan="2">
+            <td align="left" colspan="2">
                      <%= button_to 'Edit', edit_data_provider_path(@provider), :method => :get %>
                      <%= button_to 'Delete', data_provider_path(@provider), :confirm => 'Are you sure?', :method => :delete %>
                      <% if @provider.is_browsable? %>
@@ -121,7 +120,9 @@
       <% end %>
 
    </table>
-
+   
+   </div> <!-- End class="generalbox" -->
+   
    <P>
 
    <table>
@@ -144,9 +145,6 @@
      <% end %>
    </table>
 
-</div> <!-- End class="generalbox" -->
-
-
 <% if check_role(:admin) || @provider.user_id == current_user.id %>
 
   <P>
@@ -160,3 +158,5 @@
   </table>
 
 <% end %>
+
+

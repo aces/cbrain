@@ -1,9 +1,9 @@
 
 <h2>Feedback</h2>
 
-<table>
+<table class = "property_list show_general_table">
    <tr>
-     <th colspan="2"><%= h @feedback.summary %></th>
+     <th class = "center_align_heading" colspan="2"><%= h @feedback.summary %></th>
    </tr>
 
    <tr>
@@ -12,7 +12,7 @@
    </tr>
 
    <tr>
-     <td colspan="2" class="left"><%= simple_format h(@feedback.details) %></td>
+     <td colspan="2" class="white_background_text"><%= simple_format h(@feedback.details) %></td>
    </tr>
 </table>
 

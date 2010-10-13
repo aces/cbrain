@@ -7,49 +7,49 @@
 
 <div class="display_cell">
 
-  <div>
+<div>
 
-   <table>
-     <tr class="list-even">
-       <td class="title"><b>Name:</b></td>
-       <td class="tabletext"><%=h @user.full_name %></td>
+   <table class = "property_list show_general_table">
+     <tr>
+       <th>Name:</th>
+       <td><%=h @user.full_name %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Login:</b></td>
-       <td class="tabletext"><%=h @user.login %></td>
-     </td>
-     <tr class="list-even">
-       <td class="title"><b>Role:</b></td>
-       <td class="tabletext"><%=h @user.role.humanize %></td>
+     <tr>
+       <th>Login:</th>
+       <td><%=h @user.login %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Email:</b></td>
-       <td class="tabletext"><%=h @user.email %></td>
+     <tr>
+       <th>Role:</th>
+       <td><%=h @user.role.humanize %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Site:</b></td>
-       <td class="tabletext"><%= link_to_site_if_accessible(@user.site) %></td>
+     <tr>
+       <th>Email:</th>
+       <td><%=h @user.email %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>City:</b></td>
-       <td class="tabletext"><%= h(@user.city) %></td>
+     <tr>
+       <th>Site:</th>
+       <td><%= link_to_site_if_accessible(@user.site) %></td>
      </tr>
-     <tr class="list-even">
-        <td class="title"><b>Country:</b></td>
-        <td class="tabletext"><%= h(@user.country) %></td>
-      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Time Zone:</b></td>
-       <td class="tabletext"><%= h(@user.time_zone || "(Unset)") %></td>
+     <tr>
+       <th>City:</th>
+       <td><%= h(@user.city) %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Default Execution Server: </b></td>
-       <td class="tabletext"><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
+     <tr>
+        <th>Country:</th>
+        <td><%= h(@user.country) %></td>
      </tr>
-     <tr class="list-even">
-       <td class="title"><b>Default Data Provider:</b></td>
-       <td class="tabletext"><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
-     </td>
+     <tr>
+       <th>Time Zone:</th>
+       <td><%= h(@user.time_zone || "(Unset)") %></td>
+     </tr>
+     <tr>
+       <th>Default Execution Server:</th>
+       <td><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
+     </tr>
+     <tr>
+       <th>Default Data Provider:</th>
+       <td><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
+     </tr>
    </table>
 
   </div>
@@ -58,7 +58,7 @@
 
   <div>
 
-   <table>
+   <table class = "resource_list">
       <tr>
         <th colspan="3">Projects</th>
       </tr>

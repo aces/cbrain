@@ -11,18 +11,21 @@
     </div>
   <% end %>
   <P>
-  <table>
+  <table class= "resource_list">
     <tr>
         <th>Name</th>
-        <td><%= h(@group.name) %></h1>
-    </tr>
-    <tr>
         <th>Members</th>
-        <td><%= @group.users.sort{ |a,b| a.login.casecmp(b.login)}.collect{ |m| link_to_user_if_accessible(m)}.join("<br>") %></h1>
-    </tr>
-    <tr>
         <th>Site</th>
-        <td><%= link_to_site_if_accessible(@group.site) %></h1>
+    </tr>
+    <td>
+       <%= h(@group.name) %></h1>
+    </td>
+    <td>
+        <%= @group.users.sort{ |a,b| a.login.casecmp(b.login)}.collect{ |m| link_to_user_if_accessible(m)}.join("<br>") %></h1>
+    </td>
+    <td>
+       <%= link_to_site_if_accessible(@group.site) %></h1>
+    </td>
     </tr>
   </table>
 </div>
