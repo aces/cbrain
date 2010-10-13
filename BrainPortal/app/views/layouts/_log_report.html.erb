@@ -3,17 +3,12 @@
   # This partial displays an object's log
   # It requires two args, the 'log' and a 'title'
 %>
+
 <% unless log.blank? %>
-<% build_accordion do |acc| %>
-  <% acc.section h(title) do %>
-  <table class="log_table">
-    <tr>
-      <th><%= title.blank? ? "Processing Log" : h(title) %></th>
-    </tr>
-    <tr>
-      <td><pre><%= Message.parse_markup(h(log)) %></pre></td>
-    </tr>
-  </table>
+  <% build_accordion do |acc| %>
+    <% acc.section h(title) do %>
+      <pre><%= Message.parse_markup(h(log)) %></pre>
+    <% end %>
+  <% end %>
 <% end %>
-<% end %>
-<% end %>
+
