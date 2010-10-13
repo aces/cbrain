@@ -338,6 +338,11 @@ table.resource_list td.subtitle {
     background-color: #05A3D6;
 }
 
+table.resource_list tr.subtitle_bordered {
+    background-color: #0471B4;
+    border: 2px solid #0471B4;
+}
+
 
 
 /* % ############################################## */
