@@ -164,6 +164,10 @@ module ApplicationHelper
   # Javascript helpers
   #################################################################################
   
+  ###########################################################
+  # MAKE SURE THIS HASH MATCHES THE REGEX BELOW!!!!!!!!!!!!!
+  ###########################################################
+  
   HTML_FOR_JS_ESCAPE_MAP = {
   #  '"'     => '\\"',    # wrong, we leave it as is
   #  '</'    => '<\/',    # wrong too
@@ -184,7 +188,7 @@ module ApplicationHelper
   def html_for_js(string)
     # "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
     return "''" unless string
-    "'" + (string.gsub(/(\\|\r?\n|[\n\r"'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } ) + "'"
+    "'" + (string.gsub(/(\\|\r?\n|[\n\r'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } ) + "'" # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!!!!!!!!!!
   end
 
 end
