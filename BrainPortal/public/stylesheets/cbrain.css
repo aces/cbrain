@@ -111,6 +111,7 @@ h5 {
 
 .display_cell {
     display: table-cell;
+    
 }
 
 
@@ -196,6 +197,88 @@ tr.list-unavailable {
 }
 
 
+/* % ######################################################### */
+/* % Property List Table Styles */
+/* % Table for the property listing (manily show pages) */
+/* % These will add up to or override the default table layout above */
+/* % ######################################################### */
+
+.property_list {
+    border: 0px;
+    border-collapse: collapse;
+}
+
+.property_list th {
+    border: 0px;
+    background-color: #E7E7E7;
+    text-align: right;
+    text-indent: 0px;
+    font-family: Verdana;
+    font-weight: italic;
+    font-size: 11px;
+    color: #444444;
+    white-space: nowrap;
+    width: 20em;
+}
+
+.property_list tr{
+    border: 1px;
+    color: #E7E7E7;
+}
+
+.property_list th a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.property_list th a:link {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.property_list td {
+    border: 0px;
+    text-align: left;
+    padding-left: 1em;
+    padding-right: 1em;
+    white-space: nowrap;
+}
+
+table.property_list td.checkbox {
+    text-align: center;
+}
+
+table.property_list tr.subtitle {
+    background-color: #05A3D6;
+}
+
+table.property_list th.subtitle {
+    background-color: #0471B4;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+table.property_list td.subtitle {
+    background-color: #05A3D6;
+    color: #444444;
+}
+
+th.center_align_heading {
+    text-align: center;
+}
+
+td.property_list_details {
+    border: 0px;
+    text-align: center;
+    padding-left: 0em;
+    padding-right: 0em;
+    white-space: nowrap;
+}
+
+table.property_list td.white_background_text {
+    text-align: left;
+    background-color: #ffffff;
+}
 
 /* % ######################################################### */
 /* % Resource List Table Styles */
@@ -247,7 +330,8 @@ table.resource_list tr.subtitle {
 }
 
 table.resource_list th.subtitle {
-    background-color: #05A3D6;
+    background-color: #E7E7E7;
+    color: #444444;
 }
 
 table.resource_list td.subtitle {
@@ -867,7 +951,7 @@ pre {
 
 .menu_bar {
     display: table;
-    padding-left: 1em;
+    padding-left: 0em;
     padding-right: 1em;
     padding-top: 0.2em;
     padding-bottom: 0.2em;
@@ -876,7 +960,7 @@ pre {
 }
 
 .menu_bar_left {
-    margin-left: 2em;
+    margin-left: 0em;
 }
 
 
@@ -1048,6 +1132,44 @@ pre {
 
 .edit_file_table td {
     text-align: left;
+}
+
+/* % ######################################################### */
+/* % Task Show and Edit */
+/* % ######################################################### */
+
+.show_task_table {
+    clear: both;
+    margin-right: auto;
+    margin-left: 0px;
+    width: 950px;
+}
+
+.show_task_table td {
+    text-align: left;
+    margin-right: 0em;
+}
+
+
+/* % ######################################################### */
+/* % General Show and Edit */
+/* % ######################################################### */
+
+.show_general_table {
+    clear: both;
+    margin-right: auto;
+    margin-left: 0px;
+    width: auto;
+}
+
+.show_general_table td {
+    text-align: left;
+    margin-right: 0em;
+    background-color: #F6F6F6;
+}
+
+.show_general_table th{
+    width: 10em;
 }
 
 
@@ -1257,7 +1379,7 @@ td.middle {
 /* % ######################################################### */
 
 #message_table {
-    margin-left: 2em;
+    margin-left: 0em;
 }
 
 #message_table td {
