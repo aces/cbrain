@@ -16,13 +16,13 @@
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Name:</th>
       <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
-    </tr class="list-odd">
+    </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Format:</th>
       <td colspan="2">
         <%= select_tag "file_type", options_for_select(@userfile.valid_file_types.map{ |c| [c, c]  }, @userfile.class.name) %>
       </td>
-    </tr class="list-odd">
+    </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
       <td><%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %></td>
@@ -38,67 +38,66 @@
     </tr>  
   
     <%if @userfile.is_a? SingleFile %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Parent:</th>
         <td><%=h @userfile.parent.name rescue ""%></td>
         <td></td>
-      </tr>
+    </tr>
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
+    <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Children:</th>
         <td><%=h @userfile.parent.name rescue ""%></td>
         <td></td>
-      </tr>
+    </tr>
     <% end %> <!-- singlefile -->
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Created at:</th>
-      <td><%=h(to_localtime(@userfile.created_at,:datetime)) %></td>
-      <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
+        <th class="right_align">Created at:</th>
+        <td><%=h(to_localtime(@userfile.created_at,:datetime)) %></td>
+        <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Modified at:</th>
-      <td><%=h(to_localtime(@userfile.updated_at,:datetime)) %></td>
-      <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
+        <th class="right_align">Modified at:</th>
+        <td><%=h(to_localtime(@userfile.updated_at,:datetime)) %></td>
+        <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
     </tr>
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Project:</th>
-      <td><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
-      <td></td>
+        <th class="right_align">Project:</th>
+        <td><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
+        <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Project Access:</th>
-      <td><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
-      <td></td>
+        <th class="right_align">Project Access:</th>
+        <td><%= f.select(:group_writable, [['Read Only', false],['Read/Write', true]], {}, :disabled => !@userfile.has_owner_access?(current_user)) %></td>
+        <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Tags:</th>
-      <td colspan="2">
-        <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
-      </td>
+        <th class="right_align">Tags:</th>
+        <td colspan="2">
+        <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %></td>
     </tr>
     <% if current_user.has_role? :admin %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Data Provider:</th>
-      <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+        <th class="right_align">Data Provider:</th>
+        <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= h(@userfile.data_provider.class.to_s) %> )
-      </td>
+        </td>
       <td>
-          <% @userfile.sync_status.each do |syncstat| %>
+        <% @userfile.sync_status.each do |syncstat| %>
             <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
-          <% end %>
+        <% end %>
       </td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Local Data Provider (cache) path:</th>
-      <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
+        <th class="right_align">Local Data Provider (cache) path:</th>
+        <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
     </tr>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
         <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th class="right_align">Remote SSH Data Provider path:</th>
-          <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+            <th class="right_align">Remote SSH Data Provider path:</th>
+            <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
         </tr>
       <% end %>
     <% end %>
@@ -109,7 +108,7 @@
   
   <% if current_user.tags %>
     <select name="tag_ids[]" multiple="multiple" style="width:150px" >
-    <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+        <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
     </select>
   <% end %>
   
@@ -134,6 +133,7 @@
       This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
       </p>
     <% end %>
+
 <% end %>
 
   <P>
