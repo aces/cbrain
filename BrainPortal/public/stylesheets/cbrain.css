@@ -376,6 +376,7 @@ table.resource_list tr.subtitle_bordered {
 }
 
 h1.warning {
+    font-size: 14px;
     line-height: 1.1em;
     padding: 0;
     margin: 0;
