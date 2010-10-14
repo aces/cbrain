@@ -276,7 +276,7 @@ class ClusterTask < CbrainTask
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always
-      existing_userfile.group_id = attlist_group_id # crush or reset group
+      existing_userfile.group_id = group_id_for_file # crush or reset group
       return existing_userfile
     end
     cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
