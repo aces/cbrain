@@ -270,17 +270,17 @@ class ClusterTask < CbrainTask
       cb_error "Cannot assign user to file." unless self.user_id
       attlist[:user_id] = self.user_id
     end
-    unless attlist.has_key?(:group_id)
-      cb_error "Cannot assign group to file." unless self.group_id
-      attlist[:group_id] = self.group_id
-    end
+    group_id_for_file = attlist.delete(:group_id) || self.group_id
+    cb_error "Cannot assign group to file." unless group_id_for_file
     results = klass.find(:all, :conditions => attlist)
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always
+      existing_userfile.group_id = attlist_group_id # crush or reset group
       return existing_userfile
     end
     cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
+    attlist[:group_id] = group_id_for_file
     return klass.new(attlist)
   end
 
