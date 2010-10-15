@@ -102,6 +102,7 @@ class DataProvidersController < ApplicationController
     end
     
     @provider = subclass.new(fields)
+    @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
     
     if errors.empty? && @provider.save
       add_meta = params[:meta] || {}
