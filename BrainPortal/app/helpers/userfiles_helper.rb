@@ -16,24 +16,22 @@ module UserfilesHelper
     end
   end
   
-  def shift_file_link(userfile, dir, same_type, link_options = {})
+  def shift_file_link(userfile, dir, same_type, options = {})
     if dir.to_s.downcase == "previous"
       direction = "previous"
     else
       direction = "next"
     end
     
-    options = {}
-    options[:conditions] = {}
-
-    options[:access_requested] = link_options.delete(:access_requested) || :write
+    link_options = options.delete(:html)
+    options[:conditions] ||= {}
     
-    if current_project
-      options[:conditions][:group_id] = current_project.id
+    if current_project && !(options[:conditions].has_key?(:group_id) || options[:conditions].has_key?("userfiles.group_id"))
+      options[:conditions]["userfiles.group_id"] = current_project.id
     end
     
     if same_type
-      options[:conditions][:type] = userfile.class.name
+      options[:conditions]["userfiles.type"] = userfile.class.name
       text = "#{direction.capitalize} #{userfile.class.name}"
     else
       text = "#{direction.capitalize} File"

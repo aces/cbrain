@@ -5,7 +5,10 @@
 
 <div class="generalbox">
 
-  <%= file_link_table(@userfile, :class  => "action_link", :access_requested  => :write) %>
+  <%= 
+    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
+                               :html  => {:class  => "action_link"}) 
+  %>
   <br>
 
 <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>

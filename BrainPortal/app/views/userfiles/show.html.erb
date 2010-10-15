@@ -5,7 +5,10 @@
 
 <div class="generalbox">
 
-  <%= file_link_table(@userfile, :class  => "action_link", :access_requested  => :read) %>
+  <%= 
+    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
+                               :html  => {:class  => "action_link"}) 
+  %>
   <br>
   
   <table class="property_list edit_file_table">
@@ -84,16 +87,16 @@
     </tr>
 
     <% if current_user.has_role? :admin %>
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Local Data Provider (cache) path:</th>
-        <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
-    </tr>
-    <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Remote SSH Data Provider path:</th>
-        <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
-    </tr>
-    <% end %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <th class="right_align">Local Data Provider (cache) path:</th>
+          <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
+      </tr>
+      <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <th class="right_align">Remote SSH Data Provider path:</th>
+          <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+      </tr>
+      <% end %>
     <% end %>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
