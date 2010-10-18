@@ -10,7 +10,8 @@
     <% if current_user %>
       <%= link_to 'My Account', current_user %>
     <% end %>
-   <a class="credits" href="/">Credits</a>
+    <a href="http://wiki.cbrain.mcgill.ca/cbrain/cbrain" onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">User Manual</a>
+    <a class="credits" href="/">Credits</a>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>
 
