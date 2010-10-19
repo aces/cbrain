@@ -47,12 +47,11 @@
 </div>
 
 <div class="display_cell">
-    <div class="generalbox_account_info">
+  <div class="generalbox_account_info">
     
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>
-  
-  
-  <p>
+    
+    <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
     </p>
     <p>
@@ -71,9 +70,9 @@
     <p>
        <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
     </p>
-   <p>
+    <p>
     <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
-   </p>
+    </p>
     <p>
       <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
     </p>
@@ -85,9 +84,9 @@
 
     <div class="generalbox_account_info">
 
-  <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
+    <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
 
-   <div class="task_summary">
+    <div class="task_summary">
      <div class="task_summary_count">
        <%= @tasks_by_status[:completed].size %> Completed tasks: 
      </div>
@@ -136,8 +135,7 @@
          <% end %>
        </table>
      <% end %>
-   </div>
-   </div>
+     </div>
 </div>
 </div>
 
