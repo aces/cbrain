@@ -59,9 +59,8 @@ Rails::Initializer.run do |config|
   # Make sure the secret is at least 30 characters and all random, 
   # no regular words or you'll be exposed to dictionary attacks.
   config.action_controller.session = {
-    :session_key => '_CBRAIN_BrainPortal_session',
+    :session_key => '_CBRAIN_session',
     :secret      => '02524545c48017ffc066213436f0119354c3c5f5f60308fa3d47ee30015defbfb2f21a20560a36e11c843d5934f5d9e0164ff7277405f8f055521d6527fcd277',
-    :session_domain => 'cbrain.mcgill.ca'
   }
 
   # Use the database for sessions instead of the cookie-based default,
