@@ -458,6 +458,22 @@ a {
     border: 1px solid #E4E4E4;
 }
 
+/* % ######################################################### */
+/* % General box layouts for account information */
+/* % ######################################################### */
+
+.generalbox_account_info {
+    width: 28em;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-bottom: 1em;
+    padding: 1em;
+    background-color: #F6F6F6;
+    color: #505050;
+    line-height: 1.5em;
+    border: 1px solid #E4E4E4;
+}
+
 .notesbox {
     padding: 1em;
     background-color: #F6F6F6;
@@ -889,9 +905,9 @@ pre {
 
 .task_summary {
     clear: both;
-    margin-left:auto;
+    margin-left:0px;
     margin-right:auto;
-    text-align: center;
+    text-align: left;
     padding: 1em;
     margin-top: 0em;
     width: 50%;
@@ -926,7 +942,7 @@ pre {
 }
 
 .task_summary_count {
-    font-size: 2em;
+    font-size: 1.3em;
     font-weight: bold;
 }
 
@@ -937,9 +953,11 @@ pre {
 }
 
 .task_summary_table {
-    margin-left:auto;
+    margin-top: 1em;
+    margin-left:0px;
     margin-right:auto;
     border: 0px;
+    background-color: #E4E4E4;
 }
 
 .task_summary_table td {
