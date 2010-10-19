@@ -1,9 +1,13 @@
+
 Welcome to CBRAIN, <%= @user.full_name %>,
 
-your account has been set up.
+Your account has been set up.
 
-Access CBRAIN here: <%= CBRAIN::Site_URL %>
+Access CBRAIN here:
+
+    <%= RemoteResource.current_resource.site_url_prefix || "(CBRAIN Site URL Not Configured!)" %>
 
 Sincerely,
 
-The CBRAIN admins
+The CBRAIN administrators.
+

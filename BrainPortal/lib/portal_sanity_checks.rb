@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -20,7 +21,6 @@
 # The is a rake task to run these sanity checks called rake db:sanity:check
 # This rake task should be run before starting cbrain for the first time. 
 #
-
 
 require 'socket'
 
@@ -246,28 +246,30 @@ class PortalSanityChecks < CbrainChecker
   #Makes sure that the portal is registered as a remote ressource or adds it
   def self.ensure_that_rails_app_is_a_remote_resource
 
-     #-----------------------------------------------------------------------------
-     puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
-     #-----------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
+    #-----------------------------------------------------------------------------
 
-     dp_cache_md5 = DataProvider.cache_md5
-     brainportal  = BrainPortal.find(:first,
-                                     :conditions => { :cache_md5 => dp_cache_md5 })
+    myname       = ENV["CBRAIN_RAILS_APP_NAME"]
+    myname     ||= CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
+
+    brainportal  = BrainPortal.find_by_name(myname)
  
-     unless brainportal
-       puts "C> \t- Creating a new BrainPortal record for this RAILS app."
-       admin  = User.find_by_login('admin')
-       gadmin = Group.find_by_name('admin')
-       brainportal = BrainPortal.create!(
-                                         :name        => "Portal_" + rand(10000).to_s,
-                                         :user_id     => admin.id,
-                                         :group_id    => gadmin.id,
-                                         :online      => true,
-                                         :read_only   => false,
-                                         :description => 'CBRAIN BrainPortal on host ' + Socket.gethostname,
-                                         :cache_md5   => dp_cache_md5 )
-       puts "C> \t- NOTE: You might want to use the console and give it a better name than '#{brainportal.name}'."
-     end
+    unless brainportal
+      puts "C> \t- Creating a new BrainPortal record for this RAILS app."
+      admin  = User.find_by_login('admin')
+      gadmin = Group.find_by_name('admin')
+      brainportal = BrainPortal.create!(
+                                        :name        => myname,
+                                        :user_id     => admin.id,
+                                        :group_id    => gadmin.id,
+                                        :online      => true,
+                                        :read_only   => false,
+                                        :description => 'CBRAIN BrainPortal on host ' + Socket.gethostname,
+                                        :dp_cache_dir => ""
+                                       )
+      puts "C> \t- NOTE: You need to use the interface to configure properly the Data Provider cache directory."
+    end
 
    end
 

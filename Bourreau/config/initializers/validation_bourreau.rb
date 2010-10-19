@@ -23,6 +23,7 @@ if program_name =~ /about$/ # script/about
 elsif program_name =~ /generate$|destroy$/ # script/generate or script/destroy
   puts "C> \t- Running Rails utility '#{program_name}'."
 else
+  CbrainSystemChecks.check(:all)
   BourreauSystemChecks.check(:all)
 end
 

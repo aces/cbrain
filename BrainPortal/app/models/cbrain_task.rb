@@ -471,11 +471,11 @@ class CbrainTask < ActiveRecord::Base
   end
 
   # Record the current RemoteResource's revision number.
-  def addlog_current_resource_revision
+  def addlog_current_resource_revision(message = "")
     rr     = RemoteResource.current_resource
     rrinfo = rr.info # always local, will not trigger network query
     rr_rev = rrinfo.starttime_revision
-    self.addlog("#{rr.class} rev. #{rr_rev}", :caller_level => 1 )
+    self.addlog("#{rr.class} rev. #{rr_rev} #{message}", :caller_level => 1 )
   end
   
   

@@ -32,9 +32,11 @@ if program_name == 'irb' # for script/console
   if ENV['CBRAIN_SKIP_VALIDATIONS']
     puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
     puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
-    #PortalSystemChecks.check([:a030_check_configuration_variables])
   else
-    PortalSystemChecks.check(PortalSystemChecks.all - [:a070_start_bourreau_ssh_tunnels])
+    puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+    puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+    CbrainSystemChecks.check(:all)
+    PortalSystemChecks.check(:all)
   end
 elsif program_name =~ /about$/ # script/about
   puts "C> \t- What's this all ABOUT?"
@@ -46,7 +48,6 @@ elsif program_name =~ /generate$|destroy$/ # script/generate or script/destroy
 #
 
 elsif first_arg == "db:sanity:check" 
-  PortalSystemChecks.check([:a030_check_configuration_variables])
   #------------------------------------------------------------------------------
   puts "C> \t- No more validations needed for sanity checks. Skipping."
   #------------------------------------------------------------------------------
@@ -55,10 +56,12 @@ elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema:load/
   puts "C> \t- No validations needed for DB migrations. Skipping."
   #------------------------------------------------------------------------------
 elsif ! first_arg.nil? && first_arg.include?("spec") #if running the test suite, make model sane and run the validation
+  CbrainSystemChecks.check(:all)
   PortalSystemChecks.check([:a030_check_configuration_variables])
   PortalSanityChecks.check(:all)
   PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity, :a030_check_configuration_variables])
 else
+  CbrainSystemChecks.check(:all)
   PortalSystemChecks.check(:all)
 end
 

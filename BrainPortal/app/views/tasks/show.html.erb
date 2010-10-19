@@ -41,8 +41,10 @@
     <% end %>
 
     <!-- RESTART -->
-    <% if @task.status == 'Completed' %>
+    <% if @task.status == 'Completed' || @task.status == 'Terminated' %>
       <td><%= button_to 'Restart At Setup', :action => 'operation', :params => { 'operation' => 'restart_setup', 'tasklist[]' => @task.id } %></td>
+    <% end %>
+    <% if @task.status == 'Completed' %>
       <td><%= button_to 'Restart On Cluster', :action => 'operation', :params => { 'operation' => 'restart_cluster', 'tasklist[]' => @task.id } %></td>
       <td><%= button_to 'Restart At PostProcessing', :action => 'operation', :params => { 'operation' => 'restart_postprocess', 'tasklist[]' => @task.id } %></td>
     <% end %>

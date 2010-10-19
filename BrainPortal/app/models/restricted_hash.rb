@@ -26,21 +26,36 @@ class RestrictedHash < Hash
 
    Revision_info="$Id$"
 
-   # First time in my life I use a 'Class Instance Variable'
+   # This must be a 'Class Instance Variable', not a class variable.
    @allowed_keys = {}
 
    # Initialize the list of allowed keys for your hash.
    # This methods requires an array of legal keys (usually,
    # symbols or strings).
+   #
+   #   class X < RestrictedHash
+   #     self.allowed_keys= [ :abc, :def ]
+   #   end
    def self.allowed_keys=(keys_list)
      # Hashing it all
+     keys_list = keys_list[0] if keys_list.size == 1 && keys_list[0].is_a?(Array) # Alt API compatibility
      @allowed_keys = keys_list.inject({}) { |keys,myattr| keys[myattr] = true; keys }
    end
 
    # Returns the list of allowed keys for your hash,
    # as you supplied to allowed_keys=() (but not
-   # necessarily in the same order).
-   def self.allowed_keys
+   # necessarily in the same order). If given any
+   # arguments, it acts the same as allowed_keys=(keys_list)
+   # before returning the new set of keys. This makes it
+   # useful to invoke as a directive in a class:
+   #
+   #   class X < RestrictedHash
+   #     allowed_keys :abc, :def
+   #   end
+   def self.allowed_keys(*keys_list)
+     if keys_list && keys_list.size > 0
+       self.allowed_keys=keys_list
+     end
      @allowed_keys.keys
    end
 
@@ -54,6 +69,36 @@ class RestrictedHash < Hash
    # in this restricted hash object.
    def key_is_allowed?(myattr)
      self.class.key_is_allowed?(myattr)
+   end
+
+   # Returns the list of allowed keys for your hash,
+   # as you supplied to allowed_keys=() (but not
+   # necessarily in the same order). Unlike the class
+   # method of the same name, you can't change the set
+   # of allowed keys with this instance method.
+   def allowed_keys
+     self.class.allowed_keys
+   end
+
+   # This method is a utility that allows you to
+   # create a single instance of a RestrictedHash
+   # belonging to an anonymous subclass of RestrictedHash
+   # created especially for that instance. The +keys_list+
+   # is the set of restricted keys you want.
+   #
+   #   my_special_hash = RestrictedHash.builder([ :abc, :def ])
+   #   my_special_hash[:abc] = 3  # works
+   #   my_special_hash[:xyz] = 5  # fails, as :xyz not allowed.
+   #
+   # Note that the method can be invoked with a list of attribute
+   # names, just as well:
+   #
+   #   my_special_hash = RestrictedHash.builder( :abc, :def )
+   def self.builder(*keys_list)
+     cb_error "Need non_empty key list." unless keys_list.is_a?(Array) && keys_list.size > 0
+     built_class = Class.new(self)
+     built_class.allowed_keys = keys_list
+     built_class.new
    end
 
    # Unlike a normal hash, this class allows easy
@@ -119,5 +164,10 @@ class RestrictedHash < Hash
      end
    end
 
+end
+
+# This method is a shorthand for RestrictedHash.builder(args)
+def RestrictedHash(*args)
+  RestrictedHash.builder(*args)
 end
 

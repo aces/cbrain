@@ -15,164 +15,6 @@ class BourreauSystemChecks < CbrainChecker
 
   Revision_info="$Id$"
 
-
-
-  #Checks for a proper timezone configuration in Rails' environment.
-  def self.a009_check_if_timezone_configured
-
-    #-----------------------------------------------------------------------------
-    puts "C> Checking for proper time zone configuration..."
-    #-----------------------------------------------------------------------------
-    
-    if ! Time.zone.blank?
-      puts "C>\t- Time zone set to '#{Time.zone.name}'."
-    else
-      print <<-"TZ_ERROR"
-C>
-C> Error: Time Zone configuration incomplete!
-C>
-C> For this application to work, you must make sure that the
-C> Rails application has the proper time zone configured
-C> in this file:
-C>
-C>   #{RAILS_ROOT}/config/initializers/config_bourreau.rb
-C>
-C> For instructions on how to edit the file, see:
-C> 
-C>   #{RAILS_ROOT}/config/initializers/config_bourreau.rb.TEMPLATE
-C>
-C> The full list of time zone names can be obtained by
-C> running the rake task:
-C>
-C>   rake time:zones:all
-C>
-C> and a more particular subset of acceptable names
-C> for your current machine can be seen by running
-C>
-C>   rake time:zones:local
-C>
-      TZ_ERROR
-      Kernel.exit(1)
-    end
-  end
-
-
-
-  def self.a010_ensure_configuration_variables_are_set
-    
-    #-----------------------------------------------------------------------------
-    puts "C> Verifying configuration variables..."
-    #-----------------------------------------------------------------------------
-
-    needed_Constants = %w(
-                       DataProviderCache_dir
-                       DataProviderCache_RevNeeded
-                       DataProvider_IgnorePatterns
-                       CLUSTER_sharedir
-                       BOURREAU_CLUSTER_NAME CLUSTER_TYPE DEFAULT_QUEUE
-                       EXTRA_QSUB_ARGS 
-                       BOURREAU_WORKERS_INSTANCES
-                       BOURREAU_WORKERS_CHECK_INTERVAL
-                       BOURREAU_WORKERS_LOG_TO
-                       BOURREAU_WORKERS_VERBOSE
-                     )
-
-    # Constants
-    needed_Constants.each do |c|
-      unless CBRAIN.const_defined?(c)
-        raise "Configuration error: the CBRAIN constant '#{c}' is not defined!\n" +
-          "Check 'config_bourreau.rb' (and compare it to 'config_bourreau.rb.TEMPLATE')."
-      end
-    end
-    
-    # Run-time checks
-    unless File.directory?(CBRAIN::DataProviderCache_dir)
-      raise "CBRAIN configuration error: Data Provider cache directory '#{CBRAIN::DataProviderCache_dir}' does not exist!"
-    end
-    unless File.directory?(CBRAIN::CLUSTER_sharedir)
-      raise "CBRAIN configuration error: grid work directory '#{CBRAIN::CLUSTER_sharedir}' does not exist!"
-    end
-
-    if CBRAIN::BOURREAU_CLUSTER_NAME.empty? || CBRAIN::BOURREAU_CLUSTER_NAME == "nameit"
-      raise "CBRAIN configuration error: this Bourreau has not been given a name!"
-    else
-      bourreau = Bourreau.find_by_name(CBRAIN::BOURREAU_CLUSTER_NAME)
-      if bourreau
-        CBRAIN.const_set('BOURREAU_ID',bourreau.id) # this is my own ID, then.
-      else
-        raise "CBRAIN configuration error: can't find ActiveRecord for a Bourreau with name '#{CBRAIN::BOURREAU_CLUSTER_NAME}'."
-      end
-    end
-
-    raise "CBRAIN configuration error: 'DataProvider_IgnorePatterns' is not an array!" unless
-      CBRAIN::DataProvider_IgnorePatterns.is_a?(Array)
-
-    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
-      raise "Configuration error: the pattern '#{pattern}' in 'DataProvider_IgnorePatterns' is not acceptable." if
-        pattern.blank? ||
-        pattern == "*" ||
-        ! pattern.is_a?(String) ||
-        pattern =~ /\*\*/ ||
-        pattern =~ /\// ||
-        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
-    end
-
-    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
-      puts "C>\t- DataProvider exclude pattern: '#{pattern}'"
-    end
-  end
-  
-
-
-  def self.a020_ensure_registered_as_remote_ressource
-
-    #-----------------------------------------------------------------------------
-    puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
-    #-----------------------------------------------------------------------------
-
-    dp_cache_md5     = DataProvider.cache_md5
-    bourreau_by_md5  = Bourreau.find(:first,
-                                     :conditions => { :cache_md5 => dp_cache_md5 })
-    bourreau_by_name = Bourreau.find(:first,
-                                     :conditions => { :name => CBRAIN::BOURREAU_CLUSTER_NAME })
-
-    if bourreau_by_md5 && bourreau_by_name
-      if bourreau_by_md5.id != bourreau_by_name.id
-        raise "Error! Found two Bourreau records for this rails APP, but they conflict!"
-      end
-      bourreau = bourreau_by_md5
-    elsif bourreau_by_md5 || bourreau_by_name
-      puts "C> \t- Adjusting Bourreau record for this RAILS app."
-      bourreau = bourreau_by_md5 || bourreau_by_name # which ever is defined
-      bourreau.cache_md5 = dp_cache_md5
-      bourreau.name      = CBRAIN::BOURREAU_CLUSTER_NAME
-      bourreau.save!
-    else
-      puts "C> \t- Creating a new Bourreau record for this RAILS app."
-      admin  = User.find_by_login('admin')
-      gadmin = Group.find_by_name('admin')
-      bourreau = Bourreau.create!(
-                                  :name        => CBRAIN::BOURREAU_CLUSTER_NAME,
-                                  :user_id     => admin.id,
-                                  :group_id    => gadmin.id,
-                                  :online      => true,
-                                  :read_only   => false,
-                                  :description => 'Bourreau on host ' + Socket.gethostname,
-                                  :cache_md5   => dp_cache_md5 )
-      puts "C> \t- NOTE: You might want to edit it using the Portal's interface."
-    end
-
-    # This constant is helpful whenever we want to
-    # access the info about this very RAILS app.
-    # Note that SelfRemoteResourceId is used by SyncStatus methods.
-    
-    CBRAIN.const_set('SelfRemoteResourceId',bourreau.id)
-    bourreau.update_attributes( :online => true )
-
-  end
-
-
-
   def self.a021_ensure_old_configuration_variables_are_unset
 
     myself = RemoteResource.current_resource
@@ -360,46 +202,27 @@ Adjust them using the Portal interface then erase the two constants
 
   end
 
+  def self.a022_ensure_more_configuration_variables_are_unset
+    
+    old_Constants = {
+                       'DataProviderCache_dir'           => :dp_cache_dir,
+                       'DataProviderCache_RevNeeded'     => nil,
+                       'DataProvider_IgnorePatterns'     => :dp_ignore_patterns,
+                       'CLUSTER_sharedir'                => :cms_shared_dir,
+                       'BOURREAU_CLUSTER_NAME'           => nil,
+                       'CLUSTER_TYPE'                    => :cms_class,
+                       'DEFAULT_QUEUE'                   => :cms_default_queue,
+                       'EXTRA_QSUB_ARGS'                 => :cms_extra_qsub_args,
+                       'BOURREAU_WORKERS_INSTANCES'      => :workers_instances,
+                       'BOURREAU_WORKERS_CHECK_INTERVAL' => :workers_chk_time,
+                       'BOURREAU_WORKERS_LOG_TO'         => :workers_log_to,
+                       'BOURREAU_WORKERS_VERBOSE'        => :workers_verbose
+                     }
 
+    CbrainSystemChecks.move_old_config_vars("bourreau", old_Constants)
 
-  def self.a030_ensure_data_provider_caches_needs_wiping
-
-    #-----------------------------------------------------------------------------
-    puts "C> Checking to see if Data Provider caches need wiping..."
-    #-----------------------------------------------------------------------------
-
-    dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
-    dp_current_rev = DataProvider.revision_info.svn_id_rev
-    raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
-      dp_current_rev && dp_current_rev =~ /^\d+/
-    if dp_init_rev.to_i <= CBRAIN::DataProviderCache_RevNeeded # Before Pierre's upgrade
-      puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
-      puts "C> \t- WARNING: This could take a long time so you should not"
-      puts "C> \t  start another instance of this Rails application."
-      Dir.chdir(DataProvider.cache_rootdir) do
-        Dir.foreach(".") do |entry|
-          next unless File.directory?(entry) && entry !~ /^\./ # ignore ., .. and .*_being_deleted.*
-          newname = ".#{entry}_being_deleted.#{Process.pid}"
-          renamed_ok = File.rename(entry,newname) rescue false
-          if renamed_ok
-            puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
-            system("/bin/rm -rf '#{newname}' </dev/null &")
-          end
-        end
-      end
-      puts "C> \t- Synchronization objects are being wiped..."
-      synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => CBRAIN::SelfRemoteResourceId })
-      synclist.each do |ss|
-        ss.destroy rescue true
-      end
-      puts "C> \t- Re-recording DataProvider revision number in cache."
-      DataProvider.cache_revision_of_last_init(:force)
-      puts "C> \t- Done."
-    end
   end
-
-
-
+  
   def self.a050_ensure_proper_cluster_management_layer_is_loaded
 
     #-----------------------------------------------------------------------------
@@ -407,26 +230,38 @@ Adjust them using the Portal interface then erase the two constants
     #-----------------------------------------------------------------------------
 
     # Load the proper class for interacting with the cluster
-    case CBRAIN::CLUSTER_TYPE
-    when "SGE"
-      require 'scir_sge.rb'
-    when "PBS"
-      require 'scir_pbs.rb'
-    when "UNIX"
-      require 'scir_local.rb'
-    when "MOAB"
-      require 'scir_moab.rb'
-    when "SHARCNET"
-      require 'scir_sharcnet.rb'
+
+    myself        = RemoteResource.current_resource
+    cluster_type  = myself.cms_class || "(Unset)"
+    cluster_class = nil
+    case cluster_type
+    when "SGE"                     # old keyword
+      cluster_class = "ScirSge"
+    when "PBS"                     # old keyword
+      cluster_class = "ScirPbs"
+    when "UNIX"                    # old keyword
+      cluster_class = "ScirUnix"
+    when "MOAB"                    # old keyword
+      cluster_class = "ScirMoab"
+    when "SHARCNET"                # old keyword
+      cluster_class = "ScirSharcnet"
+    when /Scir(\w+)/
+      cluster_class = cluster_type
     else
-      raise "CBRAIN configuration error: CLUSTER_TYPE is set to unknown value '#{CBRAIN::CLUSTER_TYPE}' !"
+      raise "CBRAIN configuration error: cluster type is set to unknown value '#{cluster_type}' !"
     end
-    puts "C> \t - Layer for '#{CBRAIN::CLUSTER_TYPE}' loaded."
+    if cluster_class != cluster_type  # adjust old keywords
+      myself.cms_class = cluster_class
+      myself.save(true)
+    end
+    session = myself.scir_session
+    rev = session.revision_info.svn_id_pretty_file_rev_author_date # loads it?
+    puts "C> \t - Layer for '#{cluster_class}' #{rev} loaded."
   end
 
 
 
-  def self.a060_ensure_bourreau_worker_precess_are_reported
+  def self.a060_ensure_bourreau_worker_processes_are_reported
 
     #-----------------------------------------------------------------------------
     puts "C> Reporting Bourreau Worker Processes (if any)..."
@@ -445,17 +280,6 @@ Adjust them using the Portal interface then erase the two constants
       puts "C> \t - Scheduling restart for all of them ..."
       allworkers.stop_workers
     end
-  end
-
-
-
-  def self.a080_ensure_set_starttime_revision
-
-    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
-    #-----------------------------------------------------------------------------
-    puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
-    #-----------------------------------------------------------------------------
-
   end
 
 end

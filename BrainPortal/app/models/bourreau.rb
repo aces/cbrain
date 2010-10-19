@@ -19,12 +19,36 @@ class Bourreau < RemoteResource
   has_and_belongs_to_many :tools
 
   attr_accessor :operation_messages # no need to store in DB
-  
+
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config
     @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
       { :tool_id => nil, :bourreau_id => self.id } )
+  end
+
+  # Returns the Scir subclass
+  # responsible for communicating with the cluster;
+  # this method is only meaningful when the current Rails
+  # app is a Bourreau itself.
+  def scir_class
+    return @scir_class if @scir_class
+    cms_class = self.cms_class || "Unset"
+    if cms_class !~ /^Scir\w+$/ # old keyword convention?!?
+      cb_error "Value of cms_class in Bourreau record invalid: '#{cms_class}'"
+    end
+    @scir_class = Class.const_get(cms_class)
+    @scir_class
+  end
+
+  # Returns the Scir session subclass object
+  # responsible for communicating with the cluster;
+  # this method is only meaningful when the current Rails
+  # app is a Bourreau itself.
+  def scir_session
+    return @scir_session_cache if @scir_session_cache
+    @scir_session_cache = Scir.session_builder(self.scir_class) # e.g. ScirUnix::Session.new()
+    @scir_session_cache
   end
 
   # Start a Bourreau remotely. As a requirement for this to work,
@@ -101,8 +125,9 @@ class Bourreau < RemoteResource
   # by the RemoteResource class method of the same name.
   def self.remote_resource_info
     info = super
+    myself = RemoteResource.current_resource
 
-    queue_tasks_tot_max = Scir::Session.session_cache.queue_tasks_tot_max
+    queue_tasks_tot_max = myself.scir_session.queue_tasks_tot_max rescue [ "unknown", "unknown" ]
     queue_tasks_tot     = queue_tasks_tot_max[0]
     queue_tasks_max     = queue_tasks_tot_max[1]
 
@@ -117,8 +142,8 @@ class Bourreau < RemoteResource
 
     info.merge!(
       # Bourreau info
-      :bourreau_cms       => CBRAIN::CLUSTER_TYPE,
-      :bourreau_cms_rev   => Scir::Session.session_cache.revision_info,
+      :bourreau_cms       => myself.cms_class || "Unconfigured",
+      :bourreau_cms_rev   => (myself.scir_session.revision_info rescue Object.revision_info),
       :tasks_max          => queue_tasks_max,
       :tasks_tot          => queue_tasks_tot,
 
@@ -209,15 +234,27 @@ class Bourreau < RemoteResource
     cb_error "Got worker control command #{command.command} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
 
+    num_instances = myself.workers_instances
+    chk_time      = myself.workers_chk_time
+    log_to        = myself.workers_log_to
+    verbose       = myself.workers_verbose   || 0
+
+    cb_error "Cannot start workers: improper number of instances to start in config (must be 1..20)." unless
+       num_instances && num_instances > 0 && num_instances < 21
+    cb_error "Cannot start workers: improper check interval in config (must be 5..200)." unless
+       chk_time && chk_time >= 5 && chk_time <= 200
+    cb_error "Cannot start workers: improper log destination keyword in config (must be none, separate, stdout|stderr, combined, or bourreau)." unless
+       (! log_to.blank? ) && log_to =~ /^(none|separate|combined|bourreau|stdout|stderr|stdout\|stderr|stderr\|stdout)$/
+
     # Returns a logger object or the symbol :auto
-    logger = self.initialize_worker_logger()
+    logger = self.initialize_worker_logger(log_to,verbose)
 
     # Workers are started when created
     worker_pool = WorkerPool.create_or_find_pool(BourreauWorker,
-       CBRAIN::BOURREAU_WORKERS_INSTANCES,
-       { :check_interval => CBRAIN::BOURREAU_WORKERS_CHECK_INTERVAL,
+       num_instances,
+       { :check_interval => chk_time,
          :worker_log     => logger, # nil, a logger object, or :auto
-         :log_level      => CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO # for :auto
+         :log_level      => verbose > 1 ? Log4r::DEBUG : Log4r::INFO # for :auto
        }
     )
     worker_pool.wake_up_workers
@@ -276,7 +313,7 @@ class Bourreau < RemoteResource
 
         # These actions trigger special handling code in the workers
         task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
-        task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' tasks only
+        task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' or 'Terminated' tasks only
 
         # The 'Duplicate' operation copies the task object into a brand new task.
         # As a side effect, the task can be reassigned to another Bourreau too
@@ -297,7 +334,7 @@ class Bourreau < RemoteResource
 
         # OK now, if something has changed (based on status), we proceed we the update.
         next unless task.status != old_status
-        task.addlog_current_resource_revision
+        task.addlog_current_resource_revision("New status: #{task.status}")
         task.save
         tasks_affected += 1 if task.bourreau_id == myself.id
       rescue
@@ -333,9 +370,7 @@ class Bourreau < RemoteResource
 
   # Create the logger object for the workers.
   # Returns nil, or a logger object, or the symbol :auto
-  def self.initialize_worker_logger
-
-    log_to = CBRAIN::BOURREAU_WORKERS_LOG_TO
+  def self.initialize_worker_logger(log_to,verbose_level)
 
     # Option 1: the Worker class itself will set them up, one per worker.
     return :auto if log_to == 'separate'
@@ -357,7 +392,7 @@ class Bourreau < RemoteResource
           stderr_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
           blogger.add(stderr_op)
         end
-        blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+        blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO
       end
 
     # Option 3: combined log a file
@@ -369,7 +404,7 @@ class Bourreau < RemoteResource
                       :filename  => "#{RAILS_ROOT}/log/BourreauWorkers.combined..log",
                       :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
                       :maxsize   => 1000000, :trunc => 600000))
-        blogger.level = CBRAIN::BOURREAU_WORKERS_VERBOSE ? Log4r::DEBUG : Log4r::INFO
+        blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO
       end
 
     # Option 4: use RAIL's own logger

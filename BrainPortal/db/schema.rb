@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100921174526) do
+ActiveRecord::Schema.define(:version => 20101006211030) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -172,6 +172,17 @@ ActiveRecord::Schema.define(:version => 20100921174526) do
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
     t.string   "time_zone"
+    t.string   "dp_cache_dir"
+    t.string   "cms_class"
+    t.string   "cms_default_queue"
+    t.string   "cms_extra_qsub_args"
+    t.string   "cms_shared_dir"
+    t.integer  "workers_instances"
+    t.integer  "workers_chk_time"
+    t.string   "workers_log_to"
+    t.integer  "workers_verbose"
+    t.text     "dp_ignore_patterns"
+    t.string   "site_url_prefix"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

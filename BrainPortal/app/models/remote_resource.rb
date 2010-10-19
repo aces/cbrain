@@ -53,15 +53,41 @@ class RemoteResource < ActiveRecord::Base
   
   include ResourceAccess
 
+  serialize   :dp_ignore_patterns
+
+  belongs_to  :user
+  belongs_to  :group
+  has_many    :sync_status
+
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
                                  :allow_blank => true
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :sync_status
+  validate                :proper_dp_ignore_patterns
+  validate                :dp_cache_path_valid
+
+
+
+
+  ############################################################################
+  # Pseudo-attributes Access
+  ############################################################################
+
+  # Used by interface so that users can get the list of ignore patterns
+  # as a single space-separated string.
+  def spaced_dp_ignore_patterns #:nodoc:
+    ip = self.dp_ignore_patterns || []
+    ip.join("     ")
+  end
+
+  # Used by interface so that users can set the list of ignore patterns
+  # as a single space-separated string.
+  def spaced_dp_ignore_patterns=(spaced_vals = "") #:nodoc:
+    ip = spaced_vals.split(/\s+/).reject { |u| u.blank? }
+    self.dp_ignore_patterns = ip
+  end
 
 
 
@@ -109,6 +135,62 @@ class RemoteResource < ActiveRecord::Base
     SyncStatus.find(:all, :conditions => { :remote_resource_id => rr_id }).each do |ss|
       ss.destroy rescue true
     end
+    true
+  end
+
+  # Verify that the ignore patterns are correct.
+  def proper_dp_ignore_patterns #:nodoc:
+
+    ig_pat = self.dp_ignore_patterns || [] # nil and [] are ok
+    unless ig_pat.is_a?(Array)
+      errors.add(:dp_ignore_patterns,"is not an array.")
+      return false
+    end
+
+    all_ok = true
+
+    ig_pat.each do |pattern|
+       if (! pattern.is_a?(String)) ||
+          pattern.blank? ||
+          pattern == "*" ||
+          ! pattern.is_a?(String) ||
+          pattern =~ /\*\*/ ||
+          pattern =~ /\// ||
+          pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
+          errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
+          all_ok = false
+      end
+    end
+
+    all_ok
+  end
+
+  # Verify that the dp_cache_dir is correct, at least from
+  # what we can see. It's possibel to edit the path of an
+  # external RemoteResource, so we can't check that the dir
+  # exist over there.
+  def dp_cache_path_valid #:nodoc:
+    path = self.dp_cache_dir
+
+    return true if path.blank?  # We allow this even if it won't work, until the admin sets it.
+
+    if path !~ /^\//
+      errors.add(:dp_cache_dir, "must be an absolute path.")
+      return false
+    end
+
+    if path =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
+      errors.add(:dp_cache_dir, "cannot be a system temporary directory.")
+      return false
+    end
+
+    if self.id && self.id == CBRAIN::SelfRemoteResourceId
+      unless File.directory?(path) && File.readable?(path) && File.writable?(path)
+        errors.add(:dp_cache_dir," does not exist or is unaccessible.")
+        return false
+      end
+    end
+
     true
   end
 
@@ -303,21 +385,20 @@ class RemoteResource < ActiveRecord::Base
   # way to check the state of the resource is to use the
   # info() method, which caches the information record.
   def is_alive?
+    self.reload
     return false if self.online == false 
     @info = self.remote_resource_info
-    if @info.name == "???"
-      self.time_of_death ||= Time.now
-      if self.time_of_death < 2.minutes.ago
-        self.time_of_death = Time.now
-      elsif self.time_of_death < Time.now
-        self.online = false
-      end
-      self.save
-      return false
+    if @info.name != "???"
+      self.update_attributes( :time_of_death => nil ) if self.time_of_death
+      return true
     end
-    self.time_of_death = nil
-    self.save
-    true
+    self.update_attributes( :time_of_death => Time.now ) unless self.time_of_death
+    if self.time_of_death < 2.minutes.ago
+      self.update_attributes( :time_of_death => Time.now )
+    elsif self.time_of_death >= 2.minutes.ago && self.time_of_death < 10.seconds.ago
+      self.update_attributes( :online => false )
+    end
+    return false
   rescue
     false
   end

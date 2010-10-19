@@ -27,6 +27,7 @@ class BourreauxController < ApplicationController
                               :group_id  => bourreau_group_id,
                               :online    => true
                             )
+    sensible_defaults(@bourreau)
   end
   
   def show #:nodoc:
@@ -87,6 +88,8 @@ class BourreauxController < ApplicationController
     @users = current_user.available_users
     @groups = current_user.available_groups
 
+    sensible_defaults(@bourreau)
+
     respond_to do |format|
       format.html { render :action => :edit }
       format.xml  { render :xml => @bourreau }
@@ -112,6 +115,7 @@ class BourreauxController < ApplicationController
   end
 
   def update #:nodoc:
+
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
     
@@ -121,23 +125,44 @@ class BourreauxController < ApplicationController
     
     subtype = fields.delete(:type)
   
+    old_dp_cache_dir = @bourreau.dp_cache_dir
     @bourreau.update_attributes(fields)
-
     @bourreau.save
 
-    if @bourreau.errors.empty?
-      if params[:tool_management] != nil 
-        redirect_to(:controller => "tools", :action =>"tool_management")
-        flash[:notice] = "#{@bourreau.name} successfully updated"
-      else
-        redirect_to(bourreaux_url)
-        flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
-      end
-    else
-      @users = current_user.available_users
+    unless @bourreau.errors.empty?
+      @users  = current_user.available_users
       @groups = current_user.available_groups
       render :action => 'edit'
       return
+    end
+
+    if old_dp_cache_dir != @bourreau.dp_cache_dir
+      old_ss = SyncStatus.find(:all, :conditions => { :remote_resource_id => @bourreau.id })
+      old_ss.each do |ss|
+        ss.destroy rescue true
+      end
+      info_message = "Since the Data Provider cache directory has been changed, all\n" +
+                     "synchronization status objects were reset.\n";
+      unless old_dp_cache_dir.blank?
+        info_message += "You may have to clean up the content of the old cache directory\n" +
+                        "    #{old_dp_cache_dir}\n" +
+                        "on host\n" +
+                        "    #{@bourreau.ssh_control_host || @bourreau.actres_host || 'localhost'}"
+      end
+      Message.send_message(current_user,
+        :message_type => :system,
+        :critical     => true,
+        :header       => "Data Provider cache directory changed for #{@bourreau.class} '#{@bourreau.name}'",
+        :description  => info_message
+      )
+    end
+
+    if params[:tool_management] != nil 
+      redirect_to(:controller => "tools", :action =>"tool_management")
+      flash[:notice] = "#{@bourreau.name} successfully updated"
+    else
+      redirect_to(bourreaux_url)
+      flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
     end
 
   end
@@ -222,7 +247,8 @@ class BourreauxController < ApplicationController
       @bourreau.addlog("Rails application started by user #{current_user.login}.")
       begin
         @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
-        @bourreau.send_command_start_workers
+        res = @bourreau.send_command_start_workers
+        raise "Failed command to start workers" unless res && res[:command_execution_status] == "OK" # to trigger rescue
         flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
       rescue
         flash[:notice] += "\nHowever, we couldn't start the workers."
@@ -246,7 +272,8 @@ class BourreauxController < ApplicationController
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
     begin
-      @bourreau.send_command_stop_workers
+      res = @bourreau.send_command_stop_workers
+      raise "Failed command to stop workers" unless res && res[:command_execution_status] == "OK" # to trigger rescue
       @bourreau.addlog("Workers stopped by user #{current_user.login}.")
       flash[:notice] = "Workers on Execution Server '#{@bourreau.name}' stopped."
     rescue
@@ -262,6 +289,23 @@ class BourreauxController < ApplicationController
   rescue => e
     flash[:error] = e.message
     redirect_to :action => :index
+  end
+
+  private
+
+  # Adds sensible default values to some field for
+  # new objects, or existing ones being edited.
+  def sensible_defaults(portal_or_bourreau)
+    if portal_or_bourreau.is_a?(BrainPortal)
+      if portal_or_bourreau.site_url_prefix.blank?
+        guess = "http://" + request.env["HTTP_HOST"] + "/"
+        portal_or_bourreau.site_url_prefix = guess
+      end
+    end
+
+    if portal_or_bourreau.dp_ignore_patterns.nil? # not blank, nil!
+      portal_or_bourreau.dp_ignore_patterns = [ ".DS_Store", "._*" ]
+    end
   end
 
 end

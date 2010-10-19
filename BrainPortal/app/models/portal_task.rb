@@ -55,7 +55,7 @@ class PortalTask < CbrainTask
     "Failed To PostProcess"            => [ "Duplicate", "Recover" ],
     "Failed Setup Prerequisites"       => [ "Duplicate", "Recover" ],
     "Failed PostProcess Prerequisites" => [ "Duplicate", "Recover" ],
-    "Terminated"                       => [ "Duplicate" ],
+    "Terminated"                       => [ "Duplicate", "Restart Setup" ],
     "Completed"                        => [ "Duplicate", "Restart Setup", "Restart Cluster", "Restart PostProcess" ]
     # Other transitions are not used by the interface,
     # as they cannot be triggered by the user. For

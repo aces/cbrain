@@ -24,6 +24,7 @@ class BourreauWorker < Worker
     @zero_task_found = 0 # count the normal scan cycles with no tasks
     rr = RemoteResource.current_resource
     worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
+    @rr_id = rr.id
   end
 
   # Calls process_task() regularly on any task that is active.
@@ -44,7 +45,7 @@ class BourreauWorker < Worker
                                          'Recover Setup', 'Recover Cluster', 'Recover PostProcess',
                                          'Restart Setup', 'Restart Cluster', 'Restart PostProcess',
                                        ],
-                       :bourreau_id => CBRAIN::SelfRemoteResourceId } )
+                       :bourreau_id => @rr_id } )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode.

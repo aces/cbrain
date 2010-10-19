@@ -198,7 +198,7 @@ class DataProvider < ActiveRecord::Base
 
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
-  validates_inclusion_of :read_only, :in => [true, false]
+  validates_inclusion_of  :read_only, :in => [true, false]
 
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
     :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, and !',
@@ -239,6 +239,16 @@ class DataProvider < ActiveRecord::Base
       @depth
     end
   end
+
+  # This value is used to trigger DP cache wipes
+  # in the validation code (see CbrainSystemChecks)
+  # Instructions: when the caching system changes,
+  # increase this number to the highest SVN rev
+  # BEFORE the commit that implements the change,
+  # then commit this file with the new caching system.
+  # It's important that this value always be less than
+  # the revision number above in Revision_info.
+  DataProviderCache_RevNeeded = 959
 
 
 
@@ -961,8 +971,16 @@ class DataProvider < ActiveRecord::Base
   #     "/CbrainCacheDir"
   # This is a class method.
   def self.cache_rootdir #:nodoc:
-    Pathname.new(CBRAIN::DataProviderCache_dir)
+    @conf_dir ||= RemoteResource.current_resource.dp_cache_dir
+    cb_error "No cache directory for Data Providers configured!" if @conf_dir.blank? || ! ( @conf_dir.is_a?(String) || @conf_dir.is_a?(Pathname) )
+    @conf_dir = Pathname.new(@conf_dir)
   end
+
+  def self.rsync_ignore_patterns #:nodoc:
+    @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
+  end
+
+
 
   # Returns an array of two subdirectory levels where a file
   # is cached. These are two strings of two digits each. For
@@ -1065,11 +1083,12 @@ class DataProvider < ActiveRecord::Base
   #################################################################
 
   # Returns a string with a set of --exclude=ABC options for
-  # a rsync command, based on the patterns ABC defined
-  # in the constant array CBRAIN::DataProvider_IgnorePatterns
+  # a rsync command, based on the patterns configured
+  # for the current Data Provider.
   def rsync_excludes #:nodoc:
     excludes = ""
-    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+    patterns = self.class.rsync_ignore_patterns
+    patterns.each do |pattern|
       excludes += " " unless excludes.blank?
       excludes += "--exclude=#{shell_escape(pattern)}"
     end
@@ -1078,12 +1097,13 @@ class DataProvider < ActiveRecord::Base
   end
 
   # Utility method that returns true if pathname matches
-  # one of the excluded patterns configured for the rails
-  # application in the constant array CBRAIN::DataProvider_IgnorePatterns
+  # one of the excluded patterns configured for the
+  # current Data Provider.
   def is_excluded?(pathname) #:nodoc:
-    return false if CBRAIN::DataProvider_IgnorePatterns.empty?
+    patterns = self.class.rsync_ignore_patterns
+    return false if patterns.empty?
     as_string = pathname.to_s
-    CBRAIN::DataProvider_IgnorePatterns.each do |pattern|
+    patterns.each do |pattern|
       return true if File.fnmatch(pattern,as_string)
     end
     false

@@ -9,7 +9,6 @@
 # $Id$
 #
 
-require 'scir'
 require 'stringio'
 require 'base64'
 require 'fileutils'
@@ -72,13 +71,19 @@ class ClusterTask < CbrainTask
 
   # Automatically register the task's version when new() is invoked.
   def initialize(arguments = {}) #:nodoc:
-    super(arguments)
-    baserev = Revision_info
-    subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} revision #{baserev.svn_id_rev}")
-    self.addlog("#{subrev.svn_id_file} revision #{subrev.svn_id_rev}")
+    res = super(arguments)
+    self.record_cbraintask_revs
+    res
   end
 
+  # Records the revision number of ClusterTask and the
+  # revision number of the its specific subclass.
+  def record_cbraintask_revs #:nodoc:
+    baserev = ClusterTask::Revision_info
+    subrev  = self.revision_info
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
+    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
+  end
 
 
   ##################################################################
@@ -411,6 +416,7 @@ class ClusterTask < CbrainTask
 
     begin
       self.addlog("Setting Up.")
+      self.record_cbraintask_revs
       self.make_cluster_workdir
       self.apply_tool_config_environment
       Dir.chdir(self.cluster_workdir) do
@@ -447,6 +453,7 @@ class ClusterTask < CbrainTask
     # to have a spawn occur here.
     begin
       self.addlog("Starting asynchronous postprocessing.")
+      self.record_cbraintask_revs
       self.apply_tool_config_environment
       saveok = false
       Dir.chdir(self.cluster_workdir) do
@@ -568,7 +575,7 @@ class ClusterTask < CbrainTask
 
     # Cluster job termination
     if cur_status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
-      Scir::Session.session_cache.terminate(self.cluster_jobid)
+      self.scir_session.terminate(self.cluster_jobid)
       self.status = "Terminated"
       return true
     end
@@ -602,7 +609,7 @@ class ClusterTask < CbrainTask
   def suspend
     return unless self.status == "On CPU"
     begin
-      Scir::Session.session_cache.suspend(self.cluster_jobid)
+      self.scir_session.suspend(self.cluster_jobid)
       self.status = "Suspended"
     rescue
       # nothing to do
@@ -613,7 +620,7 @@ class ClusterTask < CbrainTask
   def resume
     begin
       return unless self.status == "Suspended"
-      Scir::Session.session_cache.resume(self.cluster_jobid)
+      self.scir_session.resume(self.cluster_jobid)
       self.status = "On CPU"
     rescue
       # nothing to do
@@ -624,7 +631,7 @@ class ClusterTask < CbrainTask
   def hold
     return unless self.status == "Queued"
     begin
-      Scir::Session.session_cache.hold(self.cluster_jobid)
+      self.scir_session.hold(self.cluster_jobid)
       self.status = "On Hold"
     rescue
       # nothing to do
@@ -635,7 +642,7 @@ class ClusterTask < CbrainTask
   def release
     begin
       return unless self.status == "Suspended"
-      Scir::Session.session_cache.release(self.cluster_jobid)
+      self.scir_session.release(self.cluster_jobid)
       self.status = "Queued"
     rescue
       # nothing to do
@@ -676,10 +683,11 @@ class ClusterTask < CbrainTask
   # This triggers the restart mechanism for all Completed tasks.
   # This simply sets a special value in the 'status' field
   # that will be handled by the Bourreau Worker.
-  def restart(atwhat)
+  def restart(atwhat = "Setup")
     begin
-      return unless self.status == 'Completed'
+      return unless self.status =~ /Completed|Terminated/
       return unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
+      atwhat = "Setup" if self.status == "Terminated" # forced
       self.addlog("Scheduling restart at '#{atwhat}'.")
       self.status="Restart #{atwhat}" # will be handled by worker
     rescue
@@ -834,13 +842,45 @@ class ClusterTask < CbrainTask
 
   protected
 
-  # The list of possible cluster states is larger than
+  # Returns the class name which implements this
+  # Bourreau's cluster management system interface.
+  # This is really a property of the whole Rails app,
+  # but it's provided here in the model for convenience.
+  def self.scir_class #:nodoc:
+    @scir_class   ||= RemoteResource.current_resource.scir_class
+  end
+
+  # Returns the object which implements this
+  # Bourreau's cluster management system's session.
+  # This is really a property of the whole Rails app,
+  # but it's provided here in the model for convenience.
+  def self.scir_session #:nodoc:
+    @scir_session ||= RemoteResource.current_resource.scir_session
+  end
+
+  # Returns the class name which implements this
+  # Bourreau's cluster management system interface.
+  # This is really a property of the whole Rails app,
+  # but it's provided here in the model for convenience.
+  def scir_class #:nodoc:
+    self.class.scir_class
+  end
+
+  # Returns the object which implements this
+  # Bourreau's cluster management system's session.
+  # This is really a property of the whole Rails app,
+  # but it's provided here in the model for convenience.
+  def scir_session #:nodoc:
+    self.class.scir_session
+  end
+
+  # The list of possible cluster states is different than
   # the ones we need for CBRAIN, so here is a mapping
   # to our shorter list. Note that when a job finishes
   # on the cluster, we cannot tell whether it was all
   # correctly done or not, so we only have "Does Not Exist"
   # as a state. It's up to the subclass' save_results()
-  # to figure out if the processing was successfull or
+  # to figure out if the processing was successful or
   # not.
   @@Cluster_States_To_Status ||= {
                                # The textual strings are important
@@ -865,7 +905,7 @@ class ClusterTask < CbrainTask
   # a killed job or a job that's exited properly, and we can't determine
   # which of the three from the job_ps()
   def cluster_status
-    state = Scir::Session.session_cache.job_ps(self.cluster_jobid,self.updated_at)
+    state = self.scir_session.job_ps(self.cluster_jobid,self.updated_at)
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   end
@@ -947,8 +987,9 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     end
 
     # Create the cluster job object
-    Scir::Session.session_cache   # Make sure it's loaded.
-    job = Scir::JobTemplate.new_jobtemplate
+    scir_class   = self.scir_class
+    scir_session = self.scir_session
+    job          = Scir.job_template_builder(scir_class)
     job.command = "/bin/bash"
     job.arg     = [ qsubfile ]
     job.stdout  = ":" + self.stdout_cluster_filename
@@ -958,23 +999,23 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     job.name    = name
 
     # Log version of Scir lib
-    drm     = Scir.drm_system
-    version = Scir.version
-    impl    = Scir.drmaa_implementation
+    drm     = scir_class.drm_system
+    version = scir_class.version
+    impl    = scir_class.drmaa_implementation
     self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'.")
 
-    impl_revinfo = Scir::Session.session_cache.revision_info
+    impl_revinfo = scir_session.revision_info
     impl_file    = impl_revinfo.svn_id_file
     impl_rev     = impl_revinfo.svn_id_rev
     impl_author  = impl_revinfo.svn_id_author
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
-    self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' revision '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
+    self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' rev. '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
-    jobid              = Scir::Session.session_cache.run(job)
+    jobid              = scir_session.run(job)
     self.cluster_jobid = jobid
     self.status        = "Queued"
     self.addlog("Queued as job ID '#{jobid}'.")
@@ -988,6 +1029,18 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
   ##################################################################
   # Cluster Job Shared Work Directory Methods
   ##################################################################
+
+  # Returns the directory configured as the tasks' 'work' directory root
+  # for the current Rails application, as stored in the RemoteResource
+  # object that represents it.
+  def self.cluster_sharedir
+    return @sharedir if @sharedir
+    @sharedir = RemoteResource.current_resource.cms_shared_dir
+    cb_error "No cluster share directory configured for this Bourreau?" if @sharedir.blank?
+    cb_error "Cluster share directory is not accessible?" unless
+      File.directory?(@sharedir) && File.readable?(@sharedir) && File.writable?(@sharedir)
+    @sharedir
+  end
 
   # Create the directory in which to run the job.
   # If the task contains the ID of another task in
@@ -1018,7 +1071,8 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     # Create our own work directory
     name = self.name
     user = self.user.login
-    self.cluster_workdir = (CBRAIN::CLUSTER_sharedir + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
+    gridshared = self.class.cluster_sharedir
+    self.cluster_workdir = (gridshared + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
     self.addlog("Trying to create workdir '#{self.cluster_workdir}'.")
     Dir.mkdir(self.cluster_workdir,0700) unless File.directory?(self.cluster_workdir)
 

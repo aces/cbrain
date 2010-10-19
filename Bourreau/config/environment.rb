@@ -46,8 +46,9 @@ Rails::Initializer.run do |config|
   # (by default production uses :info, the others :debug)
   # config.log_level = :debug
 
-  # DO NOT USE config.time_zone. TIME ZONE SHOULD BE SET IN config/initializers/config_portal.rb
-  # FOR INSTRUCTIONS ON HOW TO EDIT THE FILE, SEE config/initializers/config_portal.rb.TEMPLATE
+  # The time zone for this Rails app is configured using the interface.
+  # Any value set here will be ignored once the app has fully booted.
+  #config.time_zone = 'UTC'
 
   # Your secret key for verifying cookie session data integrity.
   # If you change this key, all old sessions will become invalid!

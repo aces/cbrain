@@ -28,16 +28,6 @@ class CBRAIN
 
   $CBRAIN_StartTime_Revision = "???"  # numeric; will be filled in by validation script
 
-  # This value is used to trigger DP cache wipes
-  # in the validation code (see PortalSystemChecks)
-  # Instructions: when the caching system changes,
-  # increase this number to the highest SVN rev
-  # BEFORE the commit that implements the change,
-  # then commit this file with the new caching system.
-  # It's important that this value be less than
-  # the revision number of new 'models/data_provider.rb'.
-  DataProviderCache_RevNeeded = 959
-
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
   # of 'monit' which clears the environment of almost everything!
@@ -163,10 +153,7 @@ class CBRAIN
 
         # Try to close all file descriptors from 3 to 50.
         writer.close # Not needed in the subchild!
-        begin
-          (3..50).each { |i| x = IO.for_fd(i) rescue nil ; x.close if x }
-        rescue
-        end
+        (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
 
         # Background code execution
         begin
@@ -196,15 +183,6 @@ class CBRAIN
     subchildpid
   end
   
-  def self.time_zone=(zone)
-    begin
-      Rails.configuration.time_zone = zone
-      Rails::Initializer.new(Rails.configuration).initialize_time_zone
-    rescue => e
-      raise e.message.gsub "config", "CBRAIN"
-    end
-  end
-
 end  # End of CBRAIN class
 
 unless Rails.configuration.time_zone.blank?
