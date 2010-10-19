@@ -1,5 +1,3 @@
-<% if @userfile.is_locally_synced? %>
-  <% content_viewer do %>
-    <%= image_tag "/userfiles/#{@userfile.id}/content#{@userfile.file_extension}" %>
-  <% end %>
+<% content_viewer do %>
+  <%= image_tag "/userfiles/#{@userfile.id}/content#{@userfile.file_extension}" %>
 <% end %>

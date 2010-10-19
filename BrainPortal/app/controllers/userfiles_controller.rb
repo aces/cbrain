@@ -203,11 +203,6 @@ class UserfilesController < ApplicationController
     state = @userfile.local_sync_status
     @sync_status = state.status if state
     @default_viewer = @userfile.viewers.first
-    
-    if @default_viewer.blank? && File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/_#{@userfile.class.name.underscore}.html.erb")
-      partial = @userfile.class.name.underscore
-      @default_viewer = Userfile::Viewer.new :name => partial.humanize, :partial  => partial
-    end
 
     @log  = @userfile.getlog rescue nil
   end

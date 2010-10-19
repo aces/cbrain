@@ -50,7 +50,7 @@
           %>
           <hr>
           Update File Type: <%= select_tag :file_type, grouped_options_for_select([["Files", SingleFile.valid_file_types.map{|c| [c, c]}], ["Collections", FileCollection.valid_file_types.map{|c| [c, c]}] ]) %>
-          <%= hijacker_submit_button("Update File Type", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+          <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
       <% end %>
 
       <% button_with_dropdown_menu("Move/Copy")  do %>

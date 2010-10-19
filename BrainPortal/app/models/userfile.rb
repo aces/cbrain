@@ -92,8 +92,8 @@ class Userfile < ActiveRecord::Base
       cb_error "Unknown viewer option: '#{atts.keys.first}'." unless atts.empty?
 
       @conditions = []
-      @name       = name      || partial.to_s.clone
-      @partial    = partial   || name.to_s.clone   
+      @name       = name      || partial.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2')
+      @partial    = partial   || name.to_s.gsub(/\s+/, "").underscore 
       att_if = [ att_if ] unless att_if.is_a?(Array)
       att_if.each do |method|
         cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)

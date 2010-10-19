@@ -21,7 +21,7 @@
       <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Format:</th>
+      <th class="right_align">Type:</th>
       <td colspan="2">
         <%= select_tag "file_type", options_for_select(@userfile.valid_file_types.map{ |c| [c, c]  }, @userfile.class.name) %>
       </td>

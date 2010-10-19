@@ -12,6 +12,8 @@ class ImageFile < SingleFile
 
   Revision_info="$Id$"
   
+  has_viewer :partial  => "image_file", :if  => :is_locally_synced?
+  
   def self.file_name_pattern
     /\.(jpe?g|gif|png)$/i
   end
