@@ -6,51 +6,45 @@
 </script>
 
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
+
 <% if current_user.has_role?(:admin) %>
-
   <div class="display_cell">
+    <div class="generalbox_account_info">
+        <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
 
-      <div class="generalbox_account_info">
-
-       <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
-
-       
-      <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
-      </p>
+        <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
       <% if @active_users %>
         <p>
         <strong>Users currently online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
         </p>
         <p><strong>Recent activity:</strong></p>
         <% Session.recent_activity.each do |entry| %>
-        <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
+          <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
         <% end %>
-        <% end %>
-        <br>
+      <% end %>
+      <br>
         There are currently <%= Session.count %> entries in the sessions table.<br>
-        <% form_tag home_path do %>
-          Clear sessions older than <%= select_tag :clear_sessions, options_for_select(@offset_times) %>
+      <% form_tag home_path do %>
+        Clear sessions older than <%= select_tag :clear_sessions, options_for_select(@offset_times) %>
         <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
-        <% end %>
-        <br>
-          <% form_tag home_path do %>
-            <% if BrainPortal.current_resource.portal_locked? %>
+      <% end %>
+      <br>
+      <% form_tag home_path do %>
+        <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
               <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
-            <% else %>
+        <% else %>
               <%= hidden_field_tag :lock_portal, "lock" %>
               <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
-            <% end %>
-          <% end %>  
+        <% end %>
+      <% end %>  
+    </div>
+  </div>
 <% end %>
-</div>
-</div>
 
 <div class="display_cell">
   <div class="generalbox_account_info">
-    
-  <h1><%= link_to "Account Info", user_path(current_user) %></h1>
-    
+  <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
     <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
     </p>
@@ -68,25 +62,21 @@
        <strong>Projects you belong to:</strong>  <%= @groups.map { |g| link_to_group_if_accessible(g) }.join(", ") %>
     </p>
     <p>
-       <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
+      <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
     </p>
     <p>
-    <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
+      <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
     </p>
     <p>
       <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
-    </p>
-    
-</div>
+    </p>  
+  </div>
 </div>
 
 <div class="display_cell">
-
-    <div class="generalbox_account_info">
-
-    <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
-
-    <div class="task_summary">
+  <div class="generalbox_account_info">
+  <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
+   <div class="task_summary">
      <div class="task_summary_count">
        <%= @tasks_by_status[:completed].size %> Completed tasks: 
      </div>
@@ -94,48 +84,48 @@
        <table class="task_summary_table">
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-           <tr>
-             <td><%= link_to_task_if_accessible(task) %></td>
-             <td><%= to_localtime(task.updated_at,:datetime) %></td>
-           </tr>
+            <tr>
+              <td><%= link_to_task_if_accessible(task) %></td>
+              <td><%= to_localtime(task.updated_at,:datetime) %></td>
+            </tr>
          <% end %>
        </table>
      <% end %>
    </div>
 
    <div class="task_summary">
-     <div class="task_summary_count">
+    <div class="task_summary_count">
        <%= @tasks_by_status[:running].size %> Running tasks: 
-     </div>
-     <% unless @tasks_by_status[:running].blank? %>
-       <table class="task_summary_table">
-         <tr><th colspan="2">Recent Activity</th></tr>
-         <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-           <tr>
-             <td><%= link_to_task_if_accessible(task) %></td>
-             <td><%= to_localtime(task.updated_at,:datetime) %></td>
-           </tr>
-         <% end %>
-       </table>
-     <% end %>
+    </div>
+    <% unless @tasks_by_status[:running].blank? %>
+     <table class="task_summary_table">
+       <tr><th colspan="2">Recent Activity</th></tr>
+       <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
+       <tr>
+       <td><%= link_to_task_if_accessible(task) %></td>
+       <td><%= to_localtime(task.updated_at,:datetime) %></td>
+       </tr>
+      <% end %>
+    </table>
+    <% end %>
    </div>
 
    <div class="task_summary">
      <div class="task_summary_count">
-       <%= @tasks_by_status[:failed].size %> Failed tasks: 
+      <%= @tasks_by_status[:failed].size %> Failed tasks: 
      </div>
      <% unless @tasks_by_status[:failed].blank? %>
-       <table class="task_summary_table">
+     <table class="task_summary_table">
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-           <tr>
-             <td><%= link_to_task_if_accessible(task) %></td>
-             <td><%= to_localtime(task.updated_at,:datetime) %></td>
-           </tr>
+          <tr>
+          <td><%= link_to_task_if_accessible(task) %></td>
+          <td><%= to_localtime(task.updated_at,:datetime) %></td>
+          </tr>
          <% end %>
-       </table>
+     </table>
      <% end %>
-     </div>
-</div>
+   </div>
+  </div>
 </div>
 
