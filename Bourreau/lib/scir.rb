@@ -88,7 +88,7 @@ puts "\e[1;37;42mCREATED SCIR SESSION for #{subclass} in #{self.class}=#{self.ob
   # subclassname::JobTemplate, as defined in +subclassname+.
   def self.job_template_builder(subclassname,*args)
     subclass = Class.const_get(subclassname.to_s) rescue Object
-    raise "Invalid subclass name #{subclass}" unless subclass < Scir::JobTemplate
+    raise "Invalid subclass name #{subclass}" unless subclass < self
     job = subclass.const_get("JobTemplate").new(*args)
     job
   end
