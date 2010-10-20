@@ -62,7 +62,12 @@
        <strong>Projects you belong to:</strong>  <%= @groups.map { |g| link_to_group_if_accessible(g) }.join(", ") %>
     </p>
     <p>
-      <strong>Tools available to you:</strong> <%= h(current_user.available_tools.map(&:name).sort.join(", ")) %>
+      <strong>Tools available to you:</strong><br/>
+      <% tools = current_user.available_tools.map(&:name).sort %>
+      <% tools.each_with_index do |name,i| %>
+        <%= h(name) %><%= "," unless i == tools.size - 1 %>
+        <%= "<br/>" if i % 5 == 4 %>
+      <% end %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
@@ -85,8 +90,8 @@
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
             <tr>
-              <td><%= link_to_task_if_accessible(task) %></td>
-              <td><%= to_localtime(task.updated_at,:datetime) %></td>
+              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
             </tr>
          <% end %>
        </table>
@@ -102,8 +107,8 @@
        <tr><th colspan="2">Recent Activity</th></tr>
        <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
        <tr>
-       <td><%= link_to_task_if_accessible(task) %></td>
-       <td><%= to_localtime(task.updated_at,:datetime) %></td>
+       <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+       <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
        </tr>
       <% end %>
     </table>
@@ -119,8 +124,8 @@
          <tr><th colspan="2">Recent Activity</th></tr>
          <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
           <tr>
-          <td><%= link_to_task_if_accessible(task) %></td>
-          <td><%= to_localtime(task.updated_at,:datetime) %></td>
+          <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+          <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
           </tr>
          <% end %>
      </table>

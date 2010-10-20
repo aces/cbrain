@@ -114,12 +114,19 @@ class CbrainTask < ActiveRecord::Base
   end
 
   # Returns a longer name for the task (without the Cbrain prefix stuff)
+  # that includes the task's Bourreau name.
+  # Example: 'Civet@MyBourreau'
+  def name_and_bourreau
+    mybourreau = self.bourreau.name rescue "(Unknown)"
+    "#{self.name}@#{mybourreau}"
+  end
+
+  # Returns a longer name for the task (without the Cbrain prefix stuff)
   # that includes the task's Bourreau name and ID.
   # Example: 'Civet@MyBourreau/23'
   def fullname
-    mybourreau = self.bourreau.name rescue "(Unknown)"
-    myid       = self.id            ||     "(NoId)"
-    "#{self.name}@#{mybourreau}/#{myid}"
+    myid = self.id || "(NoId)"
+    "#{self.name_and_bourreau}/#{myid}"
   end
 
   # Returns the Tool object associated with the task.
