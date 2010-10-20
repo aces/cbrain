@@ -139,7 +139,7 @@ class CbrainSystemChecks < CbrainChecker
   def self.a080_ensure_set_starttime_revision
 
     # Global for the whole Rails process
-    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
+    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.lc_rev
 
     #-----------------------------------------------------------------------------
     puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
