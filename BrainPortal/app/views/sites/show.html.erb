@@ -4,19 +4,37 @@
 <div class="menu_bar menu_bar_left">
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>    
 </div>
-    
-<P>
 
-<div class="groupentry">   
-  <strong>Managers:</strong>                   <%= @site.managers.collect(&:login).join(", ") %><br>
-  <strong>Number of users:</strong>            <%= @site.users.count %><br>
-  <strong>Number of groups:</strong>           <%= @site.groups.count %><br>
-  <strong>Number of files:</strong>            <%= @site.userfiles_find_all.count %><br>
-  <strong>Number of data providers:</strong>   <%= @site.data_providers_find_all.count %><br>
-  <strong>Number of remote resources:</strong> <%= @site.remote_resources_find_all.count %><br>
-</div>
+<br>
 
-<P>
+<table class="property_list show_file_table">
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Managers:</th>
+     <td><%= @site.managers.collect(&:login).join(", ") %></td>
+   </tr>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Number of users:</th>
+     <td><%= @site.users.count %></td>
+   </tr>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Number of groups:</th>
+     <td><%= @site.groups.count %></td>
+   </tr>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Number of files:</th>
+     <td><%= @site.userfiles_find_all.count %></td>
+   </tr>  
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Number of data providers:</th>
+     <td><%= @site.data_providers_find_all.count %></td>
+   </tr>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Number of remote resources:</th>
+     <td><%= @site.remote_resources_find_all.count %></td>
+   </tr>
+</table>
+
+<br>
 
 <table class="resource_list">
   <tr>

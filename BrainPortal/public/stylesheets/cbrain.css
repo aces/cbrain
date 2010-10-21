@@ -1141,6 +1141,24 @@ pre {
 }
 
 
+/* % ######################################################### */
+/* % Show and Edit Pages*/
+/* % ######################################################### */
+
+.show_file_table {
+    clear: both;
+    margin-right: auto;
+    margin-left: 0px;
+    width: auto;
+}
+
+.show_file_table td {
+    text-align: left;
+}
+
+.show_file_table th {
+    width: auto;
+}
 
 /* % ######################################################### */
 /* % Userfiles Show and Edit */
