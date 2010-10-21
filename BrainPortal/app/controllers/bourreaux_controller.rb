@@ -281,8 +281,9 @@ class BourreauxController < ApplicationController
     end
 
     @bourreau.stop
-    @bourreau.ssh_master.stop
     @bourreau.addlog("Rails application stopped.")
+    @bourreau.online = false
+    @bourreau.save
     flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped."
     redirect_to :action => :index
 

@@ -290,9 +290,10 @@ class ClusterTask < CbrainTask
   end
 
   def we_are_in_workdir #:nodoc:
-    return false if self.cluster_workdir.blank?
+    full = self.full_cluster_workdir
+    return false if full.blank?
     cur_dir = Dir.getwd
-    Dir.chdir(self.cluster_workdir) do  # We need to do this in case the workdir goes through symlinks...
+    Dir.chdir(full) do  # We need to do this in case the workdir goes through symlinks...
       return false if cur_dir != Dir.getwd
     end
     true
@@ -419,7 +420,7 @@ class ClusterTask < CbrainTask
       self.record_cbraintask_revs
       self.make_cluster_workdir
       self.apply_tool_config_environment
-      Dir.chdir(self.cluster_workdir) do
+      Dir.chdir(self.full_cluster_workdir) do
         if ! self.setup  # as defined by subclass
           self.addlog("Failed to setup: 'false' returned by setup().")
           self.status = "Failed To Setup"
@@ -456,7 +457,7 @@ class ClusterTask < CbrainTask
       self.record_cbraintask_revs
       self.apply_tool_config_environment
       saveok = false
-      Dir.chdir(self.cluster_workdir) do
+      Dir.chdir(self.full_cluster_workdir) do
         # Call the subclass-provided save_results()
         saveok = self.save_results
       end
@@ -758,8 +759,9 @@ class ClusterTask < CbrainTask
 
   # All object destruction also implies termination!
   def before_destroy #:nodoc:
-    self.terminate
+    self.terminate rescue true
     self.remove_cluster_workdir
+    true
   end
 
 
@@ -780,8 +782,8 @@ class ClusterTask < CbrainTask
   # created, or no longer exists. The file itself is not
   # garanteed to exist, either.
   def stdout_cluster_filename(run_number=nil)
-    workdir = self.cluster_workdir
-    return nil unless workdir
+    workdir = self.full_cluster_workdir
+    return nil if workdir.blank?
     if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
       "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
     else
@@ -794,8 +796,8 @@ class ClusterTask < CbrainTask
   # created, or no longer exists. The file itself is not
   # garanteed to exist, either.
   def stderr_cluster_filename(run_number=nil)
-    workdir = self.cluster_workdir
-    return nil unless workdir
+    workdir = self.full_cluster_workdir
+    return nil if workdir.blank?
     if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
       "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
     else
@@ -817,7 +819,7 @@ class ClusterTask < CbrainTask
      return if self.new_record?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
-     scriptfile = Pathname.new(self.cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
+     scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
         io = IO.popen("tail -1000 #{stdoutfile}","r")
         self.cluster_stdout = io.read
@@ -937,7 +939,7 @@ class ClusterTask < CbrainTask
 
     name     = self.name
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
-    workdir  = self.cluster_workdir
+    workdir  = self.full_cluster_workdir
 
     # Special case of RUBY-only jobs (jobs that have no cluster-side).
     # In this case, only the 'Setting Up' and 'Post Processing' states
@@ -1030,18 +1032,6 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
   # Cluster Job Shared Work Directory Methods
   ##################################################################
 
-  # Returns the directory configured as the tasks' 'work' directory root
-  # for the current Rails application, as stored in the RemoteResource
-  # object that represents it.
-  def self.cluster_sharedir
-    return @sharedir if @sharedir
-    @sharedir = RemoteResource.current_resource.cms_shared_dir
-    cb_error "No cluster share directory configured for this Bourreau?" if @sharedir.blank?
-    cb_error "Cluster share directory is not accessible?" unless
-      File.directory?(@sharedir) && File.readable?(@sharedir) && File.writable?(@sharedir)
-    @sharedir
-  end
-
   # Create the directory in which to run the job.
   # If the task contains the ID of another task in
   # the attribute :share_wd_tid, then that other
@@ -1051,7 +1041,8 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     # Test to see if it already exists; if so, use it.
     current = self.cluster_workdir
     if ! current.blank?
-      return true if File.directory?(current)
+      full = self.full_cluster_workdir
+      return true if File.directory?(full)
       self.cluster_workdir = nil # nihilate it
     end
 
@@ -1060,10 +1051,10 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     if ! otask_id.blank?
       otask = CbrainTask.find(otask_id)
       cb_error "Cannot use the work directory of a task that belong to another Bourreau." if otask.bourreau_id != self.bourreau_id
-      owd   = otask.cluster_workdir
+      owd   = otask.full_cluster_workdir
       cb_error "Cannot find the work directory of other task '#{otask_id}'."      if owd.blank?
       cb_error "The work directory '#{owd} of task '#{otask_id}' does not exist." unless File.directory?(owd)
-      self.cluster_workdir = owd
+      self.cluster_workdir = File.basename(owd)
       self.addlog("Using workdir '#{owd}' of task '#{otask.bname_tid}'.")
       return
     end
@@ -1071,22 +1062,25 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     # Create our own work directory
     name = self.name
     user = self.user.login
-    gridshared = self.class.cluster_sharedir
-    self.cluster_workdir = (gridshared + "/" + "#{user}-#{name}-P" + Process.pid.to_s + "-I" + self.id.to_s)
-    self.addlog("Trying to create workdir '#{self.cluster_workdir}'.")
-    Dir.mkdir(self.cluster_workdir,0700) unless File.directory?(self.cluster_workdir)
+    basedir = "#{user}-#{name}-P#{Process.pid}-I#{self.id}"
+    self.cluster_workdir = basedir # new convention is just the basename.
+    fulldir = self.full_cluster_workdir # builds using the basename and the bourreau's cms_shared_dir
+    self.addlog("Trying to create workdir '#{fulldir}'.")
+    Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
 
     true
   end
 
   # Remove the directory created to run the job.
   def remove_cluster_workdir
-    unless self.cluster_workdir.blank?
-      self.addlog("Removing workdir '#{self.cluster_workdir}'.")
-      FileUtils.remove_dir(self.cluster_workdir, true)
-      #system("/bin/rm -rf \"#{self.cluster_workdir}\" >/dev/null 2>/dev/null")
-      self.cluster_workdir = nil
-    end
+    cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+    full=self.full_cluster_workdir
+    return if full.blank?
+    self.addlog("Removing workdir '#{full}'.")
+    FileUtils.remove_dir(full, true) rescue true
+    self.cluster_workdir = nil
+    true
   end
 
 end

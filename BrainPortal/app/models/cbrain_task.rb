@@ -142,6 +142,29 @@ class CbrainTask < ActiveRecord::Base
     ["batch"]
   end
 
+  # This method returns the full path of the task's work directory;
+  # the old convention was to store the full path in the
+  # :cluster_workdir, while the new one is to store just the basename
+  # and use the task's Bourreau's :cms_shared_dir attribute for the
+  # rest.
+  def full_cluster_workdir
+    attval = self.cluster_workdir
+    return attval if attval.blank? || attval =~ /^\// # already full path?
+    shared_dir = self.cluster_shared_dir # from its bourreau's cms_shared_dir
+    return shared_dir + "/" + attval
+  end
+
+  # Returns the task's bourreau's cms_shared_dir (which might not be
+  # a valid path on the current host). Raises an exception if it's
+  # not defined!
+  def cluster_shared_dir
+    mybourreau = self.bourreau
+    cb_error "No Bourreau associated with this task." unless mybourreau
+    shared_dir = mybourreau.cms_shared_dir
+    cb_error "Cluster shared work directory not defined for Bourreau '#{self.bourreau.name}'." if shared_dir.blank?
+    shared_dir
+  end
+    
 
 
   ##################################################################

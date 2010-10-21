@@ -168,7 +168,7 @@ class BourreauWorker < Worker
         task.addlog_context(self,"Attempting to run recovery method '#{recover_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrecover = Dir.chdir(task.cluster_workdir) do
+          canrecover = Dir.chdir(task.full_cluster_workdir) do
             task.send(recover_method)  # custom recovery method written by task programmer
           end
         rescue => ex
@@ -185,7 +185,7 @@ class BourreauWorker < Worker
           task.addlog("Successful recovery from '#{fromwhat}' failure, now we retry it.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
-              Dir.chdir(task.cluster_workdir) do
+              Dir.chdir(task.full_cluster_workdir) do
                 task.instance_eval { submit_cluster_job } # will set status to 'Queued' or 'Data Ready'
                 # Line above: the eval is needed because it's a protected method, and I want to keep it so.
               end
@@ -214,7 +214,7 @@ class BourreauWorker < Worker
         task.addlog_context(self,"Attempting to run restart method '#{restart_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrestart = Dir.chdir(task.cluster_workdir) do
+          canrestart = Dir.chdir(task.full_cluster_workdir) do
             task.send(restart_method)  # custom restart preparation method written by task programmer
           end
         rescue => ex
@@ -230,7 +230,7 @@ class BourreauWorker < Worker
           task.addlog("This task's Run Number was increased to '#{task.run_number}'.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
-              Dir.chdir(task.cluster_workdir) do
+              Dir.chdir(task.full_cluster_workdir) do
                 task.instance_eval { submit_cluster_job } # will set status to 'Queued' or 'Data Ready'
                 # Line above: the eval is needed because it's a protected method, and I want to keep it so.
               end
