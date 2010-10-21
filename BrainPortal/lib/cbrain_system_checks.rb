@@ -78,11 +78,13 @@ class CbrainSystemChecks < CbrainChecker
     myself = RemoteResource.current_resource
     my_time_zone = myself.time_zone
 
-    if my_time_zone.blank? 
-      puts "C> \t- Warning: time zone not set for this Rails app, setting it to UTC."
+    if my_time_zone.blank? || ActiveSupport::TimeZone[my_time_zone].blank?
+      puts "C> \t- Warning: time zone not set properly for this Rails app, setting it to UTC."
       my_time_zone = 'UTC'
       myself.time_zone = my_time_zone
       myself.save
+    else
+      puts "C> \t- Time zone set to '#{my_time_zone}'."
     end
 
     Rails.configuration.time_zone = my_time_zone

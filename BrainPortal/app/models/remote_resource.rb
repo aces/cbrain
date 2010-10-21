@@ -70,7 +70,6 @@ class RemoteResource < ActiveRecord::Base
 
 
 
-
   ############################################################################
   # Pseudo-attributes Access
   ############################################################################
@@ -485,12 +484,6 @@ class RemoteResource < ActiveRecord::Base
       :starttime_revision => $CBRAIN_StartTime_Revision
 
     )
-
-    # Cache the time zone name in the current resource.
-    if ! time_zone_name.blank? && (myself.time_zone.blank? || myself.time_zone != time_zone_name)
-      myself.time_zone = time_zone_name
-      myself.save
-    end
 
     return info
   end

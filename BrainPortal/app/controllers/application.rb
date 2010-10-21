@@ -26,6 +26,7 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :set_session, :only  => :index
   before_filter :password_reset
+  before_filter :adjust_system_time_zone
   around_filter :catch_cbrain_message, :activate_user_time_zone
     
   # See ActionController::RequestForgeryProtection for details
@@ -40,15 +41,35 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # This method adjust the Rails app's time zone in the rare
+  # cases where the admin has changed it in the DB using the
+  # interface.
+  def adjust_system_time_zone
+    myself = RemoteResource.current_resource
+    syszone = myself.time_zone
+    return true unless syszone && ActiveSupport::TimeZone[syszone]
+    if Time.zone.blank? || Time.zone.name != syszone
+      puts "\e[1;33;41mRESETTING TIME ZONE FROM #{Time.zone.name rescue "unset"} to #{syszone}.\e[0m"
+      Rails.configuration.time_zone = syszone
+      Rails::Initializer.new(Rails.configuration).initialize_time_zone
+    #else
+    #  testtime = Userfile.first.created_at
+    #  puts "\e[1;33;41mTIME ZONE STAYS SAME: #{syszone} TEST: #{testtime}\e[0m"
+    end
+    true
+  end
+
   # This method wraps ALL other controller methods
   # into a sandbox where the value for Time.zone is
   # temporarily switched to the current user's time zone,
   # if it is defined. Otherwise, the Rails application's
-  # time zone as defined in config.environment.rb is used.
+  # time zone is used.
   def activate_user_time_zone #:nodoc:
-    if current_user && ! current_user.time_zone.blank? && ActiveSupport::TimeZone[current_user.time_zone]
-      Time.use_zone(ActiveSupport::TimeZone[current_user.time_zone]) { yield }
-    else
+    return yield unless current_user # nothing to do if no user logged in
+    userzone = current_user.time_zone
+    return yield unless userzone && ActiveSupport::TimeZone[userzone] # nothing to do if no user zone or zone is incorrent
+    return yield if Time.zone && Time.zone.name == userzone # nothing to do if user's zone is same as system's
+    Time.use_zone(ActiveSupport::TimeZone[userzone]) do
       yield
     end
   end

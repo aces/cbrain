@@ -23,6 +23,15 @@
       <p><label for="online">Status</label><br/>
       <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
 
+      <span title="Time zone where this server is located.">
+        <p><label for="time_zone">Time Zone</label><br/>
+        <%= f.time_zone_select :time_zone, 
+            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+              :include_blank => true }
+        %></p>
+      </span>
+
       <% if is_bourreau %>
 
       <p><label>ActiveResource Configuration</label><p/>
