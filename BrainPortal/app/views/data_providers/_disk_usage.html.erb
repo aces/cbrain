@@ -6,147 +6,134 @@
 
 <% ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
 
+  <% if @report_dps_all.size > 0 && @report_users_all.size > 0 %>
+
   <h3>Disk Usage Statistics for Data Providers</h3>
  
   <table>
 
     <tr>
       <th ROWSPAN="2"></th>
-      <th COLSPAN="<%= @report_dps.size + (@report_dps.size > 1 ? 1 : 0) %>">Data Providers</th>
+      <th COLSPAN="<%= @report_dps_all.size %>">Data Providers</th>
     </tr>
 
     <tr>
-      <% counter = 0 %>
-      <% @report_col_objects.each do |col| %>
-        <% if counter <= @report_dps.size %>
-          <th><%= h(col.is_a?(String) ? col : col.name) %></th>
-        <% end %>
-        <% counter += 1 %>
+      <% @report_dps_all.each do |col| %>
+        <th><%= h(col.is_a?(String) ? col : col.name) %></th>
       <% end %>
     </tr>
       
-    <% @report_row_objects.each do |row| %>
+    <% @report_users_all.each do |row| %>
       <tr>
           <th><%= h(row.is_a?(String) ? row : row.login) %></th>
           
-          <% counter = 0 %>
-          <% @report_col_objects.each do |col| %>
-            <% break if counter > @report_dps.size %>
-            <% counter += 1  %>
+          <% @report_dps_all.each do |col| %>
 
             <% cell = @report_stats[row] ? @report_stats[row][col] : nil %>
-            <% if cell %>
-              <% cellcolor = if cell[:size]    >= 10_000_000_000 # 10 gig
-                                "#ff4444"
-                             elsif cell[:size] >=  1_000_000_000 # 1 gig
-                                "#ff8888"
-                             elsif cell[:size] >=    100_000_000 # 100 megs
-                                "#ffcccc"
-                             elsif cell[:size] >=     10_000_000 # 10 megs
-                                "#ffffcc"
-                             else
-                                "#ffffff"
-                             end
-              %>
-              <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
-                  <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
-                  <% if cell[:unknowns] > 0 %>
-                     <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
-                  <% end %>
-                  
-              </td>
-            <% else %>
+
+            <% if ! cell %>
               <td bgcolor="#cccccc"></td>
-            <% end %>    <% # end if -%>
-            
+              <% next %>
+            <% end %>
+
+            <% cellcolor = if cell[:size]    >= 10_000_000_000 # 10 gig
+                              "#ff4444"
+                           elsif cell[:size] >=  1_000_000_000 # 1 gig
+                              "#ff8888"
+                           elsif cell[:size] >=    100_000_000 # 100 megs
+                              "#ffcccc"
+                           elsif cell[:size] >=     10_000_000 # 10 megs
+                              "#ffffcc"
+                           else
+                              "#ffffff"
+                           end
+            %>
+            <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
+                <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
+                <% if cell[:unknowns] > 0 %>
+                   <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
+                <% end %>
+            </td>
           <% end %>    <% # end column iteration -%>
+
       </tr>
     <% end %>    <% # end row iteration -%>
 
   </table>
    
+  <% end %>
+
   <!-- *********************************** -->
   <!-- Disk usage summary -->
   <!-- For Data Provider Caches -->
   <!-- *********************************** -->
    
+  <% if @report_rrs.size > 0 && @report_users_all.size > 0 %>
+
   <h3>Disk Usage Statistics for Data Provider Caches</h3>
    
   <table>
     <tr>
       <th ROWSPAN="2"></th>
-        <% if @report_rrs.size > 0 %>
-          <th COLSPAN="<%= @report_rrs.size %>">Data Provider Caches for Servers</th>
-        <% end %>
+      <th COLSPAN="<%= @report_rrs.size %>">Data Provider Caches for Servers</th>
     </tr>
 
     <tr>
-      <% counter = 0  %>
-      <% @report_col_objects.each do |col| %>
-          <% if counter > @report_dps.size %>
-            <th><%= h(col.is_a?(String) ? col : col.name) %></th>
-          <% end %>
-          <% counter += 1 %>
+      <% @report_rrs.each do |col| %>
+        <th><%= h(col.is_a?(String) ? col : col.name) %></th>
       <% end %>
     </tr>
       
-    <% @report_row_objects.each do |row| %>
+    <% @report_users_all.each do |row| %>
       <tr>
         <th><%= h(row.is_a?(String) ? row : row.login) %></th>
          
-          <% counter = 0 %>
-          <% @report_col_objects.each do |col| %>
+          <% @report_rrs.each do |col| %>
           
-            <% if counter > @report_dps.size %>
-            
             <% cell = @report_stats[row] ? @report_stats[row][col] : nil %>
-            <% if cell %>
-              <% cellcolor = if cell[:size]    > 10_000_000_000 # 10 gig
-                                "#ff4444"
-                             elsif cell[:size] >  1_000_000_000 # 1 gig
-                                "#ff8888"
-                             elsif cell[:size] >    100_000_000 # 100 megs
-                                "#ffcccc"
-                             elsif cell[:size] >     10_000_000 # 10 megs
-                                "#ffffcc"
-                             else
-                                "#ffffff"
-                             end
-              %>
-              <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
-                  <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
-                  <% if cell[:unknowns] > 0 %>
-                     <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
-                  <% end %>
-                  
-                  <% if @report_rrs.include?(col) && @report_users.include?(row) %>
-                  
-                     <% #Check box for cleaning the cache -%>
-                    <% if col.is_a?(Bourreau) || col.id == CBRAIN::SelfRemoteResourceId %>
-                      <BR><%= check_box_tag('clean_cache[]', "#{row.id},#{col.id}", false ) %>
-                    <% end %>
-                    <% end %>
-                  
-              </td>
-            <% else %>
+
+            <% if ! cell %>
               <td bgcolor="#cccccc"></td>
-            <% end %>    <% # end if cell -%>
-            <% end %>  <% # end if -%>
-            <% counter += 1 %>
-            
+              <% next %>
+            <% end %>
+
+            <% cellcolor = if cell[:size]    > 10_000_000_000 # 10 gig
+                              "#ff4444"
+                           elsif cell[:size] >  1_000_000_000 # 1 gig
+                              "#ff8888"
+                           elsif cell[:size] >    100_000_000 # 100 megs
+                              "#ffcccc"
+                           elsif cell[:size] >     10_000_000 # 10 megs
+                              "#ffffcc"
+                           else
+                              "#ffffff"
+                           end
+            %>
+            <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
+              <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
+              <% if cell[:unknowns] > 0 %>
+                <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
+              <% end %>
+                
+              <% #Check box for cleaning the cache -%>
+              <% if @report_rrs.include?(col) && @report_users.include?(row) %>
+                <BR><%= check_box_tag('clean_cache[]', "#{row.id},#{col.id}", false ) %>
+              <% end %>
+            </td>
+
           <% end %>    <% # end column iteration -%>
       </tr>
     <% end %>    <% # end row iteration -%>
 
-    <% if @report_rrs.size > 0 %>
-      <tr>
-        <th COLSPAN="<%= 1+@report_col_objects.size %>">
-          <%= submit_tag 'Cleanup Selected Caches' %>
-        </th>
-      </tr>
-    <% end %> <% #end if -%>
+    <tr>
+      <th COLSPAN="<%= 1+@report_rrs.size %>">
+        <%= submit_tag 'Cleanup Selected Caches' %>
+      </th>
+    </tr>
 
   </table>
+
+  <% end %>
    
   <%= hidden_field_tag "cleanup_before", @cache_older %>
 
