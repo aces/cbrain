@@ -118,6 +118,18 @@ class ClusterTask < CbrainTask
     true
   end
 
+  # This method can be redefined in a subclass;
+  # it will be called by the framework to query
+  # a task and get an estimate of how long the
+  # task will run. This is used when submitting the
+  # job on the cluster. The value returned by a
+  # CbrainTask should be conservative and be reasonably
+  # larger than the longest run expected, without being
+  # overly excessive. The default value used by
+  # the framework is 24.hours
+  def job_walltime_estimate
+    24.hours
+  end
 
 
   ##################################################################
@@ -992,13 +1004,14 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     scir_class   = self.scir_class
     scir_session = self.scir_session
     job          = Scir.job_template_builder(scir_class)
-    job.command = "/bin/bash"
-    job.arg     = [ qsubfile ]
-    job.stdout  = ":" + self.stdout_cluster_filename
-    job.stderr  = ":" + self.stderr_cluster_filename
-    job.join    = false
-    job.wd      = workdir
-    job.name    = name
+    job.command  = "/bin/bash"
+    job.arg      = [ qsubfile ]
+    job.stdout   = ":" + self.stdout_cluster_filename
+    job.stderr   = ":" + self.stderr_cluster_filename
+    job.join     = false
+    job.wd       = workdir
+    job.name     = name
+    job.walltime = self.job_walltime_estimate
 
     # Log version of Scir lib
     drm     = scir_class.drm_system

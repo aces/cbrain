@@ -135,6 +135,7 @@ class ScirMoab < Scir
       command += "-e #{shell_escape(self.stderr)} " if self.stderr
       command += "-j oe "                           if self.join
       command += " #{Scir.cbrain_config[:extra_qsub_args]} "     unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "-l walltime=#{self.walltime.to_i} " unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
 
       return command

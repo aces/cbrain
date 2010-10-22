@@ -74,6 +74,12 @@ class CbrainTask::Diagnostics < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    params        = self.params || {}
+    cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
+    2.minutes + cluster_delay.seconds
+  end
+
   # Creates a series of bash commands that will be run on the cluster.
   # The bash commands runs the 'wc' command on the SingleFiles given
   # in argument and the 'du' command on FileCollections. It also reports

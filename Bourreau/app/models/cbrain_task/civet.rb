@@ -149,6 +149,10 @@ class CbrainTask::Civet < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    7.hours # 4.5 normally
+  end
+
   def cluster_commands #:nodoc:
     params = self.params
     file0  = params[:file_args]["0"] # we require this single entry for info on the data files

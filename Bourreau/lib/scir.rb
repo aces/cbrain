@@ -174,7 +174,7 @@ puts "\e[1;37;42mCREATED SCIR SESSION for #{subclass} in #{self.class}=#{self.ob
   class JobTemplate
 
     # We only support a subset of DRMAA's job template
-    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue
+    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime
 
     def revision_info #:nodoc:
       Class.const_get(self.class.to_s.sub(/::JobTemplate/,"")).revision_info

@@ -38,6 +38,10 @@ class CbrainTask::Mincaverage < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    1.hours
+  end
+
   def cluster_commands #:nodoc:
     params       = self.params
     file_names  = Userfile.find(params[:interface_userfile_ids]).map(&:name).join(" ")

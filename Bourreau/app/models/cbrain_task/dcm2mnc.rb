@@ -42,6 +42,10 @@ class CbrainTask::Dcm2mnc < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    1.hours
+  end
+
   def cluster_commands #:nodoc:
     params       = self.params
     use_coord = params[:use_coordinates].blank? ? "" : "-usecoordinates"

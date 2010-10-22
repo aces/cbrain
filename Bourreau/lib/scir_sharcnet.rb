@@ -129,6 +129,7 @@ class ScirSharcnet < Scir
       command += "-o #{shell_escape(stdoutfile)} "  if stdoutfile
       command += "-e #{shell_escape(stderrfile)} "  if stderrfile && ! self.join && stderrfile != stdoutfile
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
+      command += "-r #{(self.walltime.to_i/60)+1} " unless self.walltime.blank?  # sqsub uses minutes
       command += " #{Scir.cbrain_config[:extra_qsub_args]} "     unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "/bin/bash #{shell_escape(self.arg[0])}"
       command += " 2>&1 " # they mix stdout and stderr !!! grrrrrr

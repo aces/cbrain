@@ -30,6 +30,10 @@ class CbrainTask::Nii2mnc < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    1.hours
+  end
+
   # See CbrainTask.txt
   def cluster_commands #:nodoc:
     params       = self.params

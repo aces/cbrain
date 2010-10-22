@@ -38,6 +38,10 @@ class CbrainTask::Mincmath < ClusterTask
     true
   end
 
+  def job_walltime_estimate #:nodoc:
+    1.hours
+  end
+
   def cluster_commands #:nodoc:
     params       = self.params
     out_name     = params[:out_name]
