@@ -38,7 +38,7 @@
   <%= f.text_field :select_menu_text %>
 </p>
 
-<% if @tool %>
+<% if @tool && !@tool.new_record? %>
 <p>
   Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
 </p>

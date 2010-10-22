@@ -1,3 +1,4 @@
+<% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user) %>
 
 <% ajax_form_for :tool, @tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 

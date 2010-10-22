@@ -20,7 +20,6 @@ class ToolsController < ApplicationController
   # GET /tools.xml
   def index #:nodoc:
     @tools     = current_user.available_tools.find(:all, :include  => [:bourreaux, :user, :group], :order  => "tools.name")
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     
     respond_to do |format|
       format.html # index.html.erb
