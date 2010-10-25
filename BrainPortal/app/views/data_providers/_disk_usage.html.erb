@@ -10,14 +10,10 @@
 
   <h3>Disk Usage Statistics for Data Providers</h3>
  
-  <table>
+  <table class="resource_list">
 
     <tr>
-      <th ROWSPAN="2"></th>
-      <th COLSPAN="<%= @report_dps_all.size %>">Data Providers</th>
-    </tr>
-
-    <tr>
+      <th></th>
       <% @report_dps_all.each do |col| %>
         <th><%= h(col.is_a?(String) ? col : col.name) %></th>
       <% end %>
@@ -72,21 +68,29 @@
 
   <h3>Disk Usage Statistics for Data Provider Caches</h3>
    
-  <table>
-    <tr>
-      <th ROWSPAN="2"></th>
-      <th COLSPAN="<%= @report_rrs.size %>">Data Provider Caches for Servers</th>
-    </tr>
+  <table class="resource_list">
 
     <tr>
+      <th></th>
       <% @report_rrs.each do |col| %>
-        <th><%= h(col.is_a?(String) ? col : col.name) %></th>
+        <th><% if col.is_a?(String) %>
+              <%= h(col) %>
+            <% else %>
+              <%= h(col.name) %>
+              <br/><small><%= col.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+            <% end %>
+        </th>
       <% end %>
     </tr>
       
     <% @report_users_all.each do |row| %>
       <tr>
-        <th><%= h(row.is_a?(String) ? row : row.login) %></th>
+        <th><%= h(row.is_a?(String) ? row : row.login) %>
+          <% # All servers checkbox -%>
+          <% if row.is_a?(User) %>
+            <BR><%= select_all_checkbox("clean_cache_users_#{row.id}") %>
+          <% end %>
+        </th>
          
           <% @report_rrs.each do |col| %>
           
@@ -115,9 +119,12 @@
                 <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
               <% end %>
                 
-              <% #Check box for cleaning the cache -%>
+              <% # Check box for cleaning the cache -%>
               <% if @report_rrs.include?(col) && @report_users.include?(row) %>
-                <BR><%= check_box_tag('clean_cache[]', "#{row.id},#{col.id}", false ) %>
+                <BR><%= check_box_tag('clean_cache[]', "#{row.id},#{col.id}", false, :class => "clean_cache_users_#{row.id} clean_cache_rrs_#{col.id}" ) %>
+              <% elsif @report_users_all[-1] == row && ! @report_users.include?(row) %>
+                <% # All users checkbox -%>
+                <BR><%= select_all_checkbox("clean_cache_rrs_#{col.id}") %>
               <% end %>
             </td>
 
