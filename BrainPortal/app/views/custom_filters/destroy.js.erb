@@ -1,0 +1,3 @@
+jQuery('#new_custom_filter').closest(".overlay_content").dialog("close").remove();
+<% @custom_filter = @custom_filter.class.new %>
+jQuery('#custom_filters_list').html(<%= html_for_js(render :partial  => "custom_filters/custom_filter_list") %>).trigger("new_content")

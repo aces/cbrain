@@ -1058,6 +1058,7 @@ pre {
 /* % ########################################################  */
 
 .sidebar {
+    white-space: nowrap;
     font-size: 0.9em;
     padding: 5px;
     margin-top: 5px;
@@ -1073,8 +1074,7 @@ pre {
 /* % ########################################################  */
 
 #page_display {
-    padding-left: 2em;
-    padding-top: 0.5em;
+    padding: 0 1em 1em 20px;
     text-align: left;
 }
 

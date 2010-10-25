@@ -1,0 +1,17 @@
+<h4>By Custom Filter</h4>
+
+<% overlay_content_link 'Create Custom Filter', :width => 500 do %>
+  <div id="new_custom_filter">
+    <%= render :partial  => "custom_filters/new" %>
+  </div>
+<% end  %>
+
+<ul class="filter_menu">
+  <%  @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+
+    <li id="custom_filter_<%= filter.id %>" class="custom_filter">
+      <%= render :partial => 'custom_filters/custom_filter_li', :locals  => {:filter  => filter} %>
+    </li>
+
+  <% end %>
+</ul>

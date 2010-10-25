@@ -1,0 +1,24 @@
+<% custom_filter ||= @custom_filter %>
+<% filter_type = custom_filter.class.name.underscore %>
+
+<h2>New Custom Filter</h2>
+
+<div class="generalbox">
+
+  <% ajax_form_for :custom_filter, custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
+    <%= hidden_field_tag :filter_class, filter_type %>
+    <%= f.error_messages %>
+
+    <p>
+      <strong>Filter name:</strong><br>
+      <%= f.text_field :name %>
+    </p>
+
+    <%= render :partial => "custom_filters/#{filter_type}" %>
+
+    <p>
+
+    <%= f.submit "Create" %>
+  <% end %>
+
+</div>  <!-- End class="generalbox" -->

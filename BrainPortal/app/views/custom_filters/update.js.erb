@@ -1,0 +1,7 @@
+<% if @custom_filter.errors.empty? %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#edit_custom_filter_<%= @custom_filter.id %>').closest(".overlay_content").dialog("close").remove();
+  jQuery('#custom_filter_<%= @custom_filter.id %>').html(<%= html_for_js(render :partial  => "custom_filters/custom_filter_li", :locals  => {:filter  => @custom_filter}) %>).trigger("new_content");
+<% else %>
+  jQuery('#edit_custom_filter_<%= @custom_filter.id %>').html(<%= html_for_js(render :partial  => "custom_filters/edit") %>);
+<% end %>

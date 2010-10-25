@@ -1,22 +1,57 @@
-
 <% title 'Tasks' %>
 
-<% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
+<div class="display_cell" id="tasks_div">
+  <% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
+      
+      <div class="menu_bar">
+      
+        <% button_with_dropdown_menu("Apply an Operation")  do %>
+            <%= select_tag( "operation", <<-"OPTIONS_FOR_TASKS"
+              <option value="">Operations on selected tasks:</option>
 
-  <div class="display_cell" id="tasks_div">
+              <optgroup label="Operations for queued tasks">
+              <option value="hold">Hold queued tasks</option>
+              <option value="release">Release held tasks</option>
 
-    <div id="pagination" class="pagination">
-      <%= render :partial => "pagination" %>
-    </div>
+              <optgroup label="Operations for running tasks">
+              <option value="suspend">Suspend running tasks</option>
+              <option value="resume">Resume suspended tasks</option>
 
-    <table class="resource_list" id="tasks_table">
-      <%= render :partial => "tasks/tasks_table" %>
-    </table>
+              <optgroup label="Operations for failed tasks">
+              <option value="recover">Trigger failure recovery code</option>
 
-  </div>
+              <optgroup label="Operations for completed tasks">
+              <option value="restart_setup">Restart tasks at "Setup" stage</option>
+              <option value="restart_cluster">Restart tasks at "Cluster" stage</option>
+              <option value="restart_postprocess">Restart tasks at "Post Processing" stage</option>
 
-  <div class="display_cell sidebar">
-    <%= render :partial => "tasks/sidebar" %>
-  </div> <!-- display cell -->
+              <optgroup label="Operations for all tasks">
+              <option value="duplicate">Duplicate selected tasks and start them anew</option>
+              <option value="terminate">Terminate selected tasks</option>
+              <option value="delete">Remove selected tasks</option>
+              OPTIONS_FOR_TASKS
 
-<% end %>  <!-- End form -->
+            ) %>
+
+            <br>
+
+            <%= submit_tag("Apply Operation") %>
+          
+        <% end %>
+
+      </div>
+      
+      <div id="pagination" class="pagination">
+        <%= render :partial => "pagination" %>
+      </div>
+
+      <table class="resource_list" id="tasks_table">
+        <%= render :partial => "tasks/tasks_table" %>
+      </table>
+
+  <% end %>  <!-- End form -->
+</div>
+
+<div class="display_cell sidebar">
+  <%= render :partial => "tasks/sidebar" %>
+</div> <!-- display cell -->

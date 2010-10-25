@@ -1,36 +1,36 @@
-
+<% custom_filter ||= @custom_filter %>
 <p>
    Task:<br>
    
-      <%= select :data, :type, PortalTask.send(:subclasses).map(&:to_s).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => @custom_filter.data["type"]  %>
+      <%= select :data, :type, PortalTask.send(:subclasses).map(&:to_s).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
    
 </p>
 <p>
    Description:<br>
    
-       <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => @custom_filter.data["description_type"]    %>
-       <%= text_field_tag "data[description_term]", @custom_filter.data["description_term"] %>
+       <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"]    %>
+       <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
      
 </p>
 <p>
    Creation Date:<br>
    
-       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => @custom_filter.data["created_date_type"]  %>
-       <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse(@custom_filter.data["created_date_term"] || Time.now.to_s) %>
+       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => custom_filter.data["created_date_type"]  %>
+       <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse(custom_filter.data["created_date_term"] || Time.now.to_s) %>
    
 </p>
 
 <p>
    Owner:<br>
    
-      <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["user_id"]  %>
+      <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => custom_filter.data["user_id"]  %>
    
 </p> 
 
 <p>
    Execution Server:<br>
    
-      <%= select :data, :bourreau_id, Bourreau.find_all_accessible_by_user(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => @custom_filter.data["bourreau_id"]  %>
+      <%= select :data, :bourreau_id, Bourreau.find_all_accessible_by_user(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => custom_filter.data["bourreau_id"]  %>
    
 </p>
 

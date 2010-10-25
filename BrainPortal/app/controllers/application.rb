@@ -121,9 +121,11 @@ class ApplicationController < ActionController::Base
     begin
       yield
     rescue ActiveRecord::RecordNotFound => e
+      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
     rescue ActionController::UnknownAction => e
+      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
       flash[:error] = "The page you requested does not exist."
       redirect_to default_redirect
     rescue CbrainException => cbm

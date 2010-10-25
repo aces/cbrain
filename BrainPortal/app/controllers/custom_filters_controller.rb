@@ -16,33 +16,17 @@ class CustomFiltersController < ApplicationController
   
   Revision_info="$Id$"
 
-  # GET /custom_filters/new
-  # GET /custom_filters/new.xml
-  def new #:nodoc:
-    filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
-    @custom_filter = filter_class.new
-
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @custom_filter }
-    end
-  end
-
-  # GET /custom_filters/1/edit
-  def edit #:nodoc:
-    @custom_filter = current_user.custom_filters.find(params[:id])
-  end
-
   # POST /custom_filters
   # POST /custom_filters.xml
   def create #:nodoc:
-    filter_class  = Class.const_get("#{params[:type]}_custom_filter".classify)
+    filter_class  = Class.const_get("#{params[:filter_class]}".classify)
     @custom_filter = filter_class.new(params[:custom_filter])
     @custom_filter.data.merge! params[:data]
     
     @custom_filter.user_id = current_user.id
     
     respond_to do |format|
+      format.js
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
         format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
@@ -64,6 +48,7 @@ class CustomFiltersController < ApplicationController
     @custom_filter.data.merge! params[:data]
     
     respond_to do |format|
+      format.js
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
         if @custom_filter.filtered_class_controller == "userfiles"    
@@ -96,6 +81,7 @@ class CustomFiltersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
+      format.js
       format.xml  { head :ok }
     end
   end

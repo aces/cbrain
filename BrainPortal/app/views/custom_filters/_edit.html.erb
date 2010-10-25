@@ -1,0 +1,23 @@
+<% custom_filter ||= @custom_filter %>
+<% filter_type = custom_filter.class.name.underscore %>
+
+<h2>Edit Custom Filter</h2>
+
+<div class="generalbox">
+
+  <% ajax_form_for :custom_filter, custom_filter, :url => {:controller  => "custom_filters", :action => "update", :id  => custom_filter.id }, :method  => :put, :datatype  => "script" do |f| %>
+    <%= f.error_messages %>
+
+    <p>
+      <strong>Filter name:</strong><br>
+      <%= f.text_field :name %>
+    </p>
+
+    <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => custom_filter}  %>
+
+    <p>
+
+    <%= f.submit "Update" %>
+  <% end %>
+
+</div>  <!-- End class="generalbox" -->
