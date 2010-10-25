@@ -56,6 +56,7 @@ class SshTunnel
   Debug                = false
   CONTROL_SOCKET_DIR_1 = "#{RAILS_ROOT}/tmp/sockets"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
+  SPAWN_WAIT_TIME      = 40
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master tunnel to a
@@ -260,7 +261,6 @@ class SshTunnel
       return true if @pid # so it's already running, eh.
     end
 
-
     # Start the SSH master in a sub-subprocess
     @pid = nil # will inherit value of 'subpid' below
     socket = self.control_path
@@ -276,16 +276,25 @@ class SshTunnel
       Kernel.exit!
     end
 
-    # Wait for it to be fully established (up to 10 seconds).
+    # Wait for it to be fully established (up to SPAWN_WAIT_TIME seconds).
     Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
-    10.times do
+    SPAWN_WAIT_TIME.times do
       break if File.exist?(socket) && File.exist?(pidfile)
       sleep 1
     end
-    self.read_pidfile
 
-    return @pid.blank? ? false : true
+    # OK, let's see if it started OK.
+    self.read_pidfile
+    return true if @pid
+
+    # Something went wrong, kill it if it exists.
+    pid = self.raw_read_pidfile
+    if pid
+      Process.kill("TERM",pid) rescue true
+    end
+
+    false
   end
 
   # Stop the master SSH connection, disabling all tunnels if
@@ -510,8 +519,10 @@ class SshTunnel
   # a legal PID number for a currently running SSH
   # master. If necessary, sets @pid with the PID
   # before returning it. Otherwise, makes sure
-  # @pid is reset to nil.
-  def read_pidfile #:nodoc:
+  # @pid is reset to nil. This method makes several
+  # checks, too: the socket must exist, the pidfile
+  # must exist.
+  def read_pidfile(options = {}) #:nodoc:
     socket  = self.control_path
     pidfile = self.pidfile_path
     unless File.exist?(socket) && File.exist?(pidfile)
@@ -519,16 +530,22 @@ class SshTunnel
       @pid = nil
       return nil
     end
-    # Unfortunately, this won't work when we have multiple instances of the Rails app.
-    #return @pid if @pid
+    @pid = self.raw_read_pidfile # can be nil if it's incorrect
+    @pid
+  end
+
+  # Just reads the pidfile and returns the numeric
+  # pid foudn there. Returns nil if it seems incorrect.
+  def raw_read_pidfile #:nodoc:
     begin
+      pidfile = self.pidfile_path
       line = nil
       File.open(pidfile,"r") { |fh| line = fh.read }
       return nil unless line && line.match(/^\d+/)
-      @pid = line.to_i
-      @pid = nil if @pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
-      @pid = nil unless self.process_ok?(@pid)
-      return @pid
+      pid = line.to_i
+      pid = nil if pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
+      pid = nil unless self.process_ok?(pid)
+      return pid
     rescue
       return nil
     end
