@@ -105,8 +105,8 @@ class UsersController < ApplicationController
     
     cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
     
-    params[:user][:group_ids] ||= []
-    params[:user][:group_ids] |= @user.groups.find(:all, :conditions  => {:type  => ["SystemGroup", "UserGroup", "SiteGroup"]} )  
+    params[:user][:group_ids] ||= WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
+    params[:user][:group_ids] |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
     
     if params[:user][:password]
       params[:user][:password_reset] = false
@@ -129,7 +129,7 @@ class UsersController < ApplicationController
         if current_user.has_role? :admin
           @groups = WorkGroup.find(:all)
         elsif current_user.has_role? :site_manager
-          @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+          @groups = WorkGroup.find(:all, :conditions  => {:site_id  => current_user.site_id})
         end
         format.html { render :action => "show" }
         format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }

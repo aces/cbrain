@@ -42,6 +42,7 @@
 
     <label for="groups">Projects</label>
     <table>
+      <%= hidden_field_tag "user[group_ids][]", [] %>
       <% for group in @groups %>
         <tr>
           <td class="left_align"><%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %></td>
