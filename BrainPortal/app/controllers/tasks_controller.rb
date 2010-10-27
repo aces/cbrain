@@ -72,11 +72,12 @@ class TasksController < ApplicationController
     if @filter_params["filters"]["bourreau_id"].blank?
       scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
     end
-
+    
+    @filter_params["sort"]["order"] ||= "cbrain_tasks.batch"
     sort_order = @filter_params["sort"]["order"]
     sort_dir   = @filter_params["sort"]["dir"]
     # Set sort order and make it persistent.
-    if !sort_order || sort_order == "cbrain_tasks.batch"
+    if sort_order == "cbrain_tasks.batch"
       sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
       sort_dir   = 'DESC'
     end
