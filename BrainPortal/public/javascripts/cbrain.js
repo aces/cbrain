@@ -468,13 +468,14 @@ jQuery(
    //Allows for the creation of form submit buttons that can highjack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
-   jQuery(".ajax_submit_button").live("click", function(){
+   jQuery(".hijacker_submit_button").live("click", function(){
      var button = jQuery(this);
      var commit = button.attr("value");
      var data_type = button.attr("data-datatype");
      var url = button.attr("data-url");
      var method = button.attr("data-method");
      var target = button.attr("data-target");
+     var ajax_submit = button.attr("data-ajax-submit");
      var other_options = {};
      if(button.attr("data-width")) other_options["width"] = button.attr("data-width");
      if(button.attr("data-height")) other_options["height"] = button.attr("data-height");
@@ -493,18 +494,23 @@ jQuery(
            return false;
          };
      }
-
-     enclosing_form.ajaxSubmit({
-       url: url,
-       type: method,
-       dataType: data_type,
-       success: function(data){
-         modify_target(data, target, other_options);
-       },
-       data: { commit : commit },
-       resetForm: false
-       }
-     );
+     if(ajax_submit != "false"){
+       enclosing_form.ajaxSubmit({
+         url: url,
+         type: method,
+         dataType: data_type,
+         success: function(data){
+           modify_target(data, target, other_options);
+         },
+         data: { commit : commit },
+         resetForm: false
+         }
+       );
+      }else{
+        enclosing_form.attr("action", url);
+        enclosing_form.attr("method", method);
+        enclosing_form.submit();
+      }
      return false;
    });
 

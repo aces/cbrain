@@ -678,14 +678,9 @@ class UserfilesController < ApplicationController
 
   #Dowload the selected files.
   def download
-    if request.format.to_sym == :js
-      render :text  => "window.location='#{url_for(:action  => :download, :file_ids  => params[:file_ids] )}'"
-      return
-    end
-    
-    filelist    = params[:file_ids] || []
-    
+    filelist           = params[:file_ids] || []
     specified_filename = params[:specified_filename]
+    
     if ! specified_filename.blank?
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."

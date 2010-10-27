@@ -163,11 +163,6 @@ class TasksController < ApplicationController
       params[:toolname]  = task
     end
     
-    if request.format.to_sym == :js
-      render :text  => "window.location='#{url_for(:controller  => :tasks, :action  => :new, :toolname  => params[:toolname], :bourreau_id  => params[:bourreau_id], :file_ids  => params[:file_ids] )}'"
-      return
-    end
-    
     # Brand new task object for the form
     @toolname         = params[:toolname]
     if @toolname.blank?

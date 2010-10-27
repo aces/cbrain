@@ -7,7 +7,7 @@
 
 <div class="display_cell" id="userfiles_menus_and_filelist">
 
-  <% form_tag(url_for(:controller => 'userfiles', :action => 'download'), :method => :post, "data-datatype"  => "script") do %>
+  <% multi_form_tag(:method => :post, "data-datatype"  => "script") do %>
 
   <div class="menu_bar">
     <span class="button_set">  
@@ -25,7 +25,7 @@
       <% button_with_dropdown_menu("Download") do %>
         Specify Download File Name (optional):
         <%= text_field_tag :specified_filename %>
-        <%= hijacker_submit_button("Download Files", :method  => :get) %>
+        <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :method  => :get) %>
       <% end %>
 
       <% button_with_dropdown_menu("Update Attributes") do %>

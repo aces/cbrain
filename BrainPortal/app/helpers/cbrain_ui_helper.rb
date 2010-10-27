@@ -635,19 +635,47 @@ module CbrainUiHelper
     form_for(record_or_name_or_array, *args, &proc)
   end
   
+  #A form that assumes it will be submitting to multiple locations
+  #and thus does not explicitly define its +action+ attribute.
+  #Assumes that all submit buttons will be created using
+  #+hijacker_submit_button+ with a +url+ defined.
+  def multi_form_tag(options = {}, *parameters_for_url, &block)
+    options[:class] ||= ""
+    options[:class] +=  " multi_form"
+    
+    data_type = options.delete(:datatype)
+    if data_type
+      options["data-datatype"] = data_type.to_s.downcase
+    end
+    
+    method = options[:method] #NOTE: not deleted, so it can still be used by rails
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
+    form_tag("#", options, *parameters_for_url, &block)
+  end
+  
   #A submit button that hijack the submission of the form in which it appears
   #by for example, sending to a different url, requesting a 
   #different data type, changing the http method, etc.
   #
   #
   #Options:
+  #[:url] url to submit to.
   #[:datatype] the datatype expected from the request (HTML, XML, script...).
   #[:method] HTTP method to use for the request.
   #[:target] selector for elements to update prior to or after the
   #         the request is sent.
   #[:confirm] Confirm message to display before sending the request.
+  #[:ajax_submit] Submit using ajax. Defaults to true.
   def hijacker_submit_button(name, options = {})
-    options_setup("ajax_submit_button", options)
+    options_setup("hijacker_submit_button", options)
+    
+    ajax_submit = options.delete(:ajax_submit)
+    unless ajax_submit.nil?
+      options["data-ajax-submit"] = ajax_submit.to_s
+    end
     
     submit_tag(name, options)
   end
