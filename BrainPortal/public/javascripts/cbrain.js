@@ -6,8 +6,8 @@ function modify_target(data, target, options){
   var new_content = jQuery(data);
   if(target){ 
     if(target == "__OVERLAY__"){
-      width = parseInt(options["width"] || 800);
-      height = parseInt(options["height"] || 500);
+      width = parseInt(options["width"]); // || 800);
+      height = parseInt(options["height"]); // || 500);
       jQuery("<div></div>").html(new_content).appendTo(jQuery("body")).dialog({
        	show: "puff",
        	modal: true,
@@ -578,9 +578,7 @@ jQuery(
          jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
          	show: "puff",
          	modal: true,
-   	      position: 'center',
-         	width: 800,
-         	height: 500,
+   	        position: 'center',
          	close: function(){
          	  jQuery(this).remove();
          	}

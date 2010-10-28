@@ -110,6 +110,7 @@
   <P>
   
   <% if current_user.tags %>
+    Tags for this file:<br>
     <select name="tag_ids[]" multiple="multiple" style="width:150px" >
         <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
     </select>
@@ -118,7 +119,8 @@
   <P>
 
   <% if @userfile.can_be_accessed_by?(current_user)  %>
-    <%= submit_tag "Update Fields" %>
+    <%= submit_tag "Update Fields", :class => "button" %>
+    <BR>
   <% end %>
 
 <% end %> <!-- form -->
@@ -128,12 +130,13 @@
     <P>
     
     <% if @sync_status =~ /^To/ %>
-      <p>This data is currently being synchronized.</p>
+      <p>The content of this data file is currently being synchronized.</p>
     <% elsif ! (@userfile.data_provider.not_syncable?) %>
-      <p>This data is not currently synchronized.<BR>
+      <p>The content of this data file is not currently synchronized.<BR>
       Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
       to start the synchronization process.<br>
-      This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+      This will allow you to view displayable content (if any)<% if @userfile.is_a?(FileCollection) %>
+      and extract files from this collection<% end %>.
       </p>
     <% end %>
 

@@ -111,7 +111,14 @@ h5 {
 
 .display_cell {
     display: table-cell;
-    
+}
+
+.display_block {  /* default for divs */
+    display: block;
+}
+
+.display_inline {  /* default for spans */
+    display: inline;
 }
 
 
@@ -416,6 +423,10 @@ h1.warning {
    text-align: right;
 }
 
+ .centered {
+   text-align: center;
+}
+
 .small {
   font-size: 0.8em;
 }
@@ -455,7 +466,7 @@ a {
 /* % ######################################################### */
 
 .generalbox {
-    float: left;    /* I don't think this is right; TOFIX */
+    display: table-cell;
     width: auto;
     margin-left: 1em;
     margin-right: 1em;
@@ -470,17 +481,6 @@ a {
 /* % ######################################################### */
 /* % General box layouts for account information */
 /* % ######################################################### */
-
-.generalbox_account_info {
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 1em;
-    padding: 1em;
-    background-color: #F6F6F6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #E4E4E4;
-}
 
 .notesbox {
     padding: 1em;

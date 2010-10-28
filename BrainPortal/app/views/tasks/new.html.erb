@@ -37,7 +37,7 @@
   :
 </h2>
 
-<div class="generalbox" style="float: none;">
+<div class="generalbox">
 <%= render :partial => "tasks/cbrain_task/#{@task.name.underscore}",
            :locals  => { :params  => @task.params, :form => form }
  %>
@@ -46,7 +46,9 @@
 
 
 <% unless @task.class.properties[:no_submit_button] %>
-  <center><%= submit_tag "Start #{@task.name}" %></center>
+  <P>
+  <%= submit_tag "Start #{@task.name}", :class => "button" %>
+  <BR>
 <% end %>
 
 <% end %>

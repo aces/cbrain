@@ -6,7 +6,7 @@
 <% end %>
 </b>
 <small><small>
-   <% overlay_content_link "Edit", :width => 500, :enclosing_element  => "span" do %>
+   <% overlay_content_link "Edit", :enclosing_element  => "span" do %>
       <div id="edit_custom_filter_<%= filter.id %>">
         <%= render :partial  => "custom_filters/edit", :locals  => {:custom_filter  => filter} %>
       </div>

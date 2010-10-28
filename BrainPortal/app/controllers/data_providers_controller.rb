@@ -45,17 +45,18 @@ class DataProvidersController < ApplicationController
     @ssh_keys = get_ssh_public_keys
 
     # Gather statistics
-    @user_sf_fc = {}
-    users = current_user.available_users
-    
-    users.each do |user|
-      user_id = user.id
-      login   = user.login
-      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => data_provider_id, :user_id => user_id })
-      sf = fc = 0
-      userfiles.each { |u| sf += 1 if u.is_a?(SingleFile) }
-      userfiles.each { |u| fc += 1 if u.is_a?(FileCollection) }
-      @user_sf_fc[login] = [ sf, fc ]
+    @user_fileclass_count = {}
+    @fileclasses_totcount = {}
+    current_user.available_users.each do |user|
+      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => data_provider_id, :user_id => user.id })
+      @user_fileclass_count[user] ||= {}
+      userfiles.each do |u|
+        klass = u.class.to_s
+        @fileclasses_totcount[klass]              ||= 0
+        @fileclasses_totcount[klass]               += 1
+        @user_fileclass_count[user][u.class.to_s] ||= 0
+        @user_fileclass_count[user][u.class.to_s]  += 1
+      end
     end
 
     respond_to do |format|
