@@ -250,7 +250,7 @@ class SshDataProvider < DataProvider
   # command running in the background (which will be started if
   # necessary).
   def ssh_shared_options
-    @master ||= SshTunnel.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master.ssh_shared_options("auto") # ControlMaster=auto
   end

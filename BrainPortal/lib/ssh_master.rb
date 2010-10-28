@@ -3,7 +3,8 @@
 # CBRAIN Project
 #
 # This class provides the functionality necessary to create,
-# destroy and manage SSH tunnels to other hosts.
+# destroy and manage persistent SSH master (control) connections
+# to other hosts.
 #
 # Original author: Pierre Rioux
 #
@@ -16,7 +17,10 @@ require 'sys/proctable'
 # = SSH Tunnel Utility Class 
 #
 # This class provides the functionality necessary to create,
-# destroy, and manage persistent SSH tunnels to other hosts.
+# destroy, and manage persistent SSH master (control) connections
+# to other hosts. Each master connection can be configured with
+# a set of tunnels.
+#
 # Tunnels are tied to a master, persistent SSH process running in
 # a subprocess; the master SSH process is controled using the
 # instance methods of this class, where each instance represent
@@ -32,13 +36,13 @@ require 'sys/proctable'
 # on port 8080 that we would like to access, even though this port
 # is not visible from here.
 #
-#    master = SshTunnel.new('john','my.example.com',22)
+#    master = SshMaster.new('john','my.example.com',22)
 #    master.add_tunnel(:forward,1234,'localhost',8080)
 #    master.start
 #    # Now we can connect to port 1234 locally and see the web server.
 #    # Later on, even if we have lost the variable 'master'
 #    # above, we can find it again to kill the tunnel:
-#    master = SshTunnel.find('john','my.example.com',22)
+#    master = SshMaster.find('john','my.example.com',22)
 #    master.stop
 #
 # The master SSH process uses connection sharing to improve
@@ -46,7 +50,7 @@ require 'sys/proctable'
 # domain sockets in /tmp; see also the ControlMaster and
 # ControlPath options in SSH's manual (in particular, for
 # the man page ssh_config, and for the '-o' option of 'ssh').
-class SshTunnel
+class SshMaster
 
   include Sys  # for ProcTable
 
@@ -59,57 +63,68 @@ class SshTunnel
   SPAWN_WAIT_TIME      = 40
 
   # This class method allows you to find out and fetch the
-  # instance object that represents a master tunnel to a
-  # remote host (there can only be a single tunnel for
+  # instance object that represents a master connection to a
+  # remote host (there can only be a single master for
   # each triplet [user,host,port] so we might as well remember
   # the objects in the class).
   def self.find(remote_user,remote_host,remote_port=22,category=nil)
     remote_port ||= 22
-    @@ssh_tunnels ||= {}
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
     key = "#{category}/#{key}" if category && category.to_s =~ /^\w+$/
-    @@ssh_tunnels[key]
+    ssh_masters = self.ssh_master_cache
+    ssh_masters[key]
+  end
+
+  def self.ssh_master_cache #:nodoc
+    #@@ssh_masters ||= {}
+    #@@ssh_masters
+    $cbrain_ssh_masters ||= {}  # rails reload the class every time so can't use @@ssh_masters
+    $cbrain_ssh_masters
+  end
+
+  def ssh_master_cache #:nodoc:
+    self.class.ssh_master_cache
   end
 
   # This method is like find() except that it will create
   # the necessary control object if necessary.
   def self.find_or_create(remote_user,remote_host,remote_port=22,category=nil)
     remote_port ||= 22
-    tunnelobj = self.find(remote_user,remote_host,remote_port,category) ||
+    masterobj = self.find(remote_user,remote_host,remote_port,category) ||
                 self.new( remote_user,remote_host,remote_port,category)
-    tunnelobj
+    masterobj
   end
 
   # Works like find, but expect a single key
   # in a format like "user@host:port".
   def self.find_by_key(key)
-    @@ssh_tunnels ||= {}
-    @@ssh_tunnels[key]
+    ssh_masters = self.ssh_master_cache
+    ssh_masters[key]
   end
 
   # Returns all the configured SSH connections (not all
   # of them may be alive).
   def self.all
-    @@ssh_tunnels ||= {}
-    @@ssh_tunnels.values
+    ssh_masters = self.ssh_master_cache
+    ssh_masters.values
   end
 
   # Returns an array containing all the keys for the currently
   # configued master SSH connections (not all of them
   # may be alive). Keys are strings like "user@host:port".
   def self.all_keys
-    @@ssh_tunnels ||= {}
-    @@ssh_tunnels.keys
+    ssh_masters = self.ssh_master_cache
+    ssh_masters.keys
   end
 
   def self.destroy_all #:nodoc:
-    @@ssh_tunnels ||= {}
-    @@ssh_tunnels.values.each { |tun| tun.destroy }
+    ssh_masters = self.ssh_master_cache
+    ssh_masters.values.each { |tun| tun.destroy }
   end
 
-  # Create a control object for a potential tunnel to
+  # Create a control object for a potential master to
   # host +host+, as user +user+ with SSH port +port+.
-  # The tunnel is not started. The object is registered
+  # The master is NOT started. The object is registered
   # in the class and can be found later using the
   # find() class method. This means that projects using
   # this library do not have to save the control object
@@ -125,13 +140,13 @@ class SshTunnel
       end
     end
 
-    raise "SSH tunnel's \"user\" is not a simple identifier." unless
+    raise "SSH master's \"user\" is not a simple identifier." unless
       remote_user =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
-    raise "SSH tunnel's \"host\" is not a simple host name." unless
+    raise "SSH master's \"host\" is not a simple host name." unless
       remote_host =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
-    raise "SSH tunnel's \"port\" is not a port number." unless
+    raise "SSH master's \"port\" is not a port number." unless
       remote_port.is_a?(Fixnum) && remote_port > 0 && remote_port < 65535
-    raise "SSH tunnel's \"category\" is not a simple identifer." unless
+    raise "SSH master's \"category\" is not a simple identifer." unless
       category.nil? || (category.is_a?(String) && category =~ /^\w+$/)
 
     @user     = remote_user
@@ -139,7 +154,7 @@ class SshTunnel
     @port     = remote_port
     @category = category
 
-    raise "This tunnel spec is already registered with the class." if
+    raise "This master spec is already registered with the class." if
       self.class.find(@user,@host,@port,@category)
 
     @pid             = nil
@@ -149,7 +164,9 @@ class SshTunnel
     # Register it
     @simple_key = @key = "#{@user}@#{@host}:#{@port}"
     @key = "#{@category}/#{@key}" if @category && @category.to_s =~ /^\w+$/
-    @@ssh_tunnels[@key] = self
+    ssh_masters = self.ssh_master_cache
+    ssh_masters[@key] = self
+    debugTrace("Registering SSH master: #{@key}")
 
     # Check to see if a process already manage the master
     self.read_pidfile
@@ -209,7 +226,7 @@ class SshTunnel
   def get_tunnels(direction)
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
-    return direction == :forward ? @forward_tunnels : @reverse_tunnels
+    return direction == :forward ? @forward_tunnels.dup : @reverse_tunnels.dup
   end
 
   # This is like get_tunnels, except the returned array
@@ -372,7 +389,7 @@ class SshTunnel
   end
 
   # Returns the ssh command's options to connect to
-  # the tunnel using the master control path.
+  # the the master control path.
   # By default, we do not return the 'ssh' command
   # itself but we do include the user and hostname.
   # A typical return value would be something like:
@@ -382,7 +399,8 @@ class SshTunnel
   # which allows you to add more options at the beginning
   # and the end of any ssh command being built. Note that
   # generally, if the master is active, the port, user
-  # and host are ignored completely.
+  # and host are ignored completely when re-using this
+  # string as part of another 'ssh' command.
   def ssh_shared_options(control_master="no")
     socket = self.control_path
     " -p #{@port}"                        +
@@ -467,7 +485,8 @@ class SshTunnel
   # really necessary.
   def destroy
     self.stop
-    @@ssh_tunnels.delete @key
+    ssh_masters = self.ssh_master_cache
+    ssh_masters.delete @key
     true
   end
 
@@ -569,8 +588,8 @@ class SshTunnel
   # Checks that the current instance is the one registered
   def properly_registered? #:nodoc:
     found = self.class.find(@user,@host,@port,@category)
-    raise "This tunnel is no longer registered with the class." unless found
-    raise "This tunnel object does not match the object registered in the class!" if
+    raise "This SSh master is no longer registered with the class." unless found
+    raise "This SSh master object does not match the object registered in the class!" if
       found.object_id != self.object_id
     true
   end

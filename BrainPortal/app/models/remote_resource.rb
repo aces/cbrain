@@ -203,7 +203,7 @@ class RemoteResource < ActiveRecord::Base
   # for this RemoteResource. The method does not start it, if
   # it's created.
   def ssh_master
-    master = SshTunnel.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,self.class.to_s)
+    master = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,self.class.to_s)
     master
   end
 
@@ -313,7 +313,7 @@ class RemoteResource < ActiveRecord::Base
   # These two methods prepend the constant shell statements
   #   "source /path/to/cbrain_bashrc;"
   # to the specified shell command and then call the corresponding command
-  # execution methods of the master ssh_tunnel for the RemoteResource.
+  # execution methods of the ssh_master for the RemoteResource.
   ############################################################################
 
   # Runs the specified +shell_command+ (a bash command) on
