@@ -135,17 +135,30 @@ class Userfile < ActiveRecord::Base
   def file_extension
     self.name.scan(/\.[^\.]+$/).last
   end
+
+  # Classes this type of file can be converted to.
+  # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
+  def self.valid_file_classes
+    return @valid_file_classes if @valid_file_classes
+
+    base_class = self
+    base_class = SingleFile     if self <= SingleFile
+    base_class = FileCollection if self <= FileCollection
+    
+    @valid_file_classes = base_class.send(:subclasses).unshift(base_class)
+  end
+
+  # Instance version of the class method.
+  def valid_file_classes
+    self.class.valid_file_classes
+  end
   
-  #Classes this type of file can be converted to.
+  #Names of classes this type of file can be converted to.
   #Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
   def self.valid_file_types
     return @valid_file_types if @valid_file_types
     
-    base_class = self
-    base_class = SingleFile if self <= SingleFile
-    base_class = FileCollection if self <= FileCollection
-    
-    @valid_file_types = base_class.send(:subclasses).unshift(base_class).map(&:name)
+    @valid_file_types = self.valid_file_classes.map(&:name)
   end
   
   #Instance version of the class method.

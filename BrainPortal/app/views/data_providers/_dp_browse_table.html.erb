@@ -32,8 +32,8 @@
   <th>Size</th>
   <th>
     Type<br>
-    <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_types) %><br>
-    <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_types) %>
+    <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_classes.map(&:pretty_type) ) %><br>
+    <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_classes.map(&:pretty_type) ) %>
   </th>
   <th>Last modified</th>
   <th>Registered?</th>
@@ -73,7 +73,7 @@
          <td>
            <%= 
              select_tag("filetypes[]",
-               options_for_select(SingleFile.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)), 
+               options_for_select(SingleFile.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)), 
                :class  => "file_select")
            %>
          </td>
@@ -81,7 +81,7 @@
          <td>
           <%= 
             select_tag("filetypes[]",
-                options_for_select(FileCollection.valid_file_types.map{|c| [c, "#{c}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)), 
+                options_for_select(FileCollection.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)), 
                 :class  => "directory_select")
           %>
          </td>

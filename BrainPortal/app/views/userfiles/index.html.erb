@@ -47,7 +47,13 @@
                                                        :method  => :get) 
           %>
           <hr>
-          Update File Type: <%= select_tag :file_type, grouped_options_for_select([["Files", SingleFile.valid_file_types.map{|c| [c, c]}], ["Collections", FileCollection.valid_file_types.map{|c| [c, c]}] ]) %>
+          Update File Type:
+          <%=
+             select_tag :file_type, grouped_options_for_select(
+               [["Files",       SingleFile.valid_file_classes.map{|c| [c.pretty_type, c.name]}],
+                ["Collections", FileCollection.valid_file_classes.map{|c| [c.pretty_type, c.name]}]
+               ])
+           %>
           <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
       <% end %>
 
