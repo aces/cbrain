@@ -23,13 +23,15 @@
   <% sorted_users.each do |user| %>
     <% login        = user.login %>
     <% klass_counts = user_fileclass_count[user] || {} %>
+    <% usertot      = user_totcount[user] || 0 %>
+    <% next if usertot == 0 %>
     <tr>
       <td><%= h(login) %></td>
       <% sorted_classes.each do |klass| %>
         <% count = klass_counts[klass] || "" %>
         <td><%= h(count) %></td>
       <% end %>
-      <td><%= h(user_totcount[user]) %></td>
+      <td><%= h(usertot) %></td>
     </tr>
   <% end %>
 </table>
