@@ -44,20 +44,13 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    # Gather statistics
-    @user_fileclass_count = {}
-    @fileclasses_totcount = {}
-    current_user.available_users.each do |user|
-      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => data_provider_id, :user_id => user.id })
-      @user_fileclass_count[user] ||= {}
-      userfiles.each do |u|
-        klass = u.class.to_s
-        @fileclasses_totcount[klass]              ||= 0
-        @fileclasses_totcount[klass]               += 1
-        @user_fileclass_count[user][u.class.to_s] ||= 0
-        @user_fileclass_count[user][u.class.to_s]  += 1
-      end
-    end
+    stats = ApplicationController.helpers.gather_filetype_statistics(
+              :users     => current_user.available_users,
+              :providers => @provider
+            )
+    @user_fileclass_count = stats[:user_fileclass_count]
+    @fileclasses_totcount = stats[:fileclasses_totcount]
+    @user_totcount        = stats[:user_totcount]
 
     respond_to do |format|
       format.html # show.html.erb

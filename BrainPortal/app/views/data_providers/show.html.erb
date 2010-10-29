@@ -127,9 +127,10 @@
 
 <div class="generalbox">
 
-   <%= render :partial => 'file_counts',
+   <%= render :partial => 'layouts/file_counts',
               :locals => { :fileclasses_totcount => @fileclasses_totcount,
-                           :user_fileclass_count => @user_fileclass_count
+                           :user_fileclass_count => @user_fileclass_count,
+                           :user_totcount        => @user_totcount
                          }
    %>
 

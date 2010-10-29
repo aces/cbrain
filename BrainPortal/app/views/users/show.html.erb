@@ -82,6 +82,20 @@
 
   </div>
 
+  <P>
+
+  <div class="generalbox">
+
+   <%= render :partial => 'layouts/file_counts',
+              :locals => { :fileclasses_totcount => @fileclasses_totcount,
+                           :user_fileclass_count => @user_fileclass_count,
+                           :user_totcount        => @user_totcount
+                         }
+   %>
+
+  </div>
+
+
 </div>
 
 <div class="display_cell" style="padding: 1em;">

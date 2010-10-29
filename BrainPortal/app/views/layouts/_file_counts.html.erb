@@ -1,7 +1,9 @@
 
-<% # This partial requires two hashes:
-   #    fileclasses_totcount[fileclass] -> number of files of class 'fileclass'
+<%
+   # This partial requires these hashes:
+   #    fileclasses_totcount[fileclass]        -> number of files of class 'fileclass'
    #    user_fileclass_count[user][fileclass]  -> number of files belonging to 'user' in class 'fileclass'
+   #    user_totcount[user]                    -> number of files belonging to 'user'
 %>
 
 <% sorted_classes = fileclasses_totcount.keys.sort { |a,b| a <=> b } %>
@@ -9,13 +11,14 @@
  
 <table>
   <tr>
-    <th colspan="<%= 1 + sorted_classes.size %>">File Registration Statistics</th>
+    <th colspan="<%= 2 + sorted_classes.size %>">File Registration Statistics</th>
   </tr>
   <tr>
     <th>User</th>
     <% sorted_classes.each do |klass| %>
       <th><%= h(klass) %></th>
     <% end%>
+    <th>Total</th>
   </tr>
   <% sorted_users.each do |user| %>
     <% login        = user.login %>
@@ -26,6 +29,7 @@
         <% count = klass_counts[klass] || "" %>
         <td><%= h(count) %></td>
       <% end %>
+      <td><%= h(user_totcount[user]) %></td>
     </tr>
   <% end %>
 </table>
