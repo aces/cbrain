@@ -241,7 +241,10 @@
         <th><%= h(stat) %></th>
       <% end %>
     </tr>
-    <% @user_tasks_info.each do |user, statcnt| %>
+    <% sorted_users = @user_tasks_info.keys.sort { |a,b| a <=> b } %>
+    <% sorted_users.each do |user| %>
+      <% statcnt = @user_tasks_info[user] %>
+      <% next if statcnt['TOTAL'].blank? || statcnt['TOTAL'] == 0 %>
       <tr>
         <td class="left_align"><%= h(user) %></td>
         <% @statuses_list.each do |stat| %>
