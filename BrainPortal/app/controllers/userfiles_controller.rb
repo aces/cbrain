@@ -482,13 +482,14 @@ class UserfilesController < ApplicationController
   def update_multiple
     filelist    = params[:file_ids] || []
     operation = case params[:commit].to_s
+                   # Critical! Case values much mach label of submit button!
                    when "Update Tags"
                      ['set_tags_for_user', current_user, params[:tags]]
                    when "Update Projects"
                      ["update_attributes", {:group_id => params[:userfile][:group_id]}]
                    when "Update Permissions" 
                      ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
-                   when "Update File Type"
+                   when "Update"
                      ["update_file_type", params[:file_type]]
                 end
     
