@@ -61,7 +61,7 @@ class UsersController < ApplicationController
     @log                    = @user.getlog()
 
     stats = ApplicationController.helpers.gather_filetype_statistics(
-              :users     => current_user.available_users,
+              :users     => @user.available_users,
               :providers => DataProvider.all
             )
     @user_fileclass_count = stats[:user_fileclass_count]
