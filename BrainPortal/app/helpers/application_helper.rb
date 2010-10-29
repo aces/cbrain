@@ -85,7 +85,7 @@ module ApplicationHelper
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
     h(cropped_header) + " " + capture do
-      overlay_content_link("(more)", :width => 600, :enclosing_element => 'span' ) do
+      overlay_content_link("(more)", :enclosing_element => 'span' ) do
         "<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>"
       end
     end
@@ -99,9 +99,12 @@ module ApplicationHelper
       "<h3>#{h(dp.name)}</h3>\n" +
       "<pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>\n"
     end
-    all_descriptions = "<h1>Data Providers Descriptions</h1>\n" + paragraphs.join("")
+    all_descriptions = "<h2>Data Providers Descriptions</h2>\n" +
+                       "<div class=\"generalbox\">\n" +
+                        paragraphs.join("") +
+                       "</div>\n"
     capture do
-       overlay_content_link("(info)", :enclosing_element => 'span', :width => 600) do
+       overlay_content_link("(info)", :enclosing_element => 'span') do
          all_descriptions
        end
     end

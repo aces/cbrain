@@ -114,11 +114,11 @@ h5 {
 }
 
 .display_block {  /* default for divs */
-    display: block;
+    display: block !important;
 }
 
 .display_inline {  /* default for spans */
-    display: inline;
+    display: inline !important;
 }
 
 
