@@ -30,14 +30,13 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to userfiles_path }
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
+        format.html { redirect_to userfiles_path }        
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
         format.html { redirect_to userfiles_path }
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tag' }}
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
+      format.js {render :partial  => "update_tag_table"}
     end
   end
 
@@ -60,6 +59,7 @@ class TagsController < ApplicationController
         format.html { render :action => "edit" }
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
+      format.js {render :partial  => "update_tag_table"}
     end
   end
 
@@ -74,6 +74,7 @@ class TagsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to userfiles_path }
+      format.js {render :partial  => "update_tag_table"}
       format.xml  { head :ok }
     end
   end

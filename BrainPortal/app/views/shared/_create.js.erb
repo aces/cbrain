@@ -7,7 +7,7 @@
   jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
   jQuery('#new_<%= model_name %>_button').click();
 <% else %>
-    jQuery('#new_<%= model_name %>').html(<%= html_for_js(render :partial  => "#{model_name.pluralize}/new") %>);
+  jQuery('#new_<%= model_name %>').html(<%= html_for_js(render :partial  => "#{model_name.pluralize}/new") %>);
 <% end %>
 
   

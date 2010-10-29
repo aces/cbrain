@@ -95,26 +95,42 @@ function load_behaviour(event){
    loaded_element.find(".tabs").tabs();
    
    loaded_element.find(".inline_edit_field").each(function() {
-     var input_field = jQuery(this).children().filter("span").children().filter("input").hide();
-     var save_link = jQuery(this).children().filter(".inplace_edit_field_save").hide();
-     var text = jQuery(this).children().filter("span").children().filter(".current_text");
-     var save_function = function(event) {
-       text.html(input_field.val());
-       input_field.hide();
-       save_link.hide();
-       text.show();
-     };
-     input_field.change(save_function);
+     var inline_edit_field = jQuery(this);
+     var data_type = inline_edit_field.attr("data-datatype");
+     var target = inline_edit_field.attr("data-target");
+     var method = inline_edit_field.attr("data-method");
+     if(!method) method = "POST";
+     if(!data_type) data_type = "script";
+     
+     var form = inline_edit_field.children("form")
+            .hide()
+            .ajaxForm({
+              type: method,
+              dataType: data_type,
+              success: function(data){
+                modify_target(data, target);     
+              }});
+     var input_field = form.find(".inline_edit_input");
+     var text = inline_edit_field.find(".current_text");
+     var trigger = inline_edit_field.find(inline_edit_field.attr("data-trigger"));
+     
+     var data_type = inline_edit_field.attr("data-datatype");
+     var target = inline_edit_field.attr("data-target");
+     var method = inline_edit_field.attr("data-method");
+     if(!method) method = "POST";
+     if(!data_type) data_type = "script";
 
-     jQuery(save_link).click(save_function);
-
-
-     jQuery(this).children().filter("span").click(function(event){
-       input_field.val(text.html());
+     trigger.click(function(event){
        text.hide();
-       input_field.show();
-       save_link.show();
+       form.show();
+       input_field.focus();
+       return false;
      });
+     
+     form.focusout(function(event){
+        text.show();
+        form.hide(); 
+      });
 
    });
 

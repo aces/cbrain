@@ -117,21 +117,25 @@ module CbrainUiHelper
   end
   
   #Create an inline edit field.
-  #
-  #INCOMPLETE: the ability to submit an update on save should be added.
-  #current needs to be part of a form.
-  def inline_edit_field(options = {})
-    name = options[:name]
-    field_label = options[:label]
-    initial = options[:initial_value] || ""
-    "<div class=\"inline_edit_field\">"+
-      "<span>"+
-        "#{field_label}:  "+
-        "<span class=\"current_text\">#{initial}</span>"+
-        "<input name=\"#{name}\" />"+
-      "</span>" +
-      "<a class=\"inplace_edit_field_save\">Save</a>"+
-    "</div>" 
+  def inline_edit_field(p_name, url, options = {}, &block)
+    name = p_name
+    initial_text = capture(&block)
+    initial_value = options.delete(:initial_value) || initial_text
+    field_label = options.delete(:label)
+    field_label += ":  " unless field_label.blank?
+    
+    options_setup("inline_edit_field", options)
+    options["data-trigger"] = options.delete(:trigger) || ".current_text"
+    
+    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    
+    concat("<div #{atts}>")
+    concat("<span class=\"current_text\">#{initial_text}</span>")
+    concat(form_tag_html(:action  => url_for(url), :class  => "inline_edit_form")) 
+    concat("#{field_label}")
+    concat(text_field_tag(name, initial_value, :class => "inline_edit_input")) 
+    concat("</form>")
+    concat("</div>") 
   end
   
   #Create a tooltip that displays html when mouseovered.

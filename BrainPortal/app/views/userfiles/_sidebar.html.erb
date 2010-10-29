@@ -22,9 +22,8 @@
 <% build_accordion do |acc| %>
   <% acc.section "Filter Files" do %>
     <%= render :partial => 'userfiles/filters' %>
-    <%= render :partial => 'userfiles/tag_table_sidebar' %>
-    <div>
-      <%= render :partial => "tags/new", :object => @tag %>
+    <div id="tag_table_sidebar">
+      <%= render :partial => 'userfiles/tag_table_sidebar' %>
     </div>
   <% end %>
 
