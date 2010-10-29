@@ -287,12 +287,8 @@ table.property_list td.white_background_text {
     background-color: #ffffff;
 }
 
-#cbrain_data_provider_table {
-    width: 50%;
-}
-
-#user_data_provider_table {
-    width: 50%;
+.whole_width {
+    width: 100%;
 }
 
 

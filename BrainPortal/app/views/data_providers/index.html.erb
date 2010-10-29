@@ -15,8 +15,10 @@
 <%= show_hide_toggle "Show Details", ".provider_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
 
 <p>
-  
-<table class="resource_list" id="cbrain_data_provider_table">
+
+<div class = "display_cell">
+
+<table class="resource_list whole_width" id="cbrain_data_provider_table">
 
   <%= render :partial => 'data_provider_table_headers', :locals => { :table_title => 'Official CBRAIN Storage' } %>
 
@@ -32,7 +34,7 @@
 
 <P><br>
   
-<table class="resource_list" id="user_data_provider_table">
+<table class="resource_list whole_width" id="user_data_provider_table">
 
   <%= render :partial => 'data_provider_table_headers', :locals => { :table_title => 'User Storage' } %>
 
@@ -45,7 +47,9 @@
   <% end %>
 
 </table>
-   
+
+</div>
+
 <P>
 
 <div id="disk_usage">   
