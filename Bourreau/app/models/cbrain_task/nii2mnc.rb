@@ -95,7 +95,7 @@ class CbrainTask::Nii2mnc < ClusterTask
       return false
     end
 
-    mincfile = safe_userfile_find_or_new(SingleFile,
+    mincfile = safe_userfile_find_or_new(MincFile,
       :name             => mincbase,
       :data_provider_id => params[:data_provider_id]
     )

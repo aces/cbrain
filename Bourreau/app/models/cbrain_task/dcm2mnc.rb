@@ -69,7 +69,7 @@ class CbrainTask::Dcm2mnc < ClusterTask
       next unless file.match(/\.mnc(.gz)?\s*$/i)
       file.sub!(/\s+$/,"")
       basename = File.basename(file)
-      mincfile = safe_userfile_find_or_new(SingleFile,
+      mincfile = safe_userfile_find_or_new(MincFile,
         :name             => basename,
         :data_provider_id => params[:data_provider_id],
         :task             => "Dcm2mnc"

@@ -163,7 +163,7 @@ class CbrainTask::Diagnostics < ClusterTask
     report  = nil
 
     if dp_id  # creating the report is optional
-      report = safe_userfile_find_or_new(SingleFile,
+      report = safe_userfile_find_or_new(TextFile,
             :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
             :data_provider_id => dp_id,
             :task             => 'Bourreau Diagnostics'
