@@ -26,7 +26,7 @@
         <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name) %>
       </td>
       <td>
-        <% unless @userfile.class == @userfile.suggested_file_type %>
+        <% if @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
           (<span>Suggested file type: </span> <span class="warning"><%= @userfile.suggested_file_type.pretty_type %></span>)
         <% end %>
       </td>
