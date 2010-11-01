@@ -171,6 +171,10 @@ class Userfile < ActiveRecord::Base
     self.valid_file_types.include? type
   end
   
+  def suggested_file_type
+    @suggested_file_type ||= self.valid_file_classes.find{|ft| self.name =~ ft.file_name_pattern}
+  end
+  
   #Updates the class (type attribute) of this file if +type+ is 
   #valid according to valid_file_types.
   def update_file_type(type)

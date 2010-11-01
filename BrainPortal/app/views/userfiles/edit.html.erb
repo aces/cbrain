@@ -22,8 +22,13 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Type:</th>
-      <td colspan="2">
+      <td>
         <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name) %>
+      </td>
+      <td>
+        <% unless @userfile.class == @userfile.suggested_file_type %>
+          (<span>Suggested file type: </span> <span class="warning"><%= @userfile.suggested_file_type.pretty_type %></span>)
+        <% end %>
       </td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">

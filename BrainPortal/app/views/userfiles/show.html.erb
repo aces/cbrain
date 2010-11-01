@@ -20,7 +20,12 @@
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Type:</th>
-      <td colspan="2"><%= @userfile.pretty_type %></td>
+      <td><%= @userfile.pretty_type %></td>
+      <td>
+        <% unless @userfile.class == @userfile.suggested_file_type %>
+          (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>. You can edit the file type <%= link_to "here", edit_userfile_path(@userfile), :class  => "action_link" %></span>)
+        <% end %>
+      </td>
     </tr>
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
