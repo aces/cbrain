@@ -31,7 +31,7 @@ namespace :db do
       end
       stats.each do |frt, v|
         v.each do |tot, cnt|
-          puts "#{cnt} userfiles #{"would be " if report }converted from #{frt} to '#{tot}'."
+          puts "#{cnt} userfiles #{"would be " if report }converted from '#{frt}' to '#{tot}'."
         end
       end
       puts "\nNOTE: the update was NOT actually performed." if report
