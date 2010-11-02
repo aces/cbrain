@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
   before_filter :set_cache_killer
   before_filter :check_if_locked
   before_filter :prepare_messages
-  before_filter :set_session, :only  => :index
+  before_filter :set_session
   before_filter :password_reset
   before_filter :adjust_system_time_zone
   around_filter :catch_cbrain_message, :activate_user_time_zone

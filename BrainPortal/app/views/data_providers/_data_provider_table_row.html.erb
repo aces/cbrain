@@ -1,17 +1,23 @@
 
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= data_provider.id %>">
   <td><%= link_to_data_provider_if_accessible(data_provider) %></td>
-  <td class="provider_details" style="display:none"><%= link_to_user_if_accessible(data_provider.user) %></td>
+  <% if @filter_params["details"] == 'on' %>
+    <td><%= link_to_user_if_accessible(data_provider.user) %></td>
+  <% end %>
   <td><%= link_to_group_if_accessible(data_provider.group) %></td>
-  <td class="provider_details" style="display:none"><%= link_to_site_if_accessible(data_provider.site) %></td>
-  <td class="provider_details" style="display:none"><%= h(data_provider.time_zone || "(Unset)") %></td>
+  <% if @filter_params["details"] == 'on' %>
+    <td><%= link_to_site_if_accessible(data_provider.site) %></td>
+    <td><%= h(data_provider.time_zone || "(Unset)") %></td>
+  <% end %>
   <td><%= data_provider.online    ? "Yes" : "<font color=\"red\">No</font>" %></td>
   <% staggered_loading "td", url_for(:action  => :is_alive, :id  => data_provider.id), :error_message  => "<span class=\"warning\">???</span>" do %>
     <span class="loading_message">Checking...</span>
   <% end %>
   <td><%= h(data_provider.read_only    ? "Read Only"    : "Read/Write") %></td>
-  <td class="provider_details" style="display:none"><%= h(data_provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
-  <td class="provider_details" style="display:none"><%= overlay_description(data_provider.description) %></td>
+  <% if @filter_params["details"] == 'on' %>
+    <td><%= h(data_provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
+    <td><%= overlay_description(data_provider.description) %></td>
+  <% end %>
   <td>
      <% if data_provider.has_owner_access?(current_user) %>
      <%= link_to 'Edit', edit_data_provider_path(data_provider), :class => 'action_link' %>

@@ -11,11 +11,15 @@
 
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_to_bourreau_if_accessible(bour) %></td>
-<td class="resource_details" style="display:none"><%= red_if(diskrev.to_s != runrev.to_s,"Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}") %></td>
-<td class="resource_details" style="display:none"><%= link_to_user_if_accessible(bour.user) %></td>
+<% if @filter_params["details"] == 'on' %>
+  <td><%= red_if(diskrev.to_s != runrev.to_s,"Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}") %></td>
+  <td><%= link_to_user_if_accessible(bour.user) %></td>
+<% end %>
 <td><%= link_to_group_if_accessible(bour.group) %></td>
-<td class="resource_details" style="display:none"><%= link_to_site_if_accessible(bour.site_affiliation) %></td>
-<td class="resource_details" style="display:none"><%= h(bour.time_zone || "(Unset)") %></td>
+<% if @filter_params["details"] == 'on' %>
+  <td><%= link_to_site_if_accessible(bour.site_affiliation) %></td>
+  <td><%= h(bour.time_zone || "(Unset)") %></td>
+<% end %>
 <td><%= red_if( ! bour.online,      "Yes", "Offline" ) %></td>
 <td><%= red_if( info.name == "???", "Yes", "Down!"   ) %></td>
 
@@ -29,7 +33,9 @@
   <td>-</td>
 <% end %>
 
-<td class="resource_details" style="display:none"><%= overlay_description(bour.description) %></td>
+<% if @filter_params["details"] == 'on' %>
+  <td><%= overlay_description(bour.description) %></td>
+<% end %>
 
 <% if bour.has_owner_access?(current_user) %>
 

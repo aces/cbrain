@@ -32,6 +32,10 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
+    respond_to do |format|
+      format.html
+      format.js
+    end
   end
 
   # GET /data_providers/1

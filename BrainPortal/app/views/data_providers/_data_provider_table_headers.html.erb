@@ -1,26 +1,34 @@
 
   <tr>
     <th colspan="1"/>                                               <!-- name -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- owner -->
     <th colspan="1"/>                                               <!-- group -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- site -->
-    <th colspan="1" class="provider_details" style="display:none"/> <!-- time zone -->
+    <% if @filter_params["details"] == 'on' %>    
+      <th colspan="3"/>                                           <!-- owner site time zone -->
+    <% end %>
     <th colspan="3"><%= h(table_title) %></th>                    <!-- online alive mode -->
-    <th colspan="2" class="provider_details" style="display:none"/> <!-- syncability description -->
+    <% if @filter_params["details"] == 'on' %>
+      <th colspan="2"/> <!-- syncability description -->
+    <% end %>
     <th colspan="3"/>                                               <!-- operations -->
   </tr>
 
   <tr>
     <th>Provider Name</th>
-    <th class="provider_details" style="display:none">Owner</th>
+    <% if @filter_params["details"] == 'on' %>
+      <th>Owner</th>
+    <% end %>
     <th>Project</th>
-    <th class="provider_details" style="display:none">Site</th>
-    <th class="provider_details" style="display:none">Time Zone</th>
+    <% if @filter_params["details"] == 'on' %>
+      <th>Site</th>
+      <th>Time Zone</th>
+    <% end %>
     <th>Online?</th>
     <th>Alive?</th>
     <th>Mode</th>
-    <th class="provider_details" style="display:none">Syncability</th>
-    <th class="provider_details" style="display:none">Description</th>
+    <% if @filter_params["details"] == 'on' %>
+      <th>Syncability</th>
+      <th>Description</th>
+    <% end %>
     <th colspan="3">Operations</th>
   </tr>
 

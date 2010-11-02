@@ -1,45 +1,6 @@
 
 <% title 'Execution Servers' %>
 
-<div class="menu_bar menu_bar_left">
-  <% if check_role(:admin) || check_role(:site_manager)%>
-    <% button_with_dropdown_menu('Create New Server', :partial => 'new', :content_id => "new_bourreau", :button_id => "new_bourreau_button") %>
-    <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
-  <% end %>
-  <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
+<div id="bourreaux_display">
+  <%= render :partial => 'bourreaux_display' %>
 </div>
-
-<P>
-
-<%= show_hide_toggle "Show Details", ".resource_details", :alternate_text  => "Hide Details", :class  => "action_link" %>
-
-<P>
-  
-<table id="bourreau_table" class="resource_list">
-  <tr>
-      <th>Server Class</th>
-      <th>Server Name</th>
-      <th class="resource_details" style="display:none">Revision Numbers</th>
-      <th class="resource_details" style="display:none">Owner</th>
-      <th>Project</th>
-      <th class="resource_details" style="display:none">Site</th>
-      <th class="resource_details" style="display:none">Time Zone</th>
-      <th>Online?</th>
-      <th>Alive?</th>
-      <th>Workers?</th>
-      <th>Load</th>
-      <th>Tasks</th>
-      <th class="resource_details" style="display:none">Description</th>
-      <th colspan="4">Operations</th>
-  </tr>
-
-  <% for bour in @bourreaux %>
-    <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
-                         :id => "bourreau_#{bour.id}",
-                         :class  => "row_highlight #{cycle("list-odd", "list-even")}", 
-                         :error_message  => "<td class=\"loading_message\">Data for #{bour.name} unavailable</td>" do %>
-       <td class="loading_message">Loading...</td>
-    <% end %>
-  <% end %>
-</table>
-

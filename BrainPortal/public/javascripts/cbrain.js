@@ -141,6 +141,8 @@ function load_behaviour(event){
    loaded_element.find(".button_set").buttonset();
 
 
+   loaded_element.find(".button_with_drop_down > div.drop_down_menu").hide();
+
    loaded_element.find(".button_with_drop_down").children(".button_menu").button({
      icons: {
        secondary: 'ui-icon-triangle-1-s'
@@ -300,8 +302,6 @@ jQuery(
      }
      return false;  
    });
-
-   jQuery(".button_with_drop_down > div.drop_down_menu").hide();
 
    //Highlighting on ressource list tables.
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
