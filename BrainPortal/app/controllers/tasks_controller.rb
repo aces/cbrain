@@ -154,23 +154,24 @@ class TasksController < ApplicationController
   
   def new #:nodoc:
     
-    unless params[:toolname] 
+    unless params[:tool_id] 
       if params[:scientific_operation].blank?
-        task = params[:conversion_operation]
+        tool_id = params[:conversion_operation]
       else
-        task = params[:scientific_operation]
+        tool_id = params[:scientific_operation]
       end
-      task.sub!(/^CbrainTask::/,"")
-      params[:toolname]  = task
+      params[:tool_id]  = tool_id
     end
     
     # Brand new task object for the form
-    @toolname         = params[:toolname]
-    if @toolname.blank?
+  
+    if params[:tool_id].blank?
       flash[:error] = "Please select a task to perform."
       redirect_to :controller  => :userfiles, :action  => :index
       return
     end
+    
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
     
     @task             = CbrainTask.const_get(@toolname).new
 
@@ -263,7 +264,7 @@ class TasksController < ApplicationController
     flash[:error]  = ""
 
     # A brand new task object!
-    @toolname         = params[:toolname]
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id

@@ -1,0 +1,2 @@
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#tag_table_sidebar").html(<%= html_for_js(render :partial => 'userfiles/tag_table_sidebar') %>).trigger("new_content");

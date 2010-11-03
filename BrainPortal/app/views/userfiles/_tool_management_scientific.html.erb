@@ -6,7 +6,7 @@
   <%= ajax_onchange_select(
      "scientific_operation",
      url_for(:controller  => :tools, :action  => :bourreau_select), 
-     current_user.available_scientific_tools.inject('<option value="">Select a Scientific Operation</option>') { |options, tool| options += "<option value='#{tool.cbrain_task_class}'>#{tool.select_menu_text}</option>"},
+     current_user.available_scientific_tools.inject('<option value="">Select a Scientific Operation</option>') { |options, tool| options += "<option value='#{tool.id}'>#{tool.select_menu_text}</option>"},
         :target  => "#bourreau_select2", 
         :target_text  => "<span class='warning'>Loading...</span>"
     ) 

@@ -33,7 +33,7 @@ class ToolsController < ApplicationController
       return
     end
     
-    @tool = current_user.available_tools.find_by_cbrain_task_class(params[:current_value])
+    @tool = current_user.available_tools.find(params[:current_value])
     @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
     
     respond_to do |format|
