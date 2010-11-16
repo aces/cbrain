@@ -35,7 +35,7 @@
     only two required field in this form will be those in the box
     <strong>ActiveResource Configuration</strong>. Note that these
     two fields are completely ignored if the ActiveResource connection
-    is being tunneled (see below).
+    is being tunnelled (see below).
 
     <p>
     <h4>Hardcoded, But With Remote Control</h4>
@@ -58,7 +58,7 @@
     Execution Server by having the BrainPortal set up SSH tunnels for
     either (or both) of the ActiveResource connection and the
     Database Server connection. This can be turned on by entering
-    port numbers in the two fields in the section <strong>Tunneling
+    port numbers in the two fields in the section <strong>Tunnelling
     Configuration</strong>. For this to work, the <strong>SSH Remote
     Control Configuration</strong> must be operational (see above). The
     port numbers specified here must both be public TCP port that are
@@ -67,7 +67,7 @@
 
     <p>
 
-    <strong>Tunneling the ActiveResource connection:</strong> Entering
+    <strong>Tunnelling the ActiveResource connection:</strong> Entering
     a port number here will tell the BrainPortal to select this
     port for the Execution Server's Rails listening port (the <em>port</em>
     argument to its <em>script/server -p port</em> command when it's
@@ -80,7 +80,7 @@
 
     <p>
 
-    <strong>Tunneling the DB server connection:</strong> Entering a port
+    <strong>Tunnelling the DB server connection:</strong> Entering a port
     number here will tell the BrainPortal to select this port for the
     Execution Server's Rails DB connection; more accurately, by doing this, the
     BrainPortal will create from scratch a new <em>database.yml</em>
@@ -98,13 +98,13 @@
 
     <p>
 
-    A side effect of tunneling the DB server is that any
+    A side effect of tunnelling the DB server is that any
     <em>database.yml</em> file already present on the Execution Server side will
     be backed up, and also that the newly created <em>database.yml</em>
     file will be DELETED after the Server is started. This provides a
     high security context for the DB server's connection as if there
     were no <em>database.yml</em> file at all. And if there were,
-    and tunneling is disabled by blanking out the port field, then
+    and tunnelling is disabled by blanking out the port field, then
     the backup <em>database.yml</em> will be restored.
 
 </div>

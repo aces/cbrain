@@ -60,7 +60,7 @@ class Bourreau < RemoteResource
   # *ssh_control_port*:: Optional, default 22
   # *ssh_control_rails_dir*:: Mandatory
   #
-  # If DB and/or ActiveResource tunneling is enabled, the
+  # If DB and/or ActiveResource tunnelling is enabled, the
   # remote Bourreau will be told to use the tunnels. This
   # implies that the remote database.yml will be rewritten
   # and the "-p port" option will be set to the value
@@ -80,10 +80,10 @@ class Bourreau < RemoteResource
     myrailsenv = ENV["RAILS_ENV"] || "production"
 
     # If we tunnel the DB, we get a non-blank yml file here
-    db_yml  = self.has_db_tunneling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
+    db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
 
     # What port the Rails Bourreau will listen to?
-    port = self.has_actres_tunneling_info?  ?   self.tunnel_actres_port : self.actres_port
+    port = self.has_actres_tunnelling_info?  ?   self.tunnel_actres_port : self.actres_port
 
     # File to capture command output.
     captfile = "/tmp/start.out.#{Process.pid}"

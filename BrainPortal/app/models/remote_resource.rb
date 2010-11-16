@@ -34,7 +34,7 @@ require 'socket'
 #[*ssh_control_port*] SSH port number of the machine running the remote resource's Rails application.
 #[*ssh_control_rails_dir*] Rails root directory where the remote resource is installed.
 #
-#==Optional Tunneling Port Numbers Attributes:
+#==Optional Tunnelling Port Numbers Attributes:
 #[*tunnel_mysql_port*] Used by a BrainPortal to offer its ActiveRecord DB connection to the
 #                      remote resource through a tunnel; this works only when the SSH
 #                      connection attributes are properly configured.
@@ -241,7 +241,7 @@ class RemoteResource < ActiveRecord::Base
     master.delete_tunnels(:reverse)
 
     # Setup DB tunnel
-    if self.has_db_tunneling_info?
+    if self.has_db_tunnelling_info?
       remote_db_port  = self.tunnel_mysql_port
       myconfig        = self.class.current_resource_db_config
       local_db_host   = myconfig["host"]  || "localhost"
@@ -250,7 +250,7 @@ class RemoteResource < ActiveRecord::Base
     end
 
     # Setup ActiveResource tunnel
-    if self.has_actres_tunneling_info?
+    if self.has_actres_tunnelling_info?
       local_port  = 3090+self.id # see also in site()
       remote_port = self.tunnel_actres_port
       master.add_tunnel(:forward, local_port, "localhost", remote_port)
@@ -264,7 +264,7 @@ class RemoteResource < ActiveRecord::Base
 
   # This stops the master SSH connection to the remote resource,
   # including any present tunnels. This can seriously affect
-  # the remote resource if DB tunneling is in effect, as it
+  # the remote resource if DB tunnelling is in effect, as it
   # will kill its DB connection! Otherwise, the remote
   # resource is not affected.
   def stop_tunnels
@@ -295,15 +295,15 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Returns true if this remote resource is configued
-  # for DB tunneling
-  def has_db_tunneling_info? #:nodoc:
+  # for DB tunnelling
+  def has_db_tunnelling_info? #:nodoc:
     return true if self.has_ssh_control_info? && ( ! self.tunnel_mysql_port.blank? )
     false
   end
 
   # Returns true if this remote resource is configued
-  # for ActiveResource tunneling
-  def has_actres_tunneling_info? #:nodoc:
+  # for ActiveResource tunnelling
+  def has_actres_tunnelling_info? #:nodoc:
     return true if self.has_ssh_control_info? && ( ! self.tunnel_actres_port.blank? )
     false
   end
@@ -407,7 +407,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Returns this RemoteResource's URL. This URL is adjusted
   # depending on whether or not the ActiveResource
-  # connection is tunneled through a SSH master connection.
+  # connection is tunnelled through a SSH master connection.
   # In the case of a tunnel, the connection is established
   # to host localhost, on a port number equal to (3090 +
   # the ID of the resource).
