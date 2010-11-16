@@ -49,8 +49,6 @@ class CbrainSystemChecks < CbrainChecker
       # The most important global assignment in the CBRAIN system!
       CBRAIN.const_set("SelfRemoteResourceId",rr.id)
       rr.update_attributes( :online    => true )
-      md5 = DataProvider.cache_md5 rescue nil
-      rr.update_attributes( :cache_md5 => md5 ) if md5 && rr.cache_md5 != md5
       return true # everything OK
     end
 
@@ -100,17 +98,26 @@ class CbrainSystemChecks < CbrainChecker
     puts "C> Checking to see if Data Provider caches need wiping..."
     #-----------------------------------------------------------------------------
 
+    myself = RemoteResource.current_resource
+
     cache_root     = DataProvider.cache_rootdir rescue nil
-    unless cache_root
+    if cache_root.blank?
       puts "C> \t- SKIPPING! No cache root directory yet configured!"
       return
     end
 
-    dp_init_rev    = DataProvider.cache_revision_of_last_init  # will be "0" if unknown
+    dp_init_rev    = DataProvider.cache_revision_of_last_init rescue nil # will be "0" if unknown, nil if erroneous
     dp_current_rev = DataProvider.revision_info.svn_id_rev
+
+    if dp_init_rev.nil?
+      puts "C> \t- SKIPPING! Cache root directory '#{cache_root}' is invalid! Fix with the interface, please."
+      return
+    end
+
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
       dp_current_rev && dp_current_rev =~ /^\d+/
-    if dp_init_rev.to_i <= DataProvider::DataProviderCache_RevNeeded # Before Pierre's upgrade
+
+    if dp_init_rev.to_i > 0 && dp_init_rev.to_i <= DataProvider::DataProviderCache_RevNeeded # Before Pierre's upgrade
       puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
       puts "C> \t- WARNING: This could take a long time so you should not"
       puts "C> \t  start another instance of this Rails application."
@@ -126,12 +133,14 @@ class CbrainSystemChecks < CbrainChecker
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."
-      synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => RemoteResource.current_resource.id })
+      synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => myself.id })
       synclist.each do |ss|
         ss.destroy rescue true
       end
       puts "C> \t- Re-recording DataProvider revision number in cache."
       DataProvider.cache_revision_of_last_init(:force)
+      md5 = DataProvider.cache_md5 rescue nil
+      myself.update_attributes( :cache_md5 => md5 ) if md5 && myself.cache_md5 != md5
       puts "C> \t- Done."
     end
   end

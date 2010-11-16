@@ -63,7 +63,7 @@ class RemoteResource < ActiveRecord::Base
   validates_presence_of   :name, :user_id, :group_id
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
-                                 :allow_blank => true
+                                 :allow_blank => true # handled by validates_presence_of, see above
 
   validate                :proper_dp_ignore_patterns
   validate                :dp_cache_path_valid
@@ -178,14 +178,17 @@ class RemoteResource < ActiveRecord::Base
       return false
     end
 
-    if path =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
-      errors.add(:dp_cache_dir, "cannot be a system temporary directory.")
-      return false
-    end
-
     if self.id && self.id == CBRAIN::SelfRemoteResourceId
-      unless File.directory?(path) && File.readable?(path) && File.writable?(path)
-        errors.add(:dp_cache_dir," does not exist or is unaccessible.")
+      is_ok = false
+      mess  = ""
+      begin
+        is_ok = DataProvider.this_is_a_proper_cache_dir!(path, self.id == CBRAIN::SelfRemoteResourceId)
+      rescue => ex
+        is_ok = false
+        mess  = ex.message
+      end
+      unless is_ok
+        errors.add(:dp_cache_dir," does not exist, is unaccessible, contains data or is a system directory: #{mess}")
         return false
       end
     end

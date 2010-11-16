@@ -250,6 +250,9 @@ class DataProvider < ActiveRecord::Base
   # the revision number above in Revision_info.
   DataProviderCache_RevNeeded = 959
 
+  # Basenames for special files in caching system
+  DP_CACHE_ID_FILE  = "DP_Cache_Rev.id"
+  DP_CACHE_MD5_FILE = "DP_Cache_Key.md5"
 
 
   #################################################################
@@ -887,7 +890,7 @@ class DataProvider < ActiveRecord::Base
 
     # Try to read key from special file in cache root directory
     cache_root = cache_rootdir
-    key_file = (cache_root + "DP_Cache_Key.md5").to_s
+    key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     if File.exist?(key_file)
       @@key = File.read(key_file)  # a MD5 string, 32 hex characters
       @@key.gsub!(/\W+/,"") unless @@key.blank?
@@ -931,9 +934,12 @@ class DataProvider < ActiveRecord::Base
   def self.cache_revision_of_last_init(force = nil)
     return @@cache_rev if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
 
+    # Check that the root seems OK
+    cache_root = self.cache_rootdir # a Pathname obj
+    self.this_is_a_proper_cache_dir!(cache_root) # raises exception if bad dir
+
     # Try to read rev from special file in cache root directory
-    cache_root = cache_rootdir
-    rev_file = (cache_root + "DP_Cache_Rev.id").to_s
+    rev_file = (cache_root + DP_CACHE_ID_FILE).to_s
     if ! force && File.exist?(rev_file)
       @@cache_rev = File.read(rev_file)  # a numeric ID as ASCII
       @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
@@ -967,13 +973,51 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
+  # This method checks the given +cache_root+ to make
+  # sure it looks like a proper cache directory. The
+  # test succeeds if it contains the file DP_CACHE_ID_FILE
+  # (meaning it seems to have been used as a cache
+  # directory in the past) or if the directory is empty
+  # and writable. An exception is raised otherwise.
+  def self.this_is_a_proper_cache_dir!(cache_root,check_local_filesystem = true)
+
+    cache_root      = cache_root.to_s
+
+    cb_error "Invalid blank DP cache directory configured." if cache_root.blank?
+    cb_error "DP cache directory configured cannot be a system temp dir: '#{cache_root}'" if
+      cache_root.to_s =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
+    return true unless check_local_filesystem
+
+    cb_error "DP cache directory doesn't exist: '#{cache_root}'" unless
+      File.directory?(cache_root)
+    cb_error "DP cache directory not accessible: '#{cache_root}'" unless
+      File.readable?(cache_root) && File.writable?(cache_root)
+
+    cache_root_path = Pathname.new(cache_root)
+    rev_file        = (cache_root_path + DP_CACHE_ID_FILE).to_s
+    return true if File.exist?(rev_file)
+
+    entries = Dir.entries(cache_root.to_s) rescue nil
+    if entries.nil? # exception?
+      cb_error "Cannot inspect content of DP cache directory '#{cache_root}' ?"
+    end
+    entries.reject! { |e| e == "." || e == ".." || e == ".DS_Store" }
+    if entries.size > 0
+      maxshow = entries.size > 5 ? 5 : entries.size
+      cb_error "It seems the configured DP cache directory '#{cache_root}' contains data!\n" +
+               "Found these files: " + entries[0..(maxshow-1)].join(", ") + "\n"
+    end
+
+    return true
+  end
+
   # Root directory for ALL DataProviders caches:
   #     "/CbrainCacheDir"
   # This is a class method.
   def self.cache_rootdir #:nodoc:
-    @conf_dir ||= RemoteResource.current_resource.dp_cache_dir
-    cb_error "No cache directory for Data Providers configured!" if @conf_dir.blank? || ! ( @conf_dir.is_a?(String) || @conf_dir.is_a?(Pathname) )
-    @conf_dir = Pathname.new(@conf_dir)
+    @cache_rootdir ||= RemoteResource.current_resource.dp_cache_dir
+    cb_error "No cache directory for Data Providers configured!" if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
+    @cache_rootdir = Pathname.new(@cache_rootdir)
   end
 
   def self.rsync_ignore_patterns #:nodoc:

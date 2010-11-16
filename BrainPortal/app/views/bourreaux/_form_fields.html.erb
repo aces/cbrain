@@ -2,7 +2,11 @@
       <% is_bourreau = @bourreau.is_a?(Bourreau) %>
 
       <p><label for="name">Name</label><br/>
-      <%= f.text_field :name %></p>
+      <%= f.text_field :name %><br/>
+      <small>Important note: this name must also be changed accordingly in the config file<br/>
+      <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em><br/>
+      for this server to restart properly later on.</small>
+      </p>
 
       <% if ! is_bourreau %>
       <p><label for="site_url_prefix">Site URL Home Page</label><br/>

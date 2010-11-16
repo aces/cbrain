@@ -116,7 +116,8 @@ class PortalSanityChecks < CbrainChecker
                    :password              => pwdduh,
                    :password_confirmation => pwdduh,
                    :email                 => 'admin@here',
-                   :role                  => 'admin'
+                   :role                  => 'admin',
+                   :password_reset        => 'true'
                    )
       puts("C> ******************************************************")
       puts("C> *  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
