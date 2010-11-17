@@ -10,7 +10,10 @@
     <% if current_user %>
       <%= link_to 'My Account', current_user %>
     <% end %>
-    <a href="http://wiki.cbrain.mcgill.ca/cbrain/cbrain" onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">User Manual</a>
+    <% help_url = RemoteResource.current_resource.help_url %>
+    <% unless help_url.blank? %>
+      <a href="<%= url_for(help_url.strip) %>" onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">User Manual</a>
+    <% end %>
     <a class="credits" href="/">Credits</a>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>

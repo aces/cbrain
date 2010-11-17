@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101117182657) do
+ActiveRecord::Schema.define(:version => 20101117210017) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -183,6 +183,7 @@ ActiveRecord::Schema.define(:version => 20101117182657) do
     t.integer  "workers_verbose"
     t.text     "dp_ignore_patterns"
     t.string   "site_url_prefix"
+    t.string   "help_url"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

@@ -1,5 +1,6 @@
 
       <% is_bourreau = @bourreau.is_a?(Bourreau) %>
+      <% is_portal   = @bourreau.is_a?(BrainPortal) %>
 
       <p><label for="name">Name</label><br/>
       <%= f.text_field :name %><br/>
@@ -8,9 +9,14 @@
       for this server to restart properly later on.</small>
       </p>
 
-      <% if ! is_bourreau %>
+      <% if is_portal %>
       <p><label for="site_url_prefix">Site URL Home Page</label><br/>
       <%= f.text_field :site_url_prefix %></p>
+
+      <p><label for="help_url">URL for local documentation</label><br/>
+      <%= f.text_field :help_url %><br/>
+      <small>If set, the portal will show a link called 'User Manual' in the account bar at the top.</small>
+      </p>
       <% end %>
 
       <p><label for="description">Description</label><br/>
