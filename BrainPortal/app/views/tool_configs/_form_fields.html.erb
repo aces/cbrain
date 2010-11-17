@@ -5,6 +5,12 @@
   <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+  <span title="Project access for this configuration.">
+    <p><label for="group_id">Available to members of project:</label>
+    <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+    </p>
+  </span>
+
   <span title="Brief description for this configuration.">
     <p><label for="description">Description:</label><br/>
     <%= text_area_tag "tool_config[description]", @tool_config.description, { :cols => 40, :rows => 10 } %><br/>

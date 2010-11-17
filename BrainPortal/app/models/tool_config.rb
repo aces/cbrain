@@ -24,12 +24,28 @@
 class ToolConfig < ActiveRecord::Base
 
   Revision_info="$Id$"
-  
+
   serialize      :env_array
 
   belongs_to     :bourreau     # can be nil; it means it applies to all bourreaux
   belongs_to     :tool         # can be nil; it means it applies to all tools
   has_many       :cbrain_tasks
+  belongs_to     :group        # can be nil; means 'everyone' in that case.
+
+  # Provides a default group_id (backward compatibility)
+  def group #:nodoc:
+    Group.find(self.group_id)
+  end
+
+  # Provides a default group_id (backward compatibility)
+  def group_id #:nodoc:
+    myid = self.read_attribute(:group_id)
+    return myid if myid
+
+    myid = Group.find_by_name('everyone').id
+    self.write_attribute(:group_id, myid)
+    myid
+  end
 
   # Returns the first line of the description. This is used
   # to represent the 'name' of the version.
@@ -68,6 +84,7 @@ class ToolConfig < ActiveRecord::Base
   def to_bash_prologue
     tool     = self.tool
     bourreau = self.bourreau
+    group    = self.group
 
     script = <<-HEADER
 
@@ -75,6 +92,7 @@ class ToolConfig < ActiveRecord::Base
 # Configuration: # #{self.id}
 # Tool:          #{tool     ? tool.name     : "ALL"}
 # Bourreau:      #{bourreau ? bourreau.name : "ALL"}
+# Group:         #{group    ? group.name    : "everyone"}
 #===================================================
 
     HEADER

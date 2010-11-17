@@ -182,7 +182,9 @@ class TasksController < ApplicationController
     @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
     if @task.bourreau_id
       tool = @task.tool
-      lastest_toolconfig = ToolConfig.find(:last, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
+      toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
+      toolconfigs.reject! { |tc| ! tc.group.can_be_accessed_by?(current_user) }
+      lastest_toolconfig = toolconfigs.last
       @task.tool_config_id = lastest_toolconfig.id if lastest_toolconfig
     end
 
@@ -546,7 +548,11 @@ class TasksController < ApplicationController
     valid_bourreau_ids = @bourreaux.index_by &:id
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing tasks have more limited choices.
     all_tool_configs   = tool.tool_configs # all of them, too much actually
-    all_tool_configs.reject! { |tc| tc.bourreau_id.blank? || ! valid_bourreau_ids[tc.bourreau_id] }
+    all_tool_configs.reject! do |tc|
+      tc.bourreau_id.blank? ||
+      ! valid_bourreau_ids[tc.bourreau_id] ||
+      ! tc.group.can_be_accessed_by?(@task.user)
+    end
 
     @tool_configs_select = []   # [ [ groupname, [ [pair], [pair] ] ], [ groupname, [ [pair], [pair] ] ] ]
     ordered_bourreaux = valid_bourreau_ids.values.sort { |a,b| a.name <=> b.name }

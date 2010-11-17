@@ -48,6 +48,8 @@ class ToolConfigsController < ApplicationController
 
     @tool_config.env_array ||= []
 
+    @tool_config.group_id = Group.find_by_name("everyone")
+
     respond_to do |format|
       format.html { render :action => :edit }
       format.xml  { render :xml => @tool_config }
@@ -58,6 +60,8 @@ class ToolConfigsController < ApplicationController
     id           = params[:id]
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []
+
+    @tool_config.group_id ||= Group.find_by_name("everyone")
       
     respond_to do |format|
       format.html # edit.html.erb
@@ -90,7 +94,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :description, :script_prologue ].each do |att|
+    [ :description, :script_prologue, :group_id ].each do |att|
        @tool_config[att] = form_tool_config[att]
     end
 
@@ -112,6 +116,8 @@ class ToolConfigsController < ApplicationController
     if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
       @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
     end
+
+    @tool_config.group_id ||= Group.find_by_name("everyone")
 
     respond_to do |format|
       if @tool_config.errors.empty? && @tool_config.save
