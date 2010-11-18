@@ -24,7 +24,7 @@
         For tool <strong><%= h(@tool_config.tool.name) %></strong> running on Execution Server <strong><%= h(@tool_config.bourreau.name) %></strong>
         <br>Configured as version: <%= overlay_description(@tool_config.description) %>
         <%= link_to "Edit", edit_tool_config_path(@tool_config) %>
-        <br>Available to member of project <%= link_to_group_if_accessible(@tool_config.group) %>
+        <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
       </LI>
     <% end %>
   </UL>

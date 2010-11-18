@@ -47,6 +47,12 @@ class ToolConfig < ActiveRecord::Base
     myid
   end
 
+  # To make it somewhat compatible with the ResourceAccess module,
+  # here's this model's own method for checking if it's visible to a user.
+  def can_be_accessed_by?(user)
+    self.group.can_be_accessed_by?(user)
+  end
+
   # Returns the first line of the description. This is used
   # to represent the 'name' of the version.
   def short_description

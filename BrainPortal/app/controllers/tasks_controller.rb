@@ -183,7 +183,7 @@ class TasksController < ApplicationController
     if @task.bourreau_id
       tool = @task.tool
       toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
-      toolconfigs.reject! { |tc| ! tc.group.can_be_accessed_by?(current_user) }
+      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
       @task.tool_config_id = lastest_toolconfig.id if lastest_toolconfig
     end
@@ -551,7 +551,7 @@ class TasksController < ApplicationController
     all_tool_configs.reject! do |tc|
       tc.bourreau_id.blank? ||
       ! valid_bourreau_ids[tc.bourreau_id] ||
-      ! tc.group.can_be_accessed_by?(@task.user)
+      ! tc.can_be_accessed_by?(@task.user)
     end
 
     @tool_configs_select = []   # [ [ groupname, [ [pair], [pair] ] ], [ groupname, [ [pair], [pair] ] ] ]

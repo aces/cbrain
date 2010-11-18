@@ -2,11 +2,21 @@
 <% tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore %>
 
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>" title="<%= h tool.description %>">
-  <td><%=h tool.name %></td>
+  <td><%= h tool.name %></td>
+  <td><%= h tool.category %></td>
   <td><%= link_to_user_if_accessible(tool.user) %>
   <td><%= link_to_group_if_accessible(tool.group) %></td>
-  <td><%= tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.map{|b| link_to_bourreau_if_accessible(b)}.join("<br>") %></td>
-  <td><%=h tool.category %></td>
+  <td class="left">
+    <% tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b| %>
+      <% tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => b.id, :tool_id => tool.id }) %>
+      <% tcs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) } %>
+      <%= link_to_bourreau_if_accessible(b) %>
+      <% if tcs.size >= 1 %>
+        (<%= pluralize tcs.size, "version" %>)
+      <% end %>
+      <br/>
+    <% end %>
+  </td>
 
   <% if current_user.has_role?(:admin) %>
     <td><%= link_to 'Edit', edit_tool_path(tool), :class  => "action_link" %></td>
