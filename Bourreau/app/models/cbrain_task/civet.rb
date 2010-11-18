@@ -201,6 +201,12 @@ class CbrainTask::Civet < ClusterTask
         args += "-VBM-fwhm #{params[:VBM_fwhm]} "   if ! params[:VBM_fwhm].blank?
     end
 
+    reset_from = params[:reset_from]
+    if ! reset_from.blank?
+      cb_error "Internal error: value for 'reset_from' is not a proper identifier?" unless reset_from =~ /^\w+$/;
+      args += "-reset-from #{reset_from} "
+    end
+
     civet_command = "CIVET_Processing_Pipeline -prefix #{prefix} -source mincfiles -target civet_out -spawn #{args} -run #{dsid}"
 
     self.addlog("Full CIVET command:\n  #{civet_command.gsub(/ -/, "\n  -")}")

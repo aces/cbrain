@@ -1,4 +1,4 @@
 <% if @filter_params["pagination"] == 'on' %>
    <%= will_paginate @paginated_list, :container => false %>
-   (<%= @total_tasks %> tasks)
+   (<%= pluralize @total_tasks, "task" %>)
 <% end %>
