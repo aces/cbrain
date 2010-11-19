@@ -185,7 +185,7 @@ class User < ActiveRecord::Base
       end
        
       all_groups = site_groups | self_groups
-      all_groups = all_groups.first if all_groups.size == 1
+      all_groups = all_groups.first if all_groups.size == 1 && arg1 != :all
       @all_group_list[cache_key] = all_groups
     else                  
       @all_group_list[cache_key] = self.groups.find(arg1, options)

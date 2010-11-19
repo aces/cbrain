@@ -1,0 +1,131 @@
+
+<%
+#######################################
+# Multi Select Preparation
+#######################################
+%>
+
+<%
+    @other_work_groups = WorkGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
+    @other_work_groups.sort! { |a,b| a.name.casecmp(b.name) }
+    @other_site_groups = SiteGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
+    @other_site_groups.sort! { |a,b| a.name.casecmp(b.name) }
+
+    user_ids = @users.index_by &:id
+    @users_multi_select_classes = {}
+    @other_work_groups.each do |group|
+      group.users.select { |u| user_ids[u.id] }.each do |u|
+        @users_multi_select_classes[u] ||= ""
+        @users_multi_select_classes[u]  += " " if ! @users_multi_select_classes[u].blank?
+        @users_multi_select_classes[u]  += "workgroup_#{group.id}"
+      end
+    end
+
+    @other_site_groups.each do |group|
+      group.users.select { |u| user_ids[u.id] }.each do |u|
+        @users_multi_select_classes[u] ||= ""
+        @users_multi_select_classes[u]  += " " if ! @users_multi_select_classes[u].blank?
+        @users_multi_select_classes[u]  += "sitegroup_#{group.id}"
+      end
+    end
+%>
+
+<%
+#######################################
+# Users Checkbox Table
+#######################################
+%>
+
+<label for="users">Users in project:</label>
+<table class="button_table">
+<% numcol = 5 %>
+<% @users.each_with_index do |user,i| %>
+  <% colnum = i % numcol %>
+  <% if colnum == 0 %>
+    <tr>
+  <% end %>
+    <td class="left_align no_wrap">
+      <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
+      <%= h(user.full_name) -%>
+    </td>
+  <% if colnum == numcol-1 %>
+    </tr>
+  <% elsif i == @users.size - 1 %>
+    <% if i >= numcol %>
+      <td colspan="<%= numcol - (colnum + 1) %>"></td>
+    <% end %>
+    </tr>
+  <% end %>
+<% end %>
+</table>
+
+<%
+#######################################
+# WorkGroup Multi Select
+#######################################
+%>
+
+<% if @other_work_groups.size > 0 %>
+
+<br/>
+
+<label>Quick select based on other work Projects:</label>
+<table class="button_table">
+<% numcol = 5 %>
+<% @other_work_groups.each_with_index do |group,i| %>
+  <% colnum = i % numcol %>
+  <% if colnum == 0 %>
+    <tr>
+  <% end %>
+    <td class="left_align no_wrap">
+      <%= select_all_checkbox "workgroup_#{group.id}" %>
+      <%= h(group.name) -%>
+    </td>
+  <% if colnum == numcol-1 %>
+    </tr>
+  <% elsif i == @other_work_groups.size - 1 %>
+    <% if i >= numcol %>
+      <td colspan="<%= numcol - (colnum + 1) %>"></td>
+    <% end %>
+    </tr>
+  <% end %>
+<% end %>
+</table>
+
+<% end %>
+
+<%
+#######################################
+# SiteGroup Multi Select
+#######################################
+%>
+
+<% if @other_site_groups.size > 0 %>
+
+<br/>
+
+<label>Quick select based on other site Projects:</label>
+<table class="button_table">
+<% numcol = 5 %>
+<% @other_site_groups.each_with_index do |group,i| %>
+  <% colnum = i % numcol %>
+  <% if colnum == 0 %>
+    <tr>
+  <% end %>
+    <td class="left_align no_wrap">
+      <%= select_all_checkbox "sitegroup_#{group.id}" %>
+      <%= h(group.name) -%>
+    </td>
+  <% if colnum == numcol-1 %>
+    </tr>
+  <% elsif i == @other_site_groups.size - 1 %>
+    <% if i >= numcol %>
+      <td colspan="<%= numcol - (colnum + 1) %>"></td>
+    <% end %>
+    </tr>
+  <% end %>
+<% end %>
+</table>
+
+<% end %>
+

@@ -96,7 +96,7 @@ class Site < ActiveRecord::Base
   # Returns the SystemGroup associated with the site; this is a
   # group with the same name as the site.
   def system_group
-    SystemGroup.find(:first, :conditions => { :name => self.login } )
+    SystemGroup.find(:first, :conditions => { :name => self.name } )
   end
 
   # An alias for system_group()

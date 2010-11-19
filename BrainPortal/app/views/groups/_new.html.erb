@@ -15,15 +15,7 @@
   <% if current_user.has_role?(:user) %>
     <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
   <% else %>
-    <label for="users">Users in project:</label>
-    <table class="button_table">
-       <% for user in @users %>
-           <tr>
-             <td class="left_align"><%= check_box_tag("group[user_ids][]", user.id.to_s) %></td>
-             <td class="left_align"><%= h(user.full_name) -%></td>
-           </tr>
-       <% end %>
-    </table>
+    <%= render :partial => 'users_form' %>
   <% end %>
   <p>
     <%= f.submit "Create" %>

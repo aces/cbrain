@@ -24,13 +24,7 @@ class GroupsController < ApplicationController
     
     #For new panel
     @group = WorkGroup.new
-    if current_user.has_role? :admin
-      @users = User.all.reject{|u| u.login == 'admin'}.sort { |a,b| a.login <=> b.login }
-    elsif current_user.has_role? :site_manager
-      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-    else
-      @users = [ current_user ]
-    end
+    @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
 
     respond_to do |format|
       format.html # index.html.erb
@@ -45,13 +39,7 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit  #:nodoc:
     @group = current_user.available_groups(params[:id], :conditions  => {:type  => "WorkGroup"})
-    if current_user.has_role? :admin
-      @users = User.all.reject{|u| u.login == 'admin'}
-    elsif current_user.has_role? :site_manager
-      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-    else
-      @users = [current_user]
-    end
+    @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
   end
 
   # POST /groups
@@ -63,20 +51,13 @@ class GroupsController < ApplicationController
       @group.site = current_user.site
     end
 
-    if current_user.has_role? :admin
-      @users = User.all.reject{|u| u.login == 'admin'}
-    elsif current_user.has_role? :site_manager
-      @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-    else
-      @users = [current_user]
-    end
-
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Project was successfully created.'
         format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
+        @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
         format.js
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -95,13 +76,7 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
-        if current_user.has_role? :admin
-          @users = User.all.reject{|u| u.login == 'admin'}
-        elsif current_user.has_role? :site_manager
-          @users = current_user.site.users.all.reject{|u| u.login == 'admin'}
-        else
-          @users = [current_user]
-        end
+        @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -135,5 +110,5 @@ class GroupsController < ApplicationController
     
     redirect_to :controller  => redirect_controller, :action  => redirect_action, :id  => redirect_id
   end
-  
+
 end
