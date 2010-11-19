@@ -42,16 +42,16 @@ require 'digest/sha1'
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
-  has_many                :tools
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources
-  has_many                :messages
   has_many                :cbrain_tasks
   has_and_belongs_to_many :groups
   belongs_to              :site
 
   #The following resources should be destroyed when a given user is destroyed.
+  has_many                :messages,        :dependent => :destroy
+  has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
   has_many                :feedbacks,       :dependent => :destroy
   has_one                 :user_preference, :dependent => :destroy
@@ -299,6 +299,9 @@ class User < ActiveRecord::Base
     end
     unless self.remote_resources.empty?
       cb_error "User #{self.login} cannot be destroyed while there are still remote resources on the account.", :action  => :index
+    end
+    unless self.cbrain_tasks.empty?
+      cb_error "User #{self.login} cannot be destroyed while there are still tasks on the account.", :action  => :index
     end
     destroy_system_group
   end
