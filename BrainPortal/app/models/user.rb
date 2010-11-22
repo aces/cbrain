@@ -50,6 +50,7 @@ class User < ActiveRecord::Base
   belongs_to              :site
 
   #The following resources should be destroyed when a given user is destroyed.
+  has_many                :statistics,      :dependent => :destroy
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
