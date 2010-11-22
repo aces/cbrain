@@ -80,6 +80,7 @@ class User < ActiveRecord::Base
   before_save               :encrypt_password
   after_update              :system_group_site_update
   before_destroy            :validate_destroy
+  after_destroy             :destroy_user_sessions
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
@@ -346,6 +347,19 @@ class User < ActiveRecord::Base
       group_ids << site_group.id
     end
     self.group_ids = group_ids
+  end
+
+  def destroy_user_sessions #:nodoc:
+    myid = self.id
+    return true unless myid # defensive
+    sessions = Session.all.select do |s|
+      (s.user_id && s.user_id == myid) ||
+      (s.data && s.data[:user_id] && s.data[:user_id] == myid)
+    end
+    sessions.each do |s|
+      s.destroy rescue true
+    end
+    true
   end
 
 end
