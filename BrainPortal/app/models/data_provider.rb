@@ -371,7 +371,7 @@ class DataProvider < ActiveRecord::Base
   # The value returned is a Pathname object, so be careful
   # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
+    #cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cache_full_pathname(userfile)
   end
   

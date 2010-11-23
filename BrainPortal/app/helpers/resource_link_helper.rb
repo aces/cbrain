@@ -173,8 +173,10 @@ module ResourceLinkHelper
       path = bourreau_path(model_obj.id) if model_class <= BrainPortal
     end
     user ||= current_user
-    if ((!model_obj.respond_to?(:available?)          || model_obj.available?) &&
-        (!model_obj.respond_to?(:can_be_accessed_by?) || model_obj.can_be_accessed_by?(user, :read)))
+    if (
+      # (!model_obj.respond_to?(:available?)          || model_obj.available?) &&
+        (!model_obj.respond_to?(:can_be_accessed_by?) || model_obj.can_be_accessed_by?(user, :read))
+       )
       link_to(name, path)
     else
       name

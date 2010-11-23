@@ -9,7 +9,12 @@
     file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
                                :html  => {:class  => "action_link"}) 
   %>
-  <br>
+
+  <% if @userfile.can_be_accessed_by?(current_user) %>
+    <div class="menu_bar menu_bar_left">
+      <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "button" %>
+    </div>
+  <% end %>
   
   <table class="property_list edit_file_table">
     
@@ -135,6 +140,11 @@
 
       <% if @sync_status =~ /^To/ %>
         <p>This data is currently being synchronized.</p>
+      <% elsif ! (@userfile.data_provider.online?) %>
+        <p>This data is not currently synchronized and<BR>
+           and its data provider is offline, so its content
+           is not viewable.
+        </p>
       <% elsif ! (@userfile.data_provider.not_syncable?) %>
         <p>This data is not currently synchronized.<BR>
         Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
@@ -142,10 +152,10 @@
         This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
         </p>
       <% end %>
-      <% end %>
-  
-      <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "action_link" %>
+
     <% end %>
+  
+  <% end %>
   
   <P>
     
