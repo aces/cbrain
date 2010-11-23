@@ -9,6 +9,10 @@
 
 <table class="property_list show_file_table">
    <tr class="<%= cycle('list-odd', 'list-even') %>">
+     <th class="right_align">Description:</th>
+     <td><%= overlay_description(@site.description) %></td>
+   </tr>
+   <tr class="<%= cycle('list-odd', 'list-even') %>">
      <th class="right_align">Managers:</th>
      <td><%= @site.managers.collect(&:login).join(", ") %></td>
    </tr>

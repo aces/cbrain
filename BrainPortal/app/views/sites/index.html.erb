@@ -11,6 +11,7 @@
 <table class="resource_list" id="site_table">
   <tr>
     <th>Name</th>
+    <th>Description</th>
     <th>Managers</th>
     <th>Number of Users</th>
     <th>Number of Projects</th>
@@ -22,7 +23,7 @@
   <% end %>
 
   <% if @sites.empty? %>
-    <tr><td colspan="6">There are not sites defined yet.</td></tr>
+    <tr><td colspan="7">There are not sites defined yet.</td></tr>
   <% end %>
 
 </table>

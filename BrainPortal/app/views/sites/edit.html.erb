@@ -1,7 +1,7 @@
 
 <% title 'Edit Site' %>
 
-<h2>Editing <%= @site.name %></h2>
+<h2>Editing Site <%= @site.name %></h2>
 
 <div class="generalbox">
 
@@ -13,6 +13,15 @@
       <%= f.label :name %><br/>
       <%= f.text_field :name %>
       <P>
+
+      <span title="Brief description of the site.">
+        <p><label for="description">Description</label><br/>
+        <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
+        <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
+        </p>
+      </span>
+      <P>
+
     </div>
 
     <div class="display_cell">

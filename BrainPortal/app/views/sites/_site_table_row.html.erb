@@ -1,6 +1,7 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="site_<%= site.id %>">
-  <td><%=link_to_site_if_accessible(site) %></td>
+  <td><%= link_to_site_if_accessible(site) %></td>
+  <td><%= overlay_description(site.description) %></td>
   <td><%= site.managers.sort{|a, b| a.login.casecmp(b.login)}.collect{ |m| link_to_user_if_accessible(m)}.join('<BR>') %></td>
   <td><%= site.users.count %></td>
   <td><%= site.groups.count %></td>   
