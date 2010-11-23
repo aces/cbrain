@@ -26,6 +26,21 @@ class GroupsController < ApplicationController
     @group = WorkGroup.new
     @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
 
+    @group_id_2_user_counts = {}
+    User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+      @group_id_2_user_counts[user.group_id.to_i] = user.total
+    end
+
+    @group_id_2_userfile_counts = {}
+    Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+      @group_id_2_userfile_counts[userfile.group_id] = userfile.total
+    end
+
+    @group_id_2_task_counts = {}
+    CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+      @group_id_2_task_counts[task.group_id] = task.total
+    end
+
     respond_to do |format|
       format.html # index.html.erb
       format.xml  { render :xml => @groups }
