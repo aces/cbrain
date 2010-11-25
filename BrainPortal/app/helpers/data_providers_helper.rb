@@ -231,7 +231,7 @@ module DataProvidersHelper
   # The values are spread from angle 240 down towards angle 0
   def size_to_color(size,max=500_000_000_000)
     size     = max if size > max
-    percent  = size.to_f/max.to_f
+    percent  = Math.log(1+size.to_f)/Math.log(max.to_f)
     angle    = 240-240*percent # degrees
 
     r_adist = (angle -   0.0).abs ; r_adist = 360.0 - r_adist if r_adist > 180.0

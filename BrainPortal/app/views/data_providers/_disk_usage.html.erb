@@ -32,7 +32,7 @@
               <% next %>
             <% end %>
 
-            <% cellcolor = size_to_color(cell[:size] || 0, 500_000_000_000) %>
+            <% cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) %>
 
             <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
                 <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
@@ -91,7 +91,7 @@
               <% next %>
             <% end %>
 
-            <% cellcolor = size_to_color(cell[:size] || 0, 500_000_000_000) %>
+            <% cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) %>
 
             <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
               <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
