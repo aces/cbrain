@@ -32,19 +32,9 @@
               <% next %>
             <% end %>
 
-            <% cellcolor = if cell[:size]    >= 10_000_000_000 # 10 gig
-                              "#ff4444"
-                           elsif cell[:size] >=  1_000_000_000 # 1 gig
-                              "#ff8888"
-                           elsif cell[:size] >=    100_000_000 # 100 megs
-                              "#ffcccc"
-                           elsif cell[:size] >=     10_000_000 # 10 megs
-                              "#ffffcc"
-                           else
-                              "#ffffff"
-                           end
-            %>
-            <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
+            <% cellcolor = size_to_color(cell[:size] || 0, 500_000_000_000) %>
+
+            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
                 <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
                 <% if cell[:unknowns] > 0 %>
                    <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
@@ -101,19 +91,9 @@
               <% next %>
             <% end %>
 
-            <% cellcolor = if cell[:size]    > 10_000_000_000 # 10 gig
-                              "#ff4444"
-                           elsif cell[:size] >  1_000_000_000 # 1 gig
-                              "#ff8888"
-                           elsif cell[:size] >    100_000_000 # 100 megs
-                              "#ffcccc"
-                           elsif cell[:size] >     10_000_000 # 10 megs
-                              "#ffffcc"
-                           else
-                              "#ffffff"
-                           end
-            %>
-            <td bgcolor="<%= cellcolor %>"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
+            <% cellcolor = size_to_color(cell[:size] || 0, 500_000_000_000) %>
+
+            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
               <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
               <% if cell[:unknowns] > 0 %>
                 <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
