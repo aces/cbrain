@@ -1,4 +1,5 @@
-<% file_list ||= @userfile.list_files(params[:collection_dir], [:regular, :directory]) %>
+
+<% file_list ||= ( @userfile.list_files(params[:collection_dir], [:regular, :directory]) rescue [] ) %>
 
 <% if file_list.blank? %>
   <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td> (<span class="warning">Empty</span>) </td><td></td></tr>
