@@ -4,11 +4,9 @@
 <!-- For Data Providers -->
 <!-- *********************************** -->
 
-<% ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
+<% if @report_dps_all.size > 0 && @report_users_all.size > 0 %>
 
-  <% if @report_dps_all.size > 0 && @report_users_all.size > 0 %>
-
-  <h3>Disk Usage Statistics for Data Providers</h3>
+  <h3>Disk Usage Statistics<%= " for Data Providers" if @report_dps_all.size > 1 %></h3>
  
   <table class="resource_list">
 
@@ -47,14 +45,19 @@
 
   </table>
    
-  <% end %>
+<% end %>
+
+
+
 
   <!-- *********************************** -->
   <!-- Disk usage summary -->
   <!-- For Data Provider Caches -->
   <!-- *********************************** -->
-   
-  <% if @report_rrs.size > 0 && @report_users_all.size > 0 %>
+
+<% if @report_rrs.size > 0 && @report_users_all.size > 0 %>
+
+  <% ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
 
   <h3>Disk Usage Statistics for Data Provider Caches</h3>
    
@@ -120,21 +123,20 @@
 
   </table>
 
-  <% end %>
-   
   <%= hidden_field_tag "cleanup_before", @cache_older %>
 
-<% end %> <!-- form -->
+  <% end %> <!-- form -->
 
-<P>
+  <P>
 
-<!-- *********************************** -->
-<!-- Refresh form -->
-<!-- *********************************** -->
+  <!-- *********************************** -->
+  <!-- Refresh form -->
+  <!-- *********************************** -->
 
-<% ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
-  Files reported under the <em>Caches</em> columns were last accessed
-  <%= select_tag("cache_older", options_for_select( @offset_times, @cache_older )) %>
-  <%= submit_tag 'Refresh' %>
-<% end %> <!-- form -->
+  <% ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
+    Files reported under the <em>Caches</em> columns were last accessed
+    <%= select_tag("cache_older", options_for_select( @offset_times, @cache_older )) %>
+    <%= submit_tag 'Refresh' %>
+  <% end %> <!-- form -->
 
+<% end %>

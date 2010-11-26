@@ -56,6 +56,29 @@ class DataProvidersController < ApplicationController
     @fileclasses_totcount = stats[:fileclasses_totcount]
     @user_totcount        = stats[:user_totcount]
 
+    # List of acceptable users
+    userlist         = if check_role(:admin)
+                         User.all
+                       elsif check_role(:site_manager)
+                         current_user.site.users
+                       else
+                         [ current_user ]
+                       end
+
+    # Create disk usage statistics table
+    stats_options = { :users            => userlist,
+                      :providers        => [ @provider ],
+                      :remote_resources => [],
+                    }
+    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
+
+    # Keys and arrays into statistics tables, for HTML output
+    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
+    @report_rrs         = @report_stats['!rrs!']
+    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
+    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
+    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
+    
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @provider }
@@ -241,7 +264,7 @@ class DataProvidersController < ApplicationController
     # Remote resources in statistics table
     rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
 
-    # Create statistics table
+    # Create disk usage statistics table
     stats_options = { :users            => userlist,
                       :providers        => @providers,
                       :remote_resources => rrlist,

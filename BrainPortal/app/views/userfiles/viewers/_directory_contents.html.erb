@@ -2,7 +2,7 @@
 <% file_list ||= ( @userfile.list_files(params[:collection_dir], [:regular, :directory]) rescue [] ) %>
 
 <% if file_list.blank? %>
-  <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td> (<span class="warning">Empty</span>) </td><td></td></tr>
+  <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td> (<span class="warning">Empty</span>) </td></tr>
 <% else %>
   <% for file in file_list[0,100] %>
      <% if file.symbolic_type == :directory %>
@@ -20,3 +20,4 @@
     <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td class="left"> <%= "&nbsp" * 6 * file_list.first.depth %> ... <%= image_tag "/images/lotsa_files_icon.png" %> <%= pluralize(file_list.size-100, "more entry") %></td><td></td></tr>
   <% end %>
 <% end %>
+
