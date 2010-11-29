@@ -1,17 +1,18 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
-  <td class="left"><%= h(user.full_name) %></td>
   <td><%= link_to_user_if_accessible(user) %></td>
-  <td><%=h user.email %></td>
+  <td class="left"><%= h(user.full_name) %></td>
+  <td><%= h user.email %></td>
+  <td><%= user.last_connected_at ? to_localtime(user.last_connected_at,:datetime) : "Unknown" %></td>
   <% groups = user.groups.reject{|g| g.name == 'everyone' || g.name == user.login }.sort{|a, b| a.name.casecmp(b.name)} %>
   <td><%= groups.map{|g| link_to_group_if_accessible(g)}.join('<BR>') %></td>
-  <td><%=h user.role.humanize %></td>
+  <td><%= h user.role.humanize %></td>
   <td><%= link_to_site_if_accessible(user.site) %></td>
   <td><%= h user.city %></td>
   <td><%= h user.country %></td>
   <td><%= h(user.time_zone || "(Unset)") %></td>
-  <td><%=h user.userfiles.count %></td>
-  <td><%=h user.cbrain_tasks.count %></td>
+  <td><%= h user.userfiles.count %></td>
+  <td><%= h user.cbrain_tasks.count %></td>
   <% unless user.login == 'admin' %>
     <td>
       <%= 
