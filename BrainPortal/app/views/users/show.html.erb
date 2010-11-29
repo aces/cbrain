@@ -9,44 +9,44 @@
 
 <div>
 
-   <table class = "property_list show_general_table">
-     <tr>
+   <table class = "property_list">
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Name:</th>
        <td><%=h @user.full_name %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Login:</th>
        <td><%=h @user.login %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Role:</th>
        <td><%=h @user.role.humanize %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Email:</th>
        <td><%=h @user.email %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Site:</th>
        <td><%= link_to_site_if_accessible(@user.site) %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>City:</th>
        <td><%= h(@user.city) %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Country:</th>
         <td><%= h(@user.country) %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Time Zone:</th>
        <td><%= h(@user.time_zone || "(Unset)") %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Default Execution Server:</th>
        <td><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
      </tr>
-     <tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Default Data Provider:</th>
        <td><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
      </tr>

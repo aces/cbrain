@@ -225,7 +225,6 @@ tr.list-unavailable {
     font-size: 11px;
     color: #444444;
     white-space: nowrap;
-    width: 20em;
 }
 
 .property_list tr{
@@ -1194,28 +1193,6 @@ pre {
 .show_task_table td {
     text-align: left;
     margin-right: 0em;
-}
-
-
-/* % ######################################################### */
-/* % General Show and Edit */
-/* % ######################################################### */
-
-.show_general_table {
-    clear: both;
-    margin-right: auto;
-    margin-left: 0px;
-    width: auto;
-}
-
-.show_general_table td {
-    text-align: left;
-    margin-right: 0em;
-    background-color: #F6F6F6;
-}
-
-.show_general_table th{
-    width: 10em;
 }
 
 
