@@ -1,7 +1,4 @@
 ActionController::Routing::Routes.draw do |map|
-  map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
-
-  map.resources :statistics
 
   # Session
   map.resource  :session
@@ -14,11 +11,12 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :custom_filters
   map.resources :tool_configs
   map.resources :user_preferences
-  map.resources :feedbacks,      :collection => { :delete_feedback => :delete }
   map.resources :tags
-  map.resources :messages,       :collection => { :delete_messages => :delete }
+  map.resources :statistics
 
   # Standard CRUD resources, with extra methods
+  map.resources :feedbacks,      :collection => { :delete_feedback => :delete }
+  map.resources :messages,       :collection => { :delete_messages => :delete }
   map.resources :users,          :member     => { :switch           => :post },
                                  :collection => { :request_password => :get,
                                                   :send_password    => :post }
@@ -40,18 +38,7 @@ ActionController::Routing::Routes.draw do |map|
                                                   :update_multiple      => :put,  
                                                   :change_provider      => :post, 
                                                   :compress             => :post }
-
-  # Redirect for polymorphisms
-  map.resources :single_files,            :controller => :userfiles  
-  map.resources :file_collection,         :controller => :userfiles  
-  map.resources :civet_collection,        :controller => :userfiles  
-  map.resources :civet_study,             :controller => :userfiles  
-  map.resources :macacc_collection,       :controller => :userfiles
-
-  map.resources :work_groups,             :controller => :groups     
-  map.resources :system_groups,           :controller => :groups     
-  map.resources :userfile_custom_filters, :controller => :custom_filters
-  map.resources :task_custom_filters,     :controller => :custom_filters
+  map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
 
   # Special named routes
   map.home        '/home',                :controller => 'portal',   :action => 'welcome'

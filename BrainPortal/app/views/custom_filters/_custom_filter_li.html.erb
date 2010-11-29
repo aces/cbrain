@@ -11,5 +11,5 @@
         <%= render :partial  => "custom_filters/edit", :locals  => {:custom_filter  => filter} %>
       </div>
    <% end %>
-   <%= ajax_link 'Delete', filter, :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete, :datatype  => 'script' %>  
+   <%= ajax_link 'Delete', custom_filter_path(filter), :confirm => "Are you sure you want to delete filter '#{filter.name}'?", :method => :delete, :datatype  => 'script' %>  
 </small></small>
