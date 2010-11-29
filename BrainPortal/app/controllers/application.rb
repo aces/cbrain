@@ -405,10 +405,10 @@ end
 
 LoggedExceptionsController.class_eval do
   # set the same session key as the app
-  session :session_key => '_BrainPortal2_session'
+  session :session_key => Rails.configuration.action_controller[:session][:session_key]
   
   include AuthenticatedSystem
-  protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
+  protect_from_forgery :secret => Rails.configuration.action_controller[:session][:secret]
 
   before_filter :login_required, :admin_role_required
 
