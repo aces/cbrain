@@ -26,20 +26,7 @@ class GroupsController < ApplicationController
     @group = WorkGroup.new
     @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
 
-    @group_id_2_user_counts = {}
-    User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
-      @group_id_2_user_counts[user.group_id.to_i] = user.total
-    end
-
-    @group_id_2_userfile_counts = {}
-    Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
-      @group_id_2_userfile_counts[userfile.group_id] = userfile.total
-    end
-
-    @group_id_2_task_counts = {}
-    CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
-      @group_id_2_task_counts[task.group_id] = task.total
-    end
+    common_form_elements()
 
     respond_to do |format|
       format.html # index.html.erb
@@ -69,6 +56,7 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Project was successfully created.'
+        common_form_elements()
         format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
@@ -124,6 +112,25 @@ class GroupsController < ApplicationController
     end
     
     redirect_to :controller  => redirect_controller, :action  => redirect_action, :id  => redirect_id
+  end
+
+  private
+
+  def common_form_elements
+    @group_id_2_user_counts = {}
+    User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+      @group_id_2_user_counts[user.group_id.to_i] = user.total
+    end
+
+    @group_id_2_userfile_counts = {}
+    Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+      @group_id_2_userfile_counts[userfile.group_id] = userfile.total
+    end
+
+    @group_id_2_task_counts = {}
+    CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+      @group_id_2_task_counts[task.group_id] = task.total
+    end
   end
 
 end
