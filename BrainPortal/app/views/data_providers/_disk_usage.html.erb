@@ -123,7 +123,8 @@
 
   </table>
 
-  <%= hidden_field_tag "cleanup_before", @cache_older %>
+  <%= hidden_field_tag "cleanup_older",    @cache_older %>
+  <%= hidden_field_tag "cleanup_younger",  @cache_younger %>
 
   <% end %> <!-- form -->
 
@@ -134,8 +135,9 @@
   <!-- *********************************** -->
 
   <% ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
-    Files reported under the <em>Caches</em> columns were last accessed
-    <%= select_tag("cache_older", options_for_select( @offset_times, @cache_older )) %>
+    Files reported in the <em>Caches</em> report were last accessed between
+    <%= select_tag("cache_older",   options_for_select( @offset_times, @cache_older )) %> and
+    <%= select_tag("cache_younger", options_for_select( @offset_times, @cache_younger )) %>
     <%= submit_tag 'Refresh' %>
   <% end %> <!-- form -->
 

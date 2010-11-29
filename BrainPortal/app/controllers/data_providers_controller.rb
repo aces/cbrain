@@ -218,8 +218,9 @@ class DataProvidersController < ApplicationController
     @providers = DataProvider.find_all_accessible_by_user(current_user)
 
     # List of cache update offsets we support
+    big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 !
     @offset_times = [
-      [ "Anytime",           0.seconds.to_i ],
+      [ "Now",               0.seconds.to_i ],
       [ "One hour ago",      1.hour.to_i    ],
       [ "Six hours ago",     6.hour.to_i    ],
       [ "One day ago",       1.day.to_i     ],
@@ -231,26 +232,46 @@ class DataProvidersController < ApplicationController
       [ "Four months ago",   4.months.to_i  ],
       [ "Six months ago",    6.months.to_i  ],
       [ "Nine months ago",   9.months.to_i  ],
-      [ "Over one year ago", 1.year.to_i    ]
+      [ "One year ago",      1.year.to_i    ],
+      [ "The Big Bang",      big_bang       ]
     ]
+   
 
-    # Restrict cache info stats to files 'older' than
-    # a certain number of seconds (by access time).
+    # Restrict cache info stats to files within
+    # a certain range of oldness.
     accessed_before = nil
-    accessed_after  = nil # not used right now
-    @cache_older     = params[:cache_older] || 0
-    if @cache_older.to_s =~ /^\d+/
-      @cache_older = @cache_older.to_i
-      @offset_times.reverse_each do |pair|
-        if @cache_older >= pair[1]
-          @cache_older = pair[1]
-          break
-        end
-      end
-      accessed_before = @cache_older.seconds.ago # this is a Time
-    else
-      @cache_older = 0
+    accessed_after  = nil
+
+    # 0 sec ago ................. < ..................... infinite secs ago
+    # now .......... older_limit .... younger_limit ..... long ago
+    #                 acc_after   <     acc_before
+
+    @cache_older   = params[:cache_older]   || 0.seconds.to_i
+    @cache_younger = params[:cache_younger] || big_bang
+    @cache_older   = @cache_older.to_s   =~ /^\d+/ ? @cache_older.to_i   : 0
+    @cache_younger = @cache_younger.to_s =~ /^\d+/ ? @cache_younger.to_i : big_bang
+    @cache_older   = big_bang if @cache_older   > big_bang
+    @cache_younger = big_bang if @cache_younger > big_bang
+    if (@cache_younger < @cache_older) # the interface allows the user to reverse them
+      @cache_younger, @cache_older = @cache_older, @cache_younger
     end
+
+    @offset_times.reverse_each do |pair|
+      if @cache_older >= pair[1]
+        @cache_older   = pair[1]
+        break
+      end
+    end
+
+    @offset_times.each do |pair|
+      if @cache_younger <= pair[1]
+        @cache_younger   = pair[1]
+        break
+      end
+    end
+
+    accessed_before = @cache_older.seconds.ago # this is a Time
+    accessed_after  = @cache_younger.seconds.ago # this is a Time
 
     # Users in statistics table
     userlist         = if check_role(:admin)
@@ -268,7 +289,8 @@ class DataProvidersController < ApplicationController
     stats_options = { :users            => userlist,
                       :providers        => @providers,
                       :remote_resources => rrlist,
-                      :accessed_before  => accessed_before
+                      :accessed_before  => accessed_before,
+                      :accessed_after   => accessed_after
                     }
     @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
 
