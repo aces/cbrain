@@ -47,31 +47,28 @@ class BourreauxController < ApplicationController
     @statuses = { 'TOTAL' => 0 }
     @user_tasks_info = {}
 
-    @user_id_name = {}
     myusers.each do |user|
-      @user_id_name[user.id] = user.login
-      @user_tasks_info[user.login] ||= {}
-      @user_tasks_info[user.login]['TOTAL'] = 0
+      @user_tasks_info[user] ||= {}
+      @user_tasks_info[user]['TOTAL'] = 0
     end
     
     begin
-       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id, :user_id => @user_id_name.keys })
+       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id, :user_id => (myusers.map &:id) }, :include => :user )
     rescue
        tasks = []
     end
 
     tasks.each do |t|
-      user_id = t.user_id.to_i
-      name    = @user_id_name[user_id] || "User-#{user_id}"
+      user    = t.user
       status  = t.status
       @statuses[status]               ||= 0
       @statuses[status]                += 1
       @statuses['TOTAL']               += 1
-      @user_tasks_info[name]          ||= {}
-      @user_tasks_info[name][status]  ||= 0
-      @user_tasks_info[name][status]   += 1
-      @user_tasks_info[name]['TOTAL'] ||= 0
-      @user_tasks_info[name]['TOTAL']  += 1
+      @user_tasks_info[user]          ||= {}
+      @user_tasks_info[user][status]  ||= 0
+      @user_tasks_info[user][status]   += 1
+      @user_tasks_info[user]['TOTAL'] ||= 0
+      @user_tasks_info[user]['TOTAL']  += 1
     end
     @statuses_list = @statuses.keys.sort.reject { |s| s == 'TOTAL' }
     @statuses_list << 'TOTAL'

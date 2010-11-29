@@ -147,8 +147,8 @@ module CbrainUiHelper
     
     content = capture(&block)
     
-    concat("<span id=\"#{@@html_tool_tip_id}\"")
-    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', '#{@@html_tool_tip_id}', 30, 0);\"")
+    concat("<span id=\"xsp_#{@@html_tool_tip_id}\"")
+    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', 'xsp_#{@@html_tool_tip_id}', 30, 0);\"")
     concat("onmouseout=\"xstooltip_hide('tootip_#{@@html_tool_tip_id}');\"") 
     concat(">")
     concat(text)

@@ -19,7 +19,7 @@
       
     <% @report_users_all.each do |row| %>
       <tr>
-          <th><%= h(row.is_a?(String) ? row : row.login) %></th>
+          <th><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %></th>
           
           <% @report_dps_all.each do |col| %>
 
@@ -78,7 +78,7 @@
       
     <% @report_users_all.each do |row| %>
       <tr>
-        <th><%= h(row.is_a?(String) ? row : row.login) %>
+        <th><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %>
           <% # All servers checkbox -%>
           <% if row.is_a?(User) %>
             <BR><%= select_all_checkbox("clean_cache_users_#{row.id}") %>

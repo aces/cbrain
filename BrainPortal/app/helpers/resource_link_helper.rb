@@ -183,6 +183,19 @@ module ResourceLinkHelper
     end
   end
 
-  
+  # Same as link_to_user_if_accessible (but requires a legal
+  # user object) and adds a tooltip with a summary of the
+  # user's information (full name, site and city).
+  def link_to_user_with_tooltip(user)
+    capture do
+      html_tool_tip(link_to_user_if_accessible(user)) do
+        "<div class=\"left_align\">\n" +
+        "#{user.full_name}<br>\n" +
+        (user.city.blank? ? "" : "City: #{user.city}<br>\n") +
+        (user.site.blank? ? "" : "Site: #{user.site.name}<br>\n") +
+        "</div>"
+      end
+    end
+  end
 
 end

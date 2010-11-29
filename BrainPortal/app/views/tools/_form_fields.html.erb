@@ -30,7 +30,8 @@
 
 <p>
   Description:<br>
-  <%= f.text_area :description %>
+  <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
+  <small>The first line must should be a short summary, and the rest are for any special notes for the users.</small>
 </p>
 
 <p>

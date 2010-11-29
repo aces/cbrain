@@ -1,8 +1,9 @@
 
 <% tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore %>
 
-<tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>" title="<%= h tool.description %>">
+<tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>">
   <td><%= h tool.name %></td>
+  <td><%= overlay_description(tool.description) %></td>
   <td><%= h tool.category %></td>
   <td><%= link_to_user_if_accessible(tool.user) %>
   <td><%= link_to_group_if_accessible(tool.group) %></td>
@@ -25,7 +26,7 @@
           delete_button 'Delete', tool_path(tool), :class  => "action_link", 
                                                    :confirm  => 'Are you sure?', 
                                                    :target  => "#tool_#{tool.id}",
-                                                   :target_text  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
+                                                   :target_text  => "<td colspan='12' style='color:red; text-align:center'>Deleting...</td>"
        %>
     </td>
   <% end %>

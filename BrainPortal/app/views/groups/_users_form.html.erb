@@ -46,7 +46,7 @@
   <% end %>
     <td class="left_align no_wrap">
       <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
-      <%= h(user.full_name) -%>
+      <%= link_to_user_with_tooltip(user) -%>
     </td>
   <% if colnum == numcol-1 %>
     </tr>

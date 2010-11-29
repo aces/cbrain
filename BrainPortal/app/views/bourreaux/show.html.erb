@@ -241,12 +241,12 @@
         <th><%= h(stat) %></th>
       <% end %>
     </tr>
-    <% sorted_users = @user_tasks_info.keys.sort { |a,b| a <=> b } %>
+    <% sorted_users = @user_tasks_info.keys.sort { |a,b| a.login <=> b.login } %>
     <% sorted_users.each do |user| %>
       <% statcnt = @user_tasks_info[user] %>
       <% next if statcnt['TOTAL'].blank? || statcnt['TOTAL'] == 0 %>
       <tr>
-        <td class="left_align"><%= h(user) %></td>
+        <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
         <% @statuses_list.each do |stat| %>
           <td><%= h(statcnt[stat]) %></td>
         <% end %>

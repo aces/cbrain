@@ -17,7 +17,7 @@
       <% end %>
     </td>
     <td><%= overlay_description(tasks.first.description, :header_width => 35) %></td>
-    <td><%= h(tasks.first.user.login) %></td>
+    <td><%= link_to_user_if_accessible(tasks.first.user) %></td>
     <td colspan="<%= current_project ? "5" : "6" %>">
       <% if launch_time %>
         <%= pluralize(tasks.size, "job")%> launched at <%= to_localtime(launch_time,:datetime) %>
