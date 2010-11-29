@@ -591,18 +591,29 @@ class DataProvidersController < ApplicationController
   def cleanup
     flash[:notice] ||= ""
 
-    # First param is cleanup_before, which is the number
-    # of second before NOW at which point files become
-    # eligible for elimination
-    cleanup_before = params[:cleanup_before] || 0
-    if cleanup_before.to_s =~ /^\d+/
-      cleanup_before = cleanup_before.to_i
-      cleanup_before = 1.year.to_i if cleanup_before > 1.year.to_i
+    # First param is cleanup_older, which is the number
+    # of second before NOW at which point files OLDER than
+    # that become eligible for elimination
+    cleanup_older = params[:cleanup_older] || 0
+    if cleanup_older.to_s =~ /^\d+/
+      cleanup_older = cleanup_older.to_i
+      cleanup_older = 1.year.to_i if cleanup_older > 1.year.to_i
     else
-      cleanup_before = 0
+      cleanup_older = 1.year.to_i
     end
 
-    # Second param is clean_cache, a set of pairs in
+    # Second param is cleanup_younger, which is the number
+    # of second before NOW at which point files YOUNGER than
+    # that become eligible for elimination
+    cleanup_younger = params[:cleanup_younger] || 0
+    if cleanup_younger.to_s =~ /^\d+/
+      cleanup_younger = cleanup_younger.to_i
+      cleanup_younger = 1.year.to_i if cleanup_younger > 1.year.to_i
+    else
+      cleanup_younger = 0
+    end
+
+    # Third param is clean_cache, a set of pairs in
     # the form "uuu,rrr" where uuu is a user_id and
     # rrr is a remote_resource_id. Both must be accessible
     # by the current user.
@@ -647,14 +658,14 @@ class DataProvidersController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,cleanup_before.ago)
+        remote_resource.send_command_clean_cache(userids,cleanup_older.ago,cleanup_younger.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue => e
         flash[:notice] += "Could not contact #{remote_resource.name}."
       end
     end
 
-    redirect_to :action => :disk_usage, :cache_older => cleanup_before
+    redirect_to :action => :disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
   end
   
   private 

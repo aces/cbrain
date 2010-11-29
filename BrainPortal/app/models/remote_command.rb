@@ -76,9 +76,10 @@ class RemoteCommand < RestrictedHash
      # Not really used right now
      :group_ids,
 
-     # Date of effect; for clean_cache it means cleans files older than this
+     # Date of effect; for clean_cache it means cleans files older than this..
      :before_date,  # Time object
-     :after_date,   # Time object; not used right now.
+     # ... but younger than this are erased.
+     :after_date,   # Time object
 
    ]
 

@@ -549,20 +549,28 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
-  def send_command_clean_cache(userlist,older_than)
+  def send_command_clean_cache(userlist,older_than,younger_than)
     if older_than.is_a?(Fixnum)
-       time_limit = older_than.seconds.ago
+       time_older = older_than.seconds.ago
     elsif older_than.is_a?(Time)
-       time_limit = older_than
+       time_older = older_than
     else
-       cb_error "Invalid time offset for clean_cache command."
+       cb_error "Invalid older_than time offset for clean_cache command."
+    end
+    if younger_than.is_a?(Fixnum)
+       time_younger = younger_than.seconds.ago
+    elsif younger_than.is_a?(Time)
+       time_younger = younger_than
+    else
+       cb_error "Invalid younger_than offset for clean_cache command."
     end
     userlist = [ userlist ] unless userlist.is_a?(Array)
     useridlist = userlist.map { |u| u.is_a?(User) ? u.id.to_s : u.to_s }.join(",")
     command = RemoteCommand.new(
       :command     => 'clean_cache',
       :user_ids    => useridlist,
-      :before_date => time_limit
+      :before_date => time_older,
+      :after_date  => time_younger
     )
     send_command(command)
   end
@@ -664,13 +672,7 @@ class RemoteResource < ActiveRecord::Base
     puts "RemoteResource Processing Command: #{command.inspect}"
     
     self.send("process_command_#{command.command}", command)
-    # if command.command == "clean_cache"
-    #   self.process_command_clean_cache(command.user_ids, command.before_date)
-    # elsif command.command =~ /^(start|stop|wakeup)_workers/
-    #   self.process_command_worker_control(Regexp.last_match[1])
-    # else
-    #   cb_error "Unknown command #{command.command}"
-    # end
+
   end
   
   #Treat process_command_xxx calls as bad commands,
@@ -696,7 +698,8 @@ class RemoteResource < ActiveRecord::Base
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
     user_ids     = command.user_ids
-    before_date = command.before_date || Time.now
+    before_date = command.before_date || 1.year.ago
+    after_date  = command.after_date  || Time.now
     
     userlist = []
     user_ids.split(/,/).uniq.each do |idstring|
@@ -714,9 +717,9 @@ class RemoteResource < ActiveRecord::Base
       targetfiles = Userfile.find(:all, :conditions => { :user_id => userlist })
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil
-        next if syncstatus && syncstatus.accessed_at >= before_date
-        #dp = userfile.data_provider
-        #next unless dp.online?
+        next unless syncstatus
+        next if syncstatus.accessed_at >= before_date
+        next if syncstatus.accessed_at <= after_date
         userfile.cache_erase
       end
     end
