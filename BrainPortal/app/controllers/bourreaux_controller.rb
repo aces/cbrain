@@ -160,12 +160,12 @@ class BourreauxController < ApplicationController
       )
     end
 
+    flash[:notice] = "#{@bourreau.class.to_s} #{@bourreau.name} successfully updated"
+
     if params[:tool_management] != nil 
       redirect_to(:controller => "tools", :action =>"tool_management")
-      flash[:notice] = "#{@bourreau.name} successfully updated"
     else
       redirect_to(bourreaux_url)
-      flash[:notice] = "#{@bourreau.class.to_s} successfully updated."
     end
 
   end
@@ -283,11 +283,13 @@ class BourreauxController < ApplicationController
       flash[:notice] = "It seems we couldn't stop the workers on Executon Server '#{@bourreau.name}'. They'll likely die by themselves."
     end
 
-    @bourreau.stop
-    @bourreau.addlog("Rails application stopped.")
+    @bourreau.online = true # to trick layers below into doing the 'stop' operation
+    success = @bourreau.stop
+    @bourreau.addlog("Rails application stopped.") if success
     @bourreau.online = false
     @bourreau.save
-    flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped."
+    flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped." if success
+    flash[:error]   = "Failed to stop tunnels for '#{@bourreau.name}'."                  if ! success
     redirect_to :action => :index
 
   rescue => e
