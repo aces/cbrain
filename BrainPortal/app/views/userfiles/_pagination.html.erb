@@ -1,4 +1,2 @@
-<% if session[:userfiles_pagination] == 'on' %>
-   <%= will_paginate @userfiles, :container => false %>
-<% end %>
+<%= will_paginate @userfiles, :container => false %>
 (<%= @userfiles_total %> files)

@@ -58,8 +58,6 @@ class UserfilesController < ApplicationController
     
     @userfiles = scope
     
-    @userfiles_per_page = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
-
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
 
     format_filters.each do |fmt|
@@ -72,9 +70,13 @@ class UserfilesController < ApplicationController
     
     @userfiles_total = @userfiles.size
     
+    @user_pref_page_length = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     if current_session.paginate?
-      @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
+      @userfiles_per_page = @user_pref_page_length
+    else
+      @userfiles_per_page = 400 # even when not paginating, there's a limit!
     end
+    @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
 
     @user_tags = current_user.tags.find(:all)
     if current_user.has_role? :admin

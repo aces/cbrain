@@ -7,7 +7,7 @@
   %>
 </h5>
 
-<% if @userfiles_total > @userfiles_per_page %>
+<% if @userfiles_total > @user_pref_page_length %>
   <h5>
     <%= ajax_link (current_session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
                 userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])),
