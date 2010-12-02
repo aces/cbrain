@@ -312,9 +312,9 @@ class Userfile < ActiveRecord::Base
     per_page = 10  if per_page < 10
     per_page = 200 if per_page > 200
     page     = page.to_i
-    page     = 1   if page < 1
     max_page = (files.size + per_page - 1 ) / per_page
     page     = max_page if page > max_page
+    page     = 1   if page < 1
     offset = (page - 1) * per_page
 
     WillPaginate::Collection.create(page, per_page) do |pager|

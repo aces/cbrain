@@ -88,14 +88,8 @@ class TasksController < ApplicationController
 
     @tasks = scope
     
-    page = (params[:page] || 1).to_i
-    @tasks_per_page = 20
-    @filter_params["pagination"] ||= "on"
-    @per_page = @filter_params["pagination"] == "on" ? @tasks_per_page : 999_999_999
-    
-    
     pagination_list = @tasks
-    @total_tasks = @tasks.size
+    @total_tasks = @tasks.size # number of TASKS
 
     if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
       seen_keys    = {}
@@ -107,11 +101,20 @@ class TasksController < ApplicationController
         lt
       end
     end
+    @total_entries = @tasks.size # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
-    @total_entries = @tasks.size
+    @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
+    @standard_tasks_per_page = 20
+    @tasks_per_page = @filter_params["pagination"] == "on" ? @standard_tasks_per_page : 200
+
+    page = (params[:page] || 1).to_i
+    max_page = (@total_entries + @tasks_per_page - 1 ) / @tasks_per_page
+    page = max_page if page > max_page
+    page = 1        if page < 1
+    offset = (page - 1) * @tasks_per_page
     
-    @paginated_list = WillPaginate::Collection.create(page, @per_page) do |pager|
-      pager.replace(pagination_list.slice((page-1) * @per_page, @per_page))
+    @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
+      pager.replace(pagination_list[offset,@tasks_per_page])
       pager.total_entries = @total_entries
       pager
     end
