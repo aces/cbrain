@@ -512,7 +512,7 @@ class RemoteResource < ActiveRecord::Base
     begin
       if !self.has_ssh_control_info? || (self.ssh_master && self.ssh_master.is_alive?)
         Control.site    = self.site
-        Control.timeout = 30
+        Control.timeout = self.timeout || 30
         control_info = Control.find('info')
         info = RemoteResourceInfo.new(control_info.attributes)
       end

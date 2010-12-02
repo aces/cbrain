@@ -32,6 +32,10 @@
 
       <p><label for="online">Status</label><br/>
       <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
+      
+      <p><label for="timeout">Timeout for is alive check (seconds)</label><br/>
+      <%= f.text_field :timeout, :size => 5%></p>
+
 
       <span title="Time zone where this server is located.">
         <p><label for="time_zone">Time Zone</label><br/>
