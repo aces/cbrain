@@ -82,7 +82,7 @@ module SelectBoxHelper
     end
 
     ordered_category_grouped = []
-    [ "Work project", "Site project", "User project", "System project" ].each do |proj|
+    [ "Work project", "Site project", "User project", "System project", "Invisible project" ].each do |proj|
        ordered_category_grouped << [ proj , category_grouped.delete(proj) ] if category_grouped[proj]
     end
 
