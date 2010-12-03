@@ -36,6 +36,12 @@
 #######################################
 %>
 
+<% if current_user.has_role? :admin %>
+  Make this a system group invisible to normal users:
+  <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
+  <p>
+<% end %>
+
 <label for="users">Users in project:</label>
 <table class="button_table">
 <% numcol = 5 %>

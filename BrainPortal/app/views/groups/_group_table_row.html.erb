@@ -9,7 +9,7 @@
   <td><%= @group_id_2_userfile_counts[group.id] || 0 %></td>
   <td><%= @group_id_2_task_counts[group.id] || 0 %></td>
   <td><%= link_to 'Switch', switch_group_path(group), :class => 'action_link', :method  => :post %></td>
-  <% if group.is_a?(WorkGroup) && group.can_be_edited_by?(current_user)%>
+  <% if group.can_be_edited_by?(current_user)%>
     <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>
     <td>
       <%= 

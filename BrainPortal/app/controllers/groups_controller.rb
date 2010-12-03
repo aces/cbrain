@@ -40,14 +40,23 @@ class GroupsController < ApplicationController
 
   # GET /groups/1/edit
   def edit  #:nodoc:
-    @group = current_user.available_groups(params[:id], :conditions  => {:type  => "WorkGroup"})
+    if current_user.has_role? :admin
+      @group = current_user.available_groups(params[:id], :conditions => {:type => [ "WorkGroup", "InvisibleGroup" ]})
+    else
+      @group = current_user.available_groups(params[:id], :conditions => {:type => "WorkGroup"})
+    end
     @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
   end
 
   # POST /groups
   # POST /groups.xml
   def create  #:nodoc:
-    @group = WorkGroup.new(params[:group])
+
+    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+      @group = InvisibleGroup.new(params[:group])
+    else
+      @group = WorkGroup.new(params[:group])
+    end
     
     unless current_user.has_role? :admin
       @group.site = current_user.site
@@ -70,8 +79,19 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update #:nodoc:
-    @group = WorkGroup.find(params[:id])
+    if current_user.has_role? :admin
+      @group = Group.find(params[:id], :conditions => { :type => [ "WorkGroup", "InvisibleGroup" ] })
+    else
+      @group = WorkGroup.find(params[:id])
+    end
+
     params[:group][:user_ids] ||= []
+
+    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+      @group.type = 'InvisibleGroup'
+    else
+      @group.type = 'WorkGroup'
+    end
 
     respond_to do |format|
       if @group.update_attributes(params[:group])
