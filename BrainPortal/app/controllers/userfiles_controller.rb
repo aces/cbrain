@@ -44,13 +44,6 @@ class UserfilesController < ApplicationController
       scope = Userfile.restrict_access_on_query(current_user, scope, :access_requested => :read)
     end
     
-    # params[:sort_order] ||= 'userfiles.lft'
-    #  sort_order = params[:sort_order]
-    #  sort_dir   = params[:sort_dir]
-    scope = scope.scoped( 
-      :include  => [:tags, {:user => :site}, :data_provider, :group, { :sync_status => :remote_resource } ]
-    )
-    
     current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort'
     unless current_session.userfiles_sort_order == "userfiles.tree_sort"
       scope = scope.scoped(:order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}")
@@ -99,7 +92,7 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.new(
       :group_id => SystemGroup.find_by_name(current_user.login).id
     )
-        
+
     respond_to do |format|
       format.html
       format.js
