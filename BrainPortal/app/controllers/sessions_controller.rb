@@ -28,19 +28,27 @@ class SessionsController < ApplicationController
         render :action  => :new
         return
       end
-       
+      
       current_session.activate
       if params[:remember_me] == "1"
         current_user.remember_me unless current_user.remember_token?
         cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
       end
-      redirect_back_or_default('/home')
+      
+      respond_to do |format|
+        format.html { redirect_back_or_default('/home') }
+        format.xml  { render :nothing => true, :status  => 200 }
+      end
       current_user.addlog("Logged in from #{request.remote_ip}")
       portal.addlog("User #{current_user.login} logged in from #{request.remote_ip}")
     else
       flash[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
-      render :action => 'new'
+      
+      respond_to do |format|
+        format.html { render :action => 'new' }
+        format.xml  { render :nothing => true, :status  => 403 }
+      end
     end
   end
 
@@ -54,7 +62,11 @@ class SessionsController < ApplicationController
     current_session.clear_data!
     #reset_session
     flash[:notice] = "You have been logged out."
-    redirect_to new_session_path
+    
+    respond_to do |format|
+      format.html { redirect_to new_session_path }
+      format.xml  { render :nothing => true, :status  => 200 }
+    end
   end
 
 end

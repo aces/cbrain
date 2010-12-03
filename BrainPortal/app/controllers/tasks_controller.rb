@@ -73,7 +73,13 @@ class TasksController < ApplicationController
       scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
     end
     
-    @filter_params["sort"]["order"] ||= "cbrain_tasks.batch"
+    if request.format.to_sym == :xml
+      @filter_params["sort"]["order"] ||= "cbrain_tasks.updated_at"
+      @filter_params["sort"]["dir"]   ||= "DESC"
+    else
+      @filter_params["sort"]["order"] ||= "cbrain_tasks.batch"
+    end
+    
     sort_order = @filter_params["sort"]["order"]
     sort_dir   = @filter_params["sort"]["dir"]
     # Set sort order and make it persistent.
@@ -91,14 +97,16 @@ class TasksController < ApplicationController
     pagination_list = @tasks
     @total_tasks = @tasks.size # number of TASKS
 
-    if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
-      seen_keys    = {}
-      pagination_list = []
-      @tasks = @tasks.all.hashed_partition do |task|
-        lt               = task.launch_time
-        pagination_list << lt unless seen_keys[lt]
-        seen_keys[lt]    = true
-        lt
+    unless request.format.to_sym == :xml
+      if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
+        seen_keys    = {}
+        pagination_list = []
+        @tasks = @tasks.all.hashed_partition do |task|
+          lt               = task.launch_time
+          pagination_list << lt unless seen_keys[lt]
+          seen_keys[lt]    = true
+          lt
+        end
       end
     end
     @total_entries = @tasks.size # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
@@ -124,6 +132,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html
+      format.xml  { render :xml => @tasks }
       format.js
     end
   end
@@ -264,7 +273,6 @@ class TasksController < ApplicationController
   end
 
   def create #:nodoc:
-
     flash[:notice] = ""
     flash[:error]  = ""
 
@@ -348,8 +356,10 @@ class TasksController < ApplicationController
         Bourreau.find(bourreau_id).send_command_start_workers # rescue true
       end
     end
-
-    redirect_to :controller => :tasks, :action => :index
+    respond_to do |format|
+      format.html { redirect_to :controller => :tasks, :action => :index }
+      format.xml { render :xml  => tasklist }
+    end  
   end
 
   def update #:nodoc:

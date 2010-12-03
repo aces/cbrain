@@ -141,6 +141,11 @@ class CbrainTask < ActiveRecord::Base
   def self.pseudo_sort_columns
     ["batch"]
   end
+  
+  #Adding defaults to standard ActiveRecord to_xml.
+  def to_xml(options={})
+       super(options.reverse_merge(:methods => :type ))
+  end
 
   # This method returns the full path of the task's work directory;
   # the old convention was to store the full path in the

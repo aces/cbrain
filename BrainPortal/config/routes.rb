@@ -54,6 +54,9 @@ ActionController::Routing::Routes.draw do |map|
   map.connect 'tasks/:action',            :controller => 'tasks'
   map.connect 'tasks/:action/:id',        :controller => 'tasks'
   map.task    '/tasks/show/:id',          :controller => 'tasks',    :action => 'show' # to create task_path()
+  map.connect 'tasks.:format',            :controller => 'tasks', :action  => 'index'
+  map.connect 'tasks/:action.:format',            :controller => 'tasks'
+  map.connect 'tasks/:action/:id.:format',        :controller => 'tasks'
 
   # Other individual maps
   map.connect "logged_exceptions/:action/:id",  :controller => "logged_exceptions" 

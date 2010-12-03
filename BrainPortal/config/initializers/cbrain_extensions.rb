@@ -26,6 +26,12 @@ class ActiveRecord::Base
   include ActRecLog
   after_destroy :destroy_log
 
+  alias original_to_xml to_xml
+  
+  def to_xml(options = {})
+    options[:root] ||= self.class.to_s.gsub("::", "-")
+    original_to_xml(options)
+  end
 end
 
 
@@ -167,6 +173,39 @@ class Array
     end
     partitions
   end
-
+  
+  def to_xml(options = {})
+    raise "Not all elements respond to to_xml" unless all? { |e| e.respond_to? :to_xml }
+    require 'builder' unless defined?(Builder)
+  
+    options = options.dup
+    options[:root]     ||= "records"
+    options[:indent]   ||= 2
+    options[:builder]  ||= Builder::XmlMarkup.new(:indent => options[:indent])
+  
+    root     = options.delete(:root).to_s
+    children = options.delete(:children)
+  
+    if !options.has_key?(:dasherize) || options[:dasherize]
+      root = root.dasherize
+    end
+  
+    options[:builder].instruct! unless options.delete(:skip_instruct)
+  
+    opts = options.clone
+  
+    xml = options[:builder]
+    if empty?
+      xml.tag!(root, options[:skip_types] ? {} : {:type => "array"})
+    else
+      xml.tag!(root, options[:skip_types] ? {} : {:type => "array"}) {
+        yield xml if block_given?
+        each { |e| e.to_xml(opts.merge({ :skip_instruct => true })) }
+      }
+    end
+  end
+  
 end
+
+
 

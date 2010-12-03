@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if
   helper        :all # include all helpers, all the time
 
-  filter_parameter_logging :password, :login, :email, :full_name, :role
+ filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
   before_filter :check_if_locked
@@ -408,6 +408,7 @@ LoggedExceptionsController.class_eval do
   session :session_key => Rails.configuration.action_controller[:session][:session_key]
   
   include AuthenticatedSystem
+
   protect_from_forgery :secret => Rails.configuration.action_controller[:session][:secret]
 
   before_filter :login_required, :admin_role_required

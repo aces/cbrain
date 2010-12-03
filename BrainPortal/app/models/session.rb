@@ -147,15 +147,15 @@ class Session
     if params[controller]
       if params[controller]["filter_off"]
         @session[controller.to_sym]["filters"] = {}
-      elsif params[controller]["remove_filter"]
+      end
+      if params[controller]["remove_filter"]
         @session[controller.to_sym]["filters"].delete(params[controller]["remove_filter"])
-      else
-        params[controller].each do |k, v|
-          if @session[controller.to_sym][k].respond_to? :merge!
-            @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
-          else
-            @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
-          end
+      end
+      params[controller].each do |k, v|
+        if @session[controller.to_sym][k].respond_to? :merge!
+          @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
+        else
+          @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
         end
       end
     end
