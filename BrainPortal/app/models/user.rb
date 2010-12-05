@@ -198,7 +198,7 @@ class User < ActiveRecord::Base
       if all_groups.is_a?(Array)
         all_groups.reject! { |g| g.is_a?(InvisibleGroup) }
       else
-        if allgroups.is_a?(InvisibleGroup)
+        if all_groups.is_a?(InvisibleGroup)
           raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}"
         end
       end
