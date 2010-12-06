@@ -114,6 +114,16 @@ class PortalTask < CbrainTask
   def before_form
     ""
   end
+
+  # This method will be called if the user clicks
+  # on a button labelled /Refresh/ when creating
+  # a new task or editing an existing one. It
+  # doesn't have to do anything, but usually it's
+  # convenient when we want to dynamicallty adjust
+  # some of the form elements.
+  def refresh_form
+    ""
+  end
   
   # This method is called after the user has clicked
   # to submit the form for the task, but before it
@@ -204,6 +214,23 @@ class PortalTask < CbrainTask
       raise cber
     rescue => other
       cber = ScriptError.new("Coding error: method before_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_refresh_form #:nodoc:
+    begin
+      was_new = self.new_record?
+      ret = self.refresh_form
+      cb_error "Coding error: method refresh_form() for #{self.class} did not return a string?!?" unless
+        ret.is_a?(String)
+      cb_error "Coding error: method refresh_form() for #{self.class} SAVED its object!" if was_new && ! self.new_record?
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      raise cber
+    rescue => other
+      cber = ScriptError.new("Coding error: method refresh_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
       cber.set_backtrace(other.backtrace.dup)
       raise cber
     end

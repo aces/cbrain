@@ -285,8 +285,8 @@ class TasksController < ApplicationController
     # Decode the selection box with combined bourreau_id and tool_config_id
     bid_tcid = params[:bid_tcid] || "," # comma important
     bid,tcid = bid_tcid.split(",")
-    @task.bourreau_id    = bid.to_i  if bid
-    @task.tool_config_id = tcid.to_i if tcid
+    @task.bourreau_id    = bid.to_i  unless bid.blank?
+    @task.tool_config_id = tcid.to_i unless tcid.blank?
 
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
@@ -295,13 +295,20 @@ class TasksController < ApplicationController
     # Log revision number of portal.
     @task.addlog_current_resource_revision
 
+    # Give a task the ability to do a refresh of its form
+    commit_button = params[:commit] || "Start" # default
+    if commit_button =~ /Refresh/i
+      initialize_common_form_values
+      flash[:notice] += @task.wrapper_refresh_form
+      render :action => :new
+      return
+    end
+
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      commit_button = params[:commit] || "Start" # default
       if commit_button =~ /(load|delete|save) preset/i
         handle_preset_actions
         initialize_common_form_values
-        flash[:notice] += @task.wrapper_before_form
         render :action => :new
         return
       end
@@ -370,6 +377,12 @@ class TasksController < ApplicationController
     id = params[:id]
     @task = current_user.available_tasks.find(id)
 
+    # Decode the selection box with combined bourreau_id and tool_config_id
+    bid_tcid = params[:bid_tcid] || "," # comma important
+    bid,tcid = bid_tcid.split(",")
+    #@task.bourreau_id    = bid.to_i  if bid # we no not change the bourreau_id
+    @task.tool_config_id = tcid.blank? ? nil : tcid.to_i
+
     # Save old params and update the current task to reflect
     # the form's content.
     old_params   = @task.params.clone
@@ -381,15 +394,17 @@ class TasksController < ApplicationController
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
     @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
-    # Decode the selection box with combined bourreau_id and tool_config_id
-    bid_tcid = params[:bid_tcid] || "," # comma important
-    bid,tcid = bid_tcid.split(",")
-    #@task.bourreau_id    = bid.to_i  if bid # we no not change the bourreau_id
-    @task.tool_config_id = tcid.to_i if tcid
+    # Give a task the ability to do a refresh of its form
+    commit_button = params[:commit] || "Start" # default
+    if commit_button =~ /Refresh/i
+      initialize_common_form_values
+      flash[:notice] += @task.wrapper_refresh_form
+      render :action => :edit
+      return
+    end
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      commit_button = params[:commit] || "Update" # default
       if commit_button =~ /(load|delete|save) preset/i
         handle_preset_actions
         initialize_common_form_values
@@ -578,7 +593,7 @@ class TasksController < ApplicationController
       else
         my_tool_configs.each do |tc|
           desc = tc.short_description
-          pairlist << [ desc, "#{bourreau.id},#{tc.id.to_s}" ]
+          pairlist << [ desc, "#{bourreau.id},#{tc.id}" ]
         end
       end
       @tool_configs_select << [ "On #{bourreau_name}:", pairlist ]

@@ -146,6 +146,43 @@ class String
     "cbrain_task[params]#{key}"
   end
 
+  # Considers self as a pattern to with substitutions
+  # are to be applied; the substitutions are found in
+  # self by recognizing keywords surreounded by
+  # '{}' (curly braces) and those keywords are looked
+  # up in the +keywords+ hash.
+  #
+  # Example:
+  #
+  #  mypat  = "abc{def}-{mach-3}{ext}"
+  #  mykeys = {  :def => 'XYZ', 'mach-3' => 'fast', :ext => '.zip' }
+  #  mypat.pattern_substitute( mykeys ) # return "abcXYZ-fast.zip"
+  #
+  # Note that keywords are limited to sequences of lowercase
+  # characters and digits, like 'def', '3', or 'def23' or the same with
+  # a number extension, like '4-34', 'def-23' and 'def23-3'.
+  #
+  # Options:
+  #
+  # :allow_unset, if true, allows substitution of an empty
+  # string if a keyword is defined in the pattern but not
+  # in the +keywords+ hash. Otherwise, an exception is raised.
+  def pattern_substitute(keywords, options = {})
+    pat_comps = self.split(/(\{(?:[a-z0-9_]+(?:-\d+)?)\})/i)
+    final = ""
+    pat_comps.each_with_index do |comp,i|
+      if i.even?
+        final += comp
+      else
+        comp.gsub!(/[{}]/,"")
+        val = keywords[comp.downcase] || keywords[comp.downcase.to_sym]
+        cb_error "Cannot find value for keyword '{#{comp.downcase}}'." if val.nil? && ! options[:allow_unset]
+        final += val.to_s
+      end
+    end
+    final
+  end
+
 end
 
 class Array

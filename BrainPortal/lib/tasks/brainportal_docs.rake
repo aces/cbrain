@@ -22,7 +22,7 @@ namespace :doc do
      rdoc.rdoc_files.include('lib/portal_system_checks.rb')
      rdoc.rdoc_files.include('lib/resource_access.rb')
      rdoc.rdoc_files.include('lib/smart_data_provider_interface.rb')
-     rdoc.rdoc_files.include('lib/ssh_tunnel.rb')
+     rdoc.rdoc_files.include('lib/ssh_master.rb')
   }
 end
 

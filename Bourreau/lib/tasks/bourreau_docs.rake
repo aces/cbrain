@@ -23,7 +23,7 @@ namespace :doc do
      rdoc.rdoc_files.include('lib/restartable_task.rb')
      rdoc.rdoc_files.include('lib/scir*.rb')
      rdoc.rdoc_files.include('lib/smart_data_provider_interface.rb')
-     rdoc.rdoc_files.include('lib/ssh_tunnel.rb')
+     rdoc.rdoc_files.include('lib/ssh_master.rb')
   }
 end
 
