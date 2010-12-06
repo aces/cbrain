@@ -6,7 +6,7 @@
   <p>
     To users of project: <%= group_select(:group_id,
             {
-              :groups  => current_user.available_groups.reject{ |g| g.name == 'everyone' if current_user.has_role?(:site_manager) }.sort_by(&:name),
+              :groups  => current_user.available_groups.sort_by(&:name),
               :selector => @message
             },
             { :include_blank => true }

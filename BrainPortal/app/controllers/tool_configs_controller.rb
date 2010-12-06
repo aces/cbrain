@@ -61,7 +61,7 @@ class ToolConfigsController < ApplicationController
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []
 
-    @tool_config.group_id ||= Group.find_by_name("everyone")
+    @tool_config.group_id = Group.find_by_name("everyone") if @tool_config.group_id.blank?
       
     respond_to do |format|
       format.html # edit.html.erb
@@ -117,7 +117,7 @@ class ToolConfigsController < ApplicationController
       @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
     end
 
-    @tool_config.group_id ||= Group.find_by_name("everyone")
+    @tool_config.group_id = Group.find_by_name("everyone") if @tool_config.group_id.blank?
 
     respond_to do |format|
       if @tool_config.errors.empty? && @tool_config.save

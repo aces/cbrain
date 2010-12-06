@@ -34,7 +34,7 @@
           <hr>
           <h4>Projects</h4>
           Change Project: 
-          <%= select(:userfile, :group_id, @user_groups.collect{|g| [g.name, g.id] }, {:selected => @default_group} , :class => :group) %>
+          <%= group_select('userfile[group_id]', { :groups => @user_groups, :selector => @default_group } ) %>
           <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
           <P>
           Project Permission Update: 

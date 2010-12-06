@@ -190,15 +190,16 @@ class User < ActiveRecord::Base
       end
        
       all_groups = site_groups | self_groups
-      all_groups.reject! { |g| g.is_a?(InvisibleGroup) }
+      all_groups.reject! { |g| g.is_a?(InvisibleGroup) || g.name == 'everyone' }
+      raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}" if all_groups.size == 0 && arg1 != :all
       all_groups = all_groups.first if all_groups.size == 1 && arg1 != :all
       @all_group_list[cache_key] = all_groups
     else                  
       all_groups = self.groups.find(arg1, options)
       if all_groups.is_a?(Array)
-        all_groups.reject! { |g| g.is_a?(InvisibleGroup) }
-      else
-        if all_groups.is_a?(InvisibleGroup)
+        all_groups.reject! { |g| g.is_a?(InvisibleGroup) || g.name == 'everyone' }
+      else # all_groups is a single group then, here.
+        if all_groups.is_a?(InvisibleGroup) || all_groups.name == 'everyone'
           raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}"
         end
       end
@@ -285,8 +286,8 @@ class User < ActiveRecord::Base
   end
    
   def prevent_group_collision #:nodoc:
-    if self.login && (WorkGroup.find_by_name(self.login) || self.login == 'everyone') 
-      errors.add(:login, "already in use by a group.")
+    if self.login && Group.find_by_name(self.login)
+      errors.add(:login, "already in use by an existing group.")
     end
   end
   

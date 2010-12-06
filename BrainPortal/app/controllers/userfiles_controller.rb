@@ -72,16 +72,7 @@ class UserfilesController < ApplicationController
     @userfiles = Userfile.paginate(@userfiles, params[:page] || 1, @userfiles_per_page)
 
     @user_tags = current_user.tags.find(:all)
-    if current_user.has_role? :admin
-      @user_groups = Group.find(:all, :order => "type")
-    elsif current_user.has_role? :site_manager
-      @user_groups = Group.find(:all, 
-                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?))", 
-                                  current_user.site_id, current_user.group_ids],
-                                :order  => "type")
-    else
-      @user_groups = current_user.groups.find(:all, :order => "type")
-    end
+    @user_groups = current_user.available_groups(:all, :order => "type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
     @data_providers = @data_providers.select { |dp| ! dp.meta[:no_uploads] }
@@ -211,16 +202,7 @@ class UserfilesController < ApplicationController
     state = @userfile.local_sync_status
     @sync_status = state.status if state
 
-    if current_user.has_role? :admin
-      @user_groups = Group.find(:all, :order => "type")
-    elsif current_user.has_role? :site_manager
-      @user_groups = Group.find(:all, 
-                                :conditions => ["(groups.site_id = ?) OR (groups.id IN (?)) OR (groups.id = ?)", 
-                                  current_user.site_id, current_user.group_ids, @userfile.group_id],
-                                :order  => "type")
-    else
-      @user_groups = current_user.groups.find(:all, :order => "type")
-    end
+    @user_groups = current_user.available_groups(:all, :order => "type")
 
     @tags = current_user.tags.find(:all)
 
@@ -465,7 +447,7 @@ class UserfilesController < ApplicationController
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.tags
-        @groups = current_user.groups
+        @user_groups = current_user.available_groups(:all, :order => "type")
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end

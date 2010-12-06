@@ -155,7 +155,7 @@ class Site < ActiveRecord::Base
     current_user_ids = self.user_ids || []
     @new_user_ids   = current_user_ids - @old_user_ids
     @unset_user_ids = @old_user_ids - current_user_ids
-    site_group = SystemGroup.find_by_name(self.name)
+    site_group = self.own_group
     
     unless self.groups.exists? site_group
       self.groups << site_group
@@ -185,8 +185,8 @@ class Site < ActiveRecord::Base
   end
   
   def prevent_group_collision #:nodoc:
-    if self.name && (WorkGroup.find_by_name(self.name) || self.name == 'everyone') 
-      errors.add(:name, "already in use by a group.")
+    if self.name && Group.find_by_name(self.name)
+      errors.add(:name, "already in use by an existing group.")
     end
   end
   
