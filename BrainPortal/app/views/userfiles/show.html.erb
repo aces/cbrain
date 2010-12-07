@@ -56,7 +56,7 @@
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Children:</th>
-      <td><%= @userfile.children.sort {|a,b| a.name.casecmp(b.name)}.map {|u| link_to_userfile_if_accessible(u)}.join("<br>") %></td>
+      <td><%= array_to_2d_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :cols => 1, :min_data => 1 ) {|u,r,c| link_to_userfile_if_accessible(u)} %></td>
       <td></td>
     </tr>
  

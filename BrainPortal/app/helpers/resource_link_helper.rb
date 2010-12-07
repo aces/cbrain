@@ -1,7 +1,7 @@
 # Helpers for resource links.
 module ResourceLinkHelper
 
-  Revision_info="$Id"
+  Revision_info="$Id$"
   
   # Creates a link to the show page of a +userfile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is

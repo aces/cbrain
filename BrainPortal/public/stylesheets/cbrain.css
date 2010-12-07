@@ -376,6 +376,11 @@ table.resource_list tr.subtitle_bordered {
     padding: 1px 1em 1px 1em;
 }
 
+.bordered {
+    border: solid 1px black;
+    margin: 2px;
+}
+
 
 
 /* % ######################################################### */

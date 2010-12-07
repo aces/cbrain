@@ -74,7 +74,7 @@
      <tr class=<%= cycle("list-even", "list-odd")%> >
        <td><%= link_to_group_if_accessible(group) %></td>
        <td><%= change_to_project_name(group.class.name) %></td>
-       <td><%= group.users.map{|u| link_to_user_if_accessible(u,nil,:name => u.full_name)}.join("<br>") %></td>
+       <td><%= array_to_2d_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_if_accessible(u,nil,:name => u.full_name)} %></td>
      </tr>
    <% end %>
 

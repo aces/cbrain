@@ -9,7 +9,7 @@
         <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
       <% if @active_users %>
         <p>
-        <strong>Users currently online:</strong> <%= h(@active_users.map(&:login).join(", ")) %>
+        <strong>Users currently online:</strong> <%= array_to_2d_table(@active_users.map(&:login), :table_class => 'simple') %>
         </p>
         <p><strong>Recent activity:</strong></p>
         <% Session.recent_activity.each do |entry| %>
@@ -58,15 +58,11 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-       <strong>Projects you belong to:</strong>  <%= @groups.map { |g| link_to_group_if_accessible(g) }.join(", ") %>
+       <strong>Projects you belong to:</strong>  <%= array_to_2d_table(@groups, :table_class => 'simple') { |g,r,c| link_to_group_if_accessible(g) } %>
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <% tools = current_user.available_tools.map(&:name).sort %>
-      <% tools.each_with_index do |name,i| %>
-        <%= h(name) %><%= "," unless i == tools.size - 1 %>
-        <%= "<br/>" if i % 5 == 4 %>
-      <% end %>
+      <%= array_to_2d_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple') %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>

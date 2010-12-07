@@ -9,11 +9,11 @@
    <div class="task_summary">
      <div class="task_summary_count">
        <% if task_list.size == 0 %>
-         No <%= status_key.to_s %> tasks.
+         No <%= status_key %> tasks.
        <% elsif task_list.size == 1 %>
-         One <%= status_key.to_s.capitalize %> task: 
+         One <%= status_key %> task: 
        <% else %>
-         <%= task_list.size %> <%= status_key.to_s.capitalize %> tasks: 
+         <%= task_list.size %> <%= status_key %> tasks: 
        <% end %>
      </div>
      <% if task_list.size > 0 %>
