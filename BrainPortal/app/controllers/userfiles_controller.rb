@@ -43,6 +43,11 @@ class UserfilesController < ApplicationController
     else
       scope = Userfile.restrict_access_on_query(current_user, scope, :access_requested => :read)
     end
+
+    scope = scope.scoped(
+      :joins    => [ :user, :data_provider, :group ],
+      :include   => :tags
+    )
     
     current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort'
     unless current_session.userfiles_sort_order == "userfiles.tree_sort"
