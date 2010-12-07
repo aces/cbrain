@@ -56,7 +56,7 @@ class PortalController < ApplicationController
                                        :user_id     => current_user.id,
                                        :bourreau_id => bourreau_ids
                                      } )
-    @tasks_by_status = @tasks.group_by do |task|
+    @tasks_by_status = @tasks.hashed_partitions do |task|
       case task.status
       when /((#{CbrainTask::COMPLETED_STATUS.join('|')}))/o
         :completed
@@ -68,8 +68,6 @@ class PortalController < ApplicationController
         :other
       end
     end
-
-    @tasks_by_status = @tasks_by_status.to_hash
 
     @tasks_by_status[:completed] ||= []
     @tasks_by_status[:running]   ||= []

@@ -913,40 +913,12 @@ pre {
     text-align: left;
     padding: 1em;
     margin-top: 0em;
-    width: 50%;
-    min-width: 30em;
-}
-
-#completed_task_summary {
-    background-color: #ddffdd;
-}
-
-#completed_task_summary th {
-    background-color: green;
-    border: none;
-}
-
-#running_task_summary {
-    background-color: #ddeeff;
-}
-
-#running_task_summary th {
-    background-color: blue;
-    border: none;
-}
-
-#failed_task_summary {
-    background-color: #ffeeee;
-}
-
-#failed_task_summary th {
-    background-color: red;
-    border: none;
 }
 
 .task_summary_count {
     font-size: 1.3em;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .task_summary_count a {

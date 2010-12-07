@@ -1,0 +1,31 @@
+
+<%
+ # this partial requires one arg
+ #   status_key :  a symbol, key to the hash @tasks_by_status
+%>
+
+<% task_list = @tasks_by_status[status_key] || [] %>
+
+   <div class="task_summary">
+     <div class="task_summary_count">
+       <% if task_list.size == 0 %>
+         No <%= status_key.to_s %> tasks.
+       <% elsif task_list.size == 1 %>
+         One <%= status_key.to_s.capitalize %> task: 
+       <% else %>
+         <%= task_list.size %> <%= status_key.to_s.capitalize %> tasks: 
+       <% end %>
+     </div>
+     <% if task_list.size > 0 %>
+       <table class="task_summary_table">
+         <tr><th colspan="2">Recent Activity</th></tr>
+         <% for task in task_list.sort{ |a,b| b.updated_at <=> a.updated_at}[0..4] %>
+            <tr>
+              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
+            </tr>
+         <% end %>
+       </table>
+     <% end %>
+   </div>
+

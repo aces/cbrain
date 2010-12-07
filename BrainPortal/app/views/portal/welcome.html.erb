@@ -1,13 +1,8 @@
 
-<script type="text/javascript">
-  window.onload=function() {
-    Nifty("div.task_summary","big");
-  }
-</script>
-
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
 
 <% if current_user.has_role?(:admin) %>
+
     <div class="generalbox">
         <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
 
@@ -39,8 +34,13 @@
       <% end %>  
     </div>
 
+
+
     <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
+
 <% end %>
+
+
 
   <div class="generalbox">
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
@@ -76,61 +76,23 @@
     </p>  
   </div>
 
+
+
+
   <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
 
+
+
+
   <div class="generalbox">
-  <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
 
-   <div class="task_summary">
-     <div class="task_summary_count">
-       <%= @tasks_by_status[:completed].size %> Completed tasks: 
-     </div>
-     <% unless @tasks_by_status[:completed].blank? %>
-       <table class="task_summary_table">
-         <tr><th colspan="2">Recent Activity</th></tr>
-         <% for task in @tasks_by_status[:completed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-            <tr>
-              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
-              <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
-            </tr>
-         <% end %>
-       </table>
-     <% end %>
-   </div>
+    <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
 
-   <div class="task_summary">
-    <div class="task_summary_count">
-       <%= @tasks_by_status[:running].size %> Running tasks: 
-    </div>
-    <% unless @tasks_by_status[:running].blank? %>
-     <table class="task_summary_table">
-       <tr><th colspan="2">Recent Activity</th></tr>
-       <% for task in @tasks_by_status[:running].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-       <tr>
-       <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
-       <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
-       </tr>
-      <% end %>
-    </table>
-    <% end %>
-   </div>
+    <%= render :partial => 'task_summary_box', :locals => { :status_key => :completed } %>
 
-   <div class="task_summary">
-     <div class="task_summary_count">
-      <%= @tasks_by_status[:failed].size %> Failed tasks: 
-     </div>
-     <% unless @tasks_by_status[:failed].blank? %>
-     <table class="task_summary_table">
-         <tr><th colspan="2">Recent Activity</th></tr>
-         <% for task in @tasks_by_status[:failed].sort{ |a,b|  b.updated_at <=> a.updated_at}[0..4] %>
-          <tr>
-          <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
-          <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
-          </tr>
-         <% end %>
-     </table>
-     <% end %>
-   </div>
+    <%= render :partial => 'task_summary_box', :locals => { :status_key => :running } %>
+
+    <%= render :partial => 'task_summary_box', :locals => { :status_key => :failed } %>
 
   </div>
 

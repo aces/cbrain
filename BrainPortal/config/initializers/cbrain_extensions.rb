@@ -210,6 +210,7 @@ class Array
     end
     partitions
   end
+  alias hashed_partitions hashed_partition
   
   def to_xml(options = {})
     raise "Not all elements respond to to_xml" unless all? { |e| e.respond_to? :to_xml }
