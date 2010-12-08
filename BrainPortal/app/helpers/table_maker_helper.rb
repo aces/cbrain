@@ -46,7 +46,7 @@ module TableMakerHelper
   #   :min_data_join => string ; when joining is triggered by :min_data,
   #                     this is the joining string. Default: ", ".
   #
-  def array_to_2d_table(array,options = {})
+  def array_to_table(array,options = {})
     numelems  = array.size
 
     if options[:min_data] && numelems < options[:min_data]

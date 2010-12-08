@@ -42,7 +42,7 @@
 
     <label for="groups">Projects</label>
     <%= hidden_field_tag "user[group_ids][]", [] %>
-    <% array_to_2d_table(@groups, :td_class => 'left_align no_wrap') do |group,r,c| %>
+    <% array_to_table(@groups, :td_class => 'left_align no_wrap') do |group,r,c| %>
       <%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %>
       <%= h(group.name) %>
     <% end %>
