@@ -23,6 +23,11 @@ module TableMakerHelper
   #   :rows => number of rows
   #   :cols => number of columns
   #
+  # If no :rows and :cols are supplied, a ratio of
+  # rows:cols can be provided:
+  #
+  #   :ratio => "numrows:numcols" # e.g. "4:2"
+  #
   # Note that the method will try its best to fit the
   # number of elements of +array+ within the number of
   # rows and columns supplied. The default is to make
@@ -61,7 +66,7 @@ module TableMakerHelper
       return ""
     end
 
-    rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols])
+    rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols],options[:ratio])
 
     tableclass   = options[:table_class]
     trclass      = options[:tr_class]
@@ -100,16 +105,23 @@ module TableMakerHelper
 
   # If one or both of :rows or :cols is missing,
   # compute the missing values.
-  def complete_rows_cols(size,rows,cols) #:nodoc:
+  def complete_rows_cols(size,rows,cols,ratio) #:nodoc:
     if cols.nil? && rows.nil?
-      rows = Math.sqrt(size).to_i
+      if ! ratio.blank? && ratio =~ /^(\d*[1-9]\d*):(\d*[1-9]\d*)$/
+        rrat     = Regexp.last_match[1].to_i
+        crat     = Regexp.last_match[2].to_i
+        rattot   = rrat * crat                # total 'cells' in ratio grid
+        cellent  = size.to_f / rattot.to_f    # entries per ratio grid cell
+        cellrows = Math.sqrt(cellent)         # rows per ratio grid cell
+        rows     = (cellrows * rrat).to_i
+      else
+        rows = Math.sqrt(size).to_i
+      end
       rows = 1 if rows == 0
-      cols = size / rows
-      cols = 1 if cols == 0;
     end
     if rows.nil?
       cols = size if cols > size
-      rows = size / ( cols || 1 )
+      rows = (size.to_f / ( cols || 1 ) + 0.999).to_i
       rows = 1 if rows == 0;
     end
     if cols.nil?
