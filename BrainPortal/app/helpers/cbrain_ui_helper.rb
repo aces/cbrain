@@ -141,14 +141,17 @@ module CbrainUiHelper
   #Create a tooltip that displays html when mouseovered.
   #Text of the icon is provided as an argument.
   #Html to be displayed on mouseover is given as a block.
-  def html_tool_tip(text = "<span class=\"action_link\">?</span>", &block)
+  def html_tool_tip(text = "<span class=\"action_link\">?</span>", options = {}, &block)
     @@html_tool_tip_id ||= 0
     @@html_tool_tip_id += 1
+
+    offset_x = options[:offset_x] || 30
+    offset_y = options[:offset_y] || 0
     
     content = capture(&block)
     
     concat("<span id=\"xsp_#{@@html_tool_tip_id}\"")
-    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', 'xsp_#{@@html_tool_tip_id}', 30, 0);\"")
+    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', 'xsp_#{@@html_tool_tip_id}', #{offset_x}, #{offset_y});\"")
     concat("onmouseout=\"xstooltip_hide('tootip_#{@@html_tool_tip_id}');\"") 
     concat(">")
     concat(text)

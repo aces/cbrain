@@ -189,7 +189,7 @@ module ResourceLinkHelper
   def link_to_user_with_tooltip(user, cur_user = current_user, options = {})
     cb_error "This method requires the first argument to be a User object." unless user.is_a?(User)
     capture do
-      html_tool_tip(link_to_user_if_accessible(user,current_user,options)) do
+      html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 60 ) do
         "<div class=\"left_align\">\n" +
         "#{user.full_name}<br>\n" +
         (user.city.blank? ? "" : "City: #{user.city}<br>\n") +
