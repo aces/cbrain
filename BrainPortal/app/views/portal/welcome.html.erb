@@ -9,11 +9,11 @@
         <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
       <% if @active_users %>
         <p>
-        <strong>Users currently online:</strong> <%= array_to_2d_table(@active_users.map(&:login), :table_class => 'simple') %>
+        <strong>Users currently online:</strong> <% array_to_2d_table(@active_users.map(&:login), :table_class => 'simple') %>
         </p>
         <p><strong>Recent activity:</strong></p>
         <% Session.recent_activity.each do |entry| %>
-          <%= link_to_user_if_accessible entry[:user] %><%= ", #{h entry[:user].city}" if  entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
+          <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
         <% end %>
       <% end %>
       <br>
@@ -58,11 +58,11 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-       <strong>Projects you belong to:</strong>  <%= array_to_2d_table(@groups, :table_class => 'simple') { |g,r,c| link_to_group_if_accessible(g) } %>
+       <strong>Projects you belong to:</strong>  <% array_to_2d_table(@groups, :table_class => 'simple') { |g,r,c| link_to_group_if_accessible(g) } %>
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <%= array_to_2d_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple') %>
+      <% array_to_2d_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple') %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>

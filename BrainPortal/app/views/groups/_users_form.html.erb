@@ -30,40 +30,32 @@
     end
 %>
 
+
+
 <%
 #######################################
 # Users Checkbox Table
 #######################################
 %>
 
-<% if current_user.has_role? :admin %>
-  Make this a system group invisible to normal users:
-  <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
-  <p>
-<% end %>
+  <% if current_user.has_role? :admin %>
+    Make this a system group invisible to normal users:
+    <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
+    <p>
+  <% end %>
 
-<label for="users">Users in project:</label>
-<table class="button_table">
-<% numcol = 5 %>
-<% @users.each_with_index do |user,i| %>
-  <% colnum = i % numcol %>
-  <% if colnum == 0 %>
-    <tr>
+  <label for="users">Users in project:</label>
+
+  <% array_to_2d_table(@users,
+      :cols        => 5,
+      :table_class => 'button_table',
+      :td_class    => 'left_align no_wrap'
+      ) do |user,r,c| %>
+        <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
+        <%= link_to_user_with_tooltip(user) %>
   <% end %>
-    <td class="left_align no_wrap">
-      <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
-      <%= link_to_user_with_tooltip(user) -%>
-    </td>
-  <% if colnum == numcol-1 %>
-    </tr>
-  <% elsif i == @users.size - 1 %>
-    <% if i >= numcol %>
-      <td colspan="<%= numcol - (colnum + 1) %>"></td>
-    <% end %>
-    </tr>
-  <% end %>
-<% end %>
-</table>
+
+
 
 <%
 #######################################
@@ -73,32 +65,22 @@
 
 <% if @other_work_groups.size > 0 %>
 
-<br/>
+  <br/>
 
-<label>Quick select based on other work Projects:</label>
-<table class="button_table">
-<% numcol = 5 %>
-<% @other_work_groups.each_with_index do |group,i| %>
-  <% colnum = i % numcol %>
-  <% if colnum == 0 %>
-    <tr>
+  <label>Quick select based on other work Projects:</label>
+
+  <% array_to_2d_table(@other_work_groups,
+      :cols        => 5,
+      :table_class => 'button_table',
+      :td_class    => 'left_align no_wrap'
+      ) do |group,r,c| %>
+        <%= select_all_checkbox "workgroup_#{group.id}" %>
+        <%= h(group.name) -%>
   <% end %>
-    <td class="left_align no_wrap">
-      <%= select_all_checkbox "workgroup_#{group.id}" %>
-      <%= h(group.name) -%>
-    </td>
-  <% if colnum == numcol-1 %>
-    </tr>
-  <% elsif i == @other_work_groups.size - 1 %>
-    <% if i >= numcol %>
-      <td colspan="<%= numcol - (colnum + 1) %>"></td>
-    <% end %>
-    </tr>
-  <% end %>
-<% end %>
-</table>
 
 <% end %>
+
+
 
 <%
 #######################################
@@ -108,30 +90,18 @@
 
 <% if @other_site_groups.size > 0 %>
 
-<br/>
+  <br/>
 
-<label>Quick select based on other site Projects:</label>
-<table class="button_table">
-<% numcol = 5 %>
-<% @other_site_groups.each_with_index do |group,i| %>
-  <% colnum = i % numcol %>
-  <% if colnum == 0 %>
-    <tr>
+  <label>Quick select based on other site Projects:</label>
+
+  <% array_to_2d_table(@other_site_groups,
+      :cols        => 5,
+      :table_class => 'button_table',
+      :td_class    => 'left_align no_wrap'
+      ) do |group,r,c| %>
+        <%= select_all_checkbox "sitegroup_#{group.id}" %>
+        <%= h(group.name) -%>
   <% end %>
-    <td class="left_align no_wrap">
-      <%= select_all_checkbox "sitegroup_#{group.id}" %>
-      <%= h(group.name) -%>
-    </td>
-  <% if colnum == numcol-1 %>
-    </tr>
-  <% elsif i == @other_site_groups.size - 1 %>
-    <% if i >= numcol %>
-      <td colspan="<%= numcol - (colnum + 1) %>"></td>
-    <% end %>
-    </tr>
-  <% end %>
-<% end %>
-</table>
 
 <% end %>
 

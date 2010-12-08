@@ -7,7 +7,7 @@
    </tr>
 
    <tr>
-      <td> <%= link_to_user_if_accessible(@feedback.user) %> </td>
+      <td> <%= link_to_user_with_tooltip(@feedback.user) %> </td>
       <td> <%= h(to_localtime(@feedback.created_at,:datetime)) %> </td>
    </tr>
 

@@ -13,7 +13,7 @@
 <td><%= link_to_bourreau_if_accessible(bour) %></td>
 <% if @filter_params["details"] == 'on' %>
   <td><%= red_if(diskrev.to_s != runrev.to_s,"Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}") %></td>
-  <td><%= link_to_user_if_accessible(bour.user) %></td>
+  <td><%= link_to_user_with_tooltip(bour.user) %></td>
 <% end %>
 <td><%= link_to_group_if_accessible(bour.group) %></td>
 <% if @filter_params["details"] == 'on' %>

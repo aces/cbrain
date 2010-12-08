@@ -2,7 +2,7 @@
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="data_provider_<%= data_provider.id %>">
   <td><%= link_to_data_provider_if_accessible(data_provider) %></td>
   <% if @filter_params["details"] == 'on' %>
-    <td><%= link_to_user_if_accessible(data_provider.user) %></td>
+    <td><%= link_to_user_with_tooltip(data_provider.user) %></td>
   <% end %>
   <td><%= link_to_group_if_accessible(data_provider.group) %></td>
   <% if @filter_params["details"] == 'on' %>

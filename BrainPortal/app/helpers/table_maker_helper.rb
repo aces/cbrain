@@ -53,11 +53,12 @@ module TableMakerHelper
       joiner = options[:min_data_join] || ", "
       formatted = []
       if block_given?
-        array.each_with_index { |elem,i| formatted << yield(elem,0,i) }
+        array.each_with_index { |elem,i| formatted << capture { yield(elem,0,i) } }
       else
         formatted = array
       end
-      return formatted.join(joiner)
+      concat formatted.join(joiner)
+      return ""
     end
 
     rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols])
@@ -74,26 +75,25 @@ module TableMakerHelper
     tr_callback ||= Proc.new { |rownum|       "<tr#{trclass}>" }
     td_callback ||= Proc.new { |elem,row,col| "<td#{tdclass}>#{elem}</td>" }
 
-    final = "<table#{tableclass}>\n"
+    concat "<table#{tableclass}>\n"
     array.each_with_index do |elem,i|
       col = i % cols
       row = i / cols
       if col == 0
-        final += "  " + tr_callback.call(row) + "\n"
+        concat "  " + tr_callback.call(row) + "\n"
       end
-      formatted_elem = block_given? ? yield(elem,row,col) : elem
-      final += "    " + td_callback.call(formatted_elem,row,col) + "\n"
+      formatted_elem = block_given? ? capture { yield(elem,row,col) } : elem
+      concat "    " + td_callback.call(formatted_elem,row,col) + "\n"
       if col + 1 == cols
-        final += "  </tr>\n"
+        concat "  </tr>\n"
       end
     end
     num_missing_tds = (cols - 1) - ((numelems-1) % cols)
     if num_missing_tds > 0
-      final += "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
+      concat "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
     end
-    final += "</table>\n"
-    
-    final
+    concat "</table>\n"
+    ""
   end
 
   private

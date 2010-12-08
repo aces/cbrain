@@ -5,7 +5,7 @@
   <td><%= h tool.name %></td>
   <td><%= overlay_description(tool.description) %></td>
   <td><%= h tool.category %></td>
-  <td><%= link_to_user_if_accessible(tool.user) %>
+  <td><%= link_to_user_with_tooltip(tool.user) %>
   <td><%= link_to_group_if_accessible(tool.group) %></td>
   <td class="left">
     <% tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b| %>
