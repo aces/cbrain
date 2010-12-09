@@ -162,7 +162,7 @@ class UserfilesController < ApplicationController
   
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    viewer_name = params[:viewer]
+    viewer_name = params[:viewerx] || params[:viewer]
     viewer      = @userfile.find_viewer(viewer_name)
 
     if viewer
@@ -182,8 +182,7 @@ class UserfilesController < ApplicationController
         render :action  => :display, :layout  => false
       end
     else
-      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
-
+      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewerx]}.</div>", :status  => "404"
     end
   end
   

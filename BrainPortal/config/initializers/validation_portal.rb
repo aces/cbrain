@@ -51,14 +51,15 @@ elsif first_arg == "db:sanity:check"
   #------------------------------------------------------------------------------
   puts "C> \t- No more validations needed for sanity checks. Skipping."
   #------------------------------------------------------------------------------
-elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema:load|db:set_task_group/
+elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema:load/
   #------------------------------------------------------------------------------
   puts "C> \t- No validations needed for DB migrations. Skipping."
   #------------------------------------------------------------------------------
 elsif ! first_arg.nil? && first_arg.include?("spec") #if running the test suite, make model sane and run the validation
   CbrainSystemChecks.check(:all)
+  PortalSystemChecks.check([:a030_check_configuration_variables])
   PortalSanityChecks.check(:all)
-  PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity])
+  PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity, :a030_check_configuration_variables])
 else
   CbrainSystemChecks.check(:all)
   PortalSystemChecks.check(:all)
