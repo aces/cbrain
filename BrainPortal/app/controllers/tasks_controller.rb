@@ -255,15 +255,19 @@ class TasksController < ApplicationController
     initialize_common_form_values
     @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
 
-    # Custom initializing
-    message = @task.wrapper_before_form
-    unless message.blank?
-      if message =~ /error/i
-        flash[:error] = message
-      else
-        flash[:notice] = message
-      end
-    end
+    ## Custom initializing
+    #
+    # No longer part of the state diagram for
+    # editing existing tasks.
+    #
+    #message = @task.wrapper_before_form
+    #unless message.blank?
+    #  if message =~ /error/i
+    #    flash[:error] = message
+    #  else
+    #    flash[:notice] = message
+    #  end
+    #end
 
     # Generate the form.
     respond_to do |format|
