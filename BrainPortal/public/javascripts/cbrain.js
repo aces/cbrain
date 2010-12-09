@@ -32,7 +32,7 @@ function modify_target(data, target, options){
 //
 //NOTE: DO NOT USE .live() or .delegate() in here.
 function load_behaviour(event){
-   loaded_element = jQuery(event.target);
+   var loaded_element = jQuery(event.target);
    //Overlay dialogs
    //See overlay_dialog_with_button()
    loaded_element.find(".overlay_dialog").each( function(index,element){
@@ -143,8 +143,8 @@ function load_behaviour(event){
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").hide();
 
-    loaded_element.find(".button_with_drop_down > div.drop_down_menu > .hijacker_submit_button").click(function(e){ 
-												       jQuery(e.target).parent().hide();
+    loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e){ 
+											                 loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();		
 												     });
 
 
