@@ -90,6 +90,13 @@ ActiveRecord::Schema.define(:version => 20101202180634) do
     t.integer  "user_id"
   end
 
+  create_table "filetypes", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "viewers"
+  end
+
   create_table "groups", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -298,6 +305,7 @@ ActiveRecord::Schema.define(:version => 20101202180634) do
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                                :default => false
     t.integer  "num_files"
+    t.string   "filetype"
     t.integer  "format_source_id"
   end
 

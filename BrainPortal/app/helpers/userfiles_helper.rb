@@ -86,8 +86,8 @@ module UserfilesHelper
   def obj_link(file_name, userfile)
     display_name = file_name.sub(/^.+\/surfaces\//, "")
     if userfile.is_locally_synced? && file_name[-4, 4] == ".obj"
-      link_to display_name, "#", "data-content-url" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content, :collection_file  => file_name), "data-content" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content),
-      "class"  => "o3d_link", "data-viewer" =>  "#{display_userfile_path(userfile, :viewer  => "civet_collection/obj_viewer", :apply_div  => false, :collection_file  => file_name)}"
+      link_to display_name, "#{display_userfile_path(userfile, :viewer  => "civet_collection/obj_viewer", :apply_div  => false, :collection_file  => file_name)}",
+      "class"  => "o3d_link"
     else
       display_name
     end
