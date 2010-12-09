@@ -44,7 +44,6 @@ ActionController::Routing::Routes.draw do |map|
   map.home        '/home',                :controller => 'portal',   :action => 'welcome'
   map.information '',                     :controller => 'portal',   :action => 'credits'
   map.about_us    '/about_us',            :controller => 'portal',   :action => 'about_us'
-  map.signup      '/signup',              :controller => 'users',    :action => 'new'
   map.login       '/login',               :controller => 'sessions', :action => 'new'
   map.logout      '/logout',              :controller => 'sessions', :action => 'destroy'
   map.jiv         '/jiv',                 :controller => 'jiv',      :action => 'index'

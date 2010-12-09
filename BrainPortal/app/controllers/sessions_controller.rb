@@ -47,8 +47,16 @@ class SessionsController < ApplicationController
       
       respond_to do |format|
         format.html { render :action => 'new' }
-        format.xml  { render :nothing => true, :status  => 403 }
+        format.xml  { render :nothing => true, :status  => 401 }
       end
+    end
+  end
+  
+  def logged_in
+    if current_user
+      render :nothing  => true, :status  => 200
+    else
+      render :nothing  => true, :status  => 401
     end
   end
 
