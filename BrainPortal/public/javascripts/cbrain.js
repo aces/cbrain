@@ -143,6 +143,11 @@ function load_behaviour(event){
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").hide();
 
+    loaded_element.find(".button_with_drop_down > div.drop_down_menu > .hijacker_submit_button").click(function(e){ 
+												       jQuery(e.target).parent().hide();
+												     });
+
+
    loaded_element.find(".button_with_drop_down").children(".button_menu").button({
      icons: {
        secondary: 'ui-icon-triangle-1-s'
