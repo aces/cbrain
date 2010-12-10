@@ -510,7 +510,10 @@ class RemoteResource < ActiveRecord::Base
 
     info = nil
     begin
-      if !self.has_ssh_control_info? || (self.ssh_master && self.ssh_master.is_alive?)
+      # We used to support direct ActiveResource connections to a Bourreau, but not anymore.
+      # We expect them all to go through SSH tunnels, now.
+      #if !self.has_ssh_control_info? || (self.ssh_master && self.ssh_master.is_alive?)
+      if self.ssh_master && self.ssh_master.is_alive?
         Control.site    = self.site
         Control.timeout = self.rr_timeout || 30
         control_info = Control.find('info')

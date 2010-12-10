@@ -51,11 +51,17 @@
      <% end %>
   </td>
 
-  <% if bour.has_remote_control_info? %>
+  <% if ! isbourreau %>
+    <td colspan="2"></td>
+  <% elsif ! bour.has_remote_control_info? %>
+    <td colspan="2"><%= red_if(true,"(Missing SSH control info)") %></td>
+  <% elsif ! bour.has_actres_tunnelling_info? %>
+    <td colspan="2"><%= red_if(true,"(Missing ActiveResource SSH tunnel info)") %></td>
+  <% elsif ! bour.has_db_tunnelling_info? %>
+    <td colspan="2"><%= red_if(true,"(Missing database SSH tunnel info)") %></td>
+  <% else %>
     <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link', :method  => :post %></td>
     <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link', :method  => :post %></td>
-  <% else %>
-    <td colspan="2"></td>
   <% end %>
 
 <% else %>
