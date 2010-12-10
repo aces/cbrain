@@ -84,7 +84,7 @@ class User < ActiveRecord::Base
     
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :login, :email, :password, :password_confirmation, :role, :group_ids, :site_id, :password_reset, :time_zone, :city, :country
+  attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
@@ -330,9 +330,11 @@ class User < ActiveRecord::Base
         old_site_group = SystemGroup.find_by_name(old_site.name)
         old_site_group.users.delete(self)
       end
-      new_site = Site.find(self.changes["site_id"].last)
-      new_site_group = SystemGroup.find_by_name(new_site.name)
-      new_site_group.users << self
+      unless self.changes["site_id"].last.blank?
+        new_site = Site.find(self.changes["site_id"].last)
+        new_site_group = SystemGroup.find_by_name(new_site.name)
+        new_site_group.users << self
+      end
     end
   end
   

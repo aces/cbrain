@@ -1,3 +1,13 @@
+<% 
+ stats = ApplicationController.helpers.gather_filetype_statistics(
+           :users     => @user.available_users,
+           :providers => DataProvider.all
+         )
+ user_fileclass_count = stats[:user_fileclass_count]
+ fileclasses_totcount = stats[:fileclasses_totcount]
+ user_totcount        = stats[:user_totcount]
+%>
+
 
 <%= javascript_tag "var current_options = null;" %>
 
@@ -87,9 +97,9 @@
   <div class="generalbox">
 
    <%= render :partial => 'layouts/file_counts',
-              :locals => { :fileclasses_totcount => @fileclasses_totcount,
-                           :user_fileclass_count => @user_fileclass_count,
-                           :user_totcount        => @user_totcount
+              :locals => { :fileclasses_totcount => fileclasses_totcount,
+                           :user_fileclass_count => user_fileclass_count,
+                           :user_totcount        => user_totcount
                          }
    %>
 

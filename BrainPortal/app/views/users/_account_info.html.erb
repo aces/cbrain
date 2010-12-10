@@ -30,14 +30,15 @@
 
   <% if check_role(:admin) || check_role(:site_manager) %>
 
-    <% if not_admin_user(@user) && check_role(:admin)%>
+    <% if not_admin_user(@user) %>
 
       <p><label for="role">Role</label><br/>
-      <%= f.select :role, [["User", "user"],["Site Manager","site_manager"],["Admin","admin"]], :prompt => 'Select a role' %></p>
-
-      <p><label for="site">Site</label><br/>
-      <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
-
+      <%= f.select :role, roles_for_user(current_user), :prompt => 'Select a role' %></p>
+      
+      <% if check_role(:admin) %>
+        <p><label for="site">Site</label><br/>
+        <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+      <% end %>
     <% end %>
 
     <label for="groups">Projects</label>

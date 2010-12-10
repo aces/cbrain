@@ -33,11 +33,13 @@
     %></p>
     
     <p><label for="role">Role</label><br/>
-    <%= f.select :role, roles_for_user(current_user), {} %> </p>
+    <%= f.select :role, roles_for_user(current_user) %> </p>
     
-    <p><label for="role">Site</label><br/>
-    <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
-  
+    <% if current_user.has_role? :admin %>
+      <p><label for="role">Site</label><br/>
+      <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+    <% end %>
+    
     <p><label for="password">Password</label><br/>
     <%= f.password_field :password %></p>
   

@@ -27,7 +27,7 @@ class UsersController < ApplicationController
     @users = current_user.available_users(:all, :include => [:groups, :site], :order  => sort_order )
     
     #For the 'new' panel
-    @user = User.new(:site_id => current_user.site_id)
+    @user = User.new
     if current_user.has_role? :admin
       @groups = WorkGroup.find(:all)
     elsif current_user.has_role? :site_manager
@@ -81,9 +81,30 @@ class UsersController < ApplicationController
     # uncomment at your own risk
     # reset_session
     
+    login     = params[:user].delete :login
+    role      = params[:user].delete :role
+    group_ids = params[:user].delete :group_ids
+    site_id   = params[:user].delete :site_id
+    
     @user = User.new(params[:user])
-        
+    
+    if current_user.has_role? :admin
+      @user.login     = login     if login
+      @user.role      = role      if role
+      @user.group_ids = group_ids if group_ids
+      @user.site_id   = site_id   if site_id
+    end
+    
     if current_user.has_role? :site_manager
+      @user.login     = login     if login
+      @user.group_ids = group_ids if group_ids
+      if role 
+        if role == 'site_manager'
+          @user.role = 'site_manager'
+        else
+          @user.role = 'user'
+        end
+      end
       @user.site = current_user.site
     end
 
@@ -117,15 +138,40 @@ class UsersController < ApplicationController
     params[:user][:group_ids] |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
     
     if params[:user][:password]
-      params[:user][:password_reset] = false
+      params[:user].delete :password_reset
+      @user.password_reset = false
     end
 
     if params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]]
       params[:user][:time_zone] = nil # change "" to nil
     end
+    
+    role      = params[:user].delete :role
+    group_ids = params[:user].delete :group_ids
+    site_id   = params[:user].delete :site_id
+    
+    @user.attributes = params[:user]
+    
+    if current_user.has_role? :admin
+      @user.role      = role      if role
+      @user.group_ids = group_ids if group_ids
+      @user.site_id   = site_id   if site_id
+    end
+    
+    if current_user.has_role? :site_manager
+      @user.group_ids = group_ids if group_ids
+      if role 
+        if role == 'site_manager'
+          @user.role = 'site_manager'
+        else
+          @user.role = 'user'
+        end
+      end
+      @user.site = current_user.site
+    end
       
     respond_to do |format|
-      if @user.update_attributes(params[:user])
+      if @user.save
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to @user }
         format.xml  { head :ok }
