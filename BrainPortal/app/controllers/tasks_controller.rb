@@ -299,7 +299,7 @@ class TasksController < ApplicationController
     if commit_button =~ /Refresh/i
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
-      @task.valid?
+      @task.valid? if @task.errors.empty?
       render :action => :new
       return
     end
@@ -412,7 +412,7 @@ class TasksController < ApplicationController
     if commit_button =~ /Refresh/i
       initialize_common_form_values
       flash[:notice] += @task.wrapper_refresh_form
-      @task.valid?
+      @task.valid? if @task.errors.empty?
       render :action => :edit
       return
     end

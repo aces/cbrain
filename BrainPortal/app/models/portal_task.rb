@@ -228,7 +228,8 @@ class PortalTask < CbrainTask
       raise ScriptError.new("Coding error: method refresh_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
       return ret
     rescue CbrainError, CbrainNotice => cber
-      raise cber
+      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      return ret || ""
     rescue => other
       cber = ScriptError.new("Coding error: method refresh_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
       cber.set_backtrace(other.backtrace.dup)
