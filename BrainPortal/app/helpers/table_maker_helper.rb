@@ -117,17 +117,19 @@ module TableMakerHelper
       else
         rows = Math.sqrt(size).to_i
       end
-      rows = 1 if rows == 0
+      rows = 1    if rows == 0
     end
     if rows.nil?
       cols = size if cols > size
-      rows = (size.to_f / ( cols || 1 ) + 0.999).to_i
-      rows = 1 if rows == 0;
+      cols = 1    if cols == 0
+      rows = (size.to_f / cols + 0.999).to_i
+      rows = 1    if rows == 0
     end
     if cols.nil?
       rows = size if rows > size
-      cols = size / ( rows || 1 )
-      cols = 1 if cols == 0;
+      rows = 1    if rows == 0
+      cols = size / rows
+      cols = 1    if cols == 0
     end
     return rows,cols
   end
