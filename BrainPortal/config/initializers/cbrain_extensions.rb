@@ -119,7 +119,7 @@ end
 class Symbol
 
   # Used by views for CbrainTasks to transform a
-  # symbol sych as :abc into a path to a variable
+  # symbol such as :abc into a path to a variable
   # inside the params[] hash, as "cbrain_task[params][abc]".
   #
   # CBRAIN adds a similar method in the String class.
@@ -127,12 +127,24 @@ class Symbol
     "cbrain_task[params][#{self}]"
   end
 
+  # Used by views for CbrainTasks to transform a
+  # symbol such as :abc (representing a path to a
+  # variable inside the params[] hash) into the name
+  # of a pseudo accessor method for that variable.
+  # This is also the name of the input field's HTML ID
+  # attribute, used for error validations.
+  #
+  # CBRAIN adds a similar method in the String class.
+  def to_la_id
+    self.to_s.to_la_id
+  end
+
 end
 
 class String
 
   # Used by views for CbrainTasks to transform a
-  # string sych as "abc" or "abc[def]" into a path to a
+  # string such as "abc" or "abc[def]" into a path to a
   # variable inside the params[] hash, as in
   # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]"
   #
@@ -144,6 +156,19 @@ class String
       key.sub!(/^(\w+)/,newcomp)
     end
     "cbrain_task[params]#{key}"
+  end
+
+  # Used by views for CbrainTasks to transform a
+  # string such as "abc" or "abc[def]" (representing
+  # a path to a variable inside the params[] hash, as in
+  # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]")
+  # into the name of a pseudo accessor method for that variable.
+  # This is also the name of the input field's HTML ID
+  # attribute, used for error validations.
+  #
+  # CBRAIN adds a similar method in the Symbol class.
+  def to_la_id
+    self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
   end
 
   # Considers self as a pattern to with substitutions

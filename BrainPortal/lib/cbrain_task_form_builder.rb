@@ -81,7 +81,8 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # the target for the input field is an entry in the
   # params hash of the CbrainTask, not one of its attribute.
   def params_text_field(paramspath, options = {})
-    text_field("nil?", params_common_options(paramspath,options))
+    pseudo_method = create_access_method(paramspath)
+    text_field(pseudo_method.to_sym, params_common_options(paramspath,options))
   end
 
   # Creates a check box input field for the CbrainTask parameter
@@ -102,7 +103,8 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
       new_options[:value]   = checked_value
       new_options[:checked] = true
     end
-    check_box("nil?", new_options, checked_value, unchecked_value)
+    pseudo_method = create_access_method(paramspath)
+    check_box(pseudo_method, new_options, checked_value, unchecked_value)
   end
 
   # Creates a hidden input field for the CbrainTask parameter
@@ -111,7 +113,8 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # the target for the input field is an entry in the
   # params hash of the CbrainTask, not one of its attribute.
   def params_hidden_field(paramspath, options = {})
-    hidden_field("nil?", params_common_options(paramspath,options))
+    pseudo_method = create_access_method(paramspath)
+    hidden_field(pseudo_method, params_common_options(paramspath,options))
   end
 
   # Creates a password input field for the CbrainTask parameter
@@ -120,7 +123,8 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # the target for the input field is an entry in the
   # params hash of the CbrainTask, not one of its attribute.
   def params_password_field(paramspath, options = {})
-    password_field("nil?", params_common_options(paramspath,options))
+    pseudo_method = create_access_method(paramspath)
+    password_field(pseudo_method, params_common_options(paramspath,options))
   end
 
   # Creates a radio button input field for the CbrainTask parameter
@@ -129,7 +133,8 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # the target for the input field is an entry in the
   # params hash of the CbrainTask, not one of its attribute.
   def params_radio_button(paramspath, tag_value, options = {})
-    radio_button("nil?", tag_value, params_common_options(paramspath,options))
+    pseudo_method = create_access_method(paramspath)
+    radio_button(pseudo_method, tag_value, params_common_options(paramspath,options))
   end
 
   # Creates a text aread input field for the CbrainTask parameter
@@ -138,14 +143,16 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # the target for the input field is an entry in the
   # params hash of the CbrainTask, not one of its attribute.
   def params_text_area(paramspath, options = {})
-    text_area("nil?", params_common_options(paramspath,options))
+    pseudo_method = create_access_method(paramspath)
+    text_area(pseudo_method, params_common_options(paramspath,options))
   end
 
   def params_common_options(paramspath, options = {}) #:nodoc:
     added_path    = paramspath.to_la
+    added_id      = paramspath.to_la_id
     added_options = options.dup.merge( {
                       :name  => added_path,  # input tag variable name
-                      :id    => added_path.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
+                      :id    => added_id
                     } )
     unless added_options.has_key?(:value) || added_options.has_key?("value")
       current_value = @object.params_path_value(paramspath) # value in params hash
@@ -153,6 +160,17 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
       added_options[:value] = current_value
     end
     added_options
+  end
+
+  def create_access_method(paramspath) #:nodoc:
+     pseudo_method = paramspath.to_la_id.to_sym
+     return pseudo_method if @object.respond_to?(pseudo_method)
+     @object.class_eval "
+       def #{pseudo_method}
+         self.params_path_value('#{paramspath}')
+       end
+     "
+     pseudo_method
   end
 
 end # class CbrainTaskFormBuilder

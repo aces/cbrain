@@ -49,27 +49,34 @@
     <tr>
       <th>Execution Server</th>
       <th>Enabled?</th>
-      <th>Versions Configuration</th>
+      <th colspan="5">Versions Configuration</th>
     </tr>
     <% for bourreau in @bourreaux %>
-      <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
-        <td><%= link_to_bourreau_if_accessible(bourreau) %></td>
-        <td><%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %></td>
-        <td>
-          <table class="simple">
-          <% ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => @tool.id }).each do |tc| %>
-            <tr>
-            <td><%= overlay_description(tc.description) %></td>
-            <td><%= link_to_group_if_accessible(tc.group) %></td>
-            <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
-            <td><%= link_to "Show", tool_config_path(tc) %></td>
-            <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.short_description}'?", :method => :delete %></td>
-            </tr>
+      <% tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => @tool.id }) %>
+      <% rows = tcs.size + 1%>
+      <tr>
+        <td rowspan="<%= rows %>"><%= link_to_bourreau_if_accessible(bourreau) %></td>
+        <td rowspan="<%= rows %>"><%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %></td>
+        <td colspan="5">
+          <center>
+          <% if rows <= 1 %>
+            <%= red_if(true,"(No specific versions configured).") %>
+          <% else %>
+            <%= pluralize(rows-1," version") + " configured." %>
           <% end %>
-            <tr><td colspan="5"><%= link_to "Add new", new_tool_config_path( :tool_id => @tool.id, :bourreau_id => bourreau.id ) %></td></tr>
-          </table>
+          <%= link_to "Add new", new_tool_config_path( :tool_id => @tool.id, :bourreau_id => bourreau.id ) %>
+          </center>
         </td>
       </tr>
+      <% tcs.each do |tc| %>
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <td><%= overlay_description(tc.description) %></td>
+          <td><%= link_to_group_if_accessible(tc.group) %></td>
+          <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
+          <td><%= link_to "Show", tool_config_path(tc) %></td>
+          <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.short_description}'?", :method => :delete %></td>
+        </tr>
+      <% end %>
     <% end %>
   </table>
 </p>

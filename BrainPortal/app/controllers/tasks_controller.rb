@@ -38,10 +38,14 @@ class TasksController < ApplicationController
       next if task.status == 'Preset' || task.status == 'SitePreset'
       @task_types[task.class.to_s] ||= 0
       @task_types[task.class.to_s]  += 1
-      @task_owners[task.user]      ||= 0
-      @task_owners[task.user]       += 1
-      @task_projects[task.group]   ||= 0
-      @task_projects[task.group]    += 1
+      if task.user
+        @task_owners[task.user]    ||= 0
+        @task_owners[task.user]     += 1
+      end
+      if task.group
+        @task_projects[task.group] ||= 0
+        @task_projects[task.group]  += 1
+      end
       @task_status[task.status]    ||= 0
       @task_status[task.status]     += 1
     end
@@ -192,6 +196,8 @@ class TasksController < ApplicationController
     @task.bourreau_id = params[:bourreau_id]
     @task.user_id     = current_user.id
     @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
+    @task.status      = "New"
+
     if @task.bourreau_id
       tool = @task.tool
       toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
@@ -217,9 +223,9 @@ class TasksController < ApplicationController
     message = @task.wrapper_before_form
     unless message.blank?
       if message =~ /error/i
-        flash[:error] = message
+        flash.now[:error] = message
       else
-        flash[:notice] = message
+        flash.now[:notice] = message
       end
     end
 
@@ -255,20 +261,6 @@ class TasksController < ApplicationController
     initialize_common_form_values
     @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
 
-    ## Custom initializing
-    #
-    # No longer part of the state diagram for
-    # editing existing tasks.
-    #
-    #message = @task.wrapper_before_form
-    #unless message.blank?
-    #  if message =~ /error/i
-    #    flash[:error] = message
-    #  else
-    #    flash[:notice] = message
-    #  end
-    #end
-
     # Generate the form.
     respond_to do |format|
       format.html # edit.html.erb
@@ -277,14 +269,17 @@ class TasksController < ApplicationController
   end
 
   def create #:nodoc:
-    flash[:notice] = ""
-    flash[:error]  = ""
+    flash[:notice]     = ""
+    flash[:error]      = ""
+    flash.now[:notice] = ""
+    flash.now[:error]  = ""
 
     # A brand new task object!
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
+    @task.status      = "New"
 
     # Decode the selection box with combined bourreau_id and tool_config_id
     bid_tcid = params[:bid_tcid] || "," # comma important
@@ -303,7 +298,8 @@ class TasksController < ApplicationController
     commit_button = params[:commit] || "Start" # default
     if commit_button =~ /Refresh/i
       initialize_common_form_values
-      flash[:notice] += @task.wrapper_refresh_form
+      flash.now[:notice] += @task.wrapper_refresh_form
+      @task.valid?
       render :action => :new
       return
     end
@@ -325,8 +321,8 @@ class TasksController < ApplicationController
         @bourreaux = [ @task.tool_config.bourreau ] # use the one in tool_config
       end
       if @bourreaux.size == 0
-        flash[:error] += "No Execution Server available right now for this task?"
-        redirect_to :action  => :new, :file_ids => @task.params[:interface_userfile_ids], :toolname => @toolname
+        flash.now[:error] = "No Execution Server available right now for this task?"
+        render :action  => :new
         return
       else
         @task.bourreau_id = @bourreaux[rand(@bourreaux.size)].id
@@ -337,7 +333,18 @@ class TasksController < ApplicationController
 
     # Custom initializing
     messages = ""
-    messages += @task.wrapper_after_form
+    begin
+      messages += @task.wrapper_after_form
+    rescue CbrainError, CbrainNotice => ex
+      @task.errors.add(:base, "#{ex.class.to_s.sub(/Cbrain/,"")} in form: #{ex.message}\n")
+    end
+
+    unless @task.errors.empty? && @task.valid?
+      flash.now[:error] += messages
+      initialize_common_form_values
+      render :action => 'new'
+      return
+    end
 
     @task.launch_time = Time.now # so grouping will work
     tasklist = @task.wrapper_final_task_list
@@ -353,7 +360,7 @@ class TasksController < ApplicationController
 
     messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check
 
-    flash[:notice] += messages if messages
+    flash[:notice] += messages + "\n" if messages
     if tasklist.size == 1
       flash[:notice] += "Launched a #{@task.name} task."
     else
@@ -375,8 +382,10 @@ class TasksController < ApplicationController
 
   def update #:nodoc:
 
-    flash[:notice] = ""
-    flash[:error]  = ""
+    flash[:notice]     = ""
+    flash[:error]      = ""
+    flash.now[:notice] = ""
+    flash.now[:error]  = ""
 
     id = params[:id]
     @task = current_user.available_tasks.find(id)
@@ -403,6 +412,7 @@ class TasksController < ApplicationController
     if commit_button =~ /Refresh/i
       initialize_common_form_values
       flash[:notice] += @task.wrapper_refresh_form
+      @task.valid?
       render :action => :edit
       return
     end
@@ -413,14 +423,26 @@ class TasksController < ApplicationController
         handle_preset_actions
         initialize_common_form_values
         @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
-        flash[:notice] += @task.wrapper_before_form
+        @task.valid?
         render :action => :edit
         return
       end
     end
 
     # Final update to the task object, this time we save it.
-    messages     = @task.wrapper_after_form
+    messages = ""
+    begin
+      messages += @task.wrapper_after_form
+    rescue CbrainError, CbrainNotice => ex
+      @task.errors.add(:base, "#{ex.class.to_s.sub(/Cbrain/,"")} in form: #{ex.message}\n")
+    end
+
+    unless @task.errors.empty? && @task.valid?
+      initialize_common_form_values
+      flash.now[:error] += messages
+      render :action => 'edit'
+      return
+    end
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
@@ -428,7 +450,8 @@ class TasksController < ApplicationController
     @task.log_params_changes(old_params,@task.params)
     @task.save!
 
-    flash[:notice] = messages if messages
+    flash[:notice] = messages + "\n" if messages
+    flash[:notice] += "New task parameters saved. See the log for changes, if any.\n"
     redirect_to :action => :show, :id => @task.id
   end
 

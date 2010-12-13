@@ -1,5 +1,6 @@
 
-<h3>Life Cycle, Recovery and Restarting Capabilities</h3>
+<fieldset>
+<legend>Bourreau Life Cycle, Recovery and Restarting Capabilities</legend>
 
 <table>
 
@@ -42,17 +43,85 @@
 
 </table>
 
+</fieldset>
+
+<p>
+
+<fieldset>
+<legend>Multi-cycle restart/recovers</legend>
+<strong>Crashes will reset to false after they are first triggered:</strong><%= form.params_check_box :crash_will_reset %>
+</fieldset>
+
+<p>
+
+<fieldset>
+<legend>Input fields validation tests:</legend>
+
+<strong>This text field must contain a odd number:</strong>
+<%= form.params_text_field :inptest_text_odd_number %>
+<p/>
+
+<strong>Exactly two checkboxes must be set:</strong>
+<%= form.params_check_box :inptest_checkbox_1 %>
+<%= form.params_check_box :inptest_checkbox_2 %>
+<%= form.params_check_box :inptest_checkbox_3 %>
+<%= form.params_check_box :inptest_checkbox_4 %>
+<p/>
+
+<strong>A hidden field is here [
+<%= form.params_hidden_field :inptest_hidden_field %>
+] which MUST have the value 'XyZ'.</strong>
+<p/>
+
+<strong>This password field must be left blank or contain 'XyZ':</strong>
+<%= form.params_password_field :inptest_password_field %>
+<p/>
+
+<strong>The first or last radio button must be selected:</strong>
+<%= form.params_radio_button :inptest_radio, 'first' %>
+<%= form.params_radio_button :inptest_radio, 'second' %>
+<%= form.params_radio_button :inptest_radio, 'third' %>
+<p/>
+
+<strong>This text area MUST contain the word 'XyZ':</strong><br/>
+<%= form.params_text_area :inptest_textarea, :cols => 40, :rows => 3 %>
+<p/>
+
+<strong>Refresh count <%= params[:refresh_count] || 0 %></strong> | <%= submit_tag 'Trigger Task Refresh' %>
+<%= form.params_hidden_field :refresh_count %>
+
+</fieldset>
 
 
-<h3>Miscellaneous</h3>
-
-<strong>Crashes will reset to false after they are first triggered: </strong>
-<%= form.params_check_box :crash_will_reset %>
 <P>
+
+<fieldset>
+<legend>Interface after_form() lifecycle test:</legend>
+<strong>Test action:</strong><br/>
+<%= select_tag :after_form_action.to_la, options_for_select(
+      [ [ "Returns message", "return" ],
+        [ "Add error message to field", "field" ],
+        [ "Add error message to field and return it", "field_ret" ],
+        [ "Raise CbrainError", "CbrainError" ],
+        [ "Raise CbrainNotice", "CbrainNotice" ],
+        [ "Raise RuntimeError", "RuntimeError" ],
+        [ "Raise ScriptError", "ScriptError" ],
+      ],
+      params[:after_form_action]
+    )
+-%><br>
+<strong>Test message:</strong><br/> <%= form.params_text_field :after_form_message %>
+
+</fieldset>
+
+
 
 <% if @task.new_record? %>
-<strong>Number of copies of this task to launch: </strong>
-<%= form.params_text_field :num_copies %> (for stress testing ONLY!)
 <P>
+
+<fieldset>
+<legend>Stress-testing</legend>
+<strong>Number of copies of this task to launch:</strong> <%= form.params_text_field :num_copies, :size => 4 %>
+</fieldset>
 <% end %>
 

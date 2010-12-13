@@ -190,7 +190,7 @@ class PortalTask < CbrainTask
   def self.wrapper_default_launch_args #:nodoc:
     begin
       ret = self.default_launch_args
-      cb_error "Coding error: method default_launch_args() for #{self.class} did not return a hash?!?" unless
+      raise ScriptError.new("Coding error: method default_launch_args() for #{self.class} did not return a hash?!?") unless
         ret.is_a?(Hash)
       return ret
     rescue CbrainError, CbrainNotice => cber
@@ -206,9 +206,9 @@ class PortalTask < CbrainTask
     begin
       was_new = self.new_record?
       ret = self.before_form
-      cb_error "Coding error: method before_form() for #{self.class} did not return a string?!?" unless
+      raise ScriptError.new("Coding error: method before_form() for #{self.class} did not return a string?!?") unless
         ret.is_a?(String)
-      cb_error "Coding error: method before_form() for #{self.class} SAVED its object!" if was_new && ! self.new_record?
+      raise ScriptError.new("Coding error: method before_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
       return ret
     rescue CbrainError, CbrainNotice => cber
       raise cber
@@ -223,9 +223,9 @@ class PortalTask < CbrainTask
     begin
       was_new = self.new_record?
       ret = self.refresh_form
-      cb_error "Coding error: method refresh_form() for #{self.class} did not return a string?!?" unless
+      raise ScriptError.new("Coding error: method refresh_form() for #{self.class} did not return a string?!?") unless
         ret.is_a?(String)
-      cb_error "Coding error: method refresh_form() for #{self.class} SAVED its object!" if was_new && ! self.new_record?
+      raise ScriptError.new("Coding error: method refresh_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
       return ret
     rescue CbrainError, CbrainNotice => cber
       raise cber
@@ -240,9 +240,9 @@ class PortalTask < CbrainTask
     begin
       was_new = self.new_record?
       ret = self.after_form
-      cb_error "Coding error: method after_form() for #{self.class} did not return a string?!?" unless
+      raise ScriptError.new("Coding error: method after_form() for #{self.class} did not return a string?!?") unless
         ret.is_a?(String)
-      cb_error "Coding error: method after_form() for #{self.class} SAVED its object!" if
+      raise ScriptError.new("Coding error: method after_form() for #{self.class} SAVED its object!") if
         (was_new && ! self.new_record?) && ! self.class.properties[:i_save_my_task_in_after_form]
       return ret
     rescue CbrainError, CbrainNotice => cber
@@ -257,12 +257,12 @@ class PortalTask < CbrainTask
   def wrapper_final_task_list #:nodoc:
     begin
       ret = self.final_task_list
-      cb_error "Coding error: method final_task_list() for #{self.class} did not return an array?!?" unless
+      raise ScriptError.new("Coding error: method final_task_list() for #{self.class} did not return an array?!?") unless
         ret.is_a?(Array)
-      cb_error "Coding error: method final_task_list() for #{self.class} returned an array but it doesn't contain CbrainTasks?!?" if
+      raise ScriptError.new("Coding error: method final_task_list() for #{self.class} returned an array but it doesn't contain CbrainTasks?!?") if
         ret.detect { |t| ! t.is_a?(CbrainTask) }
       if ! self.class.properties[:i_save_my_tasks_in_final_task_list]
-        cb_error "Coding error: method final_task_list() for #{self.class} SAVED one or more of its tasks?!?" if
+         raise ScriptError.new("Coding error: method final_task_list() for #{self.class} SAVED one or more of its tasks?!?") if
           ret.detect { |t| ! t.new_record? }
       end
       return ret
@@ -278,7 +278,7 @@ class PortalTask < CbrainTask
   def wrapper_after_final_task_list_saved(tasklist) #:nodoc:
     begin
       ret = self.after_final_task_list_saved(tasklist)
-      cb_error "Coding error: method after_final_task_list_saved() for #{self.class} did not return a string?!?" unless
+      raise ScriptError.new("Coding error: method after_final_task_list_saved() for #{self.class} did not return a string?!?") unless
         ret.is_a?(String)
       return ret
     rescue CbrainError, CbrainNotice => cber

@@ -474,7 +474,13 @@ class UserfilesController < ApplicationController
                    when "Update"
                      ["update_file_type", params[:file_type]]
                 end
-    
+
+    unless operation
+      flash[:error] = "No operation to perform."
+      redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+      redirect_to redirect_action
+      return
+    end
 
     access_requested = params[:commit] == "Update Tags" ? :read : :write
 
