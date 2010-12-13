@@ -52,7 +52,7 @@ class SessionsController < ApplicationController
     end
   end
   
-  def logged_in
+  def show
     if current_user
       render :nothing  => true, :status  => 200
     else
