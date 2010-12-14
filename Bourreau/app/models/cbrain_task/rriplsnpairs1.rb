@@ -5,7 +5,7 @@
 #
 # Original author:
 #
-# $Id: cluster_task_model.rb 1220 2010-07-06 20:01:01Z prioux $
+# $Id$
 #
 # A subclass of ClusterTask to run Rriplsnpairs1.
 class CbrainTask::Rriplsnpairs1 < ClusterTask
@@ -13,7 +13,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
   include RestartableTask # This task is naturally restartable
   include RecoverableTask # This task is naturally recoverable
 
-  Revision_info="$Id: cluster_task_model.rb 1220 2010-07-06 20:01:01Z prioux $"
+  Revision_info="$Id$"
 
 ###########################
 # See CbrainTask.txt
@@ -145,7 +145,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 			self.addlog("Line  137:  session file dir: #{args}")
 			
 		end	
-	npairsPLS_command = "/usr/local/npairs_pls/npairs_createSessionProfile #{args} "
+	npairsPLS_command = "npairs_createSessionProfile #{args} "
 	npairsPLS_command1 = "echo \"\";echo Running Npairs Create Session Profile ......"
 	npairsPLS_command2 = "echo \"\";echo Running Npairs Create Session Profile ......"	
 	# *****************
@@ -263,17 +263,17 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 	
 	analysis_type=params[:ne_cs_ANALYSIS_TYPE]
 	if analysis_type == "enpairs"
-	npairsPLS_command = "/usr/local/npairs_pls/npairs_createSessionProfile #{args}  -BLOCK false"
+	npairsPLS_command = "npairs_createSessionProfile #{args}  -BLOCK false"
 	npairsPLS_command1 = "echo \"\";echo Running Create Session Profile for NPairs Event Related Analysis ......"
-	npairsPLS_command2 = "/usr/local/npairs_pls/npairs_createDatamat #{args_datamat} "
+	npairsPLS_command2 = "npairs_createDatamat #{args_datamat} "
 	elsif 	analysis_type == "epls"
-	npairsPLS_command = "/usr/local/npairs_pls/pls_createSessionProfile #{args} -BLOCK false"
+	npairsPLS_command = "pls_createSessionProfile #{args} -BLOCK false"
 	npairsPLS_command1 = "echo \"\";echo Running Create Session Profile for Event-Related PLS Analysis ......"
-	npairsPLS_command2 = "/usr/local/npairs_pls/pls_createDatamat #{args_datamat} "
+	npairsPLS_command2 = "pls_createDatamat #{args_datamat} "
 	else
-	npairsPLS_command = "/usr/local/npairs_pls/pls_createSessionProfile #{args} -BLOCK true"
+	npairsPLS_command = "pls_createSessionProfile #{args} -BLOCK true"
 	npairsPLS_command1 = "echo \"\";echo Running Create Session Profile for Block PLS Analysis ......"
-	npairsPLS_command2 = "/usr/local/npairs_pls/pls_createDatamat #{args_datamat} "	
+	npairsPLS_command2 = pls_createDatamat #{args_datamat} "	
 	end
 	
 	# *****************
@@ -383,7 +383,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 			self.addlog("Line  365:  session file dir: #{args_datamat}")
 	end
 
-	npairsPLS_command = "/usr/local/npairs_pls/npairs_setupAnalysis #{args} "
+	npairsPLS_command = "npairs_setupAnalysis #{args} "
 	npairsPLS_command1 = "echo \"\";echo Running Npairs Setup Analysis ......"
 	npairsPLS_command2 = "echo \"\";echo Running Npairs Setup Analysis ......"
 	# *****************
@@ -400,7 +400,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 		
 		args ="  -#{params[:n_ra_xxxxM]} " 	
 		args +="   #{n_ra_FILES_parameter_new}" 
-	npairsPLS_command = "/usr/local/npairs_pls/npairs_runAnalysis #{args} "
+	npairsPLS_command = "npairs_runAnalysis #{args} "
 	npairsPLS_command1 = "echo \"\";echo Running Npairs Analysis ......"
 	npairsPLS_command2 = "echo \"\";echo Running Npairs Analysis ......"
 	
@@ -489,7 +489,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 			self.addlog("Line 401:  session file dir: #{args}")
 	end
 
-	npairsPLS_command = "/usr/local/npairs_pls/pls_setupAnalysis #{args} "
+	npairsPLS_command = "pls_setupAnalysis #{args} "
 	npairsPLS_command1 = "echo \"\";echo Running PLS Setup Analysis ......"
 	npairsPLS_command2 = "echo \"\";echo Running PLS Setup Analysis ......"
 	#*************
@@ -507,7 +507,7 @@ class CbrainTask::Rriplsnpairs1 < ClusterTask
 	
 		args ="  -#{params[:p_ra_xxxxM]} " 	
 		args +="   #{p_ra_FILES_parameter_new}" 
-		npairsPLS_command = "/usr/local/npairs_pls/pls_runAnalysis #{args} "
+		npairsPLS_command = "pls_runAnalysis #{args} "
 		npairsPLS_command1 = "echo \"\";echo Running PLS Analysis ......"
 		npairsPLS_command2 = "echo \"\";echo Running PLS Analysis ......"
 	end
