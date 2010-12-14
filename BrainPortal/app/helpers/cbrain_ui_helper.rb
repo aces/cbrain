@@ -150,14 +150,11 @@ module CbrainUiHelper
     
     content = capture(&block)
     
-    concat("<span id=\"xsp_#{@@html_tool_tip_id}\"")
-    concat("onmouseover=\"xstooltip_show('tootip_#{@@html_tool_tip_id}', 'xsp_#{@@html_tool_tip_id}', #{offset_x}, #{offset_y});\"")
-    concat("onmouseout=\"xstooltip_hide('tootip_#{@@html_tool_tip_id}');\"") 
-    concat(">")
+    concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{@@html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{@@html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
     concat(text)
     concat("</span>")
     
-    concat("<div id=\"tootip_#{@@html_tool_tip_id}\" class=\"xstooltip\">")
+    concat("<div id=\"html_tool_tip_#{@@html_tool_tip_id}\" class=\"html_tool_tip\">")
     concat(content)
     concat("</div>")
   end

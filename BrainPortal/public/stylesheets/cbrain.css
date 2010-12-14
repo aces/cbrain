@@ -1454,8 +1454,8 @@ td.middle {
 /* % xstooltip Styles */
 /* % ######################################################### */
 
-.xstooltip {
-    visibility: hidden;
+.html_tool_tip {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;

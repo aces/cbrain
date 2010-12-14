@@ -423,6 +423,35 @@ jQuery(
      
      return false;
    });
+   
+   //html_tool_tip_code based on xstooltip provided by
+   //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
+   jQuery(".html_tool_tip_trigger").live("mouseover", function(){
+      var trigger = jQuery(this);
+      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip = jQuery("#" + tool_tip_id);
+      
+      var offset_x = trigger.attr("data-offset-x") || '30';
+      var offset_y = trigger.attr("data-offset-y") || '0';
+      
+      if ((tool_tip.css('top') == '' || tool_tip.css('top') == '0px') 
+          && (tool_tip.css('left') == '' || tool_tip.css('left') == '0px'))
+      {
+          x = trigger.position().left + parseInt(offset_x);
+          y = trigger.position().top  + parseInt(offset_y);
+      
+          tool_tip.css('top',  y + 'px');
+          tool_tip.css('left', x + 'px');
+      }
+      
+      tool_tip.show();
+   }).live("mouseout", function(){
+      var trigger = jQuery(this);
+      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip = jQuery("#" + tool_tip_id);
+      
+      tool_tip.hide();
+   });
 
    /////////////////////////////////////////////////////////////////////
    //

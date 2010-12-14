@@ -41,25 +41,25 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
 
   # Special named routes
-  map.home             '/home',                :controller => 'portal',   :action => 'welcome'
-  map.information      '',                     :controller => 'portal',   :action => 'credits'
-  map.about_us         '/about_us',            :controller => 'portal',   :action => 'about_us'
-  map.login            '/login',               :controller => 'sessions', :action => 'new'
-  map.session_status   '/session_status',      :controller => 'sessions', :action => 'show'
-  map.logout           '/logout',              :controller => 'sessions', :action => 'destroy'
-  map.jiv              '/jiv',                 :controller => 'jiv',      :action => 'index'
-  map.jiv_display      '/jiv/show',            :controller => 'jiv',      :action => 'show'
+  map.home             '/home',                   :controller => 'portal',   :action => 'welcome'
+  map.information      '',                        :controller => 'portal',   :action => 'credits'
+  map.about_us         '/about_us',               :controller => 'portal',   :action => 'about_us'
+  map.login            '/login',                  :controller => 'sessions', :action => 'new'
+  map.session_status   '/session_status',         :controller => 'sessions', :action => 'show'
+  map.logout           '/logout',                 :controller => 'sessions', :action => 'destroy'
+  map.jiv              '/jiv',                    :controller => 'jiv',      :action => 'index'
+  map.jiv_display      '/jiv/show',               :controller => 'jiv',      :action => 'show'
   
   # Individual task maps
-  map.connect 'tasks/:action',            :controller => 'tasks'
-  map.connect 'tasks/:action/:id',        :controller => 'tasks'
-  map.task    '/tasks/show/:id',          :controller => 'tasks',    :action => 'show' # to create task_path()
-  map.connect 'tasks.:format',            :controller => 'tasks', :action  => 'index'
+  map.connect 'tasks/:action',                    :controller => 'tasks'
+  map.connect 'tasks/:action/:id',                :controller => 'tasks'
+  map.task    '/tasks/show/:id',                  :controller => 'tasks',    :action => 'show' # to create task_path()
+  map.connect 'tasks.:format',                    :controller => 'tasks', :action  => 'index'
   map.connect 'tasks/:action.:format',            :controller => 'tasks'
   map.connect 'tasks/:action/:id.:format',        :controller => 'tasks'
 
   # Other individual maps
-  map.connect "logged_exceptions/:action/:id",  :controller => "logged_exceptions" 
+  map.connect "logged_exceptions/:action/:id",    :controller => "logged_exceptions" 
 
   # The priority is based upon order of creation: first created -> highest priority.
 
