@@ -49,8 +49,8 @@ class ScirMoab < Scir
     end
 
     def statestring_to_stateconst(state)
-      return Scir::STATE_RUNNING        if state.match(/Run|Starting/i)
-      return Scir::STATE_QUEUED_ACTIVE  if state.match(/Idle|Queue|Defer|Staged/i)
+      return Scir::STATE_RUNNING        if state.match(/Idle|Run|Starting/i)
+      return Scir::STATE_QUEUED_ACTIVE  if state.match(/Queue|Defer|Staged/i)
       return Scir::STATE_USER_ON_HOLD   if state.match(/H[oe]ld/i)
       return Scir::STATE_USER_SUSPENDED if state.match(/Suspend/i)
       return Scir::STATE_UNDETERMINED

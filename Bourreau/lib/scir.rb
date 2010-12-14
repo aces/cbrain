@@ -71,15 +71,17 @@ class Scir
   def self.session_builder(subclassname,*args)
     subclass = Class.const_get(subclassname.to_s) rescue Object
     raise "Invalid subclass name #{subclassname}" unless subclass < self
+
     # Until I can find a way to keep this object persistent in Rails,
     # I'll have to keep storing it in a global.... sigh.
+
     #return @@session if self.class_variable_defined?('@@session')
     #@@session = subclass.const_get("Session").new(*args)
+    #@@session
+
+    # Implementation with global var.... hurgh.
     return $CBRAIN_SCIR_SESSION if $CBRAIN_SCIR_SESSION
     $CBRAIN_SCIR_SESSION = subclass.const_get("Session").new(*args)
-#puts "\e[1;37;42mCREATED SCIR SESSION for #{subclass} in #{self.class}=#{self.object_id} as #{@@session.class}=#{@@session.object_id}\e[0m"
-puts "\e[1;37;42mCREATED SCIR SESSION for #{subclass} in #{self.class}=#{self.object_id} as #{$CBRAIN_SCIR_SESSION.class}=#{$CBRAIN_SCIR_SESSION.object_id}\e[0m"
-    #@@session
     $CBRAIN_SCIR_SESSION
   end
 

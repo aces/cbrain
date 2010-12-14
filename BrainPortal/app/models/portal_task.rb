@@ -104,6 +104,37 @@ class PortalTask < CbrainTask
     {}
   end
 
+  # This method should return a hash mapping the raw
+  # IDs of your task's parameters (as used with the
+  # CbrainTaskFormBuilder helper methods) to prettier
+  # names that will be used for error messages. For
+  # instance, if your form defines a field like this:
+  #
+  #   <%= params_text_field :rand_seed %>
+  #
+  # and you validate it in your model with
+  #
+  #   params_errors.add(:rand_seed, "must be odd")
+  #
+  # then you can make sure the error message is
+  # prettier by making this method return
+  #
+  #    :rand_seed => 'The random seed number'
+  #
+  # as one of the elements of the hash.
+  # Keys of the hash must be the HTML IDs of the fields
+  # for this to work, so if your parameter is
+  # deep inside the params hash, call .to_la_id() on
+  # its path:
+  #
+  #    'employee[name]'.to_la_id => 'The name of the employee'
+  #
+  # This hash is used by the PortalTask's own class
+  # method human_attribute_name().
+  def self.pretty_params_names
+    {}
+  end
+
   # This method will be called before the view for the
   # task object is rendered. It doesn't have to do
   # anything but it can initalize some parameters based
@@ -327,6 +358,140 @@ class PortalTask < CbrainTask
     end
     cb_error "Can't find intermediate params structure for '#{paramspath}' (stopped at '#{key}' for '#{foundvalue.inspect}')" if stringpath != "" && stringpath != "[]"
     foundvalue
+  end
+
+  # Wrapper class around the ActiveRecord errors() method;
+  # this class answers to the same methods as the errors
+  # object but its 'attributes' are actually paramspaths.
+  # See the Rails classes ActiveRecord::Validations and
+  # ActiveRecord::Errors for more information.
+  class ParamsErrors
+    attr_writer :real_errors
+
+    def on(paramspath) #:nodoc:
+      @real_errors.on(paramspath.to_la_id)
+    end
+
+    def [](paramspath) #:nodoc:
+      @real_errors.on(paramspath.to_la_id)
+    end
+
+    def add(paramspath,*args) #:nodoc:
+      @real_errors.add(paramspath.to_la_id,*args)
+    end
+
+    def add_on_blank(paramspaths,*args) #:nodoc:
+      @real_errors.add_on_blank(paramspaths.map(&:to_la_id),*args)
+    end
+
+    def add_on_empty(paramspaths,*args) #:nodoc:
+      @real_errors.add_on_empty(paramspaths.map(&:to_la_id),*args)
+    end
+
+    def add_to_base(*args) #:nodoc:
+      @real_errors.add_to_base(*args)
+    end
+
+    def size #:nodoc:
+      @real_errors.size
+    end
+
+    def count #:nodoc:
+      @real_errors.size
+    end
+
+    def length #:nodoc:
+      @real_errors.size
+    end
+
+    def clear #:nodoc:
+      @real_errors.clear
+    end
+
+    def each(&block) #:nodoc:
+      @real_errors.each(&block)
+    end
+
+    def each_full(&block) #:nodoc:
+      @real_errors.each_full(&block)
+    end
+
+    def empty? #:nodoc:
+      @real_errors.empty?
+    end
+
+    def full_messages(*args) #:nodoc:
+      @real_errors.full_messages(*args)
+    end
+
+    def generate_message(paramspath,*args) #:nodoc:
+      @real_errors.generate_message(paramspaths.to_la_id,*args)
+    end
+
+    def invalid?(paramspath) #:nodoc:
+      @real_errors.invalid?(paramspath.to_la_id)
+    end
+
+    def on_base #:nodoc:
+      @real_errors.on_base
+    end
+
+    def to_xml(*args) #:nodoc:
+      @real_errors.to_xml(*args)
+    end
+
+  end
+
+  # Returns the equivalent of the 'errors' object for the
+  # task, but where the attributes are in fact paramspath
+  # values for the task's params[] hash. This works much like
+  # the standard ActiveRecord::Errors class. This is used for
+  # validating the task's params. For instance:
+  #
+  #   params = task.params || {}
+  #   name   = params[:name]
+  #   age    = params[:info][age]
+  #   task.params_errors.add(:name, "is blank!") if name.blank?
+  #   task.params_errors.add('info[age]', "is not set!") if age.blank?
+  #
+  # This would result in the two error messages
+  #
+  #   name is blank!
+  #   info age is not set!
+  #
+  # In conjunction with pretty_params_names(), the error messages
+  # can be made more elegant by giving better names to the
+  # parameters.
+  def params_errors
+    return @params_errors_cache if @params_errors_cache
+    @params_errors_cache = ParamsErrors.new
+    @params_errors_cache.real_errors = self.errors
+    @params_errors_cache
+  end
+
+  # This method returns a 'pretty' name for a params attributes.
+  # This implementation will try to look up a hash table returned
+  # by the class method pretty_params_names() first, so an
+  # easy way to provide beautiful names for your parameters
+  # is to make pretty_params_names() return such a hash.
+  # Otherwise, if the attribute starts with 'cbrain_task_params_'
+  # it will remove that part and return the rest. And otherwise,
+  # it invokes the superclass method.
+  def self.human_attribute_name(attname)
+    prettyhash = self.pretty_params_names || {}
+    shortname = (attname =~ /^cbrain_task_params_/) ? attname.sub(/^cbrain_task_params_/,"") : nil
+    # We try to guess many ways that the task programmer could have
+    # stored his 'pretty' names in the hash.
+    if prettyhash.size > 0
+       return prettyhash[attname]        if prettyhash.has_key?(attname)
+       return prettyhash[attname.to_sym] if prettyhash.has_key?(attname.to_sym)
+       if shortname
+         return prettyhash[shortname]        if prettyhash.has_key?(shortname)
+         return prettyhash[shortname.to_sym] if prettyhash.has_key?(shortname.to_sym)
+       end
+    end
+    return shortname if shortname
+    super(attname)
   end
 
 end

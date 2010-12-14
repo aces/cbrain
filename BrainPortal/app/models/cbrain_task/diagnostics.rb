@@ -61,6 +61,20 @@ class CbrainTask::Diagnostics < PortalTask
     }
   end
 
+  def self.pretty_params_names #:nodoc:
+    {
+    :inptest_text_odd_number => 'Odd number field',
+    :inptest_checkbox_1      => 'Checkboxes',
+    :inptest_checkbox_2      => 'Checkboxes',
+    :inptest_checkbox_3      => 'Checkboxes',
+    :inptest_checkbox_4      => 'Checkboxes',
+    :inptest_hidden_field    => 'Hidden field',
+    :inptest_password_field  => 'Password field',
+    :inptest_radio           => 'WKRP Radio',
+    :inptest_textarea        => 'Text area'
+    }
+  end
+
   def refresh_form #:nodoc:
     params     = self.params
     ref        = (params[:refresh_count] || 0).to_i
@@ -129,35 +143,36 @@ class CbrainTask::Diagnostics < PortalTask
     txt = params[:inptest_textarea]        || "(No text)"
 
     if odd.to_i % 2 == 0
-      errors.add(:inptest_text_odd_number.to_la_id,"is not odd!")
+      params_errors.add(:inptest_text_odd_number, "is not odd!")
     end
     if cb1.to_i + cb2.to_i + cb3.to_i + cb4.to_i != 2
-      errors.add(:inptest_checkbox_1.to_la_id,"must check exactly two!")
-      errors.add(:inptest_checkbox_2.to_la_id,"must check exactly two!")
-      errors.add(:inptest_checkbox_3.to_la_id,"must check exactly two!")
-      errors.add(:inptest_checkbox_4.to_la_id,"must check exactly two!")
+      params_errors.add(:inptest_checkbox_1, "are not checked exactly twice!")
+      params_errors.add(:inptest_checkbox_2, "are not checked exactly twice!")
+      params_errors.add(:inptest_checkbox_3, "are not checked exactly twice!")
+      params_errors.add(:inptest_checkbox_4, "are not checked exactly twice!")
     end
     if hid != 'XyZ'
-      errors.add(:inptest_hidden_field.to_la_id,"has wrong value!")
+      params_errors.add(:inptest_hidden_field, "has wrong value!")
     end
     if ! pwd.blank? && pwd != 'XyZ'
-      errors.add(:inptest_password_field.to_la_id,"has wrong password!")
+      params_errors.add(:inptest_password_field, "has wrong password!")
     end
     if rad != 'first' && rad != 'third'
-      errors.add(:inptest_radio.to_la_id,"is on wrong channel!")
+      params_errors.add(:inptest_radio, "is on the wrong channel!")
     end
     if txt !~ /XyZ/
-      errors.add(:inptest_textarea.to_la_id,"does not contain XyZ!")
+      params_errors.add(:inptest_textarea, "does not contain XyZ!")
     end
     errors.empty?
   end
 
   private
 
-  def add_errors_to_check_field(message)
+  def add_errors_to_check_field(message) #:nodoc:
     message = "No message for field error." if message.blank?
-    errors.add(:after_form_action.to_la_id, message)
-    errors.add(:after_form_message.to_la_id, message)
+    params_errors.add(:after_form_action, message)
+    params_errors.add(:after_form_message, message)
   end
+
 end
 
