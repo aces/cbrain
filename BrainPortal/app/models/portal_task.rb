@@ -63,6 +63,8 @@ class PortalTask < CbrainTask
     # handled by the Bourreau Workers.
   }
 
+
+
   ##################################################################
   # Core Object Methods
   ##################################################################
@@ -75,6 +77,22 @@ class PortalTask < CbrainTask
     self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
     self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
   end
+
+  # Backwards compatibility auto adaptation:
+  # if a task's code is extended to incldue new parameters,
+  # then this will re-insert their default values
+  # into the params[] hash.
+  def after_find #:nodoc:
+    params = self.params ||  {}
+    mydef  = self.class.default_launch_args || {}
+    mydef.each do |k,v|
+      next if params.has_key?(k)
+      params[k] = v.clone
+    end
+    self.params = params
+  end
+
+
 
   #######################################################
   # Task Launch API
@@ -122,12 +140,9 @@ class PortalTask < CbrainTask
   #    :rand_seed => 'The random seed number'
   #
   # as one of the elements of the hash.
-  # Keys of the hash must be the HTML IDs of the fields
-  # for this to work, so if your parameter is
-  # deep inside the params hash, call .to_la_id() on
-  # its path:
+  # Keys of the hash can be arbitrary paramspaths:
   #
-  #    'employee[name]'.to_la_id => 'The name of the employee'
+  #    'employee[name]' => 'The name of the employee'
   #
   # This hash is used by the PortalTask's own class
   # method human_attribute_name().
@@ -475,19 +490,28 @@ class PortalTask < CbrainTask
   # easy way to provide beautiful names for your parameters
   # is to make pretty_params_names() return such a hash.
   # Otherwise, if the attribute starts with 'cbrain_task_params_'
+  # (like ActiveRecord thinks the params attributes are named)
   # it will remove that part and return the rest. And otherwise,
   # it invokes the superclass method.
   def self.human_attribute_name(attname)
     prettyhash = self.pretty_params_names || {}
     shortname = (attname =~ /^cbrain_task_params_/) ? attname.sub(/^cbrain_task_params_/,"") : nil
     # We try to guess many ways that the task programmer could have
-    # stored his 'pretty' names in the hash.
+    # stored his 'pretty' names in the hash, including forgetting to call
+    # to_la_id() on the keys.
     if prettyhash.size > 0
-       return prettyhash[attname]        if prettyhash.has_key?(attname)
-       return prettyhash[attname.to_sym] if prettyhash.has_key?(attname.to_sym)
+       extended = prettyhash.dup
+       prettyhash.each do |att,name| # extend it with to_la_id automatically...
+         next unless att.is_a?(String) && (att.index('[') || -1 ) >= 0
+         id_att = att.to_la_id
+         next if extended.has_key?(id_att)
+         extended[id_att] = name
+       end
+       return extended[attname]        if extended.has_key?(attname)
+       return extended[attname.to_sym] if extended.has_key?(attname.to_sym)
        if shortname
-         return prettyhash[shortname]        if prettyhash.has_key?(shortname)
-         return prettyhash[shortname.to_sym] if prettyhash.has_key?(shortname.to_sym)
+         return extended[shortname]        if extended.has_key?(shortname)
+         return extended[shortname.to_sym] if extended.has_key?(shortname.to_sym)
        end
     end
     return shortname if shortname

@@ -87,6 +87,10 @@
 <%= form.params_text_area :inptest_textarea, :cols => 40, :rows => 3 %>
 <p/>
 
+<strong>This text is stored deep in the params and must contain 'Deep':</strong>
+<%= form.params_text_field 'inptest[deep]' %>
+<p/>
+
 <strong>Refresh count <%= params[:refresh_count] || 0 %></strong> | <%= submit_tag 'Trigger Task Refresh' %>
 <%= form.params_hidden_field :refresh_count %>
 

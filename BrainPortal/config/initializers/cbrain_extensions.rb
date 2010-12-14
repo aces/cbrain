@@ -153,7 +153,7 @@ class String
     key = self
     if key =~ /^(\w+)/
       newcomp = "[" + Regexp.last_match[1] + "]"
-      key.sub!(/^(\w+)/,newcomp)
+      key = key.sub(/^(\w+)/,newcomp) # not sub!() !
     end
     "cbrain_task[params]#{key}"
   end

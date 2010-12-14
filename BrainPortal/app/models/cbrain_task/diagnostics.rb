@@ -56,7 +56,9 @@ class CbrainTask::Diagnostics < PortalTask
     :inptest_hidden_field    => 'XyZ',
     :inptest_password_field  => '',
     :inptest_radio           => 'first',
-    :inptest_textarea        => 'My name is XyZ Jones.'
+    :inptest_textarea        => 'My name is XyZ Jones.',
+
+    :inptest                 => { :deep => 'So deep.' }
     
     }
   end
@@ -71,7 +73,9 @@ class CbrainTask::Diagnostics < PortalTask
     :inptest_hidden_field    => 'Hidden field',
     :inptest_password_field  => 'Password field',
     :inptest_radio           => 'WKRP Radio',
-    :inptest_textarea        => 'Text area'
+    :inptest_textarea        => 'Text area',
+
+    'inptest[deep]'          => 'Deep'
     }
   end
 
@@ -141,6 +145,7 @@ class CbrainTask::Diagnostics < PortalTask
     pwd = params[:inptest_password_field]  || ""
     rad = params[:inptest_radio]           || "(Unset)"
     txt = params[:inptest_textarea]        || "(No text)"
+    dee = (params[:inptest] || {})[:deep]  || "(No text)"
 
     if odd.to_i % 2 == 0
       params_errors.add(:inptest_text_odd_number, "is not odd!")
@@ -162,6 +167,9 @@ class CbrainTask::Diagnostics < PortalTask
     end
     if txt !~ /XyZ/
       params_errors.add(:inptest_textarea, "does not contain XyZ!")
+    end
+    if dee !~ /Deep/i
+      params_errors.add('inptest[deep]', "does not contain 'deep'!")
     end
     errors.empty?
   end
