@@ -82,7 +82,11 @@ class PortalTask < CbrainTask
   # if a task's code is extended to incldue new parameters,
   # then this will re-insert their default values
   # into the params[] hash.
-  def after_find #:nodoc:
+  #
+  # This used to be an 'after_find' callback, but it was
+  # much too expensive when a large number of tasks were
+  # reloaded.
+  def add_new_params_defaults #:nodoc:
     params = self.params ||  {}
     mydef  = self.class.default_launch_args || {}
     mydef.each do |k,v|

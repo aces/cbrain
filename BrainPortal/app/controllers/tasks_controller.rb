@@ -147,6 +147,7 @@ class TasksController < ApplicationController
     task_id     = params[:id]
 
     @task              = current_user.available_tasks.find(task_id)
+    @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
     begin
@@ -244,6 +245,7 @@ class TasksController < ApplicationController
 
   def edit #:nodoc:
     @task       = current_user.available_tasks.find(params[:id])
+    @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @toolname   = @task.name
 
     if @task.status !~ /Completed|Failed/
@@ -389,6 +391,7 @@ class TasksController < ApplicationController
 
     id = params[:id]
     @task = current_user.available_tasks.find(id)
+    @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
     # Decode the selection box with combined bourreau_id and tool_config_id
     bid_tcid = params[:bid_tcid] || "," # comma important
