@@ -137,8 +137,8 @@ table th {
     border: 1px solid #9CF;
     color: #ffffff;
     background: #0471B4;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
     text-align: center;
     text-indent: 0px;
     font-family: Verdana;
@@ -152,8 +152,8 @@ table td {
     color: #404040;
     padding-top: 0px;
     padding-bottom: 0px;
-    padding-left: 0px;
-    padding-right: 0px;
+    padding-left: 2px;
+    padding-right: 2px;
     text-align: center;
     font-family: Verdana, sans-serif, Arial;
     font-weight: normal;
@@ -609,7 +609,7 @@ pre {
 .fieldWithErrors {
     padding: 2px;
     background-color: red;
-    display: table;
+    display: inline-table;
 }
 
 #errorExplanation {

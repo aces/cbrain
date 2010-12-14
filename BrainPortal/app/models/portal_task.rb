@@ -87,7 +87,11 @@ class PortalTask < CbrainTask
     mydef  = self.class.default_launch_args || {}
     mydef.each do |k,v|
       next if params.has_key?(k)
-      params[k] = (v.clone rescue v)
+      if v.is_a?(String) || v.is_a?(Array) || v.is_a?(Hash)
+         params[k] = v.clone
+      else
+         params[k] = v
+      end
     end
     self.params = params
   end

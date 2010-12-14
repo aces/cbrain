@@ -57,42 +57,51 @@
 <fieldset>
 <legend>Input fields validation tests:</legend>
 
+<p>
 <strong>This text field must contain a odd number:</strong>
 <%= form.params_text_field :inptest_text_odd_number %>
-<p/>
+</p>
 
+<p>
 <strong>Exactly two checkboxes must be set:</strong>
 <%= form.params_check_box :inptest_checkbox_1 %>
 <%= form.params_check_box :inptest_checkbox_2 %>
 <%= form.params_check_box :inptest_checkbox_3 %>
 <%= form.params_check_box :inptest_checkbox_4 %>
-<p/>
+</p>
 
+<p>
 <strong>A hidden field is here [
 <%= form.params_hidden_field :inptest_hidden_field %>
 ] which MUST have the value 'XyZ'.</strong>
-<p/>
+</p>
 
+<p>
 <strong>This password field must be left blank or contain 'XyZ':</strong>
 <%= form.params_password_field :inptest_password_field %>
-<p/>
+</p>
 
+<p>
 <strong>The first or last radio button must be selected:</strong>
 <%= form.params_radio_button :inptest_radio, 'first' %>
 <%= form.params_radio_button :inptest_radio, 'second' %>
 <%= form.params_radio_button :inptest_radio, 'third' %>
-<p/>
+</p>
 
+<p>
 <strong>This text area MUST contain the word 'XyZ':</strong><br/>
 <%= form.params_text_area :inptest_textarea, :cols => 40, :rows => 3 %>
-<p/>
+</p>
 
+<p>
 <strong>This text is stored deep in the params and must contain 'Deep':</strong>
 <%= form.params_text_field 'inptest[deep]' %>
-<p/>
+</p>
 
-<strong>Refresh count <%= params[:refresh_count] || 0 %></strong> | <%= submit_tag 'Trigger Task Refresh' %>
+<p>
 <%= form.params_hidden_field :refresh_count %>
+<strong>Refresh count <%= params[:refresh_count] || 0 %></strong> | <%= submit_tag 'Trigger Task Refresh' %>
+</p>
 
 </fieldset>
 
