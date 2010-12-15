@@ -33,6 +33,7 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
     end
+    @groups = @groups.sort { |a,b| a.name <=> b.name }
     
     respond_to do |format|
       format.html # index.html.erb

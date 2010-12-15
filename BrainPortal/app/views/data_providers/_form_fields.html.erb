@@ -21,12 +21,23 @@
 </span>
 
 <span title="Type of data provider.">
-  <p><label for="type">Type</label><br/>
-  <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %></p>
 
-  <%= show_hide_toggle "Data Provider Type Information", "#data_provider_classes", :class  => 'action_link' %>  
+  <p><label for="type">Type</label><br/>
+  <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
+  <small><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></small>
+  </p>
 
   <div id="data_provider_classes" style="display:none">
+
+    <p>
+    This document describes the different types of Data Providers
+    implemented in CBRAIN. Not all of them are useful. In production
+    environments, the recommended type is the <strong>EnCbrainSmartDataProvider</strong>
+    for official data storage and <strong>SshDataProvider</strong> for user-specific
+    personal storage.
+    </p>
+
+    <hr>
 
     <strong>SshDataProvider:</strong> This class provides an implementation for a data provider
     where the remote files are accessed through ssh and rsync.
@@ -34,100 +45,99 @@
     level deep, directly specified by the object's remote_dir
     attribute. The file "hello" is this stored in a path like this:
     <pre>    /remote_dir/hello</pre>
+
     <p>
 
-    <% if check_role(:admin) || check_role(:site_manager) %>
+    <strong>CbrainSshDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are accessed through ssh and rsync.
+    The provider's files are stored in the 'CBRAIN enhanced
+    directory tree'; such a tree stores the file "hello"
+    of user "myuser" into a relative path like this:
+    <pre>    /remote_dir/myuser/01/23/hello</pre>
+    where the components "01" and "23" are computed based on the "hello" string.
+    <p>
 
-      <strong>CbrainSshDataProvider:</strong> This class provides an implementation for a data provider
-      where the remote files are accessed through ssh and rsync.
-      The provider's files are stored in the 'CBRAIN enhanced
-      directory tree'; such a tree stores the file "hello"
-      of user "myuser" into a relative path like this:
-      <pre>    /remote_dir/myuser/01/23/hello</pre>
-      where the components "01" and "23" are computed based on the "hello" string.
-      <p>
+    <strong>CbrainLocalDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are not even remote, they are local
+    to the currently running rails application. The provider's
+    files are stored in the 'cbrain enhanced
+    directory tree'; such a tree stores the file "hello"
+    of user "myuser" into a relative path like this:
+    <pre>    /root_dir/myuser/01/23/hello</pre>
+    where root_dir is the data provider's remote_dir (a local
+    directory) and the components "01" and "23" are computed based
+    on the hello string.
+    <p>
+    This data provider does not cache anything! The 'remote' files
+    are in fact all local, and accesing the 'cached' files mean
+    accessing the real provider's files. All methods are adjusted
+    so that their behavior is sensible.
+    <p>
 
-      <strong>CbrainLocalDataProvider:</strong> This class provides an implementation for a data provider
-      where the remote files are not even remote, they are local
-      to the currently running rails application. The provider's
-      files are stored in the 'cbrain enhanced
-      directory tree'; such a tree stores the file "hello"
-      of user "myuser" into a relative path like this:
-      <pre>    /root_dir/myuser/01/23/hello</pre>
-      where root_dir is the data provider's remote_dir (a local
-      directory) and the components "01" and "23" are computed based
-      on the hello string.
-      <p>
-      This data provider does not cache anything! The 'remote' files
-      are in fact all local, and accesing the 'cached' files mean
-      accessing the real provider's files. All methods are adjusted
-      so that their behavior is sensible.
-      <p>
+    <strong>CbrainSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
+    acts either as a CbrainLocalDataProvider or a CbrainSshDataProvider
+    depending on whether or not the current hostname matches
+    the value of the attribute remote_host.
+    This means that in the case where the current Rails application
+    runs on the same machine as the data provider, the faster
+    and more efficient CbrainLocalDataProvider will be used.
+    <p>
 
-      <strong>CbrainSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
-      acts either as a CbrainLocalDataProvider or a CbrainSshDataProvider
-      depending on whether or not the current hostname matches
-      the value of the attribute remote_host.
-      This means that in the case where the current Rails application
-      runs on the same machine as the data provider, the faster
-      and more efficient CbrainLocalDataProvider will be used.
-      <p>
+    <strong>EnCbrain*DataProvider:</strong> These three providers are <strong>en</strong>hanced variations
+    on the other three Cbrain*DataProviders described above. They differ
+    in how the store their files. The path to file is no longer based
+    on its owner or the filename, but instead uniquely determined by
+    the file's ID. A file named "hello" with ID 41233 will be stored
+    like this:
+    <pre>    /root_dir/04/12/33/hello</pre>
+    Such data providers have the advantage that files can be renamed and
+    reassigned to new owners with minimal modifications on the filesystem's
+    structure. The EnCbrain*DataProviders are the officially recommended
+    data providers for production deployment.
+    <p>
 
-      <strong>EnCbrain*DataProvider:</strong> These three providers are <strong>en</strong>hanced variations
-      on the other three Cbrain*DataProviders described above. They differ
-      in how the store their files. The path to file is no longer based
-      on its owner or the filename, but instead uniquely determined by
-      the file's ID. A file named "hello" with ID 41233 will be stored
-      like this:
-      <pre>    /root_dir/04/12/33/hello</pre>
-      Such data providers have the advantage that files can be renamed and
-      reassigned to new owners with minimal modifications on the filesystem's
-      structure. The EnCbrain*DataProviders are the officially recommended
-      data providers for production deployment.
-      <p>
+    <strong>VaultSshDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are accessed through ssh and rsync.
+    The provider's files are stored in a flat directory, two levels
+    deep, directly specified by the object's remote_dir
+    attribute and the user's login name. The file "hello"
+    of user "myuser" is thus stored into a path like this:
+    <pre>    /remote_dir/myuser/hello</pre>
+    <p>
 
-      <strong>VaultSshDataProvider:</strong> This class provides an implementation for a data provider
-      where the remote files are accessed through ssh and rsync.
-      The provider's files are stored in a flat directory, two levels
-      deep, directly specified by the object's remote_dir
-      attribute and the user's login name. The file "hello"
-      of user "myuser" is thus stored into a path like this:
-      <pre>    /remote_dir/myuser/hello</pre>
-      <p>
+    <strong>VaultLocalDataProvider:</strong> This class provides an implementation for a data provider
+    where the remote files are not even remote, they are local
+    to the currently running rails application. The provider's
+    files are stored in a flat directory, two levels
+    deep, directly specified by the object's remote_dir
+    attribute and the user's login name. The file "hello"
+    of user "myuser" is thus stored into a path like this:
+    <pre>    /root_dir/myuser/hello</pre>
+    where root_dir is the data provider's remote_dir (a local
+    directory).
+    <p>
+    This data provider does not cache anything! The 'remote' files
+    are in fact all local, and accessing the 'cached' files mean
+    accessing the real provider's files. All methods are adjusted
+    so that their behavior is sensible.
+    <p>
 
-      <strong>VaultLocalDataProvider:</strong> This class provides an implementation for a data provider
-      where the remote files are not even remote, they are local
-      to the currently running rails application. The provider's
-      files are stored in a flat directory, two levels
-      deep, directly specified by the object's remote_dir
-      attribute and the user's login name. The file "hello"
-      of user "myuser" is thus stored into a path like this:
-      <pre>    /root_dir/myuser/hello</pre>
-      where root_dir is the data provider's remote_dir (a local
-      directory).
-      <p>
-      This data provider does not cache anything! The 'remote' files
-      are in fact all local, and accessing the 'cached' files mean
-      accessing the real provider's files. All methods are adjusted
-      so that their behavior is sensible.
-      <p>
+    <strong>VaultSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
+    acts either as a VaultLocalDataProvider or a VaultSshDataProvider
+    depending on whether or not the current hostname matches
+    the value of the attribute remote_host.
+    This means that in the case where the current Rails application
+    runs on the same machine as the data provider, the faster
+    and more efficient VaultLocalDataProvider will be used.
+    <p>
 
-      <strong>VaultSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
-      acts either as a VaultLocalDataProvider or a VaultSshDataProvider
-      depending on whether or not the current hostname matches
-      the value of the attribute remote_host.
-      This means that in the case where the current Rails application
-      runs on the same machine as the data provider, the faster
-      and more efficient VaultLocalDataProvider will be used.
-      <p>
+    <strong>IncomingVaultSshDataProvider:</strong> This class behaves like the
+    VaultSshDataProvider, except that it is browsable. When browsing, only
+    the subdirectory named like the login name of the current user will
+    be visible. It is perfect for accessing
+    a jailed remote_dir for incoming content, where users
+    can upload files to these subdirectories on other channels.
 
-      <strong>IncomingVaultSshDataProvider:</strong> This class behaves like the
-      VaultSshDataProvider, except that it is browsable. When browsing, only
-      the subdirectory named like the login name of the current user will
-      be visible. It is perfect for accessing
-      a jailed remote_dir for incoming content, where users
-      can upload files to these subdirectories on other channels.
-    <% end %>
   </div>
 </span>
 
@@ -158,8 +168,11 @@
   <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true } %></p>
 </span>
 
-<div class="groupentry">
-  <strong>SSH parameters for remote Data Providers</strong>
+<p>
+
+<fieldset class="groupentry">
+  <legend>SSH parameters for remote Data Providers</legend>
+
   <span title="Name of the remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
     <p><label for="remote_host">Remote Hostname</label><br/>
     <%= f.text_field :remote_host %></p>
@@ -172,21 +185,31 @@
 
   <span title="Port number used to access remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
     <p><label for="remote_port">Remote Port Number</label><br/>
-    <%= f.text_field :remote_port %></p>
+    <%= f.text_field :remote_port, :size => 6 %></p>
   </span>
-</div>
+</fieldset>
 
-<span title="Directory used for storing files.">
-  <p><label for="remote_dir">Directory</label><br/>
-  <%= f.text_field :remote_dir %></p>
-</span>
+<p>
 
-<div class="groupentry">
-  <strong>Other properties</strong>
+<fieldset class="groupentry">
+<legend>Physical Data Location</legend>
+
+  <span title="Directory used for storing files">
+    <p><label for="remote_dir">Full Directory Path</label><br/>
+    <%= f.text_field :remote_dir, :size => 60 %></p>
+  </span>
+
+</fieldset>
+
+<p>
+
+<fieldset class="groupentry">
+  <legend>Other properties</legend>
+
   <p><label>Files MUST be copied/moved upon registration</label>
   <%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
   <small>(Only for browsable Data Providers)</small>
   <p><label>Cannot be used for uploading files in the file manager</label>
   <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
   <p>
-</div>
+</fieldset>

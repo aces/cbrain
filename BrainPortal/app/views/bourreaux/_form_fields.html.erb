@@ -48,9 +48,11 @@
 
       <% if is_bourreau %>
 
-      <p><label>SSH Remote Control Configuration</label></p>
+      <p>
 
-      <div class="groupentry">
+      <fieldset class="groupentry">
+      <legend>SSH Remote Control Configuration</legend>
+
           <p><label for="ssh_control_host">Hostname</label><br/>
           <%= f.text_field :ssh_control_host %></p>
 
@@ -62,23 +64,27 @@
 
           <p><label for="ssh_control_rails_dir">Rails Server Directory</label><br/>
           <%= f.text_field :ssh_control_rails_dir, :size => 60 %></p>
-      </div>
+      </fieldset>
         
-      <p><label>Tunnelling Configuration</label><p/>
+      <p>
 
-      <div class="groupentry">
+      <fieldset class="groupentry">
+      <legend>Tunnelling Configuration</legend>
+
         <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
         <%= f.text_field :tunnel_mysql_port, :size => 6 %></p>
 
         <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
         <%= f.text_field :tunnel_actres_port, :size => 6 %></p>
-      </div>
+      </fieldset>
 
       <% end %>
 
-      <p><label>Cache Management Configuration</label></p>
+      <p>
 
-      <div class="groupentry">
+      <fieldset class="groupentry">
+          <legend>Cache Management Configuration</legend>
+
           <p><label for="dp_cache_dir">Path to Data Provider caches</label><br/>
           <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
           <small>Warning! Changing this field will result in resetting the synchronization<br/>
@@ -100,16 +106,25 @@
                   [ "Six months", 6.month.to_i.to_s  ]
               ]
           %></p>
-      </div>
+      </fieldset>
 
       <% if is_bourreau %>
+
+      <p>
+
+      <fieldset class="groupentry">
+      <legend>Tool Versions Configuration</legend>
 
       <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
       </p>
 
-      <p><label>Cluster Management System Configuration</label></p>
+      </fieldset>
 
-      <div class="groupentry">
+      <p>
+
+      <fieldset class="groupentry">
+      <legend>Cluster Management System Configuration</legend>
+
           <p><label for="cms_class">Type of cluster</label><br/>
           <%= f.select :cms_class, [
                   [ "(Unconfigured)",  "" ],
@@ -136,11 +151,12 @@
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <small>Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</small>
           </p>
-      </div>
+      </fieldset>
 
-      <p><label>Bourreau Workers Configuration</label></p>
+      <p>
 
-      <div class="groupentry">
+      <fieldset class="groupentry">
+      <legend>Bourreau Workers Configuration</legend>
 
           <p><label for="workers_instances">Number of Workers</label><br/>
           <%= f.select :workers_instances, [
@@ -189,7 +205,7 @@
           <small>This option only affects logs sent to 'Separate files'.</small>
           </p>
 
-      </div>
+      </fieldset>
 
       <% end %>
 

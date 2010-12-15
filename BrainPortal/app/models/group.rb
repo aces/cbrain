@@ -51,6 +51,7 @@ class Group < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
+    return true if self.name == 'everyone'
     @can_be_accessed_cache       ||= {}
     @can_be_accessed_cache[user] ||= user.available_groups.include?(self)
   end
