@@ -19,6 +19,8 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
+    @message  = Message.new # blank object for new() form.
+    @group_id = nil         # for new() form
     @messages = current_user.messages.all(:order  => "last_sent DESC")
     
     respond_to do |format|
@@ -31,7 +33,22 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create #:nodoc:
     @message = Message.new(params[:message])
-    @message.send_me_to(Group.find(params[:group_id]))
+
+    if @message.header.blank?
+      @message.errors.add(:header, "cannot be left blank.")
+    end
+
+    @group_id = params[:group_id]
+    if @group_id.blank?
+      @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
+    elsif @message.errors.empty?
+      group = current_user.available_groups(@group_id)
+      if group
+        @message.send_me_to(group)
+      else
+        @message.errors.add(:base, "Invalid project specified for message destination.")
+      end
+    end
     prepare_messages
 
     respond_to do |format|

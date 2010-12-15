@@ -7,7 +7,7 @@
     To users of project: <%= group_select(:group_id,
             {
               :groups  => current_user.available_groups.sort_by(&:name),
-              :selector => @message
+              :selector => @group_id, # :group_id is not an attribute of Message.
             },
             { :include_blank => true }
             )
