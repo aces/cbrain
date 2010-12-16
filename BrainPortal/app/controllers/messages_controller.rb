@@ -63,27 +63,7 @@ class MessagesController < ApplicationController
     end
   end
 
-  # PUT /messages/1
-  # PUT /messages/1.xml
-  def update #:nodoc:
-    @message = current_user.messages.find(params[:id])
-
-    respond_to do |format|
-      if @message.update_attributes(:read  => params[:read])
-        format.xml  { head :ok }
-      else
-        flash.now[:error] = "Problem updating message."
-        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
-      end
-      format.js do
-        prepare_messages
-        @messages = current_user.messages.all(:order  => "last_sent DESC")
-         render :action  => "update_tables"
-      end
-    end
-  end
-  
-  #Delete multiple messages.
+  # Delete multiple messages.
   def delete_messages #:nodoc:
     message_list = params[:message_ids] || []
     deleted_count = 0
