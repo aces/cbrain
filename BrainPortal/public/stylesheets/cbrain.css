@@ -387,8 +387,16 @@ table.resource_list tr.subtitle_bordered {
 /* % General styles for text */
 /* % ######################################################### */
 
+.white_text {
+  color: white;
+}
+
+.white_text a {
+  color: white;
+}
+
 .warning {
-    color:red;
+    color: red;
 }
 
 h1.warning {
@@ -444,7 +452,7 @@ h1.warning {
 
 a {
     color: #000;
-    text-decoration:underline;
+    text-decoration: underline;
 }
 
 .action_link {
@@ -664,7 +672,7 @@ pre {
     color: #fff;
     padding-right: 8px;
     font-weight: bold;
-    text-decoration:none;
+    text-decoration: none;
 }
 
 #account #home_credits {
@@ -685,21 +693,21 @@ pre {
 /* % ######################################################### */
 
 #header {
-    height:7em;
-    margin:0px;
-    background-color:#05A3D6;
-    color:#f8f8f8;
-    position:relative;
+    height: 7em;
+    margin: 0px;
+    background-color: #05A3D6;
+    color: #f8f8f8;
+    position: relative;
 }
 
 #header h1 {
-    float:left;
+    float: left;
     padding: 10px;
 }
 
 #mni_logo {
     float: right;
-    background-image:url(/images/mni_logo.png);
+    background-image: url(/images/mni_logo.png);
     width: 84px;
     height: 69px;
     margin: 6px;
@@ -735,18 +743,18 @@ pre {
 }
 
 #main-menu li a:hover {
-    background:gray;
-    color:#fff;
+    background: gray;
+    color: #fff;
 }
 
 #main-menu a:hover, a:active {
-    background:#ffffff none repeat scroll 0 0;
-    color:#555555;
+    background: #ffffff none repeat scroll 0 0;
+    color: #555555;
 }
 
 #selected a {
-    background-color:white;
-    color:#05A3D6;
+    background-color: white;
+    color: #05A3D6;
 }
 
 #unselected a {
@@ -845,7 +853,7 @@ pre {
 /* ######################################################### */
 
 .credit_box {
-    float:left;
+    float: left;
     margin-left: 1em;
     margin-right: 1em;
     margin-bottom: 1em;
@@ -914,7 +922,7 @@ pre {
 .task_summary {
     clear: both;
     margin-left:0px;
-    margin-right:auto;
+    margin-right: auto;
     text-align: left;
     padding: 1em;
     margin-top: 0em;
@@ -935,7 +943,7 @@ pre {
 .task_summary_table {
     margin-top: 1em;
     margin-left:0px;
-    margin-right:auto;
+    margin-right: auto;
     border: 0px;
     background-color: #E4E4E4;
 }
@@ -1306,7 +1314,7 @@ img {
     margin: 0;
     padding: 1em 1em 1em 2em;
     background-color: #05A3D6;
-    text-align:left;
+    text-align: left;
 }
 
 
