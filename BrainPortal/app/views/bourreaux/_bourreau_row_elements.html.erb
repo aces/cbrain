@@ -44,7 +44,7 @@
     <% if RemoteResource.current_resource.id != bour.id %>
       <%= 
           delete_button 'Delete', bourreau_path(bour), :class  => "action_link", 
-                                                       :confirm  => 'Are you sure?', 
+                                                       :confirm  => "Are you sure you want to delete '#{bour.name}' ?", 
                                                        :target  => "#bourreau_#{bour.id}",
                                                        :target_text  => "<td colspan='17' style='color:red; text-align:center'>Deleting...</td>"
       %>

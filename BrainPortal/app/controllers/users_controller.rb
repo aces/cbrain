@@ -116,7 +116,12 @@ class UsersController < ApplicationController
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")
-      CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password]) rescue nil
+      if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
+        flash[:notice] += "Since this user has no proper E-Mail address, no welcome E-Mail was sent."
+      else
+        flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
+        CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password]) rescue nil
+      end
     end
     
     if current_user.has_role? :admin
