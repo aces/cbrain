@@ -109,12 +109,14 @@ class UsersController < ApplicationController
       @user.site = current_user.site
     end
 
+    @user.password_reset = true
     @user.save
     
     if @user.errors.empty?
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")
+      CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password]) rescue nil
     end
     
     if current_user.has_role? :admin
@@ -135,12 +137,12 @@ class UsersController < ApplicationController
     
     cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
     
-    params[:user][:group_ids] ||= WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
-    params[:user][:group_ids] |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
+    params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
+    params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
     
     if params[:user][:password]
       params[:user].delete :password_reset
-      @user.password_reset = false
+      @user.password_reset = current_user.id == @user.id ? false : true
     end
 
     if params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]]

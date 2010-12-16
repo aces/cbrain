@@ -147,7 +147,7 @@ class ToolConfigsController < ApplicationController
     respond_to do |format|
       format.html { 
                     if @tool_config.tool_id
-                      redirect_to edit_tool_config_path(@tool_config.tool)
+                      redirect_to edit_tool_path(@tool_config.tool)
                     else
                       redirect_to edit_bourreau_path(@tool_config.bourreau)
                     end
