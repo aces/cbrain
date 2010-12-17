@@ -20,3 +20,75 @@
   </table>
 
 <% end %>
+
+<% form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
+
+  <% if current_user.has_role? :admin %>
+
+    <%
+      offset_times = [
+        [ 'Now',            "0" ],
+        [ '10 minutes ago', 10.minutes.to_s ],
+        [ 'one hour ago',    1.hour.to_s ],
+        [ 'one day ago',     1.day.to_s ],
+        [ 'two days ago',    2.days.to_s ],
+        [ 'one week ago',    1.week.to_s ],
+        [ 'one month ago',   1.month.to_s ],
+        [ 'two months ago',  2.months.to_s ],
+        [ 'one year ago',    1.year.to_s ],
+        [ 'the big bang',   50.years.to_s ]
+      ]
+    %>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>Administrative filtering</legend>
+
+      Message belongs to user:
+      <%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => '(Any)' } %>
+      <p/>
+
+      Message is of type:
+      <%= select_tag :message_type,
+        options_for_select(
+          [
+            [ '(Any)',  "" ],
+            [ 'Notice', 'notice' ],
+            [ 'Error',  'error' ],
+            [ 'System', 'system' ],
+          ],
+          params[:message_type]
+        )
+      %>
+      <p/>
+
+      Message content was updated between:
+        <%= select_tag(:upd_before, options_for_select( offset_times, params[:upd_before] )) %> and
+        <%= select_tag(:upd_after,  options_for_select( offset_times, params[:upd_after]  )) %>
+      <p/>
+
+      Messages are marked as
+      <%= select_tag(:critical, options_for_select( [ 
+          [ '(Critical or not)', '' ],
+          [ 'Critical',   '1' ],
+          [ 'Not critical', '0' ]
+        ], params[:critical] ) )
+      %>
+      and
+      <%= select_tag(:read, options_for_select( [ 
+          [ '(Read or not)', '' ],
+          [ 'Read',   '1' ],
+          [ 'Not read', '0' ]
+        ], params[:read] ) )
+      %>
+      <p/>
+
+      <%= submit_tag 'Apply filters' %>
+
+    </fieldset>
+
+  <% end %>
+
+<% end %>
+

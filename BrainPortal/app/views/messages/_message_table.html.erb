@@ -4,8 +4,13 @@
     <th></th>
 </tr>
 
-<% for mess in @messages %>
-  <%= render :partial => 'message_table_row', :locals  => { :mess  => mess, :render_for => :index } %>
+<% @messages.each_with_index do |mess,i| %>
+  <% if i >= 50 %>
+    <tr><td colspan="3">(<%= @messages.size + 1 - i %> more messages not shown...)</td></tr>
+    <% break %>
+  <% else %>
+    <%= render :partial => 'message_table_row', :locals  => { :mess  => mess, :render_for => :index } %>
+  <% end %>
 <% end %>
 
 <% if @messages.nil? || @messages.empty? %>

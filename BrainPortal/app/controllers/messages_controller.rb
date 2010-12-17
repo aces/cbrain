@@ -16,12 +16,50 @@ class MessagesController < ApplicationController
 
   before_filter :login_required
   before_filter :manager_role_required, :only  => :create
+
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
     @message  = Message.new # blank object for new() form.
     @group_id = nil         # for new() form
-    @messages = current_user.messages.all(:order  => "last_sent DESC")
+    @show_users = false
+
+    if current_user.has_role?(:admin)
+      scope = Message.scoped( {} )
+      user_id      = params[:user_id]      ||= ""
+      upd_before   = params[:upd_before]   ||= "0"
+      upd_after    = params[:upd_after]    ||= 50.years.to_s
+      message_type = params[:message_type] ||= ""
+      critical     = params[:critical]     ||= ""
+      read         = params[:read]         ||= ""
+      if (params[:commit] || "") =~ /Apply/i
+        @show_users = true
+        if user_id =~ /^\d+$/
+          scope = scope.scoped( :conditions => { :user_id => params[:user_id].to_i } )
+        end
+        bef = upd_before.to_i
+        aft = upd_after.to_i
+        bef,aft = aft,bef if aft < bef
+        bef = bef < 1 ? 1.day.from_now : bef.ago
+        aft = aft.ago
+        scope = scope.scoped( :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] )
+        if message_type =~ /^[a-z]+$/
+          scope = scope.scoped( :conditions => { :message_type => message_type } )
+        end
+        unless critical.blank?
+          scope = scope.scoped( :conditions => { :critical => (critical == '1') } )
+        end
+        unless read.blank?
+          scope = scope.scoped( :conditions => { :read => (read == '1') } )
+        end
+      else
+        scope = scope.scoped( :conditions => { :user_id => current_user.id } )
+      end
+      scope = scope.scoped(:order => "last_sent DESC" )
+      @messages = scope.all
+    else
+      @messages = current_user.messages.all(:order  => "last_sent DESC")
+    end
     
     respond_to do |format|
       format.html # index.html.erb
@@ -63,6 +101,30 @@ class MessagesController < ApplicationController
     end
   end
 
+  # PUT /messages/1
+  # PUT /messages/1.xml
+  def update #:nodoc:
+    if current_user.has_role? :admin
+      @message = Message.find(params[:id])
+    else
+      @message = current_user.messages.find(params[:id])
+    end
+
+    respond_to do |format|
+      if @message.update_attributes(:read  => params[:read])
+        format.xml  { head :ok }
+      else
+        flash.now[:error] = "Problem updating message."
+        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
+      end
+      format.js do
+        prepare_messages
+        @messages = current_user.messages.all(:order  => "last_sent DESC")
+         render :action  => "update_tables"
+      end
+    end
+  end
+
   # Delete multiple messages.
   def delete_messages #:nodoc:
     message_list = params[:message_ids] || []
@@ -93,4 +155,5 @@ class MessagesController < ApplicationController
       format.xml  { head :ok }
     end
   end
+
 end

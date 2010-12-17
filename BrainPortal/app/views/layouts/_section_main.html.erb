@@ -6,7 +6,7 @@
 <div id="main" class="main-content">
   <% unless params[:action] == "index" && params[:controller] == "messages" %>
     <div id="message_display">
-      <%= render :partial => 'layouts/message_display' %>
+      <%= render :partial => 'messages/message_display' %>
     </div>
   <% end %>
   <%= yield :layout %>
