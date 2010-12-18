@@ -23,6 +23,7 @@ class MessagesController < ApplicationController
     @message  = Message.new # blank object for new() form.
     @group_id = nil         # for new() form
     @show_users = false
+    @max_show   = "50"
 
     if current_user.has_role?(:admin)
       scope = Message.scoped( {} )
@@ -32,6 +33,7 @@ class MessagesController < ApplicationController
       message_type = params[:message_type] ||= ""
       critical     = params[:critical]     ||= ""
       read         = params[:read]         ||= ""
+      @max_show    = params[:max_show]     ||= 50.to_s
       if (params[:commit] || "") =~ /Apply/i
         @show_users = user_id.blank? || user_id != current_user.id.to_s
         if user_id =~ /^\d+$/

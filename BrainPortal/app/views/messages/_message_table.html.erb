@@ -4,8 +4,9 @@
     <th></th>
 </tr>
 
+<% max_show = @max_show.blank? ? 50 : @max_show.to_i %>
 <% @messages.each_with_index do |mess,i| %>
-  <% if i >= 50 %>
+  <% if i >= max_show %>
     <tr><td colspan="3">(<%= @messages.size + 1 - i %> more messages not shown...)</td></tr>
     <% break %>
   <% else %>
