@@ -2,7 +2,7 @@
 
   <td class="<%= "#{mess.message_type}_display " unless mess.read? %>left_side wrap">
     <% if render_for == :index %>
-      <%= check_box_tag("message_ids[]", mess.id.to_s, false) %>
+      <%= check_box_tag("message_ids[]", mess.id.to_s, false, :class => 'messlist') %>
       <% unless @show_users.blank? %>
         ( <%= h(mess.user.login) %> )
       <% end %>

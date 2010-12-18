@@ -45,6 +45,9 @@
     <fieldset class="groupentry">
       <legend>Administrative filtering</legend>
 
+      Select all visible: <%= select_all_checkbox 'messlist' %>
+      <p/>
+
       Message belongs to user:
       <%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => '(Any)' } %>
       <p/>

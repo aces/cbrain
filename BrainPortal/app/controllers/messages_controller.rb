@@ -26,16 +26,16 @@ class MessagesController < ApplicationController
 
     if current_user.has_role?(:admin)
       scope = Message.scoped( {} )
-      user_id      = params[:user_id]      ||= ""
+      user_id      = params[:user_id]      ||= current_user.id.to_s
       upd_before   = params[:upd_before]   ||= "0"
       upd_after    = params[:upd_after]    ||= 50.years.to_s
       message_type = params[:message_type] ||= ""
       critical     = params[:critical]     ||= ""
       read         = params[:read]         ||= ""
       if (params[:commit] || "") =~ /Apply/i
-        @show_users = true
+        @show_users = user_id.blank? || user_id != current_user.id.to_s
         if user_id =~ /^\d+$/
-          scope = scope.scoped( :conditions => { :user_id => params[:user_id].to_i } )
+          scope = scope.scoped( :conditions => { :user_id => user_id.to_i } )
         end
         bef = upd_before.to_i
         aft = upd_after.to_i
