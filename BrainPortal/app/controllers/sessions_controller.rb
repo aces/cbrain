@@ -34,7 +34,16 @@ class SessionsController < ApplicationController
         current_user.remember_me unless current_user.remember_token?
         cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
       end
-      
+
+      # Record the best guess for browser's remote host name
+      reqenv = request.env
+      from_host = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] || 'unknown'
+      current_session[:guessed_remote_host] = from_host
+
+      # Record the user agent
+      raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
+      current_session[:raw_user_agent]     = raw_agent
+
       respond_to do |format|
         format.html { redirect_back_or_default('/home') }
         format.xml  { render :nothing => true, :status  => 200 }

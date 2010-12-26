@@ -62,43 +62,55 @@ class Session
   
   #Returns the list of currently active users on the system.
   def self.active_users(options = {})
-    scope = User.scoped(options)
-    scope.scoped(
-        :conditions => {:id => session_class.find(:all, 
-                                    :conditions => ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
-                                    ).map(&:user_id)}
+    active_sessions = session_class.find(:all, :conditions =>
+      ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
     )
+    user_ids = active_sessions.map &:user_id
+    scope = User.scoped(options)
+    scope.scoped( :conditions => { :id => user_ids } )
   end
   
-  def self.count(options = {})
+  def self.count(options = {}) #:nodoc:
     scope = session_class.scoped({})
     scope.count
   end
   
-  def self.session_class
+  def self.session_class #:nodoc:
     CGI::Session::ActiveRecordStore::Session
   end
 
-  def self.all
+  def self.all #:nodoc:
     self.session_class.all
   end
   
-  def self.recent_activity(n = 10, options = {})
+  def self.recent_activity(n = 10, options = {}) #:nodoc:
     scope = User.scoped(options)
     last_sessions = session_class.find(:all, :conditions => "sessions.user_id IS NOT NULL", :order  => "sessions.updated_at DESC")
     entries = []
     
     last_sessions.each do |sess|
-      break if entries.size > n
+      break if entries.size >= n
       user = User.find(sess.user_id)
-      entries << {:user  => user, :last_access  => sess.updated_at}
+      entries << {
+        :user           => user,
+        :active         => sess.active?,
+        :last_access    => sess.updated_at,
+        :remote_host    => sess.data[:guessed_remote_host],  # can be nil
+        :raw_user_agent => sess.data[:raw_user_agent],       # can be nil
+      }
     end
     
     entries
   end
-  
+
+  # Erase most of the entries in the data
+  # section of the session; this is used when the
+  # user logs out. Some elements are kept
+  # for tracking no matter what, like the
+  # :guessed_remote_host and the :raw_user_agent
   def clear_data!
     @session.data.each do |k,v|
+      next if [ :guessed_remote_host, :raw_user_agent ].include?(k)
       @session[k] = nil
     end
   end
@@ -198,7 +210,7 @@ class Session
   
   private
   
-  def sanitize_params(k, param)
+  def sanitize_params(k, param) #:nodoc:
     key = k.to_sym
     
     if key == :sort
@@ -209,7 +221,7 @@ class Session
     param
   end
   
-  def sanitize_sort_order(order)
+  def sanitize_sort_order(order) #:nodoc:
     table, column = order.strip.split(".")
     table = table.tableize
     
@@ -227,7 +239,7 @@ class Session
     "#{table}.#{column}"
   end
   
-  def sanitize_sort_dir(dir)
+  def sanitize_sort_dir(dir) #:nodoc:
     if dir.to_s.strip.upcase == "DESC"
       "DESC"
     else

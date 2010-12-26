@@ -9,17 +9,40 @@
         <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
       <% if @active_users %>
         <p>
-        <strong>Users currently online:</strong> <% array_to_table(@active_users.map(&:login), :table_class => 'simple') %>
+        <strong>Users currently online:</strong> <% array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
         </p>
         <p><strong>Recent activity:</strong></p>
-        <% Session.recent_activity.each do |entry| %>
-          <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city%>: <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago.<br>
+        <% array_to_table(Session.recent_activity, :table_class => 'simple', :td_class => 'no_wrap', :cols => 1) do |entry,r,c| %>
+          <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city%>:
+          <%= entry[:active] ? "Active" : "Logged out" %>
+          <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
+          <% if entry[:remote_host] || entry[:raw_user_agent] %>
+            <%
+               parsed   = HttpUserAgent.new(entry[:raw_user_agent] || 'unknown/unknown')
+               browser  = (parsed.browser_name    || 'unknown browser')
+               brow_ver = (parsed.browser_version || '?')
+               os       = (parsed.os_name         || 'unknown OS')
+               pretty = "#{browser} #{brow_ver} on #{os}"
+            %>
+            <br/>
+            <small>(From <%= entry[:remote_host] %></small>
+            <% html_tool_tip("with") do %>
+              <%= h(entry[:raw_user_agent]) %>
+            <% end %>
+            <small><%= pretty %>)</small>
+          <% end %>
         <% end %>
       <% end %>
       <br>
         There are currently <%= Session.count %> entries in the sessions table.<br>
       <% form_tag home_path do %>
-        Clear sessions older than <%= select_tag :clear_sessions, options_for_select(@offset_times) %>
+        Clear sessions older than
+        <%= select_tag :clear_sessions, options_for_select( [
+             [ "One month ago",     1.month.to_i   ],
+             [ "One week ago",      1.week.to_i    ],
+             [ "One day ago",       1.day.to_i     ],
+             [ "One hour ago",      1.hour.to_i    ]
+           ]) %>
         <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
       <% end %>
       <br>
@@ -58,11 +81,11 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-       <strong>Projects you belong to:</strong>  <% array_to_table(@groups, :table_class => 'simple') { |g,r,c| link_to_group_if_accessible(g) } %>
+       <strong>Projects you belong to:</strong>  <% array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <% array_to_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple') %>
+      <% array_to_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple', :td_class => 'no_wrap', :cols => 4) %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>

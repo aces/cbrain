@@ -28,12 +28,6 @@ class PortalController < ApplicationController
         
     if current_user.has_role? :admin
       @active_users = Session.active_users
-      @offset_times = [
-        [ "One month ago",     1.month.to_i   ],
-        [ "One week ago",      1.week.to_i    ],
-        [ "One day ago",       1.day.to_i     ],
-        [ "One hour ago",      1.hour.to_i    ]
-      ]
       if request.post?
         unless params[:clear_sessions].blank?
           Session.session_class.destroy_all(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago])
