@@ -46,7 +46,7 @@ class HttpUserAgent
     
     # Pre-processing
     adj_ua = user_agent_string
-    adj_ua.gsub(/(MSIE|Opera)\s+([\d\.]+)/,'\1/\2')
+    adj_ua.gsub!(/(MSIE|Opera)\s+([\d\.]+)/,'\1/\2')
 
     # Identifies all substrings in format 'abcd/1234'
     keyvals = {}
