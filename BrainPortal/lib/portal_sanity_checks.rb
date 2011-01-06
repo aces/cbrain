@@ -319,6 +319,21 @@ class PortalSanityChecks < CbrainChecker
       end
     end
   end
+  
+  def self.ensure_format_groups_match_source_groups
+    
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring formats have the same group as source file..."
+    #-----------------------------------------------------------------------------
+    
+    format_files = Userfile.all(:conditions  => "format_source_id IS NOT NULL")
+    format_files.each do |f|
+      if f.format_source && f.group_id != f.format_source.group_id
+        f.group_id = f.format_source.group_id
+        f.save!
+      end
+    end
+  end
 
 end
 

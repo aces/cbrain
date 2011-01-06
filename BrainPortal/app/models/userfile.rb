@@ -64,7 +64,9 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :group_id
   validate                :validate_associations
   validate                :validate_filename
+  validate                :validate_group_update
   
+  after_save              :update_format_group
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
   attr_accessor           :level
@@ -878,6 +880,22 @@ class Userfile < ActiveRecord::Base
       c.save!
     end    
   end
-   
+  
+  def validate_group_update
+    if self.format_source_id && self.changed.include?("group_id") && self.format_source 
+      unless self.group_id == self.format_source.group_id
+        errors.add(:group_id, "cannot be modified for a format file.")
+      end
+    end
+  end
+  
+  def update_format_group
+    unless self.format_source_id
+      self.formats.each do |f|
+        f.update_attributes!(:group_id => self.group_id)
+      end
+    end
+  end
+  
 end
 
