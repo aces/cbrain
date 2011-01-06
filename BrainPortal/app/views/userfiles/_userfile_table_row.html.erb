@@ -32,7 +32,7 @@
         <%= 
           userfile.formats.map do |u| 
             if u.available?
-              cb = check_box_tag("file_ids[]", u.id.to_s, false, :class  => 'userfiles_checkbox')
+              cb = check_box_tag("file_ids[]", u.id.to_s, false)
             else
               cb = "<input type='checkbox' DISABLED />"
             end
