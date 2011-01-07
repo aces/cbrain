@@ -31,6 +31,7 @@ class BourreauxController < ApplicationController
     
     respond_to do |format|
       format.html
+      format.xml  { render :xml => @bourreaux }
       format.js
     end
   end
@@ -113,6 +114,13 @@ class BourreauxController < ApplicationController
    
     respond_to do |format|
       format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'bourreau' }}
+      format.xml  do
+        if @bourreau.errors.empty?
+          render :xml => @bourreau
+        else
+          render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
+        end
+      end
     end
   end
 
@@ -129,12 +137,16 @@ class BourreauxController < ApplicationController
   
     old_dp_cache_dir = @bourreau.dp_cache_dir
     @bourreau.update_attributes(fields)
-    @bourreau.save
 
     unless @bourreau.errors.empty?
-      @users  = current_user.available_users
-      @groups = current_user.available_groups
-      render :action => 'edit'
+      respond_to do |format|
+        format.html do
+          @users  = current_user.available_users
+          @groups = current_user.available_groups
+          render :action => 'edit'
+        end
+        format.xml { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+      end
       return
     end
 
@@ -162,12 +174,16 @@ class BourreauxController < ApplicationController
 
     flash[:notice] = "#{@bourreau.class.to_s} #{@bourreau.name} successfully updated"
 
-    if params[:tool_management] != nil 
-      redirect_to(:controller => "tools", :action =>"tool_management")
-    else
-      redirect_to(bourreaux_url)
+    respond_to do |format|
+      format.html do
+        if params[:tool_management] != nil 
+          redirect_to(:controller => "tools", :action =>"tool_management")
+        else
+          redirect_to(bourreaux_url)
+        end
+      end
+      format.xml { render :xml  => @bourreau }
     end
-
   end
 
   def destroy #:nodoc:
@@ -188,8 +204,15 @@ class BourreauxController < ApplicationController
     end
 
     respond_to do |format|
-      format.html {redirect_to :action  => :index}
-      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'bourreau' }}
+      format.html { redirect_to :action  => :index }
+      format.xml do
+        if @bourreau.errors.empty?
+          render :xml => @bourreau
+        else
+          render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
+        end
+      end
+      format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'bourreau' } }
     end
 
   end
@@ -198,7 +221,10 @@ class BourreauxController < ApplicationController
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     active_statuses = CbrainTask::RUNNING_STATUS | CbrainTask::RECOVER_STATUS | CbrainTask::RESTART_STATUS
     @num_running    = CbrainTask.count(:all, :conditions => { :bourreau_id => @remote_resource.id, :status => active_statuses })
-    render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource }
+    respond_to do |format|
+      format.html { render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource } }
+      format.xml  { render :nothing  => true, :status  => 400}
+    end
   end
   
   def refresh_ssh_keys #:nodoc:
@@ -224,7 +250,10 @@ class BourreauxController < ApplicationController
       flash[:error]  = "These Servers are not alive and SSH keys couldn't be updated: " + skipped_bourreaux.join(", ") + "\n"
     end
     
-    redirect_to :action  => :index
+    respond_to do |format|
+      format.html { redirect_to :action  => :index }
+      format.xml  { render :xml  => { "refreshed_bourreaux"  => refreshed_bourreaux.size, "skipped_bourreaux"  => skipped_bourreaux.size } }
+    end   
   end
 
   def start #:nodoc:
@@ -260,12 +289,18 @@ class BourreauxController < ApplicationController
       flash[:error] = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
                       @bourreau.operation_messages
     end
-
-    redirect_to :action => :index
+    
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.xml { render :nothing  => true, :status  => 200  }
+    end  
 
   rescue => e
     flash[:error] = e.message
-    redirect_to :action => :index
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.xml { render :xml  => { :message  => e.message }, :status  => 500 }
+    end
   end
 
   def stop #:nodoc:
@@ -290,11 +325,18 @@ class BourreauxController < ApplicationController
     @bourreau.save
     flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped." if success
     flash[:error]   = "Failed to stop tunnels for '#{@bourreau.name}'."                  if ! success
-    redirect_to :action => :index
+    
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.xml { render :nothing  => true, :status  => 200  }
+    end
 
   rescue => e
     flash[:error] = e.message
-    redirect_to :action => :index
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.xml { render :xml  => { :message  => e.message }, :status  => 500 }
+    end
   end
 
   private
