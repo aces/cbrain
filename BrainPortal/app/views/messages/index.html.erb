@@ -21,9 +21,9 @@
 
 <% end %>
 
-<% form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
+<% if current_user.has_role? :admin %>
 
-  <% if current_user.has_role? :admin %>
+  <% form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
 
     <%
       offset_times = [

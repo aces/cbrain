@@ -25,4 +25,6 @@ class WorkGroup < Group
     end
     return self.users.size == 1 && self.users.first == user
   end
+
 end
+

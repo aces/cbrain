@@ -82,7 +82,7 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # params hash of the CbrainTask, not one of its attribute.
   def params_text_field(paramspath, options = {})
     pseudo_method = create_access_method(paramspath)
-    text_field(pseudo_method.to_sym, params_common_options(paramspath,options))
+    text_field(pseudo_method, params_common_options(paramspath,options))
   end
 
   # Creates a check box input field for the CbrainTask parameter

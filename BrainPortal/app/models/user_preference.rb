@@ -22,13 +22,13 @@ class UserPreference < ActiveRecord::Base
 
   Revision_info="$Id$"
 
+  validates_presence_of   :user_id
+  validates_uniqueness_of :user_id
+  
   belongs_to  :user
   belongs_to  :data_provider
   belongs_to  :bourreau
   serialize   :other_options
-  
-  validates_presence_of   :user_id
-  validates_uniqueness_of :user_id
   
   #Meant to update the other_options hash en masse.
   #The +options+ hash will contain the preferences to 

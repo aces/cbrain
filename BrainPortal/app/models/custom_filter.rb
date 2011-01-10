@@ -37,6 +37,8 @@
 #* User
 class CustomFilter < ActiveRecord::Base
       
+  Revision_info="$Id$"
+
   serialize     :data
       
   belongs_to    :user
@@ -46,9 +48,6 @@ class CustomFilter < ActiveRecord::Base
   validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
     
-  
-  Revision_info="$Id$"
-  
   #Main method used for custom filtering. Should be redefined in subclasses to 
   #modify +scope+ according to the filter parameters and return it.
   def filter_scope(scope)

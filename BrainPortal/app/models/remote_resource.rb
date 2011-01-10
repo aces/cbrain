@@ -55,10 +55,6 @@ class RemoteResource < ActiveRecord::Base
 
   serialize   :dp_ignore_patterns
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :sync_status
-
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
   validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
@@ -67,6 +63,10 @@ class RemoteResource < ActiveRecord::Base
 
   validate                :proper_dp_ignore_patterns
   validate                :dp_cache_path_valid
+
+  belongs_to  :user
+  belongs_to  :group
+  has_many    :sync_status
 
 
 

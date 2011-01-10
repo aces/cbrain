@@ -18,7 +18,10 @@
 #*Belongs* *to*:
 #* User
 class Feedback < ActiveRecord::Base
+
+  Revision_info="$Id$"
+
   belongs_to :user
   
-  Revision_info="$Id$"
 end
+

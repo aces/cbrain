@@ -55,10 +55,11 @@ require 'log4r'
 #   is_alive?()
 #
 class Worker
-  include Sys
-  include Log4r
 
   Revision_info="$Id$"
+
+  include Sys
+  include Log4r
 
   PIDFILES_DIR = Pathname.new(RAILS_ROOT) + "tmp/pids"
   LOGFILES_DIR = Pathname.new(RAILS_ROOT) + "log"

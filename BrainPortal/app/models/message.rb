@@ -15,6 +15,7 @@ class Message < ActiveRecord::Base
   Revision_info="$Id$"
 
   belongs_to :user
+
   attr_accessor :send_email
   
   # Send a new message to a user, the users of a group, or a site.

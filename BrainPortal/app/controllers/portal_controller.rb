@@ -28,6 +28,7 @@ class PortalController < ApplicationController
         
     if current_user.has_role? :admin
       @active_users = Session.active_users
+      @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         unless params[:clear_sessions].blank?
           Session.session_class.destroy_all(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago])
@@ -43,6 +44,7 @@ class PortalController < ApplicationController
       end
     elsif current_user.has_role? :site_manager
       @active_users = Session.active_users(:conditions  => {:site_id  => current_user.site_id})
+      @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).collect(&:id)

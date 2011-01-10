@@ -28,6 +28,14 @@
 class Group < ActiveRecord::Base
 
   Revision_info="$Id$"
+
+  before_destroy          :assign_userfile_to_owner_group,
+                          :assign_remote_resource_to_owner_group,
+                          :assign_data_provider_to_owner_group
+  
+  validates_presence_of   :name
+  validates_uniqueness_of :name
+  
   has_many                :tools
   has_and_belongs_to_many :users 
   has_many                :userfiles
@@ -36,13 +44,6 @@ class Group < ActiveRecord::Base
   has_many                :cbrain_tasks
   belongs_to              :site 
 
-  validates_presence_of   :name
-  validates_uniqueness_of :name
-  
-  before_destroy          :assign_userfile_to_owner_group,
-                          :assign_remote_resource_to_owner_group,
-                          :assign_data_provider_to_owner_group
-  
   # Returns itself; this method is here to make it symetrical
   # with other resource classes such as User and Site, which
   # both have a meaningful own_group() method.

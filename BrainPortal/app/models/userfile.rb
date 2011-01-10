@@ -33,11 +33,25 @@ require 'set'
 #* Group
 #*Has* *and* *belongs* *to* *many*:
 #* Tag
+#
 class Userfile < ActiveRecord::Base
 
   Revision_info="$Id$"
+
   Default_num_pages = "50"
 
+  after_save              :update_format_group
+  before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
+  
+  validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
+  validates_presence_of   :name
+  validates_presence_of   :user_id
+  validates_presence_of   :data_provider_id
+  validates_presence_of   :group_id
+  validate                :validate_associations
+  validate                :validate_filename
+  validate                :validate_group_update
+  
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
@@ -57,18 +71,6 @@ class Userfile < ActiveRecord::Base
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
                                                     
-  validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
-  validates_presence_of   :name
-  validates_presence_of   :user_id
-  validates_presence_of   :data_provider_id
-  validates_presence_of   :group_id
-  validate                :validate_associations
-  validate                :validate_filename
-  validate                :validate_group_update
-  
-  after_save              :update_format_group
-  before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
-  
   attr_accessor           :level
   attr_accessor           :tree_children
 
@@ -895,6 +897,7 @@ class Userfile < ActiveRecord::Base
         f.update_attributes!(:group_id => self.group_id)
       end
     end
+    true
   end
   
 end

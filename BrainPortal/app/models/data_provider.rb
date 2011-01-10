@@ -191,11 +191,8 @@ class DataProvider < ActiveRecord::Base
   
   include ResourceAccess
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :user_preferences,  :dependent => :nullify
-  has_many    :userfiles
-
+  before_destroy          :validate_destroy
+  
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
@@ -216,8 +213,11 @@ class DataProvider < ActiveRecord::Base
     :message  => 'only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
     :allow_blank => true
 
-  before_destroy          :validate_destroy
-  
+  belongs_to  :user
+  belongs_to  :group
+  has_many    :user_preferences,  :dependent => :nullify
+  has_many    :userfiles
+
   # These DataProvider subclasses don't use the owner's login in their organizational structures, so 
   # changing the owner of a Userfile stored on them won't cause any problems.
   ALLOW_FILE_OWNER_CHANGE = ["SshDataProvider", "EnCbrainSmartDataProvider", "EnCbrainLocalDataProvider", "EnCbrainSshDataProvider"]

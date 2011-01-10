@@ -20,18 +20,18 @@ class CbrainTask < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  belongs_to            :bourreau
-  belongs_to            :user
-  belongs_to            :group
-  belongs_to            :tool_config
+  before_validation     :set_group
+  before_create         :record_statistics
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id
   validates_presence_of :group_id
   validates_presence_of :status
   
-  before_validation     :set_group
-  before_create         :record_statistics
+  belongs_to            :bourreau
+  belongs_to            :user
+  belongs_to            :group
+  belongs_to            :tool_config
 
   # Pseudo Attributes (not saved in DB)
   attr_accessor :cluster_stdout, :cluster_stderr, :script_text

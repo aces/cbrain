@@ -42,24 +42,7 @@ require 'digest/sha1'
 class User < ActiveRecord::Base
 
   Revision_info="$Id$"
-  has_many                :userfiles
-  has_many                :data_providers
-  has_many                :remote_resources
-  has_many                :cbrain_tasks
-  has_and_belongs_to_many :groups
-  belongs_to              :site
 
-  #The following resources should be destroyed when a given user is destroyed.
-  has_many                :statistics,      :dependent => :destroy
-  has_many                :messages,        :dependent => :destroy
-  has_many                :tools,           :dependent => :destroy
-  has_many                :tags,            :dependent => :destroy
-  has_many                :feedbacks,       :dependent => :destroy
-  has_one                 :user_preference, :dependent => :destroy
-  has_many                :custom_filters,  :dependent => :destroy
-
-  
-  
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
@@ -86,6 +69,25 @@ class User < ActiveRecord::Base
   # anything else you want your user to change should be added here.
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
+  # The following resources PREVENT the user from being destroyed if some of them exist.
+  has_many                :userfiles
+  has_many                :data_providers
+  has_many                :remote_resources
+  has_many                :cbrain_tasks
+  has_and_belongs_to_many :groups
+  belongs_to              :site
+
+  # The following resources are destroyed automatically when the user is destroyed.
+  has_many                :statistics,      :dependent => :destroy
+  has_many                :messages,        :dependent => :destroy
+  has_many                :tools,           :dependent => :destroy
+  has_many                :tags,            :dependent => :destroy
+  has_many                :feedbacks,       :dependent => :destroy
+  has_one                 :user_preference, :dependent => :destroy
+  has_many                :custom_filters,  :dependent => :destroy
+
+  
+  
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
     u = find_by_login(login) # need to get the salt

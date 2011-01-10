@@ -33,3 +33,4 @@ class Control < ActiveResource::Base
   Revision_info="$Id$"
   
 end
+

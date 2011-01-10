@@ -19,13 +19,16 @@
 #*Has* *and* *belongs* *to* *many*:
 #* Userfile
 class Tag < ActiveRecord::Base
-  belongs_to              :user
-  has_and_belongs_to_many :userfiles
-  
+
+  Revision_info="$Id$"
+
   validates_presence_of   :name, :user_id
   validates_uniqueness_of :name, :scope => :user_id
   validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
   
-  Revision_info="$Id$"
+  has_and_belongs_to_many :userfiles
+  belongs_to              :user
+
 end
+

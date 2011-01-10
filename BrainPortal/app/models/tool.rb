@@ -24,6 +24,7 @@
 #*Has* *and* *belongs* *to* *many*
 #* Bourreau
 class Tool < ActiveRecord::Base
+
   Revision_info="$Id$"
   
   include ResourceAccess
@@ -32,14 +33,14 @@ class Tool < ActiveRecord::Base
   
   before_validation :set_default_attributes
   
+  validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
+  validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
+  validates_inclusion_of  :category, :in => Categories
+  
   belongs_to              :user
   belongs_to              :group
   has_and_belongs_to_many :bourreaux
   has_many                :tool_configs, :dependent => :destroy
-  
-  validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
-  validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
-  validates_inclusion_of  :category, :in => Categories
   
   #Find a random bourreau on which this tool is available and to which +user+ has access.
   def select_random_bourreau_for(user)

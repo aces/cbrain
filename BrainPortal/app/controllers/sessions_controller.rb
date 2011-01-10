@@ -37,7 +37,19 @@ class SessionsController < ApplicationController
 
       # Record the best guess for browser's remote host name
       reqenv = request.env
-      from_host = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] || 'unknown'
+      from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+      if from_ip
+        if from_ip =~ /^[\d\.]+$/
+          addrinfo = Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ 'unknown' ]
+          from_host = addrinfo[0]
+        else
+          from_host = from_ip # already got name?!?
+        end
+      else
+         from_ip   = '0.0.0.0'
+         from_host = 'unknown'
+      end
+      current_session[:guessed_remote_ip]   = from_ip
       current_session[:guessed_remote_host] = from_host
 
       # Record the user agent

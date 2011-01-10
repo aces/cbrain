@@ -14,4 +14,6 @@ class SanityCheck < ActiveRecord::Base
   Revision_info="$Id$"
 
   validates_presence_of :revision_info
+
 end
+
