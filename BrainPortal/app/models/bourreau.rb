@@ -293,6 +293,7 @@ class Bourreau < RemoteResource
       begin
         task       = CbrainTask.find(task_id.to_i)
         old_status = task.status # so we can detect if the operation did anything.
+        task.update_status
 
         # The method we'll now call are defined in the Bourreau side's CbrainTask model.
         # These methods trigger task control actions on the cluster.
