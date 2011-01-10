@@ -618,7 +618,7 @@ class ClusterTask < CbrainTask
     false
   end
 
-  #Suspend the task (if it's currently in an appropriate state.)
+  # Suspend the task (if it's currently in an appropriate state.)
   def suspend
     return unless self.status == "On CPU"
     begin
@@ -629,7 +629,7 @@ class ClusterTask < CbrainTask
     end
   end
 
-  #Resume processing the task if it was suspended.
+  # Resume processing the task if it was suspended.
   def resume
     begin
       return unless self.status == "Suspended"
@@ -640,7 +640,7 @@ class ClusterTask < CbrainTask
     end
   end
 
-  #Put the task on hold if it is currently queued.
+  # Put the task on hold if it is currently queued.
   def hold
     return unless self.status == "Queued"
     begin
@@ -651,10 +651,10 @@ class ClusterTask < CbrainTask
     end
   end
 
-  #Release the task from a suspended state.
+  # Release the task from state On Hold.
   def release
     begin
-      return unless self.status == "Suspended"
+      return unless self.status == "On Hold"
       self.scir_session.release(self.cluster_jobid)
       self.status = "Queued"
     rescue
