@@ -27,11 +27,11 @@
             <br/>
             <small>
               From
-              <% html_tool_tip(entry[:remote_host]) do %>
+              <% html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
                 <%= h(entry[:remote_ip] || entry[:remote_host]) %>
               <% end %>
               with
-              <% html_tool_tip(pretty) do %>
+              <% html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
                 <%= h(entry[:raw_user_agent] || 'unknown') %>
               <% end %>
             </small>
