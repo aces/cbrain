@@ -95,6 +95,7 @@ class Session
         :user           => user,
         :active         => sess.active?,
         :last_access    => sess.updated_at,
+        :remote_ip      => sess.data[:guessed_remote_ip],    # can be nil
         :remote_host    => sess.data[:guessed_remote_host],  # can be nil
         :raw_user_agent => sess.data[:raw_user_agent],       # can be nil
       }
