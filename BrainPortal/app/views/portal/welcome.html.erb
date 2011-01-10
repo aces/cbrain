@@ -26,7 +26,7 @@
             %>
             <br/>
             <small>
-              (From
+              From
               <% html_tool_tip(entry[:remote_host]) do %>
                 <%= h(entry[:remote_ip] || entry[:remote_host]) %>
               <% end %>
@@ -34,7 +34,6 @@
               <% html_tool_tip(pretty) do %>
                 <%= h(entry[:raw_user_agent] || 'unknown') %>
               <% end %>
-              )
             </small>
           <% end %>
         <% end %>
