@@ -4,7 +4,7 @@
 <h1>Edit Task <%= @task.name %></h1>
 
 <%
-     form_for(:cbrain_task, @task, :url => '/tasks/update', :method => :put, :builder => CbrainTaskFormBuilder ) do |form|
+     form_for(:cbrain_task, @task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form|
 -%>
 
 <% # Hidden fields -%>

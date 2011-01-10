@@ -318,7 +318,7 @@ class ClusterTask < CbrainTask
   def addlog_to_userfiles_processed(userfiles,comment = "")
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.bname_tid
-    mylink   = "/tasks/show/#{self.id}"  # can't use show_task_path() on Bourreau side
+    mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
@@ -333,7 +333,7 @@ class ClusterTask < CbrainTask
   def addlog_to_userfiles_created(userfiles,comment = "")
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.bname_tid
-    mylink   = "/tasks/show/#{self.id}" # can't use show_task_path() on Bourreau side
+    mylink   = "/tasks/#{self.id}" # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
@@ -350,7 +350,7 @@ class ClusterTask < CbrainTask
     creatorlist = [ creatorlist ] unless creatorlist.is_a?(Array)
     createdlist = [ createdlist ] unless createdlist.is_a?(Array)
     myname   = self.bname_tid
-    mylink   = "/tasks/show/#{self.id}"  # can't use show_task_path() on Bourreau side
+    mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     creatorlist.each do |creator|
       next unless creator.is_a?(Userfile) && creator.id

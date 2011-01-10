@@ -38,6 +38,9 @@ ActionController::Routing::Routes.draw do |map|
                                                   :update_multiple      => :put,  
                                                   :change_provider      => :post, 
                                                   :compress             => :post }
+  
+  map.resources :tasks,          :collection => { :operation  => :post }
+  
   map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
 
   # Special named routes
@@ -51,12 +54,12 @@ ActionController::Routing::Routes.draw do |map|
   map.jiv_display      '/jiv/show',               :controller => 'jiv',      :action => 'show'
   
   # Individual task maps
-  map.connect 'tasks/:action',                    :controller => 'tasks'
-  map.connect 'tasks/:action/:id',                :controller => 'tasks'
-  map.task    '/tasks/show/:id',                  :controller => 'tasks',    :action => 'show' # to create task_path()
-  map.connect 'tasks.:format',                    :controller => 'tasks', :action  => 'index'
-  map.connect 'tasks/:action.:format',            :controller => 'tasks'
-  map.connect 'tasks/:action/:id.:format',        :controller => 'tasks'
+  # map.connect 'tasks/:action',                    :controller => 'tasks'
+  #   map.connect 'tasks/:action/:id',                :controller => 'tasks'
+  #   map.task    '/tasks/show/:id',                  :controller => 'tasks',    :action => 'show' # to create task_path()
+  #   map.connect 'tasks.:format',                    :controller => 'tasks',    :action  => 'index'
+  #   map.connect 'tasks/:action.:format',            :controller => 'tasks'
+  #   map.connect 'tasks/:action/:id.:format',        :controller => 'tasks'
 
   # Other individual maps
   map.connect "logged_exceptions/:action/:id",    :controller => "logged_exceptions" 
