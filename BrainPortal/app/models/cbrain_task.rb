@@ -233,20 +233,19 @@ class CbrainTask < ActiveRecord::Base
         nv = new_params[ck]
         begin
           next if cv == nv
-          self.addlog("Changed key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
-          numchanges += 1
+          self.addlog("Changed key #{ck.inspect}, old=#{cv.inspect}, new=#{nv.inspect}")
         rescue
-          self.addlog("Uncomparable key '#{ck.inspect}', old='#{cv.inspect}', new='#{nv.inspect}'")
-          numchanges += 1
+          self.addlog("Uncomparable key #{ck.inspect}, old=#{cv.inspect}, new=#{nv.inspect}")
         end
+        numchanges += 1
         next
       end
-      self.addlog("Deleted key '#{ck.inspect}' with value '#{cv.inspect}'")
+      self.addlog("Deleted key #{ck.inspect} with value #{cv.inspect}")
       numchanges += 1
     end
     new_params.each do |nk,nv|
       next if old_params.has_key?(nk)
-      self.addlog("Added key '#{nk.inspect}' with value '#{nv.inspect}'")
+      self.addlog("Added key #{nk.inspect} with value #{nv.inspect}")
       numchanges += 1
     end
     if numchanges > 0

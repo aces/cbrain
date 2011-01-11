@@ -147,6 +147,25 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
     text_area(pseudo_method, params_common_options(paramspath,options))
   end
 
+  # Creates a selection box for the CbrainTask parameter
+  # identified by +paramspath+. The value for option_tags
+  # is the same as supplied to options_for_select(); the
+  # value selected by default in the input tag will be
+  # chosen based on the current value found in the params hash.
+  def params_select(paramspath, option_tags = nil, options = {})
+    added_options = params_common_options(paramspath,options)
+    name  = added_options.delete(:name)
+    id    = added_options.delete(:id)
+    value = added_options.delete(:value)
+    html_class = added_options.delete(:class)
+    tag = "<select name=\"#{name}\" id=\"#{id}\""
+    tag += " class=\"#{html_class}\"" if html_class
+    tag += ">"
+    tag += @template.options_for_select(option_tags,value)
+    tag += "</select>"
+    tag
+  end
+
   # This provides a replacement for the label() method
   # of the default form builder.
   def params_label(paramspath, *args)

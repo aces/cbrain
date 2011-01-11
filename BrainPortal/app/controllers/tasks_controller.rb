@@ -453,7 +453,7 @@ class TasksController < ApplicationController
     @task.log_params_changes(old_params,@task.params)
     @task.save!
 
-    flash[:notice] = messages + "\n" if messages
+    flash[:notice] += messages + "\n" unless messages.blank?
     flash[:notice] += "New task parameters saved. See the log for changes, if any.\n"
     redirect_to :action => :show, :id => @task.id
   end
