@@ -17,7 +17,7 @@ class CbrainTask::Civet < ClusterTask
   Revision_info="$Id$"
 
   include RestartableTask # This task is naturally restartable
-  include RecoverableTask # This task is naturally recoverable
+  include RecoverableTask # This task is naturally recoverable, almost! See recover_from_cluster_failure() below.
 
   def setup #:nodoc:
     params       = self.params
@@ -274,7 +274,7 @@ class CbrainTask::Civet < ClusterTask
     unless running.empty?
       self.addlog("Error: it seems this CIVET run is still processing!")
       self.addlog("We found these files in 'logs' : #{running.sort.join(', ')}")
-      self.addlog("Trigger the recovery code to force a cleanup and a restart.")
+      self.addlog("Trigger the recovery code to force a cleanup and a try again.")
       return false # Failed On Cluster
     end
     badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?)$/i }

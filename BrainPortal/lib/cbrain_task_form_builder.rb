@@ -147,6 +147,16 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
     text_area(pseudo_method, params_common_options(paramspath,options))
   end
 
+  # This provides a replacement for the label() method
+  # of the default form builder.
+  def params_label(paramspath, *args)
+    id = paramspath.to_la_id.sub(/^cbrain_task_/,"")
+    args.unshift(paramspath.to_s.humanize) if args.size == 0
+    label(id, *args)
+  end
+
+  private
+
   def params_common_options(paramspath, options = {}) #:nodoc:
     added_path    = paramspath.to_la
     added_id      = paramspath.to_la_id

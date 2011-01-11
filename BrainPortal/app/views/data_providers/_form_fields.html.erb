@@ -1,18 +1,18 @@
 
 <span title="The name of the data provider.">
-  <p><label for="name">Name</label><br/>
+  <p><%= f.label :name, "Name" %><br/>
   <%= f.text_field :name %></p>
 </span>
          
 <span title="Brief description of the data provider.">
-  <p><label for="description">Description</label><br/>
+  <p><%= f.label :description, "Description" %><br/>
   <%= f.text_area :description, :rows => 10 %><br/>
   <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
   </p>
 </span>
 
 <span title="Time zone where this data provider is located.">
-  <p><label for="time_zone">Time Zone</label><br/>
+  <p><%= f.label :time_zone, "Time Zone" %><br/>
   <%= f.time_zone_select :time_zone, 
       ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
       { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
@@ -22,7 +22,7 @@
 
 <span title="Type of data provider.">
 
-  <p><label for="type">Type</label><br/>
+  <p><%= f.label :type, "Type" %><br/>
   <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
   <small><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></small>
   </p>
@@ -142,29 +142,29 @@
 </span>
 
 <span title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
-  <p><label for="user_id">Owner</label><br/>
+  <p><%= f.label :user_id, "Owner" %><br/>
     <%= user_select("data_provider[user_id]", { :selector => @provider }, { :disabled => ! current_user.has_role?(:admin) } ) %>
   </p>
 </span>
 
 <span title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
-  <p><label for="group_id">Project</label><br/>
+  <p><%= f.label :group_id, "Project" %><br/>
     <%= group_select("data_provider[group_id]", :selector => @provider) %>
   </p>  
 </span>
 
 <span title="Is this data provider currently available for use?">
-  <p><label for="online">Status</label><br/>
+  <p><%= f.label :online, "Status" %><br/>
   <%= f.select :online, { "Online" => true, "Offline" => false } %></p>  
 </span>
 
 <span title="Is this data provider writable or read-only?">
-  <p><label for="read_only">Mode</label><br/>
+  <p><%= f.label :read_only, "Mode" %><br/>
   <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }%></p>
 </span>
 
 <span title="Is this data provider syncable?">
-  <p><label for="not_syncable">Syncability</label><br/>
+  <p><%= f.label :not_syncable, "Syncability" %><br/>
   <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true } %></p>
 </span>
 
@@ -174,17 +174,17 @@
   <legend>SSH parameters for remote Data Providers</legend>
 
   <span title="Name of the remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
-    <p><label for="remote_host">Remote Hostname</label><br/>
+    <p><%= f.label :remote_host, "Remote Hostname" %><br/>
     <%= f.text_field :remote_host %></p>
   </span>
 
   <span title="Username on the remote machine where the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
-    <p><label for="remote_user">Remote Username</label><br/>
+    <p><%= f.label :remote_user, "Remote Username" %><br/>
     <%= f.text_field :remote_user %></p>
   </span>
 
   <span title="Port number used to access remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
-    <p><label for="remote_port">Remote Port Number</label><br/>
+    <p><%= f.label :remote_port, "Remote Port Number" %><br/>
     <%= f.text_field :remote_port, :size => 6 %></p>
   </span>
 </fieldset>
@@ -195,7 +195,7 @@
 <legend>Physical data location</legend>
 
   <span title="Directory used for storing files">
-    <p><label for="remote_dir">Full Directory Path</label><br/>
+    <p><%= f.label :remote_dir, "Full Directory Path" %><br/>
     <%= f.text_field :remote_dir, :size => 60 %></p>
   </span>
 
@@ -206,10 +206,10 @@
 <fieldset class="groupentry">
   <legend>Other properties</legend>
 
-  <p><label>Files MUST be copied/moved upon registration</label>
+  <p><label for='meta_must_move'>Files MUST be copied/moved upon registration</label>
   <%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
   <small>(Only for browsable Data Providers)</small>
-  <p><label>Cannot be used for uploading files in the file manager</label>
+  <p><label for='meta_no_uploads'>Cannot be used for uploading files in the file manager</label>
   <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
   <p>
 </fieldset>

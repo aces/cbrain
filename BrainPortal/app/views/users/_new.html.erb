@@ -4,53 +4,53 @@
 <% ajax_form_for :user, @user, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <div class="display_cell">
-    <p><label for="full_name">Full Name</label><br/>
+    <p><%= f.label :full_name, "Full Name" %><br/>
     <%= f.text_field :full_name %></p>
   
-    <p><label for="login">Login</label><br/>
+    <p><%= f.label :login, "Login" %><br/>
     <%= f.text_field :login %><br>
     <small>For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</small>
     </p>
   
-    <p><label for="email">Email</label><br/>
+    <p><%= f.label :email, "Email" %><br/>
     <%= f.text_field :email %></p>
     
     <p>
-      <label for="city">City</label><br/>
+      <%= f.label :city, "City" %><br/>
       <%= f.text_field :city %>
     </p>
     
     <p>
-      <label for="country">Country</label><br/>
+      <%= f.label :country, "Country" %><br/>
       <%= f.text_field :country %>
     </p>
     
-    <p><label for="time_zone">Time Zone</label><br/>
+    <p><%= f.label :time_zone, "Time Zone" %><br/>
     <%= f.time_zone_select :time_zone,
         ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
         { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
           :include_blank => true }
     %></p>
     
-    <p><label for="role">Role</label><br/>
+    <p><%= f.label :role, "Role" %><br/>
     <%= f.select :role, roles_for_user(current_user) %> </p>
     
     <% if current_user.has_role? :admin %>
-      <p><label for="role">Site</label><br/>
+      <p><%= f.label :site_id, "Site" %><br/>
       <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
     <% end %>
     
-    <p><label for="password">Password</label><br/>
+    <p><%= f.label :password, "Password" %><br/>
     <%= f.password_field :password %></p>
   
-    <p><label for="password_confirmation">Confirm Password</label><br/>
+    <p><%= f.label :password_confirmation, "Confirm Password" %><br/>
     <%= f.password_field :password_confirmation %></p>
     
     <p><%= submit_tag 'Create User' %></p>
   </div>
   
   <div class="display_cell">
-    <label for="groups">Projects</label>
+    <label>Projects</label>
     <% array_to_table(@groups, :ratio => "3:1", :td_class => 'left_align') do |group,r,c| %>
        <%= check_box_tag("user[group_ids][]", group.id.to_s) %>
        <%= h(group.name) -%>

@@ -4,11 +4,11 @@
   <%= f.error_messages %>
 
   <p>
-    <%= f.label :name %><br />
+    <%= f.label :name, "Name" %><br />
     <%= f.text_field :name %>
   </p>
   <% if current_user.has_role?(:admin) %>
-    <p><label for="role">Site</label><br/>
+    <p><%= f.label :site_id, "Site" %><br/>
      <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
   <% end %>
 

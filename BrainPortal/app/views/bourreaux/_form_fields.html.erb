@@ -2,7 +2,7 @@
       <% is_bourreau = @bourreau.is_a?(Bourreau) %>
       <% is_portal   = @bourreau.is_a?(BrainPortal) %>
 
-      <p><label for="name">Name</label><br/>
+      <p><%= f.label :name %><br/>
       <%= f.text_field :name %><br/>
       <small>Important note: this name must also be changed accordingly in the config file<br/>
       <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em><br/>
@@ -10,35 +10,35 @@
       </p>
 
       <% if is_portal %>
-      <p><label for="site_url_prefix">Site URL Home Page</label><br/>
+      <p><%= f.label :site_url_prefix, "Site URL Home Page" %><br/>
       <%= f.text_field :site_url_prefix %></p>
 
-      <p><label for="help_url">URL for local documentation</label><br/>
+      <p><%= f.label :help_url, "URL for local documentation" %><br/>
       <%= f.text_field :help_url %><br/>
       <small>If set, the portal will show a link called 'User Manual' in the account bar at the top.</small>
       </p>
       <% end %>
 
-      <p><label for="description">Description</label><br/>
+      <p><%= f.label :description %><br/>
       <%= f.text_area :description, :rows => 10 %><br/>
       <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
       </p>
       
-      <p><label for="user_id">Owner</label><br/>
+      <p><%= f.label :user_id, "Owner" %><br/>
       <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin) } ) %></p>
 
-      <p><label for="group_id">Project</label><br/>
+      <p><%= f.label :group_id, "Project" %><br/>
       <%= group_select("bourreau[group_id]", :selector => @bourreau) %></p>
 
-      <p><label for="online">Status</label><br/>
+      <p><%= f.label :online, "Status" %><br/>
       <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %></p>
       
-      <p><label for="rr_timeout">Timeout for is alive check (seconds)</label><br/>
+      <p><%= f.label :rr_timeout, "Timeout for is alive check (seconds)" %><br/>
       <%= f.text_field :rr_timeout, :size => 5%></p>
 
 
       <span title="Time zone where this server is located.">
-        <p><label for="time_zone">Time Zone</label><br/>
+        <p><%= f.label :time_zone, "Time Zone" %><br/>
         <%= f.time_zone_select :time_zone, 
             ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
             { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
@@ -53,16 +53,16 @@
       <fieldset class="groupentry">
       <legend>SSH Remote Control Configuration</legend>
 
-          <p><label for="ssh_control_host">Hostname</label><br/>
+          <p><%= f.label :ssh_control_host, "Hostname" %><br/>
           <%= f.text_field :ssh_control_host %></p>
 
-          <p><label for="ssh_control_user">Username</label><br/>
+          <p><%= f.label :ssh_control_user, "Username" %><br/>
           <%= f.text_field :ssh_control_user %></p>
 
-          <p><label for="ssh_control_port">Port Number</label><br/>
+          <p><%= f.label :ssh_control_port, "Port Number" %><br/>
           <%= f.text_field :ssh_control_port, :size => 6 %></p>
 
-          <p><label for="ssh_control_rails_dir">Rails Server Directory</label><br/>
+          <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
           <%= f.text_field :ssh_control_rails_dir, :size => 60 %></p>
       </fieldset>
         
@@ -71,10 +71,10 @@
       <fieldset class="groupentry">
       <legend>Tunnelling Configuration</legend>
 
-        <p><label for="tunnel_mysql_port">Database Server Remote Tunnel Port</label><br/>
+        <p><%= f.label :tunnel_mysql_port, "Database Server Remote Tunnel Port" %><br/>
         <%= f.text_field :tunnel_mysql_port, :size => 6 %></p>
 
-        <p><label for="tunnel_actres_port">ActiveResource Remote Tunnel Port</label><br/>
+        <p><%= f.label :tunnel_actres_port, "ActiveResource Remote Tunnel Port" %><br/>
         <%= f.text_field :tunnel_actres_port, :size => 6 %></p>
       </fieldset>
 
@@ -85,18 +85,18 @@
       <fieldset class="groupentry">
           <legend>Cache Management Configuration</legend>
 
-          <p><label for="dp_cache_dir">Path to Data Provider caches</label><br/>
+          <p><%= f.label :dp_cache_dir, "Path to Data Provider caches" %><br/>
           <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
           <small>Warning! Changing this field will result in resetting the synchronization<br/>
           status of all files from all Data Providers! Also, the Rails app will have to<br/>
           be restarted, and all files in that directory will be erased!</small>
           </p>
 
-          <p><label for="spaced_dp_ignore_patterns">Patterns for filenames to ignore</label><br/>
+          <p><%= f.label :spaced_dp_ignore_patterns, "Patterns for filenames to ignore" %><br/>
           <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
           <small>Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</small></p>
 
-          <p><label for="cache_trust_expire">Cache Expiration Timeout</label><br/>
+          <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
           <%= f.select :cache_trust_expire, [
                   [ "Never",      "0"                ],
                   [ "Six hours",  6.hours.to_i.to_s  ],
@@ -125,7 +125,7 @@
       <fieldset class="groupentry">
       <legend>Cluster Management System Configuration</legend>
 
-          <p><label for="cms_class">Type of cluster</label><br/>
+          <p><%= f.label :cms_class, "Type of cluster" %><br/>
           <%= f.select :cms_class, [
                   [ "(Unconfigured)",  "" ],
                   [ "Sun GridEngine",  "ScirSge" ],
@@ -136,18 +136,18 @@
               ]
           %></p>
 
-          <p><label for="cms_shared_dir">Path to shared work directory</label><br/>
+          <p><%= f.label :cms_shared_dir, "Path to shared work directory" %><br/>
           <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
           <small>Optional. This directory must be visible and writable from all nodes.<br>
                  This is were the work subdirectories for all tasks will be created.</small>
           </p>
 
-          <p><label for="cms_default_queue">Default queue name</label><br/>
+          <p><%= f.label :cms_default_queue, "Default queue name" %><br/>
           <%= f.text_field :cms_default_queue %><br/>
           <small>Optional.</small>
           </p>
 
-          <p><label for="cms_extra_qsub_args">Extra 'qsub' options</label><br/>
+          <p><%= f.label :cms_extra_qsub_args, "Extra 'qsub' options" %><br/>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <small>Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</small>
           </p>
@@ -158,7 +158,7 @@
       <fieldset class="groupentry">
       <legend>Bourreau Workers Configuration</legend>
 
-          <p><label for="workers_instances">Number of Workers</label><br/>
+          <p><%= f.label :workers_instances, "Number of Workers" %><br/>
           <%= f.select :workers_instances, [
                   [ "None (for debug)",  0 ],
                   [ "1",                 1 ],
@@ -171,7 +171,7 @@
               ]
           %></p>
 
-          <p><label for="workers_chk_time">Check interval</label><br/>
+          <p><%= f.label :workers_chk_time, "Check interval" %><br/>
           <%= f.select :workers_chk_time, [
                   [ "5 seconds",               5 ],
                   [ "10 seconds",              10 ],
@@ -184,7 +184,7 @@
               ]
           %></p>
 
-          <p><label for="workers_log_to">Log destination</label><br/>
+          <p><%= f.label :workers_log_to, "Log destination" %><br/>
           <%= f.select :workers_log_to, [
                   [ "Combined file (recommended)", "combined" ],
                   [ "Separate files",              "separate" ],
@@ -196,7 +196,7 @@
               ]
           %></p>
 
-          <p><label for="workers_verbose">Log verbosity</label><br/>
+          <p><%= f.label :workers_verbose, "Log verbosity" %><br/>
           <%= f.select :workers_verbose, [
                   [ "Normal",      1 ],
                   [ "Debug info",  2 ]

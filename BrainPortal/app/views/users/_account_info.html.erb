@@ -5,23 +5,23 @@
 
 <% form_for @user do |f| -%>
 
-  <p><label for="login">Full Name</label><br/>
+  <p><%= f.label :full_name, "Full Name" %><br/>
   <%= f.text_field :full_name %></p>
 
-  <p><label for="email">Email</label><br/>
+  <p><%= f.label :email, "Email" %><br/>
   <%= f.text_field :email %></p>
 
   <p>
-    <label for="city">City</label><br/>
+    <%= f.label :city, "City" %><br/>
     <%= f.text_field :city %>
   </p>
   
   <p>
-    <label for="country">Country</label><br/>
+    <%= f.label :country, "Country" %><br/>
     <%= f.text_field :country %>
   </p>
   
-  <p><label for="time_zone">Time Zone</label><br/>
+  <p><%= f.label :time_zone, "Time Zone" %><br/>
   <%= f.time_zone_select :time_zone,
       ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
       { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
@@ -32,16 +32,16 @@
 
     <% if not_admin_user(@user) %>
 
-      <p><label for="role">Role</label><br/>
+      <p><%= f.label :role, "Role" %><br/>
       <%= f.select :role, roles_for_user(current_user), :prompt => 'Select a role' %></p>
       
       <% if check_role(:admin) %>
-        <p><label for="site">Site</label><br/>
+        <p><%= f.label :site_id, "Site" %><br/>
         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
       <% end %>
     <% end %>
 
-    <label for="groups">Projects</label>
+    <label>Projects"</label>
     <%= hidden_field_tag "user[group_ids][]", [] %>
     <% array_to_table(@groups.sort { |a,b| a.name <=> b.name }, :td_class => 'left_align no_wrap') do |group,r,c| %>
       <%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %>

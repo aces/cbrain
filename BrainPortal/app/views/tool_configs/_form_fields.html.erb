@@ -6,14 +6,14 @@
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
   <span title="Project access for this configuration.">
-    <p><label for="group_id">Available to members of project:</label>
+    <p><%= f.label :group_id, "Available to members of project:" %>
     <%= group_select "tool_config[group_id]", @tool_config.group_id %>
     </p>
   </span>
 
   <span title="Brief description for this configuration.">
-    <p><label for="description">Description:</label><br/>
-    <%= text_area_tag "tool_config[description]", @tool_config.description, { :cols => 40, :rows => 10 } %><br/>
+    <p><%= f.label :description, "Description:" %><br/>
+    <%= f.text_area :description, :cols => 40, :rows => 10 %><br/>
     <small>The first line must be a short summary, and the rest are for any special notes for the users.</small>
     </p>
   </span>
@@ -35,8 +35,8 @@
   </span>
 
   <span title="BASH initialization prologue">
-    <p><label for="description">BASH initialization prologue:</label><br/>
-    <%= text_area_tag "tool_config[script_prologue]", @tool_config.script_prologue, { :cols => 80, :rows => 10 } %><br/>
+    <p><%= f.label :script_prologue, "BASH initialization prologue:" %><br/>
+    <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
     <small>This is a multi line partial BASH script. It can use the environment variables defined above,
            and do anything else you feel is needed to activate this configuration.
            <br> Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
