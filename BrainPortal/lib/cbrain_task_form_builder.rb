@@ -40,7 +40,8 @@ require 'action_view/helpers/form_helper'
 #               :do_it    => 1,
 #               :alist    => [ "one", "two", "three" ],
 #               :hidethis => "secret",
-#               :alpha    => { :a => 1, :b => 2 }
+#               :alpha    => { :a => 1, :b => 2 },
+#               :color    => 'red'
 #             }
 #
 # Then this code:
@@ -50,6 +51,7 @@ require 'action_view/helpers/form_helper'
 #    <%= form.params_text_field   "alist[1]" %>
 #    <%= form.params_hidden_field :hidethis  %>
 #    <%= form.params_text_field   "alpha[b]" %>
+#    <%= form.params_select       :color, [ 'red', 'blue', 'yellow' ] %>
 #
 # Will generate:
 #
@@ -59,7 +61,13 @@ require 'action_view/helpers/form_helper'
 #    <input type="text"     name="cbrain_task[params][alist][1]" value="two">
 #    <input type="hidden"   name="cbrain_task[params][hidethis]" value="secret">
 #    <input type="text"     name="cbrain_task[params][alpha][b]" value="2">
+#    <select name="cbrain_task[params][color]">
+#      <option value="red" selected>red</option>
+#      <option value="blue">blue</option>
+#      <option value="yellow">yellow</option>
+#    </select>
 #
+# Some generated IDs for the tags are ommitted in this example.
 # Note that two input fields are created by params_check_box() and
 # that the default checked and unchecked values are "1" and "0".
 class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
@@ -152,14 +160,17 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # is the same as supplied to options_for_select(); the
   # value selected by default in the input tag will be
   # chosen based on the current value found in the params hash.
-  def params_select(paramspath, option_tags = nil, options = {})
+  def params_select(paramspath, option_tags = nil, options = {}, html_options = {})
     added_options = params_common_options(paramspath,options)
-    name  = added_options.delete(:name)
-    id    = added_options.delete(:id)
-    value = added_options.delete(:value)
+    name       = added_options.delete(:name)
+    id         = added_options.delete(:id)
+    value      = added_options.delete(:value)
     html_class = added_options.delete(:class)
-    tag = "<select name=\"#{name}\" id=\"#{id}\""
+    html_options.delete(:disabled) unless html_options[:disabled]
+    html_options[:disabled] &&= "disabled"
+    tag  = "<select name=\"#{name}\" id=\"#{id}\""
     tag += " class=\"#{html_class}\"" if html_class
+    tag += html_options.inject("") { |result, pair| result += " #{pair.first}=\"#{pair.last}\"" unless pair.last.nil?; result }
     tag += ">"
     tag += @template.options_for_select(option_tags,value)
     tag += "</select>"

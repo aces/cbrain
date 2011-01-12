@@ -5,11 +5,11 @@
   <%= f.error_messages %>
 
   <p>
-   Userfiles per page: 
+   <label>Userfiles per page:</label>
    <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages )%>
   </p>
   <p>
-    Default execution server:
+    <%= f.label :bourreau_id, "Default execution server:" %>
     <%= bourreau_select(     "user_preference[bourreau_id]",
                              { :bourreaux => Bourreau.find_all_accessible_by_user(current_user),
                                :selector => user_preference.bourreau_id },
@@ -17,7 +17,7 @@
     %>
   </p>
   <p>
-    Default data provider:
+    <%= f.label :data_provider_id, "Default data provider:" %>
     <%= data_provider_select("user_preference[data_provider_id]",
                              { :selector =>  user_preference.data_provider_id },
                              { :include_blank => true } )

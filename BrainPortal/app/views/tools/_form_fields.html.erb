@@ -2,40 +2,40 @@
 <%= f.error_messages %>
 
 <p>
- Tool Name: 
+ <%= f.label :name, "Tool Name:" %>
  <%= f.text_field :name %>
 </p>
 
 <p>
   <span title="PortalTask subclass which implements this tool.">
-    CbrainTask Class: 
+     <%= f.label :cbrain_task_class, "CbrainTask Class:" %>
      <%= f.text_field :cbrain_task_class %>
   </span>
 </p>
 
 <p>
- Belongs to:
- <%= user_select "tool[user_id]", @tool %>
+ <%= f.label :user_id, "Belongs to:" %>
+ <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
 </p>
 
 <p>
- Belongs to group:
- <%= group_select "tool[group_id]", @tool %>
+ <%= f.label :group_id, "Belongs to group:" %>
+ <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
 </p>
 
 <p>
-  <%= f.label :category %>: 
+  <%= f.label :category, "Category:" %>
   <%= f.select :category, Tool::Categories %>  
 </p>
 
 <p>
-  Description:<br>
+  <%= f.label :description, "Description:" %><br>
   <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
   <small>The first line must should be a short summary, and the rest are for any special notes for the users.</small>
 </p>
 
 <p>
-  Text for select box on the userfiles page:
+  <%= f.label :select_menu_text, "Text for select box on the userfiles page:" %>
   <%= f.text_field :select_menu_text %>
 </p>
 
