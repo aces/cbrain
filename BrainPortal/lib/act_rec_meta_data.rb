@@ -64,7 +64,7 @@ module ActRecMetaData
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
     unless includer <= ActiveRecord::Base
-      raise "#{includer} is not an ActiveRecord model. The ResourceAccess module cannot be used with it."
+      raise "#{includer} is not an ActiveRecord model. The ActRecMetaData module cannot be used with it."
     end
 
     includer.class_eval do
@@ -193,8 +193,10 @@ module ActRecMetaData
       mykey = mykey.to_s
       md = self.md_cache[mykey] || MetaDataStore.new( :ar_id => self.ar_id, :ar_class => self.ar_class, :meta_key => mykey )
       md_cache[mykey] = md
-      md.meta_value   = myval
-      md.save!
+      if md.meta_value != myval
+        md.meta_value   = myval
+        md.save!
+      end
       myval
     end
 
@@ -230,6 +232,7 @@ module ActRecMetaData
   # See the methods in MetaDataHandler for more info.
   def meta
     cb_error "Cannot manage metadata on the metadata store itself!" if self.is_a?(MetaDataStore)
+    cb_error "Cannot manage metadata on ActiveRecordLog objects!"   if self.is_a?(ActiveRecordLog)
     cb_error "Cannot manage metadata on an object that hasn't been saved yet." unless self.id
     @_cbrain_meta ||= MetaDataHandler.new(self.id, self.class.to_s)
   end

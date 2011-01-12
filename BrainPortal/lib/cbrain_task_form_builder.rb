@@ -7,25 +7,24 @@ require 'action_view/helpers/form_helper'
 # for CbrainTasks; in particular, it provides methods to
 # created input fields for pieces of data that will end
 # up in the +params+ hash table of the CbrainTask object.
-# All methods are meant to act like those in ActionView::Helpers::FormHelper
-# but instead of taking the name of an ActiveRecord attribute,
-# they take a +paramspath+ as their first argument.
-# The +paramspath+ can be a simple symbol or more complex paths
-# into the params structure; for instance
+# All methods are meant to act much like those in
+# ActionView::Helpers::FormHelper but instead of taking the name
+# of an ActiveRecord attribute, they take a +paramspath+ as their
+# first argument. The +paramspath+ can be a simple symbol or more
+# complex paths into the params structure; for instance:
 #
-#    Value for paramspath    CbrainTask's params    Final HTML Tag Variable
-#    ----------------------- ---------------------- --------
-#    :abc                    params[:abc]           cbrain_task[params][abc]
-#    "abc"                   params[:abc]           cbrain_task[params][abc]
-#    "myhash[abc]"           params[:myhash][:abc]  cbrain_task[params][myhash][abc]
-#    "myarray[3]"            params[:myarray][3]    cbrain_task[params][myarray][3]
-#    "anarray[]"             params[:anarray]       cbrain_task[params][anarray][]
+#    Value for paramspath  CbrainTask's Ruby var  HTML tag variable name
+#    --------------------- ---------------------- --------------------------------
+#    :abc                  params[:abc]           cbrain_task[params][abc]
+#    "abc"                 params[:abc]           cbrain_task[params][abc]
+#    "myhash[abc]"         params[:myhash][:abc]  cbrain_task[params][myhash][abc]
+#    "myarray[3]"          params[:myarray][3]    cbrain_task[params][myarray][3]
+#    "anarray[]"           params[:anarray]       cbrain_task[params][anarray][]
 # 
 # Basically, when generating the input tags, the paramspath is
 # automatically transformed into the string returned by calling
-# the String or Symbol method to_la() on it. The final HTML
-# variable name for :abc will be "cbrain_task[params][abc]",
-# for instance.
+# the String or Symbol method to_la() on it. For instance, the
+# final HTML variable name for :abc will be "cbrain_task[params][abc]".
 #
 # The default value for each input tag will be what is found
 # in the params hash of the current CbrainTask object used by
@@ -41,10 +40,10 @@ require 'action_view/helpers/form_helper'
 #               :alist    => [ "one", "two", "three" ],
 #               :hidethis => "secret",
 #               :alpha    => { :a => 1, :b => 2 },
-#               :color    => 'red'
+#               :color    => 'blue'
 #             }
 #
-# Then this code:
+# then this code:
 #
 #    <%= form.params_text_field   :comment   %>
 #    <%= form.params_check_box    :do_it     %>
@@ -53,7 +52,7 @@ require 'action_view/helpers/form_helper'
 #    <%= form.params_text_field   "alpha[b]" %>
 #    <%= form.params_select       :color, [ 'red', 'blue', 'yellow' ] %>
 #
-# Will generate:
+# will generate HTML code similar to this:
 #
 #    <input type="text"     name="cbrain_task[params][comment]"  value="hi!">
 #    <input type="checkbox" name="cbrain_task[params][do_it]"    value="1" checked>
@@ -61,15 +60,15 @@ require 'action_view/helpers/form_helper'
 #    <input type="text"     name="cbrain_task[params][alist][1]" value="two">
 #    <input type="hidden"   name="cbrain_task[params][hidethis]" value="secret">
 #    <input type="text"     name="cbrain_task[params][alpha][b]" value="2">
-#    <select name="cbrain_task[params][color]">
-#      <option value="red" selected>red</option>
-#      <option value="blue">blue</option>
-#      <option value="yellow">yellow</option>
+#    <select                name="cbrain_task[params][color]">
+#      <option          value="red">red</option>
+#      <option selected value="blue">blue</option>
+#      <option          value="yellow">yellow</option>
 #    </select>
 #
-# Some generated IDs for the tags are ommitted in this example.
-# Note that two input fields are created by params_check_box() and
-# that the default checked and unchecked values are "1" and "0".
+# Note that some generated IDs for the tags are ommitted in this example.
+# Also, there are two input fields created by params_check_box() and
+# that their default checked and unchecked values are "1" and "0".
 class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
 
   Revision_info="$Id$"

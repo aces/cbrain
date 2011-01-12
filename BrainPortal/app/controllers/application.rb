@@ -375,6 +375,39 @@ class ApplicationController < ActionController::Base
     return "<span #{color}>#{string}</span>"
   end
 
+  # Utility method that allows a controller to add
+  # meta information to a +target_object+ based on
+  # the content of a form which has inputs named
+  # like "meta[key1]" "meta[key2]" etc. The list of
+  # keys we are looking for are supplied in meta_keys;
+  # any other values present in the params[:meta] will
+  # be ignored.
+  #
+  # Example: let's say that when posting to update object @myobj,
+  # the form sent also contained this:
+  #
+  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A' } ... }
+  #
+  # Then calling
+  #
+  #   add_meta_data_from_form(@myobj, [ :def, :xyz ])
+  #
+  # will result in two meta data pieces of information added
+  # to the object @myobj, like this:
+  #
+  #   @myobj.meta[:def] = 'z'
+  #   @myobj.meta[:xyz] = 'A'
+  #
+  # See ActRecMetaData for more information.
+  def add_meta_data_from_form(target_object, meta_keys = [], myparams = params)
+    return true if meta_keys.empty?
+    form_meta = myparams[:meta] || {}
+    meta_keys.each do |key|
+      target_object.meta[key] = form_meta[key] # assignment of nil deletes the key
+    end
+    true
+  end
+
 end
 
 # Patch: Load all models so single-table inheritance works properly.

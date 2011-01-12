@@ -174,7 +174,7 @@ module ActRecLog
   # information about the current ActiveRecord class
   # will be added to the top of the log.
   def addlog(message)
-    return true  if self.is_a?(ActiveRecordLog)
+    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return false if self.id.blank?
     begin
       arl = active_record_log_find_or_create
@@ -215,7 +215,7 @@ module ActRecLog
   # name to display (the default is 0, which means the method
   # where you call addlog_context() itself).
   def addlog_context(context,message=nil,caller_back_level=0)
-    return true  if self.is_a?(ActiveRecordLog)
+    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return false if self.id.blank?
     prev_level     = caller[caller_back_level]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
@@ -247,7 +247,7 @@ module ActRecLog
   #
   #     "Abcd revision 123 prioux 2009-05-23 hello"
   def addlog_revinfo(anobject,message=nil)
-    return true  if self.is_a?(ActiveRecordLog)
+    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return false if self.id.blank?
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
@@ -263,7 +263,7 @@ module ActRecLog
   # Gets the log for the current ActiveRecord;
   # this is a single long string with embedded newlines.
   def getlog
-    return nil if self.is_a?(ActiveRecordLog)
+    return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return nil if self.id.blank?
     arl = active_record_log
     return nil unless arl
@@ -275,7 +275,7 @@ module ActRecLog
   # Use addlog() for normal operation; this method
   # is rarely used in normal situations.
   def raw_append_log(text)
-    return false if self.is_a?(ActiveRecordLog)
+    return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return false if self.id.blank?
     arl = active_record_log_find_or_create
     log = arl.log + text
@@ -290,7 +290,7 @@ module ActRecLog
   # callback when the record is destroyed, but it can be
   # called manually too.
   def destroy_log
-    return true if self.is_a?(ActiveRecordLog)
+    return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     arl = self.active_record_log
     return true unless arl
     arl.destroy_without_callbacks
@@ -300,7 +300,7 @@ module ActRecLog
   protected
 
   def active_record_log #:nodoc:
-    return nil if self.is_a?(ActiveRecordLog)
+    return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     myid    = self.id
     myclass = self.class.to_s
     return nil if myid.blank?
@@ -311,7 +311,7 @@ module ActRecLog
   end
 
   def active_record_log_find_or_create #:nodoc:
-    return nil if self.is_a?(ActiveRecordLog)
+    return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     arl = active_record_log
     return arl if arl
     
