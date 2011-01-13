@@ -139,9 +139,12 @@ class CbrainSystemChecks < CbrainChecker
       end
       puts "C> \t- Re-recording DataProvider revision number in cache."
       DataProvider.cache_revision_of_last_init(:force)
-      md5 = DataProvider.cache_md5 rescue nil
-      myself.update_attributes( :cache_md5 => md5 ) if md5 && myself.cache_md5 != md5
-      puts "C> \t- Done."
+    end
+
+    md5 = DataProvider.cache_md5 rescue nil
+    if md5 && myself.cache_md5 != md5
+      puts "C> \t- Re-recording DataProvider MD5 ID in database."
+      myself.update_attributes( :cache_md5 => md5 )
     end
   end
 
