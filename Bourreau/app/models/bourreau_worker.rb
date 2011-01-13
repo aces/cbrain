@@ -85,6 +85,8 @@ class BourreauWorker < Worker
     # Processes each task in the ready list
     by_user = tasks_todo.group_by { |t| t.user_id }
     user_ids = by_user.keys.shuffle # go through users in random order
+    bourreau_active_task_cnt = nil # we initialize this here because later we assign using ||=
+    user_active_task_cnt     = nil # we initialize this here because later we assign using ||=
     while user_ids.size > 0  # loop for each user
       user_id        = user_ids.pop
       user_max_tasks = @rr.meta["task_limit_user_#{user_id}".to_sym]
@@ -103,22 +105,24 @@ class BourreauWorker < Worker
 
           # Bourreau global limit
           if bourreau_max_tasks > 0
-            bourreau_active_tasks_cnt = CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
+            bourreau_active_tasks_cnt ||= CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
             if bourreau_active_tasks_cnt >= bourreau_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}): Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
               next # next task
             end
+            bourreau_active_tasks_cnt = nil # allow recount later
           end
 
           # User specific limit
           if user_max_tasks > 0
-            user_active_tasks_cnt = CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
+            user_active_tasks_cnt ||= CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
             if user_active_tasks_cnt >= user_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}) Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."
               next # next task
             end
+            user_active_tasks_cnt = nil # allow recount later
           end
 
         end
