@@ -47,7 +47,7 @@ class UsersController < ApplicationController
   def show #:nodoc:
     @user = User.find(params[:id], :include => [:groups, :user_preference])
     
-    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+    cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
     if current_user.has_role? :admin
       @groups = WorkGroup.find(:all)  # used for 'edit' form
@@ -140,7 +140,7 @@ class UsersController < ApplicationController
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     
-    cb_error "You don't have permission to view this page.", home_path unless edit_permission?(@user)
+    cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
     
     params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
     params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
