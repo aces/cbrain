@@ -22,14 +22,14 @@ class BourreauWorker < Worker
   ActiveTasks = [ 'Setting Up', 'Queued', 'On CPU',    # 'New' must NOT be here!
                   'On Hold', 'Suspended',
                   'Data Ready', 'Post Processing',
-                  'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess',
-                  'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess',
+                  'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess', # The Recovering states, not Recover
+                  'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess', # The Restarting states, not Restart
                 ]
 
   # Tasks that are actually moved forward by this worker.
   ReadyTasks = [ 'New', 'Queued', 'On CPU', 'Data Ready',
-                 'Recover Setup', 'Recover Cluster', 'Recover PostProcess',
-                 'Restart Setup', 'Restart Cluster', 'Restart PostProcess',
+                 'Recover Setup', 'Recover Cluster', 'Recover PostProcess', # The Recover states, not Recovering
+                 'Restart Setup', 'Restart Cluster', 'Restart PostProcess', # The Restart states, not Restarting
                ]
 
   # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
@@ -98,15 +98,15 @@ class BourreauWorker < Worker
         # Very recent tasks need to rest a little
         next if task.updated_at > 20.seconds.ago
 
-        # Enforce limit on number of New tasks
-        if task.status == 'New'
+        # Enforce limit on number of New, Recover* or Restart* tasks.
+        if task.status =~ /^(New|Recover.*|Restart.*)$/
 
           # Bourreau global limit
           if bourreau_max_tasks > 0
             bourreau_active_tasks_cnt = CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
-            worker_log.debug "This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
+            worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
             if bourreau_active_tasks_cnt >= bourreau_max_tasks
-              worker_log.debug "New task #{task.bname_tid}: Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
+              worker_log.info "Task #{task.bname_tid} (#{task.status}): Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
               next # next task
             end
           end
@@ -114,9 +114,9 @@ class BourreauWorker < Worker
           # User specific limit
           if user_max_tasks > 0
             user_active_tasks_cnt = CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
-            worker_log.debug "New task #{task.bname_tid}: User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
+            worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
             if user_active_tasks_cnt >= user_max_tasks
-              worker_log.debug "New task #{task.bname_tid}: Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."
+              worker_log.info "Task #{task.bname_tid} (#{task.status}) Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."
               next # next task
             end
           end
