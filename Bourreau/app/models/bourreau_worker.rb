@@ -17,17 +17,32 @@ class BourreauWorker < Worker
 
   Revision_info="$Id$"
 
+  # Tasks that are considered actually active (not necessarily handled by
+  # this worker)
+  ActiveTasks = [ 'Setting Up', 'Queued', 'On CPU',    # 'New' must NOT be here!
+                  'On Hold', 'Suspended',
+                  'Data Ready', 'Post Processing',
+                  'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess',
+                  'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess',
+                ]
+
+  # Tasks that are actually moved forward by this worker.
+  ReadyTasks = [ 'New', 'Queued', 'On CPU', 'Data Ready',
+                 'Recover Setup', 'Recover Cluster', 'Recover PostProcess',
+                 'Restart Setup', 'Restart Cluster', 'Restart PostProcess',
+               ]
+
   # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
   def setup
     ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
-    rr = RemoteResource.current_resource
-    worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
-    @rr_id = rr.id
+    @rr = RemoteResource.current_resource
+    worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.svn_id_rev} start rev. #{@rr.info.starttime_revision}"
+    @rr_id = @rr.id
   end
 
-  # Calls process_task() regularly on any task that is active.
+  # Calls process_task() regularly on any task that is ready.
   def do_regular_work
 
     # Exit if the Bourreau is dead
@@ -39,13 +54,8 @@ class BourreauWorker < Worker
 
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
-    worker_log.debug "Finding list of active tasks."
-    tasks_todo = CbrainTask.find(:all,
-      :conditions => { :status      => [ 'New', 'Queued', 'On CPU', 'Data Ready',
-                                         'Recover Setup', 'Recover Cluster', 'Recover PostProcess',
-                                         'Restart Setup', 'Restart Cluster', 'Restart PostProcess',
-                                       ],
-                       :bourreau_id => @rr_id } )
+    worker_log.debug "Finding list of ready tasks."
+    tasks_todo = CbrainTask.find(:all, :conditions => { :status => ReadyTasks, :bourreau_id => @rr_id } )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode.
@@ -68,23 +78,63 @@ class BourreauWorker < Worker
     end
     @zero_task_found = 0
 
-    # Processes each task in the active list
+    # Get limits from meta data store
+    @rr.meta.reload # reload limits if needed.
+    bourreau_max_tasks = @rr.meta[:task_limit_total].to_i # nil or "" or 0 means infinite
+
+    # Processes each task in the ready list
     by_user = tasks_todo.group_by { |t| t.user_id }
     user_ids = by_user.keys.shuffle # go through users in random order
-    while user_ids.size > 0
-      user_id    = user_ids.pop
+    while user_ids.size > 0  # loop for each user
+      user_id        = user_ids.pop
+      user_max_tasks = @rr.meta["task_limit_user_#{user_id}".to_sym]
+      user_max_tasks = @rr.meta[:task_limit_user_default] if user_max_tasks.blank?
+      user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
+
       task_group = by_user[user_id].shuffle # go through tasks in random order
-      while task_group.size > 0
-        task               = task_group.pop
-        unless task.updated_at > 20.seconds.ago
-          timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
-          Time.use_zone(timezone) do
-            process_task(task) # this can take a long time...
+      while task_group.size > 0 # loop for each task
+        task = task_group.pop
+
+        # Very recent tasks need to rest a little
+        next if task.updated_at > 20.seconds.ago
+
+        # Enforce limit on number of New tasks
+        if task.status == 'New'
+
+          # Bourreau global limit
+          if bourreau_max_tasks > 0
+            bourreau_active_tasks_cnt = CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
+            worker_log.debug "This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
+            if bourreau_active_tasks_cnt >= bourreau_max_tasks
+              worker_log.debug "New task #{task.bname_tid}: Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
+              next # next task
+            end
           end
+
+          # User specific limit
+          if user_max_tasks > 0
+            user_active_tasks_cnt = CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
+            worker_log.debug "New task #{task.bname_tid}: User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
+            if user_active_tasks_cnt >= user_max_tasks
+              worker_log.debug "New task #{task.bname_tid}: Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."
+              next # next task
+            end
+          end
+
         end
+
+        # Alright, move the task along its lifecycle
+        timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
+        Time.use_zone(timezone) do
+          process_task(task) # this can take a long time...
+        end
+
         break if stop_signal_received?
+
       end # each task
+
       break if stop_signal_received?
+
     end # each user
 
   end

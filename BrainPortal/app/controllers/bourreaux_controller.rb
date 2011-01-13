@@ -23,6 +23,8 @@ class BourreauxController < ApplicationController
     
     #For the new form
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    @users    = current_user.available_users
+    @groups   = current_user.available_groups
     @bourreau = Bourreau.new( :user_id   => current_user.id,
                               :group_id  => bourreau_group_id,
                               :online    => true
@@ -88,7 +90,7 @@ class BourreauxController < ApplicationController
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
     
-    @users = current_user.available_users
+    @users  = current_user.available_users
     @groups = current_user.available_groups
 
     sensible_defaults(@bourreau)
@@ -105,8 +107,6 @@ class BourreauxController < ApplicationController
 
     @bourreau = Bourreau.new( fields )
     @bourreau.save
-
-    
 
     if @bourreau.errors.empty?
       flash[:notice] = "Execution Server successfully created."
@@ -138,17 +138,21 @@ class BourreauxController < ApplicationController
     old_dp_cache_dir = @bourreau.dp_cache_dir
     @bourreau.update_attributes(fields)
 
+    @users  = current_user.available_users
+    @groups = current_user.available_groups
     unless @bourreau.errors.empty?
       respond_to do |format|
         format.html do
-          @users  = current_user.available_users
-          @groups = current_user.available_groups
           render :action => 'edit'
         end
         format.xml { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return
     end
+
+    # Adjust task limits, and store them into the meta data store
+    syms_limit_users = @users.map { |u| "task_limit_user_#{u.id}".to_sym }
+    add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default ] + syms_limit_users )
 
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.find(:all, :conditions => { :remote_resource_id => @bourreau.id })
