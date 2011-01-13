@@ -18,6 +18,8 @@ class ControlsController < ApplicationController
 
   Revision_info="$Id$"
 
+  api_available
+
   # The 'show' action responds to only a single ID, 'info',
   # and returns a RemoteResourceInfo record encapsulated
   # into a Control object.

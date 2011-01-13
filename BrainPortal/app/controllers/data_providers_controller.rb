@@ -14,11 +14,14 @@ class DataProvidersController < ApplicationController
 
   Revision_info="$Id$"
 
+  api_available :except => [:disk_usage, :cleanup, :register]
+
   before_filter :login_required
   before_filter :manager_role_required, :only  => [:new, :create]
    
   def index #:nodoc:
     @all_providers = DataProvider.find_all_accessible_by_user(current_user)
+    
     @providers = @all_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
     @providers["CBRAIN Official Storage"] ||= []
     @providers["User Storage"] ||= []
@@ -34,6 +37,7 @@ class DataProvidersController < ApplicationController
                                 )
     respond_to do |format|
       format.html
+      format.xml { render :xml  => @all_providers }
       format.js
     end
   end
@@ -81,7 +85,7 @@ class DataProvidersController < ApplicationController
     
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @provider }
+      format.xml { render :xml => @provider }
     end
   end
   
@@ -106,12 +110,12 @@ class DataProvidersController < ApplicationController
   end
 
   def create #:nodoc:
-    fields    = params[:data_provider]
+    fields    = params[:data_provider] || {}
     subtype   = fields.delete(:type)
 
     errors = {}
   
-    if subtype.empty?
+    if subtype.blank?
       errors[:type] = "must be specified."
       subclass = DataProvider
     else
@@ -136,13 +140,15 @@ class DataProvidersController < ApplicationController
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
 
-  
-    if @provider.errors.empty?
-      flash[:notice] = "Provider successfully created."
-    end 
     
     respond_to do |format|
-      format.js 
+      if @provider.errors.empty?
+        flash[:notice] = "Provider successfully created."
+        format.xml { render :xml  => @provider }
+      else
+        format.xml { render :xml  => @provider.errors, :status  => :unprocessable_entity }
+      end
+      format.js   
     end
   end
 
@@ -154,7 +160,10 @@ class DataProvidersController < ApplicationController
 
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
-       redirect_to :action => :index
+       respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { head :forbidden }
+       end
        return
     end
 
@@ -165,13 +174,18 @@ class DataProvidersController < ApplicationController
 
     if @provider.errors.empty?
       add_meta_data_from_form(@provider, [:must_move, :no_uploads])
-      redirect_to(data_providers_url)
       flash[:notice] = "Provider successfully updated."
+      respond_to do |format|
+        format.html { redirect_to(data_providers_url) }
+        format.xml  { render :xml  => @provider }
+      end   
     else
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
-      render :action => 'edit'
-      return
+      respond_to do |format|
+        format.html { render :action => 'edit' }
+        format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
+      end
     end
   end
 
@@ -184,8 +198,9 @@ class DataProvidersController < ApplicationController
       flash[:error] = "You cannot remove a provider that still has files registered on it."
       @data_provider.errors.add(:base, "You cannot remove a provider that still has files registered on it.")
       respond_to do |format|
-        format.html {redirect_to :action => :show, :id => id}
-        format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}
+        format.html { redirect_to :action => :show, :id => id }
+        format.xml  { render :xml  => @data_provider.errors, :status  => :unprocessable_entity }
+        format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' } }
       end
       return
     end
@@ -199,13 +214,18 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html {redirect_to :action  => :index}
+      format.xml { head :ok }
       format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}
     end
   end
   
   def is_alive #:nodoc:
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)        
-    render :text  => red_if( ! @provider.is_alive?, "Yes", "No" )
+    is_alive =  @provider.is_alive?
+    respond_to do |format|
+      format.html { render :text  => red_if( ! is_alive, "Yes", "No" ) }
+      format.xml { render :xml  => { :is_alive  => is_alive }  }
+    end  
   end
   
   def disk_usage #:nodoc:
@@ -308,6 +328,10 @@ class DataProvidersController < ApplicationController
 
     unless @provider.can_be_accessed_by?(@user) && @provider.is_browsable?
       flash[:error] = "You cannot browse this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }
+      end
       redirect_to :action => :index
       return
     end
@@ -317,8 +341,10 @@ class DataProvidersController < ApplicationController
       @fileinfolist = get_recent_provider_list_all(params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes. 
-
-      redirect_to :action => :index
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml { render :xml  => { :error  =>  flash[:error] }, :status  => :unprocessable_entity}
+      end
       return
     end
 
@@ -378,14 +404,17 @@ class DataProvidersController < ApplicationController
     params[:pagination] ||= "on"
     @per_page = params[:pagination] == "on" ? 50 : 999_999_999
 
-    @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
-      pager.replace(@fileinfolist[(page-1) * @per_page, @per_page])
-      pager.total_entries = @fileinfolist.size
-      pager
+    unless request.format.to_sym == :xml
+      @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
+        pager.replace(@fileinfolist[(page-1) * @per_page, @per_page])
+        pager.total_entries = @fileinfolist.size
+        pager
+      end
     end
     
     respond_to do |format|
       format.html
+      format.xml { render :xml  => @fileinfolist }
       format.js
     end
 

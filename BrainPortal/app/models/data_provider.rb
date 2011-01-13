@@ -238,6 +238,27 @@ class DataProvider < ActiveRecord::Base
       @depth = count
       @depth
     end
+    
+    def to_xml(options = {})
+      require 'builder' unless defined?(Builder)
+    
+      options = options.dup
+      options[:indent] ||= 2
+      options.reverse_merge!({ :builder => Builder::XmlMarkup.new(:indent => options[:indent]),
+                               :root => self.class.name.underscore.dasherize.tr('/', '-') })
+      options[:builder].instruct! unless options.delete(:skip_instruct)
+      root = options[:root].to_s
+    
+      options[:builder].__send__(:method_missing, root) do
+        self.instance_variables.each do |key|
+          key.sub! "@", ""
+          value = self.__send__(key)
+          options[:builder].tag!(key, value)
+        end
+        
+        yield options[:builder] if block_given?
+      end
+    end
   end
 
   # This value is used to trigger DP cache wipes

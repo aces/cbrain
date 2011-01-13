@@ -14,11 +14,18 @@ class CustomFiltersController < ApplicationController
   
   before_filter :login_required
   
+  api_available
+  
   Revision_info="$Id$"
 
   # POST /custom_filters
   # POST /custom_filters.xml
   def create #:nodoc:
+    if params[:filter_class].blank?
+      cb_error "Filter class required", :status  => :unprocessable_entity
+    end
+    params[:data] ||= {}
+    
     filter_class  = Class.const_get("#{params[:filter_class]}".classify)
     @custom_filter = filter_class.new(params[:custom_filter])
     @custom_filter.data.merge! params[:data]
@@ -26,15 +33,13 @@ class CustomFiltersController < ApplicationController
     @custom_filter.user_id = current_user.id
     
     respond_to do |format|
-      format.js
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
-        format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
-        format.xml  { render :xml => @custom_filter, :status => :created, :location => @custom_filter }
+        format.xml  { render :xml => @custom_filter }
       else
-        format.html { render :action => "new" }
         format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       end
+      format.js  
     end
   end
 
@@ -44,11 +49,13 @@ class CustomFiltersController < ApplicationController
     @custom_filter = current_user.custom_filters.find(params[:id])
     filter_name = @custom_filter.name
     
+    params[:custom_filter] ||= {}
+    params[:data] ||= {}
+    
     params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
     @custom_filter.data.merge! params[:data]
     
     respond_to do |format|
-      format.js
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
         if @custom_filter.filtered_class_controller == "userfiles"    
@@ -57,12 +64,11 @@ class CustomFiltersController < ApplicationController
             current_session.userfiles_custom_filters << @custom_filter.name
           end
         end
-        format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
         format.xml  { head :ok }
       else        
-        format.html { render :action => "edit" }
         format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       end
+      format.js
     end
   end
 
@@ -80,7 +86,6 @@ class CustomFiltersController < ApplicationController
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
 
     respond_to do |format|
-      format.html { redirect_to(:controller  => @custom_filter.filtered_class_controller, :action  => :index) }
       format.js
       format.xml  { head :ok }
     end

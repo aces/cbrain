@@ -14,6 +14,8 @@
 class BourreauxController < ApplicationController
 
   Revision_info="$Id$"
+  
+  api_available :except  => :row_data
 
   before_filter :login_required
   before_filter :manager_role_required, :except  => [:index, :show, :row_data]
@@ -116,7 +118,7 @@ class BourreauxController < ApplicationController
       format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'bourreau' }}
       format.xml  do
         if @bourreau.errors.empty?
-          render :xml => @bourreau
+          render :xml => @bourreau 
         else
           render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
         end
@@ -186,7 +188,7 @@ class BourreauxController < ApplicationController
           redirect_to(bourreaux_url)
         end
       end
-      format.xml { render :xml  => @bourreau }
+      format.xml { head :ok }
     end
   end
 
@@ -211,7 +213,7 @@ class BourreauxController < ApplicationController
       format.html { redirect_to :action  => :index }
       format.xml do
         if @bourreau.errors.empty?
-          render :xml => @bourreau
+          head :ok
         else
           render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
         end
@@ -225,10 +227,7 @@ class BourreauxController < ApplicationController
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     active_statuses = CbrainTask::RUNNING_STATUS | CbrainTask::RECOVER_STATUS | CbrainTask::RESTART_STATUS
     @num_running    = CbrainTask.count(:all, :conditions => { :bourreau_id => @remote_resource.id, :status => active_statuses })
-    respond_to do |format|
-      format.html { render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource } }
-      format.xml  { render :nothing  => true, :status  => 400}
-    end
+    render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource }
   end
   
   def refresh_ssh_keys #:nodoc:
@@ -296,7 +295,7 @@ class BourreauxController < ApplicationController
     
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.xml { render :nothing  => true, :status  => 200  }
+      format.xml { head :ok  }
     end  
 
   rescue => e
@@ -332,7 +331,7 @@ class BourreauxController < ApplicationController
     
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.xml { render :nothing  => true, :status  => 200  }
+      format.xml { head :ok  }
     end
 
   rescue => e

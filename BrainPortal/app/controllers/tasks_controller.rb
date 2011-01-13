@@ -14,6 +14,8 @@ class TasksController < ApplicationController
 
   Revision_info="$Id$"
 
+  api_available
+
   before_filter :login_required
 
   def index #:nodoc:   

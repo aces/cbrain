@@ -16,6 +16,8 @@
 class SessionsController < ApplicationController
 
   Revision_info="$Id$"
+  
+  api_available
 
   def create #:nodoc:
     self.current_user = User.authenticate(params[:login], params[:password])

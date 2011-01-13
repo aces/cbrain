@@ -27,6 +27,7 @@ class ApplicationController < ActionController::Base
   before_filter :set_session
   before_filter :password_reset
   before_filter :adjust_system_time_zone
+  before_filter :api_validity_check
   around_filter :catch_cbrain_message, :activate_user_time_zone
     
   # See ActionController::RequestForgeryProtection for details
@@ -136,8 +137,8 @@ class ApplicationController < ActionController::Base
       end
       respond_to do |format|
         format.html { redirect_to cbm.redirect || default_redirect }
-        format.js   { render :partial  => "shared/flash_update" } 
-        format.xml  { render :xml => {:error  => cbm.message}, :status => :unprocessable_entity }
+        format.js   { render :partial  => "shared/flash_update", :status  => cbm.status } 
+        format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
       end
     rescue => e
       raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
@@ -232,7 +233,10 @@ class ApplicationController < ActionController::Base
   
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
-      render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status)
+    respond_to do |format|
+      format.html { render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status) }
+      format.xml  { head status }
+    end 
   end
   
   #################################################################################
@@ -373,6 +377,62 @@ class ApplicationController < ActionController::Base
       color = "style=\"color:#{color}\""
     end
     return "<span #{color}>#{string}</span>"
+  end
+  
+  #Directive to be used in controllers to make
+  #actions available to the API
+  def self.api_available(actions = :all)
+    @api_action_code = actions
+  end
+  
+  def self.api_actions #:nodoc:
+    unless @api_actions
+      @api_actions ||= []
+      actions = @api_action_code || :none
+      case actions
+      when :all
+        @api_actions = self.instance_methods(false).map(&:to_sym)
+      when :none
+        @api_actions = []
+      when Symbol
+        @api_actions = [actions]
+      when Array
+        @api_actions = actions.map(&:to_sym)
+      when Hash
+        if actions[:only]
+          only_available = actions[:only]
+          only_available = [only_available] unless only_available.is_a?(Array)
+          only_available.map!(&:to_sym)
+          @api_actions = only_available
+        elsif actions[:except]
+          unavailable = actions[:except]
+          unavailable = [unavailable] unless unavailable.is_a?(Array)
+          unavailable.map!(&:to_sym)
+          @api_actions = self.instance_methods(false).map(&:to_sym) - unavailable
+        end
+      else
+        if actions.respond_to?(:to_sym)
+          @api_actions << actions.to_sym
+        else
+          cb_error "Invalid action definition: #{actions}."
+        end
+      end
+    end
+    
+    @api_actions
+  end
+
+  #Before filter that checks that blocks certain actions
+  #from the API
+  def api_validity_check
+    if request.format.to_sym == :xml
+      valid_actions = self.class.api_actions || []
+      current_action = params[:action].to_sym
+      
+      unless valid_actions.include? current_action
+        render :xml => {:error  => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}"}, :status  => :bad_request 
+      end
+    end
   end
 
   # Utility method that allows a controller to add

@@ -16,6 +16,8 @@ class UserfilesController < ApplicationController
 
   Revision_info="$Id$"
 
+  api_available
+
   before_filter :login_required
   around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider]
 
