@@ -57,6 +57,8 @@
 <fieldset>
 <legend>Input fields validation tests:</legend>
 
+<%= form.params_hidden_field :do_validations %>
+
 <p>
 <strong>This text field must contain a odd number:</strong>
 <%= form.params_text_field :inptest_text_odd_number %>

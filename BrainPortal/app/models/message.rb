@@ -272,7 +272,11 @@ class Message < ActiveRecord::Base
     arr = string.split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context
-      arr[i].sub!(/\[\[(.+?)\]\[(.+?)\]\]/, "<a href=\"\\2\" class=\"action_link\">\\1</a>") # parse markup
+      next unless arr[i] =~ /\[\[(.+?)\]\[(.+?)\]\]/
+      name = Regexp.last_match[1]
+      link = Regexp.last_match[2]
+      link.sub!("/tasks/show/","/tasks/")  # adjustment to old URL API for tasks
+      arr[i] = "<a href=\"#{link}\" class=\"action_link\">#{name}</a>"
     end
     arr.join
   end

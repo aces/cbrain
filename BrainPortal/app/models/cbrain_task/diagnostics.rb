@@ -48,6 +48,7 @@ class CbrainTask::Diagnostics < PortalTask
 
     :refresh_count         => 0,
 
+    :do_validations          => 'Yes',
     :inptest_text_odd_number => "1",
     :inptest_checkbox_1      => "1",
     :inptest_checkbox_2      => "0",
@@ -135,6 +136,8 @@ class CbrainTask::Diagnostics < PortalTask
 
   def validate_input_fields #:nodoc:
     params     = self.params
+
+    return true if params[:do_validations].blank?
 
     odd = params[:inptest_text_odd_number] || "0"
     cb1 = params[:inptest_checkbox_1]      || "0"
