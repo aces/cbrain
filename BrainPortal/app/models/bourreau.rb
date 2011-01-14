@@ -67,10 +67,17 @@ class Bourreau < RemoteResource
   # and the "-p port" option will be set to the value
   # of *tunnel_actres_port* instead of *actres_port*
   def start
-    self.operation_messages = "Not configured for remote control."
+    self.operation_messages = "Unknown internal error."
 
-    return false unless self.has_remote_control_info?
-    return false unless RemoteResource.current_resource.is_a?(BrainPortal)
+    unless self.has_remote_control_info?
+      self.operation_messages = "Not configrued for remote control."
+      return false
+    end
+
+    unless RemoteResource.current_resource.is_a?(BrainPortal)
+      self.operation_messages = "Only a Portal can start a Bourreau."
+      return false
+    end
 
     unless self.start_tunnels
       self.operation_messages = "Could not start the SSH master connection."
@@ -98,7 +105,10 @@ class Bourreau < RemoteResource
 
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
-    return true if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
+    if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
+      self.operation_messages = "Execution Server #{self.name} started."
+      return true
+    end
     self.operation_messages = "Remote control command failed\n" +
                               "Command: #{start_command}\n" +
                               "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"

@@ -67,10 +67,11 @@ class SshMaster
   # remote host (there can only be a single master for
   # each triplet [user,host,port] so we might as well remember
   # the objects in the class).
-  def self.find(remote_user,remote_host,remote_port=22,category=nil)
+  def self.find(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
     remote_port ||= 22
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
     key = "#{category}/#{key}" if category && category.to_s =~ /^\w+$/
+    key = "#{key}/#{uniq}"     if uniq && uniq.to_s =~ /^\w+$/
     ssh_masters = self.ssh_master_cache
     ssh_masters[key]
   end
@@ -88,15 +89,20 @@ class SshMaster
 
   # This method is like find() except that it will create
   # the necessary control object if necessary.
-  def self.find_or_create(remote_user,remote_host,remote_port=22,category=nil)
+  def self.find_or_create(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
     remote_port ||= 22
-    masterobj = self.find(remote_user,remote_host,remote_port,category) ||
-                self.new( remote_user,remote_host,remote_port,category)
+    masterobj = self.find(remote_user,remote_host,remote_port,category,uniq) ||
+                self.new( remote_user,remote_host,remote_port,category,uniq)
     masterobj
   end
 
-  # Works like find, but expect a single key
+  # Works like find, but expect a single +key+
   # in a format like "user@host:port".
+  # If a +category+ string was supplied when initializing
+  # the object, the format of the key is "category/user@host:port".
+  # If a +uniq+ string was supplied when initlializing
+  # the object, the format of the key is "user@host:port/uniq".
+  # If both were supplied, the key is "category/user@host:port/uniq"
   def self.find_by_key(key)
     ssh_masters = self.ssh_master_cache
     ssh_masters[key]
@@ -129,7 +135,7 @@ class SshMaster
   # find() class method. This means that projects using
   # this library do not have to save the control object
   # anywhere.
-  def initialize(remote_user,remote_host,remote_port=22,category=nil)
+  def initialize(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
 
     remote_port ||= 22
     if remote_port && remote_port.is_a?(String)
@@ -148,14 +154,17 @@ class SshMaster
       remote_port.is_a?(Fixnum) && remote_port > 0 && remote_port < 65535
     raise "SSH master's \"category\" is not a simple identifer." unless
       category.nil? || (category.is_a?(String) && category =~ /^\w+$/)
+    raise "SSH master's \"uniq\" is not a simple identifer." unless
+      uniq.nil? || (uniq.is_a?(String) && uniq =~ /^\w+$/)
 
     @user     = remote_user
     @host     = remote_host
     @port     = remote_port
     @category = category
+    @uniq     = uniq
 
     raise "This master spec is already registered with the class." if
-      self.class.find(@user,@host,@port,@category)
+      self.class.find(@user,@host,@port,@category,@uniq)
 
     @pid             = nil
     @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
@@ -163,7 +172,8 @@ class SshMaster
 
     # Register it
     @simple_key = @key = "#{@user}@#{@host}:#{@port}"
-    @key = "#{@category}/#{@key}" if @category && @category.to_s =~ /^\w+$/
+    @key        = "#{@category}/#{@key}" if @category && @category.to_s =~ /^\w+$/
+    @key        = "#{@key}/#{@uniq}"     if @uniq     && @uniq.to_s     =~ /^\w+$/
     ssh_masters = self.ssh_master_cache
     ssh_masters[@key] = self
     debugTrace("Registering SSH master: #{@key}")
@@ -466,15 +476,15 @@ class SshMaster
     stdout      = bash_redirection(options,1,">",:stdout)
     stderr      = bash_redirection(options,2,">",:stderr)
 
-    ssh_command =  "ssh -x #{shared_opts} #{command} #{stderr}"
-    ssh_command += " #{stdin}"  if direction == 'r'
-    ssh_command += " #{stdout}" if direction == 'w'
+    ssh_command  = "ssh -x #{shared_opts} #{command} #{stderr}"
+    ssh_command += " #{stdin}"  if direction == 'r' # with or without block
+    ssh_command += " #{stdout}" if direction == 'w' # with or without block
 
     if block_given? then
       IO.popen(ssh_command, direction) { |io| yield(io) }
     else
-      ssh_command += " #{stdout}" if direction == 'r'
-      ssh_command += " #{stdin}"  if direction == 'w'
+      ssh_command += " #{stdout}" if direction == 'r' # the 'other' direction
+      ssh_command += " #{stdin}"  if direction == 'w' # the 'other' direction
       system(ssh_command)
     end
     true    
@@ -494,7 +504,9 @@ class SshMaster
 
   # Returns the path to the SSH ControlPath socket.
   def control_path #:nodoc:
-    simple_base = base = "ssh_ctrl.#{@simple_key}"
+    simple_base = "ssh_ctrl.#{@simple_key}"
+    simple_base = "#{simple_base}_#{@uniq}" if @uniq
+    base      = simple_base
     base      = "#{@category}/#{simple_base}" if @category
     sock_dir  = "#{CONTROL_SOCKET_DIR_1}"
     sock_path = "#{sock_dir}/#{base}" # prefered location
@@ -587,9 +599,9 @@ class SshMaster
 
   # Checks that the current instance is the one registered
   def properly_registered? #:nodoc:
-    found = self.class.find(@user,@host,@port,@category)
-    raise "This SSh master is no longer registered with the class." unless found
-    raise "This SSh master object does not match the object registered in the class!" if
+    found = self.class.find(@user,@host,@port,@category,@uniq)
+    raise "This SSH master is no longer registered with the class." unless found
+    raise "This SSH master object does not match the object registered in the class!" if
       found.object_id != self.object_id
     true
   end

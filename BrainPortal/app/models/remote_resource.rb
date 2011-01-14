@@ -206,7 +206,9 @@ class RemoteResource < ActiveRecord::Base
   # for this RemoteResource. The method does not start it, if
   # it's created.
   def ssh_master
-    master = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,self.class.to_s)
+    category = "#{self.class}"
+    uniq     = "#{self.id}"
+    master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22, category, uniq)
     master
   end
 

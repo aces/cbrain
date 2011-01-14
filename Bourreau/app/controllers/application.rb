@@ -7,6 +7,11 @@ class ApplicationController < ActionController::Base #:nodoc:
 
   helper :all # include all helpers, all the time  
 
+  # Patch
+  def self.api_available #:nodoc:
+    true
+  end
+
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   #protect_from_forgery # :secret => '1ffec2733b8e6fe4baef5e8b84db95b8'
