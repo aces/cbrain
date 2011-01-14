@@ -336,6 +336,17 @@ jQuery(
       return false;
    });
    
+   jQuery(".confirm_link").live("click", function(){
+     var confirm_message = jQuery(this).attr('data-confirm');
+     
+     if(confirm_message){
+       if(!confirm(confirm_message)){
+         return false;
+       };
+     }
+     return true;
+   });
+   
    //Allows for the creation of form submit buttons that can highjack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
