@@ -35,14 +35,20 @@ class ToolsController < ApplicationController
     
     @tool = current_user.available_tools.find(params[:current_value])
     @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
+    @bourreaux.reject! do |b|
+      tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => @tool.id, :bourreau_id => b.id })
+      ! ( tool_configs.detect { |tc| tc.can_be_accessed_by?(current_user) } ) # need at least one config available for user
+    end
     
     respond_to do |format|
       format.html do 
+        random_exec_prompt = @bourreaux.size > 1 ? { :include_blank  => "Random Execution Server" } : {}
         render :text  => ApplicationController.helpers.bourreau_select("bourreau_id", 
-                                                                         {:selector  => current_user.user_preference.bourreau_id.to_s,
-                                                                          :bourreaux  => @bourreaux},
-                                                                         {:include_blank  => "Random Selection"}
-                                                                        )
+                            { :selector  => current_user.user_preference.bourreau_id.to_s,
+                              :bourreaux  => @bourreaux
+                            },
+                            random_exec_prompt
+                         )
       end
       format.xml  { render :xml => @bourreaux }
     end

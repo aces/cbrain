@@ -1,3 +1,6 @@
+
+<% title "Account Info"%>
+
 <% 
  stats = ApplicationController.helpers.gather_filetype_statistics(
            :users     => @user.available_users,
@@ -10,8 +13,6 @@
 
 
 <%= javascript_tag "var current_options = null;" %>
-
-<% title "Account Info"%>
 
 <h2>Account details for <%= h @user.full_name %></h2>
 

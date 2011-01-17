@@ -620,7 +620,7 @@ class TasksController < ApplicationController
       bourreau_name   = bourreau.name
       my_tool_configs = all_tool_configs.select { |tc| tc.bourreau_id == bourreau.id }
       pairlist        = []
-      if my_tool_configs.size == 0
+      if my_tool_configs.size == 0 # this case should no longer happen using the interface.
         pairlist << [ "Default", "#{bourreau.id}," ] # the comma is important in the string!
       else
         my_tool_configs.each do |tc|
@@ -628,7 +628,9 @@ class TasksController < ApplicationController
           pairlist << [ desc, "#{bourreau.id},#{tc.id}" ]
         end
       end
-      @tool_configs_select << [ "On #{bourreau_name}:", pairlist ]
+      #if pairlist.size > 0
+        @tool_configs_select << [ "On #{bourreau_name}:", pairlist ]
+      #end
     end
 
   end

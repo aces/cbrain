@@ -1,4 +1,6 @@
 
+<% title 'Welcome' %>
+
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
 
 <% if current_user.has_role?(:admin) %>
