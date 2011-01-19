@@ -44,12 +44,12 @@
       <% tcs = ToolConfig.find(:all, :conditions => { :tool_id => tool.id, :bourreau_id => bourreau.id }) %>
       <% if tcs.size == 0 %>
         <tr class="<%= cycle("list-odd", "list-even") %>">
-          <td class="left_align">
+          <td class="left_align no_wrap">
             <%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %>
             in project '<%= link_to_group_if_editable(bourreau.group) %>'
           </td>
           <td><%= red_if(! tool.bourreaux.include?(bourreau), "Yes", "NO!") %></td>
-          <td class="left_align"><%= red_if(true,"No versions configured") %></td>
+          <td class="left_align no_wrap"><%= red_if(true,"No versions configured") %></td>
           <td class="left_align"><%= red_if(true,"-") %></td>
           <td class="left_align"><%= red_if(true,"-") %></td>
         </tr>
@@ -57,18 +57,18 @@
       <% tcs.each_with_index do |tc,idx| %>
         <tr class="<%= cycle("list-odd", "list-even") %>">
         <% if idx == 0 %>
-          <td rowspan="<%= tcs.size %>" class="left_align">
+          <td rowspan="<%= tcs.size %>" class="left_align no_wrap">
             <%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %>
             in project '<%= link_to_group_if_editable(bourreau.group) %>'
           </td>
           <td rowspan="<%= tcs.size %>"><%= red_if(! tool.bourreaux.include?(bourreau), "Yes", "NO!") %></td>
         <% end %>
-          <td class="left_align">
+          <td class="left_align no_wrap">
             <% header,body = split_description(tc.description) %>
             <%= link_to header, edit_tool_config_path(tc) %>
             in project '<%= link_to_group_if_editable(tc.group) %>'
           </td>
-          <td class="left_align">
+          <td class="left_align no_wrap">
             <%
                projs = [ bourreau.group, tool.group, tc.group ]
                projs.reject! { |g| g.name == 'everyone' }
