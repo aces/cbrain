@@ -10,7 +10,9 @@
       <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
     </span>
             
-    <%= link_to 'Manage Tools', {:controller => "tools",  :action => "tool_management"}, :class => " button" %>
+    <%= link_to 'Manage Tools', { :controller => :tools, :action => :tool_management }, :class => " button" %>
+
+    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => " button" %>
 
   <% end %>
 
@@ -29,7 +31,7 @@
     <th>Project</th>
     <th>Execution Server &amp; Versions</th>
     <% if current_user.has_role?(:admin) %>
-      <th colspan="2">Operations</th>
+      <th colspan="3">Operations</th>
     <% end %>
     <th colspan ="2">Help/Info</th>
   </tr>

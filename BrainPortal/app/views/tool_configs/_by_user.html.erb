@@ -1,0 +1,185 @@
+
+<%
+# Partial variables needed here:
+#   user      => a user object
+#   bourreaux => list of bourreaux
+#   tools     => list of tools
+%>
+
+<fieldset>
+
+  <legend>
+      User: <%= link_to_user_with_tooltip user %>
+  </legend>
+
+  <strong>Member Of Editable Projects:</strong><p/>
+  <% user_projs = user.groups.select { |g| g.is_a?(WorkGroup) || g.is_a?(InvisibleGroup) }.sort { |a,b| a.name <=> b.name } %>
+  <% user_projs_links = user_projs.map { |g| link_to_group_if_editable(g) } %>
+  <%= array_to_table(user_projs_links, :rows => 1) { |link,r,c| link } %>
+
+  <p/>
+
+  <% cycle("list-odd", "list-even") if cycle("list-odd", "list-even") == 'list-odd' %>
+
+  <strong>Execution Servers Access:</strong><br/>
+  <table>
+    <tr>
+      <th>Execution Server</th>
+      <th>Server's Project</th>
+      <th>Accessible To User?</th>
+    </tr>
+    <% bourreaux.each do |bourreau| %>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+      <td><%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %></td>
+      <td><%= link_to_group_if_editable(bourreau.group) %></td>
+      <td><%= red_if(! bourreau.can_be_accessed_by?(user), "Yes", "NO!") %></td>
+    </tr>
+    <% end %>
+  </table>
+
+  <p/>
+
+  <% cycle("list-odd", "list-even") if cycle("list-odd", "list-even") == 'list-odd' %>
+
+  <strong>Tool Access Summary:</strong><br/>
+  <table>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+      <th class="subtitle" colspan="3">Tool Summary</th>
+      <th class="subtitle" colspan="<%= bourreaux.size %>">Number Of Versions Accessible, Per Server</th>
+    </tr>
+    <tr>
+      <th>Tool</th>
+      <th>Tool's Project</th>
+      <th>Accessible To User?</th>
+      <% bourreaux.each do |bourreau| %>
+        <th><%= bourreau.name %></th>
+      <% end %>
+    </tr>
+    <% tools.each do |tool| %>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+      <td><%= link_to tool.name, edit_tool_path(tool) %></td>
+      <td><%= link_to_group_if_editable(tool.group) %></td>
+      <td><%= red_if(! tool.can_be_accessed_by?(user), "Yes", "NO!") %></td>
+      <% bourreaux.each do |bourreau| %>
+        <%
+          tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => tool.id })
+          if bourreau.can_be_accessed_by?(user) && tool.can_be_accessed_by?(user)
+            tcs_ok = tcs.count { |tc| tc.can_be_accessed_by?(user) }
+          else
+            tcs_ok = 0
+          end
+          tcs_bad = tcs.size - tcs_ok
+        %>
+        <td>
+          <% if tcs_bad == 0 && tcs_ok == 0 %>
+            <%= red_if(true,"-") %>
+          <% elsif tcs_bad == 0 %>
+            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => 'green') %>
+          <% elsif tcs_ok == 0 %>
+            <%= red_if(true,"#{tcs_bad} NO") %>
+          <% else %>
+            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => 'green') %>,
+            <%= red_if(true,"#{tcs_bad} NO") %>
+          <% end %>
+        </td>
+      <% end %>
+    </tr>
+    <% end %>
+  </table>
+
+  <p/>
+
+  <% cycle("list-odd", "list-even") if cycle("list-odd", "list-even") == 'list-odd' %>
+
+  <strong>Tool Versions Access Details:</strong><br/>
+
+  <table>
+    <tr>
+      <th>Execution Server</th>
+      <th>Tool</th>
+      <th>Tool Version</th>
+      <th>Effective Project</th>
+      <th>Accessible To User?</th>
+    </tr>
+    <% bourreaux.each_with_index do |bourreau,bidx| %>
+      <% next unless true || bourreau.can_be_accessed_by?(user) %>
+      <% bourreau_tools = (bourreau.tools & tools).select { |t| t.can_be_accessed_by?(user) } %>
+<% bourreau_tools = tools %>
+      <% next unless true || bourreau_tools.size > 0 %>
+      <%
+         tot_tcs = 0; tool2tcs = {};
+         bourreau_tools.each do |t|
+           tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => t.id })
+           #tot_tcs += tcs.size
+tot_tcs += tcs.size > 0 ? tcs.size : 1
+           tool2tcs[t] = tcs
+         end
+      %>
+      <% bourreau_tools.each_with_index do |tool,tidx| %>
+        <% tcs = tool2tcs[tool] %>
+        <% if tcs.size == 0 %>
+          <tr class="<%= cycle("list-odd", "list-even") %>">
+            <% if tidx == 0 %>
+            <td class="left_align" rowspan="<%= tot_tcs %>">
+              <%= link_to_bourreau_if_accessible(bourreau) %>
+              in project '<%= link_to_group_if_editable(bourreau.group) %>'
+            </td>
+            <% end %>
+            <td class="left_align">
+              <%= link_to tool.name, edit_tool_path(tool) %>
+              in project '<%= link_to_group_if_editable(tool.group) %>'
+            </td>
+            <td class="left_align"><%= red_if(true,"No versions configured") %></td>
+            <td class="left_align"><%= red_if(true,"-") %></td>
+            <td><%= red_if(true,"-") %></td>
+          </tr>
+        <% end %>
+        <% tcs.each_with_index do |tc,tcidx| %>
+          <tr class="<%= cycle("list-odd", "list-even") %>">
+          <% if tidx == 0 && tcidx == 0 %>
+            <td class="left_align" rowspan="<%= tot_tcs %>">
+              <%= link_to_bourreau_if_accessible(bourreau) %>
+              in project '<%= link_to_group_if_editable(bourreau.group) %>'
+            </td>
+          <% end %>
+          <% if tcidx == 0 %>
+            <td class="left_align" rowspan="<%= tcs.size %>">
+              <%= link_to tool.name, edit_tool_path(tool) %>
+              in project '<%= link_to_group_if_editable(tool.group) %>'
+            </td>
+          <% end %>
+          <td class="left_align">
+              <% header,body = split_description(tc.description) %>
+              <%= link_to header, edit_tool_config_path(tc) %>
+              in project '<%= link_to_group_if_editable(tc.group) %>'
+          </td>
+          <td class="left_align">
+            <%
+               projs = [ bourreau.group, tool.group, tc.group ]
+               projs.reject! { |g| g.name == 'everyone' }
+            %>
+            <% if projs.size == 0 %>
+              <%= red_if(true,"'everyone'",nil,:color2 => 'green') %>
+            <% else %>
+              <% links = projs.map { |g| link_to_group_if_editable(g) } %>
+              <%= links.join(" &amp; ") %>
+            <% end %>
+          </td>
+          <td>
+            <% if bourreau.can_be_accessed_by?(user) && tool.can_be_accessed_by?(user) && tc.can_be_accessed_by?(user) %>
+              <%= red_if(true, "Yes", nil, :color2 => 'green') %>
+            <% else %>
+              <% html_tool_tip(red_if(true,"NO!")) do %>
+                <%= "* Execution Server's project<br/>"      unless bourreau.can_be_accessed_by?(user) %>
+                <%= "* Tool's project<br/>"                  unless tool.can_be_accessed_by?(user) %>
+                <%= "* Version configuration's project<br/>" unless tc.can_be_accessed_by?(user) %>
+              <% end %>
+            <% end %>
+          </td>
+        <% end %>
+      <% end %>
+    <% end %>
+  </table>
+
+</fieldset>
+

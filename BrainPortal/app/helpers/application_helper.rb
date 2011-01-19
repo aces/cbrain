@@ -73,14 +73,22 @@ module ApplicationHelper
     "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;"
   end
 
+
+  # Splits a description into a header and a body; both are returned as strings
+  # in a two-element array.
+  def split_description(description="")
+    return [ "", "" ] if description.blank?
+    raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
+    header = Regexp.last_match[1].strip
+    body   = Regexp.last_match[2].strip
+    return [ header, body ]
+  end
+
   # Takes a +description+ (a string with possibly multiple lines) and shows
   # the first line only; other lines if present will be made accessible
   # through a link called '(more)' which launches an overlay.
   def overlay_description(description=nil, options={})
-    return "" if description.blank?
-    raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
-    header = Regexp.last_match[1].strip
-    body   = Regexp.last_match[2].strip
+    header,body    = split_description(description)
     cropped_header = crop_text_to(options[:header_width] || 50,header)
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 

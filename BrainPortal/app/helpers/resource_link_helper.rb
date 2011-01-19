@@ -108,6 +108,18 @@ module ResourceLinkHelper
     link_to_model_if_accessible(Group,group,:name,cur_user,options)
   end
 
+  # This method works like link_to_group_if_accessible() except that
+  # the link is created only if the group is a WorkGroup or
+  # an InvisibleGroup. The first argument MUST be an actual group.
+  # The link created will be to the edit page of the group.
+  def link_to_group_if_editable(group, cur_user = current_user, options = {})
+    if group.is_a?(WorkGroup) || group.is_a?(InvisibleGroup)
+      link_to_group_if_accessible(group, cur_user, options.dup.merge(:path => edit_group_path(group)))
+    else
+      group.name
+    end
+  end
+
   # Creates a link to the show page of a +site+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is
   # current_user.

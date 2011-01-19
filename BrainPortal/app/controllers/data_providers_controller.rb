@@ -598,7 +598,7 @@ class DataProvidersController < ApplicationController
         if num_err > 0
           Message.send_message(current_user, 
                                 :message_type   => 'error', 
-                                :header         => "#{num_ok} files FAILED to be #{past_tense} during registration. See report below.",
+                                :header         => "#{num_err} files FAILED to be #{past_tense} during registration. See report below.",
                                 :variable_text  => errors
                                 )
         end

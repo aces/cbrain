@@ -14,6 +14,37 @@ class ToolConfigsController < ApplicationController
   before_filter :login_required
   before_filter :admin_role_required
 
+  # Only accessible to the admin user.
+  def index #:nodoc:
+    if params[:user_id].blank?
+      @users       = User.all
+    else
+      @users       = [ User.find(params[:user_id]) ]
+      @view        = 'by_user'
+    end
+
+    if params[:bourreau_id].blank?
+      @bourreaux   = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }
+    else
+      @bourreaux   = [ Bourreau.find(params[:bourreau_id]) ]
+      @view      ||= 'by_bourreau'
+    end
+
+    if params[:tool_id].blank?
+      @tools       = Tool.all
+    else
+      @tools       = [ Tool.find(params[:tool_id]) ]
+      @view      ||= 'by_tool'
+    end
+
+    @view ||= ((params[:view] || "") =~ /(by_bourreau|by_user|by_tool)/) ?
+               Regexp.last_match[1] : 'none'
+
+    @users     = @users.sort     { |a,b| a.login <=> b.login }
+    @bourreaux = @bourreaux.sort { |a,b| a.name <=> b.name }
+    @tools     = @tools.sort     { |a,b| a.name <=> b.name }
+  end
+
   def show #:nodoc:
     id     = params[:id]
     config = ToolConfig.find(id)

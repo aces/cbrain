@@ -33,10 +33,10 @@
       <% if @filter_params["details"] == 'on'  %>
         <th>Description</th>
       <% end %>
-      <th colspan="4">Operations</th>
+      <th colspan="5">Operations</th>
   </tr>
 
-  <% numcol = @filter_params["details"] == 'on' ? 17 : 12 %>
+  <% numcol = @filter_params["details"] == 'on' ? 18 : 13 %>
 
   <% for bour in @bourreaux %>
     <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 

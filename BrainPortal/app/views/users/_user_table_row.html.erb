@@ -19,7 +19,9 @@
   <td><%= h(user.time_zone || "(Unset)") %></td>
   <td><%= h user.userfiles.count %></td>
   <td><%= h user.cbrain_tasks.count %></td>
-  <% unless user.login == 'admin' %>
+  <% if user.login == 'admin' %>
+    <td colspan="2"></td>
+  <% else %>
     <td>
       <%= 
            delete_button 'Delete', user_path(user), :class  => "action_link", 
@@ -28,9 +30,8 @@
                                                     :target_text  => "<td colspan='11' style='color:red; text-align:center'>Deleting...</td>"
       %>
     </td>
-    <td><%= link_to 'Switch', switch_user_path(user), :class => 'action_link', :method  => :post %></td>
-  <% else %>
-    <td colspan="2"></td>
+    <td><%= link_to 'Switch',  switch_user_path(user), :class => 'action_link', :method  => :post %></td>
   <% end %>
+  <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => user.id }, :class => 'action_link' %></td>
 </tr>
 

@@ -64,7 +64,13 @@
     <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link', :method  => :post %></td>
   <% end %>
 
+  <% if isbourreau %>
+    <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bour.id }, :class => 'action_link' %></td>
+  <% else %>
+    <td></td>
+  <% end %>
+
 <% else %>
-  <td colspan="4"></td>
+  <td colspan="5"></td>
 <% end %>
 
