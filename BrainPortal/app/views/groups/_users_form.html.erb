@@ -39,13 +39,13 @@
 %>
 
   <% if current_user.has_role? :admin %>
+    <p>
     Make this a system group invisible to normal users:
     <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
-    <p>
+    <p/>
   <% end %>
 
   <label>Users in project:</label>
-
   <% array_to_table(@users,
       :cols        => 5,
       :table_class => 'button_table',
@@ -68,7 +68,6 @@
   <br/>
 
   <label>Quick select based on other work Projects:</label>
-
   <% array_to_table(@other_work_groups,
       :cols        => 5,
       :table_class => 'button_table',
@@ -93,7 +92,6 @@
   <br/>
 
   <label>Quick select based on other site Projects:</label>
-
   <% array_to_table(@other_site_groups,
       :cols        => 5,
       :table_class => 'button_table',

@@ -54,8 +54,31 @@
 
 <p>
 
-<h5>By User (or <%= link_to "all of them", :action => :index, :view => 'by_user' %>)</h5>
+<h5>By User</h5>
 <% array_to_table(User.all.sort { |a,b| a.login <=> b.login }, :table_class => 'simple' ) do |user,r,c| %>
   <%= link_to user.login, :action => :index, :user_id => user.id %>
+<% end %>
+
+<p>
+
+<h5>By a more specific combinations of resources</h5>
+
+<% form_tag( { :action => :index }, :method => :get) do %>
+
+Execution Server:
+<%= bourreau_select :bourreau_id, { :selector => (params[:bourreau_id] || "") }, { :include_blank => '(All servers, or...)' } %>
+
+Tool:
+<% toollist = Tool.all.sort { |a,b| a.name <=> b.name } %>
+<%= select_tag :tool_id, options_for_select( [ [ "(All tools, or...)", "" ] ] + (toollist.collect { |t| [ t.name, t.id.to_s ] } ), params[:tool_id] ) %>
+
+User:
+<%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => '(All users, or...)' } %>
+
+View By:
+<%= select_tag :view, options_for_select( [ [ "(Pick best)", "" ], [ 'By Server', 'by_bourreau' ], [ 'By Tool', 'by_tool' ], [ 'By User', 'by_user' ] ], params[:view] ) %>
+
+<%= submit_tag "Get report!" %>
+
 <% end %>
 

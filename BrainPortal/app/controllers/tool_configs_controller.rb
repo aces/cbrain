@@ -16,33 +16,39 @@ class ToolConfigsController < ApplicationController
 
   # Only accessible to the admin user.
   def index #:nodoc:
-    if params[:user_id].blank?
+
+    @view ||= ((params[:view] || "") =~ /(by_bourreau|by_user|by_tool)/) ?
+               Regexp.last_match[1] : nil
+
+    if params[:user_id].blank? || params[:user_id].to_s !~ /^\d+$/
       @users       = User.all
     else
-      @users       = [ User.find(params[:user_id]) ]
-      @view        = 'by_user'
+      @users       = [ User.find(params[:user_id].to_s) ]
+      @view      ||= 'by_user'
     end
 
-    if params[:bourreau_id].blank?
+    if params[:bourreau_id].blank? || params[:bourreau_id].to_s !~ /^\d+$/
       @bourreaux   = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }
     else
-      @bourreaux   = [ Bourreau.find(params[:bourreau_id]) ]
+      @bourreaux   = [ Bourreau.find(params[:bourreau_id].to_s) ]
       @view      ||= 'by_bourreau'
     end
 
-    if params[:tool_id].blank?
+    if params[:tool_id].blank? || params[:tool_id].to_s !~ /^\d+$/
       @tools       = Tool.all
     else
-      @tools       = [ Tool.find(params[:tool_id]) ]
+      @tools       = [ Tool.find(params[:tool_id].to_s) ]
       @view      ||= 'by_tool'
     end
-
-    @view ||= ((params[:view] || "") =~ /(by_bourreau|by_user|by_tool)/) ?
-               Regexp.last_match[1] : 'none'
 
     @users     = @users.sort     { |a,b| a.login <=> b.login }
     @bourreaux = @bourreaux.sort { |a,b| a.name <=> b.name }
     @tools     = @tools.sort     { |a,b| a.name <=> b.name }
+
+    # Limit the by_user report to at most 3 users...
+    if @view == 'by_user' && @users.size > 3
+      @users = @users[0..2]
+    end
   end
 
   def show #:nodoc:

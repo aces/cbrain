@@ -431,8 +431,8 @@ h1.warning {
    text-align: right;
 }
 
- .centered {
-   text-align: center;
+.centered {
+   text-align: center !important;
 }
 
 .small {

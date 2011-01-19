@@ -44,8 +44,8 @@
   <strong>Tool Access Summary:</strong><br/>
   <table>
     <tr class="<%= cycle("list-odd", "list-even") %>">
-      <th class="subtitle" colspan="3">Tool Summary</th>
-      <th class="subtitle" colspan="<%= bourreaux.size %>">Number Of Versions Accessible, Per Server</th>
+      <th class="subtitle centered" colspan="3">Tool Summary</th>
+      <th class="subtitle centered" colspan="<%= bourreaux.size %>">Number Of Versions Accessible, Per Server</th>
     </tr>
     <tr>
       <th>Tool</th>
@@ -61,6 +61,9 @@
       <td><%= link_to_group_if_editable(tool.group) %></td>
       <td><%= red_if(! tool.can_be_accessed_by?(user), "Yes", "NO!") %></td>
       <% bourreaux.each do |bourreau| %>
+
+        <% tool_enabled = tool.bourreaux.include?(bourreau) %>
+
         <%
           tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => tool.id })
           if bourreau.can_be_accessed_by?(user) && tool.can_be_accessed_by?(user)
@@ -71,16 +74,18 @@
           tcs_bad = tcs.size - tcs_ok
         %>
         <td>
+          <% green_color = tool_enabled ? 'green' : 'orange' %>
           <% if tcs_bad == 0 && tcs_ok == 0 %>
             <%= red_if(true,"-") %>
           <% elsif tcs_bad == 0 %>
-            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => 'green') %>
+            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => green_color) %>
           <% elsif tcs_ok == 0 %>
             <%= red_if(true,"#{tcs_bad} NO") %>
           <% else %>
-            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => 'green') %>,
+            <%= red_if(true,"#{tcs_ok} OK",nil, :color2 => green_color) %>,
             <%= red_if(true,"#{tcs_bad} NO") %>
           <% end %>
+          <%= red_if(! tool_enabled, "", "(but disabled)", :color2 => 'orange') if tcs_bad > 0 || tcs_ok > 0 %>
         </td>
       <% end %>
     </tr>
