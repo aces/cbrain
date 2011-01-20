@@ -27,6 +27,8 @@ module SmartDataProviderInterface
     else
       @provider = @network_provider
     end
+    @provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+    @provider
   end
 
   # This method returns the real data provider used
@@ -118,16 +120,16 @@ module SmartDataProviderInterface
     @provider.provider_erase(userfile)
   end
 
-  def provider_rename(userfile,newname) #:nodoc:
-    @provider.provider_rename(userfile,newname)
+  def provider_rename(userfile, newname) #:nodoc:
+    @provider.provider_rename(userfile, newname)
   end
 
-  def provider_move_to_otherprovider(userfile,otherprovider) #:nodoc:
-    @provider.provider_move_to_otherprovider(userfile,otherprovider)
+  def provider_move_to_otherprovider(userfile, otherprovider, options = {}) #:nodoc:
+    @provider.provider_move_to_otherprovider(userfile, otherprovider, options)
   end
 
-  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil) #:nodoc:
-    @provider.provider_copy_to_otherprovider(userfile,otherprovider,newname)
+  def provider_copy_to_otherprovider(userfile, otherprovider, options = {}) #:nodoc:
+    @provider.provider_copy_to_otherprovider(userfile, otherprovider, options)
   end
 
   def provider_list_all(user=nil) #:nodoc:

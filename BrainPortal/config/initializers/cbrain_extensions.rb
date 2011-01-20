@@ -56,6 +56,36 @@ module Kernel
     raise CbrainError.new(message, options)
   end
 
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_red(message)
+    puts "\e[31m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_green(message)
+    puts "\e[32m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_blue(message)
+    puts "\e[34m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_yellow(message)
+    puts "\e[33m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_magenta(message)
+    puts "\e[35m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_cyan(message)
+    puts "\e[36m#{message}\e[0m"
+  end
+
 end
 
 

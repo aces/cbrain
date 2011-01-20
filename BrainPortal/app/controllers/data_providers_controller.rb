@@ -577,7 +577,7 @@ class DataProvidersController < ApplicationController
             if move_or_copy == "MOVE"
               u.provider_move_to_otherprovider(new_dp)
               u.set_size!
-            elsif move_or_copy == "COPY" # an no ELSE !
+            elsif move_or_copy == "COPY" # and no ELSE !
               new = u.provider_copy_to_otherprovider(new_dp)
               u.destroy rescue true # will simply unregister
               new.set_size!

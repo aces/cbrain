@@ -594,15 +594,22 @@ class UserfilesController < ApplicationController
     
   end
   
-  #Copy or move files to a new provider.
+  # Copy or move files to a new provider.
   def change_provider
-    if params[:commit] == 'Move Files'
+
+    # Operaton to perform
+    if params[:commit] =~ /move/i
       task      = 'move'
-    elsif params[:commit] == 'Copy Files'
+    elsif params[:commit] =~ /copy/i
       task      = 'copy'
     end
+
+    # Option for move or copy.
+    crush_destination = (params[:crush_destination].to_s =~ /crush/i) ? true : false
     
+    # File list to apply operation
     filelist    = params[:file_ids] || []
+
     # Default message keywords for 'move'
     word_move  = 'move'
     word_moved = 'moved'
@@ -611,44 +618,38 @@ class UserfilesController < ApplicationController
       word_moved = 'copied'
     end
 
+    # Destination provider
     data_provider_id = params[:data_provider_id]
     new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
-
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
 
+    # Spawn subprocess to perform the move operations
     CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
       moved_list  = []
       failed_list = {}
       filelist.each do |id|
         begin
-          u = Userfile.find_accessible_by_user(id, current_user,
-                            :readonly         => (task == 'copy'),
-                            :access_requested => (task == 'copy' ? :read : :write) )
+          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
-          next if orig_provider.id == data_provider_id
+          next if orig_provider.id == data_provider_id # not support for copy to same provider in tehr interface, yet.
           res = nil
           if task == 'move'
             raise "Not owner." unless u.has_owner_access?(current_user)
-            res = u.provider_move_to_otherprovider(new_provider)
+            res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else
-            # NOTE! DO NOT SAVE 'u' HERE, WE CHANGE THE ATTRIBUTES SO
-            # THAT THE COPY METHOD WILL CHECK FOR COLLISIONS BUT THEY
-            # SHOULD NOT STAY LIKE THAT! (FOR SAFETY, WE HAVE :readonly IN EFFECT)
-            u.user_id    = current_user.id
-            u.group_id   = current_project ? current_project.id : current_user.own_group.id
-            u.created_at = Time.now
-            res = u.provider_copy_to_otherprovider(new_provider)
-            u=Userfile.find(id) # RELOAD IT AND CLEAR :readonly !
+            my_group_id  = current_project ? current_project.id : current_user.own_group.id
+            res = u.provider_copy_to_otherprovider(new_provider,
+                     :user_id           => current_user.id,
+                     :group_id          => my_group_id,
+                     :crush_destination => crush_destination
+                  )
           end
           raise "File collision: there is already such a file on the other provider." unless res
-          u.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'"
-          res.addlog "#{word_moved.capitalize} from data provider '#{orig_provider.name}' to '#{new_provider.name}'" if task == 'copy'
-          u.save
           moved_list << u
         rescue => e
           if u.is_a?(Userfile)

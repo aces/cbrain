@@ -741,13 +741,13 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
-  def provider_move_to_otherprovider(otherprovider)
-    self.data_provider.provider_move_to_otherprovider(self, otherprovider)
+  def provider_move_to_otherprovider(otherprovider, options = {})
+    self.data_provider.provider_move_to_otherprovider(self, otherprovider, options)
   end
   
   # See the description in class DataProvider
-  def provider_copy_to_otherprovider(otherprovider,newname = nil)
-    self.data_provider.provider_copy_to_otherprovider(self,otherprovider,newname)
+  def provider_copy_to_otherprovider(otherprovider, options = {})
+    self.data_provider.provider_copy_to_otherprovider(self, otherprovider, options)
   end
 
   # See the description in class DataProvider
@@ -862,9 +862,7 @@ class Userfile < ActiveRecord::Base
   end
   
   def erase_or_unregister
-    unless self.data_provider.is_browsable?
-      self.provider_erase
-    end
+    self.provider_erase unless self.data_provider.is_browsable?
     self.cache_erase
     true
   end

@@ -124,8 +124,8 @@ require 'digest/md5'
 # * cache_collection_index(userfile, directory, allowed_types)
 # * cache_readhandle(userfile, rel_path)
 # * cache_writehandle(userfile, rel_path)
-# * cache_copy_from_local_file(userfile,localfilename)
-# * cache_copy_to_local_file(userfile,localfilename)
+# * cache_copy_from_local_file(userfile, localfilename)
+# * cache_copy_to_local_file(userfile, localfilename)
 # * cache_erase(userfile)
 #
 # Note that all of these are also present in the Userfile model.
@@ -133,9 +133,9 @@ require 'digest/md5'
 # == Provider-side methods:
 #
 # * provider_erase(userfile)
-# * provider_rename(userfile,newname)
-# * provider_move_to_otherprovider(userfile,otherprovider)
-# * provider_copy_to_otherprovider(userfile,otherprovider)
+# * provider_rename(userfile, newname)
+# * provider_move_to_otherprovider(userfile, otherprovider, options = {})
+# * provider_copy_to_otherprovider(userfile, otherprovider, options = {})
 # * provider_list_all(user=nil)
 # * provider_collection_index(userfile, directory, allowed_types)
 # * provider_readhandle(userfile, rel_path)
@@ -471,8 +471,8 @@ class DataProvider < ActiveRecord::Base
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
-    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
+    cb_error "Error: provider #{self.name} is offline."      unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."    if     self.read_only?
     cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
     cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile." if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
@@ -655,7 +655,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     return true if newname == userfile.name
     return false unless Userfile.is_legal_filename?(newname)
-    target_exists = Userfile.find_by_name_and_data_provider_id(newname,self.id)
+    target_exists = self.userfiles.first(:conditions => { :name => newname, :user_id => userfile.user_id } )
     return false if target_exists
     cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do
@@ -663,68 +663,128 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
-  # Move a +userfile+ from the current provider to
-  # +otherprovider+ ; note that this method will
-  # update the +userfile+'s data_provider_id and
-  # save it back to the DB!
-  def provider_move_to_otherprovider(userfile,otherprovider)
+  # Move a +userfile+ from the current provider to +otherprovider+.
+  # Returns true if no move was necessary, and false if anything was amiss.
+  # Options supported are :name, :user_id, :group_id which are
+  # going to be used for the destination file, and :crush_destination
+  # that needs to be true if the destination file already exists
+  # and you want to proceed with the move anyway.
+  def provider_move_to_otherprovider(userfile, otherprovider, options = {})
     cb_error "Error: provider #{self.name} is offline."            unless self.online?
     cb_error "Error: provider #{self.name} is read_only."          if     self.read_only?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
-    return true if self.id == otherprovider.id
+
+    new_name     = options[:name]     || userfile.name
+    new_user_id  = options[:user_id]  || userfile.user_id
+    new_group_id = options[:group_id] || userfile.group_id
+    crush        = options[:crush_destination]
+
+    return true  if     self.id == otherprovider.id
+    return false unless Userfile.is_legal_filename?(new_name)
+    return false unless userfile.id # must be a fully saved file
+
+    # Find existing destination, if any
     target_exists = Userfile.find(:first,
-        :conditions => { :name             => userfile.name,
+        :conditions => { :name             => new_name,
                          :data_provider_id => otherprovider.id,
-                         :user_id          => userfile.user_id } )
-    return false if target_exists
+                         :user_id          => new_user_id
+                       } )
+
+    if target_exists
+      return true  if target_exists.id == userfile.id  # Same !?!
+      return false if ! crush
+      return false if target_exists.class != userfile.class # must be of same class
+      target_exists.destroy # ok, we destroy the destination
+    end
+
+    # Because of all the back and forth assignments below,
+    # we need a full copy of the source userfile's attributes
+    original_userfile = userfile.clone
 
     # Get path to cached copy on current provider
     sync_to_cache(userfile)
     currentcache = userfile.cache_full_path
 
-    # Copy to other provider
-    userfile.data_provider = otherprovider
+    # Copy content to other provider
+    userfile.data_provider_id = otherprovider.id
+    userfile.name             = new_name
+    userfile.user_id          = new_user_id
+    userfile.group_id         = new_group_id
     otherprovider.cache_copy_from_local_file(userfile,currentcache)
 
     # Erase on current provider
-    userfile.data_provider = self  # temporarily set it back
-    provider_erase(userfile)
+    userfile.data_provider_id = self.id  # temporarily set it back
+    userfile.name             = original_userfile.name
+    userfile.user_id          = original_userfile.user_id
+    userfile.group_id         = original_userfile.group_id
+    provider_erase(userfile) rescue true
+
+    # Register properly all the userfile info on new provider
+    userfile.data_provider_id = otherprovider.id  # must return it to true value
+    userfile.name             = new_name
+    userfile.user_id          = new_user_id
+    userfile.group_id         = new_group_id
+    userfile.save!
+
+    # Log the operation
+    userfile.addlog("Moved from DataProvider '#{self.name}' to DataProvider '#{otherprovider.name}'.")
+    userfile.addlog("Renamed from '#{original_userfile.name}' to '#{userfile.name}'.") if original_userfile.name != userfile.name
+    userfile.addlog("Crushed existing file '#{target_exists.name}' (ID #{target_exists.id}).") if target_exists
 
     # Record InSync on new provider.
-    userfile.data_provider = otherprovider  # must return it to true value
-    userfile.save
     SyncStatus.ready_to_modify_cache(userfile, 'InSync') do
       true # dummy as it's already in cache, but adjusts the SyncStatus
     end
   end
 
-  # Copy a +userfile+ from the current provider to
-  # +otherprovider+. Returns the newly created file.
-  # Optionally, rename the file at the same time.
-  def provider_copy_to_otherprovider(userfile,otherprovider,newname = nil)
+  # Copy a +userfile+ from the current provider to +otherprovider+.
+  # Returns the new userfile if data was actually copied, true if
+  # no copy was necessary, and false if anything was amiss.
+  # Options supported are :name, :user_id, :group_id which are
+  # going to be used for the new file, and :crush_destination
+  # that needs to be true if the destination file already exists
+  # and you want to proceed with the copy anyway.
+  def provider_copy_to_otherprovider(userfile, otherprovider, options = {})
     cb_error "Error: provider #{self.name} is offline."            unless self.online?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
-    return true  if self.id == otherprovider.id
-    return false if newname && ! Userfile.is_legal_filename?(newname)
-    return false unless userfile.id # must be a fully saved file
-    target_exists = Userfile.find(:first,
-        :conditions => { :name             => (newname || userfile.name),
-                         :data_provider_id => otherprovider.id,
-                         :user_id          => userfile.user_id } )
-    return false if target_exists
 
-    # Create new file entry
-    newfile                  = userfile.clone
-    newfile.data_provider    = otherprovider
-    newfile.name             = newname if newname
+    new_name     = options[:name]     || userfile.name
+    new_user_id  = options[:user_id]  || userfile.user_id
+    new_group_id = options[:group_id] || userfile.group_id
+    crush        = options[:crush_destination]
+
+    return false unless Userfile.is_legal_filename?(new_name)
+    return false unless userfile.id # must be a fully saved file
+
+    # Find existing destination, if any
+    target_exists = Userfile.find(:first,
+        :conditions => { :name             => new_name,
+                         :data_provider_id => otherprovider.id,
+                         :user_id          => new_user_id,
+                       } )
+
+    return true  if target_exists && target_exists.id == userfile.id  # Same !
+    return false if target_exists && ! crush
+    return false if target_exists && (target_exists.class != userfile.class) # must be of same class
+
+    # Prepare destination
+    newfile = target_exists || userfile.clone
+    newfile.data_provider_id = otherprovider.id
+    newfile.name             = new_name
+    newfile.user_id          = new_user_id
+    newfile.group_id         = new_group_id
+    newfile.created_at       = Time.now unless target_exists
+    newfile.updated_at       = Time.now
     newfile.save
 
     # Copy log
-    old_log = userfile.getlog
-    newfile.addlog("Copy of file '#{userfile.name}' on DataProvider '#{self.name}'")
-    if old_log
+    old_log = target_exists ? "" : userfile.getlog
+    action  = target_exists ? 'crushed' : 'copied'
+    userfile.addlog("Content #{action} to '#{newfile.name}' (ID #{newfile.id}) of DataProvider '#{otherprovider.name}'.")
+    newfile.addlog("Content #{action} from '#{userfile.name}' (ID #{userfile.id}) of DataProvider '#{self.name}'.")
+    unless old_log.blank?
       newfile.addlog("---- Original log follows: ----")
       newfile.raw_append_log(old_log)
       newfile.addlog("---- Original log ends here ----")
@@ -1190,7 +1250,7 @@ class DataProvider < ActiveRecord::Base
   # This utility method runs a bash command, intercepts the output
   # and returns it.
   def bash_this(command)
-    #puts "BASH: #{command}"
+    #puts_cyan "BASH: #{command}"
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close
