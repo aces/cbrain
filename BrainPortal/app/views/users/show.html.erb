@@ -60,6 +60,12 @@
        <th>Default Data Provider:</th>
        <td><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
      </tr>
+     <% if current_user.has_role? :admin %>
+       <tr class="<%= cycle("list-odd", "list-even") %>">
+         <th>Access Report:</th>
+         <td><%= link_to 'Access?', :controller => :tool_configs, :user_id => @user.id %></td>
+       </tr>
+     <% end %>
    </table>
 
   </div>
