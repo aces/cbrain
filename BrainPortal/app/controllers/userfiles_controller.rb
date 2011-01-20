@@ -19,7 +19,7 @@ class UserfilesController < ApplicationController
   api_available
 
   before_filter :login_required
-  around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider]
+  around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider, :quality_control]
 
   # GET /userfiles
   # GET /userfiles.xml
@@ -232,6 +232,25 @@ class UserfilesController < ApplicationController
      end
      
      redirect_to :action  => :show
+  end
+  
+  def sync_multiple
+    @userfiles = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :read)
+    
+    CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
+      @userfiles.each do |userfile|
+        state = userfile.local_sync_status
+        sync_status = 'ProvNewer'
+        sync_status = state.status if state
+        
+        if sync_status !~ /^To|InSync|Corrupted/
+          userfile.sync_to_cache
+          userfile.set_size  
+        end
+      end
+    end # spawn
+    
+    redirect_to :action  => :index
   end
 
   # POST /userfiles
@@ -506,6 +525,36 @@ class UserfilesController < ApplicationController
     
     redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
     redirect_to redirect_action
+  end
+  
+  def quality_control
+    @filelist      = params[:file_ids] || []
+    @current_index = params[:index]    || -1    
+    
+    @current_index = @current_index.to_i
+    
+    if @current_index >=  0 && params[:commit] != "Skip"
+      @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
+      tag_ids = params[:tag_ids] || []
+      case params[:commit]
+      when "Pass"
+        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_PASS", current_user.id).id.to_s]
+      when "Fail"
+        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_FAIL", current_user.id).id.to_s]
+      when "Unknown"
+        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_UNKNOWN", current_user.id).id.to_s]
+      end
+      @current_userfile.set_tags_for_user(current_user, tag_ids)
+    end
+    
+    if @current_index + 1 < @filelist.size
+      @current_index += 1
+      @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
+    else
+      flash[:notice] = "QC done."
+      redirect_to "/userfiles"
+      return
+    end     
   end
   
   #Create a collection from the selected files.

@@ -1,20 +1,81 @@
-<span class="button_set">
-  <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
+<div class="menu_bar">
+  <span class="button_set">  
+  <% button_with_dropdown_menu("Scientific Tools")  do %>
+        
+           <%= render :partial => 'userfiles/tool_management_scientific' %>
+        
+    <% end %>
 
-  <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
-                                              :confirm => "Are you sure you want to compress or uncompress the selected files?", 
-                                              :class  => "button", 
-                                              :method  => :post) 
-  %>
+    <% button_with_dropdown_menu("Conversion Tools")  do %>
+        
+          <%= render :partial => 'userfiles/tool_management_conversion' %>
+        
+    <% end %>
+    <% button_with_dropdown_menu("Download") do %>
+      Specify Download File Name (optional):
+      <%= text_field_tag :specified_filename %>
+      <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :method  => :get) %>
+    <% end %>
 
-  <%= hijacker_submit_button("Create Collection", :url  => url_for(:action  => :create_collection),
-                                                  :class  => "button", 
-                                                  :method  => :post)
-  %>
-  
-  <%= hijacker_submit_button("Delete", :url  => url_for(:action  => :delete_files),
-                                       :class  => "button",
-                                       :confirm => "Are you sure you want to delete the selected files?",
-                                       :method  => :delete) 
-  %>
-</span>
+    <% button_with_dropdown_menu("Update Attributes") do %>
+        <h4>Tags</h4>
+        <%= render :partial => 'userfiles/tag_table'%>
+        <hr>
+        <h4>Projects</h4>
+        Change Project: 
+        <%= group_select('userfile[group_id]', { :groups => @user_groups, :selector => @default_group } ) %>
+        <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
+        <P>
+        Project Permission Update: 
+        <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
+        <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+        <hr>
+        Update Parent-Child Relationships:
+        <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
+                                                     :overlay => true,
+                                                     :method  => :get) 
+        %>
+        <hr>
+        Update File Type:
+        <%=
+           select_tag :file_type, grouped_options_for_select(
+             [["Files",       SingleFile.valid_file_classes.map{|c| [c.pretty_type, c.name]}],
+              ["Collections", FileCollection.valid_file_classes.map{|c| [c.pretty_type, c.name]}]
+             ])
+         %>
+        <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+        <hr>
+        Start QC: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), :ajax_submit  => false, :method  => :post) %>
+        <hr>
+        Synchronize Files: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
+    <% end %>
+
+    <% button_with_dropdown_menu("Move/Copy")  do %>
+        <%= data_provider_select("data_provider_id") %>
+        <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
+        <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
+    <% end %>
+   </span>
+</div>
+<div class="menu_bar">
+  <span class="button_set">
+    <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
+
+    <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
+                                                :confirm => "Are you sure you want to compress or uncompress the selected files?", 
+                                                :class  => "button", 
+                                                :method  => :post) 
+    %>
+
+    <%= hijacker_submit_button("Create Collection", :url  => url_for(:action  => :create_collection),
+                                                    :class  => "button", 
+                                                    :method  => :post)
+    %>
+
+    <%= hijacker_submit_button("Delete", :url  => url_for(:action  => :delete_files),
+                                         :class  => "button",
+                                         :confirm => "Are you sure you want to delete the selected files?",
+                                         :method  => :delete) 
+    %>
+  </span>
+</div>

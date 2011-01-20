@@ -9,65 +9,7 @@
 
   <% multi_form_tag(:method => :post, "data-datatype"  => "script") do %>
 
-  <div class="menu_bar">
-    <span class="button_set">  
-    <% button_with_dropdown_menu("Scientific Tools")  do %>
-          
-             <%= render :partial => 'userfiles/tool_management_scientific' %>
-          
-      <% end %>
-
-      <% button_with_dropdown_menu("Conversion Tools")  do %>
-          
-            <%= render :partial => 'userfiles/tool_management_conversion' %>
-          
-      <% end %>
-      <% button_with_dropdown_menu("Download") do %>
-        Specify Download File Name (optional):
-        <%= text_field_tag :specified_filename %>
-        <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :method  => :get) %>
-      <% end %>
-
-      <% button_with_dropdown_menu("Update Attributes") do %>
-          <h4>Tags</h4>
-          <%= render :partial => 'userfiles/tag_table'%>
-          <hr>
-          <h4>Projects</h4>
-          Change Project: 
-          <%= group_select('userfile[group_id]', { :groups => @user_groups, :selector => @default_group } ) %>
-          <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
-          <P>
-          Project Permission Update: 
-          <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-          <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
-          <hr>
-          Update Parent-Child Relationships:
-          <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
-                                                       :overlay => true,
-                                                       :method  => :get) 
-          %>
-          <hr>
-          Update File Type:
-          <%=
-             select_tag :file_type, grouped_options_for_select(
-               [["Files",       SingleFile.valid_file_classes.map{|c| [c.pretty_type, c.name]}],
-                ["Collections", FileCollection.valid_file_classes.map{|c| [c.pretty_type, c.name]}]
-               ])
-           %>
-          <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
-      <% end %>
-
-      <% button_with_dropdown_menu("Move/Copy")  do %>
-          <%= data_provider_select("data_provider_id") %>
-          <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
-          <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
-      <% end %>
-     </span>
-  </div>
-  
-  <div class="menu_bar">
-    <%= render :partial => "userfiles/file_menu" %>
-  </div>
+  <%= render :partial => "userfiles/file_menu" %>
 
   <div id="pagination" class="pagination">
     <%= render :partial => 'userfiles/pagination' %>

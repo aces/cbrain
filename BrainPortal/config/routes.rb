@@ -39,7 +39,9 @@ ActionController::Routing::Routes.draw do |map|
                                                   :create_collection    => :post,
                                                   :update_multiple      => :put,  
                                                   :change_provider      => :post, 
-                                                  :compress             => :post }
+                                                  :compress             => :post,
+                                                  :quality_control      => :post,
+                                                  :sync_multiple        => :post }
   
   map.resources :tasks,          :collection => { :operation => :post }
   

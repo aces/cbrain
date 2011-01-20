@@ -242,18 +242,24 @@ class Userfile < ActiveRecord::Base
       u = User.find(u)
     end
 
-    self.tags.select{|t| (self.tag_ids & u.tag_ids).include? t.id}
+    self.tags.all(:conditions  => {:user_id  => user.id})
   end
 
   #Set the tags associated with this file to those
   #in the +tags+ array (represented by Tag objects
   #or ids).
   def set_tags_for_user(user, tags)
-    all_tags = self.tag_ids
-    current_user_tags = self.tag_ids & user.tag_ids
+    u = user
+    unless u.is_a? User
+      u = User.find(u)
+    end
+    tags ||= []
+    tags = [tags] unless tags.is_a? Array
+     
+    non_user_tags = self.tags.all(:conditions  => "tags.user_id <> #{u.id}").map(&:id)
+    new_tag_set = tags + non_user_tags
 
-    self.tag_ids = (all_tags - current_user_tags) + ((tags || []).collect(&:to_i) & user.tag_ids)
-    self.save
+    self.tag_ids = new_tag_set
   end
 
 
