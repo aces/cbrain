@@ -124,14 +124,17 @@ class Session
     #TODO: It would be nice if userfiles used the generalized system.
     filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])
     if params[:userfiles_search_type] == 'unfilter'
+      @session[:userfiles_format_filters] = nil
       @session[:userfiles_basic_filters] = []
       @session[:userfiles_tag_filters] = []
       @session[:userfiles_custom_filters] = []
     else
       @session[:userfiles_basic_filters] |= [filter] unless filter.blank?
+      @session[:userfiles_format_filters] = params[:userfiles_format_filter] unless params[:userfiles_format_filter].blank?
       @session[:userfiles_tag_filters] |= [params[:userfiles_tag_filter]] unless params[:userfiles_tag_filter].blank?
       @session[:userfiles_custom_filters] |= [UserfileCustomFilter.find(params[:userfiles_custom_filter]).name] unless params[:userfiles_custom_filter].blank?
       @session[:userfiles_basic_filters].delete params[:userfiles_remove_basic_filter] if params[:userfiles_remove_basic_filter]
+      @session[:userfiles_format_filters] = nil if params[:userfiles_remove_format_filter]
       @session[:userfiles_custom_filters].delete params[:userfiles_remove_custom_filter] if params[:userfiles_remove_custom_filter]
       @session[:userfiles_tag_filters].delete params[:userfiles_remove_tag_filter] if params[:userfiles_remove_tag_filter]
     end

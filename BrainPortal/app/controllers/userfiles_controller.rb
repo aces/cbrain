@@ -26,10 +26,13 @@ class UserfilesController < ApplicationController
   def index #:nodoc:
     custom_filters = current_session.userfiles_custom_filters
     custom_filter_tags = []
-    custom_filters.each{ |filter| custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags}
-
-    name_filters = current_session.userfiles_basic_filters + custom_filters.collect{ |filter| "custom:#{filter}" }
-    format_filters, name_filters = name_filters.partition{|f| f =~ /^format:/} 
+    name_filters = current_session.userfiles_basic_filters
+    
+    custom_filters.each do |filter|
+      custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags
+      name_filters += ["custom:#{filter}"]
+    end
+    
     tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
 
     scope = Userfile.convert_filters_to_scope(name_filters)
@@ -47,8 +50,8 @@ class UserfilesController < ApplicationController
     end
 
     scope = scope.scoped(
-      :joins    => [ :user, :data_provider, :group ],
-      :include   => :tags
+     :joins    => [ :user, :data_provider, :group ],
+     :include   => :tags
     )
     
     current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort'
@@ -56,14 +59,14 @@ class UserfilesController < ApplicationController
       scope = scope.scoped(:order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}")
     end
     
+    format_filter = current_session.userfiles_format_filters
+    unless format_filter.blank?
+      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}' OR userfiles.id IN (select userfiles.format_source_id from userfiles where userfiles.type='#{format_filter}') OR (userfiles.format_source_id IN (select userfiles.id from userfiles where userfiles.id IN (select userfiles.format_source_id from userfiles where userfiles.type='#{format_filter}')))")
+    end
     @userfiles = scope
     
     @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
-
-    format_filters.each do |fmt|
-      @userfiles = @userfiles.select { |file| file.has_format? fmt.sub(/^format:/, "") }
-    end
-
+      
     if current_session[:userfiles_tree_sort] == "on"
       @userfiles = Userfile.tree_sort(@userfiles)
     end
