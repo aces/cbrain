@@ -258,6 +258,13 @@ module CbrainUiHelper
     button_to name, url, options
   end
   
+  def confirm_submit(name, confirmation, options = {})
+    options[:confirm] = confirmation
+    options_setup("confirm_link", options)
+    
+    submit_tag name, options
+  end
+  
   #Create an element that will toggle between hiding and showing another element.
   #The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})

@@ -533,16 +533,20 @@ class UserfilesController < ApplicationController
     
     @current_index = @current_index.to_i
     
+    pass_tag    = @current_user.tags.find_or_create_by_name_and_user_id("QC_PASS", current_user.id)
+    fail_tag    = @current_user.tags.find_or_create_by_name_and_user_id("QC_FAIL", current_user.id)
+    unknown_tag = @current_user.tags.find_or_create_by_name_and_user_id("QC_UNKNOWN", current_user.id)
+    
     if @current_index >=  0 && params[:commit] != "Skip"
       @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
       tag_ids = params[:tag_ids] || []
       case params[:commit]
       when "Pass"
-        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_PASS", current_user.id).id.to_s]
+        tag_ids |= [pass_tag.id.to_s]
       when "Fail"
-        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_FAIL", current_user.id).id.to_s]
+        tag_ids |= [fail_tag.id.to_s]
       when "Unknown"
-        tag_ids |= [@current_user.tags.find_or_create_by_name_and_user_id("QC_UNKNOWN", current_user.id).id.to_s]
+        tag_ids |= [unknown_tag.id.to_s]
       end
       @current_userfile.set_tags_for_user(current_user, tag_ids)
     end

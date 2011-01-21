@@ -43,9 +43,14 @@
          %>
         <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
         <hr>
-        Start QC: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), :ajax_submit  => false, :method  => :post) %>
+        Start QC: <%= 
+                      hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), 
+                                                      :confirm  => "Please note that files must be synchronized locally for QC. \n\nContinue?",
+                                                      :ajax_submit  => false, 
+                                                      :method  => :post) 
+                  %>
         <hr>
-        Synchronize Files: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
+        Synchronize Files Locally: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
     <% end %>
 
     <% button_with_dropdown_menu("Move/Copy", :class => 'centered')  do %>
