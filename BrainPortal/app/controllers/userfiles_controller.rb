@@ -61,12 +61,15 @@ class UserfilesController < ApplicationController
     
     format_filter = current_session.userfiles_format_filters
     unless format_filter.blank?
-      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}' OR userfiles.id IN (select userfiles.format_source_id from userfiles where userfiles.type='#{format_filter}') OR (userfiles.format_source_id IN (select userfiles.id from userfiles where userfiles.id IN (select userfiles.format_source_id from userfiles where userfiles.type='#{format_filter}')))")
+      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}' OR userfiles.id IN (SELECT userfiles.format_source_id FROM userfiles WHERE userfiles.type='#{format_filter}') OR (userfiles.format_source_id IN (SELECT userfiles.id FROM userfiles WHERE userfiles.id IN (SELECT userfiles.format_source_id FROM userfiles WHERE userfiles.type='#{format_filter}')))")
     end
-    @userfiles = scope
     
-    @userfiles = Userfile.apply_tag_filters_for_user(@userfiles, tag_filters, current_user)
-      
+    unless tag_filters.blank?
+      scope = scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
+    end
+    
+    @userfiles = scope
+          
     if current_session[:userfiles_tree_sort] == "on"
       @userfiles = Userfile.tree_sort(@userfiles)
     end

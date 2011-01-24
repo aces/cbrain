@@ -340,7 +340,8 @@ class Userfile < ActiveRecord::Base
     current_files = files
 
     unless tag_filters.blank?
-      tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf )}
+      #tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf )}
+      tags = user.tags.find(tag_filters)
       current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
     end
 
