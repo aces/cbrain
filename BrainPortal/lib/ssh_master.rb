@@ -56,11 +56,16 @@ class SshMaster
 
   Revision_info="$Id$"
 
-  IS_ALIVE_TIMEOUT     = 30
-  Debug                = false
   CONTROL_SOCKET_DIR_1 = "#{RAILS_ROOT}/tmp/sockets"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
+
+  # Internal timing limits; conservative enough and should not need to be changed.
+  IS_ALIVE_TIMEOUT     = 30
   SPAWN_WAIT_TIME      = 40
+
+  # Advanced options for instances of Masters
+  attr_accessor :debug    # if true, turn on verbose logging of subprocess tracking stuff
+  attr_accessor :no_diag  # if true, no .oer files if created for diagnostics or logging
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
@@ -296,7 +301,11 @@ class SshMaster
       (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
       subpid = Process.fork do
         self.write_pidfile(Process.pid,:force)  # Overwrite
-        Kernel.exec(sshcmd) # TODO: intercept output for diagnostics?
+        $stdout.reopen(self.diag_path, "a")
+        $stdout.sync = true
+        $stderr.reopen($stdout)
+        puts "Starting Master at #{Time.now.localtime.to_s} as PID #{$$}"
+        Kernel.exec(sshcmd)
         Kernel.exit!  # should never reach here
       end
       Process.detach(subpid)
@@ -304,20 +313,25 @@ class SshMaster
     end
 
     # Wait for it to be fully established (up to SPAWN_WAIT_TIME seconds).
+    debugTrace("Started SSH master with PID #{pid}...")
     Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
     SPAWN_WAIT_TIME.times do
       break if File.exist?(socket) && File.exist?(pidfile)
+      debugTrace("... waiting for confirmed creation of socket and PID file...")
       sleep 1
     end
 
     # OK, let's see if it started OK.
     self.read_pidfile
+    debugTrace("Master confirmed started.") if @pid
     return true if @pid
 
     # Something went wrong, kill it if it exists.
+    debugTrace("Master did not start.")
     pid = self.raw_read_pidfile
     if pid
+      debugTrace("Killing spurious process at PID #{pid}.")
       Process.kill("TERM",pid) rescue true
     end
 
@@ -335,6 +349,7 @@ class SshMaster
     Process.kill("TERM",@pid) rescue true
     @pid = nil
     self.delete_pidfile
+    File.open(self.diag_path,"a") { |fh| fh.write("Stopping Master at #{Time.now.localtime.to_s}\n") }
     true
   end
 
@@ -487,7 +502,6 @@ class SshMaster
       ssh_command += " #{stdin}"  if direction == 'w' # the 'other' direction
       system(ssh_command)
     end
-    true    
   end
   
   # This stops the master SSH connection if it is alive, and
@@ -525,6 +539,11 @@ class SshMaster
 
   def pidfile_path #:nodoc:
     self.control_path + ".pid"
+  end
+
+  def diag_path #:nodoc:
+    return "/dev/null" if @no_diag
+    self.control_path + ".oer"
   end
 
   def write_pidfile(pid,action) #:nodoc:
@@ -638,7 +657,7 @@ class SshMaster
   end
 
   def debugTrace(message) #:nodoc:
-    return unless Debug
+    return unless @debug
     STDERR.puts("\e[1;33m#{message}\e[0m")
   end
 

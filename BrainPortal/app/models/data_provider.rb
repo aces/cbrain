@@ -779,6 +779,19 @@ class DataProvider < ActiveRecord::Base
     newfile.updated_at       = Time.now
     newfile.save
 
+    # Get path to cached copy on current provider
+    sync_to_cache(userfile)
+    currentcache = userfile.cache_full_path
+
+    # Copy content to other provider
+    begin
+      otherprovider.cache_copy_from_local_file(newfile,currentcache)
+    rescue => ex
+      #todo add log information?
+      raise ex
+      #return false
+    end
+
     # Copy log
     old_log = target_exists ? "" : userfile.getlog
     action  = target_exists ? 'crushed' : 'copied'
@@ -789,13 +802,6 @@ class DataProvider < ActiveRecord::Base
       newfile.raw_append_log(old_log)
       newfile.addlog("---- Original log ends here ----")
     end
-
-    # Get path to cached copy on current provider
-    sync_to_cache(userfile)
-    currentcache = userfile.cache_full_path
-
-    # Copy to other provider
-    otherprovider.cache_copy_from_local_file(newfile,currentcache)
 
     newfile
   end
