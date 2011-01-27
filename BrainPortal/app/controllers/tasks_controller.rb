@@ -110,14 +110,19 @@ class TasksController < ApplicationController
     @tasks_per_page = @filter_params["pagination"] == "on" ? @standard_tasks_per_page : 200
 
     page = (params[:page] || 1).to_i
-    max_page = (@total_entries + @tasks_per_page - 1 ) / @tasks_per_page
-    page = max_page if page > max_page
+    # max_page = (@total_entries + @tasks_per_page - 1 ) / @tasks_per_page
+    #   page = max_page if page > max_page
     page = 1        if page < 1
     offset = (page - 1) * @tasks_per_page
     
     if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
+      @total_entries = @tasks.count(:select => "DISTINCT launch_time")
       launch_times = @tasks.all(:offset  => offset, :limit  => @tasks_per_page, :group => :launch_time).map(&:launch_time)
-      @tasks = @tasks.scoped(:conditions => {:launch_time => launch_times})
+      if launch_times.include? nil
+        @tasks = @tasks.scoped(:conditions => ["cbrain_tasks.launch_time IN (?) OR cbrain_tasks.launch_time IS ?", launch_times, nil])
+      else
+        @tasks = @tasks.scoped(:conditions => {:launch_time => launch_times})
+      end
       seen_keys    = {}
       pagination_list = []
       @tasks = @tasks.all.hashed_partition do |task|
@@ -129,6 +134,7 @@ class TasksController < ApplicationController
     else
       @tasks = @tasks.scoped(:offset  => offset, :limit  => @tasks_per_page)
       pagination_list = @tasks.all
+      @total_entries = pagination_list.size
     end
     
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
