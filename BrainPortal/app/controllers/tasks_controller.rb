@@ -103,18 +103,6 @@ class TasksController < ApplicationController
     pagination_list = @tasks
     @total_tasks = @tasks.size # number of TASKS
 
-    unless request.format.to_sym == :xml
-      if @filter_params["sort"]["order"] == 'cbrain_tasks.batch'
-        seen_keys    = {}
-        pagination_list = []
-        @tasks = @tasks.all.hashed_partition do |task|
-          lt               = task.launch_time
-          pagination_list << lt unless seen_keys[lt]
-          seen_keys[lt]    = true
-          lt
-        end
-      end
-    end
     @total_entries = @tasks.size # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
@@ -127,15 +115,30 @@ class TasksController < ApplicationController
     page = 1        if page < 1
     offset = (page - 1) * @tasks_per_page
     
+    if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
+      launch_times = @tasks.all(:offset  => offset, :limit  => @tasks_per_page, :group => :launch_time).map(&:launch_time)
+      @tasks = @tasks.scoped(:conditions => {:launch_time => launch_times})
+      seen_keys    = {}
+      pagination_list = []
+      @tasks = @tasks.all.hashed_partition do |task|
+        lt               = task.launch_time
+        pagination_list << lt unless seen_keys[lt]
+        seen_keys[lt]    = true
+        lt
+      end
+    else
+      @tasks = @tasks.scoped(:offset  => offset, :limit  => @tasks_per_page)
+      pagination_list = @tasks.all
+    end
+    
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
-      pager.replace(pagination_list[offset,@tasks_per_page])
+      pager.replace(pagination_list)
       pager.total_entries = @total_entries
       pager
     end
     
     @bourreau_status = {}
     status = @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}
-
     respond_to do |format|
       format.html
       format.xml  { render :xml => @tasks }
