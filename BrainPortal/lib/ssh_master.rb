@@ -304,7 +304,7 @@ class SshMaster
         $stdout.reopen(self.diag_path, "a")
         $stdout.sync = true
         $stderr.reopen($stdout)
-        puts "Starting Master at #{Time.now.localtime.to_s} as PID #{$$}"
+        puts "Starting Master #{@key} at #{Time.now.localtime.to_s} as PID #{$$}"
         Kernel.exec(sshcmd)
         Kernel.exit!  # should never reach here
       end
@@ -349,7 +349,7 @@ class SshMaster
     Process.kill("TERM",@pid) rescue true
     @pid = nil
     self.delete_pidfile
-    File.open(self.diag_path,"a") { |fh| fh.write("Stopping Master at #{Time.now.localtime.to_s}\n") }
+    File.open(self.diag_path,"a") { |fh| fh.write("Stopping Master #{@key} at #{Time.now.localtime.to_s}\n") }
     true
   end
 

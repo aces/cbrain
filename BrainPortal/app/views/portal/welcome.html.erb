@@ -62,7 +62,7 @@
               <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
               <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
               <% message = "(lock message)" if message.blank? %>
-              <%= text_field_tag :message, message, :size => 24 %>
+              <%= text_field_tag :message, message, :size => 30 %>
         <% end %>
       <% end %>  
     </div>

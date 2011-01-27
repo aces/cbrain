@@ -710,7 +710,7 @@ class UserfilesController < ApplicationController
   
     Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
       basename = userfile.name
-      if userfile.data_provider.is_browsable?
+      if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
         unregistered_count += 1
       else
         deleted_count += 1

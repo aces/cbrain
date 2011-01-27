@@ -863,7 +863,9 @@ class Userfile < ActiveRecord::Base
   end
   
   def erase_or_unregister
-    self.provider_erase unless self.data_provider.is_browsable?
+    unless self.data_provider.is_browsable? && self.data_provider.meta[:must_erase].blank?
+      self.provider_erase
+    end
     self.cache_erase
     true
   end
