@@ -132,9 +132,9 @@ class TasksController < ApplicationController
         lt
       end
     else
+      @total_entries = @tasks.count
       @tasks = @tasks.scoped(:offset  => offset, :limit  => @tasks_per_page)
       pagination_list = @tasks.all
-      @total_entries = pagination_list.size
     end
     
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
