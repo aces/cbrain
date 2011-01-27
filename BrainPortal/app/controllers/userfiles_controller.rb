@@ -48,10 +48,10 @@ class UserfilesController < ApplicationController
     else
       scope = Userfile.restrict_access_on_query(current_user, scope, :access_requested => :read)
     end
-
+    
     scope = scope.scoped(
-     :joins    => [ :user, :data_provider, :group ],
-     :include   => :tags
+     :joins    => [ :user, :data_provider, :group],
+     :include  => :tags
     )
     
     current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort'
@@ -61,7 +61,9 @@ class UserfilesController < ApplicationController
     
     format_filter = current_session.userfiles_format_filters
     unless format_filter.blank?
-      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}' OR userfiles.id IN (SELECT userfiles.format_source_id FROM userfiles WHERE userfiles.type='#{format_filter}') OR (userfiles.format_source_id IN (SELECT userfiles.id FROM userfiles WHERE userfiles.id IN (SELECT userfiles.format_source_id FROM userfiles WHERE userfiles.type='#{format_filter}')))")
+      format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
+      format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
+      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
     end
     
     unless tag_filters.blank?
