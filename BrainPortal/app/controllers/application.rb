@@ -168,6 +168,8 @@ class ApplicationController < ActionController::Base
       flash.now[:error] ||= ""
       flash.now[:error] += "\n" unless flash.now[:error].blank?
       flash.now[:error] += "This portal is currently locked for maintenance."
+      message = BrainPortal.current_resource.meta[:portal_lock_message]
+      flash.now[:error] += "\n#{message}" unless message.blank?
     end
   end
     
