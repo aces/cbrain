@@ -81,7 +81,7 @@ class CbrainTask::Diagnostics < PortalTask
   end
 
   def refresh_form #:nodoc:
-    params     = self.params
+    params     = self.params || {}
     ref        = (params[:refresh_count] || 0).to_i
     ref += 1
     params[:refresh_count] = ref.to_s
@@ -89,7 +89,7 @@ class CbrainTask::Diagnostics < PortalTask
   end
 
   def after_form #:nodoc:
-    params     = self.params
+    params     = self.params || {}
     params[:interface_userfile_ids] ||= []
 
     # Adjust num_copies
@@ -114,7 +114,7 @@ class CbrainTask::Diagnostics < PortalTask
   end
 
   def final_task_list #:nodoc:
-    params     = self.params
+    params     = self.params || {}
     numfiles   = params[:interface_userfile_ids].size
     num_copies = params[:num_copies]
     desc       = self.description || ""
@@ -135,7 +135,7 @@ class CbrainTask::Diagnostics < PortalTask
   end
 
   def validate_input_fields #:nodoc:
-    params     = self.params
+    params     = self.params || {}
 
     return true if params[:do_validations].blank?
 

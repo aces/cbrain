@@ -415,78 +415,13 @@ class CbrainTask < ActiveRecord::Base
   # Internal Logging Methods
   ##################################################################
 
-  # Logging methods for the CbrainTask classes; these
-  # methods are meant to be used with ActiveRecord objects
-  # and behave similarly to those in the ActRecLog module,
-  # except that the logs are store inside the CbrainTask object's
-  # :log attribute.
-
-  # Record a +message+ in this task's log.
-  def addlog(message, options = {})
-    log = self.log
-    log = "" if log.nil? || log.empty?
-    callerlevel    = options[:caller_level] || 0
-    calling_info   = caller[callerlevel]
-    calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
-    calling_method = "" if options[:no_caller]
-    lines = message.split(/\s*\n/)
-    lines.pop while lines.size > 0 && lines[-1] == ""
-    message = lines.join("\n") + "\n"
-    log +=
-      Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
-    self.log = log
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because CbrainTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def getlog
-    self.log
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because CbrainTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def addlog_context(context,message="",caller_back_levels=0)
-    prev_level     = caller[caller_back_levels]
-    calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
-
-    class_name     = context.class.to_s
-    class_name     = context.to_s if class_name == "Class"
-    rev_info       = context.revision_info
-    #pretty_info    = rev_info.svn_id_pretty_rev_author_date
-    pretty_info    = rev_info.svn_id_rev
-
-    full_message   = "#{class_name} rev. #{pretty_info} #{calling_method}"
-    full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :no_caller => true )
-  end
-
-  # Compatibility method to let this class
-  # act a bit like the other classes extended
-  # by the ActRecLog module (see logging.rb).
-  # This is necessary because CbrainTask objects
-  # have their very own internal embedded log
-  # and do NOT use the methods defined by the
-  # ActRecLog module.
-  def addlog_revinfo(anobject,message="")
-    class_name     = anobject.class.to_s
-    class_name     = anobject.to_s if class_name == "Class"
-    rev_info       = anobject.revision_info
-    #pretty_info    = rev_info.svn_id_pretty_rev_author_date
-    pretty_info    = rev_info.svn_id_rev
-
-    full_message   = "#{class_name} rev. #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :no_caller => true )
+  # Overrides the default behavior of the ActRecLog addlog method
+  # so that caller information is provided by default.
+  def addlog(message,options={})
+    caller_level = options[:caller_level] || 0
+    caller_level += 1
+    no_caller    = options.has_key?(:no_caller) ? options[:no_caller] : false
+    super(message,options.dup.merge({ :no_caller => no_caller, :caller_level => caller_level }))
   end
 
   # Records in the task's log the info about an exception.
@@ -497,11 +432,12 @@ class CbrainTask < ActiveRecord::Base
   def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
     message.sub!(/[\s:]*$/,":")
-    self.addlog("#{message} #{exception.class}: #{exception.message}")
+    self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
     if backtrace_lines > 0
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size
-      exception.backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :nocaller => true) }
+      exception.backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :no_caller => true) }
     end
+    true
   end
 
   # Record the current RemoteResource's revision number.
@@ -510,6 +446,7 @@ class CbrainTask < ActiveRecord::Base
     rrinfo = rr.info # always local, will not trigger network query
     rr_rev = rrinfo.starttime_revision
     self.addlog("#{rr.class} rev. #{rr_rev} #{message}", :caller_level => 1 )
+    true
   end
   
   

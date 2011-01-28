@@ -1030,6 +1030,7 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     # Queue the job and return true, at this point
     # it's not our 'job' to figure out if it worked
     # or not.
+    #self.addlog("Cluster command: #{job.qsub_command}")
     jobid              = scir_session.run(job)
     self.cluster_jobid = jobid
     self.status        = "Queued"

@@ -173,23 +173,35 @@ module ActRecLog
   # The first time a message is created, some revision
   # information about the current ActiveRecord class
   # will be added to the top of the log.
-  def addlog(message)
+  def addlog(message, options = { :no_caller => true })
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    return false if self.id.blank?
+    use_internal = self.new_record? || self.id.blank?
     begin
-      arl = active_record_log_find_or_create
-      return false unless arl
-      log = arl.log
+      unless use_internal
+        arl = active_record_log_find_or_create
+        return false unless arl
+      end
+
+      callerlevel    = options[:caller_level] || 0
+      calling_info   = caller[callerlevel]
+      calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
+      calling_method = "" if options[:no_caller]
+
+      log = use_internal ? @tmp_internal_log : arl.log
       log = "" if log.blank?
       lines = message.split(/\s*\n/)
       lines.pop while lines.size > 0 && lines[-1] == ""
   
       message = lines.join("\n") + "\n"
-      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + message
+      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
       while log.size > 65500 && log =~ /\n/   # TODO: archive ?
         log.sub!(/^[^\n]*\n/,"")
       end
-      arl.update_attributes( { :log => log } )
+      if use_internal
+        @tmp_internal_log = log
+      else
+        arl.update_attributes( { :log => log } )
+      end
     rescue
       false
     end
@@ -216,7 +228,6 @@ module ActRecLog
   # where you call addlog_context() itself).
   def addlog_context(context,message=nil,caller_back_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    return false if self.id.blank?
     prev_level     = caller[caller_back_level]
     calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
 
@@ -228,7 +239,7 @@ module ActRecLog
  
     full_message   = "#{class_name} rev. #{pretty_info} #{calling_method}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message)
+    self.addlog(full_message, :caller_level => 1)
   end
 
   # Creates a custom log entry with the revision info
@@ -248,7 +259,6 @@ module ActRecLog
   #     "Abcd revision 123 prioux 2009-05-23 hello"
   def addlog_revinfo(anobject,message=nil)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    return false if self.id.blank?
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
     rev_info       = anobject.revision_info
@@ -257,14 +267,14 @@ module ActRecLog
  
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message)
+    self.addlog(full_message, :caller_level => 1)
   end
 
   # Gets the log for the current ActiveRecord;
   # this is a single long string with embedded newlines.
   def getlog
     return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    return nil if self.id.blank?
+    return @tmp_internal_log if self.new_record? || self.id.blank?
     arl = active_record_log
     return nil unless arl
     arl.log
@@ -276,6 +286,11 @@ module ActRecLog
   # is rarely used in normal situations.
   def raw_append_log(text)
     return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+    if self.new_record? || self.id.blank?
+      @tmp_internal_log ||= ""
+      @tmp_internal_log += text
+      return true
+    end
     return false if self.id.blank?
     arl = active_record_log_find_or_create
     log = arl.log + text
@@ -291,9 +306,30 @@ module ActRecLog
   # called manually too.
   def destroy_log
     return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+    if self.new_record? || self.id.blank?
+      @tmp_internal_log = ""
+      return true
+    end
     arl = self.active_record_log
     return true unless arl
     arl.destroy_without_callbacks
+    true
+  end
+
+  # Logs have been temporarily saved to
+  # an internal variable when the object
+  # doesn't yet have an ID; this method
+  # sends that tmp log to the real log
+  # record. It is usually called automatically
+  # as a after_create callback.
+  def propagate_tmp_log #:nodoc:
+    return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+    return false if self.new_record? || self.id.blank?
+    return true  if @tmp_internal_log.blank?
+    arl = active_record_log_find_or_create
+    log = (arl.log || "") + @tmp_internal_log.to_s
+    arl.update_attributes( { :log => log } )
+    @tmp_internal_log = ""
     true
   end
 

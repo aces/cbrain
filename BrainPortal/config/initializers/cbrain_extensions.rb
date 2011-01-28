@@ -25,6 +25,7 @@ class ActiveRecord::Base
   ###################################################################
   include ActRecLog
   after_destroy :destroy_log
+  after_create  :propagate_tmp_log
 
   alias original_to_xml to_xml
   

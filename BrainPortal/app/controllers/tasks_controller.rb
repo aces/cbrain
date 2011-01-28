@@ -373,7 +373,7 @@ class TasksController < ApplicationController
 
     messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check
 
-    flash[:notice] += messages + "\n" if messages
+    flash[:notice] += messages + "\n" unless messages.blank?
     if tasklist.size == 1
       flash[:notice] += "Launched a #{@task.name} task."
     else
