@@ -102,7 +102,7 @@ class ScirSharcnet < Scir
       if txt && txt =~ /as jobid\s+(\S+)/
         return Regexp.last_match[1]
       end
-      raise "Cannot find job ID from sqsub output. Got:\n#{txt}\n"
+      raise "Cannot find job ID from sqsub output.\nOutput: #{txt}\n"
     end
 
   end

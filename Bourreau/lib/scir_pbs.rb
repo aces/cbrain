@@ -94,7 +94,7 @@ class ScirPbs < Scir
       if txt && txt =~ /^(\d+)/
         return Regexp.last_match[1]
       end
-      raise "Cannot find job ID from qsub output"
+      raise "Cannot find job ID from qsub output.\nOutput: #{txt}"
     end
 
   end

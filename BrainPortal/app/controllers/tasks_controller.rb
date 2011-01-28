@@ -573,7 +573,7 @@ class TasksController < ApplicationController
       flash[:notice] += "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
     end
 
-    current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
+    #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
     redirect_to :action => :index, :format  => request.format.to_sym
 
   end # method 'operation'

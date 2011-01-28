@@ -104,7 +104,7 @@ class ScirSge < Scir
       if txt && txt =~ /Your job (\d+)/i
         return Regexp.last_match[1]
       end
-      raise "Cannot find job ID from qsub output"
+      raise "Cannot find job ID from qsub output.\nOutput: #{txt}"
     end
 
   end

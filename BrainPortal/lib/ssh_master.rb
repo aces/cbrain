@@ -332,6 +332,8 @@ class SshMaster
     pid = self.raw_read_pidfile
     if pid
       debugTrace("Killing spurious process at PID #{pid}.")
+      Process.kill("HUP",pid) rescue true
+      sleep 1
       Process.kill("TERM",pid) rescue true
     end
 
@@ -346,10 +348,12 @@ class SshMaster
     return false unless self.read_pidfile
 
     debugTrace("STOP: #{$$} Killing master for #{@key}.")
+    File.open(self.diag_path,"a") { |fh| fh.write("Stopping Master #{@key} at #{Time.now.localtime.to_s}\n") }
+    Process.kill("HUP",@pid) rescue true
+    sleep 1
     Process.kill("TERM",@pid) rescue true
     @pid = nil
     self.delete_pidfile
-    File.open(self.diag_path,"a") { |fh| fh.write("Stopping Master #{@key} at #{Time.now.localtime.to_s}\n") }
     true
   end
 
