@@ -60,7 +60,7 @@ class SshMaster
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
 
   # Internal timing limits; conservative enough and should not need to be changed.
-  IS_ALIVE_TIMEOUT     = 30
+  IS_ALIVE_TIMEOUT     = 60
   SPAWN_WAIT_TIME      = 40
 
   # Advanced options for instances of Masters
@@ -438,7 +438,7 @@ class SshMaster
     " -o PasswordAuthentication=no"       +
     " -o KbdInteractiveAuthentication=no" +
     " -o KbdInteractiveDevices=none"      +
-    " -o ServerAliveInterval=180"         +
+    " -o ServerAliveInterval=10"          +
     " -o ServerAliveCountMax=5"           +
     " -o ControlMaster=#{control_master}" +
     " -o ControlPath=#{socket}"           +

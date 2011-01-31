@@ -725,7 +725,7 @@ class RemoteResource < ActiveRecord::Base
         next unless syncstatus
         next if syncstatus.accessed_at >= before_date
         next if syncstatus.accessed_at <= after_date
-        userfile.cache_erase
+        userfile.cache_erase rescue nil
       end
     end
 

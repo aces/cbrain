@@ -232,7 +232,7 @@ class DataProvidersController < ApplicationController
     @providers = DataProvider.find_all_accessible_by_user(current_user)
 
     # List of cache update offsets we support
-    big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 !
+    big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
     @offset_times = [
       [ "Now",               0.seconds.to_i ],
       [ "One hour ago",      1.hour.to_i    ],
@@ -249,20 +249,17 @@ class DataProvidersController < ApplicationController
       [ "One year ago",      1.year.to_i    ],
       [ "The Big Bang",      big_bang       ]
     ]
-   
 
-    # Restrict cache info stats to files within
-    # a certain range of oldness.
-    accessed_before = nil
-    accessed_after  = nil
+    # Time:     Present ............................................................ Past
+    # In Words: now .......... older_limit ..... younger_limit ................. long ago
+    # Num Secs: 0 secs ago ................. < ........................ infinite secs ago
+    # Vars:     .............. @cache_older  <  @cache_younger ..........................
+    #
+    #                          |---- files to be deleted ----|
 
-    # 0 sec ago ................. < ..................... infinite secs ago
-    # now .......... older_limit .... younger_limit ..... long ago
-    #                 acc_after   <     acc_before
-
-    @cache_older   = params[:cache_older]   || 0.seconds.to_i
+    @cache_older   = params[:cache_older]   || 1.months.to_i
     @cache_younger = params[:cache_younger] || big_bang
-    @cache_older   = @cache_older.to_s   =~ /^\d+/ ? @cache_older.to_i   : 0
+    @cache_older   = @cache_older.to_s   =~ /^\d+/ ? @cache_older.to_i   : 1.months.to_i
     @cache_younger = @cache_younger.to_s =~ /^\d+/ ? @cache_younger.to_i : big_bang
     @cache_older   = big_bang if @cache_older   > big_bang
     @cache_younger = big_bang if @cache_younger > big_bang
@@ -270,6 +267,7 @@ class DataProvidersController < ApplicationController
       @cache_younger, @cache_older = @cache_older, @cache_younger
     end
 
+    # Normalize to one of the values in the table above
     @offset_times.reverse_each do |pair|
       if @cache_older >= pair[1]
         @cache_older   = pair[1]
@@ -277,6 +275,7 @@ class DataProvidersController < ApplicationController
       end
     end
 
+    # Normalize to one of the values in the table above
     @offset_times.each do |pair|
       if @cache_younger <= pair[1]
         @cache_younger   = pair[1]
@@ -284,6 +283,8 @@ class DataProvidersController < ApplicationController
       end
     end
 
+    # Restrict cache info stats to files within
+    # a certain range of oldness.
     accessed_before = @cache_older.seconds.ago # this is a Time
     accessed_after  = @cache_younger.seconds.ago # this is a Time
 
