@@ -700,28 +700,33 @@ class DataProvider < ActiveRecord::Base
 
     # Because of all the back and forth assignments below,
     # we need a full copy of the source userfile's attributes
-    original_userfile = userfile.clone
+    orig_file = userfile.clone
 
     # Get path to cached copy on current provider
     sync_to_cache(userfile)
     currentcache = userfile.cache_full_path
 
     # Copy content to other provider
-    userfile.data_provider_id = otherprovider.id
-    userfile.name             = new_name
-    userfile.user_id          = new_user_id
-    userfile.group_id         = new_group_id
-    otherprovider.cache_copy_from_local_file(userfile,currentcache)
+    begin
+      userfile.data_provider_id = otherprovider.id
+      userfile.name             = new_name
+      userfile.user_id          = new_user_id
+      userfile.group_id         = new_group_id
+      userfile.save!
+      otherprovider.cache_copy_from_local_file(userfile,currentcache)
+    ensure # make sure we return its definition to the original so we can erase it
+      userfile.data_provider_id = self.id            # temporarily set it all back
+      userfile.name             = orig_file.name
+      userfile.user_id          = orig_file.user_id
+      userfile.group_id         = orig_file.group_id
+      userfile.save!
+    end
 
-    # Erase on current provider
-    userfile.data_provider_id = self.id  # temporarily set it back
-    userfile.name             = original_userfile.name
-    userfile.user_id          = original_userfile.user_id
-    userfile.group_id         = original_userfile.group_id
-    provider_erase(userfile) rescue true
+    # Erase on current provider (thus the 'ensure' above)
+    provider_erase(userfile) rescue true # ignore errors
 
     # Register properly all the userfile info on new provider
-    userfile.data_provider_id = otherprovider.id  # must return it to true value
+    userfile.data_provider_id = otherprovider.id
     userfile.name             = new_name
     userfile.user_id          = new_user_id
     userfile.group_id         = new_group_id
@@ -729,7 +734,9 @@ class DataProvider < ActiveRecord::Base
 
     # Log the operation
     userfile.addlog("Moved from DataProvider '#{self.name}' to DataProvider '#{otherprovider.name}'.")
-    userfile.addlog("Renamed from '#{original_userfile.name}' to '#{userfile.name}'.") if original_userfile.name != userfile.name
+    userfile.addlog("Renamed from '#{orig_file.name}' to '#{userfile.name}'.")                      if orig_file.name != new_name
+    userfile.addlog("Reassigned from owner '#{orig_file.user.login}' to '#{userfile.user.login}'.") if orig_file.user_id != new_user_id
+    userfile.addlog("Reassigned from group '#{orig_file.group.name}' to '#{userfile.group.name}'.") if orig_file.group_id != new_group_id
     userfile.addlog("Crushed existing file '#{target_exists.name}' (ID #{target_exists.id}).") if target_exists
 
     # Record InSync on new provider.
