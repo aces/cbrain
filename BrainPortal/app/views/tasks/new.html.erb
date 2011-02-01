@@ -14,19 +14,13 @@
 <% end %>
 
 
-
-<h2>Task Control:</h2>
-
 <%= render :partial => 'tasks/control' %>
 
-
-
 <% unless @task.class.properties[:no_presets] %>
-<%= render :partial => "tasks/presets",
-           :locals  => { :form => form }
-%>
+  <%= render :partial => "tasks/presets",
+             :locals  => { :form => form }
+  %>
 <% end %>
-
 
 
 <h2>Task Parameters

@@ -444,6 +444,10 @@ h1.warning {
     clear: both;
 }
 
+.hidden {
+  display: none;
+}
+
 
 
 /* % ######################################################### */
@@ -461,10 +465,10 @@ a {
 }
 
 .task_help_link {
-    font-size: 0.8em;
-    text-decoration: none;
-    vertical-align: +1px;
     color: blue;
+    text-decoration: none;
+    font-size: 0.7em;
+    vertical-align: +1px;
 }
 
 
