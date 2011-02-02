@@ -37,10 +37,12 @@ class CbrainTask::Diagnostics < ClusterTask
       self.addlog "This task is copy #{params[:copy_number]} of #{params[:copy_total]}."
     end
 
+    # Report environment
     %w[ CBRAIN_GLOBAL_BOURREAU_CONFIG_ID CBRAIN_GLOBAL_TOOL_CONFIG_ID CBRAIN_TOOL_CONFIG_ID ].each do |var|
        self.addlog("Environment check: #{var}=#{ENV[var] || "(Unset)"}")
     end
 
+    # Check each input file
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
       unless u
@@ -60,12 +62,43 @@ class CbrainTask::Diagnostics < ClusterTask
       end
     end
 
+    # Testing data providers
+    dp_check_ids = params[:dp_check_ids] || []
+    dp_check_ids.reject! { |id| id.blank? }
+    if dp_check_ids.empty?
+      self.addlog("No data provider checks to perform.")
+    else
+      dp_check_ids.each do |id|
+        dp = DataProvider.find(id) rescue nil
+        if ! dp
+          self.addlog("Cannot find DataProvider ##{id}.")
+          next
+        end
+        if ! dp.online
+          self.addlog("Data Provider '#{dp.name}' is NOT ONLINE.")
+          next
+        end
+        begin
+          ok = dp.is_alive?
+          if ok
+            self.addlog("Data Provider '#{dp.name}' is ALIVE.")
+          else
+            self.addlog("Data Provider '#{dp.name}' is NOT ALIVE.")
+          end
+        rescue => ex
+          self.addlog("Data Provider '#{dp.name}' is_alive?() RAISED EXCEPTION: #{ex.class}: #{ex.message}")
+        end
+      end
+    end
+
+    # Artifical delays
     setup_delay = params[:setup_delay] ? params[:setup_delay].to_i : 0
     if setup_delay > 0
       self.addlog "Sleeping for #{setup_delay} seconds."
       sleep setup_delay
     end
 
+    # Artifical crash
     if mybool(params[:setup_crash])
       params[:setup_crash]=nil if mybool(params[:crash_will_reset])
       cb_error "This program crashed on purpose, as ordered."

@@ -189,7 +189,7 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   def params_common_options(paramspath, options = {}) #:nodoc:
     added_path    = paramspath.to_la
     added_id      = paramspath.to_la_id
-    added_options = options.dup.merge( {
+    added_options = options.dup.reverse_merge( {
                       :name  => added_path,  # input tag variable name
                       :id    => added_id
                     } )

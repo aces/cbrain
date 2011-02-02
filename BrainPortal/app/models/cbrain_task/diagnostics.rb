@@ -43,6 +43,8 @@ class CbrainTask::Diagnostics < PortalTask
     :num_copies            => 1,
     :crash_will_reset      => true,
 
+    :dp_check_ids          => [],
+
     :after_form_action     => 'return',
     :after_form_message    => '',
 

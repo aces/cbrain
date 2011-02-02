@@ -48,6 +48,19 @@
 <p>
 
 <fieldset>
+<legend>Check Data Providers Access</legend>
+
+<% array_to_table(DataProvider.find_all_accessible_by_user(current_user), :cols => 6, :td_class => 'left_align') do |dp,r,c| %>
+  <%= form.params_check_box "dp_check_ids[]", { :id => "dp_check_#{dp.id}", :class => "dp_check", :checked => params[:dp_check_ids].include?(dp.id.to_s) }, dp.id.to_s, "" %>
+  <%= label_tag "dp_check_#{dp.id}", h(dp.name) %>
+<% end %>
+Toggle all: <%= select_all_checkbox 'dp_check' %>
+
+</fieldset>
+
+<p>
+
+<fieldset>
 <legend>Multi-cycle restart/recovers</legend>
 <strong>Crashes will reset to false after they are first triggered:</strong><%= form.params_check_box :crash_will_reset %>
 </fieldset>
