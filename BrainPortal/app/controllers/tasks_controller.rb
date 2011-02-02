@@ -36,21 +36,18 @@ class TasksController < ApplicationController
     @task_owners   = {}
     @task_projects = {}
     @task_status   = {}
-    scope.find(:all).each do |task|
-      next if task.status == 'Preset' || task.status == 'SitePreset'
-      @task_types[task.class.to_s] ||= 0
-      @task_types[task.class.to_s]  += 1
-      if task.user
-        @task_owners[task.user]    ||= 0
-        @task_owners[task.user]     += 1
-      end
-      if task.group
-        @task_projects[task.group] ||= 0
-        @task_projects[task.group]  += 1
-      end
-      @task_status[task.status]    ||= 0
-      @task_status[task.status]     += 1
-    end
+    CbrainTask.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
+                          :group  => "cbrain_tasks.type",
+                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_types[t.class.name] = t.count }
+    CbrainTask.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
+                          :group  => "cbrain_tasks.user_id",
+                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_owners[t.user] = t.count }
+    CbrainTask.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
+                          :group  => "cbrain_tasks.group_id",
+                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_projects[t.group] = t.count }
+    CbrainTask.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
+                          :group  => "cbrain_tasks.status",
+                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_status[t.status] = t.count }
     
     @filter_params["filters"].each do |att, val|
       att = att.to_sym
@@ -110,9 +107,7 @@ class TasksController < ApplicationController
     @tasks_per_page = @filter_params["pagination"] == "on" ? @standard_tasks_per_page : 200
 
     page = (params[:page] || 1).to_i
-    # max_page = (@total_entries + @tasks_per_page - 1 ) / @tasks_per_page
-    #   page = max_page if page > max_page
-    page = 1        if page < 1
+    page = 1 if page < 1
     offset = (page - 1) * @tasks_per_page
     
     if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
@@ -142,7 +137,7 @@ class TasksController < ApplicationController
       pager.total_entries = @total_entries
       pager
     end
-    
+
     @bourreau_status = {}
     status = @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}
     respond_to do |format|
