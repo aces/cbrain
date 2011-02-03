@@ -674,7 +674,7 @@ class RemoteResource < ActiveRecord::Base
       return
     end
 
-    puts "RemoteResource Processing Command: #{command.inspect}"
+    #puts "RemoteResource Processing Command: #{command.inspect}"
     
     self.send("process_command_#{command.command}", command)
 

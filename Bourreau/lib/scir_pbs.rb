@@ -118,6 +118,7 @@ class ScirPbs < Scir
       command += " #{Scir.cbrain_config[:extra_qsub_args]} "     unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "-l walltime=#{self.walltime.to_i} " unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
+      command += " 2>&1"
 
       return command
     end

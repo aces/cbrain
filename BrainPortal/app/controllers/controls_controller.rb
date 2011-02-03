@@ -114,7 +114,7 @@ class ControlsController < ApplicationController
   private
 
   def process_command(command) #:nodoc:
-    puts "Received COMMAND: #{command.inspect}"
+    puts "Received COMMAND: #{command.inspect}" rescue "Exception in inspecting command?!?"
 
     myself = RemoteResource.current_resource
     myself.class.process_command(command)
@@ -122,6 +122,7 @@ class ControlsController < ApplicationController
     return true
 
   rescue => exception
+    myself ||= RemoteResource.current_resource
     Message.send_internal_error_message(User.find_by_login('admin'),
       "RemoteResource #{myself.name} raised exception processing a message.", # header
       exception,
