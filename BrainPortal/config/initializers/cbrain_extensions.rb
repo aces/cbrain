@@ -88,6 +88,19 @@ module Kernel
   def puts_cyan(message)
     puts "\e[36m#{message}\e[0m"
   end
+  
+  def puts_timer(message, colour = nil, reset = false)
+    @@__DEBUG_TIMER__ ||= nil
+    if reset
+      @@__DEBUG_TIMER__ = nil
+    end
+    if @@__DEBUG_TIMER__
+      @@__DEBUG_TIMER__.timed_puts(message, colour)
+    else
+      @@__DEBUG_TIMER__ = DebugTimer.new
+      puts message
+    end
+  end
 
 end
 

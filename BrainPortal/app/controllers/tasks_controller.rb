@@ -36,18 +36,18 @@ class TasksController < ApplicationController
     @task_owners   = {}
     @task_projects = {}
     @task_status   = {}
-    CbrainTask.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
-                          :group  => "cbrain_tasks.type",
-                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_types[t.class.name] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
-                          :group  => "cbrain_tasks.user_id",
-                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_owners[t.user] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
-                          :group  => "cbrain_tasks.group_id",
-                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_projects[t.group] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
-                          :group  => "cbrain_tasks.status",
-                          :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_status[t.status] = t.count }
+    scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
+                     :group  => "cbrain_tasks.type",
+                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_types[t.class.name] = t.count }
+    scope.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
+                     :group  => "cbrain_tasks.user_id",
+                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_owners[t.user] = t.count }
+    scope.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
+                     :group  => "cbrain_tasks.group_id",
+                      :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_projects[t.group] = t.count }
+    scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
+                     :group  => "cbrain_tasks.status",
+                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_status[t.status] = t.count }
     
     @filter_params["filters"].each do |att, val|
       att = att.to_sym
