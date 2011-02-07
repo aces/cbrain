@@ -237,26 +237,20 @@ class Userfile < ActiveRecord::Base
   #Return an array of the tags associated with this file
   #by +user+.
   def get_tags_for_user(user)
-    u = user
-    unless u.is_a? User
-      u = User.find(u)
-    end
-
-    self.tags.all(:conditions  => {:user_id  => user.id})
+    user = User.find(user) unless user.is_a?(User)
+    self.tags.select { |t| t.user_id == user.id }
   end
 
   #Set the tags associated with this file to those
   #in the +tags+ array (represented by Tag objects
   #or ids).
   def set_tags_for_user(user, tags)
-    u = user
-    unless u.is_a? User
-      u = User.find(u)
-    end
+    user = User.find(user) unless user.is_a?(User)
+
     tags ||= []
     tags = [tags] unless tags.is_a? Array
      
-    non_user_tags = self.tags.all(:conditions  => "tags.user_id <> #{u.id}").map(&:id)
+    non_user_tags = self.tags.all(:conditions  => "tags.user_id <> #{user.id}").map(&:id)
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set
