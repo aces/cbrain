@@ -79,8 +79,6 @@ class UserfilesController < ApplicationController
     original_scope = scope
     @userfiles     = scope
     
-    @userfiles_total = @userfiles.size
-    
     @user_pref_page_length = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     if current_session.paginate?
       @userfiles_per_page = @user_pref_page_length
@@ -94,6 +92,7 @@ class UserfilesController < ApplicationController
     if current_session[:userfiles_tree_sort] == "on"
       @userfiles = @userfiles.scoped(:select => "userfiles.id, userfiles.parent_id")
       @userfiles = Userfile.tree_sort(@userfiles)
+      @userfiles_total = @userfiles.size
       sort_info  = {}
       userfile_ids = []
       Userfile.paginate(@userfiles, current_page, @userfiles_per_page).each{ |u| sort_info[u.id] = u; userfile_ids << u.id }
@@ -102,6 +101,7 @@ class UserfilesController < ApplicationController
       @userfiles = Userfile.tree_sort(@userfiles)
       @userfiles.each{ |u| u.level = sort_info[u.id].level }
     else
+      @userfiles_total = @userfiles.size
       @userfiles = @userfiles.all(:offset => offset, :limit  => @userfiles_per_page)
     end
     

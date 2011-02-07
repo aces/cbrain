@@ -306,7 +306,9 @@ class Userfile < ActiveRecord::Base
     self.tree_children.each do |child|
       child.level = level if level
       result << child
-      result += child.all_tree_children(level ? level+1 : nil) if child.tree_children # the 'if' optimizes one recursion out
+      if child.tree_children # the 'if' optimizes one recursion out
+        child.all_tree_children(level ? level+1 : nil).each { |c| result << c } # amazing! faster than += for arrays!
+      end
     end
     result
   end
