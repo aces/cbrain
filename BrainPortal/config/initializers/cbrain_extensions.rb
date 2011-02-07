@@ -42,6 +42,8 @@ end
 ###################################################################
 module Kernel
 
+  private
+
   # Raises a CbrainNotice exception, with a default redirect to
   # the current controller's index action.
   def cb_notify(message = "Something may have gone awry.", options = {} )

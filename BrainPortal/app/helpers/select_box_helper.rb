@@ -21,13 +21,13 @@ module SelectBoxHelper
   end
   
   #Create a standard user select box for selecting a user id for a form.
-  #The <pre>parameter_name</pre> argument will be the name of the parameter 
-  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
-  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted. and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain contain either or both of the following:
   #[selector] used for default selection. This can be a User object, a user id (String or Fixnum),
   #           or any model that has a user_id attribute.
-  #[users] the array of User objects used to build the select box. Defaults to <pre>current_user.available_users</pre>.
+  #[users] the array of User objects used to build the select box. Defaults to +current_user.available_users+.
   def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
@@ -51,13 +51,13 @@ module SelectBoxHelper
   end
   
   #Create a standard groups select box for selecting a group id for a form.
-  #The <pre>parameter_name</pre> argument will be the name of the parameter 
-  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
-  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted. and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain contain either or both of the following:
   #[selector] used for default selection. This can be a Group object, a group id (String or Fixnum),
   #           or any model that has a group_id attribute.
-  #[groups] the array of Group objects used to build the select box. Defaults to <pre>current_user.available_groups</pre>.
+  #[groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
@@ -98,9 +98,9 @@ module SelectBoxHelper
   end
   
   #Create a standard data provider select box for selecting a data provider id for a form.
-  #The <pre>parameter_name</pre> argument will be the name of the parameter 
-  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
-  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted. and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain contain either or both of the following:
   #[selector] used for default selection. This can be a DataProvider object, a data provider id (String or Fixnum),
   #           or any model that has a data_provider_id attribute.
@@ -135,9 +135,9 @@ module SelectBoxHelper
   end
   
   #Create a standard bourreau select box for selecting a bourreau id for a form.
-  #The <pre>parameter_name</pre> argument will be the name of the parameter 
-  #when the form is submitted. and the <pre>select_tag_options</pre> hash will be sent
-  #directly as options to the <pre>select_tag</pre> helper method called to create the element.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted. and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain contain either or both of the following:
   #[selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Fixnum),
   #           or any model that has a bourreau_id attribute.

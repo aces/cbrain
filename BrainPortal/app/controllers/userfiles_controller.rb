@@ -662,6 +662,7 @@ class UserfilesController < ApplicationController
                   )
           end
           raise "File collision: there is already such a file on the other provider." unless res
+          u.cache_erase rescue nil 
           moved_list << u
         rescue => e
           if u.is_a?(Userfile)
