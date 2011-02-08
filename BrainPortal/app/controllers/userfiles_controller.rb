@@ -24,105 +24,139 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
+
     current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort' 
+
+    #------------------------------
+    # Filtered scope
+    #------------------------------
+
+    filtered_scope = Userfile.scoped( {} )
+
+    # Prepare filters
     custom_filters = current_session.userfiles_custom_filters
-    custom_filter_tags = []
-    name_filters = current_session.userfiles_basic_filters
+    name_filters   = current_session.userfiles_basic_filters
         
+    # Prepare custom filters
+    custom_filter_tags = []
     custom_filters.each do |filter|
       custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags
-      name_filters += ["custom:#{filter}"]
+      name_filters       += [ "custom:#{filter}" ]
     end
         
+    # Prepare tag filters
     tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
-    scope = Userfile.convert_filters_to_scope(name_filters)
-    scope = scope.scoped(:conditions  => {:format_source_id  => nil})
-    if current_project
-      scope = scope.scoped(:conditions  => {:group_id  => current_project.id})
+    Userfile.add_filters_to_scope(name_filters, filtered_scope)
+    unless tag_filters.blank?
+      filtered_scope = filtered_scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
     end
-    if current_session.view_all?
-      if current_user.has_role? :site_manager
-        scope = Userfile.restrict_site_on_query(current_user, scope)
-      end
+
+    # Filter by current project
+    if current_project
+      filtered_scope = filtered_scope.scoped(:conditions => { :group_id  => current_project.id } )
+    end
+
+    # Restrict by 'view all' or not
+    if current_session.view_all? && current_user.has_role?(:site_manager)
+      filtered_scope = Userfile.restrict_site_on_query(current_user, filtered_scope)
     else
-      scope = Userfile.restrict_access_on_query(current_user, scope, :access_requested => :read)
+      filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
     end 
-    scope = scope.scoped(
-     :include  => :tags
-    )
-    
-    
+
+    # Filter by format
+    filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
     format_filter = current_session.userfiles_format_filters
     unless format_filter.blank?
       format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
       format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-      scope = scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
+      filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
     end
     
-    unless tag_filters.blank?
-      scope = scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
-    end
-    
+    #------------------------------
+    # Sorting scope
+    #------------------------------
+
+    sorted_scope = filtered_scope.scoped({})
+    joins = []
     unless current_session.userfiles_sort_order == "userfiles.tree_sort"
       sort_table = current_session.userfiles_sort_order.split(".")[0]
       case sort_table
       when "users"
-        scope = scope.scoped(:joins => :user)
+        joins << :user
       when "groups"
-        scope = scope.scoped(:joins => :group)
+        joins << :group
       when "data_providers"
-        scope = scope.scoped(:joins => :data_provider)
+        joins << :data_provider
       end
-      scope = scope.scoped(:order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}")
+      sorted_scope = sorted_scope.scoped(
+        :joins => joins,
+        :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
+      )
     end
     
-    original_scope = scope
-    @userfiles     = scope
-    
+    #------------------------------
+    # Pagination variables
+    #------------------------------
+
     @user_pref_page_length = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
     if current_session.paginate?
       @userfiles_per_page = @user_pref_page_length
     else
       @userfiles_per_page = 400 # even when not paginating, there's a limit!
     end
-    
     current_page = params[:page] || 1
     offset = (current_page.to_i - 1) * @userfiles_per_page
-    
-    if current_session[:userfiles_tree_sort] == "on"
-      @userfiles = @userfiles.scoped(:select => "userfiles.id, userfiles.parent_id")
-      @userfiles = Userfile.tree_sort(@userfiles)
-      @userfiles_total = @userfiles.size
-      sort_info  = {}
-      userfile_ids = []
-      Userfile.paginate(@userfiles, current_page, @userfiles_per_page).each{ |u| sort_info[u.id] = u; userfile_ids << u.id }
-      @userfiles = original_scope
-      @userfiles = @userfiles.scoped(:conditions => {:id => userfile_ids})
-      @userfiles = Userfile.tree_sort(@userfiles)
-      @userfiles.each{ |u| u.level = sort_info[u.id].level }
+
+    #------------------------------
+    # Final paginated array of objects
+    #------------------------------
+
+    includes = [ :user, :data_provider, :sync_status, :tags, :group ] # used only when fetching objects for renadering the page
+
+    # ---- NO tree sort ----
+    if current_session[:userfiles_tree_sort] != "on"
+      @userfiles_total = filtered_scope.size
+      @userfiles       = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
+      @userfiles       = WillPaginate::Collection.create(current_page, @userfiles_per_page) do |pager|
+        pager.replace(@userfiles)
+        pager.total_entries = @userfiles_total
+        pager
+      end
+    # ---- WITH tree sort ----
     else
-      @userfiles_total = @userfiles.size
-      @userfiles = @userfiles.all(:offset => offset, :limit  => @userfiles_per_page)
+      # We first get first from a list of 'simple' objects
+      simple_userfiles  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").all
+      simple_userfiles  = Userfile.tree_sort(simple_userfiles)
+      @userfiles_total  = simple_userfiles.size
+
+      # Paginate the list of simple objects
+      @userfiles        = Userfile.paginate(simple_userfiles, current_page, @userfiles_per_page)
+
+      # Fetch and substitute the real objects in-situ
+      userfile_ids      = @userfiles.collect { |u| u.id }
+      real_subset       = filtered_scope.all(:include => includes, :conditions => { :id => userfile_ids })
+      real_subset_index = real_subset.index_by { |u| u.id }
+      @userfiles.each_with_index do |simple,i|
+        @userfiles[i]       = real_subset_index[simple.id]
+        @userfiles[i].level = simple.level
+      end
     end
     
-    @userfiles = WillPaginate::Collection.create(current_page, @userfiles_per_page) do |pager|
-      pager.replace(@userfiles)
-      pager.total_entries = @userfiles_total
-      pager
-    end
-    
-    @user_tags = current_user.tags.find(:all)
-    @user_groups = current_user.available_groups(:all, :order => "type")
+    #------------------------------
+    # Other view variables
+    #------------------------------
+
+    @user_tags      = current_user.tags.find(:all)
+    @user_groups    = current_user.available_groups(:all, :order => "type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
-    @data_providers = @data_providers.select { |dp| ! dp.meta[:no_uploads] }
+    @data_providers.reject! { |dp| dp.meta[:no_uploads] }
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
     @preferred_bourreau_id = current_user.user_preference.bourreau_id
 
-    #For the 'new' panel
-    @userfile = Userfile.new(
-      :group_id => SystemGroup.find_by_name(current_user.login).id
-    )
+    # For the 'new' panel
+    @userfile = Userfile.new( :group_id => current_user.own_group.id )
+
     respond_to do |format|
       format.html
       format.js

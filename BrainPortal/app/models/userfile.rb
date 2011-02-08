@@ -364,12 +364,11 @@ class Userfile < ActiveRecord::Base
     end
   end
   
-  #Convert the array of +filters+ into an scope
+  #Convert the array of +filters+ and add them to +scope+
   #to be used in pulling userfiles from the database.
   #Note that tag filters will not be converted, as they are
   #handled by the apply_tag_filters method.
-  def self.convert_filters_to_scope(filters)
-    scope = self.scoped({})
+  def self.add_filters_to_scope(filters,scope)
 
     filters.each do |filter|
       type, term = filter.split(':')
