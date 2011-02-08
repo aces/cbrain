@@ -212,7 +212,7 @@ class User < ActiveRecord::Base
   
   def available_tasks
     @available_tasks ||= if self.has_role? :admin
-                         CbrainTask.scoped({ :include => [ :user, :group ] })
+                         CbrainTask.scoped({})
                        elsif self.has_role? :site_manager
                          CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
                        else

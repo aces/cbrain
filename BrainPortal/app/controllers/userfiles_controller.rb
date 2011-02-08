@@ -41,12 +41,12 @@ class UserfilesController < ApplicationController
     custom_filter_tags = []
     custom_filters.each do |filter|
       custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags
-      name_filters       += [ "custom:#{filter}" ]
+      name_filters       << "custom:#{filter}"
     end
         
     # Prepare tag filters
-    tag_filters = current_session.userfiles_tag_filters + custom_filter_tags
-    Userfile.add_filters_to_scope(name_filters, filtered_scope)
+    tag_filters    = current_session.userfiles_tag_filters + custom_filter_tags
+    filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
     unless tag_filters.blank?
       filtered_scope = filtered_scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
     end

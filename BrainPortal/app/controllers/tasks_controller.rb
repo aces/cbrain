@@ -20,15 +20,12 @@ class TasksController < ApplicationController
 
   def index #:nodoc:   
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreau_ids = @bourreaux.map &:id
 
     if current_project
-      scope = CbrainTask.scoped(:conditions  => {:group_id  => current_project.id}, :include => [ :user, :group ] )
+      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id }, :include => [ :user, :group ] )
     else
       scope = current_user.available_tasks
-    end
-    
-    unless @filter_params["filters"]["user_id"].blank?
-      scope = scope.scoped(:conditions => {:user_id => @filter_params["filters"]["user_id"]})
     end
     
     #Used to create filters
@@ -36,22 +33,21 @@ class TasksController < ApplicationController
     @task_owners   = {}
     @task_projects = {}
     @task_status   = {}
-    CbrainTask.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
-                     :group  => "cbrain_tasks.type",
-                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_types[t.class.name] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
-                     :group  => "cbrain_tasks.user_id",
-                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_owners[t.user] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
-                     :group  => "cbrain_tasks.group_id",
-                      :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_projects[t.group] = t.count }
-    CbrainTask.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
-                     :group  => "cbrain_tasks.status",
-                     :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'").each{ |t| @task_status[t.status] = t.count }
+
+    header_scope = scope.scoped( :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'" )
+    header_scope = header_scope.scoped( :conditions => { :bourreau_id => bourreau_ids })
+
+    header_scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
+                      :group => "cbrain_tasks.type" ).each { |t| @task_types[t.class.name] = t.count }
+    header_scope.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
+                      :group => "cbrain_tasks.user_id" ).each { |t| @task_owners[t.user] = t.count }
+    header_scope.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
+                      :group => "cbrain_tasks.group_id" ).each { |t| @task_projects[t.group] = t.count }
+    header_scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
+                      :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
     
     @filter_params["filters"].each do |att, val|
       att = att.to_sym
-      next if att == :user_id
       value = val
       case att
       when :status
@@ -73,9 +69,9 @@ class TasksController < ApplicationController
     end
 
     if @filter_params["filters"]["bourreau_id"].blank?
-      scope = scope.scoped( :conditions  => {:bourreau_id  => @bourreaux.map { |b| b.id }} )
+      scope = scope.scoped( :conditions => { :bourreau_id => bourreau_ids } )
     end
-    
+
     if request.format.to_sym == :xml
       @filter_params["sort"]["order"] ||= "cbrain_tasks.updated_at"
       @filter_params["sort"]["dir"]   ||= "DESC"
