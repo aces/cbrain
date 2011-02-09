@@ -7,7 +7,7 @@
 
    <td>
      <% if userfile.available? %>
-      <%= check_box_tag("file_ids[]", userfile.id.to_s, false, :class  => 'userfiles_checkbox') %>
+      <%= check_box_tag("file_ids[]", userfile.id.to_s, @persistent_userfile_ids[userfile.id.to_s], :class  => 'userfiles_checkbox') %>
      <% else %>
       <input type='checkbox' DISABLED />
      <% end %>

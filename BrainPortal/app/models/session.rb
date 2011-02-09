@@ -43,7 +43,8 @@ class Session
     @session[:userfiles_tree_sort] ||= 'on'
     @session[:userfiles_pagination] ||= 'on'
     @session[:userfiles_details] ||= 'off'
-    
+    @session[:persistent_userfile_ids] ||= {}
+
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
     @session[controller.to_sym]["filters"] ||= {}
@@ -210,6 +211,53 @@ class Session
   #*Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
   def method_missing(key, *args)
     @session[key.to_sym]
+  end
+
+  ###########################################
+  # Peristent Userfile Ids Management Methods
+  ###########################################
+
+  # Clear the list of persistent userfile IDs;
+  # returns the number of userfiles that were there.
+  def persistent_userfile_ids_clear
+    persistent_ids = self[:persistent_userfile_ids] ||= {}
+    original_count = persistent_ids.size
+    self[:persistent_userfile_ids] = {}
+    original_count
+  end
+
+  # Add the IDs in the array +id_list+ to the
+  # list of persistent userfile IDs.
+  # Returns the number of IDs that were actually added.
+  def persistent_userfile_ids_add(id_list)
+    added_count    = 0
+    persistent_ids = self[:persistent_userfile_ids] ||= {}
+    id_list.each do |id|
+      next if persistent_ids[id]
+      persistent_ids[id] = true
+      added_count += 1
+    end
+    added_count
+  end
+
+  # Removed the IDs in the array +id_list+ to the
+  # list of persistent userfile IDs.
+  # Returns the number of IDs that were actually removed.
+  def persistent_userfile_ids_remove(id_list)
+    removed_count  = 0
+    persistent_ids = self[:persistent_userfile_ids] ||= {}
+    id_list.each do |id|
+      next unless persistent_ids[id]
+      persistent_ids.delete(id)
+      removed_count += 1
+    end
+    removed_count
+  end
+
+  # Returns an array of the list of persistent userfile IDs.
+  def persistent_userfile_ids_list
+    persistent_ids = self[:persistent_userfile_ids] ||= {}
+    persistent_ids.keys
   end
   
   private

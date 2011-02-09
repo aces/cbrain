@@ -19,7 +19,11 @@ class UserfilesController < ApplicationController
   api_available
 
   before_filter :login_required
-  around_filter :permission_check, :only  => [:download, :update_multiple, :delete_files, :create_collection, :change_provider, :quality_control]
+  before_filter :auto_add_persistent_userfile_ids, :except => [ :manage_persistent ]
+  around_filter :permission_check, :only => [
+      :download, :update_multiple, :delete_files, :create_collection, :change_provider, :quality_control,
+      :manage_persistent
+  ]
 
   # GET /userfiles
   # GET /userfiles.xml
@@ -106,8 +110,8 @@ class UserfilesController < ApplicationController
     else
       @userfiles_per_page = 400 # even when not paginating, there's a limit!
     end
-    current_page = params[:page] || 1
-    offset = (current_page.to_i - 1) * @userfiles_per_page
+    @current_page = params[:page] || 1
+    offset = (@current_page.to_i - 1) * @userfiles_per_page
 
     #------------------------------
     # Final paginated array of objects
@@ -119,7 +123,7 @@ class UserfilesController < ApplicationController
     if current_session[:userfiles_tree_sort] != "on"
       @userfiles_total = filtered_scope.size
       @userfiles       = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
-      @userfiles       = WillPaginate::Collection.create(current_page, @userfiles_per_page) do |pager|
+      @userfiles       = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
         pager.replace(@userfiles)
         pager.total_entries = @userfiles_total
         pager
@@ -132,7 +136,7 @@ class UserfilesController < ApplicationController
       @userfiles_total  = simple_userfiles.size
 
       # Paginate the list of simple objects
-      @userfiles        = Userfile.paginate(simple_userfiles, current_page, @userfiles_per_page)
+      @userfiles        = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
 
       # Fetch and substitute the real objects in-situ
       userfile_ids      = @userfiles.collect { |u| u.id }
@@ -156,6 +160,8 @@ class UserfilesController < ApplicationController
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
     @preferred_bourreau_id = current_user.user_preference.bourreau_id
 
+    @persistent_userfile_ids = current_session[:persistent_userfile_ids] ||= {}
+
     # For the 'new' panel
     @userfile = Userfile.new( :group_id => current_user.own_group.id )
 
@@ -166,7 +172,8 @@ class UserfilesController < ApplicationController
     end
   end
 
-  def new_parent_child
+  def new_parent_child #:nodoc:
+
     if params[:file_ids].blank?
       render :text  => "<span class=\"warning\">You must select at least one file to which you have write access.</span>"
       return
@@ -177,7 +184,7 @@ class UserfilesController < ApplicationController
     render :action  => :new_parent_child, :layout  => false
   end
   
-  def create_parent_child
+  def create_parent_child #:nodoc:
     parent_id = params[:parent_id]
     child_ids = params[:child_ids]
     
@@ -302,7 +309,8 @@ class UserfilesController < ApplicationController
      redirect_to :action  => :show
   end
   
-  def sync_multiple
+  # Triggers the mass synchronization of several userfiles
+  def sync_multiple #:nodoc:
     @userfiles = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :read)
     
     CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
@@ -337,7 +345,7 @@ class UserfilesController < ApplicationController
   #            a maximum of 50 files may be extracted in this way, and
   #            no files nested within directories will be extracted
   #            (the +collection+ option has no such limitations).
-  def create
+  def create #:nodoc:
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -550,7 +558,7 @@ class UserfilesController < ApplicationController
   
   # Updated tags, groups or group-writability flags for several
   # userfiles.
-  def update_multiple
+  def update_multiple #:nodoc:
     filelist    = params[:file_ids] || []
     operation = case params[:commit].to_s
                    # Critical! Case values much mach label of submit button!
@@ -595,7 +603,7 @@ class UserfilesController < ApplicationController
     redirect_to redirect_action
   end
   
-  def quality_control
+  def quality_control #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1    
     
@@ -636,7 +644,7 @@ class UserfilesController < ApplicationController
   end
   
   #Create a collection from the selected files.
-  def create_collection
+  def create_collection #:nodoc:
     filelist    = params[:file_ids] || []
     if current_project
       file_group = current_project.id
@@ -673,7 +681,7 @@ class UserfilesController < ApplicationController
   end
   
   # Copy or move files to a new provider.
-  def change_provider
+  def change_provider #:nodoc:
 
     # Operaton to perform
     if params[:commit] =~ /move/i
@@ -767,9 +775,42 @@ class UserfilesController < ApplicationController
     flash[:notice] = "Your files are being #{word_moved} in the background.\n"
     redirect_to :action => :index, :format => request.format.to_sym
   end
+
+  # Adds the selected userfile IDs to the session's persistent list
+  def manage_persistent #:nodoc:
+    filelist    = params[:file_ids] || []
+
+    if (params[:operation] || 'clear') =~ /(clear|add|remove|replace)/i
+      operation = Regexp.last_match[1].downcase
+    else
+      operation = 'clear'
+    end
+
+    flash[:notice] = ""
+
+    if operation == 'clear' || operation == 'replace'
+      original_count = current_session.persistent_userfile_ids_clear
+      flash[:notice] += "#{@template.pluralize(original_count, "file")} cleared from persistent list.\n" if original_count > 0
+    end
+
+    if operation == 'add'   || operation == 'replace'
+      added_count   = current_session.persistent_userfile_ids_add(filelist)
+      flash[:notice] += "#{@template.pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
+    end
+
+    if operation == 'remove'
+      removed_count = current_session.persistent_userfile_ids_remove(filelist)
+      flash[:notice] += "#{@template.pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
+    end
+
+    persistent_ids = current_session.persistent_userfile_ids_list
+    flash[:notice] += "Total of #{@template.pluralize(persistent_ids.size, "file")} now in the persistent ID list.\n" if persistent_ids.size > 0
+
+    redirect_to :action => :index, :page => params[:page]
+  end
   
   #Delete the selected files.
-  def delete_files
+  def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
     
     deleted_count      = 0
@@ -797,7 +838,7 @@ class UserfilesController < ApplicationController
   
 
   #Dowload the selected files.
-  def download
+  def download #:nodoc:
     filelist           = params[:file_ids] || []
     specified_filename = params[:specified_filename]
     
@@ -844,7 +885,7 @@ class UserfilesController < ApplicationController
 
   #Extract a file from a collection and register it separately
   #in the database.
-  def extract_from_collection
+  def extract_from_collection #:nodoc:
     success = failure = 0
 
     unless params[:file_ids] && params[:file_ids].size > 0
@@ -885,7 +926,7 @@ class UserfilesController < ApplicationController
 
   # Compress or uncompress a set of userfiles; only supported
   # for SingleFiles.
-  def compress 
+  def compress  #:nodoc:
     filelist    = params[:file_ids] || []
     
     to_compress        = []
@@ -979,10 +1020,15 @@ class UserfilesController < ApplicationController
   end
 
   private
-  
+
+  # Adds the persistent userfile ids to the params[:file_ids] argument
+  def auto_add_persistent_userfile_ids #:nodoc:
+    params[:file_ids] = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
+  end
+
   # Verify that all files selected for an operation
   # are accessible by the current user.
-  def permission_check
+  def permission_check #:nodoc:
     if params[:file_ids].blank?
       flash[:error] = "No file selected? Selection cleared.\n"
       redirect_to :action => :index, :format => request.format.to_sym

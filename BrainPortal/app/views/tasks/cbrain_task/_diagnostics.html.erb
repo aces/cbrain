@@ -1,5 +1,12 @@
 
 <fieldset>
+<legend>File List Summary</legend>
+  This task has <%= (params[:interface_userfile_ids] || []).size %> files in its input list.
+</fieldset>
+
+<p/>
+
+<fieldset>
 <legend>Bourreau Life Cycle, Recovery and Restarting Capabilities</legend>
 
 <table>
@@ -45,7 +52,7 @@
 
 </fieldset>
 
-<p>
+<p/>
 
 <fieldset>
 <legend>Check Data Providers Access</legend>
@@ -58,14 +65,14 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 
 </fieldset>
 
-<p>
+<p/>
 
 <fieldset>
 <legend>Multi-cycle restart/recovers</legend>
 <strong>Crashes will reset to false after they are first triggered:</strong><%= form.params_check_box :crash_will_reset %>
 </fieldset>
 
-<p>
+<p/>
 
 <fieldset>
 <legend>Input fields validation tests:</legend>
@@ -120,8 +127,7 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 
 </fieldset>
 
-
-<P>
+<p/>
 
 <fieldset>
 <legend>Interface after_form() lifecycle test:</legend>
@@ -145,7 +151,7 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 
 
 <% if @task.new_record? %>
-<P>
+<p/>
 
 <fieldset>
 <legend>Stress-testing</legend>

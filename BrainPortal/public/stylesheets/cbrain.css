@@ -967,7 +967,7 @@ pre {
 
 .menu_bar {
     display: table;
-    padding-left: 0em;
+    padding-left: 1em;
     padding-right: 1em;
     padding-top: 0.2em;
     padding-bottom: 0.2em;
@@ -997,6 +997,14 @@ pre {
     margin-right: 0;
     margin-left: 0;
     min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
+}
+
+.selected_info {
+    float: left;
+}
+
+.page_links {
+    text-align: center;
 }
 
 #userfiles_table {

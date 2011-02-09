@@ -34,7 +34,7 @@ class TasksController < ApplicationController
     @task_projects = {}
     @task_status   = {}
 
-    header_scope = scope.scoped( :conditions => "cbrain_tasks.status<>'Preset' AND cbrain_tasks.status<>'SitePreset'" )
+    header_scope = scope.scoped( :conditions => "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
     header_scope = header_scope.scoped( :conditions => { :bourreau_id => bourreau_ids })
 
     header_scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
@@ -210,7 +210,8 @@ class TasksController < ApplicationController
     end
 
     # Filter list of files as provided by the get request
-    @files            = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :write) rescue []
+    file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
+    @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."
       redirect_to :controller  => :userfiles, :action  => :index

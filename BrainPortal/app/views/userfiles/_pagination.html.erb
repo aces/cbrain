@@ -1,2 +1,9 @@
+<span class="selected_info">
+  <% if @persistent_userfile_ids.size > 0 %>
+    <%= red_if(true,"#{pluralize(@persistent_userfile_ids.size," file")} selected on all pages") %>
+  <% end %>
+</span>
+<span class="page_links">
 <%= will_paginate @userfiles, :container => false %>
 (<%= @userfiles_total %> files)
+</span>

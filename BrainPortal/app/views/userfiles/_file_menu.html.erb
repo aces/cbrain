@@ -53,7 +53,7 @@
         Synchronize Files Locally: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
     <% end %>
 
-    <% button_with_dropdown_menu("Move/Copy", :class => 'centered')  do %>
+    <% button_with_dropdown_menu("Move/Copy", :class => 'centered') do %>
         <p>
           To Data Provider:
           <%= data_provider_select("data_provider_id") %>
@@ -68,10 +68,38 @@
           <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
         <p/>
     <% end %>
+
+    <% select_label = "Selected Files" + (@persistent_userfile_ids.size != 0 ? " (now: #{@persistent_userfile_ids.size})" : "") %>
+    <% button_with_dropdown_menu(select_label, :class => 'centered') do %>
+      <p>
+      This panel manages your list of <em>persistently</em> selected files.<br/>
+      This list is maintained even when you switch from page to page.
+      </p>
+      <p>
+      <% if @persistent_userfile_ids.size == 0 %>
+        Currently, no files are current persistently selected.
+      <% else %>
+        <%= red_if(true,"#{pluralize(@persistent_userfile_ids.size,"file")} currently selected.") %>
+      <% end %>
+      </p>
+      <p>
+      <% [ 'Add Files', 'Remove Files', 'Clear The List' ].each do |label| %>
+        <%= hijacker_submit_button(label,
+              :url => url_for(:action  => :manage_persistent, :operation => label),
+              :method => :post,
+              :ajax_submit => false
+            ) 
+        %>
+      <% end %>
+      </p>
+   <% end %>
+
    </span>
 </div>
+
 <div class="menu_bar">
   <span class="button_set">
+
     <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
 
     <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
@@ -90,5 +118,6 @@
                                          :confirm => "Are you sure you want to delete the selected files?",
                                          :method  => :delete) 
     %>
+
   </span>
 </div>
