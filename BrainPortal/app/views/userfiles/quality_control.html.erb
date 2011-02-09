@@ -17,15 +17,6 @@
 <% end %>
 
 <br>
-<% if @userfile.respond_to?(:qc_files) && !@userfile.qc_files.blank? %>
-  <% if @userfile.is_locally_synced? %>
-    <% @userfile.qc_files.map(&:name).each do |qc| %>
-      <%= image_tag url_for(:action  => :content, :id  => @userfile.id, :collection_file  => qc) %><br>
-    <% end %>
-  <% else %>
-    This file must be synced locally to view QC data.
-  <% end %>
-<% else %>
-  File <% @userfile.name %> does not contain QC data.
-<% end %>
+<%= render :partial => @partial %>
+
 

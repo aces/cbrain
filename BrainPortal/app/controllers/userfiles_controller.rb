@@ -232,7 +232,7 @@ class UserfilesController < ApplicationController
   
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    viewer_name = params[:viewerx] || params[:viewer]
+    viewer_name = params[:viewer]
     viewer      = @userfile.find_viewer(viewer_name)
 
     if viewer
@@ -252,7 +252,7 @@ class UserfilesController < ApplicationController
         render :action  => :display, :layout  => false
       end
     else
-      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewerx]}.</div>", :status  => "404"
+      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
     end
   end
   
@@ -622,6 +622,12 @@ class UserfilesController < ApplicationController
     if @current_index + 1 < @filelist.size
       @current_index += 1
       @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
+      partial_base = "userfiles/quality_control/"
+      if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
+        @partial = partial_base + @userfile.class.name.underscore
+      else
+        @partial = partial_base + "default"
+      end
     else
       flash[:notice] = "QC done."
       redirect_to "/userfiles"
