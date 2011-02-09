@@ -4,6 +4,6 @@
   <% end %>
 </span>
 <span class="page_links">
-<%= will_paginate @userfiles, :container => false %>
+<%= will_paginate @userfiles, :container => false, :params => { :file_ids => nil } %>
 (<%= @userfiles_total %> files)
 </span>
