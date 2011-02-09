@@ -23,7 +23,7 @@ class TasksController < ApplicationController
     bourreau_ids = @bourreaux.map &:id
 
     if current_project
-      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id }, :include => [ :user, :group ] )
+      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
     else
       scope = current_user.available_tasks
     end
