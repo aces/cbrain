@@ -71,19 +71,21 @@
 
     <% select_label = "Selected Files" + (@persistent_userfile_ids.size != 0 ? " (now: #{@persistent_userfile_ids.size})" : "") %>
     <% button_with_dropdown_menu(select_label, :class => 'centered') do %>
-      <p>
+      <p class="left_align">
       This panel manages your list of <em>persistently</em> selected files.<br/>
-      This list is maintained even when you switch from page to page.
+      This list is maintained even when you switch from page to page.<br/>
+      These files plus those selected on the current page will all be used<br/>
+      for all operation buttons (move/copy, submit tasks, etc).
       </p>
       <p>
       <% if @persistent_userfile_ids.size == 0 %>
-        Currently, no files are current persistently selected.
+        Currently, no files are selected persistently.
       <% else %>
-        <%= red_if(true,"#{pluralize(@persistent_userfile_ids.size,"file")} currently selected.") %>
+        <%= red_if(true,"#{pluralize(@persistent_userfile_ids.size,"file")} currently selected persistently.") %>
       <% end %>
       </p>
       <p>
-      <% [ 'Add Files', 'Remove Files', 'Clear The List' ].each do |label| %>
+      <% [ 'Add To List', 'Remove From List', 'Clear The List' ].each do |label| %>
         <%= hijacker_submit_button(label,
               :url => url_for(:action  => :manage_persistent, :operation => label),
               :method => :post,

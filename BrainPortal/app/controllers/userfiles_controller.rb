@@ -788,9 +788,11 @@ class UserfilesController < ApplicationController
 
     flash[:notice] = ""
 
+    cleared_count = added_count = removed_count = 0
+
     if operation == 'clear' || operation == 'replace'
-      original_count = current_session.persistent_userfile_ids_clear
-      flash[:notice] += "#{@template.pluralize(original_count, "file")} cleared from persistent list.\n" if original_count > 0
+      cleared_count = current_session.persistent_userfile_ids_clear
+      flash[:notice] += "#{@template.pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
     end
 
     if operation == 'add'   || operation == 'replace'
@@ -804,7 +806,11 @@ class UserfilesController < ApplicationController
     end
 
     persistent_ids = current_session.persistent_userfile_ids_list
-    flash[:notice] += "Total of #{@template.pluralize(persistent_ids.size, "file")} now in the persistent ID list.\n" if persistent_ids.size > 0
+    flash[:notice] += "Total of #{@template.pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
+      persistent_ids.size > 0 && (added_count > 0 || removed_count > 0 || cleared_count > 0)
+
+    flash[:notice] += "No changes made to the persistent list of userfiles." if
+      added_count == 0 && removed_count == 0 && cleared_count == 0
 
     redirect_to :action => :index, :page => params[:page]
   end
@@ -1029,12 +1035,12 @@ class UserfilesController < ApplicationController
   # Verify that all files selected for an operation
   # are accessible by the current user.
   def permission_check #:nodoc:
-    if params[:file_ids].blank?
-      flash[:error] = "No file selected? Selection cleared.\n"
+    action_name = params[:action].to_s
+    if params[:file_ids].blank? && action_name != 'manage_persistent'
+      flash[:error] = "No files selected? Selection cleared.\n"
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
-    action_name = params[:action].to_s
     if action_name == "update_multiple"
       action_name = params[:commit] + " on"
     end
