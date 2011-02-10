@@ -233,10 +233,9 @@ class CbrainTask::Civet < ClusterTask
   end
 
   def save_results #:nodoc:
-    params       = self.params
-    file0        = params[:file_args]["0"] # we require this single entry for info on the data files
+    params           = self.params
+    file0            = params[:file_args]["0"] # we require this single entry for info on the data files
 
-    prefix           = file0[:prefix] || "unkpref2"
     dsid             = file0[:dsid]   || "unkdsid2"
     data_provider_id = params[:data_provider_id]
 
@@ -292,8 +291,9 @@ class CbrainTask::Civet < ClusterTask
     end
 
     # Create new CivetCollection
+    out_name = output_name_from_pattern(file0[:t1_name])
     civetresult = safe_userfile_find_or_new(CivetCollection,
-      :name             => dsid + "-" + uniq_run,
+      :name             => out_name,
       :data_provider_id => data_provider_id,
       :task             => "Civet"
     )
@@ -378,6 +378,9 @@ class CbrainTask::Civet < ClusterTask
   # Makes a quick check to ensure the input files
   # are really MINC files.
   def validate_minc_file(path) #:nodoc:
+    unless params[:fake_run_civetcollection_id].blank?
+      return true # no validation necessary in test 'fake' mode.
+    end
     outerr = self.tool_config_system("mincinfo #{path} 2>&1")
     out    = outerr[0]
     base = File.basename(path)
@@ -390,6 +393,46 @@ class CbrainTask::Civet < ClusterTask
        return false
     end
     true
+  end
+
+  # Creates the output filename based on the pattern
+  # provided by the user.
+  def output_name_from_pattern(t1name)
+    file0        = params[:file_args]["0"] # we require this single entry for info on the data files
+    prefix       = file0[:prefix] || "unkpref3"
+    dsid         = file0[:dsid]   || "unkdsid3"
+
+    pattern = self.params[:output_filename_pattern] || ""
+    pattern.strip!
+    pattern = '{subject}-{cluster}-{task_id}-{run_number}' if pattern.blank?
+
+    # Create standard keywords
+    now = Time.zone.now
+    components = {
+      "date"       => now.strftime("%Y-%m-%d"),
+      "time"       => now.strftime("%H:%M:%S"),
+      "task_id"    => self.id.to_s,
+      "run_number" => self.run_number.to_s,
+      "cluster"    => self.bourreau.name,
+      "subject"    => dsid,
+      "prefix"     => prefix
+    }
+
+    # Add {1}, {2} etc keywords from t1 name
+    t1_comps = t1name.split(/([a-z0-9]+)/i)
+    1.step(t1_comps.size-1,2) do |i|
+      keyword = "#{(i-1)/2+1}"
+      components[keyword] = t1_comps[i]
+    end
+
+    # Create new basename
+    final = pattern.pattern_substitute(components) # in cbrain_extensions.rb
+
+    # Validate it
+    cb_error "Pattern for new filename produces an invalid filename: '#{final}'." unless
+      Userfile.is_legal_filename?(final)
+
+    return final
   end
 
 end
