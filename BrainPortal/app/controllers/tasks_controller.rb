@@ -646,9 +646,13 @@ class TasksController < ApplicationController
         old_params = @task.params.clone
         @task.params         = preset.params
         restore_untouchable_attributes(@task,old_params)
-        @task.group_id       = preset.group_id       if preset.group_id
-        @task.bourreau_id    = preset.bourreau_id    if preset.bourreau_id
-        @task.tool_config_id = preset.tool_config_id if preset.tool_config_id
+        if preset.group && preset.group.can_be_accessed_by?(current_user)
+          @task.group_id = preset.group_id
+        end
+        if preset.tool_config && preset.tool_config.can_be_accessed_by?(current_user) && (@task.new_record? || preset.tool_config.bourreau_id == @task.bourreau_id)
+          @task.tool_config_id = preset.tool_config_id
+        end
+        @task.bourreau_id = @task.tool_config.bourreau_id if @task.tool_config
         flash[:notice] += "Loaded preset '#{preset.description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
