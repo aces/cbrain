@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110127232841) do
+ActiveRecord::Schema.define(:version => 20110210223824) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -25,6 +25,9 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.integer "tool_id"
     t.integer "bourreau_id"
   end
+
+  add_index "bourreaux_tools", ["bourreau_id"], :name => "index_bourreaux_tools_on_bourreau_id"
+  add_index "bourreaux_tools", ["tool_id"], :name => "index_bourreaux_tools_on_tool_id"
 
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"
@@ -46,6 +49,7 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
   end
 
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
+  add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
   add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
   add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
   add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
@@ -60,6 +64,7 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.text     "data"
   end
 
+  add_index "custom_filters", ["type"], :name => "index_custom_filters_on_type"
   add_index "custom_filters", ["user_id"], :name => "index_custom_filters_on_user_id"
 
   create_table "data_providers", :force => true do |t|
@@ -80,6 +85,10 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.boolean  "not_syncable",  :default => false
     t.string   "time_zone"
   end
+
+  add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
+  add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
+  add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
 
   create_table "feedbacks", :force => true do |t|
     t.string   "summary"
@@ -104,6 +113,9 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.integer "group_id"
     t.integer "user_id"
   end
+
+  add_index "groups_users", ["group_id"], :name => "index_groups_users_on_group_id"
+  add_index "groups_users", ["user_id"], :name => "index_groups_users_on_user_id"
 
   create_table "logged_exceptions", :force => true do |t|
     t.string   "exception_class"
@@ -130,6 +142,8 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.boolean  "critical"
     t.boolean  "display"
   end
+
+  add_index "messages", ["user_id"], :name => "index_messages_on_user_id"
 
   create_table "meta_data_store", :force => true do |t|
     t.integer  "ar_id"
@@ -171,9 +185,7 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
     t.string   "time_zone"
-    t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
-    t.text     "dp_ignore_patterns"
     t.string   "cms_class"
     t.string   "cms_default_queue"
     t.string   "cms_extra_qsub_args"
@@ -182,6 +194,8 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
+    t.text     "dp_ignore_patterns"
+    t.string   "site_url_prefix"
     t.string   "help_url"
     t.integer  "rr_timeout"
   end
@@ -244,11 +258,15 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
   end
 
   add_index "tags", ["name"], :name => "index_tags_on_name"
+  add_index "tags", ["user_id"], :name => "index_tags_on_user_id"
 
   create_table "tags_userfiles", :id => false, :force => true do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
   end
+
+  add_index "tags_userfiles", ["tag_id"], :name => "index_tags_userfiles_on_tag_id"
+  add_index "tags_userfiles", ["userfile_id"], :name => "index_tags_userfiles_on_userfile_id"
 
   create_table "tool_configs", :force => true do |t|
     t.text     "description"
@@ -261,6 +279,9 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.integer  "group_id"
   end
 
+  add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
+  add_index "tool_configs", ["tool_id"], :name => "index_tool_configs_on_tool_id"
+
   create_table "tools", :force => true do |t|
     t.string   "name"
     t.integer  "user_id"
@@ -272,6 +293,11 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
     t.string   "select_menu_text"
     t.text     "description"
   end
+
+  add_index "tools", ["category"], :name => "index_tools_on_category"
+  add_index "tools", ["cbrain_task_class"], :name => "index_tools_on_cbrain_task_class"
+  add_index "tools", ["group_id"], :name => "index_tools_on_group_id"
+  add_index "tools", ["user_id"], :name => "index_tools_on_user_id"
 
   create_table "user_preferences", :force => true do |t|
     t.integer  "user_id"
@@ -301,6 +327,8 @@ ActiveRecord::Schema.define(:version => 20110127232841) do
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
+  add_index "userfiles", ["format_source_id"], :name => "index_userfiles_on_format_source_id"
+  add_index "userfiles", ["group_id"], :name => "index_userfiles_on_group_id"
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
   add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
   add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
