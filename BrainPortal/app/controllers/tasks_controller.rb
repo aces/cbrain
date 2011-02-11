@@ -354,31 +354,46 @@ class TasksController < ApplicationController
     @task.launch_time = Time.now # so grouping will work
     tasklist = @task.wrapper_final_task_list
     
-    tasklist.each do |task|
-      task.status = "New" if task.status.blank?
-      begin
-        task.save!
-      rescue => ex
-        messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
-      end
-    end
+    # Spawn a background process to launch the tasks.
+    CBRAIN.spawn_with_active_records(:admin,"Spawn Tasks") do
 
-    messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check
+      messages = ""
+
+      tasklist.each do |task|
+        task.status = "New" if task.status.blank?
+        begin
+          task.save!
+        rescue => ex
+          messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
+        end
+      end
+
+      messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
+
+      # Send a start worker command to each affected bourreau
+      bourreau_ids = tasklist.map &:bourreau_id
+      bourreau_ids.uniq.each do |bourreau_id|
+        Bourreau.find(bourreau_id).send_command_start_workers rescue true
+      end
+
+      unless messages.blank?
+        Message.send_message(current_user, {
+          :header        => "Submitted #{tasklist.size} #{@task.name} tasks; some messages follow.",
+          :message_type  => :notice,
+          :variable_text => message
+          }
+        )
+      end
+
+    end
 
     flash[:notice] += messages + "\n" unless messages.blank?
     if tasklist.size == 1
-      flash[:notice] += "Launched a #{@task.name} task."
+      flash[:notice] += "Launching a #{@task.name} task in background."
     else
-      flash[:notice] += "Launched #{tasklist.size} #{@task.name} tasks."
+      flash[:notice] += "Launching #{tasklist.size} #{@task.name} tasks in background."
     end
 
-    # Send a start worker command to each affected bourreau
-    CBRAIN.spawn_with_active_records(:nobody,"Trigger workers") do
-      bourreau_ids = tasklist.map &:bourreau_id
-      bourreau_ids.uniq.each do |bourreau_id|
-        Bourreau.find(bourreau_id).send_command_start_workers # rescue true
-      end
-    end
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
       format.xml { render :xml  => tasklist }
