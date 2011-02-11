@@ -1066,7 +1066,8 @@ pre {
     margin-left: 5px;
     margin-right: 5px;
     margin-bottom: 5px;
-    background-color: #eeeeee;
+    background-color: #f6f6f6;
+    border: 1px solid #dddddd;
 }
 
 
@@ -1075,17 +1076,17 @@ pre {
 /* % ########################################################  */
 
 #page_display {
-    padding: 0 1em 1em 20px;
+    background-color: #f6f6f6;
+    border: 1px solid #dddddd;
     text-align: left;
+    padding: 0 1em 0 1em;
 }
 
 #userfiles_search_by_filename {
-    color: #000000;
+    background-color: #f6f6f6;
+    border: 1px solid #dddddd;
     text-align: left;
-    padding-left: 20px;
-    padding-top: 0px;
-    padding-bottom: 1em;
-    padding-right: 1em;
+    padding: 0 1em 1em 1em;
 }
 
 
@@ -1095,9 +1096,10 @@ pre {
 /* % ########################################################  */
 
 .filter_sidebar {
-    background-color: #EEEEEE;
+    background-color: #f6f6f6;
     color: #505050;
-    padding-left: 20px;
+    padding: 0 1em 0 1em;
+    border: 1px solid #dddddd;
 }
 
 .filter_menu {

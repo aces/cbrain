@@ -1,15 +1,21 @@
+
 <div id="page_display">
   <%= render :partial => 'tasks/tasks_view_mode' %>
 </div>
 
-<div class="filter_sidebar">
+<p/>
+
+<fieldset class="filter_sidebar">
+  <legend>Active Filters</legend>
     <div id="current_filters">
       <%= render :partial => 'tasks/current_filters' %>
     </div>
     <small>
       <%= ajax_link 'clear', { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } }, :datatype  => 'script' %>
     </small>
-</div>
+</fieldset>
+
+<p/>
 
 <% build_accordion do |acc| %>
   <% acc.section "Filter Tasks" do %>

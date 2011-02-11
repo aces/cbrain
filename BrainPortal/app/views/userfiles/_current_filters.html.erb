@@ -1,12 +1,12 @@
 
-<h4>Active Filters</h4>
-
 <ul class="filter_menu">
+
     <% session[:userfiles_basic_filters].each do |filter|%>
        <li>
          <%= crop_text_to(20, filter) %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_basic_filter  => filter), :datatype  => 'script' %>
        </li>
     <% end %>
+
     <% unless session[:userfiles_tag_filters].blank? %>
       <% current_user.tags.find(session[:userfiles_tag_filters]).each do |tag|%>
         <li>
@@ -14,15 +14,18 @@
         </li>
       <% end %>
     <% end %>
+
     <% if session[:userfiles_format_filters]%>
        <li>
          <%= crop_text_to(20, "format:#{session[:userfiles_format_filters]}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_format_filter  => session[:userfiles_format_filters]), :datatype  => 'script' %>
        </li>
     <% end %>
+
     <% session[:userfiles_custom_filters].each do |filter|%>
        <li>
          <%= crop_text_to(20, "custom:#{filter}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_custom_filter  => filter), :datatype  => 'script' %>
        </li>
     <% end %>
+
 </ul>
 

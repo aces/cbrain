@@ -3,21 +3,28 @@
   <%= render :partial => "userfiles/page_display" %>
 </div>
 
-<div id="userfiles_search_by_filename">
+<p/>
+
+<fieldset id="userfiles_search_by_filename">
+  <legend>Search by filename</legend>
   <% form_tag({:controller  => :userfiles, :action => "index"}, :method => "get") do %>
-    <h5>Search by filename</h5>
     <div id="name_search_filter">
       <%= ajax_search_box :userfiles_search_term, userfiles_path(:userfiles_search_type => "name_search") %>
     </div>
   <% end %>
-</div>
+</fieldset>
 
-<div class="filter_sidebar">
+<p/>
+
+<fieldset class="filter_sidebar">
+  <legend>Active Filters</legend>
     <div id="current_filters">
-        <%= render :partial => 'userfiles/current_filters' %>
+      <%= render :partial => 'userfiles/current_filters' %>
     </div>
     <%= ajax_link 'clear', { :controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter }, :datatype => 'script', :class  => "action_link" %>
-</div>
+</fieldset>
+
+<p/>
 
 <% build_accordion do |acc| %>
   <% acc.section "Filter Files" do %>
