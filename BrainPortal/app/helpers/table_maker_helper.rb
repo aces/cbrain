@@ -75,12 +75,15 @@ module TableMakerHelper
     trclass    &&= " class=\"#{trclass}\""
     tdclass    &&= " class=\"#{tdclass}\""
 
+    tableid      = options[:table_id]
+    tableid    &&= " id=\"#{tableid}\""
+
     tr_callback = options[:tr_callback]
     td_callback = options[:td_callback]
     tr_callback ||= Proc.new { |rownum|       "<tr#{trclass}>" }
     td_callback ||= Proc.new { |elem,row,col| "<td#{tdclass}>#{elem}</td>" }
 
-    concat "<table#{tableclass}>\n"
+    concat "<table#{tableclass}#{tableid}>\n"
     array.each_with_index do |elem,i|
       col = i % cols
       row = i / cols
