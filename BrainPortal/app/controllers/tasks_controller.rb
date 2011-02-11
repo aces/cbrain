@@ -380,7 +380,7 @@ class TasksController < ApplicationController
         Message.send_message(current_user, {
           :header        => "Submitted #{tasklist.size} #{@task.name} tasks; some messages follow.",
           :message_type  => :notice,
-          :variable_text => message
+          :variable_text => messages
           }
         )
       end
