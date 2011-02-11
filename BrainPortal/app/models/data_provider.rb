@@ -284,30 +284,8 @@ class DataProvider < ActiveRecord::Base
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?
-    return false if self.online? == false
-    
-    #set time of death or set to offline is past 1 hour
-    alive_flag = impl_is_alive?
-
-    unless alive_flag
-      self.time_of_death ||= Time.now
-      if self.time_of_death < 2.minutes.ago
-        self.time_of_death = Time.now
-      elsif self.time_of_death < Time.now
-        self.online = false
-      end
-      self.save
-      return false
-    end
-
-    #reset time of death 
-    if alive_flag
-      self.time_of_death = nil 
-      self.save
-      return true
-    end
-
-    cb_error "Error: is_alive? for provider #{self.name} is returning a non truth that is true" 
+    return false unless self.online?
+    return impl_is_alive? ? true : false
   end
 
   # Raises an exception if is_alive? is +false+, otherwise

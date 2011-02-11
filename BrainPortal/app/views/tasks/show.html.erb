@@ -161,13 +161,13 @@
       %>
       <% if for_setup.size > 0 %>
         <tr>
-          <th colspan="2">Setup Prerequisites</td>
+          <th class="center_align_heading" colspan="2">Setup Prerequisites</td>
         </tr>
         <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
       <% end %>
       <% if for_postpro.size > 0 %>
         <tr>
-          <th colspan="2">Post Processing Prerequisites</td>
+          <th class="center_align_heading" colspan="2">Post Processing Prerequisites</td>
         </tr>
         <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
       <% end %>
