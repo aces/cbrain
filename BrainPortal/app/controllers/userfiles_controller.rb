@@ -38,8 +38,8 @@ class UserfilesController < ApplicationController
     filtered_scope = Userfile.scoped( {} )
 
     # Prepare filters
-    custom_filters = current_session.userfiles_custom_filters
-    name_filters   = current_session.userfiles_basic_filters
+    custom_filters = current_session.userfiles_custom_filters.clone
+    name_filters   = current_session.userfiles_basic_filters.clone
         
     # Prepare custom filters
     custom_filter_tags = []
