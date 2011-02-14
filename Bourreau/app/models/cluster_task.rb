@@ -956,7 +956,7 @@ class ClusterTask < CbrainTask
     # Special case of RUBY-only jobs (jobs that have no cluster-side).
     # In this case, only the 'Setting Up' and 'Post Processing' states
     # are actually performed.
-    if commands.nil? || commands.size == 0
+    if commands.blank? || commands.all? { |l| l.blank? }
       self.addlog("No BASH commands associated with this task. Jumping to state 'Data Ready'.")
       self.status = "Data Ready"  # Will trigger Post Processing later on.
       self.save

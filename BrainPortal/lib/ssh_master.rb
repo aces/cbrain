@@ -298,18 +298,24 @@ class SshMaster
     socket = self.control_path
     File.unlink(socket) rescue true
     pid = Process.fork do
-      (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
-      subpid = Process.fork do
-        self.write_pidfile(Process.pid,:force)  # Overwrite
-        $stdout.reopen(self.diag_path, "a")
-        $stdout.sync = true
-        $stderr.reopen($stdout)
-        puts "Starting Master #{@key} at #{Time.now.localtime.to_s} as PID #{$$}"
-        Kernel.exec(sshcmd)
-        Kernel.exit!  # should never reach here
+      begin
+        (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
+        subpid = Process.fork do
+          begin
+            self.write_pidfile(Process.pid,:force)  # Overwrite
+            $stdout.reopen(self.diag_path, "a")
+            $stdout.sync = true
+            $stderr.reopen($stdout)
+            puts "Starting Master #{@key} at #{Time.now.localtime.to_s} as PID #{$$}"
+            Kernel.exec(sshcmd)
+          ensure
+            Kernel.exit!  # should never reach here
+          end
+        end
+        Process.detach(subpid)
+      ensure
+        Kernel.exit!
       end
-      Process.detach(subpid)
-      Kernel.exit!
     end
 
     # Wait for it to be fully established (up to SPAWN_WAIT_TIME seconds).
@@ -375,19 +381,22 @@ class SshMaster
     my_pid      = $$
     signal_name = "SIGURG"
     alarm_pid = Process.fork do
-      (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
-      Signal.trap("TERM") do
-        debugTrace("Alarm subprocess #{$$} for #{@key}: told to exit with TERM.")
+      begin
+        (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
+        Signal.trap("TERM") do
+          debugTrace("Alarm subprocess #{$$} for #{@key}: told to exit with TERM.")
+          Kernel.exit!
+        end
+        Signal.trap("EXIT") do
+          debugTrace("Alarm subprocess #{$$} for #{@key}: exiting.")
+        end
+        debugTrace("Alarm subprocess #{$$} for #{@key}: Waiting at #{Time.now}.")
+        Kernel.sleep(IS_ALIVE_TIMEOUT)
+        debugTrace("Alarm subprocess #{$$} for #{@key}: Notifying master of timeout at #{Time.now}.")
+        Process.kill(signal_name,my_pid)
+      ensure
         Kernel.exit!
       end
-      Signal.trap("EXIT") do
-        debugTrace("Alarm subprocess #{$$} for #{@key}: exiting.")
-      end
-      debugTrace("Alarm subprocess #{$$} for #{@key}: Waiting at #{Time.now}.")
-      Kernel.sleep(IS_ALIVE_TIMEOUT)
-      debugTrace("Alarm subprocess #{$$} for #{@key}: Notifying master of timeout at #{Time.now}.")
-      Process.kill(signal_name,my_pid)
-      Kernel.exit!
     end
     Process.detach(alarm_pid)
 

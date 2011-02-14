@@ -85,7 +85,7 @@ class ToolConfigsController < ApplicationController
 
     @tool_config.env_array ||= []
 
-    @tool_config.group_id = Group.find_by_name("everyone")
+    @tool_config.group_id = Group.find_by_name("everyone").id
 
     respond_to do |format|
       format.html { render :action => :edit }
@@ -98,7 +98,7 @@ class ToolConfigsController < ApplicationController
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []
 
-    @tool_config.group_id = Group.find_by_name("everyone") if @tool_config.group_id.blank?
+    @tool_config.group_id = Group.find_by_name("everyone").id if @tool_config.group_id.blank?
       
     respond_to do |format|
       format.html # edit.html.erb
@@ -131,7 +131,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :description, :script_prologue, :group_id ].each do |att|
+    [ :description, :script_prologue, :group_id, :ncpus ].each do |att|
        @tool_config[att] = form_tool_config[att]
     end
 

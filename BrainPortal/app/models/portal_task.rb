@@ -43,20 +43,50 @@ class PortalTask < CbrainTask
   # used by the tasks controller so as not to send
   # messages to Bourreaux to do stuff on tasks that
   # are not ready for it anyway.
-  AllowedOperations = { # destroy is handled differently and separately
-    # Current                          =>   List of states we can change to
-    #--------------------------------  ------------------------------
+  AllowedOperations = { # 'Destroy' is handled differently and separately
+
+    #===============================================================================
+    # Active states
+    #===============================================================================
+
+    # Current                          => List of states we can change to
+    #--------------------------------  ---------------------------------------------
     "Queued"                           => [ "Duplicate", "Terminated", "On Hold"   ],
     "On Hold"                          => [ "Duplicate", "Terminated", "Queued"    ],
     "On CPU"                           => [ "Duplicate", "Terminated", "Suspended" ],
     "Suspended"                        => [ "Duplicate", "Terminated", "On CPU"    ],
+
+    #===============================================================================
+    # Passive states
+    #===============================================================================
+
+    # Current                          => List of states we can change to
+    #--------------------------------  ---------------------------------------------
     "Failed To Setup"                  => [ "Duplicate", "Recover" ],
     "Failed On Cluster"                => [ "Duplicate", "Recover" ],
     "Failed To PostProcess"            => [ "Duplicate", "Recover" ],
     "Failed Setup Prerequisites"       => [ "Duplicate", "Recover" ],
     "Failed PostProcess Prerequisites" => [ "Duplicate", "Recover" ],
     "Terminated"                       => [ "Duplicate", "Restart Setup" ],
-    "Completed"                        => [ "Duplicate", "Restart Setup", "Restart Cluster", "Restart PostProcess" ]
+    "Completed"                        => [ "Duplicate", "Restart Setup", "Restart Cluster", "Restart PostProcess" ],
+
+    #===============================================================================
+    # Killed ruby code... (bourreau will check it's more than 8 hours ago)
+    #===============================================================================
+
+    # Current                          => List of states we can change to
+    #--------------------------------  ---------------------------------------------
+    "Setting Up"                       => [ "Terminated" ],
+    "Post Processing"                  => [ "Terminated" ],
+    "Restarting Setup"                 => [ "Terminated" ],
+    "Restarting Cluster"               => [ "Terminated" ],
+    "Restarting PostProcess"           => [ "Terminated" ],
+    "Recovering Setup"                 => [ "Terminated" ],
+    "Recovering Cluster"               => [ "Terminated" ],
+    "Recovering PostProcess"           => [ "Terminated" ],
+
+    "Preset"                           => []  # kind of dummy last entry
+
     # Other transitions are not used by the interface,
     # as they cannot be triggered by the user. For
     # instance, "On CPU" to "Data Ready", which is
