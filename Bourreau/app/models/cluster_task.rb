@@ -833,12 +833,12 @@ class ClusterTask < CbrainTask
      stderrfile = self.stderr_cluster_filename(run_number)
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
-        io = IO.popen("tail -1000 #{stdoutfile}","r")
+        io = IO.popen("tail -2000 #{stdoutfile}","r")
         self.cluster_stdout = io.read
         io.close
      end
      if stderrfile && File.exist?(stderrfile)
-        io = IO.popen("tail -1000 #{stderrfile}","r")
+        io = IO.popen("tail -2000 #{stderrfile}","r")
         self.cluster_stderr = io.read
         io.close
      end

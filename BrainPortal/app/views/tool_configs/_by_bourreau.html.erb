@@ -74,6 +74,7 @@
             <%
                projs = [ bourreau.group, tool.group, tc.group ]
                projs.reject! { |g| g.name == 'everyone' }
+               projs = projs.uniq
             %>
             <% if projs.size == 0 %>
               <%= red_if(true,"'everyone'",nil,:color2 => 'green') %>

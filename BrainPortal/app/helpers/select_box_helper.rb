@@ -77,7 +77,18 @@ module SelectBoxHelper
     grouped_by_classes.each do |entry|
       group_category_name = entry.first
       group_category_name.sub!(/ group/," project")
-      group_pairs         = entry.last.sort_by(&:name).map{|elem| [elem.name, elem.id.to_s]}
+      group_pairs         = entry.last.sort_by(&:name).map do |group|
+        label = group.name
+        if group.is_a?(UserGroup)
+          group_user_full = group.users[0].full_name rescue nil
+          #label += " " * (12 - label.size) if label.size < 12
+          label += " (#{group_user_full})" if ! group_user_full.blank?
+        elsif group.is_a?(SiteGroup)
+          group_site_header = split_description(group.site.description)[0] rescue nil
+          label += " (#{group_site_header})" if ! group_site_header.blank?
+        end
+        [label, group.id.to_s]
+      end
       category_grouped[group_category_name] = group_pairs
     end
 
