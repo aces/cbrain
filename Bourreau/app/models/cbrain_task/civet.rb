@@ -26,7 +26,6 @@ class CbrainTask::Civet < ClusterTask
       self.addlog("Parallel CIVETs being setup (x #{file_args.size}).")
     end
     file_args.each_key.sort { |a,b| a.to_i <=> b.to_i }.each do |arg_idx|
-      self.addlog("Setting up CIVET '##{arg_idx}' for subject '#{file_args[arg_idx][:dsid]}'") if file_args.size > 1
       return false unless setup_single(arg_idx)
     end
     true
@@ -36,8 +35,15 @@ class CbrainTask::Civet < ClusterTask
     params       = self.params
     file0        = params[:file_args][arg_idx] # we require this single entry for info on the data files
 
-    prefix       = file0[:prefix] || "unkpref1"
-    dsid         = file0[:dsid]   || "unkdsid1"
+    prefix       = file0[:prefix] || "unkpref"
+    dsid         = file0[:dsid]   || "unkdsid"
+
+    unless mybool(file0[:launch])
+      self.addlog("No need to setup pipeline for CIVET ##{arg_idx} '#{dsid}': not selected for processing.")
+      return true
+    end
+
+    self.addlog("Setting up CIVET ##{arg_idx} '#{dsid}'")
 
     # Main location of symlinks for all input files
     mincfiles_dir = "mincfiles_#{arg_idx}"
@@ -97,7 +103,7 @@ class CbrainTask::Civet < ClusterTask
       safe_symlink("#{colpath}/#{t1_name}",t1sym)
       return false unless validate_minc_file(t1sym)
 
-      if file0[:multispectral] || file0[:spectral_mask]
+      if mybool(file0[:multispectral]) || mybool(file0[:spectral_mask])
         if t2_name
           t2ext = t2_name.match(/.gz$/i) ? ".gz" : ""
           t2sym = "#{mincfiles_dir}/#{prefix}_#{dsid}_t2.mnc#{t2ext}"
@@ -127,7 +133,7 @@ class CbrainTask::Civet < ClusterTask
       safe_symlink(t1cachename,t1sym)
       return false unless validate_minc_file(t1sym)
 
-      if file0[:multispectral] || file0[:spectral_mask]
+      if mybool(file0[:multispectral]) || mybool(file0[:spectral_mask])
         if t2_id
           t2cachefile = Userfile.find(t2_id)
           t2cachefile.sync_to_cache
@@ -276,8 +282,13 @@ class CbrainTask::Civet < ClusterTask
     params = self.params
     file0  = params[:file_args][arg_idx] # we require this single entry for info on the data files
 
-    prefix = file0[:prefix] || "unkpref2"
-    dsid   = file0[:dsid]   || "unkdsid2"
+    prefix = file0[:prefix] || "unkpref"
+    dsid   = file0[:dsid]   || "unkdsid"
+
+    unless mybool(file0[:launch])
+      self.addlog("No need to run pipeline for CIVET ##{arg_idx} '#{dsid}': not selected for processing.")
+      return nil
+    end
 
     # Cheating mode (for debugging/development)
     fake_id = params[:fake_run_civetcollection_id]
@@ -392,10 +403,16 @@ class CbrainTask::Civet < ClusterTask
     params           = self.params
     file0            = params[:file_args][arg_idx] # we require this single entry for info on the data files
 
-    dsid             = file0[:dsid]   || "unkdsid2"
+    prefix           = file0[:prefix] || "unkpref"  # not used in this method
+    dsid             = file0[:dsid]   || "unkdsid"
     data_provider_id = params[:data_provider_id]
 
-    self.addlog("Processing results for CIVET #{arg_idx} '#{dsid}'.")
+    unless mybool(file0[:launch])
+      self.addlog("No need to save results for CIVET ##{arg_idx} '#{dsid}': not selected for processing.")
+      return true
+    end
+
+    self.addlog("Processing results for CIVET ##{arg_idx} '#{dsid}'.")
 
     # Unique identifier for this run
     uniq_run = self.bname_tid_dashed + "-" + self.run_number.to_s
@@ -514,8 +531,8 @@ class CbrainTask::Civet < ClusterTask
   def recover_from_cluster_failure_single(arg_idx) #:nodoc:
     params       = self.params || {}
     file0        = params[:file_args][arg_idx] # we require this single entry for info on the data files
-    prefix       = file0[:prefix] || "unkpref2"
-    dsid         = file0[:dsid]   || "unkdsid2"
+    prefix       = file0[:prefix] || "unkpref"
+    dsid         = file0[:dsid]   || "unkdsid"
 
     # Where we find this subject's results
     out_dsid = "civet_out/#{dsid}"
@@ -570,8 +587,8 @@ class CbrainTask::Civet < ClusterTask
   # provided by the user.
   def output_name_from_pattern(t1name,arg_idx)
     file0        = params[:file_args][arg_idx] # we require this single entry for info on the data files
-    prefix       = file0[:prefix] || "unkpref3"
-    dsid         = file0[:dsid]   || "unkdsid3"
+    prefix       = file0[:prefix] || "unkpref"
+    dsid         = file0[:dsid]   || "unkdsid"
 
     pattern = self.params[:output_filename_pattern] || ""
     pattern.strip!
