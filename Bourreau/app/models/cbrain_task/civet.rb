@@ -519,14 +519,17 @@ class CbrainTask::Civet < ClusterTask
 
     # Where we find this subject's results
     out_dsid = "civet_out/#{dsid}"
+    log_dir  = "#{out_dsid}/logs"
 
-    logfiles = Dir.entries("#{out_dsid}/logs")
-    badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?|running|lock)$/i }
-    if badnews.empty?
-      self.addlog("No 'failed' files found in logs.")
-    else
-      self.addlog("Removing these files in 'logs' : #{badnews.sort.join(', ')}")
-      badnews.each { |bn| File.unlink("#{out_dsid}/logs/#{bn}") rescue true }
+    if File.directory?(out_dsid) && File.directory?(log_dir)
+      logfiles = Dir.entries(log_dir)
+      badnews  = logfiles.select { |lf| lf =~ /\.(fail(ed)?|running|lock)$/i }
+      if badnews.empty?
+        self.addlog("No 'failed' files found in logs.")
+      else
+        self.addlog("Removing these files in 'logs' : #{badnews.sort.join(', ')}")
+        badnews.each { |bn| File.unlink("#{out_dsid}/logs/#{bn}") rescue true }
+      end
     end
 
     true

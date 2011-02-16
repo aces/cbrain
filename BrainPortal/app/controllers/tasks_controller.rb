@@ -352,23 +352,27 @@ class TasksController < ApplicationController
     end
 
     @task.launch_time = Time.now # so grouping will work
-    tasklist = @task.wrapper_final_task_list
+    tasklist,task_list_message = @task.wrapper_final_task_list
+    unless task_list_message.blank?
+      messages += "\n" unless messages.blank? || messages =~ /\n$/
+      messages += task_list_message
+    end
     
     # Spawn a background process to launch the tasks.
     CBRAIN.spawn_with_active_records(:admin,"Spawn Tasks") do
 
-      messages = ""
+      spawn_messages = ""
 
       tasklist.each do |task|
         task.status = "New" if task.status.blank?
         begin
           task.save!
         rescue => ex
-          messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
+          spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
         end
       end
 
-      messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
+      spawn_messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
 
       # Send a start worker command to each affected bourreau
       bourreau_ids = tasklist.map &:bourreau_id
@@ -376,23 +380,24 @@ class TasksController < ApplicationController
         Bourreau.find(bourreau_id).send_command_start_workers rescue true
       end
 
-      unless messages.blank?
+      unless spawn_messages.blank?
         Message.send_message(current_user, {
           :header        => "Submitted #{tasklist.size} #{@task.name} tasks; some messages follow.",
           :message_type  => :notice,
-          :variable_text => messages
+          :variable_text => spawn_messages
           }
         )
       end
 
     end
 
-    flash[:notice] += messages + "\n" unless messages.blank?
     if tasklist.size == 1
       flash[:notice] += "Launching a #{@task.name} task in background."
     else
       flash[:notice] += "Launching #{tasklist.size} #{@task.name} tasks in background."
     end
+    flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
+    flash[:notice] += messages + "\n" unless messages.blank?
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }

@@ -700,11 +700,11 @@ pre {
     height: 7em;
     margin: 0px;
     background-color: #05A3D6;
-    color: #f8f8f8;
     position: relative;
 }
 
 #header h1 {
+    color: #f8f8f8;
     float: left;
     padding: 10px;
 }
@@ -794,7 +794,8 @@ pre {
 }
 
 #project_menu_items {
-  color: #22C;
+  /* color: #22C; */
+  padding: 0 1em 0 1em;
 }
 
 #header_project_menu span {

@@ -46,7 +46,7 @@ class Scir
 
   # Returns the class name for the implementation.
   def self.drm_system
-    self.class.to_s
+    self.to_s
   end
 
   # This method acts as a interface between Scir and

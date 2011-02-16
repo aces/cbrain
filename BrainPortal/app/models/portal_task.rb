@@ -341,7 +341,13 @@ class PortalTask < CbrainTask
 
   def wrapper_final_task_list #:nodoc:
     begin
-      ret = self.final_task_list
+      list_plus_message = self.final_task_list  # [t,t,t]     OR     [ [t,t,t], message ]
+      if list_plus_message.size == 2 && list_plus_message[0].is_a?(Array) # when an optional message is returned
+        ret,message = list_plus_message
+      else # standard case
+        ret = list_plus_message
+        message = nil
+      end
       raise ScriptError.new("Coding error: method final_task_list() for #{self.class} did not return an array?!?") unless
         ret.is_a?(Array)
       raise ScriptError.new("Coding error: method final_task_list() for #{self.class} returned an array but it doesn't contain CbrainTasks?!?") if
@@ -350,7 +356,7 @@ class PortalTask < CbrainTask
          raise ScriptError.new("Coding error: method final_task_list() for #{self.class} SAVED one or more of its tasks?!?") if
           ret.detect { |t| ! t.new_record? }
       end
-      return ret
+      return ret,message
     rescue CbrainError, CbrainNotice => cber
       raise cber
     rescue => other

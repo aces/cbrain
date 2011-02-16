@@ -21,10 +21,7 @@
     <%= ajax_link  "Size", userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
     <%= set_order_icon('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
   </th>
-  <th>
-     <%= ajax_link  "Tags", userfiles_path(:userfiles_sort_order  => 'tags.name', :userfiles_sort_dir  => set_dir_old('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script' %>
-     <%= set_order_icon('tags.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-  </th>
+  <th>Tags</th>
   <% unless current_project %>
     <th>
       <%= ajax_link  "Project", userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
