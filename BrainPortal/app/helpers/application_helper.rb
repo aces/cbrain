@@ -14,6 +14,21 @@ module ApplicationHelper
     content_for(:title)  { ' - ' + page_title }
   end
 
+  #Will check for associations to display them properly.
+  def display_filter(model, key, value, methods = {})
+    klass = Class.const_get model.to_s.classify
+    association_keys = klass.reflect_on_all_associations(:belongs_to).map(&:primary_key_name)
+    if association_keys.include?(key.to_s)
+      association_key   = key.to_s
+      association_name  = key.sub(/_id$/, "")
+      association_class = Class.const_get association_name.classify
+      name_method = methods[association_key.to_sym] || methods[association_name.to_sym] || :name
+      "#{association_name.capitalize}:#{association_class.find(value).send(name_method)}"
+    else
+      "#{key.to_s.capitalize}:#{value}"
+    end
+  end
+
   def add_tool_tip(message, element='span', &block)
     content = capture(&block)
     

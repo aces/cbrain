@@ -511,7 +511,7 @@ jQuery(
        var target = text_field.attr("data-target");
 
        var parameters = {};
-       parameters[text_field.attr("id")] = text_field.attr("value");
+       parameters[text_field.attr("name")] = text_field.attr("value");
 
        jQuery.ajax({
          type: method,

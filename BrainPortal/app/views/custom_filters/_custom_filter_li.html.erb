@@ -1,8 +1,8 @@
 <b>
 <% if filter.is_a? UserfileCustomFilter %>
-  <%= ajax_link crop_text_to(15, filter.name), { :controller  => :userfiles, :action  => :index, :userfiles_custom_filter  => filter.id }, :datatype  => 'script' %>
+  <%= filter_add_link crop_text_to(15, filter.name), :controller => :userfiles, :parameter  => :custom_filters_array, :value => filter.id  %>
 <% else %>
-  <%= ajax_link crop_text_to(15, filter.name), { :controller  => filter.filtered_class_controller, :action => :index, :tasks => { :filters => { :custom_filter  => filter.id } } }, :datatype  => 'script' %>
+  <%= filter_add_link crop_text_to(15, filter.name), :controller => @custom_filter.filtered_class_controller, :filters => {:custom_filter  => filter.id} %>
 <% end %>
 </b>
 <small><small>

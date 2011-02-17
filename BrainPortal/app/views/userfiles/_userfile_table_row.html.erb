@@ -15,7 +15,7 @@
    </td>
    
    <td class="left">
-      <%= tree_view_icon(current_session[:userfiles_tree_sort], userfile.level) if (userfile.level || 0) > 0 -%>
+      <%= tree_view_icon(@filter_params["tree_sort"], userfile.level) if (userfile.level || 0) > 0 -%>
       <% if userfile.is_a? FileCollection %>
         <%= image_tag "/images/folder_icon_solid.png" %>
       <% else %>
@@ -45,7 +45,7 @@
    <td>
     <%= userfile.pretty_type %>
    </td>
-   <% unless current_session[:userfiles_details] == 'off' %>
+   <% unless @filter_params["details"] == 'off' %>
    <td class="userfiles_details"><%= link_to_user_if_accessible(userfile.user) %></td>
    <td class="userfiles_details">
       <% html_tool_tip(to_localtime(userfile.created_at,:date), :offset_x => 0, :offset_y => 20) do %>
@@ -69,7 +69,7 @@
    <% else %>
      <td/><td/>
    <% end %>
-   <% unless current_session[:userfiles_details] == 'off' %>
+   <% unless @filter_params["details"] == 'off' %>
      <td class="userfiles_details">
         <%= link_to_data_provider_if_accessible(userfile.data_provider) %>
      </td>

@@ -17,8 +17,19 @@
   <td><%= h user.city %></td>
   <td><%= h user.country %></td>
   <td><%= h(user.time_zone || "(Unset)") %></td>
-  <td><%= h user.userfiles.count %></td>
-  <td><%= h user.cbrain_tasks.count %></td>
+  <td>
+    <%= 
+      filter_reset_link h(user.userfiles.count), :controller => :userfiles, 
+                                                 :clear_params => [:filters_hash, :tag_filters_array, :custom_filters_array], 
+                                                 :filters => {:user_id => user.id}, :ajax  => false 
+    %>
+  </td>
+  <td>
+    <%= 
+      filter_reset_link h(user.cbrain_tasks.count), :controller => :tasks, 
+                                                    :filters => {:user_id => user.id}, :ajax  => false 
+    %>
+  </td>
   <% if user.login == 'admin' %>
     <td colspan="2"></td>
   <% else %>

@@ -32,23 +32,13 @@ class Session
   
   def initialize(session, params) #:nodoc:
     @session = session
-    if @session[:userfiles_sort_order] == "userfiles.lft"
-      @session[:userfiles_sort_order] = nil
-    end
     
-    @session[:userfiles_basic_filters] ||= []
-    @session[:userfiles_tag_filters] ||= []
-    @session[:userfiles_custom_filters] ||= []
-    @session[:userfiles_sort_order] ||= 'userfiles.name'
-    @session[:userfiles_tree_sort] ||= 'on'
-    @session[:userfiles_pagination] ||= 'on'
-    @session[:userfiles_details] ||= 'off'
     @session[:persistent_userfile_ids] ||= {}
 
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
-    @session[controller.to_sym]["filters"] ||= {}
-    @session[controller.to_sym]["sort"] ||= {}
+    @session[controller.to_sym]["filters_hash"] ||= {}
+    @session[controller.to_sym]["sort_hash"] ||= {}
   end
   
   #Mark this session as active in the database.
@@ -121,71 +111,50 @@ class Session
   #contained in the +params+ hash.
   def update(params)
     controller = params[:controller]
-
-    #TODO: It would be nice if userfiles used the generalized system.
-    filter = Userfile.get_filter_name(params[:userfiles_search_type], params[:userfiles_search_term])
-    if params[:userfiles_search_type] == 'unfilter'
-      @session[:userfiles_format_filters] = nil
-      @session[:userfiles_basic_filters] = []
-      @session[:userfiles_tag_filters] = []
-      @session[:userfiles_custom_filters] = []
-    else
-      @session[:userfiles_basic_filters] |= [filter] unless filter.blank?
-      @session[:userfiles_format_filters] = params[:userfiles_format_filter] unless params[:userfiles_format_filter].blank?
-      @session[:userfiles_tag_filters] |= [params[:userfiles_tag_filter]] unless params[:userfiles_tag_filter].blank?
-      @session[:userfiles_custom_filters] |= [UserfileCustomFilter.find(params[:userfiles_custom_filter]).name] unless params[:userfiles_custom_filter].blank?
-      @session[:userfiles_basic_filters].delete params[:userfiles_remove_basic_filter] if params[:userfiles_remove_basic_filter]
-      @session[:userfiles_format_filters] = nil if params[:userfiles_remove_format_filter]
-      @session[:userfiles_custom_filters].delete params[:userfiles_remove_custom_filter] if params[:userfiles_remove_custom_filter]
-      @session[:userfiles_tag_filters].delete params[:userfiles_remove_tag_filter] if params[:userfiles_remove_tag_filter]
-    end
-        
-    if params[:userfiles_view_all] && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
-      @session[:userfiles_view_all] = params[:userfiles_view_all]
-    end
-    
-    if params[:userfiles_sort_order] && !params[:page]
-      @session[:userfiles_sort_order] = sanitize_sort_order(params[:userfiles_sort_order])
-      @session[:userfiles_sort_dir] = sanitize_sort_dir(params[:userfiles_sort_dir])
-    end
-    
-    if params[:userfiles_tree_sort]
-      @session[:userfiles_tree_sort] = params[:userfiles_tree_sort]
-    end
-    
-    if params[:userfiles_pagination]
-      @session[:userfiles_pagination] = params[:userfiles_pagination]
-    end
-    
-    if params[:userfiles_details]
-      @session[:userfiles_details] = params[:userfiles_details]
-    end
      
     if params[controller]
-      if params[controller]["filter_off"]
-        @session[controller.to_sym]["filters"] = {}
-      end
-      if params[controller]["remove_filter"]
-        @session[controller.to_sym]["filters"].delete(params[controller]["remove_filter"])
-      end
       params[controller].each do |k, v|
-        if @session[controller.to_sym][k].respond_to? :merge!
-          @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
+        if @session[controller.to_sym][k].nil?
+          if k =~ /_hash/
+            @session[controller.to_sym][k] = {}
+          elsif k =~ /_array/
+            @session[controller.to_sym][k] = []
+          end
+        end
+        if k == "remove" && v.is_a?(Hash)
+          v.each do |list, item|
+            if @session[controller.to_sym][list].respond_to? :delete
+              @session[controller.to_sym][list].delete item
+            else
+              @session[controller.to_sym].delete list
+            end
+          end
+        elsif k == "clear_all"
+          clear_list = v
+          clear_list = [v] unless v.is_a? Array
+          clear_list.each do |item|
+            if item == "all"
+              @session[controller.to_sym].clear
+              @session[controller.to_sym]["filters_hash"] ||= {}
+              @session[controller.to_sym]["sort_hash"] ||= {}
+            elsif @session[controller.to_sym][item].respond_to? :clear
+              @session[controller.to_sym][item].clear
+            elsif
+              @session[controller.to_sym].delete item
+            end
+          end
         else
-          @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
+          if @session[controller.to_sym][k].is_a? Hash
+            @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
+          elsif @session[controller.to_sym][k].is_a? Array
+            sanitized_param = sanitize_params(k, params[controller][k])
+            @session[controller.to_sym][k] |= [sanitized_param] if sanitized_param
+          else
+            @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
+          end
         end
       end
     end
-  end
-  
-  #Is pagination of the Userfile index currently active?
-  def paginate?
-    @session[:userfiles_pagination] == 'on'
-  end
-  
-  #Is the current *admin* user viewing all files on the system (or only his/her own)?
-  def view_all?
-    @session[:userfiles_view_all] == 'on' && (User.find(@session[:user_id]).has_role?(:admin) || User.find(@session[:user_id]).has_role?(:site_manager))
   end
   
   #Returns the params saved for +controller+.
@@ -265,7 +234,7 @@ class Session
   def sanitize_params(k, param) #:nodoc:
     key = k.to_sym
     
-    if key == :sort
+    if key == :sort_hash
       param["order"] = sanitize_sort_order(param["order"])
       param["dir"] = sanitize_sort_dir(param["dir"])
     end

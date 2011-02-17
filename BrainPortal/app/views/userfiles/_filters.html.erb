@@ -1,18 +1,13 @@
 <h4>By Type</h4>
      
 <ul class="filter_menu">
-
-  <li><%= ajax_link 'All Files', {:controller  => :userfiles, :action  => :index, :userfiles_search_type  => :unfilter}, :datatype  => 'script' %> 
-  </li> 
   
   <% SingleFile.send(:subclasses).each do |sf| %>
-    <li><%= ajax_link sf.pretty_type.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_format_filter  => sf.name}, :datatype  => 'script' %> 
-    </li>
+    <li><%= filter_add_link sf.pretty_type.pluralize, :filters => {:format  => sf.name} %></li>
   <% end %>
   
   <% FileCollection.send(:subclasses).each do |fc| %>
-    <li><%= ajax_link fc.pretty_type.pluralize, {:controller  => :userfiles, :action  => :index, :userfiles_format_filter  => fc.name}, :datatype  => 'script' %> 
-    </li>
+    <li><%= filter_add_link fc.pretty_type.pluralize, :filters => {:format  => fc.name} %></li>
   <% end %>
 </ul>
 

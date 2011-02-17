@@ -38,19 +38,37 @@ class UserfilesController < ApplicationController
     filtered_scope = Userfile.scoped( {} )
 
     # Prepare filters
-    custom_filters = current_session.userfiles_custom_filters.clone
-    name_filters   = current_session.userfiles_basic_filters.clone
+    @filter_params["filters_hash"]         ||= {}
+    @filter_params["custom_filters_array"] ||= []
+    @filter_params["tag_filters_array"]    ||= []   
         
     # Prepare custom filters
-    custom_filter_tags = []
-    custom_filters.each do |filter|
-      custom_filter_tags |= UserfileCustomFilter.find_by_name(filter).tags
-      name_filters       << "custom:#{filter}"
-    end
+    custom_filter_tags = @filter_params["custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
         
     # Prepare tag filters
-    tag_filters    = current_session.userfiles_tag_filters + custom_filter_tags
-    filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
+    tag_filters    = @filter_params["tag_filters_array"] + custom_filter_tags
+    
+    #Apply filters
+    filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
+    @filter_params["filters_hash"].each do |att, val|
+      if att.to_sym == :name
+        filtered_scope = filtered_scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{val}%"])
+      elsif att.to_sym == :format
+        format_filter = val
+        format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
+        format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
+        filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
+      else
+        filtered_scope = filtered_scope.scoped(:conditions => {att => val})
+      end
+    end
+    
+    @filter_params["custom_filters_array"].each do |custom_filter_id|
+      custom_filter = UserfileCustomFilter.find(custom_filter_id)
+      filtered_scope = custom_filter.filter_scope(filtered_scope)
+    end
+    
+    #filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
     unless tag_filters.blank?
       filtered_scope = filtered_scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
     end
@@ -61,22 +79,13 @@ class UserfilesController < ApplicationController
     end
 
     # Restrict by 'view all' or not
-    if current_session.view_all?
+    if @filter_params["view_all"] == 'on' && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))
       if current_user.has_role?(:site_manager)
         filtered_scope = Userfile.restrict_site_on_query(current_user, filtered_scope)
       end
     else
       filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
     end 
-
-    # Filter by format
-    filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
-    format_filter = current_session.userfiles_format_filters
-    unless format_filter.blank?
-      format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
-      format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-      filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
-    end
     
     #------------------------------
     # Sorting scope
@@ -84,28 +93,29 @@ class UserfilesController < ApplicationController
 
     sorted_scope = filtered_scope.scoped({})
     joins = []
-    unless current_session.userfiles_sort_order == "userfiles.tree_sort"
-      sort_table = current_session.userfiles_sort_order.split(".")[0]
-      case sort_table
-      when "users"
-        joins << :user
-      when "groups"
-        joins << :group
-      when "data_providers"
-        joins << :data_provider
-      end
-      sorted_scope = sorted_scope.scoped(
-        :joins => joins,
-        :order => "#{current_session.userfiles_sort_order} #{current_session.userfiles_sort_dir}"
-      )
+      
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
+    sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
+    case sort_table
+    when "users"
+      joins << :user
+    when "groups"
+      joins << :group
+    when "data_providers"
+      joins << :data_provider
     end
+    sorted_scope = sorted_scope.scoped(
+      :joins => joins,
+      :order => "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
+    )
     
     #------------------------------
     # Pagination variables
     #------------------------------
 
     @user_pref_page_length = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
-    if current_session.paginate?
+    @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
+    if @filter_params["pagination"] == "on"
       @userfiles_per_page = @user_pref_page_length
     else
       @userfiles_per_page = 400 # even when not paginating, there's a limit!
@@ -120,7 +130,8 @@ class UserfilesController < ApplicationController
     includes = [ :user, :data_provider, :sync_status, :tags, :group ] # used only when fetching objects for renadering the page
 
     # ---- NO tree sort ----
-    if current_session[:userfiles_tree_sort] != "on"
+    @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
+    if @filter_params["tree_sort"] == "off"
       @userfiles_total = filtered_scope.size
       @userfiles       = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
       @userfiles       = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|

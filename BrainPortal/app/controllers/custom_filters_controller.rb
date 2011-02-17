@@ -47,7 +47,6 @@ class CustomFiltersController < ApplicationController
   # PUT /custom_filters/1.xml
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
-    filter_name = @custom_filter.name
     
     params[:custom_filter] ||= {}
     params[:data] ||= {}
@@ -58,12 +57,6 @@ class CustomFiltersController < ApplicationController
     respond_to do |format|
       if @custom_filter.save
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-        if @custom_filter.filtered_class_controller == "userfiles"    
-          if current_session.userfiles_custom_filters.include?(filter_name)
-            current_session.userfiles_custom_filters.delete filter_name
-            current_session.userfiles_custom_filters << @custom_filter.name
-          end
-        end
         format.xml  { head :ok }
       else        
         format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
@@ -77,9 +70,9 @@ class CustomFiltersController < ApplicationController
   def destroy #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
     if @custom_filter.filtered_class_controller == "userfiles"    
-      current_session.userfiles_custom_filters.delete @custom_filter.name
+      current_session[@custom_filter.filtered_class_controller.to_sym]["custom_filters_array"].delete @custom_filter.id.to_s
     else
-      current_session[@custom_filter.filtered_class_controller.to_sym]["filters"].delete "custom_filter"
+      current_session[@custom_filter.filtered_class_controller.to_sym]["filters_hash"].delete "custom_filter"
     end
     @custom_filter.destroy
 

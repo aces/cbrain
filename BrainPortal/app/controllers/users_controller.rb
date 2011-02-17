@@ -19,10 +19,10 @@ class UsersController < ApplicationController
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
   
   def index #:nodoc:
-    @filter_params["sort"]["order"] ||= 'users.full_name'
-    @filter_params["sort"]["dir"]   ||= ''
+    @filter_params["sort_hash"]["order"] ||= 'users.full_name'
+    @filter_params["sort_hash"]["dir"]   ||= ''
     
-    sort_order = "#{@filter_params["sort"]["order"]} #{@filter_params["sort"]["dir"]}"
+    sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
     @users = current_user.available_users(:all, :include => [:groups, :site], :order  => sort_order )
     

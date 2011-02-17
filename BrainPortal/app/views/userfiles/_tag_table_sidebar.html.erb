@@ -4,7 +4,7 @@
    <% current_user.tags.each do |tag| %> 
        <li>
          <% inline_edit_field "tag[name]", { :controller => "tags", :action => "update", :id  => tag.id}, :initial_value  => tag.name, :method  => :put, :trigger  => ".edit_trigger" do %>
-           <%= ajax_link crop_text_to(15, tag.name), {:controller  => :userfiles, :action  => :index, :userfiles_tag_filter => tag.id }, :datatype  => 'script' %>
+           <%= filter_add_link crop_text_to(15, tag.name), :controller => :userfiles, :parameter => :tag_filters_array, :value => tag.id  %>
            <small>
                <%= link_to 'Edit', "#", :class  => "edit_trigger" %>
                <%= ajax_link 'Delete', tag, :confirm => "Are you sure you want to delete tag '#{tag.name}'?", :datatype => 'script', :method => :delete %> 

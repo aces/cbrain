@@ -1,41 +1,36 @@
 <tr>    
   <th><%= select_all_checkbox "userfiles_checkbox" %></th> 
   <th>
-    <%= ajax_link  "Filename", {:action  => :index, :userfiles_sort_order  => 'userfiles.name', :userfiles_sort_dir  => set_dir_old('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :datatype  => 'script'  %>
-    <%= set_order_icon('userfiles.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+    <%= ajax_sort_link "Filename", 'Userfile', 'name' %>
   </th>
   <th>
-      <%= ajax_link "Type", userfiles_path(:userfiles_sort_order => 'userfiles.type',
-         :userfiles_sort_dir  => set_dir_old('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-      <%= set_order_icon('userfiles.type', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+    <%= ajax_sort_link "Type", 'Userfile', 'type' %>
   </th>
-  <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-    <%= ajax_link "Owner", {:action  => :index, :userfiles_sort_order  => 'users.login', :userfiles_sort_dir  => set_dir_old('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])}, :datatype  => 'script'  %>
-    <%= set_order_icon('users.login', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-  </th>
-  <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-    <%= ajax_link  "Creation Date", userfiles_path(:userfiles_sort_order  => 'userfiles.created_at', :userfiles_sort_dir  => set_dir_old('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-    <%= set_order_icon('userfiles.created_at', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-  </th>
+  <% unless @filter_params["details"] == 'off' %>
+    <th class="userfiles_details" >
+      <%= ajax_sort_link "Owner", 'User', 'login' %>
+    </th>
+    <th class="userfiles_details">
+      <%= ajax_sort_link "Creation Date", 'Userfile', 'created_at' %>
+    </th>
+  <% end %>
   <th>  
-    <%= ajax_link  "Size", userfiles_path(:userfiles_sort_order  => 'userfiles.size', :userfiles_sort_dir  => set_dir_old('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-    <%= set_order_icon('userfiles.size', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+    <%= ajax_sort_link "Size", 'Userfile', 'size' %>
   </th>
   <th>Tags</th>
   <% unless current_project %>
     <th>
-      <%= ajax_link  "Project", userfiles_path(:userfiles_sort_order  => 'groups.name', :userfiles_sort_dir  => set_dir_old('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-      <%= set_order_icon('groups.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+      <%= ajax_sort_link "Project", 'Group', 'name' %>
     </th>
   <% end %>
   <th>
-    <%= ajax_link  "Project Access", userfiles_path(:userfiles_sort_order  => 'userfiles.group_writable', :userfiles_sort_dir  => set_dir_old('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-     <%= set_order_icon('userfiles.group_writable', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
+    <%= ajax_sort_link "Project Access", 'Userfile', 'group_writable' %>
   </th>
-   <th class="userfiles_details" <%= 'style="display:none"' if current_session[:userfiles_details] == 'off' %> >
-    <%= ajax_link  "Provider", userfiles_path(:userfiles_sort_order  => 'data_providers.name', :userfiles_sort_dir  => set_dir_old('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir])), :datatype  => 'script'  %>
-    <%= set_order_icon('data_providers.name', current_session[:userfiles_sort_order], current_session[:userfiles_sort_dir]) %>
-  </th>
+   <% unless @filter_params["details"] == 'off' %>
+    <th class="userfiles_details">
+      <%= ajax_sort_link "Provider", 'DataProvider', 'name' %>
+    </th>  
+   <% end %>
 </tr>
 
 <% @userfiles.each do |userfile| %>

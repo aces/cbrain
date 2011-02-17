@@ -46,11 +46,11 @@ class TasksController < ApplicationController
     header_scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
                       :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
     
-    @filter_params["filters"].each do |att, val|
+    
+    @filter_params["filters_hash"].each do |att, val|
       att = att.to_sym
       value = val
-      case att
-      when :status
+      if att == :status
         case value.to_sym
         when :completed
           value = CbrainTask::COMPLETED_STATUS
@@ -68,19 +68,19 @@ class TasksController < ApplicationController
       end
     end
 
-    if @filter_params["filters"]["bourreau_id"].blank?
+    if @filter_params["filters_hash"]["bourreau_id"].blank?
       scope = scope.scoped( :conditions => { :bourreau_id => bourreau_ids } )
     end
 
     if request.format.to_sym == :xml
-      @filter_params["sort"]["order"] ||= "cbrain_tasks.updated_at"
-      @filter_params["sort"]["dir"]   ||= "DESC"
+      @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
+      @filter_params["sort_hash"]["dir"]   ||= "DESC"
     else
-      @filter_params["sort"]["order"] ||= "cbrain_tasks.batch"
+      @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
     end
     
-    sort_order = @filter_params["sort"]["order"]
-    sort_dir   = @filter_params["sort"]["dir"]
+    sort_order = @filter_params["sort_hash"]["order"]
+    sort_dir   = @filter_params["sort_hash"]["dir"]
     # Set sort order and make it persistent.
     if sort_order == "cbrain_tasks.batch"
       sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
@@ -106,7 +106,7 @@ class TasksController < ApplicationController
     page = 1 if page < 1
     offset = (page - 1) * @tasks_per_page
     
-    if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
+    if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
       @total_entries = @tasks.count(:select => "DISTINCT launch_time")
       launch_times = @tasks.all(:offset  => offset, :limit  => @tasks_per_page, :group => :launch_time).map(&:launch_time)
       if launch_times.include? nil

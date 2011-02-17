@@ -1,30 +1,30 @@
 
 <h5>
   <%= 
-    ajax_link (current_session[:userfiles_details] == 'off' ? "Show Details" : "Hide Details"),
-            {:controller  => :userfiles, :action => :index, :userfiles_details => set_toggle(current_session[:userfiles_details])}, 
-            :datatype  => 'script'
+    ajax_link (@filter_params["details"] == 'off' ? "Show Details" : "Hide Details"),
+            {:controller  => :userfiles, :action => :index, :userfiles => {:details  => set_toggle(@filter_params["details"])}}, 
+            :datatype  => 'script' 
   %>
 </h5>
 
 <% if @userfiles_total > @user_pref_page_length %>
   <h5>
-    <%= ajax_link (current_session[:userfiles_pagination] == 'on' ? "Disable Pagination" : "Paginate" ),
-                userfiles_path(:userfiles_pagination => set_toggle(session[:userfiles_pagination])),
+    <%= ajax_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
+                userfiles_path(:userfiles => {:pagination  => set_toggle(@filter_params["pagination"])}),
                 :datatype  => 'script'
     %>
   </h5>
 <% end %>
 
 <h5>
-  <%= ajax_link (current_session[:userfiles_tree_sort] == 'off' ? "Enable Tree View" : "Disable Tree View"), 
-                {:controller  => :userfiles, :action => :index, :userfiles_tree_sort => set_toggle(current_session[:userfiles_tree_sort])}, 
+  <%= ajax_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"), 
+                {:controller  => :userfiles, :action => :index, :userfiles => {:tree_sort  => set_toggle(@filter_params["tree_sort"])}}, 
                 :datatype  => 'script' %>
 </h5>
 
 <% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-  <%= ajax_link current_session[:userfiles_view_all] == 'on' ? "Show your files ": "Show all files on the system", 
-              userfiles_path(:userfiles_view_all => set_toggle(session[:userfiles_view_all])), 
+  <%= ajax_link @filter_params["view_all"] == 'on' ? "Show your files ": "Show all files on the system", 
+              userfiles_path(:userfiles => {:view_all  => set_toggle(@filter_params["view_all"])}), 
               :datatype  => 'script'
   %>
 <% end %>

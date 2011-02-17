@@ -1,11 +1,9 @@
 
 <tr>
-    <th> 
-       <%= select_all_checkbox "task_checkbox" %>
-    </th>
-
-
-    <th id="task_type_header" onMouseOver="jQuery('#task_filters_list').show()" onMouseOut="jQuery('#task_filters_list').hide()">
+   <th> 
+      <%= select_all_checkbox "task_checkbox" %>
+   </th>
+   <th id="task_type_header" onMouseOver="jQuery('#task_filters_list').show()" onMouseOut="jQuery('#task_filters_list').hide()">
       <%= ajax_sort_link "Task Name", 'CbrainTask', 'type' %>
       <% unless @task_types.blank? %>
         <br>
@@ -13,24 +11,15 @@
            <% @task_types.keys.sort.each do |task_type| %>
               <li>
                 <% num_occur = @task_types[task_type] %>
-                <%= 
-                  ajax_link h(crop_text_to(20, task_type.sub(/^CbrainTask::/, "") + " (#{num_occur})" )), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:type  => task_type}}}, 
-                                                                                    :datatype  => 'script'
-                %> 
+                <%= filter_add_link  h(crop_text_to(20, task_type.sub(/^CbrainTask::/, "") + " (#{num_occur})" )), :filters => {:type  => task_type} %>
               </li> 
            <% end %>
          </ul>
       <% end %>
     </th>
-
-
-
     <th onMouseOver="jQuery('#description_filters_list').show()" onMouseOut="jQuery('#description_filters_list').hide()">
        <%= ajax_sort_link "Description", 'CbrainTask', 'description' %>
     </th>
-
-
-
     <th onMouseOver="jQuery('#owner_filters_list').show()" onMouseOut="jQuery('#owner_filters_list').hide()">
        <%= ajax_sort_link "Owner", 'User', 'login' %>
        <% unless @task_owners.blank? %>
@@ -39,15 +28,12 @@
               <% @task_owners.keys.sort_by(&:login).each do |task_owner| %>
                  <li>
                    <% num_occur = @task_owners[task_owner] %>
-                   <%= ajax_link h(task_owner.login + " (#{num_occur})"), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:user_id  => task_owner.id}}}, :datatype  => 'script' %>
+                   <%= filter_add_link h(task_owner.login + " (#{num_occur})"), :filters => {:user_id  => task_owner.id} %>
                  </li> 
               <% end %>
            </ul>
         <% end %>
     </th>
-
-
-
     <% unless current_project %>
       <th onMouseOver="jQuery('#project_filters_list').show()" onMouseOut="jQuery('#project_filters_list').hide()">
         <%= ajax_sort_link "Project", 'Group', 'name' %>
@@ -57,16 +43,13 @@
              <% @task_projects.keys.sort_by(&:name).each do |task_project| %>
                 <li>
                   <% num_occur = @task_projects[task_project] %>
-                  <%= ajax_link h(task_project.name + " (#{num_occur})"), {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:group_id  => task_project.id}}}, :datatype  => 'script' %>
+                  <%= filter_add_link h(task_project.name + " (#{num_occur})"), :filters => {:group_id  => task_project.id} %>
                 </li> 
              <% end %>
           </ul>
         <% end %>
       </th>
     <% end %>
-
-
-
     <th onMouseOver="jQuery('#bourreau_filters_list').show()" onMouseOut="jQuery('#bourreau_filters_list').hide()">
       <%= ajax_sort_link "Execution Server", 'RemoteResource', 'name' %>
       <% unless @bourreaux.blank? %>
@@ -74,18 +57,12 @@
            <ul class="filter_list" id="bourreau_filters_list" style="display:none;">
               <% @bourreaux.sort_by(&:name).each do |bourreau| %>
                  <li>
-                    <%= 
-                        ajax_link h(bourreau.name),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:bourreau_id  => bourreau.id}}}, 
-                                                    :datatype  => 'script'
-                    %>
+                   <%= filter_add_link h(bourreau.name), :filters => {:bourreau_id  => bourreau.id} %>
                  </li> 
               <% end %>
            </ul>
       <% end %>
     </th>
-
-
-
     <th onMouseOver="jQuery('#status_filters_list').show()" onMouseOut="jQuery('#status_filters_list').hide()">
       <%= ajax_sort_link "Current Status", 'CbrainTask', 'status' %>
       <% unless @task_status.blank? %>
@@ -94,37 +71,24 @@
              <% @task_status.keys.sort.each do |task_status| %>
                 <li>
                   <% num_occur = @task_status[task_status] %>
-                  <%= 
-                      ajax_link h(task_status + " (#{num_occur})"),  {:controller  => :tasks, :action  => :index, :tasks => {:filters => {:status  => task_status}}}, 
-                                                :datatype  => 'script'
-                  %>
+                  <%= filter_add_link h(task_status + " (#{num_occur})"), :filters => {:status  => task_status} %>
                 </li> 
              <% end %>
           </ul>
       <% end %>
     </th>
-
-
-
     <th>Run Number</th>
-
-
-
     <th>
       <%= ajax_sort_link "Time Submitted", 'CbrainTask', 'created_at' %>
     </th>
-
-
-
     <th>
       <%= ajax_sort_link "Last Updated", 'CbrainTask', 'updated_at' %>
     </th>
-
 </tr>
 
 
 
-<% if @filter_params["sort"]["order"] == 'cbrain_tasks.batch' %>
+<% if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
   <%= render :partial => 'tasks/batch_view'  %>
 <% else %>
   <%= render :partial => 'tasks/list_view' %>

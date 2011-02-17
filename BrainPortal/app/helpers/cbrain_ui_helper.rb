@@ -550,9 +550,55 @@ module CbrainUiHelper
     sort_order = sort_table.strip.tableize + "." + sort_column.strip
     controller = options.delete(:controller) || params[:controller]
     action = options.delete(:action) || params[:actions]
-    url = { :controller  => controller, :action  => action, controller  => {:sort  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort"])}} }
+    url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
     link_options = options.reverse_merge(:datatype  => 'script')
-    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort"]["order"], @filter_params["sort"]["dir"])
+    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+  end
+  
+  def filter_add_link(name, options = {})
+    filter_param = options.delete(:parameter) || :filters_hash
+    values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
+    values       = options.delete(:filters) if options.has_key?(:filters)
+    params_hash  = {filter_param => values}
+    build_filter_link name, params_hash, options
+  end
+  
+  def filter_remove_link(name, key, options = {})
+    filter_param = options.delete(:parameter) || :filters_hash
+    params_hash = {:remove => {filter_param => key}}
+    build_filter_link name, params_hash, options
+  end
+  
+  def filter_clear_link(name, options = {})
+    cleared_params = options.delete(:clear_params) || :filters_hash    
+    params_hash = {:clear_all  => cleared_params}
+    build_filter_link name, params_hash, options
+  end
+  
+  def filter_reset_link(name, options = {})
+    filter_param = options.delete(:parameter) || :filters_hash
+    values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
+    values       = options.delete(:filters) if options.has_key?(:filters)
+    cleared_params = options.delete(:clear_params) || :filters_hash
+    params_hash = {:clear_all  => cleared_params, filter_param => values}
+    build_filter_link name, params_hash, options
+  end
+  
+  def build_filter_link(name, params_hash, options)
+    controller   = options.delete(:controller) || params[:controller]
+    if options.has_key?(:ajax) 
+      ajax         = options.delete(:ajax)
+    else
+      ajax         = true
+    end
+    params_hash = {controller.to_sym  => params_hash}
+    url = {:controller => controller, :action => :index}.merge params_hash
+    if ajax
+      options[:datatype] ||= :script
+      ajax_link name, url, options
+    else
+      link_to name, url, options
+    end
   end
   
   ###########################################

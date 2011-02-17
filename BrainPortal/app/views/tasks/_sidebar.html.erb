@@ -11,7 +11,7 @@
       <%= render :partial => 'tasks/current_filters' %>
     </div>
     <small>
-      <%= ajax_link 'clear', { :controller  => :tasks, :action  => :index, :tasks => { :filter_off  => true } }, :datatype  => 'script' %>
+      <%= filter_clear_link 'clear' %>
     </small>
 </fieldset>
 

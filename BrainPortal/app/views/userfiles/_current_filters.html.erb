@@ -1,31 +1,25 @@
 
 <ul class="filter_menu">
 
-    <% session[:userfiles_basic_filters].each do |filter|%>
+    <% @filter_params["filters_hash"].each do |att, val|%>
        <li>
-         <%= crop_text_to(20, filter) %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_basic_filter  => filter), :datatype  => 'script' %>
+         <%= crop_text_to(20, display_filter(:userfiles, att, val, {:user  => :login})) %><%= filter_remove_link delete_icon, att  %>
        </li>
     <% end %>
 
-    <% unless session[:userfiles_tag_filters].blank? %>
-      <% current_user.tags.find(session[:userfiles_tag_filters]).each do |tag|%>
+    <% unless @filter_params["tag_filters_array"].blank? %>
+      <% current_user.tags.find(@filter_params["tag_filters_array"]).each do |tag|%>
         <li>
-          <%= crop_text_to(20, "tag:#{tag.name}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_tag_filter  => tag.id), :datatype  => 'script' %>
+          <%= crop_text_to(20, "tag:#{tag.name}") %><%= filter_remove_link delete_icon, tag.id, :parameter  => :tag_filters_array %>
         </li>
       <% end %>
     <% end %>
-
-    <% if session[:userfiles_format_filters]%>
-       <li>
-         <%= crop_text_to(20, "format:#{session[:userfiles_format_filters]}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_format_filter  => session[:userfiles_format_filters]), :datatype  => 'script' %>
-       </li>
+    <% unless @filter_params["custom_filters_array"].blank? %>
+      <% current_user.custom_filters.find(@filter_params["custom_filters_array"]).each do |filter|%>
+        <li>
+          <%= crop_text_to(20, "custom:#{filter.name}") %><%= filter_remove_link delete_icon, filter.id, :parameter  => :custom_filters_array %>
+        </li>
+      <% end %>
     <% end %>
-
-    <% session[:userfiles_custom_filters].each do |filter|%>
-       <li>
-         <%= crop_text_to(20, "custom:#{filter}") %><%= ajax_link delete_icon, userfiles_path(:userfiles_remove_custom_filter  => filter), :datatype  => 'script' %>
-       </li>
-    <% end %>
-
 </ul>
 
