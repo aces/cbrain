@@ -427,7 +427,7 @@ class TasksController < ApplicationController
     old_params   = @task.params.clone
     new_att      = params[:cbrain_task] || {}
     @task.attributes = new_att # just updates without saving
-    restore_untouchable_attributes(@task,old_params)
+    @task.restore_untouchable_attributes(old_params)
 
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
@@ -665,7 +665,7 @@ class TasksController < ApplicationController
       if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
         old_params = @task.params.clone
         @task.params         = preset.params
-        restore_untouchable_attributes(@task,old_params)
+        @task.restore_untouchable_attributes(old_params, :include_unpresetable => true)
         if preset.group && preset.group.can_be_accessed_by?(current_user)
           @task.group_id = preset.group_id
         end
@@ -716,15 +716,6 @@ class TasksController < ApplicationController
       end
       preset.save!
       flash[:notice] += "Saved preset '#{preset.description}'.\n"
-    end
-  end
-
-  # TODO: maybe this should be in the task model
-  def restore_untouchable_attributes(task,old_params) #:nodoc:
-    cur_params = task.params
-    untouchables = task.wrapper_untouchable_params_attributes
-    untouchables.each_key do |untouch|
-      cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
     end
   end
 

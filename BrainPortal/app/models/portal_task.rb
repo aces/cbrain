@@ -255,9 +255,17 @@ class PortalTask < CbrainTask
   # by overriden versions of this method (in other
   # words, even if you don't explicitely include
   # :interface_userfile_ids in the hash, it will
-  # be considered).
+  # be in there).
   def untouchable_params_attributes
     { :interface_userfile_ids => true }
+  end
+
+  # Similarly to untouchable_params_attributes, this method
+  # should return a hash where the keys identify
+  # params attributes that should NOT be reloaded when
+  # the user loads a preset. The default is an empty hash.
+  def unpresetable_params_attributes
+    {}
   end
 
 
@@ -388,6 +396,13 @@ class PortalTask < CbrainTask
       :interface_userfile_ids => true
     )
     return ext
+  end
+
+  # Used internally to specify params attributes
+  # that should not be modified when reloading a preset.
+  def wrapper_unpresetable_params_attributes #:nodoc:
+    att = self.unpresetable_params_attributes || {}
+    return att
   end
 
 
@@ -561,6 +576,22 @@ class PortalTask < CbrainTask
     return shortname if shortname
     super(attname)
   end
+
+  # Restores from old_params any attributes listed in the
+  # untouchable_params_attributes hash, potentially including those
+  # defined in unpresetable_params
+  def restore_untouchable_attributes(old_params, options = {}) #:nodoc:
+    cur_params    = self.params || {}
+    untouchables  = self.wrapper_untouchable_params_attributes
+    unpresetables = options[:include_unpresetable] ? self.wrapper_unpresetable_params_attributes : {}
+    att_list = untouchables.keys + unpresetables.keys
+    att_list.each do |untouch|
+      cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
+    end
+    self.params = cur_params
+    true
+  end
+
 
 end
 
