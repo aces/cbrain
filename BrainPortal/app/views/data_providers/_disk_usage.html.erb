@@ -30,13 +30,43 @@
               <% next %>
             <% end %>
 
-            <% cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) %>
-
-            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
-                <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
-                <% if cell[:unknowns] > 0 %>
-                   <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
-                <% end %>
+            <% 
+              cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) 
+              filters = {}
+              if row.is_a? User
+                filters[:user_id] = row.id
+              end
+              if col.is_a? DataProvider
+                filters[:data_provider_id] = col.id
+              end
+            %>
+            
+            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text">
+              <%= 
+                filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;"),
+                                  :controller => :userfiles,
+                                  :filters => filters,
+                                  :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
+                                  :ajax => false
+              %>
+              <BR>
+              <%= 
+                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;"),
+                                  :controller => :userfiles,
+                                  :filters => filters,
+                                  :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
+                                  :ajax => false
+              %>
+              <% if cell[:unknowns] > 0 %>
+                <BR>
+                <%= 
+                  filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;"),
+                                    :controller => :userfiles,
+                                    :filters => filters,
+                                    :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
+                                    :ajax => false
+                %>
+              <% end %>
             </td>
           <% end %>    <% # end column iteration -%>
 
