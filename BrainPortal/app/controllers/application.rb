@@ -260,6 +260,22 @@ class ApplicationController < ActionController::Base
     end 
   end
   
+  def table_column?(model, attribute)
+    table, column = attribute.split "."
+    if column
+      if table.to_s != column.to_s
+        return false
+      end
+    else
+      column = table
+    end
+    klass = Class.const_get model.to_s.classify
+    
+    klass.column_names.include? column.to_s
+  rescue
+    false   
+  end
+  
   #################################################################################
   # Date/Time Helpers
   #################################################################################

@@ -63,7 +63,7 @@ class TasksController < ApplicationController
       if att == :custom_filter
         custom_filter = TaskCustomFilter.find(value)
         scope = custom_filter.filter_scope(scope)
-      else
+      elsif table_column?(:cbrain_task, att)
         scope = scope.scoped(:conditions => {att => value})
       end
     end

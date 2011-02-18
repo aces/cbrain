@@ -38,9 +38,11 @@ class UserfilesController < ApplicationController
     filtered_scope = Userfile.scoped( {} )
 
     # Prepare filters
-    @filter_params["filter_hash"]         ||= {}
+    @filter_params["filter_hash"]                 ||= {}
     @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_tags_array"]    ||= []   
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
+    @filter_params["filter_tags_array"]           ||= [] 
+    @filter_params["filter_tags_array"]           &= current_user.tag_ids.map(&:to_s)  
         
     # Prepare custom filters
     custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
@@ -58,7 +60,7 @@ class UserfilesController < ApplicationController
         format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
         format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
         filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
-      else
+      elsif table_column?(:userfile, att)
         filtered_scope = filtered_scope.scoped(:conditions => {att => val})
       end
     end
