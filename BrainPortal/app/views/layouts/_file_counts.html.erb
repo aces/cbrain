@@ -29,9 +29,9 @@
       <td><%= h(login) %></td>
       <% sorted_classes.each do |klass| %>
         <% count = klass_counts[klass] || "" %>
-        <td><%= h(count) %></td>
+        <td><%= filter_reset_link h(count), :controller => :userfiles, :filters => {:user_id => user.id, :file_format => klass}, :clear_params => :clear_filter, :ajax => false %></td>
       <% end %>
-      <td><%= h(usertot) %></td>
+      <td><%= filter_reset_link h(usertot), :controller => :userfiles, :filters => {:user_id => user.id}, :clear_params => :clear_filter, :ajax => false %></td>
     </tr>
   <% end %>
 </table>
