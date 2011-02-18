@@ -8,7 +8,7 @@
 <fieldset id="userfiles_search_by_filename">
   <legend>Search by filename</legend>
   <div id="name_search_filter">
-    <%= ajax_search_box "userfiles[filters_hash][name]", userfiles_path %>
+    <%= ajax_search_box "userfiles[filter_hash][name]", userfiles_path %>
   </div>
 </fieldset>
 
@@ -19,7 +19,7 @@
     <div id="current_filters">
       <%= render :partial => 'userfiles/current_filters' %>
     </div>
-    <%= filter_clear_link 'clear', :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array], :class  => "action_link" %>
+    <%= filter_clear_link 'clear', :class  => "action_link" %>
 </fieldset>
 
 <p/>

@@ -47,7 +47,7 @@ class TasksController < ApplicationController
                       :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
     
     
-    @filter_params["filters_hash"].each do |att, val|
+    @filter_params["filter_hash"].each do |att, val|
       att = att.to_sym
       value = val
       if att == :status
@@ -68,7 +68,7 @@ class TasksController < ApplicationController
       end
     end
 
-    if @filter_params["filters_hash"]["bourreau_id"].blank?
+    if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.scoped( :conditions => { :bourreau_id => bourreau_ids } )
     end
 

@@ -46,7 +46,6 @@
                 filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;"),
                                   :controller => :userfiles,
                                   :filters => filters,
-                                  :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
                                   :ajax => false
               %>
               <BR>
@@ -54,7 +53,6 @@
                 filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;"),
                                   :controller => :userfiles,
                                   :filters => filters,
-                                  :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
                                   :ajax => false
               %>
               <% if cell[:unknowns] > 0 %>
@@ -63,7 +61,6 @@
                   filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;"),
                                     :controller => :userfiles,
                                     :filters => filters,
-                                    :clear_params => [:filters_hash, :custom_filters_array, :tag_filters_array],
                                     :ajax => false
                 %>
               <% end %>

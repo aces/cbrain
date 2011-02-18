@@ -20,7 +20,6 @@
   <td>
     <%= 
       filter_reset_link h(user.userfiles.count), :controller => :userfiles, 
-                                                 :clear_params => [:filters_hash, :tag_filters_array, :custom_filters_array], 
                                                  :filters => {:user_id => user.id}, :ajax  => false 
     %>
   </td>

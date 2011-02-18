@@ -37,7 +37,7 @@ class Session
 
     controller = params[:controller]
     @session[controller.to_sym] ||= {}
-    @session[controller.to_sym]["filters_hash"] ||= {}
+    @session[controller.to_sym]["filter_hash"] ||= {}
     @session[controller.to_sym]["sort_hash"] ||= {}
   end
   
@@ -111,7 +111,6 @@ class Session
   #contained in the +params+ hash.
   def update(params)
     controller = params[:controller]
-     
     if params[controller]
       params[controller].each do |k, v|
         if @session[controller.to_sym][k].nil?
@@ -129,13 +128,18 @@ class Session
               @session[controller.to_sym].delete list
             end
           end
-        elsif k == "clear_all"
-          clear_list = v
-          clear_list = [v] unless v.is_a? Array
+        elsif k =~ /^clear_(.+)/
+          pattern = Regexp.last_match[1].gsub(/\W/, "")
+          if pattern == "all"
+            clear_list = v
+            clear_list = [v] unless v.is_a? Array
+          else
+            clear_list = @session[controller.to_sym].keys.grep(/^#{pattern}/)
+          end
           clear_list.each do |item|
             if item == "all"
               @session[controller.to_sym].clear
-              @session[controller.to_sym]["filters_hash"] ||= {}
+              @session[controller.to_sym]["filter_hash"] ||= {}
               @session[controller.to_sym]["sort_hash"] ||= {}
             elsif @session[controller.to_sym][item].respond_to? :clear
               @session[controller.to_sym][item].clear

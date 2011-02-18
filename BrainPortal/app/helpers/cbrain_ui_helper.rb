@@ -556,42 +556,64 @@ module CbrainUiHelper
   end
   
   def filter_add_link(name, options = {})
-    filter_param = options.delete(:parameter) || :filters_hash
+    filter_param = options.delete(:parameter) || :filter_hash
     values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
     values       = options.delete(:filters) if options.has_key?(:filters)
-    params_hash  = {filter_param => values}
+    if values.respond_to?(:merge)
+      params_hash  = values.merge :update_filter => filter_param
+    else
+      params_hash  = {filter_param => values}.merge :update_filter => true
+    end
+    options[:pretty] = true
     build_filter_link name, params_hash, options
   end
   
   def filter_remove_link(name, key, options = {})
-    filter_param = options.delete(:parameter) || :filters_hash
+    filter_param = options.delete(:parameter) || :filter_hash
     params_hash = {:remove => {filter_param => key}}
     build_filter_link name, params_hash, options
   end
   
   def filter_clear_link(name, options = {})
-    cleared_params = options.delete(:clear_params) || :filters_hash    
-    params_hash = {:clear_all  => cleared_params}
+    cleared_params = options.delete(:clear_params) || :clear_filter
+    if !cleared_params.is_a?(Array) && cleared_params.to_s =~ /^clear_/
+      params_hash = {cleared_params => true}  
+    else
+      params_hash = {:clear_all  => cleared_params}
+    end
+    options[:pretty] = true
     build_filter_link name, params_hash, options
   end
   
   def filter_reset_link(name, options = {})
-    filter_param = options.delete(:parameter) || :filters_hash
+    filter_param = options.delete(:parameter) || :filter_hash
     values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
     values       = options.delete(:filters) if options.has_key?(:filters)
-    cleared_params = options.delete(:clear_params) || :filters_hash
-    params_hash = {:clear_all  => cleared_params, filter_param => values}
+    if values.respond_to?(:merge)
+      params_hash  = values.merge :update_filter => filter_param
+    else
+      params_hash  = {filter_param => values}.merge :update_filter => true
+    end
+    cleared_params = options.delete(:clear_params) || :clear_filter
+    if !cleared_params.is_a?(Array) && cleared_params.to_s =~ /^clear_/
+      params_hash.merge! cleared_params => true
+    else
+      params_hash.merge! :clear_all  => cleared_params
+    end
+    options[:pretty] = true
     build_filter_link name, params_hash, options
   end
   
-  def build_filter_link(name, params_hash, options)
+  def build_filter_link(name, params_hash, options = {})
     controller   = options.delete(:controller) || params[:controller]
     if options.has_key?(:ajax) 
       ajax         = options.delete(:ajax)
     else
       ajax         = true
     end
-    params_hash = {controller.to_sym  => params_hash}
+    unless options[:pretty]
+      params_hash = {controller.to_sym  => params_hash}
+    end
     url = {:controller => controller, :action => :index}.merge params_hash
     if ajax
       options[:datatype] ||= :script

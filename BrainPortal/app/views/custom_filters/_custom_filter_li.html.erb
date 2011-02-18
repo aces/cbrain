@@ -1,6 +1,6 @@
 <b>
 <% if filter.is_a? UserfileCustomFilter %>
-  <%= filter_add_link crop_text_to(15, filter.name), :controller => :userfiles, :parameter  => :custom_filters_array, :value => filter.id  %>
+  <%= filter_add_link crop_text_to(15, filter.name), :controller => :userfiles, :parameter  => :filter_custom_filters_array, :value => filter.id  %>
 <% else %>
   <%= filter_add_link crop_text_to(15, filter.name), :controller => @custom_filter.filtered_class_controller, :filters => {:custom_filter  => filter.id} %>
 <% end %>

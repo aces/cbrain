@@ -1,23 +1,23 @@
 
 <ul class="filter_menu">
 
-    <% @filter_params["filters_hash"].each do |att, val|%>
+    <% @filter_params["filter_hash"].each do |att, val|%>
        <li>
          <%= crop_text_to(20, display_filter(:userfiles, att, val, {:user  => :login})) %><%= filter_remove_link delete_icon, att  %>
        </li>
     <% end %>
 
-    <% unless @filter_params["tag_filters_array"].blank? %>
-      <% current_user.tags.find(@filter_params["tag_filters_array"]).each do |tag|%>
+    <% unless @filter_params["filter_tags_array"].blank? %>
+      <% current_user.tags.find(@filter_params["filter_tags_array"]).each do |tag|%>
         <li>
-          <%= crop_text_to(20, "tag:#{tag.name}") %><%= filter_remove_link delete_icon, tag.id, :parameter  => :tag_filters_array %>
+          <%= crop_text_to(20, "Tag:#{tag.name}") %><%= filter_remove_link delete_icon, tag.id, :parameter  => :filter_tags_array %>
         </li>
       <% end %>
     <% end %>
-    <% unless @filter_params["custom_filters_array"].blank? %>
-      <% current_user.custom_filters.find(@filter_params["custom_filters_array"]).each do |filter|%>
+    <% unless @filter_params["filter_custom_filters_array"].blank? %>
+      <% current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).each do |filter|%>
         <li>
-          <%= crop_text_to(20, "custom:#{filter.name}") %><%= filter_remove_link delete_icon, filter.id, :parameter  => :custom_filters_array %>
+          <%= crop_text_to(20, "Custom:#{filter.name}") %><%= filter_remove_link delete_icon, filter.id, :parameter  => :filter_custom_filters_array %>
         </li>
       <% end %>
     <% end %>

@@ -62,8 +62,8 @@ class TagsController < ApplicationController
   # DELETE /tags/1.xml
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
-    if current_session[:userfiles]["tag_filters_array"]
-      current_session[:userfiles]["tag_filters_array"].delete @tag.id.to_s
+    if current_session[:userfiles]["filter_tags_array"]
+      current_session[:userfiles]["filter_tags_array"].delete @tag.id.to_s
     end
     @tag.destroy
 

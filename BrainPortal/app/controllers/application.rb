@@ -100,6 +100,25 @@ class ApplicationController < ActionController::Base
   end
 
   def set_session
+    current_controller = params[:controller]
+    params[current_controller] ||= {}
+    clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
+    clear_param_key    = clear_params.first
+    clear_param_value  = params[clear_param_key]
+    if clear_param_key
+      params[current_controller][clear_param_key.to_s] = clear_param_value
+    end
+    if params[:update_filter]
+      update_filter      = params[:update_filter].to_s
+      parameters = request.query_parameters.clone
+      parameters.delete "update_filter"
+      clear_params.each { |p| parameters.delete p.to_s }
+      if update_filter =~ /_hash$/
+        params[current_controller][update_filter] = parameters
+      elsif
+        params[current_controller] = parameters
+      end
+    end
     current_session.update(params)
     @filter_params = current_session.params_for(params[:controller])
   end

@@ -1,6 +1,6 @@
 
 <ul class="filter_menu">
-    <% @filter_params["filters_hash"].each do |key, value| %>
+    <% @filter_params["filter_hash"].each do |key, value| %>
         <li>
           <% if key == "custom_filter" %>
             <%= crop_text_to(30, TaskCustomFilter.find(value).name) %><%= filter_remove_link delete_icon, key %>

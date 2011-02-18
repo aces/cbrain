@@ -38,22 +38,22 @@ class UserfilesController < ApplicationController
     filtered_scope = Userfile.scoped( {} )
 
     # Prepare filters
-    @filter_params["filters_hash"]         ||= {}
-    @filter_params["custom_filters_array"] ||= []
-    @filter_params["tag_filters_array"]    ||= []   
+    @filter_params["filter_hash"]         ||= {}
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_tags_array"]    ||= []   
         
     # Prepare custom filters
-    custom_filter_tags = @filter_params["custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
+    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
         
     # Prepare tag filters
-    tag_filters    = @filter_params["tag_filters_array"] + custom_filter_tags
+    tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
     
     #Apply filters
     filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
-    @filter_params["filters_hash"].each do |att, val|
+    @filter_params["filter_hash"].each do |att, val|
       if att.to_sym == :name
         filtered_scope = filtered_scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{val}%"])
-      elsif att.to_sym == :format
+      elsif att.to_sym == :file_format
         format_filter = val
         format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
         format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
@@ -63,7 +63,7 @@ class UserfilesController < ApplicationController
       end
     end
     
-    @filter_params["custom_filters_array"].each do |custom_filter_id|
+    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
       filtered_scope = custom_filter.filter_scope(filtered_scope)
     end
