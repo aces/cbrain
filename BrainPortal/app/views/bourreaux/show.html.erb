@@ -249,9 +249,9 @@
         <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
         <% @statuses_list.each do |stat| %>
           <% if stat == "TOTAL" %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id}, :ajax => false %></td>
+            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :user_id => user.id}, :ajax => false %></td>
           <% else %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id, :status => stat}, :ajax => false %></td>
+            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :user_id => user.id, :status => stat}, :ajax => false %></td>
           <% end %>
         <% end %>
       </tr>
@@ -262,7 +262,7 @@
         <% if stat == "TOTAL" %>
           <td><%= link_to h(@statuses[stat]), :controller => :tasks, :action => :index %></td>
         <% else %>
-          <td><%= filter_reset_link h(@statuses[stat]), :controller => :tasks, :filters  => {:status => stat}, :ajax => false %></td>
+          <td><%= filter_reset_link h(@statuses[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :status => stat}, :ajax => false %></td>
         <% end %>
       <% end %>
     <tr>

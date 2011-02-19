@@ -261,9 +261,9 @@ class ApplicationController < ActionController::Base
   end
   
   def table_column?(model, attribute)
-    table, column = attribute.split "."
+    table, column = attribute.to_s.split "."
     if column
-      if table.to_s != column.to_s
+      if table.to_s != column.to_s  # WHAT ?!? do you mean to compare 'table' to 'model' instead?!?
         return false
       end
     else
@@ -271,7 +271,7 @@ class ApplicationController < ActionController::Base
     end
     klass = Class.const_get model.to_s.classify
     
-    klass.column_names.include? column.to_s
+    klass.columns_hash[column]
   rescue
     false   
   end
