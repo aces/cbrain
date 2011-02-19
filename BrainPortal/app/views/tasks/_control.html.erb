@@ -8,7 +8,7 @@
   <tr>
     <td>
       <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
-      <%= select_tag :bid_tcid, grouped_options_for_select(@tool_configs_select, "#{@task.bourreau_id},#{@task.tool_config_id}") %>
+      <%= tool_config_select "cbrain_task[tool_config_id]", :tool_configs => @tool_configs, :selector => @task %>
     </td>
 
     <td>

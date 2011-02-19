@@ -196,17 +196,18 @@ class TasksController < ApplicationController
 
     # Our new task object needs some initializing
     @task.params      = @task.class.wrapper_default_launch_args.clone
-    @task.bourreau_id = params[:bourreau_id]
-    @task.user_id     = current_user.id
+    @task.bourreau_id = params[:bourreau_id] # may or may not be there
+    @task.user        = current_user
     @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
     @task.status      = "New"
 
+    # Offer latest accessible tool config as default
     if @task.bourreau_id
       tool = @task.tool
       toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
-      @task.tool_config_id = lastest_toolconfig.id if lastest_toolconfig
+      @task.tool_config = lastest_toolconfig if lastest_toolconfig
     end
 
     # Filter list of files as provided by the get request
@@ -286,15 +287,13 @@ class TasksController < ApplicationController
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
     @task.status      = "New"
 
-    # Decode the selection box with combined bourreau_id and tool_config_id
-    bid_tcid = params[:bid_tcid] || "," # comma important
-    bid,tcid = bid_tcid.split(",")
-    @task.bourreau_id    = bid.to_i  unless bid.blank?
-    @task.tool_config_id = tcid.to_i unless tcid.blank?
+    # Extract the Bourreau ID from the ToolConfig
+    tool_config = @task.tool_config
+    @task.bourreau = tool_config.bourreau if tool_config && tool_config.bourreau
 
     # Security checks
-    @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
@@ -316,21 +315,6 @@ class TasksController < ApplicationController
         initialize_common_form_values
         render :action => :new
         return
-      end
-    end
-
-    # Choose a Bourreau if none selected
-    if @task.bourreau_id.blank?
-      initialize_common_form_values  # We call this just for getting @bourreaux
-      if @task.tool_config && @task.tool_config.bourreau
-        @bourreaux = [ @task.tool_config.bourreau ] # use the one in tool_config
-      end
-      if @bourreaux.size == 0
-        flash.now[:error] = "No Execution Server available right now for this task?"
-        render :action  => :new
-        return
-      else
-        @task.bourreau_id = @bourreaux[rand(@bourreaux.size)].id
       end
     end
 
@@ -416,22 +400,24 @@ class TasksController < ApplicationController
     @task = current_user.available_tasks.find(id)
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
-    # Decode the selection box with combined bourreau_id and tool_config_id
-    bid_tcid = params[:bid_tcid] || "," # comma important
-    bid,tcid = bid_tcid.split(",")
-    #@task.bourreau_id    = bid.to_i  if bid # we no not change the bourreau_id
-    @task.tool_config_id = tcid.blank? ? nil : tcid.to_i
-
     # Save old params and update the current task to reflect
     # the form's content.
     old_params   = @task.params.clone
-    new_att      = params[:cbrain_task] || {}
+    new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
+    old_tool_config = @task.tool_config
+    old_bourreau    = @task.bourreau
     @task.attributes = new_att # just updates without saving
     @task.restore_untouchable_attributes(old_params)
 
+    # Bourreau ID must stay the same; tool config must be one associated with it
+    @task.bourreau = old_bourreau
+    unless @task.tool_config && @task.tool_config.bourreau_id == old_bourreau.id
+      @task.tool_config = old_tool_config
+    end
+
     # Security checks
     @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group_id    = current_user.own_group_id unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.group_id    = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
     commit_button = params[:commit] || "Start" # default
@@ -627,31 +613,12 @@ class TasksController < ApplicationController
 
     # Tool Configurations
     valid_bourreau_ids = @bourreaux.index_by &:id
-    valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if @task.id # existing tasks have more limited choices.
-    all_tool_configs   = tool.tool_configs # all of them, too much actually
-    all_tool_configs.reject! do |tc|
+    valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
+    @tool_configs      = tool.tool_configs # all of them, too much actually
+    @tool_configs.reject! do |tc|
       tc.bourreau_id.blank? ||
       ! valid_bourreau_ids[tc.bourreau_id] ||
       ! tc.can_be_accessed_by?(@task.user)
-    end
-
-    @tool_configs_select = []   # [ [ groupname, [ [pair], [pair] ] ], [ groupname, [ [pair], [pair] ] ] ]
-    ordered_bourreaux = valid_bourreau_ids.values.sort { |a,b| a.name <=> b.name }
-    ordered_bourreaux.each do |bourreau|
-      bourreau_name   = bourreau.name
-      my_tool_configs = all_tool_configs.select { |tc| tc.bourreau_id == bourreau.id }
-      pairlist        = []
-      if my_tool_configs.size == 0 # this case should no longer happen using the interface.
-        pairlist << [ "Default", "#{bourreau.id}," ] # the comma is important in the string!
-      else
-        my_tool_configs.each do |tc|
-          desc = tc.short_description
-          pairlist << [ desc, "#{bourreau.id},#{tc.id}" ]
-        end
-      end
-      #if pairlist.size > 0
-        @tool_configs_select << [ "On #{bourreau_name}:", pairlist ]
-      #end
     end
 
   end
@@ -667,12 +634,12 @@ class TasksController < ApplicationController
         @task.params         = preset.params
         @task.restore_untouchable_attributes(old_params, :include_unpresetable => true)
         if preset.group && preset.group.can_be_accessed_by?(current_user)
-          @task.group_id = preset.group_id
+          @task.group = preset.group
         end
         if preset.tool_config && preset.tool_config.can_be_accessed_by?(current_user) && (@task.new_record? || preset.tool_config.bourreau_id == @task.bourreau_id)
-          @task.tool_config_id = preset.tool_config_id
+          @task.tool_config = preset.tool_config
         end
-        @task.bourreau_id = @task.tool_config.bourreau_id if @task.tool_config
+        @task.bourreau = @task.tool_config.bourreau if @task.tool_config
         flash[:notice] += "Loaded preset '#{preset.description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
@@ -709,7 +676,7 @@ class TasksController < ApplicationController
         end
         preset.params = @task.params.clone
       end
-      preset.bourreau_id = 0
+      preset.bourreau_id = 0 # convention: presets have bourreau id set to 0
       preset.status = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?

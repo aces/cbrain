@@ -98,7 +98,7 @@ class ToolsController < ApplicationController
                   :cbrain_task_class  => tool,
                   :bourreau_ids       => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
                   :user_id            => User.find_by_login("admin").id,
-                  :group_id           => Group.find_by_name("everyone").id,
+                  :group_id           => Group.everyone.id,
                   :category           => "scientific tool" 
                 )
       success = @tool.save

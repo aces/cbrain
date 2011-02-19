@@ -109,9 +109,15 @@ class CbrainSystemChecks < CbrainChecker
     dp_init_rev    = DataProvider.cache_revision_of_last_init rescue nil # will be "0" if unknown, nil if erroneous
     dp_current_rev = DataProvider.revision_info.svn_id_rev
 
-    if dp_init_rev.nil?
+    if dp_init_rev.nil? # NIL check important, see method above
       puts "C> \t- SKIPPING! Cache root directory '#{cache_root}' is invalid! Fix with the interface, please."
       return
+    end
+
+    cache_dir_mode = File.stat(cache_root).mode
+    if (cache_dir_mode & 0777) != 0700
+      puts "C> \t- WARNING! Cache root directory '#{cache_root}' has invalid permissions #{sprintf("%4.4o",cache_dir_mode & 0777)}. Fixing to 0700."
+      File.chmod(0700,cache_root)
     end
 
     raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless

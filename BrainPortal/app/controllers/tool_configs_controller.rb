@@ -85,7 +85,7 @@ class ToolConfigsController < ApplicationController
 
     @tool_config.env_array ||= []
 
-    @tool_config.group_id = Group.find_by_name("everyone").id
+    @tool_config.group = Group.everyone
 
     respond_to do |format|
       format.html { render :action => :edit }
@@ -98,7 +98,7 @@ class ToolConfigsController < ApplicationController
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []
 
-    @tool_config.group_id = Group.find_by_name("everyone").id if @tool_config.group_id.blank?
+    @tool_config.group = Group.everyone if @tool_config.group_id.blank?
       
     respond_to do |format|
       format.html # edit.html.erb
@@ -150,11 +150,30 @@ class ToolConfigsController < ApplicationController
        end
     end
 
+    @tool_config.group = Group.everyone if @tool_config.group_id.blank?
+
+    # Merge with an existing tool config
+    if (params[:commit] || "") =~ /Merge/i 
+       other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
+       if other_tc
+         if @tool_config.tool_id &&  @tool_config.bourreau_id
+           @tool_config.description = "#{@tool_config.description}\n#{other_tc.description}".strip
+           @tool_config.group       = other_tc.group
+           @tool_config.ncpus       = other_tc.ncpus
+         end
+         @tool_config.env_array       += (other_tc.env_array || [])
+         @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"
+         flash[:notice] = "Appended info from another Tool Config."
+       else
+         flash[:notice] = "No changes made."
+       end
+       render :action => :edit
+       return
+    end
+
     if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
       @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
     end
-
-    @tool_config.group_id = Group.find_by_name("everyone") if @tool_config.group_id.blank?
 
     respond_to do |format|
       if @tool_config.errors.empty? && @tool_config.save

@@ -352,15 +352,15 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    newGroup = UserGroup.new(:name => self.login, :site  => self.site)
-    newGroup.save!
+    userGroup = UserGroup.new(:name => self.login, :site  => self.site)
+    userGroup.save!
     
-    everyoneGroup = SystemGroup.find_by_name("everyone")
+    everyoneGroup = Group.everyone
     group_ids = self.group_ids
-    group_ids << newGroup.id
+    group_ids << userGroup.id
     group_ids << everyoneGroup.id
     if self.site
-      site_group = SystemGroup.find_by_name(self.site.name)
+      site_group = SiteGroup.find_by_name(self.site.name)
       group_ids << site_group.id
     end
     self.group_ids = group_ids

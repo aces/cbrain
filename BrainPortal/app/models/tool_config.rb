@@ -42,7 +42,7 @@ class ToolConfig < ActiveRecord::Base
     myid = self.read_attribute(:group_id)
     return myid if myid
 
-    myid = Group.find_by_name('everyone').id
+    myid = Group.everyone.id
     self.write_attribute(:group_id, myid)
     myid
   end

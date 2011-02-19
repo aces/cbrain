@@ -4,7 +4,7 @@
 Run <%= h(toolname) %> on:<P>
 
 <ul>
-  <% myidlist.each do |id| %>
+  <% (myidlist || []).each do |id| %>
     <li><%= link_to_userfile_if_accessible(id) %></li>
   <% end %>
 </ul>

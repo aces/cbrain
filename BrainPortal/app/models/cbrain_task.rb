@@ -27,6 +27,7 @@ class CbrainTask < ActiveRecord::Base
   validates_presence_of :bourreau_id
   validates_presence_of :group_id
   validates_presence_of :status
+  validates_presence_of :tool_config_id
   
   belongs_to            :bourreau
   belongs_to            :user

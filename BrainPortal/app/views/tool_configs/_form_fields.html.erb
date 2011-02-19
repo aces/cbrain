@@ -45,10 +45,25 @@
     <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
     <small>This is a multi line partial BASH script. It can use the environment variables defined above,
            and do anything else you feel is needed to activate this configuration.
-           <br> Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
+           <br/> Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
            could interfere with the proper processing of the task's output.</small>
     </p>
   </span>
+
+  <p>
+  Option: Merge configuration from another existing entry:
+  <%= tool_config_select :merge_from_tc_id, {}, { :include_blank => 'Merge from...' } %>
+  <%= submit_tag 'Merge Configuration' %><br/>
+  <small>
+  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+    The description, environment variables and prologue script will be appended to whatever
+    values are currently in the form. The project and suggested number of CPUs will be changed.
+  <% else %>
+    The environment variables and prologue script will be appended to whatever
+    values are currently in the form.
+  <% end %>
+  </small>
+  </p>
 
 </div>
 

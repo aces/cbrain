@@ -44,6 +44,11 @@ class Group < ActiveRecord::Base
   has_many                :cbrain_tasks
   belongs_to              :site 
 
+  # Returns the unique and special group 'everyone'
+  def self.everyone
+    @everyone ||= self.find_by_name('everyone')
+  end
+
   # Returns itself; this method is here to make it symetrical
   # with other resource classes such as User and Site, which
   # both have a meaningful own_group() method.
@@ -52,9 +57,8 @@ class Group < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    return true if self.name == 'everyone'
     @can_be_accessed_cache       ||= {}
-    @can_be_accessed_cache[user] ||= user.available_groups.include?(self)
+    @can_be_accessed_cache[user] ||= (user.has_role?(:admin) || user.is_member_of_group(self))
   end
   
   #Can this group be edited by +user+?
