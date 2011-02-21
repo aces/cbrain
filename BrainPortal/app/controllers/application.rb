@@ -189,6 +189,12 @@ class ApplicationController < ActionController::Base
       flash.now[:error] += "This portal is currently locked for maintenance."
       message = BrainPortal.current_resource.meta[:portal_lock_message]
       flash.now[:error] += "\n#{message}" unless message.blank?
+      unless current_user && current_user.has_role?(:admin)
+        respond_to do |format|
+          format.html {redirect_to logout_path unless params[:controller] == "sessions"}
+          format.xml  {render :xml => {:message => message}, :status => 503}
+        end
+      end
     end
   end
     

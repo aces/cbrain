@@ -3,11 +3,11 @@
     <% @filter_params["filter_hash"].each do |key, value| %>
         <li>
           <% if key == "custom_filter" %>
-            <%= crop_text_to(30, TaskCustomFilter.find(value).name) %><%= filter_remove_link delete_icon, key %>
+            <%= h crop_text_to(30, TaskCustomFilter.find(value).name) %><%= filter_remove_link delete_icon, key %>
           <% elsif key == "type" %>
-            <%= crop_text_to(30, value.sub(/^CbrainTask::/, "")) %><%= filter_remove_link delete_icon, key %>
+            <%= h crop_text_to(30, value.sub(/^CbrainTask::/, "")) %><%= filter_remove_link delete_icon, key %>
           <% else %>
-            <%= crop_text_to(30, display_filter(:cbrain_task, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key %>
+            <%= h crop_text_to(30, display_filter(:cbrain_task, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key %>
           <% end %>
         </li>
     <% end %>

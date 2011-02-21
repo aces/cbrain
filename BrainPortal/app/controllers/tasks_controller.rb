@@ -65,6 +65,8 @@ class TasksController < ApplicationController
         scope = custom_filter.filter_scope(scope)
       elsif table_column?(:cbrain_task, att)
         scope = scope.scoped(:conditions => {att => value})
+      else
+        @filter_params["filter_hash"].delete att
       end
     end
 

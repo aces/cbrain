@@ -62,6 +62,8 @@ class UserfilesController < ApplicationController
         filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
       elsif table_column?(:userfile, att)
         filtered_scope = filtered_scope.scoped(:conditions => {att => val})
+      else
+        @filter_params["filter_hash"].delete att
       end
     end
     
