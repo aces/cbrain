@@ -16,6 +16,10 @@ class CbrainTask::Diagnostics < PortalTask
 
   validate :validate_input_fields
 
+  def self.properties #:nodoc:
+    { :parallelization_size => true }
+  end
+
   def self.default_launch_args #:nodoc:
     {
     :setup_delay           => 0,

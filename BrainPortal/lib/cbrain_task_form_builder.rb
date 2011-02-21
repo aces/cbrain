@@ -102,13 +102,15 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # See the doc in the module above.
   def params_check_box(paramspath, options = {}, checked_value = "1", unchecked_value = "0")
     new_options = params_common_options(paramspath,options)
-    found_value = new_options[:value]
-    if found_value.blank? || (found_value.is_a?(Numeric) && found_value == 0) || (found_value.is_a?(String) && found_value == "0")
-      new_options[:value]   = unchecked_value
-      new_options.delete(:checked)
-    else
+    found_value = new_options[:value] # can be nil
+    if (found_value.is_a?(Numeric) && found_value == checked_value.to_i) ||
+       (found_value.is_a?(String)  && found_value == checked_value.to_s) || 
+       (found_value.is_a?(Array)   && found_value.map(&:to_s).include?(checked_value.to_s))
       new_options[:value]   = checked_value
       new_options[:checked] = true
+    else
+      new_options[:value]   = unchecked_value
+      new_options.delete(:checked)
     end
     pseudo_method = create_access_method(paramspath)
     check_box(pseudo_method, new_options, checked_value, unchecked_value)
@@ -195,7 +197,7 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
                     } )
     unless added_options.has_key?(:value) || added_options.has_key?("value")
       current_value = @object.params_path_value(paramspath) # value in params hash
-      current_value = "" unless [ Numeric, String, Symbol, TrueClass, FalseClass ].detect { |k| current_value.is_a?(k) }
+      current_value = "" unless [ Numeric, String, Symbol, TrueClass, FalseClass, Array ].detect { |k| current_value.is_a?(k) }
       added_options[:value] = current_value
     end
     added_options

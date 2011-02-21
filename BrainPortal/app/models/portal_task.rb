@@ -139,7 +139,7 @@ class PortalTask < CbrainTask
   # Special boolean properties of your task, returned as a
   # hash table. Used by CBRAIN rendering code to control
   # default elements. Advanced feature. The defaults
-  # for all properties should be 'false' so that subclass
+  # for all properties are'false' so that subclass
   # only have to explicitely set the special properties
   # that they want 'true' (since nil is also false).
   def self.properties
@@ -147,7 +147,8 @@ class PortalTask < CbrainTask
        :no_submit_button                   => false, # view will not automatically have a submit button
        :i_save_my_task_in_after_form       => false, # used by validation code for detected coding errors
        :i_save_my_tasks_in_final_task_list => false, # used by validation code for detected coding errors
-       :no_presets                         => false  # view will not contain the preset load/save panel
+       :no_presets                         => false, # view will not contain the preset load/save panel
+       :parallelization_size               => false  # true or fixnum: turns on parallelization
     }
   end
 

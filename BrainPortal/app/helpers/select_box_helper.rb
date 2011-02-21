@@ -252,7 +252,7 @@ module SelectBoxHelper
       ordered_tools.each do |tool|
         tool_tool_configs = by_tool[tool].sort do |tc1,tc2|
           cmp = (tc1.tool.name <=> tc2.tool.name)
-          cmp != 0 ? cmp : (tc2.created_at <=> tc1.created_at)
+          cmp != 0 ? cmp : (tc1.created_at <=> tc2.created_at)
         end
         pairlist = []
         tool_tool_configs.each do |tc|

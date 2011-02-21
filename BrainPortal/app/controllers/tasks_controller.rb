@@ -253,7 +253,7 @@ class TasksController < ApplicationController
     @toolname   = @task.name
 
     if @task.status !~ /Completed|Failed/
-      flash[:error] = "You cannot edit the parameters of an active task.\n";
+      flash[:error] = "You cannot edit the parameters of an active task.\n"
       redirect_to :action => :show, :id => params[:id]
       return
     end
@@ -335,6 +335,30 @@ class TasksController < ApplicationController
       return
     end
 
+    # Detect automatic parallelism support; in that case
+    # the tasks are created in the 'Standby' state, then
+    # passed to the CbrainTask::Parallelizer class to
+    # launch (one or many) parallelizer objects too.
+    parallel_size = nil
+    prop_parallel = @task.class.properties[:parallelization_size] # true, or a number
+    tc_ncpus      = @task.tool_config.ncpus || 1
+    if prop_parallel && (tc_ncpus > 1)
+      if prop_parallel.is_a?(Fixnum) && prop_parallel > 1
+        parallel_size = tc_ncpus < prop_parallel ? tc_ncpus : prop_parallel # min of the two
+      else
+        parallel_size = tc_ncpus
+      end
+      parallel_size = nil if parallel_size < 1 # no need then
+    end
+
+    # Disable parallelizer if no Tool object yet created.
+    if parallel_size && ! CbrainTask::Parallelizer.tool
+      parallel_size = nil
+      messages += "Warning: parallelization cannot be performed until the admin configures a Tool for it.\n"
+    end
+
+    # Prepare final list of tasks; from the one @task object we have,
+    # we get a full array of clones of that task in tasklist
     @task.launch_time = Time.now # so grouping will work
     tasklist,task_list_message = @task.wrapper_final_task_list
     unless task_list_message.blank?
@@ -348,8 +372,15 @@ class TasksController < ApplicationController
       spawn_messages = ""
 
       tasklist.each do |task|
-        task.status = "New" if task.status.blank?
         begin
+          if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
+            if (task.status || 'New') !~ /New|Standby/ # making sure task programmer knows what he's doing
+              raise ScriptError.new("Trying to parallelize a task, but the status was '#{task.status}' instead of 'New' or 'Standby'.")
+            end
+            task.status = "Standby" # force it there; the parallelizer with turn it back to 'New' later on
+          else
+            task.status = "New" if task.status.blank?
+          end
           task.save!
         rescue => ex
           spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
@@ -357,6 +388,16 @@ class TasksController < ApplicationController
       end
 
       spawn_messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
+
+      # Create parallelizer, if needed
+      if parallel_size
+        paral_tasklist = tasklist.select { |t| t.class == @task.class }
+        paral_messages = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist,parallel_size)
+        if ! paral_messages.blank?
+          spawn_messages += "\n" unless spawn_messages.blank? || spawn_messages =~ /\n$/
+          spawn_messages += paral_messages
+        end
+      end
 
       # Send a start worker command to each affected bourreau
       bourreau_ids = tasklist.map &:bourreau_id

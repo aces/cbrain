@@ -29,7 +29,7 @@ class Tool < ActiveRecord::Base
   
   include ResourceAccess
   
-  Categories = ["scientific tool", "conversion tool"]
+  Categories = ["scientific tool", "conversion tool", "background"]
   
   before_validation :set_default_attributes
   

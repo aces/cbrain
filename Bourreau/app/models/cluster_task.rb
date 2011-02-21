@@ -490,7 +490,9 @@ class ClusterTask < CbrainTask
 
   # Possible returned status values:
   # [<b>New</b>] The task is new and not yet set up.
+  # [<b>Standby</b>] The task just exists; getting out of this state is up to the process which set it thus.
   # [<b>Setting Up</b>] The task is in its asynchronous 'setup' state.
+  # [<b>Configured</b>] The task has been set up but NOT launched on cluster.
   # [<b>Failed *</b>]  (To Setup, On Cluster, etc) The task failed at some stage.
   # [<b>Queued</b>] The task is queued.
   # [<b>On CPU</b>] The task is underway.
@@ -512,12 +514,14 @@ class ClusterTask < CbrainTask
       cb_error "Unknown blank status obtained from CbrainTask ActiveRecord #{self.id}."
     end
 
-    # Final states that we can't get out of, except for:
+    # The list below contains states that are either final
+    # or are are moved to other states using other mechanism
+    # than a check with the cluster's state. For instance:
     # - "Data Ready" which can be moved to "Post Processing"
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(New|Setting Up|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart|Preset)$/)
+    return ar_status if ar_status.match(/^(Standby|New|Setting Up|Configured|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart|Preset)$/)
 
     # This is the expensive call, the one that queries the cluster.
     clusterstatus = self.cluster_status
@@ -1027,14 +1031,19 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     impl_time    = impl_revinfo.svn_id_time
     self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' rev. '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
-    # Queue the job and return true, at this point
-    # it's not our 'job' to figure out if it worked
-    # or not.
-    self.addlog("Cluster command: #{job.qsub_command}") if self.user.login == 'admin'
-    jobid              = scir_session.run(job)
-    self.cluster_jobid = jobid
-    self.status        = "Queued"
-    self.addlog("Queued as job ID '#{jobid}'.")
+    # Some jobs are meant only to be fully configured by never actually submitted.
+    if self.meta[:configure_only]
+      self.addlog("This task is meant to be configured but not actually submitted.")
+      self.status="Configured"
+    else
+      # Queue the job on the cluster and return true, at this point
+      # it's not our 'job' to figure out if it worked or not.
+      self.addlog("Cluster command: #{job.qsub_command}") if self.user.login == 'admin'
+      jobid              = scir_session.run(job)
+      self.cluster_jobid = jobid
+      self.status        = "Queued"
+      self.addlog("Queued as job ID '#{jobid}'.")
+    end
     self.save
 
     return true

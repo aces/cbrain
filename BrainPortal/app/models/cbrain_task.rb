@@ -83,7 +83,7 @@ class CbrainTask < ActiveRecord::Base
   ##################################################################
 
   COMPLETED_STATUS = [ "Completed" ]
-  RUNNING_STATUS   = [ "New", "Setting Up", "Queued", "On CPU", "Suspended", "On Hold", "Data Ready", "Post Processing"]
+  RUNNING_STATUS   = [ "Standby", "Configured", "New", "Setting Up", "Queued", "On CPU", "Suspended", "On Hold", "Data Ready", "Post Processing"]
   FAILED_STATUS    = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
                        "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
                        "Terminated" ]
@@ -134,8 +134,13 @@ class CbrainTask < ActiveRecord::Base
   # Unfortunately, there isn't a clear association between
   # a task and a tool; it's based on the class name stored
   # in one of the tool's attribute.
+  def self.tool
+    @tool_cache ||= Tool.find(:first, :conditions => { :cbrain_task_class => self.to_s })
+  end
+
+  # Same as the class method of the same name.
   def tool
-    @tool_cache ||= Tool.find(:first, :conditions => { :cbrain_task_class => self.class.to_s })
+    self.class.tool
   end
   
   # Define sort orders that don't refer to actual columns in the table.
@@ -266,9 +271,7 @@ class CbrainTask < ActiveRecord::Base
   # fulfill them.
   PREREQS_STATES_COVERED_BY = {
  
-    'Queued' => {
-                  'New'                              => :wait,
-                  'Setting Up'                       => :wait,
+    'Queued' => { # Task must be AT LEAST 'Queued', but can be further along.
                   'Queued'                           => :go,
                   'On Hold'                          => :go,
                   'On CPU'                           => :go,
@@ -284,13 +287,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :fail,
                 },
 
-    'Data Ready' => {
-                  'New'                              => :wait,
-                  'Setting Up'                       => :wait,
-                  'Queued'                           => :wait,
-                  'On Hold'                          => :wait,
-                  'On CPU'                           => :wait,
-                  'Suspended'                        => :wait,
+    'Data Ready' => { # Task must be AT LEAST 'Data Ready', but can be further along.
                   'Data Ready'                       => :go,
                   'Post Processing'                  => :go,
                   'Completed'                        => :go,
@@ -302,15 +299,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :fail
                 },
 
-    'Completed' => {
-                  'New'                              => :wait,
-                  'Setting Up'                       => :wait,
-                  'Queued'                           => :wait,
-                  'On Hold'                          => :wait,
-                  'On CPU'                           => :wait,
-                  'Suspended'                        => :wait,
-                  'Data Ready'                       => :wait,
-                  'Post Processing'                  => :wait,
+    'Completed' => { # Task must be 'Completed'.
                   'Completed'                        => :go,
                   'Terminated'                       => :fail,
                   'Failed To Setup'                  => :fail,
@@ -320,15 +309,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :fail
                 },
 
-    'Failed' => {
-                  'New'                              => :wait,
-                  'Setting Up'                       => :wait,
-                  'Queued'                           => :wait,
-                  'On Hold'                          => :wait,
-                  'On CPU'                           => :wait,
-                  'Suspended'                        => :wait,
-                  'Data Ready'                       => :wait,
-                  'Post Processing'                  => :wait,
+    'Failed' => { # Task must have failed.
                   'Completed'                        => :fail,
                   'Terminated'                       => :fail, # a terminated task is not 'failed'
                   'Failed To Setup'                  => :go,
@@ -336,27 +317,70 @@ class CbrainTask < ActiveRecord::Base
                   'Failed On Cluster'                => :go,
                   'Failed Setup Prerequisites'       => :go,
                   'Failed PostProcess Prerequisites' => :go
+                },
+
+     'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
+                  'Standby'                          => :go,
+                  'Completed'                        => :fail,
+                  'Terminated'                       => :fail,
+                  'Failed To Setup'                  => :fail,
+                  'Failed To PostProcess'            => :fail,
+                  'Failed On Cluster'                => :fail,
+                  'Failed Setup Prerequisites'       => :fail,
+                  'Failed PostProcess Prerequisites' => :fail
+                },
+
+     'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
+                  'Configured'                       => :go,
+                  'Completed'                        => :fail,
+                  'Terminated'                       => :fail,
+                  'Failed To Setup'                  => :fail,
+                  'Failed To PostProcess'            => :fail,
+                  'Failed On Cluster'                => :fail,
+                  'Failed Setup Prerequisites'       => :fail,
+                  'Failed PostProcess Prerequisites' => :fail
                 }
 
   }
 
   # The previous table is missing lots of entries that are common
-  # to all prereq states; we add them here.
+  # to all prereq states; we add them here. By default, any
+  # current state other than those specified explicitely above
+  # mean :wait .
   PREREQS_STATES_COVERED_BY.each_value do |states_go_wait_fail|
-    states_go_wait_fail.merge!(
-        {
-          'Recover Setup'          => :wait,
-          'Recover Cluster'        => :wait,
-          'Recover PostProcess'    => :wait,
-          'Recovering Setup'       => :wait,
-          'Recovering Cluster'     => :wait,
-          'Recovering PostProcess' => :wait,
-          'Restart Setup'          => :wait,
-          'Restart Cluster'        => :wait,
-          'Restart PostProcess'    => :wait,
-          'Restarting Setup'       => :wait,
-          'Restarting Cluster'     => :wait,
-          'Restarting PostProcess' => :wait
+    states_go_wait_fail.reverse_merge!(
+        { # ALL states should appear in this list.
+          'Standby'                          => :wait,
+          'Configured'                       => :wait,
+          'New'                              => :wait,
+          'Setting Up'                       => :wait,
+          'Queued'                           => :wait,
+          'On Hold'                          => :wait,
+          'On CPU'                           => :wait,
+          'Suspended'                        => :wait,
+          'Data Ready'                       => :wait,
+          'Post Processing'                  => :wait,
+          'Completed'                        => :wait,
+          'Terminated'                       => :wait,
+          'Failed To Setup'                  => :wait,
+          'Failed To PostProcess'            => :wait,
+          'Failed On Cluster'                => :wait,
+          'Failed Setup Prerequisites'       => :wait,
+          'Failed PostProcess Prerequisites' => :wait,
+          'Recover Setup'                    => :wait,
+          'Recover Cluster'                  => :wait,
+          'Recover PostProcess'              => :wait,
+          'Recovering Setup'                 => :wait,
+          'Recovering Cluster'               => :wait,
+          'Recovering PostProcess'           => :wait,
+          'Restart Setup'                    => :wait,
+          'Restart Cluster'                  => :wait,
+          'Restart PostProcess'              => :wait,
+          'Restarting Setup'                 => :wait,
+          'Restarting Cluster'               => :wait,
+          'Restarting PostProcess'           => :wait,
+          'Preset'                           => :wait,
+          'SitePreset'                       => :wait
         }
     )
   end
@@ -367,19 +391,32 @@ class CbrainTask < ActiveRecord::Base
   # be set up (when +for_what+ is :for_setup) or to enter post
   # processing (when +for_what+ is :for_post_processing), the
   # +othertask+ must be in +needed_state+ .
+  #
+  # If +needed_state+ is a single '-' (dash), whatever prerequisite
+  # currently exists will be removed, instead.
   def add_prerequisites(for_what, othertask, needed_state = "Completed") #:nodoc:
     cb_error "Prerequisite argument 'for_what' must be :for_setup or :for_post_processing" unless
       for_what.is_a?(Symbol) && (for_what == :for_setup || for_what == :for_post_processing)
     cb_error "Prerequisite argument needed_state='#{needed_state}' is not allowed." unless
-      PREREQS_STATES_COVERED_BY[needed_state]
+      needed_state == '-' || PREREQS_STATES_COVERED_BY[needed_state]
     otask_id = othertask.is_a?(CbrainTask) ? othertask.id : othertask.to_i
     cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if otask_id.blank?
     cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == otask_id
     ttid = "T#{otask_id}"
     prereqs         = self.prerequisites || {}
     task_list       = prereqs[for_what]  ||= {}
-    task_list[ttid] = needed_state
+    if needed_state == '-'
+      task_list.delete(ttid)
+    else
+      task_list[ttid] = needed_state
+    end
     self.prerequisites = prereqs # in case it was blank originally
+  end
+
+  # This method removes a prerequisite entry in the task's object.
+  # The prerequisite must have been added with add_prerequisites_* first.
+  def remove_prerequisites(for_what, othertask) #:nodoc:
+    add_prerequisites(for_what, othertask, '-')
   end
 
   # This method adds a prerequisite entry in the task's object;
@@ -396,6 +433,20 @@ class CbrainTask < ActiveRecord::Base
   # The argument +othertask+ can be a task object, or its ID.
   def add_prerequisites_for_post_processing(othertask, needed_state = "Completed")
     add_prerequisites(:for_post_processing, othertask, needed_state)
+  end
+
+  # This method removes a 'for_setup' prerequisite entry
+  # from the task's object. See add_prerequisites_for_setup for
+  # more info.
+  def remove_prerequisites_for_setup(othertask)
+    remove_prerequisites(:for_setup, othertask)
+  end
+
+  # This method removes a 'for_post_processing' prerequisite entry
+  # from the task's object. See add_prerequisites_for_post_processing for
+  # more info.
+  def remove_prerequisites_for_post_processing(othertask)
+    remove_prerequisites(:for_post_processing, othertask)
   end
 
   # This method sets the attribute :share_wd_tid to the
