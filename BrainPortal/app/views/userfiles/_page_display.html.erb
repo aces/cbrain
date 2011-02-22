@@ -1,32 +1,29 @@
-
 <h5>
   <%= 
-    ajax_link (@filter_params["details"] == 'off' ? "Show Details" : "Hide Details"),
-            {:controller  => :userfiles, :action => :index, :userfiles => {:details  => set_toggle(@filter_params["details"])}}, 
-            :datatype  => 'script' 
+    filter_add_link (@filter_params["details"] == 'off' ? "Show Details" : "Hide Details"),
+                    :parameter => :details, 
+                    :value     => set_toggle(@filter_params["details"])
   %>
 </h5>
-
 <% if @userfiles_total > @user_pref_page_length %>
   <h5>
-    <%= ajax_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
-                userfiles_path(:userfiles => {:pagination  => set_toggle(@filter_params["pagination"])}),
-                :datatype  => 'script'
+    <%= filter_add_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
+                       :parameter => :pagination,
+                       :value     => set_toggle(@filter_params["pagination"])
     %>
   </h5>
 <% end %>
-
 <h5>
-  <%= ajax_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"), 
-                {:controller  => :userfiles, :action => :index, :userfiles => {:tree_sort  => set_toggle(@filter_params["tree_sort"])}}, 
-                :datatype  => 'script' %>
-</h5>
-
-<% if current_user && (check_role(:admin) || check_role(:site_manager)) %>
-  <%= ajax_link @filter_params["view_all"] == 'on' ? "Show your files ": "Show all files on the system", 
-              userfiles_path(:userfiles => {:view_all  => set_toggle(@filter_params["view_all"])}), 
-              :datatype  => 'script'
+  <%= 
+      filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"), 
+                      :parameter => :tree_sort,  
+                      :value     => set_toggle(@filter_params["tree_sort"])
   %>
-<% end %>
-
+</h5>
+<h5>
+<%= filter_add_link @filter_params["view_all"] == 'on' ? "Show your files ": "Show all available files", 
+                    :parameter => :view_all,
+                    :value     => set_toggle(@filter_params["view_all"]) 
+%>
+</h5>
 

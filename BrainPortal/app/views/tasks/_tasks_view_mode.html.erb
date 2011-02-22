@@ -3,15 +3,15 @@
   <strong>Currently in Batch View</strong>
 <% else %>
   <h5>
-    <%= ajax_link 'Switch to Batch View', {:controller  => :tasks, :action  => :index, :tasks  => {:sort  => {:order  => 'CbrainTask.batch'}}}, :datatype  => 'script' %>
+    <%= ajax_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
   </h5>
 <% end %>
 
 <% if @total_entries > @standard_tasks_per_page %>
   <h5>
-    <%= ajax_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
-                {:controller  => :tasks, :action  => :index, :tasks  => {:pagination  => set_toggle(@filter_params["pagination"])}},
-                :datatype  => 'script'
+    <%= filter_add_link @filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate",
+                        :parameter => :pagination,
+                        :value => set_toggle(@filter_params["pagination"])
     %>
   </h5>
 <% end %>
