@@ -256,7 +256,7 @@ class TasksController < ApplicationController
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @toolname   = @task.name
 
-    if @task.status !~ /Completed|Failed/
+    if @task.status !~ /Completed|Failed|Duplicated|Terminated/
       flash[:error] = "You cannot edit the parameters of an active task.\n"
       redirect_to :action => :show, :id => params[:id]
       return
@@ -358,7 +358,7 @@ class TasksController < ApplicationController
     # Disable parallelizer if no Tool object yet created.
     if parallel_size && ! CbrainTask::Parallelizer.tool
       parallel_size = nil
-      messages += "Warning: parallelization cannot be performed until the admin configures a Tool for it.\n"
+      messages += "\nWarning: parallelization cannot be performed until the admin configures a Tool for it.\n"
     end
 
     # Prepare final list of tasks; from the one @task object we have,
@@ -590,7 +590,7 @@ class TasksController < ApplicationController
           end
           skippedtasks = btasklist - oktasks
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks,new_status) # TODO parse returned command object?
+            bourreau.send_command_alter_tasks(oktasks,new_status,params[:dup_bourreau_id]) # TODO parse returned command object?
             sent_ok += oktasks.size
           end
           sent_skipped += skippedtasks.size

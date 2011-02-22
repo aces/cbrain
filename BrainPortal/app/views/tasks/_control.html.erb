@@ -3,10 +3,10 @@
 <%= show_hide_toggle "(show/hide)", ".control_box", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast' %>
 </h2>
 
-<table class="simple control_box<%= " hidden" if ! @task.new_record? %>">
+<table class="simple control_box<%= " hidden" if (! @task.new_record?) && @task.status != "Duplicated" %>">
 
   <tr>
-    <td>
+    <td <%= 'class="error_display"' if @task.status == 'Duplicated' %>>
       <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
       <%= tool_config_select "cbrain_task[tool_config_id]", :tool_configs => @tool_configs, :selector => @task %>
     </td>

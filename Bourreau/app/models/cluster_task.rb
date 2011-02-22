@@ -521,7 +521,7 @@ class ClusterTask < CbrainTask
     #    through the method call save_results()
     # - "Post Processing" which will be moved to "Completed"
     #    through the method call save_results()
-    return ar_status if ar_status.match(/^(Standby|New|Setting Up|Configured|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart|Preset)$/)
+    return ar_status if ar_status.match(/^(Duplicated|Standby|New|Setting Up|Configured|Failed.*|Data Ready|Terminated|Completed|Post Processing|Recover|Restart|Preset)$/)
 
     # This is the expensive call, the one that queries the cluster.
     clusterstatus = self.cluster_status

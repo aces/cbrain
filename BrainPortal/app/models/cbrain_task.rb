@@ -91,7 +91,7 @@ class CbrainTask < ActiveRecord::Base
                        "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
   RESTART_STATUS   = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
                        "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
-  OTHER_STATUS     = [ "Preset" ]
+  OTHER_STATUS     = [ "Preset", "Duplicated" ]
 
   ACTIVE_STATUS    = RUNNING_STATUS | RECOVER_STATUS | RESTART_STATUS
 
@@ -352,6 +352,7 @@ class CbrainTask < ActiveRecord::Base
   PREREQS_STATES_COVERED_BY.each_value do |states_go_wait_fail|
     states_go_wait_fail.reverse_merge!(
         { # ALL states should appear in this list.
+          'Duplicated'                       => :wait,
           'Standby'                          => :wait,
           'Configured'                       => :wait,
           'New'                              => :wait,

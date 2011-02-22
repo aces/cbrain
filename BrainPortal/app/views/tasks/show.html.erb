@@ -40,7 +40,7 @@
     <% end %>
 
     <!-- RESTART -->
-    <% if @task.status == 'Completed' || @task.status == 'Terminated' %>
+    <% if @task.status =~ /Completed|Terminated|Duplicated/ %>
       <td><%= button_to 'Restart At Setup', { :action => 'operation', :operation => 'restart_setup', 'tasklist[]' => @task.id }, :class  => "button" %></td>
     <% end %>
     <% if @task.status == 'Completed' %>
@@ -54,7 +54,7 @@
     <% end %>
 
     <!-- EDIT -->
-    <% if @task.status =~ /Completed|Failed/ %>
+    <% if @task.status =~ /Completed|Failed|Duplicated|Terminated/ %>
       <td><%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "button"  %></td>
     <% end %>
 

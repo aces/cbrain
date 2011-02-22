@@ -4,39 +4,90 @@
   <% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
       
       <div class="menu_bar">
-      
-        <% button_with_dropdown_menu("Apply an Operation")  do %>
-            <%= select_tag( "operation", <<-"OPTIONS_FOR_TASKS"
-              <option value="">Operations on selected tasks:</option>
 
-              <optgroup label="Operations for queued tasks">
-              <option value="hold">Hold queued tasks</option>
-              <option value="release">Release held tasks</option>
+        <% button_with_dropdown_menu("For Queued Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that are still in the Execution Server's Queue and not
+            yet on CPU. Not all Execution Servers support these operations.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Hold Queued Tasks",  :url  => url_for(:action  => :operation, :operation => 'hold'), :method  => :post) %>
+            <%= hijacker_submit_button("Release Held Tasks", :url  => url_for(:action  => :operation, :operation => 'release'), :method  => :post) %>
+          <p/>
+        <% end %>
 
-              <optgroup label="Operations for running tasks">
-              <option value="suspend">Suspend running tasks</option>
-              <option value="resume">Resume suspended tasks</option>
+        <% button_with_dropdown_menu("For Running Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that are running on their Execution Servers.
+            Not all Execution Servers support these operations.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Suspend Running Tasks",  :url  => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post) %>
+            <%= hijacker_submit_button("Resume Suspended Tasks", :url  => url_for(:action  => :operation, :operation => 'resume'), :method  => :post) %>
+          <p/>
+        <% end %>
 
-              <optgroup label="Operations for failed tasks">
-              <option value="recover">Trigger failure recovery code</option>
+        <% button_with_dropdown_menu("For Failed Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that have failed, one way or another.
+            Trying to recover from errors will trigger cleanup code and a restart at
+            the closest successful processing stage before it failed. It doesn't always
+            work but it's often useful to try at least once!
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Trigger Error Recovery", :url  => url_for(:action  => :operation, :operation => 'recover'), :method  => :post) %>
+          <p/>
+        <% end %>
 
-              <optgroup label="Operations for completed tasks">
-              <option value="restart_setup">Restart tasks at "Setup" stage</option>
-              <option value="restart_cluster">Restart tasks at "Cluster" stage</option>
-              <option value="restart_postprocess">Restart tasks at "Post Processing" stage</option>
+        <% button_with_dropdown_menu("For Completed Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that have completed successfully.
+            You can try to restart them at three different stages in their lifecycle:
+          </p>
+          <p class="dropmenu_info">
+            <ul>
+               <li>At <strong>Setup</strong>, when input data files<br/>
+                   are synchronized on the Execution server and the<br/>
+                   processing scripts are created.</li>
+               <li>At <strong>Cluster</strong>, when the scientific scripts<br/>
+                   are actually run on the Execution Server's nodes.</li>
+               <li>At <strong>Post Processing</strong>, when the resulting output<br/>
+                   files are sent back to the CBRAIN Data Providers.</li>
+            </ul>
+          </p>
+          <p class="centered">
+            Restart at... <%= hijacker_submit_button("\"Setup\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post) %>
+            <%= hijacker_submit_button("\"Cluster\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post) %>
+            <%= hijacker_submit_button("\"Post Processing\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post) %>
+          <p/>
+          <p class="dropmenu_info">
+            You can also duplicate tasks and recreate them on a different
+            Execution Server. Before restarting them, make sure to adjust
+            their tool version, though.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Duplicate Tasks", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post) %>
+            on Execution Server: <%= bourreau_select :dup_bourreau_id %>
+          <p/>
+        <% end %>
 
-              <optgroup label="Operations for all tasks">
-              <option value="duplicate">Duplicate selected tasks and start them anew</option>
-              <option value="terminate">Terminate selected tasks</option>
-              <option value="delete">Remove selected tasks</option>
-              OPTIONS_FOR_TASKS
-
-            ) %>
-
-            <br>
-
-            <%= submit_tag("Apply Operation") %>
-          
+        <% button_with_dropdown_menu("Terminating And Cleaning Up") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that you no longer need.
+            You can terminate tasks that are at any point in their lifecycle, even
+            failed tasks. Tasks marked <strong>Terminated</strong> can be restarted
+            later on.
+          </p>
+          <p class="dropmenu_info">
+            You can also remove tasks completely. This will erase the task's work area
+            on the Execution Server, including temporary data files, but will not erase
+            a successful task's output files. This is useful if if have
+            confidential data, for instance. 
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Terminate Tasks", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method  => :post) %>
+            <%= hijacker_submit_button("Remove Tasks", :url  => url_for(:action  => :operation, :operation => 'delete'), :method  => :post) %>
+          <p/>
         <% end %>
 
       </div>

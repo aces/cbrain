@@ -215,7 +215,7 @@ class Bourreau < RemoteResource
   # or a single CbrainTask object or an array of such.
   # +new_task_status+ is one of the keywords recognized by
   # process_command_alter_tasks(); in the case where operation
-  # is 'Duplicate', then a +new_bourreau_id+ can be supplied too.
+  # is 'Duplicated', then a +new_bourreau_id+ can be supplied too.
   def send_command_alter_tasks(tasks,new_task_status,new_bourreau_id=nil)
     tasks    = [ tasks ] unless tasks.is_a?(Array)
     task_ids = tasks.map { |t| t.is_a?(CbrainTask) ? t.id : t.to_i }
@@ -326,19 +326,19 @@ class Bourreau < RemoteResource
         task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
         task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' or 'Terminated' tasks only
 
-        # The 'Duplicate' operation copies the task object into a brand new task.
+        # The 'Duplicated' operation copies the task object into a brand new task.
         # As a side effect, the task can be reassigned to another Bourreau too
         # (Note that the task will fail at Setup if the :share_wd_id attribute specify
         # a task that is now on the original Bourreau).
         # Duplicating a task could also be performed on the client side (BrainPortal).
-        if (newstatus == 'Duplicate')
+        if (task.status =~ /Completed|Terminated/ && newstatus == 'Duplicated')
           new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
           new_task = task.class.new(task.attributes) # a kind of DUP!
           new_task.bourreau_id     = new_bourreau_id
           new_task.cluster_jobid   = nil
           new_task.cluster_workdir = nil
           new_task.run_number      = 1
-          new_task.status          = "New"
+          new_task.status          = "Duplicated"
           new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
           task=new_task
         end
@@ -348,8 +348,9 @@ class Bourreau < RemoteResource
         task.addlog_current_resource_revision("New status: #{task.status}")
         task.save
         tasks_affected += 1 if task.bourreau_id == myself.id
-      rescue
+      rescue => ex
         puts "Something has gone wrong altering task '#{task_id}' with new status '#{newstatus}'."
+        puts "#{ex.class.to_s}: #{ex.message}"
       end
     end
 

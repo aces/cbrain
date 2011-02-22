@@ -34,7 +34,7 @@ class PortalTask < CbrainTask
     "restart_setup"       => "Restart Setup",
     "restart_cluster"     => "Restart Cluster",
     "restart_postprocess" => "Restart PostProcess",
-    "duplicate"           => "Duplicate"
+    "duplicate"           => "Duplicated"
   }
 
   # In order to optimize the set of state transitions
@@ -51,10 +51,10 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Queued"                           => [ "Duplicate", "Terminated", "On Hold"   ],
-    "On Hold"                          => [ "Duplicate", "Terminated", "Queued"    ],
-    "On CPU"                           => [ "Duplicate", "Terminated", "Suspended" ],
-    "Suspended"                        => [ "Duplicate", "Terminated", "On CPU"    ],
+    "Queued"                           => [ "Terminated", "On Hold"   ],
+    "On Hold"                          => [ "Terminated", "Queued"    ],
+    "On CPU"                           => [ "Terminated", "Suspended" ],
+    "Suspended"                        => [ "Terminated", "On CPU"    ],
 
     #===============================================================================
     # Passive states
@@ -62,13 +62,14 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Failed To Setup"                  => [ "Duplicate", "Recover" ],
-    "Failed On Cluster"                => [ "Duplicate", "Recover" ],
-    "Failed To PostProcess"            => [ "Duplicate", "Recover" ],
-    "Failed Setup Prerequisites"       => [ "Duplicate", "Recover" ],
-    "Failed PostProcess Prerequisites" => [ "Duplicate", "Recover" ],
-    "Terminated"                       => [ "Duplicate", "Restart Setup" ],
-    "Completed"                        => [ "Duplicate", "Restart Setup", "Restart Cluster", "Restart PostProcess" ],
+    "Failed To Setup"                  => [ "Recover" ],
+    "Failed On Cluster"                => [ "Recover" ],
+    "Failed To PostProcess"            => [ "Recover" ],
+    "Failed Setup Prerequisites"       => [ "Recover" ],
+    "Failed PostProcess Prerequisites" => [ "Recover" ],
+    "Terminated"                       => [ "Duplicated", "Restart Setup" ],
+    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess" ],
+    "Duplicated"                       => [ "Restart Setup" ],
 
     #===============================================================================
     # Killed ruby code... (bourreau will check it's more than 8 hours ago)
