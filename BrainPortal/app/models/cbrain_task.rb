@@ -93,6 +93,8 @@ class CbrainTask < ActiveRecord::Base
                        "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
   OTHER_STATUS     = [ "Preset" ]
 
+  ACTIVE_STATUS    = RUNNING_STATUS | RECOVER_STATUS | RESTART_STATUS
+
   ##################################################################
   # Core Object Methods
   ##################################################################

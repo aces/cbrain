@@ -225,8 +225,7 @@ class BourreauxController < ApplicationController
   
   def row_data #:nodoc:
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    active_statuses = CbrainTask::RUNNING_STATUS | CbrainTask::RECOVER_STATUS | CbrainTask::RESTART_STATUS
-    @num_running    = CbrainTask.count(:all, :conditions => { :bourreau_id => @remote_resource.id, :status => active_statuses })
+    @num_running    = CbrainTask.count(:all, :conditions => { :bourreau_id => @remote_resource.id, :status =>  CbrainTask::ACTIVE_STATUS })
     render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource }
   end
   

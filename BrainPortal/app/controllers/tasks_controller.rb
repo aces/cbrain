@@ -56,6 +56,8 @@ class TasksController < ApplicationController
           value = CbrainTask::COMPLETED_STATUS
         when :running
           value = CbrainTask::RUNNING_STATUS
+        when :active
+          value = CbrainTask::ACTIVE_STATUS # larger set than running
         when :failed
           value = CbrainTask::FAILED_STATUS
         end 
@@ -369,7 +371,7 @@ class TasksController < ApplicationController
     end
     
     # Spawn a background process to launch the tasks.
-    CBRAIN.spawn_with_active_records(:admin,"Spawn Tasks") do
+    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml, :admin, "Spawn Tasks") do
 
       spawn_messages = ""
 

@@ -26,7 +26,12 @@
 <% if isbourreau %>
   <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>
   <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
-  <td><%= @num_running %>
+  <td><% if @num_running > 0 %>
+        <%= filter_reset_link @num_running, :controller => :tasks, :filters  => { :bourreau_id => bour.id, :status => :active }, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
 <% else %>
   <td>-</td>
   <td>-</td>

@@ -55,7 +55,9 @@ class CbrainTask::Parallelizer < PortalTask
 
     # Destructively go through the task list and build parallelizers
     desttasklist = tasklist.dup # we'll destroy THIS array, and leave the original intact
-    num_parallelizers = 0
+    num_parallelizers = 0 # parallelizer tasks
+    num_parallel      = 0 # tasks under parallelizer control
+    num_serial        = 0 # tasks launched normally, serially
     while desttasklist.size > 0
 
       subtasklist  = desttasklist[0,group_size]           # first group_size tasks
@@ -66,6 +68,7 @@ class CbrainTask::Parallelizer < PortalTask
         subtasklist.each do |task|
           task.status = 'New'
           task.save!
+          num_serial += 1
         end
         next # may end the destructive loop, or continue it if we were grouping them all one by one
       end
@@ -98,6 +101,7 @@ class CbrainTask::Parallelizer < PortalTask
       # Launch the parallelizer
       parallelizer.save!
       num_parallelizers += 1
+      num_parallel      += subtasklist.size
 
       # Launch the subtasks with prerequisites and the 'Configure Only' meta option
       subtasklist.each do |task|
@@ -108,12 +112,23 @@ class CbrainTask::Parallelizer < PortalTask
       end
     end
 
+    messages = ""
+
     if num_parallelizers > 1
-      "Launched #{num_parallelizers} Parallelizer tasks (covering a total of #{tasklist.size} tasks)."
-    else
-      "Launched a Parallelizer task (covering a total of #{tasklist.size} tasks)."
+      messages += "Launched #{num_parallelizers} Parallelizer tasks (covering a total of #{num_parallel} tasks).\n"
+    elsif num_parallelizer == 1
+      messages += "Launched a Parallelizer task (covering a total of #{num_parallel} tasks).\n"
     end
 
+    if num_parallelizers > 0 && num_serial > 0
+      if num_serial > 1
+        messages += "In addition, #{num_serial} leftover tasks were started separately (without a Parallelizer).\n"
+      else
+        messages += "In addition, 1 leftover task was started separately (without a Parallelizer).\n"
+      end
+    end
+
+    messages
   end
 
 end

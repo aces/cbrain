@@ -482,12 +482,12 @@ class ApplicationController < ActionController::Base
   # meta information to a +target_object+ based on
   # the content of a form which has inputs named
   # like "meta[key1]" "meta[key2]" etc. The list of
-  # keys we are looking for are supplied in meta_keys;
+  # keys we are looking for are supplied in +meta_keys+ ;
   # any other values present in the params[:meta] will
   # be ignored.
   #
   # Example: let's say that when posting to update object @myobj,
-  # the form sent also contained this:
+  # the also form sent this to the controller:
   #
   #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A' } ... }
   #
