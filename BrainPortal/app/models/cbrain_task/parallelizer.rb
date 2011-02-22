@@ -116,7 +116,7 @@ class CbrainTask::Parallelizer < PortalTask
 
     if num_parallelizers > 1
       messages += "Launched #{num_parallelizers} Parallelizer tasks (covering a total of #{num_parallel} tasks).\n"
-    elsif num_parallelizer == 1
+    elsif num_parallelizers == 1
       messages += "Launched a Parallelizer task (covering a total of #{num_parallel} tasks).\n"
     end
 
