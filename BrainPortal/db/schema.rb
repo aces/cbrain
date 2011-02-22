@@ -185,7 +185,9 @@ ActiveRecord::Schema.define(:version => 20110214170108) do
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
     t.string   "time_zone"
+    t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
+    t.text     "dp_ignore_patterns"
     t.string   "cms_class"
     t.string   "cms_default_queue"
     t.string   "cms_extra_qsub_args"
@@ -194,8 +196,6 @@ ActiveRecord::Schema.define(:version => 20110214170108) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
-    t.text     "dp_ignore_patterns"
-    t.string   "site_url_prefix"
     t.string   "help_url"
     t.integer  "rr_timeout"
   end

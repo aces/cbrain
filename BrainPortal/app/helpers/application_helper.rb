@@ -17,13 +17,18 @@ module ApplicationHelper
   #Will check for associations to display them properly.
   def display_filter(model, key, value, methods = {})
     klass = Class.const_get model.to_s.classify
-    association_keys = klass.reflect_on_all_associations(:belongs_to).map(&:primary_key_name)
-    if association_keys.include?(key.to_s)
-      association_key   = key.to_s
-      association_name  = key.sub(/_id$/, "")
-      association_class = Class.const_get association_name.classify
+    association = klass.reflect_on_all_associations(:belongs_to).find { |a| a.primary_key_name == key.to_s  }
+    if association
+      association_key   = association.primary_key_name
+      association_name  = association.name.to_s
+      association_class = Class.const_get association.class_name
       name_method = methods[association_key.to_sym] || methods[association_name.to_sym] || :name
-      "#{association_name.humanize}:#{association_class.find(value).send(name_method)}"
+      object = association_class.find_by_id(value)
+      if object
+        "#{association_name.humanize}:#{object.send(name_method)}"
+      else
+        "#{key.to_s.humanize}:#{value}"
+      end
     else
       "#{key.to_s.humanize}:#{value}"
     end
