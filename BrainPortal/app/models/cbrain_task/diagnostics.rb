@@ -17,7 +17,7 @@ class CbrainTask::Diagnostics < PortalTask
   validate :validate_input_fields
 
   def self.properties #:nodoc:
-    { :parallelization_size => true }
+    { :use_parallelizer => true }
   end
 
   def self.default_launch_args #:nodoc:

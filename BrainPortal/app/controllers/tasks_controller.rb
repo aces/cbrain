@@ -344,7 +344,7 @@ class TasksController < ApplicationController
     # passed to the CbrainTask::Parallelizer class to
     # launch (one or many) parallelizer objects too.
     parallel_size = nil
-    prop_parallel = @task.class.properties[:parallelization_size] # true, or a number
+    prop_parallel = @task.class.properties[:use_parallelizer] # true, or a number
     tc_ncpus      = @task.tool_config.ncpus || 1
     if prop_parallel && (tc_ncpus > 1)
       if prop_parallel.is_a?(Fixnum) && prop_parallel > 1
