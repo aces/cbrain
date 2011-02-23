@@ -329,9 +329,9 @@ class Bourreau < RemoteResource
         # The 'Duplicated' operation copies the task object into a brand new task.
         # As a side effect, the task can be reassigned to another Bourreau too
         # (Note that the task will fail at Setup if the :share_wd_id attribute specify
-        # a task that is now on the original Bourreau).
+        # a task that currently is on the original Bourreau).
         # Duplicating a task could also be performed on the client side (BrainPortal).
-        if (task.status =~ /Completed|Terminated/ && newstatus == 'Duplicated')
+        if (newstatus == 'Duplicated')
           new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
           new_task = task.class.new(task.attributes) # a kind of DUP!
           new_task.bourreau_id     = new_bourreau_id
@@ -356,7 +356,7 @@ class Bourreau < RemoteResource
 
     # Artifically trigger a 'wakeup workers' commmand if any task was
     # affected locally. Unfortunately we can't wake up workers on
-    # a different Bourreaux yet.
+    # a different Bourreau yet.
     if tasks_affected > 0
       myself.send_command_start_workers
     end

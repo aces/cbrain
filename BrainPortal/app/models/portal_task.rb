@@ -51,10 +51,10 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Queued"                           => [ "Terminated", "On Hold"   ],
-    "On Hold"                          => [ "Terminated", "Queued"    ],
-    "On CPU"                           => [ "Terminated", "Suspended" ],
-    "Suspended"                        => [ "Terminated", "On CPU"    ],
+    "Queued"                           => [ "Duplicated", "Terminated", "On Hold"   ],
+    "On Hold"                          => [ "Duplicated", "Terminated", "Queued"    ],
+    "On CPU"                           => [ "Duplicated", "Terminated", "Suspended" ],
+    "Suspended"                        => [ "Duplicated", "Terminated", "On CPU"    ],
 
     #===============================================================================
     # Passive states
@@ -62,11 +62,11 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Failed To Setup"                  => [ "Recover" ],
-    "Failed On Cluster"                => [ "Recover" ],
-    "Failed To PostProcess"            => [ "Recover" ],
-    "Failed Setup Prerequisites"       => [ "Recover" ],
-    "Failed PostProcess Prerequisites" => [ "Recover" ],
+    "Failed To Setup"                  => [ "Duplicated", "Recover" ],
+    "Failed On Cluster"                => [ "Duplicated", "Recover" ],
+    "Failed To PostProcess"            => [ "Duplicated", "Recover" ],
+    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover" ],
+    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover" ],
     "Terminated"                       => [ "Duplicated", "Restart Setup" ],
     "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess" ],
     "Duplicated"                       => [ "Restart Setup" ],
@@ -77,16 +77,18 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Setting Up"                       => [ "Terminated" ],
-    "Post Processing"                  => [ "Terminated" ],
-    "Restarting Setup"                 => [ "Terminated" ],
-    "Restarting Cluster"               => [ "Terminated" ],
-    "Restarting PostProcess"           => [ "Terminated" ],
-    "Recovering Setup"                 => [ "Terminated" ],
-    "Recovering Cluster"               => [ "Terminated" ],
-    "Recovering PostProcess"           => [ "Terminated" ],
+    "Setting Up"                       => [ "Duplicated", "Terminated" ],
+    "Post Processing"                  => [ "Duplicated", "Terminated" ],
+    "Restarting Setup"                 => [ "Duplicated", "Terminated" ],
+    "Restarting Cluster"               => [ "Duplicated", "Terminated" ],
+    "Restarting PostProcess"           => [ "Duplicated", "Terminated" ],
+    "Recovering Setup"                 => [ "Duplicated", "Terminated" ],
+    "Recovering Cluster"               => [ "Duplicated", "Terminated" ],
+    "Recovering PostProcess"           => [ "Duplicated", "Terminated" ],
 
-    "Preset"                           => []  # kind of dummy last entry
+    "Standby"                          => [],
+    "Configured"                       => [],
+    "Preset"                           => []   # kind of dummy last entry
 
     # Other transitions are not used by the interface,
     # as they cannot be triggered by the user. For

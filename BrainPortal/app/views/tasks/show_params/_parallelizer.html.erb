@@ -26,7 +26,7 @@
 
   <p>
   In the task manager, you can view the full
-  <%= filter_reset_link "list of tasks", :controller => :tasks, :filters  => { :launch_time => @task.launch_time }, :ajax => false %> 
+  <%= filter_reset_link "list of tasks", :controller => :tasks, :filters  => { :launch_time => @task.launch_time.to_s(:db) }, :ajax => false %> 
   in this batch.
   </p>
 
