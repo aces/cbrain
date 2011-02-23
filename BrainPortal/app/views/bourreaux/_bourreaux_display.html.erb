@@ -39,11 +39,15 @@
   <% numcol = @filter_params["details"] == 'on' ? 18 : 13 %>
 
   <% for bour in @bourreaux %>
-    <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
-                         :id             => "bourreau_#{bour.id}",
-                         :class          => "row_highlight #{cycle("list-odd", "list-even")}", 
-                         :error_message  => "<td colspan=\"#{numcol}\" class=\"loading_message\">Information for '#{bour.name}' unavailable</td>" do %>
-       <td colspan="<%= numcol %>" class="loading_message">Fetching information for '<%= h(bour.name) %>' ...</td>
+    <% if bour.is_a?(Bourreau) && bour.online? %>
+      <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
+                           :id             => "bourreau_#{bour.id}",
+                           :class          => "row_highlight #{cycle("list-odd", "list-even")}", 
+                           :error_message  => "<td colspan=\"#{numcol}\" class=\"loading_message\">Information for '#{bour.name}' unavailable</td>" do %>
+         <td colspan="<%= numcol %>" class="loading_message">Fetching information for '<%= h(bour.name) %>' ...</td>
+      <% end %>
+    <% else %>
+      <%= render :partial => 'bourreau_table_row', :locals => { :bourreau => bour } %>
     <% end %>
   <% end %>
 </table>
