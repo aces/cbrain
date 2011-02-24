@@ -25,6 +25,8 @@ class UserfilesController < ApplicationController
       :manage_persistent
   ]
 
+  MAX_DOWNLOAD_MEGABYTES = 400
+
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
@@ -848,49 +850,68 @@ class UserfilesController < ApplicationController
   end
   
 
-  #Dowload the selected files.
+  # Dowload the selected files.
   def download #:nodoc:
     filelist           = params[:file_ids] || []
     specified_filename = params[:specified_filename]
     
+    # Check or build filename for downloaded data
+    # Does NOT include .tar.gz extensions, which will be added later if necessary
     if ! specified_filename.blank?
+      specified_filename.sub!(/(\.tar)?(\.g?z)?$/i,"")
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
           redirect_to :action => :index, :format =>  request.format.to_sym
           return
-      else
-        specified_filename = "#{specified_filename}.tar.gz"
       end
     else
-      is_blank = true
-      timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
-      specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}.tar.gz"
+      is_blank  = true
+      timestamp = Time.now.to_i.to_s[-4..-1]  # four digits long
+      specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
     end
     
-    if filelist.size == 1 && Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read).is_a?(SingleFile)
-      userfile = Userfile.find_accessible_by_user(filelist[0], current_user, :access_requested => :read)
-      userfile.sync_to_cache
+    tot_size = 0
+
+    # Find list of files accessible to the user
+    userfiles_list = filelist.collect do |id|
+      u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
+      next unless u
+      tot_size += (u.size || 0)
+      u
+    end
+
+    # Do we have at least ONE file to send?
+    if userfiles_list.size == 0
+      flash[:notice] = "No files selected for download."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    # Check size limit
+    if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
+      flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
+                      "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    # Sync all files
+    userfiles_list.each { |u| u.sync_to_cache rescue true }
+
+    # When sending a single file, just throw it at the browser.
+    if filelist.size == 1 && userfiles_list[0].is_a?(SingleFile)
+      userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
-      specified_filename.sub!(/.tar.gz$/,"") unless specified_filename.blank?
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename        
-    else
-      userfiles_list = filelist.collect do |id|
-        u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
-        next unless u
-        u.sync_to_cache
-        u
-      end
-      if userfiles_list.size == 0
-        flash[:notice] = "No filenames selected for download."
-        redirect_to :action => :index, :format =>  request.format.to_sym
-        return
-      end
-      tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
-      send_file tarfile, :stream  => true, :filename => specified_filename
-      CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
-        sleep 300
-        File.unlink(tarfile)
-      end
+      return
+    end
+
+    # When several files are to be sent, create and send a .tar.gz file
+    tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+    send_file tarfile, :stream  => true, :filename => "#{specified_filename}.tar.gz"
+    CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
+      sleep 300
+      File.unlink(tarfile)
     end
   end
 

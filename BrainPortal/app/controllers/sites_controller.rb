@@ -30,7 +30,7 @@ class SitesController < ApplicationController
   # GET /sites/1
   # GET /sites/1.xml
   def show #:nodoc:
-    @site = Site.find(params[:id])
+    @site = current_user.has_role?(:admin) ? Site.find(params[:id]) : current_user.site
 
     respond_to do |format|
       format.html # show.html.erb
