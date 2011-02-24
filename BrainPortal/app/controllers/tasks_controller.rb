@@ -21,7 +21,7 @@ class TasksController < ApplicationController
   def index #:nodoc:   
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     bourreau_ids = @bourreaux.map &:id
-
+    
     if current_project
       scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
     else
@@ -33,7 +33,7 @@ class TasksController < ApplicationController
     @task_owners   = {}
     @task_projects = {}
     @task_status   = {}
-
+    
     header_scope = scope.scoped( :conditions => "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
     header_scope = header_scope.scoped( :conditions => { :bourreau_id => bourreau_ids })
 
@@ -47,31 +47,8 @@ class TasksController < ApplicationController
                       :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
     
     
-    @filter_params["filter_hash"].each do |att, val|
-      att = att.to_sym
-      value = val
-      if att == :status
-        case value.to_sym
-        when :completed
-          value = CbrainTask::COMPLETED_STATUS
-        when :running
-          value = CbrainTask::RUNNING_STATUS
-        when :active
-          value = CbrainTask::ACTIVE_STATUS # larger set than running
-        when :failed
-          value = CbrainTask::FAILED_STATUS
-        end 
-      end
-      if att == :custom_filter
-        custom_filter = TaskCustomFilter.find(value)
-        scope = custom_filter.filter_scope(scope)
-      elsif table_column?(:cbrain_task, att)
-        scope = scope.scoped(:conditions => {att => value})
-      else
-        @filter_params["filter_hash"].delete att
-      end
-    end
-
+    scope = base_filtered_scope(scope)
+    
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.scoped( :conditions => { :bourreau_id => bourreau_ids } )
     end
@@ -729,6 +706,10 @@ class TasksController < ApplicationController
       preset.save!
       flash[:notice] += "Saved preset '#{preset.description}'.\n"
     end
+  end
+
+  def resource_class
+    CbrainTask
   end
 
   # Warning: private context in effect here.

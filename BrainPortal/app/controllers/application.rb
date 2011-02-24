@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if
   helper        :all # include all helpers, all the time
 
- filter_parameter_logging :password, :login, :email, :full_name, :role
+  filter_parameter_logging :password, :login, :email, :full_name, :role
 
   before_filter :set_cache_killer
   before_filter :check_if_locked
@@ -41,6 +41,32 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
+  
+  def resource_class
+    @resource_class ||= Class.const_get self.class.to_s.sub(/Controller$/, "").singularize
+  end
+  
+  def table_column?(model, attribute)
+    column = attribute
+    klass = Class.const_get model.to_s.classify
+    
+    klass.columns_hash[column]
+  rescue
+    false   
+  end
+  
+  def base_filtered_scope(filtered_scope = resource_class.scoped({}))
+    @filter_params["filter_hash"].each do |att, val|
+      if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
+        filtered_scope = filtered_scope.send(att, *val)
+      elsif table_column?(resource_class, att)
+        filtered_scope = filtered_scope.scoped(:conditions => {att => val})
+      else
+        @filter_params["filter_hash"].delete att
+      end
+    end
+    filtered_scope
+  end
 
   # This method adjust the Rails app's time zone in the rare
   # cases where the admin has changed it in the DB using the
@@ -108,16 +134,18 @@ class ApplicationController < ActionController::Base
     if clear_param_key
       params[current_controller][clear_param_key.to_s] = clear_param_value
     end
+    clear_params.each { |p| params.delete p.to_s }
     if params[:update_filter]
       update_filter      = params[:update_filter].to_s
       parameters = request.query_parameters.clone
       parameters.delete "update_filter"
-      clear_params.each { |p| parameters.delete p.to_s }
       if update_filter =~ /_hash$/
         params[current_controller][update_filter] = parameters
       elsif
         params[current_controller] = parameters
       end
+      params.delete "update_filter"
+      parameters.keys.each { |p|  params.delete p}
     end
     current_session.update(params)
     @filter_params = current_session.params_for(params[:controller])
@@ -264,22 +292,6 @@ class ApplicationController < ActionController::Base
       format.html { render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status) }
       format.xml  { head status }
     end 
-  end
-  
-  def table_column?(model, attribute)
-    table, column = attribute.to_s.split "."
-    if column
-      if table.to_s != column.to_s  # WHAT ?!? do you mean to compare 'table' to 'model' instead?!?
-        return false
-      end
-    else
-      column = table
-    end
-    klass = Class.const_get model.to_s.classify
-    
-    klass.columns_hash[column]
-  rescue
-    false   
   end
   
   #################################################################################

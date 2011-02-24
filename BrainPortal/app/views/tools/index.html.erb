@@ -13,7 +13,9 @@
     <%= link_to 'Manage Tools', { :controller => :tools, :action => :tool_management }, :class => " button" %>
 
     <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => " button" %>
-
+    <% unless @filter_params["filter_hash"].blank? %>
+      <%= render :partial => "shared/manage_filter_button" %>
+    <% end %>
   <% end %>
 
   <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button" %>

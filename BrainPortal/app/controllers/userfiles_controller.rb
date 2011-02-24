@@ -29,8 +29,6 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   def index #:nodoc:
 
-    current_session[:userfiles_sort_order] ||= 'userfiles.tree_sort' 
-
     #------------------------------
     # Filtered scope
     #------------------------------
@@ -51,21 +49,8 @@ class UserfilesController < ApplicationController
     tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
     
     #Apply filters
+    filtered_scope = base_filtered_scope
     filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
-    @filter_params["filter_hash"].each do |att, val|
-      if att.to_sym == :name
-        filtered_scope = filtered_scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{val}%"])
-      elsif att.to_sym == :file_format
-        format_filter = val
-        format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
-        format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-        filtered_scope = filtered_scope.scoped(:conditions  => "userfiles.type='#{format_filter}'#{format_ids}")
-      elsif table_column?(:userfile, att)
-        filtered_scope = filtered_scope.scoped(:conditions => {att => val})
-      else
-        @filter_params["filter_hash"].delete att
-      end
-    end
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
@@ -173,7 +158,7 @@ class UserfilesController < ApplicationController
     #------------------------------
 
     @user_tags      = current_user.tags.find(:all)
-    @user_groups    = current_user.available_groups(:all, :order => "type")
+    @user_groups    = current_user.available_groups(:order => "type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
@@ -304,7 +289,7 @@ class UserfilesController < ApplicationController
     state = @userfile.local_sync_status
     @sync_status = state.status if state
 
-    @user_groups = current_user.available_groups(:all, :order => "type")
+    @user_groups = current_user.available_groups(:order => "type")
 
     @tags = current_user.tags.find(:all)
 
@@ -569,7 +554,7 @@ class UserfilesController < ApplicationController
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.tags
-        @user_groups = current_user.available_groups(:all, :order => "type")
+        @user_groups = current_user.available_groups(:order => "type")
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end

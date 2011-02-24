@@ -1,0 +1,17 @@
+<% button_with_dropdown_menu('Manage Filters') do %>
+  <fieldset class="filter_sidebar">
+    <legend>Active Filters</legend>
+      <div id="current_filters">
+        <ul class="filter_menu">
+            <% @filter_params["filter_hash"].each do |key, value| %>
+                <li>
+                  <%= h crop_text_to(30, display_filter(:cbrain_task, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                </li>
+            <% end %>
+        </ul>
+      </div>
+      <small>
+        <%= filter_clear_link 'clear', :ajax => false %>
+      </small>
+  </fieldset>
+<% end %>

@@ -154,89 +154,64 @@ class User < ActiveRecord::Base
   end
   
   #Find the tools that this user has access to.
-  def available_tools
-    @available_tools ||= if self.has_role? :admin
-                         Tool.scoped({})
-                       elsif self.has_role? :site_manager
-                         Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
-                       else
-                         Tool.scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
-                       end
+  def available_tools(options = {})
+    if self.has_role? :admin
+      Tool.scoped(options)
+    elsif self.has_role? :site_manager
+      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+    else
+      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+    end
   end
+  
   #Find the scientific tools that this user has access to.
-  def available_scientific_tools
-    @available_scientific_tools ||= self.available_tools.scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
+  def available_scientific_tools(options = {})
+    self.available_tools(options).scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
-  def available_conversion_tools
-    @available_conversion_tools ||= self.available_tools.scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
+  def available_conversion_tools(options = {})
+    self.available_tools(options).scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
-  def available_groups(arg1 = :all, options = {})
-    cache_key = arg1.inspect + options.inspect
-    @all_group_list ||= {}
-    return @all_group_list[cache_key] if @all_group_list[cache_key]
-
+  def available_groups(options = {})
     if self.has_role? :admin
-      @all_group_list[cache_key] = Group.find(arg1,options)
+      group_scope = Group.scoped(options)
     elsif self.has_role? :site_manager
-      site_groups = self.site.groups.find(arg1, options.clone) rescue []
-      site_groups = [site_groups] unless site_groups.is_a?(Array) 
-      self_groups = self.groups.find(arg1, options.clone) rescue []
-      self_groups = [self_groups] unless self_groups.is_a?(Array)
-            
-      if site_groups.blank? and self_groups.blank?
-        raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}"
-      end
-       
-      all_groups = site_groups | self_groups
-      all_groups.reject! { |g| g.is_a?(InvisibleGroup) || g.name == 'everyone' }
-      raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}" if all_groups.size == 0 && arg1 != :all
-      all_groups = all_groups.first if all_groups.size == 1 && arg1 != :all
-      @all_group_list[cache_key] = all_groups
+      group_scope = Group.scoped(:conditions => ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
+      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])      
     else                  
-      all_groups = self.groups.find(arg1, options)
-      if all_groups.is_a?(Array)
-        all_groups.reject! { |g| g.is_a?(InvisibleGroup) || g.name == 'everyone' }
-      else # all_groups is a single group then, here.
-        if all_groups.is_a?(InvisibleGroup) || all_groups.name == 'everyone'
-          raise ActiveRecord::RecordNotFound, "Couldn't find Group with ID=#{arg1}"
-        end
-      end
-      @all_group_list[cache_key] = all_groups
+      group_scope = self.groups.scoped(options)
+      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
+      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])
     end
-    @all_group_list[cache_key]
+    
+    group_scope
   end
   
-  def available_tasks
-    @available_tasks ||= if self.has_role? :admin
-                         CbrainTask.scoped({})
-                       elsif self.has_role? :site_manager
-                         CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
-                       else
-                         CbrainTask.scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids])
-                       end
+  def available_tasks(options = {})
+    if self.has_role? :admin
+      CbrainTask.scoped(options)
+    elsif self.has_role? :site_manager
+      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+    else
+      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids])
+    end
   end
   
   #Return the list of users under this user's control based on role.
-  def available_users(arg1 = :all, options = {})
-    return [self] if self.has_role? :user
-    
-    cache_key = arg1.inspect + options.inspect
-    @all_user_list ||= {}
-    return @all_user_list[cache_key] if @all_user_list[cache_key]
-    
+  def available_users(options = {})
     if self.has_role? :admin
-      @all_user_list[cache_key] = User.find(arg1, options)
+      user_scope = User.scoped(options)
     elsif self.has_role? :site_manager
-      @all_user_list[cache_key] = self.site.users.find(arg1, options)
+      user_scope = self.site.users.scoped(options)
     else
-      cb_error "Unknown role!"
+      user_scope = User.scoped(:conditions => {:id => self.id}).scoped(options)
     end
     
-    @all_user_list[cache_key]
+    user_scope
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:

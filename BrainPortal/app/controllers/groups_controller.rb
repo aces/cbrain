@@ -19,12 +19,12 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:    
-    @system_groups = current_user.available_groups(:all, :conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
-    @work_groups = current_user.available_groups(:all, :conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @system_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @work_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
     
     #For new panel
     @group = WorkGroup.new
-    @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
+    @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
 
     common_form_elements()
 
@@ -35,17 +35,17 @@ class GroupsController < ApplicationController
   end
   
   def show #:nodoc:
-    @group = current_user.available_groups(params[:id])
+    @group = current_user.available_groups.find(params[:id])
   end
 
   # GET /groups/1/edit
   def edit  #:nodoc:
     if current_user.has_role? :admin
-      @group = current_user.available_groups(params[:id], :conditions => {:type => [ "WorkGroup", "InvisibleGroup" ]})
+      @group = current_user.available_groups.find(params[:id], :conditions => {:type => [ "WorkGroup", "InvisibleGroup" ]})
     else
-      @group = current_user.available_groups(params[:id], :conditions => {:type => "WorkGroup"})
+      @group = current_user.available_groups.find(params[:id], :conditions => {:type => "WorkGroup"})
     end
-    @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
+    @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
   end
 
   # POST /groups
@@ -69,7 +69,7 @@ class GroupsController < ApplicationController
         format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
+        @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
         format.js
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -99,7 +99,7 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
-        @users = current_user.available_users(:all, :order => :login).reject{|u| u.login == 'admin'}
+        @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login).reject{|u| u.login == 'admin'}
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -110,7 +110,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1
   # DELETE /groups/1.xml
   def destroy  #:nodoc:
-    @group = current_user.available_groups(params[:id])
+    @group = current_user.available_groups.find(params[:id])
     @group.destroy
 
     respond_to do |format|
@@ -127,7 +127,7 @@ class GroupsController < ApplicationController
     if params[:id] == "off"
       current_session[:active_group_id] = nil
     else
-      @group = current_user.available_groups(params[:id])
+      @group = current_user.available_groups.find(params[:id])
       current_session[:active_group_id] = @group.id
     end
     

@@ -20,7 +20,7 @@ class DataProvidersController < ApplicationController
   before_filter :manager_role_required, :only  => [:new, :create]
    
   def index #:nodoc:
-    @all_providers = DataProvider.find_all_accessible_by_user(current_user)
+    @all_providers = base_filtered_scope DataProvider.find_all_accessible_by_user(current_user)
     
     @providers = @all_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
     @providers["CBRAIN Official Storage"] ||= []

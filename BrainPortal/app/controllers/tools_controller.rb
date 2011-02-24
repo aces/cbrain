@@ -19,7 +19,7 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @tools     = current_user.available_tools.find(:all, :include  => [:bourreaux, :user, :group], :order  => "tools.name")
+    @tools     = base_filtered_scope(current_user.available_tools).find(:all, :include  => [:bourreaux, :user, :group], :order  => "tools.name")
     
     respond_to do |format|
       format.html # index.html.erb

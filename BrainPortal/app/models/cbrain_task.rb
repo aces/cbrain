@@ -42,6 +42,24 @@ class CbrainTask < ActiveRecord::Base
   # subclass of CbrainTask to find/use/define its content
   # as necessary.
   serialize :params
+  
+  named_scope :status, lambda { |s|  
+                         case s.to_sym
+                         when :completed
+                           value = CbrainTask::COMPLETED_STATUS
+                         when :running
+                           value = CbrainTask::RUNNING_STATUS
+                         when :active
+                           value = CbrainTask::ACTIVE_STATUS # larger set than running
+                         when :failed
+                           value = CbrainTask::FAILED_STATUS
+                         else
+                           value = s
+                         end
+                         { :conditions => { :status => value } }    
+                       }
+  
+  named_scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})).current_scoped_methods[:find] }
 
   # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current

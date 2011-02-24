@@ -25,8 +25,8 @@ class MessagesController < ApplicationController
     @show_users = false
     @max_show   = "50"
 
+    scope = base_filtered_scope
     if current_user.has_role?(:admin)
-      scope = Message.scoped( {} )
       user_id      = params[:user_id]      ||= current_user.id.to_s
       upd_before   = params[:upd_before]   ||= "0"
       upd_after    = params[:upd_after]    ||= 50.years.to_s
@@ -57,11 +57,10 @@ class MessagesController < ApplicationController
       else
         scope = scope.scoped( :conditions => { :user_id => current_user.id } )
       end
-      scope = scope.scoped(:order => "last_sent DESC" )
-      @messages = scope.all
     else
-      @messages = current_user.messages.all(:order  => "last_sent DESC")
+      scope = scope.scoped(:conditions => {:user_id => current_user.id})
     end
+    @messages = scope.scoped(:order => "last_sent DESC" )
     
     respond_to do |format|
       format.html # index.html.erb
@@ -82,7 +81,7 @@ class MessagesController < ApplicationController
     if @group_id.blank?
       @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
     elsif @message.errors.empty?
-      group = current_user.available_groups(@group_id)
+      group = current_user.available_groups.find(@group_id)
       if group
         @message.send_me_to(group)
       else

@@ -8,7 +8,7 @@
 <fieldset id="userfiles_search_by_filename">
   <legend>Search by filename</legend>
   <div id="name_search_filter">
-    <%= ajax_search_box "userfiles[filter_hash][name]", userfiles_path %>
+    <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
   </div>
 </fieldset>
 

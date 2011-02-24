@@ -7,6 +7,9 @@
               {:controller  => :bourreaux, :action  => :index, :bourreaux  => {:details  => set_toggle(@filter_params["details"])}},
               :datatype  => 'script', :class  => "button"
   %>
+  <% unless @filter_params["filter_hash"].blank? %>
+    <%= render :partial => "shared/manage_filter_button" %>
+  <% end %>
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 

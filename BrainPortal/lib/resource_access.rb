@@ -98,7 +98,7 @@ module ResourceAccess
         end
       end
     
-      scope.find(:all)
+      scope
     end
   end
 end
