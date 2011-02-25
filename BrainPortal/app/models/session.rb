@@ -232,6 +232,12 @@ class Session
     persistent_ids = self[:persistent_userfile_ids] ||= {}
     persistent_ids.keys
   end
+
+  # Returns the persistent userfile IDs as a hash.
+  def persistent_userfile_ids
+    persistent_ids = self[:persistent_userfile_ids] ||= {}
+    persistent_ids
+  end
   
   private
   

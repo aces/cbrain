@@ -167,8 +167,6 @@ class UserfilesController < ApplicationController
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
     @preferred_bourreau_id = current_user.user_preference.bourreau_id
 
-    @persistent_userfile_ids = current_session[:persistent_userfile_ids] ||= {}
-
     # For the 'new' panel
     @userfile = Userfile.new( :group_id => current_user.own_group.id )
 

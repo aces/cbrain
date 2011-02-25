@@ -4,6 +4,7 @@
   <% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
       
       <div class="menu_bar">
+      <span class="button_set">
 
         <% button_with_dropdown_menu("For Queued Tasks") do %>
           <p class="dropmenu_info">
@@ -11,8 +12,8 @@
             yet on CPU. Not all Execution Servers support these operations.
           </p>
           <p class="centered">
-            <%= hijacker_submit_button("Hold Queued Tasks",  :url  => url_for(:action  => :operation, :operation => 'hold'), :method  => :post) %>
-            <%= hijacker_submit_button("Release Held Tasks", :url  => url_for(:action  => :operation, :operation => 'release'), :method  => :post) %>
+            <%= hijacker_submit_button("Hold Queued Tasks",  :url => url_for(:action  => :operation, :operation => 'hold'), :method  => :post) %>
+            <%= hijacker_submit_button("Release Held Tasks", :url => url_for(:action  => :operation, :operation => 'release'), :method  => :post) %>
           <p/>
         <% end %>
 
@@ -22,8 +23,8 @@
             Not all Execution Servers support these operations.
           </p>
           <p class="centered">
-            <%= hijacker_submit_button("Suspend Running Tasks",  :url  => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post) %>
-            <%= hijacker_submit_button("Resume Suspended Tasks", :url  => url_for(:action  => :operation, :operation => 'resume'), :method  => :post) %>
+            <%= hijacker_submit_button("Suspend Running Tasks",  :url => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post) %>
+            <%= hijacker_submit_button("Resume Suspended Tasks", :url => url_for(:action  => :operation, :operation => 'resume'), :method  => :post) %>
           <p/>
         <% end %>
 
@@ -35,7 +36,7 @@
             work but it's often useful to try at least once!
           </p>
           <p class="centered">
-            <%= hijacker_submit_button("Trigger Error Recovery", :url  => url_for(:action  => :operation, :operation => 'recover'), :method  => :post) %>
+            <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post) %>
           <p/>
         <% end %>
 
@@ -56,9 +57,10 @@
             </ul>
           </p>
           <p class="centered">
-            Restart at... <%= hijacker_submit_button("\"Setup\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post) %>
-            <%= hijacker_submit_button("\"Cluster\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post) %>
-            <%= hijacker_submit_button("\"Post Processing\" stage", :url  => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post) %>
+            <strong>Restart at:</strong><br/>
+            <%= hijacker_submit_button("\"Setup\" stage", :url => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post) %>
+            <%= hijacker_submit_button("\"Cluster\" stage",             :url => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post) %>
+            <%= hijacker_submit_button("\"Post Processing\" stage",     :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post) %>
           <p/>
           <p class="dropmenu_info">
             You can also duplicate tasks and recreate them on a different
@@ -66,7 +68,7 @@
             their tool version, though.
           </p>
           <p class="centered">
-            <%= hijacker_submit_button("Duplicate Tasks", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post) %>
+            <%= hijacker_submit_button("Duplicate Tasks", :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post) %>
             on Execution Server: <%= bourreau_select :dup_bourreau_id %>
           <p/>
         <% end %>
@@ -85,11 +87,12 @@
             confidential data, for instance. 
           </p>
           <p class="centered">
-            <%= hijacker_submit_button("Terminate Tasks", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method  => :post) %>
-            <%= hijacker_submit_button("Remove Tasks", :url  => url_for(:action  => :operation, :operation => 'delete'), :method  => :post) %>
+            <%= hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'), :method  => :post) %>
+            <%= hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),    :method  => :post) %>
           <p/>
         <% end %>
 
+      </span>
       </div>
       
       <div id="pagination" class="pagination">

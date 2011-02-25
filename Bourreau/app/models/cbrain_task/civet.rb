@@ -354,10 +354,10 @@ class CbrainTask::Civet < ClusterTask
       "echo 1>&2 ''"
     ]
 
-    if fake_id
-      local_script << "sleep 20  # For FAKE execution, we replace the command with a delay"
-    else
+    if fake_id.blank?
       local_script << civet_command
+    else
+      local_script << "sleep 20  # For FAKE execution, we replace the command with a delay"
     end
 
     local_script
