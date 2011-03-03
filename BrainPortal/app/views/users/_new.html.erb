@@ -50,11 +50,7 @@
   </div>
   
   <div class="display_cell">
-    <label>Projects</label>
-    <% array_to_table(@groups, :ratio => "3:1", :td_class => 'left_align') do |group,r,c| %>
-       <%= check_box_tag("user[group_ids][]", group.id.to_s) %>
-       <%= h(group.name) -%>
-    <% end %>
+    <%= render :partial => 'group_tables' %>
   </div>
   
 <% end %>

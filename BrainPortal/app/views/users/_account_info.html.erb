@@ -31,7 +31,6 @@
   <% if check_role(:admin) || check_role(:site_manager) %>
 
     <% if not_admin_user(@user) %>
-
       <p><%= f.label :role, "Role" %><br/>
       <%= f.select :role, roles_for_user(current_user), :prompt => 'Select a role' %></p>
       
@@ -41,12 +40,7 @@
       <% end %>
     <% end %>
 
-    <label>Projects</label>
-    <%= hidden_field_tag "user[group_ids][]", [] %>
-    <% array_to_table(@groups.sort { |a,b| a.name <=> b.name }, :td_class => 'left_align no_wrap') do |group,r,c| %>
-      <%= check_box_tag("user[group_ids][]", group.id.to_s, @user.groups.include?(group) ) %>
-      <%= h(group.name) %>
-    <% end %>
+    <%= render :partial => 'group_tables' %>
 
   <% end %>
 

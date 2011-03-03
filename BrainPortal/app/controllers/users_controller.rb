@@ -28,12 +28,6 @@ class UsersController < ApplicationController
     
     #For the 'new' panel
     @user = User.new
-    if current_user.has_role? :admin
-      @groups = WorkGroup.find(:all)
-    elsif current_user.has_role? :site_manager
-      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-    end
-    @groups = @groups.sort { |a,b| a.name <=> b.name }
     
     respond_to do |format|
       format.html # index.html.erb
@@ -49,14 +43,6 @@ class UsersController < ApplicationController
     
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
-    if current_user.has_role? :admin
-      @groups = WorkGroup.find(:all)  # used for 'edit' form
-    elsif current_user.has_role? :site_manager
-      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})  # used for 'new' form
-    else
-      @groups = [] # defensive; not used normally for ordinary users
-    end
-    
     @default_data_provider  = @user.user_preference.data_provider rescue nil
     @default_bourreau       = @user.user_preference.bourreau      rescue nil
     @log                    = @user.getlog()
@@ -124,12 +110,6 @@ class UsersController < ApplicationController
       end
     end
     
-    if current_user.has_role? :admin
-      @groups = WorkGroup.find(:all)
-    elsif current_user.has_role? :site_manager
-      @groups = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
-    end
-    
     respond_to do |format|
       format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'user' }}
     end
@@ -142,8 +122,8 @@ class UsersController < ApplicationController
     
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
     
-    params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
-    params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map(&:id)
+    params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
+    params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
     
     if params[:user][:password]
       params[:user].delete :password_reset
@@ -187,11 +167,6 @@ class UsersController < ApplicationController
         flash.now[:error] ||= ""
         @user.errors.each do |field, message|
           flash.now[:error] += "#{field} #{message}.\n".humanize
-        end
-        if current_user.has_role? :admin
-          @groups = WorkGroup.find(:all)
-        elsif current_user.has_role? :site_manager
-          @groups = WorkGroup.find(:all, :conditions  => {:site_id  => current_user.site_id})
         end
         format.html { render :action => "show" }
         format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
