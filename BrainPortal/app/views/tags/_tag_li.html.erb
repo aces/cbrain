@@ -1,0 +1,17 @@
+<b>
+  <%= filter_add_link crop_text_to(15, tag.name), :controller => :userfiles, :parameter  => :filter_tags_array, :value => tag.id  %>
+</b>
+
+<small><small>
+  <% if tag.group_id != current_user.own_group.id %>
+    (Project: <%= tag.group.name %>)
+  <% end %>
+  <% if tag.user_id == current_user.id %>
+   <% overlay_content_link "Edit", :enclosing_element  => "span" do %>
+      <div id="edit_tag_<%= tag.id %>">
+        <%= render :partial  => "tags/edit", :locals  => {:tag  => tag} %>
+      </div>
+  <% end %>
+  <%= ajax_link 'Delete', tag_path(tag), :confirm => "Are you sure you want to delete tag '#{tag.name}' ?", :method => :delete, :datatype  => 'script' %>  
+ <% end %>
+</small></small>

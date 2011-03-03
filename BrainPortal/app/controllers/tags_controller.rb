@@ -36,7 +36,7 @@ class TagsController < ApplicationController
         format.html { redirect_to userfiles_path }
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
-      format.js {render :partial  => "update_tag_table"}
+      format.js
     end
   end
 
@@ -54,7 +54,7 @@ class TagsController < ApplicationController
         format.html { render :action => "edit" }
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
-      format.js {render :partial  => "update_tag_table"}
+      format.js
     end
   end
 

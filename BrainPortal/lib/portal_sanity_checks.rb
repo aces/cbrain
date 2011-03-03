@@ -334,6 +334,20 @@ class PortalSanityChecks < CbrainChecker
       end
     end
   end
+  
+  def self.ensure_tags_have_a_group_id
+    
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring tags have a group..."
+    #-----------------------------------------------------------------------------
+    
+    tags = Tag.all(:conditions => "group_id IS NULL")
+    tags.each do |t|
+      new_group = t.user.own_group
+      t.group_id = new_group.id
+      t.save!
+    end
+  end
 
 end
 

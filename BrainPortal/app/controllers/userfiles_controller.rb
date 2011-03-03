@@ -42,7 +42,7 @@ class UserfilesController < ApplicationController
     @filter_params["filter_custom_filters_array"] ||= []
     @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
     @filter_params["filter_tags_array"]           ||= [] 
-    @filter_params["filter_tags_array"]           &= current_user.tag_ids.map(&:to_s)  
+    @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
         
     # Prepare custom filters
     custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
@@ -159,7 +159,7 @@ class UserfilesController < ApplicationController
     # Other view variables
     #------------------------------
 
-    @user_tags      = current_user.tags.find(:all)
+    @user_tags      = current_user.available_tags
     @user_groups    = current_user.available_groups(:order => "type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
@@ -291,7 +291,7 @@ class UserfilesController < ApplicationController
 
     @user_groups = current_user.available_groups(:order => "type")
 
-    @tags = current_user.tags.find(:all)
+    @tags = current_user.available_tags
 
     @log  = @userfile.getlog rescue nil
   end
@@ -553,7 +553,7 @@ class UserfilesController < ApplicationController
       else
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
-        @tags = current_user.tags
+        @tags = current_user.available_tags
         @user_groups = current_user.available_groups(:order => "type")
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
@@ -614,12 +614,15 @@ class UserfilesController < ApplicationController
     
     @current_index = @current_index.to_i
     
-    pass_tag    = @current_user.tags.find_or_create_by_name_and_user_id("QC_PASS", current_user.id)
-    fail_tag    = @current_user.tags.find_or_create_by_name_and_user_id("QC_FAIL", current_user.id)
-    unknown_tag = @current_user.tags.find_or_create_by_name_and_user_id("QC_UNKNOWN", current_user.id)
+    admin_user     = User.find_by_login("admin")
+    everyone_group = Group.find_by_name("everyone")
+    
+    pass_tag    = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
+    fail_tag    = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
+    unknown_tag = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
     
     if @current_index >=  0 && params[:commit] != "Skip"
-      @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
+      @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
       tag_ids = params[:tag_ids] || []
       case params[:commit]
       when "Pass"
@@ -634,7 +637,7 @@ class UserfilesController < ApplicationController
     
     if @current_index + 1 < @filelist.size
       @current_index += 1
-      @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user)
+      @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
       partial_base = "userfiles/quality_control/"
       if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
         @partial = partial_base + @userfile.class.name.underscore

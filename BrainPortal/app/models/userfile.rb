@@ -246,7 +246,7 @@ class Userfile < ActiveRecord::Base
   #by +user+.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.select { |t| t.user_id == user.id }
+    self.tags.all(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", user.id, user.group_ids])
   end
 
   #Set the tags associated with this file to those
@@ -258,7 +258,7 @@ class Userfile < ActiveRecord::Base
     tags ||= []
     tags = [tags] unless tags.is_a? Array
      
-    non_user_tags = self.tags.all(:conditions  => "tags.user_id <> #{user.id}").map(&:id)
+    non_user_tags = self.tags.all(:conditions  => ["tags.user_id<>? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).map(&:id)
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set
@@ -344,7 +344,6 @@ class Userfile < ActiveRecord::Base
     current_files = files
 
     unless tag_filters.blank?
-      #tags = tag_filters.collect{ |tf| user.tags.find_by_name( tf )}
       tags = user.tags.find(tag_filters)
       current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
     end

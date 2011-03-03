@@ -1,0 +1,8 @@
+<% if @tag.errors.empty? %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#new_tag').closest(".overlay_content").dialog("close").remove();
+  <% @tag = Tag.new %>
+  jQuery("#tag_table_sidebar").html(<%= html_for_js(render :partial => 'userfiles/tag_table_sidebar') %>).trigger("new_content");
+<% else %>
+  jQuery('#new_tag').html(<%= html_for_js(render :partial  => "tags/new") %>);
+<% end %>

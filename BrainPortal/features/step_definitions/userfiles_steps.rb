@@ -20,7 +20,7 @@ Given /^"([^\"]*)" owns the following userfiles$/ do |login, table|
     tag_ids = []
     if hash[:tags]
       hash[:tags].split(/,\s*/).each do |tag_name|
-       tag = user.tags.find_by_name(tag_name)  
+       tag = user.available_tags.find_by_name(tag_name)  
        unless tag
          tag = Tag.new(:name => tag_name, :user_id => user.id)
          tag.save

@@ -1,0 +1,7 @@
+<% if @tag.errors.empty? %>
+  <%= render :partial  => "shared/flash_update" %>
+  jQuery('#edit_tag_<%= @tag.id %>').closest(".overlay_content").dialog("close").remove();
+  jQuery('#tag_<%= @tag.id %>').html(<%= html_for_js(render :partial  => "tags/tag_li", :locals  => {:tag  => @tag}) %>).trigger("new_content");
+<% else %>
+  jQuery('#edit_tag_<%= @tag.id %>').html(<%= html_for_js(render :partial  => "tags/edit", :locals => {:tag  => @tag}) %>);
+<% end %>

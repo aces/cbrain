@@ -59,7 +59,7 @@ class UserfilesControllerTest < ActionController::TestCase
     
     file = Userfile.find_by_name(filename)
     
-    put :update, {:id => file.id, :userfile => {:name  => new_name, :tag_ids  => [file.user.tags.first.id]}}
+    put :update, {:id => file.id, :userfile => {:name  => new_name, :tag_ids  => [file.user.available_tags.first.id]}}
     
     file = Userfile.find_by_name(new_name)
     assert file.tags.count == 1

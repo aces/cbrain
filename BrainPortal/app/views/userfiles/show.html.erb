@@ -117,13 +117,13 @@
     </tr>
   </table>
   
-  <% if current_user.tags %>
+  <% if current_user.available_tags.count > 0 %>
     <br>
     <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
       <%= hidden_field_tag "file_ids[]", @userfile.id %>
       <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
       <select name="tags[]" multiple="multiple" style="width:150px" >
-      <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+      <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
       </select>
       <br>
       <%= submit_tag "Update Tags" %>

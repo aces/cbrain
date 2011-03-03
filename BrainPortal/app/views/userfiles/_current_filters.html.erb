@@ -8,7 +8,7 @@
     <% end %>
 
     <% unless @filter_params["filter_tags_array"].blank? %>
-      <% current_user.tags.find(@filter_params["filter_tags_array"]).each do |tag|%>
+      <% current_user.available_tags.find(@filter_params["filter_tags_array"]).each do |tag|%>
         <li>
           <%= h crop_text_to(30, "Tag:#{tag.name}") %><%= filter_remove_link delete_icon, tag.id, :parameter  => :filter_tags_array %>
         </li>

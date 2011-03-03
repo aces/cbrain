@@ -1,19 +1,17 @@
 
 <h4>By Tag</h4>
-<ul class="filter_menu">
-   <% current_user.tags.each do |tag| %> 
-       <li>
-         <% inline_edit_field "tag[name]", { :controller => "tags", :action => "update", :id  => tag.id}, :initial_value  => tag.name, :method  => :put, :trigger  => ".edit_trigger" do %>
-           <%= filter_add_link crop_text_to(15, tag.name), :controller => :userfiles, :parameter => :filter_tags_array, :value => tag.id  %>
-           <small>
-               <%= link_to 'Edit', "#", :class  => "edit_trigger" %>
-               <%= ajax_link 'Delete', tag, :confirm => "Are you sure you want to delete tag '#{tag.name}'?", :datatype => 'script', :method => :delete %> 
-           </small>
-         <% end %>
-      </li>
-   <% end %>
-</ul>
+<% overlay_content_link 'Create Tag' do %>
+  <div id="new_tag">
+    <%= render :partial  => "tags/new" %>
+  </div>
+<% end  %>
 
-<% inline_edit_field("tag[name]", { :controller => "tags", :action => "create" }, :initial_value  => "" ) do %>
-  <%= link_to("New Tag", "#", :class  => "action_link") %>
-<% end %>
+<ul class="filter_menu">
+  <%  current_user.available_tags(:include => :group).each do |tag| %>
+
+    <li id="tag_<%= tag.id %>" class="tag">
+      <%= render :partial => 'tags/tag_li', :locals  => {:tag  => tag} %>
+    </li>
+
+  <% end %>
+</ul>

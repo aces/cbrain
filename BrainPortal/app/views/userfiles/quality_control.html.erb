@@ -10,7 +10,7 @@
   <% end %>
   <%= hidden_field_tag :index, @current_index %>
   <select name="tag_ids[]" multiple="multiple" style="width:150px" >
-  <%= options_from_collection_for_select current_user.tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
   </select>
   <br>
   <%= submit_tag "Update Tags" %>

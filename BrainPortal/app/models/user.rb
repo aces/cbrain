@@ -191,6 +191,10 @@ class User < ActiveRecord::Base
     group_scope
   end
   
+  def available_tags(options = {})
+    Tag.scoped(options).scoped(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids])
+  end
+  
   def available_tasks(options = {})
     if self.has_role? :admin
       CbrainTask.scoped(options)

@@ -47,12 +47,12 @@
 
 </p> 
 
-<% if current_user.tags %>
+<% unless current_user.available_tags.blank? %>
       <p>
          Tags:
          
             <table>
-              <% for tag in current_user.tags %>
+              <% for tag in current_user.available_tags %>
                   <tr class="<%= cycle('list-odd', 'list-even') %>">
                     <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, custom_filter.tags.include?(tag.name)) %></td>
                     <td><%= h(tag.name) -%></td>

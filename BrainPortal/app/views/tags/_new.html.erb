@@ -1,0 +1,22 @@
+<h2>New Tag</h2>
+
+<div class="generalbox">
+
+  <% ajax_form_for :tag, @tag, :url => {:controller  => "tags", :action => "create" }, :datatype  => "script" do |f| %>
+    <%= f.error_messages %>
+
+    <p>
+      <%= f.label :name, "Tag name:" %><br>
+      <%= f.text_field :name %>
+    </p>
+
+    <p>
+      <%= f.label :group_id, "Project:" %><br/>
+      <%= group_select("tag[group_id]", :selector => current_user.own_group) %>
+    </p>
+    <p>
+
+    <%= f.submit "Create" %>
+  <% end %>
+
+</div>  <!-- End class="generalbox" -->
