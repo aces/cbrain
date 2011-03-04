@@ -175,11 +175,13 @@ function load_behaviour(event){
     //the entire element will be replace an not just its contents.
     loaded_element.find(".ajax_element").each(function (index,element){
       var current_element = jQuery(element);
+      var method = current_element.attr("data-method")
+      if(!method) method = "GET";
       var url = current_element.attr("data-url");
       var error_message = current_element.attr("data-error");
       var replace = current_element.attr("data-replace");
       jQuery.ajax({
-        type: 'GET',
+        type: method,
         url: url,
         dataType: 'html',
         success: function(data) {
@@ -472,8 +474,10 @@ jQuery(
 
    //Forms with the class "ajax_form" will be submitted as ajax requests.
    //Datatype and target can be set with appropriate "data" attributes.
-   jQuery(".ajax_form").live("submit", function(){
-     var current_form = jQuery(this);
+   jQuery(".ajax_form").find("input[type=submit]").live("click", function(){
+     var submit_button = jQuery(this);
+     var current_form = submit_button.closest("form");
+     var commit = submit_button.attr("value");
      var data_type = current_form.attr("data-datatype");
      var target = current_form.attr("data-target");
      var method = current_form.attr("data-method");
@@ -489,6 +493,7 @@ jQuery(
      current_form.ajaxSubmit({
        type: method,
        dataType: data_type,
+       data: {commit : commit},
        success: function(data){
          modify_target(data, target);     
        },
@@ -497,7 +502,7 @@ jQuery(
      return false;
    });
 
-   //Allows a textfield to submit an ajax request independantly of
+   //Allows a textfield to submit an ajax request independently of
    //the surrounding form. Submission is triggered when the ENTER
    //key is pressed.
    jQuery(".search_box").live("keypress", function(event){

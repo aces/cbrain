@@ -356,6 +356,11 @@ module CbrainUiHelper
     options[:class] ||= ""
     options[:class] +=  " ajax_element"
     
+    method = options.delete(:method)
+    if method
+      options["data-method"] = method.to_s.upcase
+    end
+    
     #This builds an html attribute string from the html_opts hash
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     

@@ -32,17 +32,18 @@ ActionController::Routing::Routes.draw do |map|
                                  :collection => { :cleanup => :post, :disk_usage => :get }
 
   map.resources :userfiles,      :member     => { :content => :get, :display  => :get, :sync_to_cache => :post, :extract_from_collection  => :post }, 
-                                 :collection => { :download             => :get,
-                                                  :new_parent_child     => :get,
-                                                  :create_parent_child  => :post,
-                                                  :delete_files         => :delete, 
-                                                  :create_collection    => :post,
-                                                  :update_multiple      => :put,  
-                                                  :change_provider      => :post, 
-                                                  :compress             => :post,
-                                                  :quality_control      => :post,
-                                                  :manage_persistent    => :post,
-                                                  :sync_multiple        => :post }
+                                 :collection => { :download              => :get,
+                                                  :new_parent_child      => :get,
+                                                  :create_parent_child   => :post,
+                                                  :delete_files          => :delete, 
+                                                  :create_collection     => :post,
+                                                  :update_multiple       => :put,  
+                                                  :change_provider       => :post, 
+                                                  :compress              => :post,
+                                                  :quality_control       => :post,
+                                                  :quality_control_panel => :post,
+                                                  :manage_persistent     => :post,
+                                                  :sync_multiple         => :post }
   
   map.resources :tasks,          :collection => { :new => :post, :operation => :post }
   

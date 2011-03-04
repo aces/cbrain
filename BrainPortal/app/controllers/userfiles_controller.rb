@@ -609,6 +609,16 @@ class UserfilesController < ApplicationController
   end
   
   def quality_control #:nodoc:
+    if params[:done]
+      flash[:notice] = "QC done."
+      redirect_to "/userfiles"
+      return
+    end
+    
+    @filelist = params[:file_ids] || []
+  end
+  
+  def quality_control_panel
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1    
     
@@ -617,11 +627,11 @@ class UserfilesController < ApplicationController
     admin_user     = User.find_by_login("admin")
     everyone_group = Group.find_by_name("everyone")
     
-    pass_tag    = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
-    fail_tag    = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
-    unknown_tag = @current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
+    pass_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
+    fail_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
+    unknown_tag = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
     
-    if @current_index >=  0 && params[:commit] != "Skip"
+    if @current_index >=  0 && params[:commit] && params[:commit] != "Next" && params[:commit] != "Previous"
       @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
       tag_ids = params[:tag_ids] || []
       case params[:commit]
@@ -635,20 +645,21 @@ class UserfilesController < ApplicationController
       @current_userfile.set_tags_for_user(current_user, tag_ids)
     end
     
-    if @current_index + 1 < @filelist.size
+    if params[:commit] == "Previous" && @current_index > 0
+      @current_index -= 1
+    elsif @current_index < @filelist.size-1
       @current_index += 1
-      @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
-      partial_base = "userfiles/quality_control/"
-      if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
-        @partial = partial_base + @userfile.class.name.underscore
-      else
-        @partial = partial_base + "default"
-      end
+    end
+    
+    @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
+    partial_base = "userfiles/quality_control/"
+    if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
+      @partial = partial_base + @userfile.class.name.underscore
     else
-      flash[:notice] = "QC done."
-      redirect_to "/userfiles"
-      return
-    end     
+      @partial = partial_base + "default"
+    end
+    
+    render :partial => "quality_control_panel"
   end
   
   #Create a collection from the selected files.
