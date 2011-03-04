@@ -16,6 +16,11 @@ module ApplicationHelper
 
   #Will check for associations to display them properly.
   def display_filter(model, key, value, methods = {})
+    exceptions = {
+      "group" => "project",
+      "bourreau"  => "server"
+    }
+    
     klass = Class.const_get model.to_s.classify
     association = klass.reflect_on_all_associations(:belongs_to).find { |a| a.primary_key_name == key.to_s  }
     if association
@@ -24,6 +29,9 @@ module ApplicationHelper
       association_class = Class.const_get association.class_name
       name_method = methods[association_key.to_sym] || methods[association_name.to_sym] || :name
       object = association_class.find_by_id(value)
+      if exceptions[association_name]
+        association_name = exceptions[association_name]
+      end
       if object
         "#{association_name.humanize}:#{object.send(name_method)}"
       else
