@@ -19,10 +19,11 @@ class CustomFiltersController < ApplicationController
   Revision_info="$Id$"
 
   def new
-    if params[:filter_class].blank?
+    filter_param = "#{params[:filter_class]}".classify
+    unless CustomFilter.send(:subclasses).map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end    
-    filter_class  = Class.const_get("#{params[:filter_class]}".classify)
+    filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
   end
 
@@ -33,12 +34,13 @@ class CustomFiltersController < ApplicationController
   # POST /custom_filters
   # POST /custom_filters.xml
   def create #:nodoc:
-    if params[:filter_class].blank?
+    filter_param = "#{params[:filter_class]}".classify
+    unless CustomFilter.send(:subclasses).map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
     params[:data] ||= {}
     
-    filter_class  = Class.const_get("#{params[:filter_class]}".classify)
+    filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new(params[:custom_filter])
     @custom_filter.data.merge! params[:data]
     
