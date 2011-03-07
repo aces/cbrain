@@ -20,9 +20,9 @@
     <td><%= link_to_user_if_accessible(tasks.first.user) %></td>
     <td colspan="<%= current_project ? "5" : "6" %>">
       <% if launch_time %>
-        <%= pluralize(tasks.size, "job")%> launched at <%= to_localtime(launch_time,:datetime) %>
+        <%= pluralize(tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
       <% else %>
-        <%= pluralize(tasks.size, "old job")%>
+        <%= pluralize(tasks.size, "old job") %>
       <% end %>
     </td>
   </tr>

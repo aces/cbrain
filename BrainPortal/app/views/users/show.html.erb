@@ -1,5 +1,5 @@
 
-<% title "Account Info"%>
+<% title "Account Info" %>
 
 <% 
  stats = ApplicationController.helpers.gather_filetype_statistics(
@@ -15,9 +15,7 @@
 
 <h2>Account details for <%= h @user.full_name %></h2>
 
-<div class="display_cell">
-
-<div>
+  <div class="display_cell">
 
    <table class = "property_list">
      <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -53,6 +51,10 @@
        <td><%= h(@user.time_zone || "(Unset)") %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
+       <th>Last Connected:</th>
+       <td><%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at)} ago)" : "(Never)" %></td>
+     </tr>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Default Execution Server:</th>
        <td><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
      </tr>
@@ -69,6 +71,20 @@
    </table>
 
   </div>
+
+<div class="display_cell" style="padding: 1em;">
+  <% build_accordion do |acc| %>
+    <% acc.section "Edit Account Info" do %>
+      <%= render :partial => "account_info" %>   
+    <% end %>
+    <% acc.section "Change Password" do %>
+      <%= render :partial => "change_password" %>   
+    <% end %>
+    <% acc.section "Edit Preferences" do %>
+      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
+    <% end %>
+  <% end %>
+</div>
 
   <P>
 
@@ -87,7 +103,7 @@
   
    <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
      <% next if group.name == 'everyone' %>
-     <tr class=<%= cycle("list-even", "list-odd")%> >
+     <tr class=<%= cycle("list-even", "list-odd") %> >
        <td><%= link_to_group_if_accessible(group) %></td>
        <td><%= change_to_project_name(group.class.name) %></td>
        <td><% array_to_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
@@ -112,20 +128,6 @@
   </div>
 
 
-</div>
-
-<div class="display_cell" style="padding: 1em;">
-  <% build_accordion do |acc| %>
-    <% acc.section "Edit Account Info" do %>
-      <%= render :partial => "account_info" %>   
-    <% end %>
-    <% acc.section "Change Password" do %>
-      <%= render :partial => "change_password" %>   
-    <% end %>
-    <% acc.section "Edit Preferences" do %>
-      <%= render :partial => "preferences", :locals  => {:user_preference  => @user.user_preference} %>   
-    <% end %>
-  <% end %>
 </div>
 
 <P>

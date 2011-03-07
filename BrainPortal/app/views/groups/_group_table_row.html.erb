@@ -5,7 +5,7 @@
     <td><%= change_to_project_name(group.class.name) %></td>
   <% end %>
   <td><%= link_to_site_if_accessible(group.site) %></td>
-  <td><%= filter_reset_link @group_id_2_user_counts[group.id] || 0 %></td>
+  <td><%= @group_id_2_user_counts[group.id] || 0 %></td>
   <td>
       <% if (@group_id_2_userfile_counts[group.id] || 0).to_i > 0 %>
         <%= filter_reset_link @group_id_2_userfile_counts[group.id], :controller => :userfiles, :filters  => {:group_id => group.id}, :ajax => false %>
@@ -21,7 +21,7 @@
       <% end %>
   </td>
   <td><%= link_to 'Switch', switch_group_path(group), :class => 'action_link', :method  => :post %></td>
-  <% if group.can_be_edited_by?(current_user)%>
+  <% if group.can_be_edited_by?(current_user) %>
     <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>
     <td>
       <%= 

@@ -41,7 +41,7 @@
               <%= link_to 'Tools', tools_path %>
             </li>
         
-            <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager))%>
+            <% if current_user && (current_user.has_role?(:admin) || current_user.has_role?(:site_manager)) %>
               <li <%= set_selected(params[:controller], :users) %>>
                 <%= link_to 'Users', users_path %>
               </li>

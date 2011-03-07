@@ -228,7 +228,7 @@ module CbrainUiHelper
   ##################################################################
   # Creates a submit button with the value specified in the helper
   #
-  # ex: <%= submit_button("Move Files")%>
+  # ex: <%= submit_button("Move Files") %>
   #
   #
   # This generates: 

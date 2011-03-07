@@ -22,7 +22,7 @@ class PortalController < ApplicationController
     end
     
     @num_files              = current_user.userfiles.size
-    @groups                 = current_user.available_groups(:order => :name)
+    @groups                 = current_user.has_role?(:admin) ? current_user.groups(:order => :name) : current_user.available_groups(:order => :name)
     @default_data_provider  = current_user.user_preference.data_provider rescue nil
     @default_bourreau       = current_user.user_preference.bourreau      rescue nil
         

@@ -48,13 +48,13 @@
     <%if @userfile.is_a? SingleFile %>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Parent:</th>
-        <td><%=h @userfile.parent.name rescue ""%></td>
+        <td><%=h @userfile.parent.name rescue "" %></td>
         <td></td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Children:</th>
-        <td><%=h @userfile.parent.name rescue ""%></td>
+        <td><%=h @userfile.parent.name rescue "" %></td>
         <td></td>
     </tr>
     <% end %> <!-- singlefile -->
