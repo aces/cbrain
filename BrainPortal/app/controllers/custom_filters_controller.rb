@@ -13,10 +13,22 @@
 class CustomFiltersController < ApplicationController
   
   before_filter :login_required
-  
+  layout false
   api_available
   
   Revision_info="$Id$"
+
+  def new
+    if params[:filter_class].blank?
+      cb_error "Filter class required", :status  => :unprocessable_entity
+    end    
+    filter_class  = Class.const_get("#{params[:filter_class]}".classify)
+    @custom_filter = filter_class.new
+  end
+
+  def edit
+    @custom_filter = current_user.custom_filters.find(params[:id])
+  end
 
   # POST /custom_filters
   # POST /custom_filters.xml

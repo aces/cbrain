@@ -12,7 +12,7 @@
 
     <p>
       <%= f.label :group_id, "Project:" %><br/>
-      <%= group_select("tag[group_id]", :selector => current_user.own_group) %>
+      <%= group_select("tag[group_id]", @tag) %>
     </p>
     <p>
 

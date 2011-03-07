@@ -8,7 +8,7 @@ function modify_target(data, target, options){
     if(target == "__OVERLAY__"){
       width = parseInt(options["width"]); // || 800);
       height = parseInt(options["height"]); // || 500);
-      jQuery("<div></div>").html(new_content).appendTo(jQuery("body")).dialog({
+      jQuery("<div class='overlay_content'></div>").html(new_content).appendTo(jQuery("body")).dialog({
        	show: "puff",
        	modal: true,
         position: 'center',

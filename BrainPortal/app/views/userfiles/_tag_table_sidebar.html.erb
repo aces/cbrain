@@ -1,10 +1,6 @@
 
 <h4>By Tag</h4>
-<% overlay_content_link 'Create Tag' do %>
-  <div id="new_tag">
-    <%= render :partial  => "tags/new" %>
-  </div>
-<% end  %>
+<%= overlay_ajax_link 'Create Tag', new_tag_path %>
 
 <ul class="filter_menu">
   <%  current_user.available_tags(:include => :group).each do |tag| %>

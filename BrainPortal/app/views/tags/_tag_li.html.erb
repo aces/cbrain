@@ -7,11 +7,7 @@
     (Project: <%= tag.group.name %>)
   <% end %>
   <% if tag.user_id == current_user.id %>
-   <% overlay_content_link "Edit", :enclosing_element  => "span" do %>
-      <div id="edit_tag_<%= tag.id %>">
-        <%= render :partial  => "tags/edit", :locals  => {:tag  => tag} %>
-      </div>
-  <% end %>
+   <%= overlay_ajax_link "Edit", edit_tag_path(tag) %>
   <%= ajax_link 'Delete', tag_path(tag), :confirm => "Are you sure you want to delete tag '#{tag.name}' ?", :method => :delete, :datatype  => 'script' %>  
  <% end %>
 </small></small>

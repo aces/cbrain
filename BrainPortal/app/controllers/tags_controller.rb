@@ -15,6 +15,11 @@ class TagsController < ApplicationController
   Revision_info = "$Id$"
 
   before_filter :login_required
+  layout false
+
+  def new
+    @tag = Tag.new(:group_id => current_user.own_group.id)
+  end
 
   # GET /tags/1/edit
   def edit #:nodoc:
