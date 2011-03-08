@@ -59,12 +59,45 @@ after the NEP program is completed.</p>
 
 </div>
 
-<div class="credit_box">
+<div class="display_cell credit_box">
   <h3>Subversion Revision Information</h3>
   <p><strong>CBRAIN Revision:</strong> <%= @revinfo['Revision'] %></p>
   <p><strong>Portal Last Changed Author:</strong> <%= @revinfo['Last Changed Author'] %></p>
   <p><strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %></p>
   <p><strong>Portal Last Changed Date:</strong> <%= h(to_localtime(@revinfo['Last Changed Date'],:datetime)) %></p>
   <p><strong>Portal Up Since:</strong> <%= h(to_localtime(CBRAIN::Startup_LocalTime,:datetime)) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)</p>
+</div>
+
+<div class="display_cell credit_box">
+  <h3>Licensing Information</h3>
+  <fieldset>
+    <legend>
+     GPL License
+    </legend>
+    The CBRAIN code base is distributed under the GPL.<br/>
+   A copy of the text of the license can be found here.
+    <%= show_hide_toggle "(Show)", "#gpl_panel", :class  => 'action_link' %>
+    <div id="gpl_panel" style="display: none">
+      <pre>
+      <% txt = File.read(RAILS_ROOT + "/../GPL_v3.txt") rescue "Error getting license file." %>
+      <%= h(txt) %>
+      </pre>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>
+     Other licenses
+    </legend>
+    Some packages or libraries developed by external entities<br/>
+    are used in the CBRAIN code base; here is a summary of their<br/>
+    respective licenses.
+    <%= show_hide_toggle "(Show)", "#other_licenses_panel", :class  => 'action_link' %>
+    <div id="other_licenses_panel" style="display: none">
+      <pre>
+      <% txt = File.read(RAILS_ROOT + "/../CBRAIN_licenses.txt") rescue "Error getting license file." %>
+      <%= h(txt) %>
+      </pre>
+    </div>
+  </fieldset>
 </div>
 

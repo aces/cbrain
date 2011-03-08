@@ -23,7 +23,16 @@
   <td><%= h(bour.time_zone || "(Unset)") %></td>
 <% end %>
 <td><%= red_if( ! bour.online,      "Yes", "Offline" ) %></td>
-<td><%= red_if( info.name == "???", "Yes", "Down!"   ) %></td>
+<td>
+    <% if info.name == "???" %>
+      <%= red_if(true,"Down!") %>
+    <% else %>
+      <% html_tool_tip("Yes") do %>
+        Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
+        (for <%= pretty_elapsed(info.uptime.to_i) %>)
+      <% end %>
+    <% end %>
+</td>
 
 <% if isbourreau %>
   <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>

@@ -27,3 +27,5 @@
   Original code provided by Scott Persinger
   From his blog: http://geekblog.vodpod.com/?p=26
 
+- Individual Ruby GEMs each have their own licensing terms.
+
