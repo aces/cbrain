@@ -1,7 +1,7 @@
 <% title 'Tasks' %>
 
 <div class="display_cell" id="tasks_div">
-  <% ajax_form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
+  <% form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post, :datatype  => "script") do %>
       
       <div class="menu_bar">
       <span class="button_set">
