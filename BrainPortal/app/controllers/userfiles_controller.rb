@@ -129,30 +129,35 @@ class UserfilesController < ApplicationController
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off"
       @userfiles_total = filtered_scope.size
-      @userfiles       = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
-      @userfiles       = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
-        pager.replace(@userfiles)
-        pager.total_entries = @userfiles_total
-        pager
-      end
+      ordered_real     = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
     # ---- WITH tree sort ----
     else
-      # We first get first from a list of 'simple' objects
-      simple_userfiles  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").all
+      # We first get a list of 'simple' objects
+      simple_userfiles  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").all # low cost of construction
       simple_userfiles  = Userfile.tree_sort(simple_userfiles)
       @userfiles_total  = simple_userfiles.size
 
       # Paginate the list of simple objects
-      @userfiles        = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
+      page_of_userfiles = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
 
-      # Fetch and substitute the real objects in-situ
-      userfile_ids      = @userfiles.collect { |u| u.id }
+      # Fetch the real objects and collect them in the same order
+      userfile_ids      = page_of_userfiles.collect { |u| u.id }
       real_subset       = filtered_scope.all(:include => includes, :conditions => { :id => userfile_ids })
       real_subset_index = real_subset.index_by { |u| u.id }
-      @userfiles.each_with_index do |simple,i|
-        @userfiles[i]       = real_subset_index[simple.id]
-        @userfiles[i].level = simple.level
+      ordered_real      = []
+      page_of_userfiles.each do |simple|
+        full = real_subset_index[simple.id]
+        next unless full # this can happen when the userfile list change between fetching the simple and real lists
+        full.level = simple.level
+        ordered_real << full
       end
+    end
+
+    # Turn the array ordered_real into the final paginated collection
+    @userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
+      pager.replace(ordered_real)
+      pager.total_entries = @userfiles_total
+      pager
     end
     
     #------------------------------
