@@ -90,11 +90,6 @@ class FileCollection < Userfile
     true
   end
   
-  def get_full_subdir_listing(directory)
-    full_dir = Pathname.new(self.name) + directory
-    self.list_files("#{full_dir}")
-  end
-  
   # Returns a string to be displayed as the size in views.
   def format_size
     super + " (#{self.num_files} files)"
