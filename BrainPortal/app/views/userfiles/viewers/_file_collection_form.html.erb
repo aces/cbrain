@@ -1,6 +1,6 @@
 <% if @userfile.num_files && @userfile.num_files > 0 %>
   <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :extract_from_collection }, :html => { :method => :post } do |f| %>
-    <% ajax_element(display_userfile_path(@userfile, :viewer  => collection_partial), :class  => "loading_message") do %>
+    <% ajax_element(display_userfile_path(@userfile, :viewer  => collection_partial, :base_directory => params[:base_directory]), :class  => "loading_message") do %>
       <br>
       Loading...
       <br>

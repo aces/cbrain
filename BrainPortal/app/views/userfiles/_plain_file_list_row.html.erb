@@ -11,7 +11,7 @@
     <% else %>
       <%= image_tag "/images/file_icon.png" %>
     <% end %>
-    <%= h(Pathname.new(file.name).basename) %> 
+    <%= data_link file.name, @userfile %> 
     <% if file.symbolic_type == :directory %>
       <span class="ajax_onclick_show_child small warning">Expand</span><span class="ajax_onclick_hide_child small warning" style="display:none">Hide</span>
     <% end %>

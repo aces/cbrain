@@ -1,4 +1,8 @@
- 
+<% 
+  base_dir = Pathname.new(@userfile.name) + (params[:base_directory] || "")
+  base_dir = @userfile.list_files(".", :directory).find{ |f| f.name == base_dir.to_s}.name rescue "."
+  base_dir.sub!(/^#{@userfile.name}\//, "")
+%> 
 <table class="plain_file_list" class="resource_list">
    <tr class="list-odd">
      <% if @userfile.is_locally_synced? %>
@@ -11,7 +15,7 @@
    </tr>
    <%= render :partial => 'userfiles/viewers/directory_contents',
               :locals  => {
-                :file_list => (@userfile.list_files(".", [:regular, :directory]) rescue [])
+                :file_list => (@userfile.list_files(base_dir, [:regular, :directory]) rescue [])
               }
    %>
 

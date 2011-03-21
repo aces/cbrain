@@ -113,25 +113,22 @@
         <th class="right_align">Tags:</th>
         <td colspan="2">
             <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
+            <% overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
+              <% if current_user.available_tags.count > 0 %>
+                <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
+                  <%= hidden_field_tag "file_ids[]", @userfile.id %>
+                  <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
+                  <select name="tags[]" multiple="multiple" style="width:150px" >
+                  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+                  </select>
+                  <br>
+                  <%= submit_tag "Update Tags" %>
+                <% end %>
+              <% end %>
+            <% end %>
         </td>
     </tr>
   </table>
-  
-  <% if current_user.available_tags.count > 0 %>
-    <br>
-    <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
-      <%= hidden_field_tag "file_ids[]", @userfile.id %>
-      <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
-      <select name="tags[]" multiple="multiple" style="width:150px" >
-      <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
-      </select>
-      <br>
-      <%= submit_tag "Update Tags" %>
-    <% end %>
-    <br>
-  <% end %>
-  
-  <P>
 
   <% if @userfile.can_be_accessed_by?(current_user) %>
     <% unless @userfile.is_locally_synced? %>
@@ -158,24 +155,25 @@
   <% end %>
   
   <P>
-    
-  <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-    <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
-      <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
-      <%= submit_tag "Change View" %>
-    <% end %>
-  <% end  %>
-  
-  <P>
-    
-  <div id="userfile_viewer">
-    <div class="display_userfile">   
-      <% if @default_viewer %>
-        <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
-      <% end %>
-    </div>
-  </div>
-    
+  <% unless @userfile.viewers.blank? %>
+    <fieldset>
+      <legend>Contents</legend>
+      <% if @userfile.viewers && @userfile.viewers.size > 1 %>
+        <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
+          <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
+          <%= submit_tag "Change View" %>
+        <% end %>
+        <br>
+      <% end  %>
+      <div id="userfile_viewer">
+        <div class="display_userfile">   
+          <% if @default_viewer %>
+             <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+          <% end %>
+        </div>
+      </div>
+    </fieldset>
+  <% end %>
   <P>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>

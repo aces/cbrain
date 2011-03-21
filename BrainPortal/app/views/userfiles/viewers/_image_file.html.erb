@@ -1,3 +1,16 @@
-<% content_viewer do %>
-  <%= image_tag "/userfiles/#{@userfile.id}/content#{@userfile.file_extension}" %>
+<% 
+  if params[:collection_file] && @userfile.list_files.find { |f| f.name == params[:collection_file] }
+    extension  = Userfile.file_extension(params[:collection_file])
+    parameters = "?collection_file=#{params[:collection_file]}"
+  else
+    extension = @userfile.file_extension
+  end
+%>
+
+<% if params[:content_viewer] == "off" %>
+  <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
+<% else %>
+  <% overlay_content_link "Show Displayable Content", :class => "action_link" do %>
+    <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
+  <% end %>
 <% end %>

@@ -93,6 +93,25 @@ module UserfilesHelper
     end
   end
   
+  def data_link(file_name, userfile)
+    display_name = Pathname.new(file_name).basename.to_s
+    matched_class = SingleFile.send(:subclasses).unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
+    if file_name[-4, 4] == ".obj"
+      link_to h(display_name), "#", "data-content-url" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content, :collection_file  => file_name), "data-content" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content),
+      "class"  => "o3d_link", "data-viewer" =>  "#{display_userfile_path(userfile, :viewer  => "civet_collection/obj_viewer", :apply_div  => false, :collection_file  => file_name)}"
+    elsif matched_class 
+      if matched_class <= TextFile
+        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :collection_file  => file_name, :viewer => "text_file", :content_viewer => "off")
+      elsif matched_class <= ImageFile
+        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :collection_file  => file_name, :viewer => "image_file", :content_viewer => "off")
+      else
+         h(display_name)
+      end
+    else
+      h(display_name)
+    end
+  end
+  
   # Return the HTML code that represent a symbol
   # for +statkeyword+, which is a SyncStatus 'status'
   # keyword. E.g. for "InSync", the
@@ -120,7 +139,7 @@ module UserfilesHelper
   #Create a collapsable "Content" box for userfiles show page.
   def content_viewer(&block)
     concat('<div id="userfile_contents_display">')
-    concat(show_hide_toggle '<strong>Contents</strong>', "#userfile_contents_display_toggle")
+    concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
     concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
     concat(capture(&block))
     concat('</div>')

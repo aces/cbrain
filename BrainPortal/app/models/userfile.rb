@@ -145,7 +145,11 @@ class Userfile < ActiveRecord::Base
   
   #File extension for this file (helps sometimes in building urls).
   def file_extension
-    self.name.scan(/\.[^\.]+$/).last
+    self.class.file_extension(self.name)
+  end
+
+  def self.file_extension(name)
+    name.scan(/\.[^\.]+$/).last
   end
 
   # Classes this type of file can be converted to.
