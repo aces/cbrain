@@ -2,38 +2,37 @@
 <% @paginated_list.each do |launch_time| %>
   <% tasks = @tasks[launch_time] %>
   <% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+  <% launch_time_param = launch_time.to_s(:db) if launch_time %>
 
   <% if tasks.size > 1 %>
-
-  <tr class="batch_job_header row_highlight">
-    <td>
-      <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox" %>
-    </td>
-    <td class="left">
-      <% if launch_time %>
-        <%= show_hide_toggle  "#{tasks.first.name} (Batch)", ".batch_listing_#{launch_time_id}" %>
-      <% else %>
-        <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
-      <% end %>
-    </td>
-    <td><%= overlay_description(tasks.first.description, :header_width => 35) %></td>
-    <td><%= link_to_user_if_accessible(tasks.first.user) %></td>
-    <td colspan="<%= current_project ? "5" : "6" %>">
-      <% if launch_time %>
-        <%= pluralize(tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
-      <% else %>
-        <%= pluralize(tasks.size, "old job") %>
-      <% end %>
-    </td>
-  </tr>
-  <% end %>
-
-
-  <% for task in tasks %>
+    <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
+      <td>
+        <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
+      </td>
+      <td class="left">
+        <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
+          <% if launch_time %>
+            <%= "#{tasks.first.name} (Batch)" %>
+          <% else %>
+            <%= "(Various)" %>
+          <% end %>
+        <% end %>
+      </td>
+      <td><%= overlay_description(tasks.first.description, :header_width => 35) %></td>
+      <td><%= link_to_user_if_accessible(tasks.first.user) %></td>
+      <td colspan="<%= current_project ? "5" : "6" %>">
+        <% if launch_time %>
+          <%= pluralize(tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
+        <% else %>
+          <%= pluralize(tasks.size, "old job") %>
+        <% end %>
+      </td>
+    </tr>
+  <% else %>
     <%= render :partial => 'task_table_row',
-               :locals  => { :task             => task,
-                             :task_available   => @bourreau_status[task.bourreau.id] ? true : false,
-                             :is_child         => (tasks.size > 1),
+               :locals  => { :task             => tasks[0],
+                             :task_available   => @bourreau_status[tasks[0].bourreau.id] ? true : false,
+                             :is_child         => false,
                            }
     %>
   <% end %>

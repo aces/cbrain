@@ -1,0 +1,31 @@
+<% launch_time = @tasks.first.launch_time %>
+<% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+<tr class="batch_job_header row_highlight">
+  <td>
+    <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox" %>
+  </td>
+  <td class="left">
+    <% if launch_time %>
+      <%= show_hide_toggle  "#{@tasks.first.name} (Batch)", ".batch_listing_#{launch_time_id}" %>
+    <% else %>
+      <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
+    <% end %>
+  </td>
+  <td><%= overlay_description(@tasks.first.description, :header_width => 35) %></td>
+  <td><%= link_to_user_if_accessible(@tasks.first.user) %></td>
+  <td colspan="<%= current_project ? "5" : "6" %>">
+    <% if launch_time %>
+      <%= pluralize(@tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
+    <% else %>
+      <%= pluralize(@tasks.size, "old job") %>
+    <% end %>
+  </td>
+</tr>
+<% for task in @tasks %>
+  <%= render :partial => 'task_table_row',
+             :locals  => { :task             => task,
+                           :task_available   => @bourreau_status[task.bourreau.id] ? true : false,
+                           :is_child         => true,
+                         }
+  %>
+<% end %>

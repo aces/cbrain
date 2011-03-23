@@ -124,6 +124,34 @@ class TasksController < ApplicationController
     end
   end
   
+  def batch_list
+    if current_project
+      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
+    else
+      scope = current_user.available_tasks
+    end
+    
+    
+    scope = base_filtered_scope(scope)
+    
+    scope = scope.scoped(:conditions => {:launch_time => params[:launch_time]})
+    
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    if @filter_params["filter_hash"]["bourreau_id"].blank?
+      scope = scope.scoped( :conditions => { :bourreau_id => @bourreaux.map(&:id) } )
+    end
+
+    scope = scope.scoped(:include  => [:bourreau, :user, :group], 
+                         :readonly => false, 
+                         :order    => "cbrain_tasks.launch_time DESC, cbrain_tasks.created_at DESC" )
+        
+    @tasks = scope                     
+    @bourreau_status = {}
+    @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
+    
+    render :layout => false
+  end
+  
   # GET /tasks/1
   # GET /tasks/1.xml
   def show #:nodoc:
@@ -499,7 +527,14 @@ class TasksController < ApplicationController
   #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database. 
   def operation #:nodoc:
     operation   = params[:operation]
-    tasklist    = params[:tasklist] || []
+    tasklist    = params[:tasklist]  || []
+    batch_ids   = params[:batch_ids] || []
+    if batch_ids.delete "nil"
+      tasklist += CbrainTask.all(:conditions => {:launch_time => nil}).map(&:id)
+    end
+    tasklist += CbrainTask.all(:conditions => {:launch_time => batch_ids}).map(&:id)
+
+    tasklist = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""

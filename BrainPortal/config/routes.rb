@@ -45,7 +45,7 @@ ActionController::Routing::Routes.draw do |map|
                                                   :manage_persistent     => :post,
                                                   :sync_multiple         => :post }
   
-  map.resources :tasks,          :collection => { :new => :post, :operation => :post }
+  map.resources :tasks,          :collection => { :new => :post, :operation => :post, :batch_list => :get }
   
   map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
 
