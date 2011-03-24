@@ -444,7 +444,7 @@ class ClusterTask < CbrainTask
           # the status is moving forward at its own pace now
         end
       end
-    rescue => e
+    rescue Exception => e
       self.addlog_exception(e,"Exception raised while setting up:")
       self.status = "Failed To Setup"
     end
@@ -1085,7 +1085,7 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
     # Create our own work directory
     name = self.name
     user = self.user.login
-    basedir = "#{user}-#{name}-P#{Process.pid}-I#{self.id}"
+    basedir = "#{user}-#{name}-T#{self.id}"
     self.cluster_workdir = basedir # new convention is just the basename.
     fulldir = self.full_cluster_workdir # builds using the basename and the bourreau's cms_shared_dir
     self.addlog("Trying to create workdir '#{fulldir}'.")
@@ -1098,6 +1098,7 @@ export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
   def remove_cluster_workdir
     cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
+    return true if ! self.share_wd_tid.blank?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
@@ -1113,8 +1114,8 @@ Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
   Dir.glob("*.rb").each do |model|      
     model.sub!(/.rb$/,"")
     unless CbrainTask.const_defined? model.classify
+      #puts_blue "Loading CbrainTask subclass #{model.classify} from #{model}.rb ..."
       require_dependency "cbrain_task/#{model}.rb"
-      #puts ">>>> #{model} #{model.classify}"
     end
   end
 end
