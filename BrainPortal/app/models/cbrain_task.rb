@@ -150,6 +150,22 @@ class CbrainTask < ActiveRecord::Base
     "#{self.name_and_bourreau}/#{myid}"
   end
 
+  # This method can be used to return a 'pretty' version of
+  # the name of this task, which can contain a bit of task-specific
+  # information. e.g. "MyTask (2 files)". It's used in the task
+  # index page. Don't make it too long, though, it's not a report.
+  # The default is the same as the +name+ instance method.
+  def pretty_name
+    self.name
+  end
+
+  # Returns a prettier name for the task's class
+  # Can be customized by subclasses to improve views, by keep it short.
+  # By default, returns the same value as the +name+ class method.
+  def self.pretty_name
+    @pretty_name ||= self.to_s.sub(/^CbrainTask::/,"")
+  end
+
   # Returns the Tool object associated with the task.
   # Unfortunately, there isn't a clear association between
   # a task and a tool; it's based on the class name stored

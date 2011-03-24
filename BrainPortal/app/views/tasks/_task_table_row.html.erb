@@ -14,7 +14,7 @@
   <tr class="list-unavailable row_highlight batch_listing_<%= launch_time_id %>" title="This task is on an Execution Server that is OFFLINE.">
     <td></td>
 <% end %>
-    <td class="left"><%= is_child ? "&nbsp;&nbsp;&#x21b3;" : "" %><%= link_to_task_if_accessible(task) %></td>
+    <td class="left"><%= is_child ? task_tree_view_icon(task.level || 0) : "" %><%= link_to_task_if_accessible(task, nil, :name => task.pretty_name) %></td>
     <td><%= overlay_description(task.description, :header_width => 35) %></td>
     <td><%= link_to_user_if_accessible(task.user) %></td>
     <% unless current_project %>

@@ -1,7 +1,7 @@
 
-<% title "Edit Task " + @task.name %>
+<% title "Edit Task " + @task.pretty_name %>
 
-<h1>Edit Task <%= @task.name %></h1>
+<h1>Edit Task <%= @task.pretty_name %></h1>
 
 <%
      form_for(:cbrain_task, @task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form|

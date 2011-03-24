@@ -143,7 +143,7 @@ class TasksController < ApplicationController
 
     scope = scope.scoped(:include  => [:bourreau, :user, :group], 
                          :readonly => false, 
-                         :order    => "cbrain_tasks.launch_time DESC, cbrain_tasks.created_at DESC" )
+                         :order    => "cbrain_tasks.rank" )
         
     @tasks = scope                     
     @bourreau_status = {}
@@ -260,6 +260,12 @@ class TasksController < ApplicationController
     @task       = current_user.available_tasks.find(params[:id])
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @toolname   = @task.name
+
+    if @task.class.properties[:cannot_be_edited]
+      flash[:error] = "This task is not meant to be edited.\n"
+      redirect_to :action => :show, :id => params[:id]
+      return
+    end
 
     if @task.status !~ /Completed|Failed|Duplicated|Terminated/
       flash[:error] = "You cannot edit the parameters of an active task.\n"

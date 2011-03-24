@@ -1,7 +1,7 @@
 
-<% title @task.name + ' Task Information' %>
+<% title @task.pretty_name + ' Task Information' %>
 
-<h2><%= @task.name %> Task Information</h2>
+<h2><%= @task.pretty_name %> Task Information</h2>
 
 <% if @task.bourreau.online? %>
 
@@ -54,7 +54,7 @@
     <% end %>
 
     <!-- EDIT -->
-    <% if @task.status =~ /Completed|Failed|Duplicated|Terminated/ %>
+    <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
       <td><%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "button"  %></td>
     <% end %>
 
@@ -69,7 +69,7 @@
 
        <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th>Task Name</th>
-          <td class="left_align"><%= h(@task.name) %></td>
+          <td class="left_align"><%= h(@task.name) %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %></td>
       </tr>
       
       <tr class="<%= cycle('list-odd', 'list-even') %>">
