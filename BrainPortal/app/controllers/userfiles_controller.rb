@@ -262,14 +262,18 @@ class UserfilesController < ApplicationController
       end
     end
     
-    if @partial
-      if params[:apply_div] == "false"
-        render  :partial  => "userfiles/viewers/#{@partial}"
+    begin
+      if @partial
+        if params[:apply_div] == "false"
+          render :partial  => "userfiles/viewers/#{@partial}"
+        else
+          render :action  => :display, :layout  => false
+        end
       else
-        render :action  => :display, :layout  => false
+        render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
       end
-    else
-      render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
+    rescue
+      render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "404"
     end
   end
   
