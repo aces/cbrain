@@ -97,7 +97,7 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
   <%= show_hide_toggle "(Show)", "#inp_test", :class  => 'action_link' %>
 </legend>
 
-<div id="inp_test" style="display:none;">
+<div id="inp_test"<%= ' style="display:none;"' if @task.errors.empty? %>>
 
 <%= form.params_hidden_field :do_validations %>
 
@@ -140,6 +140,11 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 <p>
 <strong>This text is stored deep in the params and must contain 'Deep':</strong>
 <%= form.params_text_field 'inptest[deep]' %>
+</p>
+
+<p>
+<strong>This selection box must be set to an odd number:</strong>
+<%= form.params_select :inptest_select, [ "1", "2", "3", "4" ] %>
 </p>
 
 <p>

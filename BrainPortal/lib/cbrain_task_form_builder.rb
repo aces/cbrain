@@ -162,20 +162,11 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
   # value selected by default in the input tag will be
   # chosen based on the current value found in the params hash.
   def params_select(paramspath, option_tags = nil, options = {}, html_options = {})
+    pseudo_method = create_access_method(paramspath)
     added_options = params_common_options(paramspath,options)
-    name       = added_options.delete(:name)
-    id         = added_options.delete(:id)
-    value      = added_options.delete(:value)
-    html_class = added_options.delete(:class)
-    html_options.delete(:disabled) unless html_options[:disabled]
-    html_options[:disabled] &&= "disabled"
-    tag  = "<select name=\"#{name}\" id=\"#{id}\""
-    tag += " class=\"#{html_class}\"" if html_class
-    tag += html_options.inject("") { |result, pair| result += " #{pair.first}=\"#{pair.last}\"" unless pair.last.nil?; result }
-    tag += ">"
-    tag += @template.options_for_select(option_tags,value)
-    tag += "</select>"
-    tag
+    html_options[:name] = added_options.delete(:name)
+    html_options[:id]   = added_options.delete(:id)
+    select(pseudo_method, option_tags, added_options, html_options)
   end
 
   # This provides a replacement for the label() method

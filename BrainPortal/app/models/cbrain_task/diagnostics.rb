@@ -65,7 +65,9 @@ class CbrainTask::Diagnostics < PortalTask
     :inptest_radio           => 'first',
     :inptest_textarea        => 'My name is XyZ Jones.',
 
-    :inptest                 => { :deep => 'So deep.' }
+    :inptest                 => { :deep => 'So deep.' },
+
+    :inptest_select          => '3'
     
     }
   end
@@ -82,7 +84,9 @@ class CbrainTask::Diagnostics < PortalTask
     :inptest_radio           => 'WKRP Radio',
     :inptest_textarea        => 'Text area',
 
-    'inptest[deep]'          => 'Deep'
+    'inptest[deep]'          => 'Deep',
+
+    :inptest_select          => 'Odd selection box'
     }
   end
 
@@ -155,6 +159,7 @@ class CbrainTask::Diagnostics < PortalTask
     rad = params[:inptest_radio]           || "(Unset)"
     txt = params[:inptest_textarea]        || "(No text)"
     dee = (params[:inptest] || {})[:deep]  || "(No text)"
+    sel = params[:inptest_select]          || "0"
 
     if odd.to_i % 2 == 0
       params_errors.add(:inptest_text_odd_number, "is not odd!")
@@ -179,6 +184,9 @@ class CbrainTask::Diagnostics < PortalTask
     end
     if dee !~ /Deep/i
       params_errors.add('inptest[deep]', "does not contain 'deep'!")
+    end
+    if sel.to_i % 2 == 0
+      params_errors.add(:inptest_select, "is not odd!")
     end
     errors.empty?
   end
