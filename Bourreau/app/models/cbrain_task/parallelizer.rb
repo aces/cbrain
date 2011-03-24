@@ -13,9 +13,6 @@ class CbrainTask::Parallelizer < ClusterTask
 
   Revision_info="$Id$"
 
-  #include RestartableTask # This task is naturally restartable
-  #include RecoverableTask # This task is naturally recoverable
-
   def setup #:nodoc:
     true
   end
@@ -102,7 +99,7 @@ class CbrainTask::Parallelizer < ClusterTask
 
   # Returns true if all enabled subtasks are
   # either Completed or Failed, which is
-  # necessary for restart and recover ops.
+  # necessary for restarts.
   def all_subtasks_are?(states = /Completed|Failed|Terminated/) #:nodoc:
     return true if self.my_subtasks.all? { |otask| otask.status =~ states }
     self.addlog("Cannot proceed, as subtasks are not in states matching #{states.inspect}.")

@@ -87,8 +87,8 @@ class CbrainTask::Serializer < PortalTask
       if subtasklist.size < 2 || group_size < 2
         subtasklist.each do |task|
           task.status = 'New'
-          task.rank   = rank; rank += 1
-          task.level  = 0
+          task.rank   = rank unless task.rank; rank += 1
+          task.level  = 0    unless task.level
           task.save!
           num_normal += 1
         end
@@ -132,8 +132,8 @@ class CbrainTask::Serializer < PortalTask
       subtasklist.each do |task|
         task.add_prerequisites_for_post_processing(serializer, 'Completed')
         task.status = "New" # trigger them to start
-        task.level  = 1
-        task.rank   = rank; rank += 1
+        task.rank   = rank unless task.rank; rank += 1
+        task.level  = 1    unless task.level
         task.meta[:configure_only]=true
         task.save!
       end
