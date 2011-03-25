@@ -1,5 +1,5 @@
-<% launch_time = @tasks.first.launch_time %>
-<% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+<% launch_time    = @tasks.first ? @tasks.first.launch_time : nil %>
+<% launch_time_id = launch_time  ? launch_time.to_i         : 0 %>
 <tr class="batch_job_header row_highlight">
   <td>
     <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox" %>
