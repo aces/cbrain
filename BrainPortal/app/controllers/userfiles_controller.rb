@@ -136,6 +136,13 @@ class UserfilesController < ApplicationController
       simple_userfiles  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").all # low cost of construction
       simple_userfiles  = Userfile.tree_sort(simple_userfiles)
       @userfiles_total  = simple_userfiles.size
+      if params[:find_file_id]
+        find_file_id    = params[:find_file_id].to_i
+        find_file_index = simple_userfiles.index{ |u| u.id == find_file_id }
+        if find_file_index
+          @current_page = (find_file_index / @userfiles_per_page) + 1
+        end
+      end
 
       # Paginate the list of simple objects
       page_of_userfiles = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
@@ -151,6 +158,7 @@ class UserfilesController < ApplicationController
         full.level = simple.level
         ordered_real << full
       end
+      
     end
 
     # Turn the array ordered_real into the final paginated collection

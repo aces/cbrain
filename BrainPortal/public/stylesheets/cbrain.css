@@ -203,6 +203,9 @@ tr.list-unavailable {
     background-color: #ff6699;
 }
 
+tr.selected_row {
+    background-color: yellow;
+}
 
 /* % ######################################################### */
 /* % Property List Table Styles */

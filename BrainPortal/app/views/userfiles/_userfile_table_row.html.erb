@@ -1,5 +1,6 @@
-
-<% if userfile.available? %>
+<% if params[:find_file_id].to_s == userfile.id.to_s %>
+  <tr class="selected_row row_highlight">
+<% elsif userfile.available? %>
   <tr class="<%= cycle("list-odd", "list-even") %> row_highlight">
 <% else %>
   <tr class="list-unavailable row_highlight" title="This file is unavailable due to its provider being offline">
@@ -17,10 +18,11 @@
    <td class="left">
       <%= tree_view_icon(@filter_params["tree_sort"], userfile.level) if (userfile.level || 0) > 0 -%>
       <% if userfile.is_a? FileCollection %>
-        <%= image_tag "/images/folder_icon_solid.png" %>
+        <% file_icon = image_tag "/images/folder_icon_solid.png" %>
       <% else %>
-        <%= image_tag "/images/file_icon.png" %>
+        <% file_icon = image_tag "/images/file_icon.png" %>
       <% end %>
+      <%= ajax_link file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :class => "action_link", :datatype => "script", :title => "Show in Unfiltered File List" %>
       <%= link_to_userfile_if_accessible(userfile) %>
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
