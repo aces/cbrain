@@ -154,7 +154,7 @@ class BourreauWorker < Worker
   def process_task(task)
 
     mypid = Process.pid
-    notification_needed = true # set to false for restarts and recovers
+    notification_needed = true # set to false later, in the case of restarts and recovers
 
     worker_log.debug "--- Got #{task.bname_tid} in state #{task.status}"
 
@@ -307,6 +307,8 @@ class BourreauWorker < Worker
     #####################################################################
     # Task notification section
     #####################################################################
+    notification_needed = false if task.tool && task.tool.category && task.tool.category == 'background'
+
     if notification_needed # not needed for restarts or recover ops
       if task.status == 'Completed'
         Message.send_message(task.user,
