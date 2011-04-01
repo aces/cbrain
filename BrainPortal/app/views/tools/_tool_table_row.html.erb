@@ -32,12 +32,16 @@
     
   <% tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore %>
 
-  <td><%= overlay_ajax_link "Help", "/doc/tasks/#{tool_plain_name}_options.html" %>
-  </td>
-  <% info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html" %>
   <td>
+    <% help_path = "/doc/tasks/#{tool_plain_name}_options.html" %>
+    <% if File.exist?( RAILS_ROOT + "/public" + help_path ) %>
+      <%= overlay_ajax_link "Help", help_path %>
+    <% end %>
+  </td>
+  <td>
+    <% info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html" %>
     <% if File.exist?( RAILS_ROOT + "/public" + info_path ) %>
-        <%= overlay_ajax_link "Info", info_path %></td>
+      <%= overlay_ajax_link "Info", info_path %>
     <% end %>
   </td>
 </tr>
