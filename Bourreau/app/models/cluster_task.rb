@@ -397,6 +397,7 @@ class ClusterTask < CbrainTask
     script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
     script += tool_glob_config.to_bash_prologue     if tool_glob_config
     script += tool_config.to_bash_prologue          if tool_config
+    script += self.supplemental_cbrain_tool_config_init
     script += "\n\n" + command + "\n\n"
     File.open(scriptfile,"w") { |fh| fh.write(script) }
 
@@ -410,6 +411,17 @@ class ClusterTask < CbrainTask
     File.unlink(scriptfile) rescue true
     File.unlink(outfile)    rescue true
     File.unlink(errfile)    rescue true
+  end
+
+  # Used to add some more initialization code specific to
+  # the CBRAIN system itself, after all other tool_config
+  # initalizations. Returns a few lines of BASH code as
+  # a single string. If overrriden in subclasses, make sure
+  # to append the bash code to the one returned by super()!
+  def supplemental_cbrain_tool_config_init #:nodoc:
+    "\n" +
+    "# CBRAIN Bourreau-side initializations\n" +
+    "export PATH=\"#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH\"\n"
   end
 
 
@@ -990,9 +1002,7 @@ class ClusterTask < CbrainTask
 #{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
 #{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
 #{tool_config          ? tool_config.to_bash_prologue          : ""}
-
-# CBRAIN initializations
-export PATH="#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH"
+#{self.supplemental_cbrain_tool_config_init}
 
 # CbrainTask '#{self.name}' commands section
 
