@@ -91,12 +91,16 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
     # Extract the list of jobs and index it
     pipeline_xml    = File.read("#{pipe_desc_dir}/pipeline.xml")
     pipeline_struct = Hash.from_xml(pipeline_xml)
-    jobs            = pipeline_struct['pipeline']['job']
-    jobs            = [ jobs ] unless jobs.is_a?(Array)
-    jobs_by_id      = jobs.index_by { |job| job['id'] }
+
+    # Debug: create a DOT formated file of the job dependencies
+    dotout = self.create_dot_graph(pipeline_struct);
+    File.open("#{self.name.underscore}.dot","w") { |fh| fh.write(dotout) } # for debugging
 
     # For each job, build lists of 'follower' and 'predecessor' jobs
     # NOTE: cannot store these lists inside the job objects themselves, as it would confuse their to_s() renderers
+    jobs                   = pipeline_struct['pipeline']['job']
+    jobs                   = [ jobs ] unless jobs.is_a?(Array)
+    jobs_by_id             = jobs.index_by { |job| job['id'] }
     job_id_to_successors   = {}
     job_id_to_predecessors = {}
     jobs.each do |job|
@@ -453,6 +457,28 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
        res += colname
      end
      res
+  end
+
+  # Returns a graph of the PSOM jobs dependencies in DOT format
+  def create_dot_graph(xml_hash) #:nodoc:
+    jobs            = xml_hash['pipeline']['job']
+    jobs            = [ jobs ] unless jobs.is_a?(Array)
+    jobs_by_id      = jobs.index_by { |job| job['id'] }
+
+    dotout = "digraph #{self.name} {\n"
+    jobs.each do |job|
+      job_id       = job['id']
+      job_name     = job['name']
+      dependencies = (job['dependencies'] || {})['dependency'] || []
+      dependencies = [ dependencies] unless dependencies.is_a?(Array)
+      dependencies.each do |prec_id|
+        prec      = jobs_by_id[prec_id]
+        prec_name = prec['name']
+        dotout += "  #{prec_name} -> #{job_name};\n"
+      end
+    end
+    dotout += "}\n"
+    dotout
   end
 
 end
