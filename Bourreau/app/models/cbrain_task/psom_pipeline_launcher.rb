@@ -93,7 +93,7 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
     pipeline_struct = Hash.from_xml(pipeline_xml)
 
     # Debug: create a DOT formated file of the job dependencies
-    dotout = self.create_dot_graph(pipeline_struct);
+    dotout = create_dot_graph(pipeline_struct);
     File.open("#{self.name.underscore}.dot","w") { |fh| fh.write(dotout) } # for debugging
 
     # For each job, build lists of 'follower' and 'predecessor' jobs
@@ -115,6 +115,11 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
         job_id_to_successors[depjobid] << job_id
       end
     end
+
+    # Remove redundant dependencies.
+    # If A -> B, B -> C and A -> C, then A -> C is redundant.
+    # NYI
+    #remove_redundant_dependencies(job_id_to_predecessors,job_id_to_successors)
 
     # -----------------------------------------------------------------
     # Create a topologically sorted array of jobs
@@ -175,6 +180,11 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
     missing_jobs = jobs.select { |job| ! seen_job_ids[job['id']] }
     cb_error "The graph of jobs seems to contain #{missing_jobs.size} jobs unconnected to the rest of the graph?!?" if missing_jobs.size > 0
 
+    # Debug 2: create a DOT formated file of the job dependencies,
+    # this time with redundant edges removed.
+    dotout_nr = create_dot_graph_nr(ordered_jobs, job_id_to_predecessors, job_id_to_successors)
+    File.open("#{self.name.underscore}_nr.dot","w") { |fh| fh.write(dotout_nr) } # for debugging
+
     # -----------------------------------------------------------------
     # Create one Cbrain::PsomSubtask for each job
     # -----------------------------------------------------------------
@@ -208,6 +218,8 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
           :psom_pipe_desc_subdir  => pipe_desc_dir,  # rel path of file to run is psom_pipe_desc_subdir/job_file
           :psom_job_script        => job_file,
           :psom_job_run_subdir    => pipe_run_dir,    # work directory for subtask; shared by all, here.
+          :psom_predecessor_tids  => [],
+          :psom_successor_tids    => [],
           :psom_main_pipeline_tid => self.id # same as share_wd_tid
         }
       )
@@ -234,7 +246,21 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
 
     # Add prerequisites such that OUR post processing occurs only when
     # all subtasks are done.
-    subtasks.each { |subtask| self.add_prerequisites_for_post_processing(subtask) }
+    subtasks.each do |subtask|
+      self.add_prerequisites_for_post_processing(subtask)
+    end
+
+    # Now that all the subtasks have IDs, adjust them to
+    # include their lists of predecessors and successors task IDs.
+    subtasks.each do |subtask|
+      subtask_params  = subtask.params
+      subtask_job_id  = subtask_params[:psom_job_id]
+      predecessor_ids = job_id_to_predecessors[subtask_job_id] || []
+      successor_ids   = job_id_to_successors[subtask_job_id]   || []
+      subtask.params[:psom_predecessor_tids] = predecessor_ids.map { |jid| job_id_to_task[jid].id }
+      subtask.params[:psom_successor_tids]   = successor_ids.map   { |jid| job_id_to_task[jid].id }
+      subtask.save!
+    end
 
     # Record all the IDs of the subtasks.
     params[:subtask_ids] = subtasks.map &:id
@@ -438,6 +464,8 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
   # Debug support code.
   #--------------------------------------------------------------------
 
+  private
+
   # Debug topological sort; pass it an ID, an array of IDs,
   # an object that responds to ['id'] or an array of such objects.
   # Colorized the shortened IDs.
@@ -480,6 +508,50 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
     dotout += "}\n"
     dotout
   end
+
+  # Returns a graph of the PSOM jobs dependencies in DOT format
+  # with redundant dependencies removed.
+  #
+  # Can be simplified to remove calls to all_succ_ids if
+  # remove_redundant_dependencies() is ever implemented and
+  # used (see commented-out code above)
+  def create_dot_graph_nr(ordered_jobs, id_to_prec, id_to_succ) #:nodoc:
+    id_to_all_succ_ids = {}
+    dotout = "digraph #{self.name}_nr {\n"
+    seen_job_ids = {}
+    jobs_by_id   = ordered_jobs.index_by { |job| job['id'] }
+    ordered_jobs.each do |job|
+      job_id       = job['id']
+      job_name     = job['name']
+      prec_ids     = id_to_prec[job_id] || []
+      succ_ids     = id_to_succ[job_id] || []
+      seen_job_ids[job_id] = true
+      succ_ids.each do |succ_id|
+        other_succ_ids = succ_ids.reject { |i| i == succ_id }
+        next if other_succ_ids.any? { |i| all_succ_ids(i,id_to_succ)[succ_id] }
+        succ_job      = jobs_by_id[succ_id]
+        succ_job_name = succ_job['name']
+        dotout += "  #{job_name} -> #{succ_job_name};\n"
+      end
+    end
+    dotout += "}\n"
+    dotout
+  end
+
+  def all_succ_ids(id,id_to_succ) #:nodoc:
+    @_all_succ_ids ||= {}
+    return @_all_succ_ids[id] if @_all_succ_ids.has_key?(id)
+    direct = id_to_succ[id] || []
+    union  = {}
+    direct.each do |sid|
+      union[sid] = true
+      asid = all_succ_ids(sid,id_to_succ)
+      union.merge!(asid)
+    end
+    @_all_succ_ids[id] = union
+    union
+  end
+
 
 end
 
