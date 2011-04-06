@@ -32,6 +32,10 @@ class BourreauxController < ApplicationController
                               :online    => true
                             )
     sensible_defaults(@bourreau)
+
+    if current_user.has_role? :admin
+      @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
+    end
     
     respond_to do |format|
       format.html

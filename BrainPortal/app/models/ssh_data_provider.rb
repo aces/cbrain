@@ -27,7 +27,7 @@ class SshDataProvider < DataProvider
   def impl_is_alive? #:nodoc:
     ssh_opts = self.ssh_shared_options
     return false unless @master.is_alive?
-    dir  = shell_escape(self.remote_dir)
+    dir  = remote_shell_escape(self.remote_dir)
     text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
     return(text.blank? ? true : false);
   rescue
@@ -53,7 +53,7 @@ class SshDataProvider < DataProvider
 
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache: rsync returned:\n#{text}" unless text.blank?
     cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" unless File.exist?(localfull)
@@ -68,11 +68,11 @@ class SshDataProvider < DataProvider
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{shell_escape(remotefull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
     ssh_opts = self.ssh_shared_options
-    text = bash_this("ssh -x -n #{ssh_opts} \"test -e #{shell_escape(remotefull)} && echo DestIsOk\"")
+    text = bash_this("ssh -x -n #{ssh_opts} \"test -e #{remote_shell_escape(remotefull)} && echo DestIsOk\"")
     cb_error "Error syncing userfile to data provider: no destination file found after rsync?\nTest for #{shell_escape(remotefull)} returned: '#{text}'" unless text =~ /DestIsOk/
     true
   end
@@ -112,7 +112,7 @@ class SshDataProvider < DataProvider
   
   def impl_provider_readhandle(userfile, rel_path = ".", &block) #:nodoc:
     full_path = provider_full_path(userfile) + rel_path
-    IO.popen("ssh #{ssh_shared_options} cat #{shell_escape(full_path)}","r") do |fh|
+    IO.popen("ssh #{ssh_shared_options} cat #{remote_shell_escape(full_path)}","r") do |fh|
       cb_error "Error: read handle cannot be provided for non-file." if fh.eof?
       yield(fh)
     end

@@ -35,6 +35,11 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
+
+    if current_user.has_role? :admin
+      @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
+    end
+
     respond_to do |format|
       format.html
       format.xml { render :xml  => @all_providers }

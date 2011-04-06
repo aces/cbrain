@@ -1238,6 +1238,26 @@ class DataProvider < ActiveRecord::Base
     "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
   end
 
+  # This method is used to escape properly any string such that
+  # it becomes a literal in as REMOTE bash command; there are
+  # two levels of escaping necessary. For instance, if you have
+  # a file called "abcd()" on a remote server and you want
+  # to cat it:
+  #
+  #   system("ssh remoteserver cat #{double_escape("abcd()")}
+  #
+  # will run locally
+  #
+  #   ssh remote server cat ''\''abcd()'\'''
+  #
+  # which will run on the remoteserver
+  #
+  #   cat 'abcd()'
+  #
+  def remote_shell_escape(s)
+    shell_escape(shell_escape(s))
+  end
+
   # This utility method runs a bash command, intercepts the output
   # and returns it.
   def bash_this(command)
