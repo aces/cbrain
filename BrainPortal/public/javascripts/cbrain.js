@@ -312,7 +312,7 @@ jQuery(
 
    //Highlighting on ressource list tables.
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
-   jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFEBE5');});
+   jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
 
    jQuery(".ajax_link").live("click", function(element){
      var link = jQuery(this);
