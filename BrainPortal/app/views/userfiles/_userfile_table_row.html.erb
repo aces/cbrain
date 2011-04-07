@@ -22,7 +22,7 @@
       <% else %>
         <% file_icon = image_tag "/images/file_icon.png" %>
       <% end %>
-      <%= ajax_link file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :class => "action_link", :datatype => "script", :title => "Show in Unfiltered File List" %>
+      <%= ajax_link file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :datatype => "script", :title => "Show in Unfiltered File List" %>
       <%= link_to_userfile_if_accessible(userfile) %>
       <% userfile.sync_status.each do |syncstat| %>
         <%= render :partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat } %>
