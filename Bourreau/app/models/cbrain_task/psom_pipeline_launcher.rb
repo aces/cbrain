@@ -206,7 +206,7 @@ class CbrainTask::PsomPipelineLauncher < ClusterTask
         :group_id       => self.group_id,
         :bourreau_id    => self.bourreau_id,
         :tool_config_id => self.tool_config_id, # TODO this is not exactly right
-        :description    => job_name + "\n\n" + fmri_study.name,
+        :description    => "Subtask ##{job_idx+1}/#{ordered_jobs.size} for #{fmri_study.name}\n\n#{job_name}",
         :launch_time    => self.launch_time,
         :run_number     => self.run_number,
         :share_wd_tid   => self.id,

@@ -12,7 +12,7 @@
       <% if subtask %>
         <%= form.params_check_box "task_ids_enabled[#{tid}]", {}, "1", "0" %>
         <%= link_to_task_if_accessible(subtask, nil, :name => subtask.fullname) %>
-        (currently in state <strong><%= subtask.status %></strong>)
+        (currently in state <strong><%= colored_status(subtask.status) %></strong>)
       <% else %>
         <%= form.params_check_box "task_ids_enabled[#{tid}]", { :disabled => true }, "1", "0" %>
         (Task #<%= h(tid) %> no longer exists)

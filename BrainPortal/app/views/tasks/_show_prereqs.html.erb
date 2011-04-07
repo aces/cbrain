@@ -7,13 +7,18 @@
 <% for_this.keys.sort.each do |ttid|
    next unless ttid =~ /^T(\d+)/
    tid = Regexp.last_match[1]
-   state = for_this[ttid]
+   pstate = for_this[ttid]
    otask = CbrainTask.find(tid) rescue nil
-   otaskname = otask ? "#{otask.name}@#{otask.bname_tid}" : "(DestroyedTask)/#{tid}"
+   otaskname = "(DestroyedTask)/#{tid}"
+   ostate    = ""
+   if otask
+     otaskname = "#{otask.pretty_name}@#{otask.bname_tid}"
+     ostate  = "(#{colored_status(otask.status)})"
+   end
 %>
   <tr>
-    <td><%= otask ? (link_to otaskname, task_path(tid)) : h(otaskname) %></td>
-    <td><%= h(state) %></td>
+    <td><%= otask ? (link_to otaskname, task_path(tid)) : h(otaskname) %> <%= ostate %></td>
+    <td><%= h(pstate) %></td>
   </tr>
 <% end %>
 
