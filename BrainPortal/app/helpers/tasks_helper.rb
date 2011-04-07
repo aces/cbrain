@@ -13,14 +13,14 @@ module TasksHelper
 
   StatesToColor = {
           'Duplicated'                       => "blue",
-          'Standby'                          => "yellow",
-          'Configured'                       => "yellow",
+          'Standby'                          => "orange",
+          'Configured'                       => "orange",
           'New'                              => "blue",
           'Setting Up'                       => "blue",
           'Queued'                           => "blue",
-          'On Hold'                          => "yellow",
+          'On Hold'                          => "orange",
           'On CPU'                           => "blue",
-          'Suspended'                        => "yellow",
+          'Suspended'                        => "orange",
           'Data Ready'                       => "blue",
           'Post Processing'                  => "blue",
           'Completed'                        => "green",
@@ -30,20 +30,20 @@ module TasksHelper
           'Failed On Cluster'                => "red",
           'Failed Setup Prerequisites'       => "red",
           'Failed PostProcess Prerequisites' => "red",
-          'Recover Setup'                    => "blue",
-          'Recover Cluster'                  => "blue",
-          'Recover PostProcess'              => "blue",
-          'Recovering Setup'                 => "blue",
-          'Recovering Cluster'               => "blue",
-          'Recovering PostProcess'           => "blue",
+          'Recover Setup'                    => "purple",
+          'Recover Cluster'                  => "purple",
+          'Recover PostProcess'              => "purple",
+          'Recovering Setup'                 => "purple",
+          'Recovering Cluster'               => "purple",
+          'Recovering PostProcess'           => "purple",
           'Restart Setup'                    => "blue",
           'Restart Cluster'                  => "blue",
           'Restart PostProcess'              => "blue",
           'Restarting Setup'                 => "blue",
           'Restarting Cluster'               => "blue",
           'Restarting PostProcess'           => "blue",
-          'Preset'                           => "blue", # never seen in interface
-          'SitePreset'                       => "blue"  # never seen in interface
+          'Preset'                           => "black", # never seen in interface
+          'SitePreset'                       => "black"  # never seen in interface
   }
 
 
