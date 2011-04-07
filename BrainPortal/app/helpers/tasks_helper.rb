@@ -42,8 +42,9 @@ module TasksHelper
           'Restarting Setup'                 => "blue",
           'Restarting Cluster'               => "blue",
           'Restarting PostProcess'           => "blue",
-          'Preset'                           => "black", # never seen in interface
-          'SitePreset'                       => "black"  # never seen in interface
+          'Preset'                           => "black",  # never seen in interface
+          'SitePreset'                       => "black",  # never seen in interface
+          'Failed'                           => "red"     # not an official task status, but used in reports
   }
 
 

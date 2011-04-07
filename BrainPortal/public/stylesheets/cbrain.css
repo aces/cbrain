@@ -339,6 +339,10 @@ table.resource_list td.checkbox {
     text-align: center;
 }
 
+table.resource_list td.left_align {
+    text-align: left;
+}
+
 table.resource_list tr.subtitle {
     background-color: #05A3D6;
 }
