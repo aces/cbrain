@@ -110,15 +110,15 @@ class PortalSanityChecks < CbrainChecker
       puts "C> \t- Admin user does not exist yet. Creating one."
       
       pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
-      User.create!(
-                   :full_name             => "Administrator",
-                   :login                 => "admin",
-                   :password              => pwdduh,
-                   :password_confirmation => pwdduh,
-                   :email                 => 'admin@here',
-                   :role                  => 'admin',
-                   :password_reset        => 'true'
-                   )
+      admin = User.new
+      admin.full_name             = "Administrator"
+      admin.login                 = "admin"
+      admin.password              = pwdduh
+      admin.password_confirmation = pwdduh
+      admin.email                 = 'admin@here'
+      admin.role                  = 'admin'
+      admin.password_reset        = 'true'
+      admin.save!
       puts("C> ******************************************************")
       puts("C> *  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
       puts("C> * CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")
