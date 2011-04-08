@@ -72,7 +72,7 @@ class SshDataProvider < DataProvider
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
     ssh_opts = self.ssh_shared_options
-    text = bash_this("ssh -x -n #{ssh_opts} \"test -e #{remote_shell_escape(remotefull)} && echo DestIsOk\"")
+    text = bash_this("ssh -x -n #{ssh_opts} \"test -e \"#{remote_shell_escape(remotefull)}\" && echo DestIsOk\"")
     cb_error "Error syncing userfile to data provider: no destination file found after rsync?\nTest for #{shell_escape(remotefull)} returned: '#{text}'" unless text =~ /DestIsOk/
     true
   end
