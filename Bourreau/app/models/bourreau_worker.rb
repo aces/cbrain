@@ -219,6 +219,16 @@ class BourreauWorker < Worker
         recover_method = :recover_from_cluster_failure         if fromwhat == 'Cluster'
         recover_method = :recover_from_post_processing_failure if fromwhat == 'PostProcess'
         canrecover = false
+        # Check special case where we can reconnect to a running task!
+        if fromwhat =~ /Cluster|PostProcess/
+          clusterstatus = task.send :cluster_status  # this is normally a protected method
+          if clusterstatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
+            task.addlog_context(self,"Woh there Nelly! While attempting recovery from #{fromwhat} failure we found a cluster task still running! Resetting to #{clusterstatus}")
+            task.save
+            task.status_transition!(task.status,clusterstatus) # try to update; ignore errors.
+            return
+          end
+        end
         task.addlog_context(self,"Attempting to run recovery method '#{recover_method}'.")
         begin
           task.addlog_current_resource_revision
