@@ -74,8 +74,16 @@ class ToolsController < ApplicationController
 
     params[:tool][:bourreau_ids] ||= []
     @tool = Tool.new(params[:tool])
+
+    task_class = @tool.cbrain_task_class || "CbrainTask::Object"
+    task_class = task_class.dup.sub!(/^CbrainTask::/,"")
+    subclass = CbrainTask.const_get(task_class) rescue Object
+    unless subclass < CbrainTask # strictly subclass
+      @tool.errors.add(:cbrain_task_class, "doesn't seem to be a code subclass of CbrainTask.")
+    end
+
     respond_to do |format|
-      if @tool.save
+      if @tool.errors.empty? && @tool.save
         flash[:notice] = 'Tool was successfully created.'
         format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tool' }}
         format.xml  { render :xml => @tool, :status => :created, :location => @tool }

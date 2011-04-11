@@ -97,7 +97,7 @@ class SshDataProvider < DataProvider
         att = sftp.lstat!(newpath)
         return false # means file exists already
       rescue => ex
-        return false
+        # Nothing to do! An exception means everything is OK, so just go on.
       end
       begin
         sftp.rename!(oldpath,newpath)
