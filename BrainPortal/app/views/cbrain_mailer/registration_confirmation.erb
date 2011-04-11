@@ -8,9 +8,11 @@ Access CBRAIN here:
     <%= RemoteResource.current_resource.site_url_prefix || "(CBRAIN Site URL Not Configured!)" %>
 
 Your username for logging in is: <%= @user.login %>
+<% unless @no_password_reset_needed %>
 Your temporary password is: <%= @plain_password %>
 
 You will be asked to change your password upon first log in.
+<% end %>
 
 Sincerely,
 

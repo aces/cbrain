@@ -69,6 +69,8 @@ class Bourreau < RemoteResource
   def start
     self.operation_messages = "Unknown internal error."
 
+    self.online = true
+
     unless self.has_remote_control_info?
       self.operation_messages = "Not configrued for remote control."
       return false
@@ -106,6 +108,7 @@ class Bourreau < RemoteResource
     File.unlink(captfile) rescue true
     if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
       self.operation_messages = "Execution Server #{self.name} started."
+      self.save
       return true
     end
     self.operation_messages = "Remote control command failed\n" +

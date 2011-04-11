@@ -18,10 +18,11 @@
      </div>
      <% if task_list.size > 0 %>
        <table class="task_summary_table">
-         <tr><th colspan="2">Recent Activity</th></tr>
+         <tr><th colspan="3">Recent Activity</th></tr>
          <% for task in task_list.sort{ |a,b| b.updated_at <=> a.updated_at}[0..4] %>
             <tr>
               <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td><%= colored_status(task.status) %></td>
               <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
             </tr>
          <% end %>

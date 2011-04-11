@@ -15,11 +15,11 @@ class CbrainMailer < ActionMailer::Base
   Revision_info="$Id$"
   
   #Send a registration confirmation to new users.
-  def registration_confirmation(user,plain_password)
+  def registration_confirmation(user, plain_password, no_password_reset_needed = false)
     subject     'Welcome to CBRAIN!'
     recipients  user.email
     from        "no_reply@cbrain.mcgill.ca"
-    body        :user  => user, :plain_password => plain_password
+    body        :user  => user, :plain_password => plain_password, :no_password_reset_needed => no_password_reset_needed
   end
   
   #Send a password reset e-mail.

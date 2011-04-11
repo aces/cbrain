@@ -72,6 +72,8 @@ class UsersController < ApplicationController
     role      = params[:user].delete :role
     group_ids = params[:user].delete :group_ids
     site_id   = params[:user].delete :site_id
+
+    no_password_reset_needed = params.delete(:no_password_reset_needed) == "1"
     
     @user = User.new(params[:user])
     
@@ -95,7 +97,7 @@ class UsersController < ApplicationController
       @user.site = current_user.site
     end
 
-    @user.password_reset = true
+    @user.password_reset = no_password_reset_needed ? false : true
     @user.save
     
     if @user.errors.empty?
@@ -106,7 +108,7 @@ class UsersController < ApplicationController
         flash[:notice] += "Since this user has no proper E-Mail address, no welcome E-Mail was sent."
       else
         flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
-        CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password]) rescue nil
+        CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password],no_password_reset_needed) rescue nil
       end
     end
     
