@@ -25,6 +25,7 @@ class CBRAIN
   Rails_UserName     = Etc.getpwuid(Rails_UserId).name
   Rails_UserHome     = Etc.getpwuid(Rails_UserId).dir
   System_Uname       = `uname -a`.chomp
+  ENV['PATH']        = "#{RAILS_ROOT}/vendor/cbrain/bin:#{ENV['PATH']}"
 
   $CBRAIN_StartTime_Revision = "???"  # numeric; will be filled in by validation script
 
