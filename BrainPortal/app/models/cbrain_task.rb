@@ -48,9 +48,13 @@ class CbrainTask < ActiveRecord::Base
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
                          when :running
-                           value = CbrainTask::RUNNING_STATUS
+                           value = CbrainTask::RUNNING_STATUS # standard path, including waiting states
                          when :active
                            value = CbrainTask::ACTIVE_STATUS # larger set than running
+                         when :queued
+                           value = CbrainTask::QUEUED_STATUS # wait states in standard path
+                         when :processing
+                           value = CbrainTask::PROCESSING_STATUS # code-running states in standard path
                          when :failed
                            value = CbrainTask::FAILED_STATUS
                          else
@@ -100,18 +104,20 @@ class CbrainTask < ActiveRecord::Base
   # Status Lists
   ##################################################################
 
-  COMPLETED_STATUS = [ "Completed" ]
-  RUNNING_STATUS   = [ "Standby", "Configured", "New", "Setting Up", "Queued", "On CPU", "Suspended", "On Hold", "Data Ready", "Post Processing"]
-  FAILED_STATUS    = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
-                       "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
-                       "Terminated" ]
-  RECOVER_STATUS   = [ "Recover Setup",    "Recover Cluster",    "Recover PostProcess",
-                       "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
-  RESTART_STATUS   = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
-                       "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
-  OTHER_STATUS     = [ "Preset", "Duplicated" ]
+  COMPLETED_STATUS  = [ "Completed" ]
+  QUEUED_STATUS     = [ "New", "Standby", "Configured", "Queued", "On Hold", "Suspended", "Data Ready" ] # waiting for something
+  PROCESSING_STATUS = [ "Setting Up", "On CPU", "Post Processing" ] # actually running code
+  RUNNING_STATUS    = [ "New", "Setting Up", "Queued", "On CPU", "Data Ready", "Post Processing"] # main path
+  FAILED_STATUS     = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
+                        "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
+                        "Terminated" ]
+  RECOVER_STATUS    = [ "Recover Setup",    "Recover Cluster",    "Recover PostProcess",
+                        "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
+  RESTART_STATUS    = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
+                        "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
+  OTHER_STATUS      = [ "Preset", "Duplicated" ]
 
-  ACTIVE_STATUS    = RUNNING_STATUS | RECOVER_STATUS | RESTART_STATUS
+  ACTIVE_STATUS    = QUEUED_STATUS | PROCESSING_STATUS | RECOVER_STATUS | RESTART_STATUS
 
   ##################################################################
   # Core Object Methods
