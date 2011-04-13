@@ -326,7 +326,7 @@ class ApplicationController < ActionController::Base
   # 0:: "0 seconds"
   # 1:: "1 second"
   # 7272:: "2 hours, 1 minute and 12 seconds"
-  def pretty_elapsed(numseconds)
+  def pretty_elapsed(numseconds,options = {})
     remain = numseconds.to_i
 
     return "0 seconds" if remain <= 0
@@ -354,6 +354,12 @@ class ApplicationController < ActionController::Base
     ]
 
     components = components.select { |c| c[0] > 0 }
+
+    if options[:num_components]
+      while components.size > options[:num_components]
+        components.pop
+      end
+    end
 
     final = ""
 

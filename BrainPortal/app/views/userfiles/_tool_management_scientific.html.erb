@@ -3,25 +3,26 @@
 
   <br>
  
+  <div class="userfiles_tool_selector">
   <%= ajax_onchange_select(
      "scientific_operation",
      url_for(:controller  => :tools, :action  => :bourreau_select), 
      current_user.available_scientific_tools.inject('<option value="">Select a Scientific Operation</option>') { |options, tool| options += "<option value='#{tool.id}'>#{tool.select_menu_text}</option>"},
-        :target  => "#bourreau_select2", 
+        :target  => "#bourreau_select_science", 
         :target_text  => "<span class='warning'>Loading...</span>"
     ) 
   %>
+  </div>
   
-  <span id="bourreau_select2">
-  </span>
+  <div class="userfiles_bourreau_selector" id="bourreau_select_science">
+  </div>
   
-  <br>
-  <br>
-
-  <%= hijacker_submit_button("Apply Operation", :url          => url_for(:controller  => :tasks, :action  => :new),
+  <p class="centered">
+  <%= hijacker_submit_button("Launch Tool",     :url          => url_for(:controller  => :tasks, :action  => :new),
                                                 :method       => :post,
                                                 :ajax_submit  => false) %>
-  <br><br>
+  </p>
+
 <% else %>
   <br>
   <% if current_user.has_role? :admin %>

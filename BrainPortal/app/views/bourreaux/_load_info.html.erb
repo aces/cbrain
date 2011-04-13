@@ -1,0 +1,38 @@
+
+<%
+   latest_in_queue_delay    = bourreau.meta[:latest_in_queue_delay]
+   time_of_last_queue_delay = bourreau.meta[:time_of_latest_in_queue_delay]
+   num_active               = CbrainTask.status('active').find_all_by_bourreau_id(bourreau.id).count
+   num_queued               = CbrainTask.status('Queued').find_all_by_bourreau_id(bourreau.id).count
+   num_running              = CbrainTask.status('running').find_all_by_bourreau_id(bourreau.id).count
+%>
+
+<h4>Latest load information about this Execution Server</h4>
+
+<% unless latest_in_queue_delay.blank? %>
+<%
+    latest_in_queue_delay = latest_in_queue_delay.to_i 
+    rating = case
+      when latest_in_queue_delay > 2.hours
+        red_if(true, "awful",    nil, :color2 => 'purple')
+      when latest_in_queue_delay > 1.hour
+        red_if(true, "bad",      nil, :color2 => 'red')
+      when latest_in_queue_delay > 20.minutes
+        red_if(true, "mediocre", nil, :color2 => 'orange')
+      else
+        red_if(true, "good",     nil, :color2 => 'green')
+      end
+%>
+  Most recent wait time before execution starts: <%= pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
+  <% unless time_of_last_queue_delay.blank? %>
+    <small>(This happened <%= pretty_elapsed(Time.now.to_i - time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small><br/>
+  <% end %>
+  <br/>
+<% end %>
+
+  Number of active tasks (all users): <%= num_active %><br/>
+
+  Number of queued tasks (all users): <%= num_queued %><br/>
+
+  Number of running tasks (all users): <%= num_running %><br/>
+

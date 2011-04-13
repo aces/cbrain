@@ -1,0 +1,28 @@
+
+<% select_attributes = {
+     "class"            => 'request_on_change',
+     "data-target-text" => "&nbsp;",
+     "data-target"      => '#load_info',
+     "data-url"         => '/bourreaux/load_info'
+   }
+   select_attributes[:include_blank] = "Random Execution Server" if @bourreaux.size > 1
+   selected_by_default = current_user.user_preference.bourreau_id.to_s
+   @bourreau = selected_by_default.blank? ? nil : Bourreau.find_by_id(selected_by_default)
+%>
+
+<%= bourreau_select("bourreau_id",
+                    { :selector  => @bourreau,
+                      :bourreaux => @bourreaux
+                    },
+                    select_attributes
+                   )
+%>
+
+<% if @bourreaux.size > 0 && @bourreau %>
+  <br/>
+  <br/>
+  <div id="load_info">
+    <%= render :partial => 'bourreaux/load_info', :locals => { :bourreau => @bourreau } %>
+  </div>
+<% end %>
+

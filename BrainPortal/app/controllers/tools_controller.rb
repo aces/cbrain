@@ -33,7 +33,7 @@ class ToolsController < ApplicationController
       return
     end
     
-    @tool = current_user.available_tools.find(params[:current_value])
+    @tool      = current_user.available_tools.find(params[:current_value])
     @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
     @bourreaux.reject! do |b|
       tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => @tool.id, :bourreau_id => b.id })
@@ -41,19 +41,12 @@ class ToolsController < ApplicationController
     end
     
     respond_to do |format|
-      format.html do 
-        random_exec_prompt = @bourreaux.size > 1 ? { :include_blank  => "Random Execution Server" } : {}
-        render :text  => ApplicationController.helpers.bourreau_select("bourreau_id", 
-                            { :selector  => current_user.user_preference.bourreau_id.to_s,
-                              :bourreaux  => @bourreaux
-                            },
-                            random_exec_prompt
-                         )
-      end
-      format.xml  { render :xml => @bourreaux }
+      format.html { render :partial => 'tools/bourreau_select' }
+      format.xml  { render :xml     => @bourreaux }
     end
     
-  rescue
+  rescue => ex
+    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
   end
 

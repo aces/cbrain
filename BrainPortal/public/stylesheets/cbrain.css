@@ -1022,6 +1022,16 @@ pre {
     width: 100%;
 }
 
+.userfiles_tool_selector {
+    padding: 0 1em;
+    display: table-cell;
+}
+
+.userfiles_bourreau_selector {
+    padding: 0 1em;
+    display: table-cell;
+}
+
 
 
 /* % ######################################################### */
@@ -1505,6 +1515,10 @@ td.middle {
     color: black;
     padding: 5px;
     border: 1px solid black;
+}
+
+.white_bg {
+    background-color: white;
 }
 
 

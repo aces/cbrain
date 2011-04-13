@@ -145,16 +145,20 @@ module CbrainUiHelper
     @@html_tool_tip_id ||= 0
     @@html_tool_tip_id += 1
 
+    html_tool_tip_id = @@html_tool_tip_id.to_s # we need a local var in case the block rendered ALSO calls html_tool_tip inside !
+    html_tool_tip_id += "_#{Process.id}_#{rand(1000000)}" # because of async ajax requests
+
     offset_x = options[:offset_x] || 30
     offset_y = options[:offset_y] || 0
     
-    content = capture(&block)
+    content = capture(&block) # here, new calls to html_tool_tip can be made.
     
-    concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{@@html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{@@html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
+    concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
     concat(text)
     concat("</span>")
     
-    concat("<div id=\"html_tool_tip_#{@@html_tool_tip_id}\" class=\"html_tool_tip\">")
+    content_class = options.delete(:tooltip_div_class) || "html_tool_tip"
+    concat("<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">")
     concat(content)
     concat("</div>")
   end

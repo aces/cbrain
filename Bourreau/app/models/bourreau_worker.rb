@@ -156,11 +156,25 @@ class BourreauWorker < Worker
     mypid = Process.pid
     notification_needed = true # set to false later, in the case of restarts and recovers
 
-    worker_log.debug "--- Got #{task.bname_tid} in state #{task.status}"
+    initial_status      = task.status
+    initial_change_time = task.updated_at
+
+    worker_log.debug "--- Got #{task.bname_tid} in state #{initial_status}"
 
     unless task.status =~ /^(Recover|Restart)/
       task.update_status
-      worker_log.debug "Updated #{task.bname_tid} to state #{task.status}"
+      new_status = task.status
+      worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
+
+      # Record bourreau delay time for Queued -> On CPU
+      if initial_status == 'Queued' && new_status =~ /On CPU|Data Ready/
+        @rr.meta.reload
+        n2q = task.meta[:last_delay_new_to_queued] || 0
+        q2r = Time.now - initial_change_time
+        @rr.meta[:last_delay_queued_to_running]  = q2r
+        @rr.meta[:latest_in_queue_delay]         = n2q.to_i + q2r
+        @rr.meta[:time_of_latest_in_queue_delay] = Time.now
+      end
     end
 
     case task.status
@@ -178,6 +192,8 @@ class BourreauWorker < Worker
           task.setup_and_submit_job # New -> Queued|Failed To Setup
           worker_log.info  "Submitted: #{task.bname_tid}"
           worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
+          n2q = Time.now - initial_change_time
+          task.meta[:last_delay_new_to_queued] = n2q
         elsif action == :wait
           worker_log.debug "     -> #{task.bname_tid} unfulfilled Setup prerequisites."
         else # action == :fail

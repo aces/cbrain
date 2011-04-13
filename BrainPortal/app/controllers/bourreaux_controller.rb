@@ -231,6 +231,25 @@ class BourreauxController < ApplicationController
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource }
   end
+
+  def load_info #:nodoc:
+
+    if params[:current_value].blank?
+      render :text  => ""
+      return
+    end
+
+    @bourreau  = Bourreau.find(params[:current_value])
+
+    respond_to do |format|
+      format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
+      format.xml  { render :xml     => @bourreau   }
+    end
+
+  rescue => ex
+    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+    render :text  => '<strong style="color:red">No Information Available</strong>'
+  end
   
   def refresh_ssh_keys #:nodoc:
     refreshed_bourreaux = []
