@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
   include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
-  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if
+  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
   helper        :all # include all helpers, all the time
 
   filter_parameter_logging :password, :login, :email, :full_name, :role
@@ -280,7 +280,8 @@ class ApplicationController < ActionController::Base
     return nil unless current_session[:active_group_id]
     
     if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
-      @current_project = Group.find(current_session[:active_group_id])
+      @current_project = Group.find_by_id(current_session[:active_group_id])
+      current_session[:active_group_id] = nil if @current_project.nil?
     end
     
     @current_project
@@ -426,7 +427,7 @@ class ApplicationController < ActionController::Base
   #     red_if( ! is_alive? , "Alive", "Down!" )
   #
   #     red_if( num_matches == 0, "#{num_matches} found" )
-  def red_if(condition,string1,string2 = string1, options = { :color2 => 'red' } )
+  def red_if(condition, string1, string2 = string1, options = { :color2 => 'red' } )
     if condition
       color = options[:color2] || 'red'
       string = string2 || string1
@@ -434,10 +435,15 @@ class ApplicationController < ActionController::Base
       color = options[:color1]
       string = string1
     end
-    if color
-      color = "style=\"color:#{color}\""
-    end
-    return "<span #{color}>#{string}</span>"
+    return color ? html_colorize(string,color) : string
+  end
+
+  # Returns a string of text colorized in HTML.
+  # The HTML code will be in a SPAN, like this:
+  #   <SPAN STYLE="COLOR:color">text</SPAN>
+  # The default color is 'red'.
+  def html_colorize(text, color = "red", options = {})
+    "<span style=\"color: #{color}\">#{text}</span>"
   end
   
   #Directive to be used in controllers to make
