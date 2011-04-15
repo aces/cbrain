@@ -29,10 +29,7 @@ class Group < ActiveRecord::Base
 
   Revision_info="$Id$"
 
-  before_destroy          :assign_userfile_to_owner_group,
-                          :assign_remote_resource_to_owner_group,
-                          :assign_data_provider_to_owner_group,
-                          :assign_task_to_owner_group
+  after_destroy           :reassign_models_to_owner_group
   
   validates_presence_of   :name
   validates_uniqueness_of :name
@@ -43,6 +40,7 @@ class Group < ActiveRecord::Base
   has_many                :data_providers 
   has_many                :remote_resources
   has_many                :cbrain_tasks
+  has_many                :tags
   belongs_to              :site 
 
   # Returns the unique and special group 'everyone'
@@ -72,43 +70,19 @@ class Group < ActiveRecord::Base
 
   private
   
-  def assign_userfile_to_owner_group #:nodoc:
-    user_group = {}
-    self.userfiles.each do |file|
-      user = file.user
-      user_group[user.id] ||= SystemGroup.find_by_name(user.login)
-      
-      file.update_attributes!(:group => user_group[user.id])
-    end
-  end
-  
-  def assign_remote_resource_to_owner_group #:nodoc:
-    user_group = {}
-    self.remote_resources.each do |rr|
-      user = rr.user
-      user_group[user.id] ||= SystemGroup.find_by_name(user.login)
-      
-      rr.update_attributes!(:group => user_group[user.id])
-    end
-  end
-  
-  def assign_data_provider_to_owner_group #:nodoc:
-    user_group = {}
-    self.data_providers.each do |dp|
-      user = dp.user
-      user_group[user.id] ||= SystemGroup.find_by_name(user.login)
-      
-      dp.update_attributes!(:group => user_group[user.id])
-    end
-  end
-
-  def assign_task_to_owner_group #:nodoc:
-    user_group = {}
-    self.cbrain_tasks.each do |task|
-      user = task.user
-      user_group[user.id] ||= SystemGroup.find_by_name(user.login)
-      
-      task.update_attributes!(:group => user_group[user.id])
+  def reassign_models_to_owner_group #:nodoc:
+    group_has_many_model_list = Group.reflect_on_all_associations.select { |a| a.macro == :has_many }.map { |a| a.name }
+    objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }
+    #objlist = self.userfiles +
+    #          self.remote_resources +
+    #          self.data_providers +
+    #          self.cbrain_tasks +
+    #          self.tags +
+    #          self.tools
+    user_id_to_own_group_id = {}
+    objlist.each do |obj|
+      own_group_id = user_id_to_own_group_id[obj.user_id] ||= obj.user.own_group.id
+      obj.update_attributes!( :group_id => own_group_id )
     end
   end
 
