@@ -25,7 +25,7 @@
 <td><%= red_if( ! bour.online,      "Yes", "Offline" ) %></td>
 <td>
     <% if info.name == "???" %>
-      <%= red_if(true,"Down!") %>
+      <%= html_colorize("Down!") %>
     <% else %>
       <% html_tool_tip("Yes") do %>
         Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
@@ -72,11 +72,11 @@
   <% if ! isbourreau %>
     <td colspan="2"></td>
   <% elsif ! bour.has_remote_control_info? %>
-    <td colspan="2"><%= red_if(true,"(Missing SSH control info)") %></td>
+    <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
   <% elsif ! bour.has_actres_tunnelling_info? %>
-    <td colspan="2"><%= red_if(true,"(Missing ActiveResource SSH tunnel info)") %></td>
+    <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
   <% elsif ! bour.has_db_tunnelling_info? %>
-    <td colspan="2"><%= red_if(true,"(Missing database SSH tunnel info)") %></td>
+    <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
   <% else %>
     <td><%= link_to 'Start', start_bourreau_path(bour), :class => 'action_link', :method  => :post %></td>
     <td><%= link_to 'Stop',  stop_bourreau_path(bour),  :class => 'action_link', :method  => :post %></td>

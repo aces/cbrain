@@ -61,7 +61,7 @@
             <td colspan="6">
               <center>
               <% if rows <= 1 %>
-                <%= red_if(true,"(No specific versions configured).") %>
+                <%= html_colorize("(No specific versions configured).") %>
               <% else %>
                 <%= pluralize(rows-1," version") + " configured." %>
               <% end %>

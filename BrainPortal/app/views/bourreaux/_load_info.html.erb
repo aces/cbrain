@@ -13,14 +13,18 @@
 <%
     latest_in_queue_delay = latest_in_queue_delay.to_i 
     rating = case
-      when latest_in_queue_delay > 2.hours
-        red_if(true, "awful",    nil, :color2 => 'purple')
-      when latest_in_queue_delay > 1.hour
-        red_if(true, "bad",      nil, :color2 => 'red')
-      when latest_in_queue_delay > 20.minutes
-        red_if(true, "mediocre", nil, :color2 => 'orange')
+      when latest_in_queue_delay <  1.minute
+        html_colorize("instant",  'green')
+      when latest_in_queue_delay <  2.minute
+        html_colorize("superb",   'blue')
+      when latest_in_queue_delay < 15.minutes
+        html_colorize("good",     'yellow')
+      when latest_in_queue_delay <  1.hour
+        html_colorize("mediocre", 'orange')
+      when latest_in_queue_delay <  2.hours
+        html_colorize("bad",      'purple')
       else
-        red_if(true, "good",     nil, :color2 => 'green')
+        html_colorize("awful",    'red')
       end
 %>
   Most recent wait time before execution starts: <%= pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>

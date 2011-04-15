@@ -51,7 +51,7 @@ module TasksHelper
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_status(status)
     return status unless StatesToColor.has_key?(status)
-    red_if(true, status, status, :color2 => StatesToColor[status])
+    html_colorize(status,StatesToColor[status])
   end
 
 end

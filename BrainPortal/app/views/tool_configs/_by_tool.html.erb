@@ -51,9 +51,9 @@
             in project '<%= link_to_group_if_editable(bourreau.group) %>'
           </td>
           <td><%= red_if(! tool_enabled, "Yes", "NO!", :color2 => 'orange') %></td>
-          <td class="left_align no_wrap"><%= red_if(true,"No versions configured") %></td>
-          <td class="left_align"><%= red_if(true,"-") %></td>
-          <td class="left_align"><%= red_if(true,"-") %></td>
+          <td class="left_align no_wrap"><%= html_colorize("No versions configured") %></td>
+          <td class="left_align"><%= html_colorize("-") %></td>
+          <td class="left_align"><%= html_colorize("-") %></td>
         </tr>
       <% end %>
       <% tcs.each_with_index do |tc,idx| %>
@@ -77,7 +77,7 @@
                projs = projs.uniq
             %>
             <% if projs.size == 0 %>
-              <%= red_if(true,"'everyone'",nil,:color2 => 'green') %>
+              <%= html_colorize("'everyone'", 'green') %>
             <% else %>
               <% links = projs.map { |g| link_to_group_if_editable(g) } %>
               <%= links.join(" &amp; ") %>
@@ -92,7 +92,7 @@
               <% if access_ok %>
                 <%= h user.login %>
               <% else %>
-                <% html_tool_tip(red_if(true,user.login)) do %>
+                <% html_tool_tip(html_colorize(user.login)) do %>
                   <%= "* Tool is not enabled<br/>"             unless tool_enabled %>
                   <%= "* Execution Server's project<br/>"      unless user_can_access_bourreau[user] %>
                   <%= "* Tool's project<br/>"                  unless user_can_access_tool[user] %>

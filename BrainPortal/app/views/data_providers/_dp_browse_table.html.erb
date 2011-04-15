@@ -66,7 +66,7 @@
       <td><%= h(fi_userfile.class.to_s) %></td>
     <% else %>
        <% if ! fi_ok %>
-         <td><%= red_if(true,"Unacceptable?") %></td>
+         <td><%= html_colorize("Unacceptable?") %></td>
        <% elsif fi_type == :regular %>
          <td>
            <%= 

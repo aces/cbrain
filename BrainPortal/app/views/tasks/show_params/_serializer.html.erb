@@ -17,7 +17,7 @@
         <%= link_to_task_if_accessible(subtask, nil, :name => subtask.fullname) %>
         (currently in state <strong><%= colored_status(subtask.status) %></strong>)
       <% else %>
-        <%= red_if(true,"Off") %>
+        <%= html_colorize("Off") %>
         (Task #<%= h(tid) %> no longer exists)
       <% end %>
     </li>

@@ -81,7 +81,7 @@
       <% if current_session.persistent_userfile_ids.size == 0 %>
         Currently, no files are selected persistently.
       <% else %>
-        <%= red_if(true,"#{pluralize(current_session.persistent_userfile_ids.size,"file")} currently selected persistently.") %>
+        <%= html_colorize("#{pluralize(current_session.persistent_userfile_ids.size,"file")} currently selected persistently.") %>
       <% end %>
       </p>
       <p>

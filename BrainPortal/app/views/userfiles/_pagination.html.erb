@@ -1,6 +1,6 @@
 <span class="selected_info">
   <% if current_session.persistent_userfile_ids.size > 0 %>
-    <%= red_if(true,"(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %>
+    <%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %>
   <% end %>
 </span>
 <span class="page_links">
