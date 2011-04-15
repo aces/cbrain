@@ -40,9 +40,9 @@ class TasksController < ApplicationController
     header_scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
                       :group => "cbrain_tasks.type" ).each { |t| @task_types[t.class.name] = t.count }
     header_scope.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
-                      :group => "cbrain_tasks.user_id" ).each { |t| @task_owners[t.user] = t.count }
+                      :group => "cbrain_tasks.user_id" ).each { |t| @task_owners[t.user] = t.count if t.user }
     header_scope.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
-                      :group => "cbrain_tasks.group_id" ).each { |t| @task_projects[t.group] = t.count }
+                      :group => "cbrain_tasks.group_id" ).each { |t| @task_projects[t.group] = t.count if t.group }
     header_scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
                       :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
     

@@ -31,7 +31,8 @@ class Group < ActiveRecord::Base
 
   before_destroy          :assign_userfile_to_owner_group,
                           :assign_remote_resource_to_owner_group,
-                          :assign_data_provider_to_owner_group
+                          :assign_data_provider_to_owner_group,
+                          :assign_task_to_owner_group
   
   validates_presence_of   :name
   validates_uniqueness_of :name
@@ -98,6 +99,16 @@ class Group < ActiveRecord::Base
       user_group[user.id] ||= SystemGroup.find_by_name(user.login)
       
       dp.update_attributes!(:group => user_group[user.id])
+    end
+  end
+
+  def assign_task_to_owner_group #:nodoc:
+    user_group = {}
+    self.cbrain_tasks.each do |task|
+      user = task.user
+      user_group[user.id] ||= SystemGroup.find_by_name(user.login)
+      
+      task.update_attributes!(:group => user_group[user.id])
     end
   end
 
