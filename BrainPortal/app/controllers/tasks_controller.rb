@@ -407,7 +407,8 @@ class TasksController < ApplicationController
       # Create parallelizer, if needed
       if parallel_size
         paral_tasklist = tasklist.select { |t| t.class == @task.class }
-        paral_messages = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist,parallel_size)
+        paral_info = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist, :group_size => parallel_size)
+        paral_messages = paral_info[0] # [1] is an array of Parallelizers, [2] an array of single tasks.
         if ! paral_messages.blank?
           spawn_messages += "\n" unless spawn_messages.blank? || spawn_messages =~ /\n$/
           spawn_messages += paral_messages

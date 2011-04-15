@@ -35,11 +35,30 @@ class CbrainTask::Parallelizer < PortalTask
   #  "Parallelizer (#{summary})"
   #end
 
-  # Creates and launch a parallelizer for a set of other CbrainTasks
-  # supplied in +tasklist+.
-  def self.create_from_task_list(tasklist = [], group_size = 2) #:nodoc:
+  # Creates and launch a set of Parallelizers for a set of other
+  # CbrainTasks supplied in +tasklist+. All the tasks in +tasklist+
+  # are assumed to already have been created with status 'Standby'.
+  #
+  # Returns an array of three elements:
+  #
+  # * A message about how things went
+  # * An array of the Parallelizer task objects
+  # * An array of the leftover task objects not parallelized (if any)
+  #
+  # Supported options:
+  #
+  #   :group_size               => group that many task per Parallelizer
+  #   :initial_rank             => rank counter for task batching
+  #   :subtask_level            => level of subtasks in task batch, default 1
+  #   :parallelizer_level       => level of Parallelizers in task batch, default 0
+  #   :subtask_start_state      => subtask status once parallelized, default 'New'
+  #   :parallelizer_start_state => Parallelizer status once created, default 'New'
+  def self.create_from_task_list(tasklist = [], options = {}) #:nodoc:
  
-    return "" if tasklist.empty?
+    return [ "",[], [] ] if tasklist.empty?
+
+    options    = { :group_size => options } if options.is_a?(Fixnum) # old API
+    group_size = options[:group_size] || 2
 
     unless tasklist.all? { |t| t.status == 'Standby' }
       cb_error "Trying to parallelize a list of tasks that are NOT in Standby state?!?"
@@ -72,12 +91,17 @@ class CbrainTask::Parallelizer < PortalTask
       )
     end
 
-    # Destructively go through the task list and build parallelizers
-    desttasklist = tasklist.dup # we'll destroy THIS array, and leave the original intact
-    num_parallelizers = 0 # parallelizer tasks
-    num_parallel      = 0 # tasks under parallelizer control
-    num_normal        = 0 # tasks launched normally, independently
-    rank              = 0 # global counter for all tasks in the batch
+    # Destructively go through the task list and build Parallelizers
+    desttasklist        = tasklist.dup # we'll destroy THIS array, and leave the original intact
+    parallelizer_tasks  = [] # parallelizer tasks
+    normal_tasks        = [] # tasks launched normally, independently
+    num_parallel        = 0 # tasks under parallelizer control
+    rank                = options[:initial_rank]             || 0 # global counter for all tasks in the batch
+    level_task          = options[:subtask_level]            || 1
+    level_paral         = options[:parallelizer_level]       || 0
+    subtask_start_state = options[:subtask_start_state]      || 'New'
+    paral_start_state   = options[:parallelizer_start_state] || 'New'
+
     while desttasklist.size > 0
 
       subtasklist  = desttasklist[0,group_size]           # first group_size tasks
@@ -86,18 +110,18 @@ class CbrainTask::Parallelizer < PortalTask
       # For groups of one, we just launch normally
       if subtasklist.size < 2 || group_size < 2
         subtasklist.each do |task|
-          task.status = 'New'
-          task.rank   = rank unless task.rank; rank += 1
-          task.level  = 0    unless task.level
+          task.status = subtask_start_state
+          task.rank   = rank       unless task.rank; rank += 1
+          task.level  = level_task unless task.level
           task.save!
-          num_normal += 1
+          normal_tasks << task
         end
         next # may end the destructive loop, or continue it if we were grouping them all one by one
       end
 
-      # Create the parallelizer
+      # Create the Parallelizer
       first = subtasklist[0]
-      description = "Parallelizer ##{num_parallelizers+1} for #{first.name} x #{subtasklist.size}"
+      description = "Parallelizer ##{parallelizer_tasks.size+1} for #{first.name} x #{subtasklist.size}"
       if subtasklist.size < tasklist.size
         description += "\nThis task runs a subset of #{subtasklist.size} out of a larger batch of #{tasklist.size} tasks."
       end
@@ -108,32 +132,32 @@ class CbrainTask::Parallelizer < PortalTask
         :user_id        => first.user_id,
         :group_id       => first.group_id,
         :bourreau_id    => first.bourreau_id,
-        :status         => 'New',
+        :status         => paral_start_state,
         :params         => { :task_ids_enabled => tasks_ids_enabled },
         :launch_time    => first.launch_time,
         :rank           => rank,
-        :level          => 0,
+        :level          => level_paral,
         :tool_config_id => tc.id
       )
       rank += 1
 
-      # Add prereqs: the parallelizer can only start once the
+      # Add prereqs: the Parallelizer can only start once the
       # subtasks are configured
       subtasklist.each do |task|
         parallelizer.add_prerequisites_for_setup(task, 'Configured')
       end
 
-      # Launch the parallelizer
+      # Launch the Parallelizer
       parallelizer.save!
-      num_parallelizers += 1
-      num_parallel      += subtasklist.size
+      parallelizer_tasks << parallelizer
+      num_parallel       += subtasklist.size
 
       # Launch the subtasks with prerequisites and the 'Configure Only' meta option
       subtasklist.each do |task|
         task.add_prerequisites_for_post_processing(parallelizer, 'Completed')
-        task.status = "New" # trigger them to start
-        task.rank   = rank unless task.rank; rank += 1
-        task.level  = 1    unless task.level
+        task.status = subtask_start_state # trigger them to start
+        task.rank   = rank       unless task.rank; rank += 1
+        task.level  = level_task unless task.level
         task.meta[:configure_only]=true
         task.save!
       end
@@ -141,13 +165,13 @@ class CbrainTask::Parallelizer < PortalTask
 
     messages = ""
 
-    if num_parallelizers > 1
-      messages += "Launched #{num_parallelizers} Parallelizer tasks (covering a total of #{num_parallel} tasks).\n"
-    elsif num_parallelizers == 1
+    if parallelizer_tasks.size > 1
+      messages += "Launched #{parallelizer_tasks.size} Parallelizer tasks (covering a total of #{num_parallel} tasks).\n"
+    elsif parallelizer_tasks.size == 1
       messages += "Launched a Parallelizer task (covering a total of #{num_parallel} tasks).\n"
     end
 
-    if num_parallelizers > 0 && num_normal > 0
+    if parallelizer_tasks.size > 0 && num_normal > 0
       if num_normal > 1
         messages += "In addition, #{num_normal} leftover tasks were started separately (without a Parallelizer).\n"
       else
@@ -155,7 +179,7 @@ class CbrainTask::Parallelizer < PortalTask
       end
     end
 
-    messages
+    [ messages, parallelizer_tasks, normal_tasks ]
   end
 
 end
