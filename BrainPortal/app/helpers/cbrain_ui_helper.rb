@@ -146,7 +146,7 @@ module CbrainUiHelper
     @@html_tool_tip_id += 1
 
     html_tool_tip_id = @@html_tool_tip_id.to_s # we need a local var in case the block rendered ALSO calls html_tool_tip inside !
-    html_tool_tip_id += "_#{Process.id}_#{rand(1000000)}" # because of async ajax requests
+    html_tool_tip_id += "_#{Process.pid}_#{rand(1000000)}" # because of async ajax requests
 
     offset_x = options[:offset_x] || 30
     offset_y = options[:offset_y] || 0
