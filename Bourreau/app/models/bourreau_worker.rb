@@ -70,7 +70,6 @@ class BourreauWorker < Worker
     if tasks_todo.size == 0
       @zero_task_found += 1 # count the normal scan cycles with no tasks
       if @zero_task_found >= 3 # three in a row?
-        @zero_task_found = 0
         worker_log.info "No tasks need handling, going to sleep for one hour."
         request_sleep_mode(1.hour + rand(15).seconds)
       end
@@ -169,10 +168,11 @@ class BourreauWorker < Worker
       # Record bourreau delay time for Queued -> On CPU
       if initial_status == 'Queued' && new_status =~ /On CPU|Data Ready/
         @rr.meta.reload
-        n2q = task.meta[:last_delay_new_to_queued] || 0
+        n2q = task.meta[:last_delay_new_to_queued] || 0 # task-specific
         q2r = Time.now - initial_change_time
-        @rr.meta[:last_delay_queued_to_running]  = q2r
-        @rr.meta[:latest_in_queue_delay]         = n2q.to_i + q2r
+        @rr.meta[:last_delay_new_to_queued]      = n2q.to_i # separate record for bourreau
+        @rr.meta[:last_delay_queued_to_running]  = q2r.to_i # separate record for bourreau
+        @rr.meta[:latest_in_queue_delay]         = n2q.to_i + q2r.to_i
         @rr.meta[:time_of_latest_in_queue_delay] = Time.now
       end
     end
@@ -192,8 +192,7 @@ class BourreauWorker < Worker
           task.setup_and_submit_job # New -> Queued|Failed To Setup
           worker_log.info  "Submitted: #{task.bname_tid}"
           worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
-          n2q = Time.now - initial_change_time
-          task.meta[:last_delay_new_to_queued] = n2q
+          task.meta[:last_delay_new_to_queued] = (Time.now - initial_change_time).to_i
         elsif action == :wait
           worker_log.debug "     -> #{task.bname_tid} unfulfilled Setup prerequisites."
         else # action == :fail
