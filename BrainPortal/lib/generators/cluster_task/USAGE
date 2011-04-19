@@ -14,8 +14,15 @@ Example:
 
      script/generate cluster_task UniversalTranslator
 
-will create these templates:
+will create these directories, files and templates:
 
-     app/models/cbrain_task/universal_translator.rb
+     app/models/cbrain_task/universal_translator.rb    # symbolic link to cbrain_task_class_loader.rb
+     app/models/cbrain_task/universal_translator/
+     app/models/cbrain_task/universal_translator/portal/
+     app/models/cbrain_task/universal_translator/portal/universal_translator.rb
+     app/models/cbrain_task/universal_translator/bourreau/
+     app/models/cbrain_task/universal_translator/bourreau/universal_translator.rb
      app/views/tasks/cbrain_task/_universal_translator.html.erb
+     app/views/tasks/show_params/_universal_translator.html.erb
+     public/doc/tasks/universal_translator_options.html
 

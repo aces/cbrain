@@ -8,7 +8,7 @@ namespace :doc do
      rdoc.main = 'doc/README_FOR_APP'
      rdoc.rdoc_files.include('doc/README_FOR_APP')
      rdoc.rdoc_files.include('app/*/*.rb')
-     rdoc.rdoc_files.include('app/models/cbrain_task/*.rb')
+     rdoc.rdoc_files.include('app/models/cbrain_task/*/portal/*.rb')
      rdoc.rdoc_files.include('config/initializers/cbrain.rb')
      rdoc.rdoc_files.include('config/initializers/cbrain_extensions.rb')
      rdoc.rdoc_files.include('config/initializers/revisions.rb')
