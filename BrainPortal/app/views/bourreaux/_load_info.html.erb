@@ -18,7 +18,7 @@
       when latest_in_queue_delay <  2.minute
         html_colorize("superb",   'blue')
       when latest_in_queue_delay < 15.minutes
-        html_colorize("good",     'yellow')
+        html_colorize("good",     'black')
       when latest_in_queue_delay <  1.hour
         html_colorize("mediocre", 'orange')
       when latest_in_queue_delay <  2.hours
