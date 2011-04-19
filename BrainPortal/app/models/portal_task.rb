@@ -596,17 +596,5 @@ class PortalTask < CbrainTask
     true
   end
 
-
-end
-
-# Patch: pre-load all model files for the subclasses
-Dir.chdir(File.join(RAILS_ROOT, "app", "models", "cbrain_task")) do
-  Dir.glob("*.rb").each do |model|
-    model.sub!(/.rb$/,"")
-    unless CbrainTask.const_defined? model.classify
-      require_dependency "cbrain_task/#{model}.rb"
-      #puts ">>>> #{model} #{model.classify}"
-    end
-  end
 end
 
