@@ -2,15 +2,15 @@
 #
 # CBRAIN Project
 #
-# Parallelizer task model
+# Serializer task model
 #
 # Original author: Pierre Rioux
 #
 # $Id$
 #
 
-# A subclass of PortalTask to parallelize other tasks.
-class CbrainTask::Parallelizer < PortalTask
+# A subclass of PortalTask to serialize other tasks.
+class CbrainTask::CbSerializer < PortalTask
 
   Revision_info="$Id$"
 
@@ -32,7 +32,7 @@ class CbrainTask::Parallelizer < PortalTask
   #    summary += ", " if ! summary.blank?
   #    summary += "#{name} x #{tasklist.size}"
   #  end
-  #  "Parallelizer (#{summary})"
+  #  "Serializer (#{summary})"
   #end
 
 end

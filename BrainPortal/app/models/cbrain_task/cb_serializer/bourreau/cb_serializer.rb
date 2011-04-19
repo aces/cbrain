@@ -9,7 +9,7 @@
 # $Id$
 #
 
-class CbrainTask::Serializer < ClusterTask
+class CbrainTask::CbSerializer < ClusterTask
 
   Revision_info="$Id$"
 
@@ -146,7 +146,7 @@ class CbrainTask::Serializer < ClusterTask
       otask.restart("PostProcess")
       otask.save!
     end
-    self.addlog("This Serializer doesn't need to restart its own post processing.")
+    self.addlog("This CbSerializer doesn't need to restart its own post processing.")
     self.addlog("Its subtasks, however, were properly notified to do so.")
     false
   end
