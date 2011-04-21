@@ -17,25 +17,9 @@ class CbrainTask::CbSerializer < ClusterTask
     true
   end
 
-  def my_subtasks #:nodoc:
-    params           = self.params || {}
-    task_ids_enabled = params[:task_ids_enabled] || {}
-    task_ids = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
-    tasklist = task_ids.collect do |tid|
-      if task_ids_enabled[tid].to_s == "1"
-        CbrainTask.find_by_id(tid)
-      else
-        self.remove_prerequisites_for_setup(tid)
-        nil
-      end
-    end
-    tasklist.reject! { |t| t.nil? }
-    tasklist
-  end
-
   def job_walltime_estimate #:nodoc:
     tot = 0.seconds
-    self.my_subtasks.each do |otask|
+    self.enabled_subtasks.each do |otask|
       wt = otask.job_walltime_estimate || 1.minute
       tot += wt
     end
@@ -46,7 +30,7 @@ class CbrainTask::CbSerializer < ClusterTask
   def cluster_commands #:nodoc:
     params   = self.params || {}
 
-    subtasks = self.my_subtasks
+    subtasks = self.enabled_subtasks
 
     commands = [
       "#",
@@ -85,7 +69,7 @@ class CbrainTask::CbSerializer < ClusterTask
   def save_results #:nodoc:
     params   = self.params || {}
     self.addlog("Marking all tasks as ready.")
-    self.my_subtasks.each do |otask|
+    self.enabled_subtasks.each do |otask|
       otask.addlog("#{self.fullname} marking me as \"Data Ready\".")
       otask.status = "Data Ready"
       otask.remove_prerequisites_for_post_processing(self)
@@ -99,7 +83,7 @@ class CbrainTask::CbSerializer < ClusterTask
   # either Completed or Failed, which is
   # necessary for restarts.
   def all_subtasks_are?(states = /Completed|Failed|Terminated/) #:nodoc:
-    return true if self.my_subtasks.all? { |otask| otask.status =~ states }
+    return true if self.enabled_subtasks.all? { |otask| otask.status =~ states }
     self.addlog("Cannot proceed, as subtasks are not in states matching #{states.inspect}.")
     false
   end
@@ -109,7 +93,7 @@ class CbrainTask::CbSerializer < ClusterTask
       self.addlog("This task can only be restarted at Setup if its subtasks are all either Completed, Failed, or Terminated.")
       return false
     end
-    self.my_subtasks.each do |otask|
+    self.enabled_subtasks.each do |otask|
       otask.add_prerequisites_for_post_processing(self,'Completed')
       otask.meta[:configure_only] = true
       orig_status = otask.status
@@ -140,7 +124,7 @@ class CbrainTask::CbSerializer < ClusterTask
       self.addlog("This task can only be restarted at Post Processing if its subtasks are all Completed.")
       return false
     end
-    self.my_subtasks.each do |otask|
+    self.enabled_subtasks.each do |otask|
       otask.remove_prerequisites_for_post_processing(self)
       otask.meta[:configure_only] = nil
       otask.restart("PostProcess")

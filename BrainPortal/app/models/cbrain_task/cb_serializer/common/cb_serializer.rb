@@ -11,6 +11,26 @@
 
 class CbrainTask::CbSerializer
 
+  # Returns the list of tasks parallelized;
+  # this list includes only the tasks that have been
+  # 'enabled' (disabling can be triggered using the
+  # interface).
+  def enabled_subtasks
+    params           = self.params || {}
+    task_ids_enabled = params[:task_ids_enabled] || {}
+    task_ids = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
+    tasklist = task_ids.collect do |tid|
+      if task_ids_enabled[tid].to_s == "1"
+        CbrainTask.find_by_id(tid)
+      else
+        self.remove_prerequisites_for_setup(tid)
+        nil
+      end
+    end
+    tasklist.reject! { |t| t.nil? }
+    tasklist
+  end
+
   # Creates and launch a set of Serializers for a set of other
   # CbrainTasks supplied in +tasklist+. All the tasks in +tasklist+
   # are assumed to already have been created with status 'Standby'.
@@ -23,18 +43,22 @@ class CbrainTask::CbSerializer
   #
   # Supported options:
   #
-  #   :group_size               => group that many task per Serializer
+  #   :group_size               => group that many task per Serializer; default 2
+  #   :min_group_size           => if there is a set of leftover tasks smaller than this, they are NOT serialized; default 2
   #   :initial_rank             => rank counter for task batching
   #   :subtask_level            => level of subtasks in task batch, default 1
   #   :serializer_level         => level of Serializers in task batch, default 0
   #   :subtask_start_state      => subtask status once serialized, default 'New'
   #   :serializer_start_state   => Serializer status once created, default 'New'
+  #
+  # If a block is given, the block will be called once for each
+  # serializer with, in its two arguments, the CbSerializer and
+  # an array of its subtasks.
   def self.create_from_task_list(tasklist = [], options = {}) #:nodoc:
  
     return [ "",[], [] ] if tasklist.empty?
 
-    options    = { :group_size => options } if options.is_a?(Fixnum) # old API
-    group_size = options[:group_size] || 2
+    options = { :group_size => options } if options.is_a?(Fixnum) # old API
 
     unless tasklist.all? { |t| t.status == 'Standby' }
       cb_error "Trying to serialize a list of tasks that are NOT in Standby state?!?"
@@ -72,6 +96,11 @@ class CbrainTask::CbSerializer
     serializer_tasks    = [] # serializer tasks
     normal_tasks        = [] # tasks launched normally, independently
     num_serial          = 0 # tasks under serializer control
+
+    # Get options
+    group_size          = options[:group_size]               || 2
+    min_group_size      = options[:min_group_size]           || 2
+    min_group_size      = group_size if min_group_size > group_size
     rank                = options[:initial_rank]             || 0 # global counter for all tasks in the batch
     level_task          = options[:subtask_level]            || 1
     level_serial        = options[:serializer_level]         || 0
@@ -83,8 +112,8 @@ class CbrainTask::CbSerializer
       subtasklist  = desttasklist[0,group_size]           # first group_size tasks
       desttasklist = desttasklist[group_size,99999] || [] # destructively, here's the rest
 
-      # For groups of one, we just launch normally
-      if subtasklist.size < 2 || group_size < 2
+      # For groups too small, we just launch normally
+      if subtasklist.size < min_group_size
         subtasklist.each do |task|
           task.status = subtask_start_state
           task.rank   = rank       unless task.rank; rank += 1
@@ -137,6 +166,9 @@ class CbrainTask::CbSerializer
         task.meta[:configure_only]=true
         task.save!
       end
+
+      # Call the user block, if needed
+      yield(serializer,subtasklist) if block_given?
     end
 
     messages = ""
@@ -155,7 +187,7 @@ class CbrainTask::CbSerializer
       end
     end
 
-    [ messages, parallelizer_tasks, normal_tasks ]
+    [ messages, serializer_tasks, normal_tasks ]
   end
 
 end

@@ -18,7 +18,7 @@
   common_code = "#{dirname}/#{model}/common/#{model}.rb"
 
   if ! CbrainTask.const_defined? model.classify
-    puts_blue "LOADING #{bytype_code}"
+    #puts_blue "LOADING #{bytype_code}"
     require_dependency bytype_code if File.exists?(bytype_code)
     require_dependency common_code if File.exists?(common_code)
   end
