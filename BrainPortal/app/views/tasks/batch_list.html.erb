@@ -12,7 +12,7 @@
     </td>
     <td class="left">
       <% if launch_time %>
-        <%= show_hide_toggle  "#{@tasks.first.name} (Batch)", ".batch_listing_#{launch_time_id}" %>
+        <%= show_hide_toggle  "#{@tasks.first.pretty_name} (Batch)", ".batch_listing_#{launch_time_id}" %>
       <% else %>
         <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
       <% end %>

@@ -168,7 +168,7 @@ class CbrainTask::CbSerializer
       end
 
       # Call the user block, if needed
-      yield(serializer,subtasklist) if block_given?
+      yield(serializer, subtasklist) if block_given?
     end
 
     messages = ""
@@ -179,9 +179,9 @@ class CbrainTask::CbSerializer
       messages += "Launched a Serializer task (covering a total of #{num_serial} tasks).\n"
     end
 
-    if serializer_tasks.size > 0 && num_normal > 0
-      if num_normal > 1
-        messages += "In addition, #{num_normal} leftover tasks were started separately (without a Serializer).\n"
+    if serializer_tasks.size > 0 && normal_tasks.size > 0
+      if normal_tasks.size > 1
+        messages += "In addition, #{normal_tasks.size} leftover tasks were started separately (without a Serializer).\n"
       else
         messages += "In addition, 1 leftover task was started separately (without a Serializer).\n"
       end

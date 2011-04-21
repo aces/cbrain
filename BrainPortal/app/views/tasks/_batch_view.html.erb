@@ -12,7 +12,7 @@
       <td class="left">
         <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
           <% if launch_time %>
-            <%= "#{tasks.first.name} (Batch)" %>
+            <%= "#{tasks.first.pretty_name} (Batch)" %>
           <% else %>
             <%= "(Various)" %>
           <% end %>

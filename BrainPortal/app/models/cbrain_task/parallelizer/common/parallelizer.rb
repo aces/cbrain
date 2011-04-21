@@ -168,7 +168,7 @@ class CbrainTask::Parallelizer
       end
 
       # Call the user block, if needed
-      yield(parallelizer,subtasklist) if block_given?
+      yield(parallelizer, subtasklist) if block_given?
     end
 
     messages = ""
@@ -179,9 +179,9 @@ class CbrainTask::Parallelizer
       messages += "Launched a Parallelizer task (covering a total of #{num_parallel} tasks).\n"
     end
 
-    if parallelizer_tasks.size > 0 && num_normal > 0
-      if num_normal > 1
-        messages += "In addition, #{num_normal} leftover tasks were started separately (without a Parallelizer).\n"
+    if parallelizer_tasks.size > 0 && normal_tasks.size > 0
+      if normal_tasks.size > 1
+        messages += "In addition, #{normal_tasks.size} leftover tasks were started separately (without a Parallelizer).\n"
       else
         messages += "In addition, 1 leftover task was started separately (without a Parallelizer).\n"
       end
