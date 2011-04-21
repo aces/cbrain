@@ -217,7 +217,20 @@ class CbrainTask < ActiveRecord::Base
     cb_error "Cluster shared work directory not defined for Bourreau '#{self.bourreau.name}'." if shared_dir.blank?
     shared_dir
   end
-    
+
+  # Orders the current task with respect to +othertask+ ;
+  # the ordering is based on comparing rank, level, creation date
+  # and ID, in that order of priority. Used to deterministically
+  # determine the order of a batch in the view code. Only makes
+  # sense when comparing tasks in the same batch.
+  def cmp_by_batch_rank(othertask)
+     cmp = ((self.rank  || 0) <=> (othertask.rank  || 0))
+     cmp = ((self.level || 0) <=> (othertask.level || 0)) if cmp == 0
+     cmp = ( self.created_at  <=>  othertask.created_at ) if cmp == 0
+     cmp = ( self.id          <=>  othertask.id         ) if cmp == 0
+     cmp
+  end
+
 
 
   ##################################################################

@@ -1,7 +1,7 @@
 
 <% @paginated_list.each do |launch_time| %>
-  <% tasks = @tasks[launch_time].sort_by { |t| t.rank || 0 } %>
-  <% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+  <% tasks             = @tasks[launch_time].sort { |t1,t2| t1.cmp_by_batch_rank(t2) } %>
+  <% launch_time_id    = launch_time ? launch_time.to_i : 0 %>
   <% launch_time_param = launch_time.to_s(:db) if launch_time %>
 
   <% if tasks.size > 1 %>

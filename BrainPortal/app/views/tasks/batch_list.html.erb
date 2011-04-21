@@ -1,3 +1,5 @@
+
+<% @tasks         = @tasks.sort { |t1,t2| t1.cmp_by_batch_rank(t2) } %>
 <% launch_time    = @tasks.first ? @tasks.first.launch_time : nil %>
 <% launch_time_id = launch_time  ? launch_time.to_i         : 0 %>
 
