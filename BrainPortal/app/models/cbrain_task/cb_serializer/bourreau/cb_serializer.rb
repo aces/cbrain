@@ -35,7 +35,10 @@ class CbrainTask::CbSerializer < ClusterTask
     commands = [
       "#",
       "# Serial execution of #{subtasks.size} tasks.",
-      "#"
+      "#",
+      "",
+      "# Initialize the built-in bash seconds counter",
+      "SECONDS=0"
     ]
 
     subtasks.each do |otask|
@@ -48,9 +51,11 @@ class CbrainTask::CbSerializer < ClusterTask
         "# Run task #{otask.fullname}",
         "",
         "if test -d '#{odir}' ; then",
-        "  echo Starting script for task '#{otask.fullname}' in background.",
+        "  echo Starting script for task '#{otask.fullname}' in blocking mode.",
+        "  START=$SECONDS",
         "  cd '#{odir}'",
         "  /bin/bash #{oscript} > '#{oout}' 2> '#{oerr}'",
+        "  echo '  -> Finished in' $(( $SECONDS - $START )) \"seconds; cumulative time: $SECONDS seconds.\"",
         "else",
         "  echo Could not find workdir of task '#{otask.fullname}'. Skipping.",
         "fi"
@@ -59,7 +64,7 @@ class CbrainTask::CbSerializer < ClusterTask
 
     commands += [
       "",
-      "echo All tasks completed at `date`.",
+      "echo All tasks completed after $SECONDS seconds, at `date`.",
       ""
     ]
     

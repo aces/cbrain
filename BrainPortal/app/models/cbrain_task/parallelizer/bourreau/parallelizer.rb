@@ -34,7 +34,19 @@ class CbrainTask::Parallelizer < ClusterTask
     commands = [
       "#",
       "# Parallel execution of #{subtasks.size} tasks.",
-      "#"
+      "#",
+      "",
+      "# Initialize the built-in bash seconds counter",
+      "SECONDS=0",
+      "",
+      "# Function to report when a child exits.",
+      "child_is_done() {",
+      "  echo One task finished after $SECONDS seconds.",
+      "}",
+      "",
+      "# Let's trigger this function whenever a subprocess exits.",
+      "set -b -m",
+      "trap child_is_done SIGCHLD"
     ]
 
     subtasks.each do |otask|
@@ -61,7 +73,7 @@ class CbrainTask::Parallelizer < ClusterTask
       "echo Waiting for tasks to finish at `date`.",
       "wait",
       "",
-      "echo All tasks completed at `date`.",
+      "echo All tasks completed after $SECONDS seconds, at `date`.",
       ""
     ]
     
