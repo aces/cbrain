@@ -38,6 +38,7 @@ class CbrainTask::Parallelizer < ClusterTask
       "",
       "# Initialize the built-in bash seconds counter",
       "SECONDS=0",
+      "START=\"`date`\"",
       "",
       "# Function to report when a child exits.",
       "child_is_done() {",
@@ -70,8 +71,9 @@ class CbrainTask::Parallelizer < ClusterTask
 
     commands += [
       "",
-      "echo Waiting for tasks to finish at `date`.",
+      "echo Waiting for all tasks to finish, at $START",
       "wait",
+      "trap - SIGCHLD",
       "",
       "echo All tasks completed after $SECONDS seconds, at `date`.",
       ""
