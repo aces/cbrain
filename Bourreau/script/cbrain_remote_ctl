@@ -139,6 +139,10 @@ else # db text is provided to us
   if db_exists
     File.rename(db_file,db_file_bak) # will crush existing bak file
   end
+  # Optional: change stuff in it, depending on the environment
+  if ! ENV['CBRAIN_FRONTEND_HOSTNAME'].blank?
+    db_yml_text.sub!(/hostname:\s*\S+/,"hostname: #{ENV['CBRAIN_FRONTEND_HOSTNAME']}")
+  end
   File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
 end
 
