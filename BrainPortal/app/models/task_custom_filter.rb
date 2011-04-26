@@ -87,6 +87,7 @@ class TaskCustomFilter < CustomFilter
   end
   
   def scope_status(scope)
+    return scope if self.data["status"].is_a?(Array) && self.data["status"].all? { |v| v.blank? }
     scope.scoped(:conditions => {:status => self.data["status"]})
   end
   
