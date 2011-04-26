@@ -5,7 +5,18 @@
 </p>
 <p>
   Status:<br>
-  <%= select :data, :status, CbrainTask::PREREQS_STATES_COVERED_BY["Queued"].keys, :include_blank  => true, :selected  => custom_filter.data["status"] %>
+  <%= select_tag 'data[status]',
+      '<option></option>' +
+      grouped_options_for_select( [
+          [ 'Standard Cycle',        CbrainTask::RUNNING_STATUS + CbrainTask::COMPLETED_STATUS ],
+          [ 'Waiting For Something', CbrainTask::QUEUED_STATUS ],
+          [ 'Failed In Some Way',    CbrainTask::FAILED_STATUS ],
+          [ 'Restarting',            CbrainTask::RESTART_STATUS ],
+          [ 'Recovering',            CbrainTask::RECOVER_STATUS ]
+        ],
+        custom_filter.data["status"]
+      )
+  %>
 </p>
 <p>
    Description:<br>
