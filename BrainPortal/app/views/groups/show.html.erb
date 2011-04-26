@@ -1,7 +1,7 @@
 
 <% title "Project Info" %>
 
-<h2>Project details for <%= h @group.name %></h2>
+<h2>Details for <%= @group.pretty_category_name(current_user) %> '<%= @group.name %>'</h2>
 
 <div class="generalbox">
   <% if (@group.is_a?(WorkGroup) || @group.is_a?(InvisibleGroup)) && @group.can_be_edited_by?(current_user) %>

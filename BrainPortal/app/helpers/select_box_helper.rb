@@ -71,12 +71,12 @@ module SelectBoxHelper
       selected = selector.to_s
     end
     
-    grouped_by_classes = groups.group_by { |gr| gr.class.to_s.underscore.humanize }
+    #grouped_by_classes = groups.group_by { |gr| gr.class.to_s.underscore.humanize }
+    grouped_by_classes = groups.group_by { |gr| gr.pretty_category_name(current_user) }
 
     category_grouped = {}
     grouped_by_classes.each do |entry|
       group_category_name = entry.first
-      group_category_name.sub!(/ group/," project")
       group_pairs         = entry.last.sort_by(&:name).map do |group|
         label = group.name
         if group.is_a?(UserGroup)
@@ -93,8 +93,15 @@ module SelectBoxHelper
     end
 
     ordered_category_grouped = []
-    [ "Work project", "Site project", "User project", "System project", "Invisible project" ].each do |proj|
+    category_grouped.keys.each do |proj|
+       next unless proj =~ /Personal Work Project of/
+       ordered_category_grouped << [ proj , category_grouped.delete(proj) ]
+    end
+    [ "My Work Project", "Shared Work Project", "Site Project", "User Project", "System Project", "Invisible Project" ].each do |proj|
        ordered_category_grouped << [ proj , category_grouped.delete(proj) ] if category_grouped[proj]
+    end
+    category_grouped.keys.each do |proj| # handle what remains ?
+       ordered_category_grouped << [ "X-#{proj}" , category_grouped.delete(proj) ]
     end
 
     grouped_options = grouped_options_for_select ordered_category_grouped, selected || current_user.own_group.id.to_s

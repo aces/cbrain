@@ -1,9 +1,7 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="group_<%= group.id %>">
   <td class="left"><%= link_to_group_if_accessible group %></td>
-  <% if !group.is_a?(WorkGroup) %>
-    <td><%= change_to_project_name(group.class.name) %></td>
-  <% end %>
+  <td><%= group.pretty_category_name(current_user) %></td>
   <td><%= link_to_site_if_accessible(group.site) %></td>
   <td><%= @group_id_2_user_counts[group.id] || 0 %></td>
   <td>

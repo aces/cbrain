@@ -1,7 +1,7 @@
 
 <% title 'Edit Project' %>
 
-<h2>Edit Project</h2>
+<h2>Edit <%= @group.pretty_category_name(current_user) %></h2>
 
 <div class="generalbox">
    <% form_for :group, @group, :url => { :action => "update"}, :html  => {:method  => :put} do |f| %>
