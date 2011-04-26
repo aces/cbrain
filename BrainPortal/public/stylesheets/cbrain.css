@@ -459,6 +459,10 @@ h1.warning {
   width: 30em;
 }
 
+.medium_paragraphs {
+  width: 60em;
+}
+
 
 /* % ######################################################### */
 /* % General Links formatting */
