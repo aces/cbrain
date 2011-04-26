@@ -594,7 +594,7 @@ class DataProvider < ActiveRecord::Base
               fileinfo.send("#{meth}=", val)
             end
           rescue => e
-            puts "Method #{meth} not supported: #{e.message}"
+            #puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
         end

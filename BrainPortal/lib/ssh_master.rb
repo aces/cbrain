@@ -12,7 +12,9 @@
 #
 
 require 'fcntl'
+require 'rubygems'
 require 'sys/proctable'
+require 'active_support'
 
 # = SSH Tunnel Utility Class 
 #
@@ -56,7 +58,7 @@ class SshMaster
 
   Revision_info="$Id$"
 
-  CONTROL_SOCKET_DIR_1 = "#{RAILS_ROOT}/tmp/sockets"
+  CONTROL_SOCKET_DIR_1 = (self.const_get('RAILS_ROOT') rescue nil) ? "#{RAILS_ROOT}/tmp/sockets" : "/tmp"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
 
   # Internal timing limits; conservative enough and should not need to be changed.
@@ -537,9 +539,9 @@ class SshMaster
     base      = "#{@category}/#{simple_base}" if @category
     sock_dir  = "#{CONTROL_SOCKET_DIR_1}"
     sock_path = "#{sock_dir}/#{base}" # prefered location
-    if sock_path.size >= 100 # limitation in control path length in ssh
+    if sock_path.size >= 100 || ! File.directory?(sock_dir) # limitation in control path length in ssh
       sock_dir  = "#{CONTROL_SOCKET_DIR_2}"
-      sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 100!
+      sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 100 chars long!
     end
     if @category
       cat_dir = "#{sock_dir}/#{@category}"

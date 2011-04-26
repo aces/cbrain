@@ -117,10 +117,17 @@
   <p>
 
   <fieldset class="groupentry">
-  <legend>Tool Versions Configuration</legend>
+  <legend>Tool Version Configuration</legend>
 
-    <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
-    </p>
+    <% if @bourreau.new_record? %>
+
+      <p><label>A tool configuration for this Execution Server can be made once the server is created.</label></p>
+
+    <% else %>
+
+      <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %></p>
+
+    <% end %>
 
   </fieldset>
 
