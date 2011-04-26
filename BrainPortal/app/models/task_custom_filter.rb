@@ -29,6 +29,7 @@ class TaskCustomFilter < CustomFilter
     scope = scope_user(scope)         unless self.data["user_id"].blank?
     scope = scope_bourreau(scope)     unless self.data["bourreau_id"].blank?
     scope = scope_created_date(scope) unless self.data["created_date_type"].blank? || self.data["created_date_term"].blank?
+    scope = scope_status(scope)       unless self.data["status"].blank?
     scope
   end
   
@@ -84,4 +85,9 @@ class TaskCustomFilter < CustomFilter
   def scope_created_date(scope)
     scope.scoped(:conditions  => ["DATE(cbrain_tasks.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["created_date_term"]])
   end
+  
+  def scope_status(scope)
+    scope.scoped(:conditions => {:status => self.data["status"]})
+  end
+  
 end
