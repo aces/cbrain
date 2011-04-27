@@ -40,7 +40,7 @@ module SelectBoxHelper
     else
       selected = selector.to_s
     end
-    grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ u.login, u.id.to_s ] }, selected || current_user.id.to_s)
+    grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ "#{u.login} (#{u.full_name})", u.id.to_s ] }, selected || current_user.id.to_s)
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
