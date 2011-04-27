@@ -1,33 +1,28 @@
-
 <h3>Account preferences for <%= @user.login %></h3>
 
-<% form_for(user_preference) do |f| %>
-  <%= f.error_messages %>
-
+<% form_tag user_path(@user), :method => :put do %>
   <p>
    <label>Userfiles per page:</label>
-   <%= select :other_options, :userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages ) %>
+   <%= select :meta, :pref_userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages ) %>
   </p>
   <p>
-    <%= f.label :bourreau_id, "Default execution server:" %>
-    <%= bourreau_select(     "user_preference[bourreau_id]",
+    <%= label_tag "meta[pref_bourreau_id]", "Default execution server:" %>
+    <%= bourreau_select(     "meta[pref_bourreau_id]",
                              { :bourreaux => Bourreau.find_all_accessible_by_user(current_user),
-                               :selector => user_preference.bourreau_id },
+                               :selector => @user.meta["pref_bourreau_id"] },
                              { :include_blank => true } )
     %>
   </p>
   <p>
-    <%= f.label :data_provider_id, "Default data provider:" %>
-    <%= data_provider_select("user_preference[data_provider_id]",
-                             { :selector =>  user_preference.data_provider_id },
+    <%= label_tag "meta[pref_data_provider_id]", "Default data provider:" %>
+    <%= data_provider_select("meta[pref_data_provider_id]",
+                             { :selector =>  @user.meta["pref_data_provider_id"] },
                              { :include_blank => true } )
     %>
-    <%= overlay_data_providers_descriptions() %>
+    <%= overlay_data_providers_descriptions %>
   </p>
   <p>
-    <%= f.submit "Save Preferences" %>
+    <%= submit_tag "Save Preferences" %>
   </p>
 <% end %>  <!-- End form -->
-
-<%= button_to 'Reset to Defaults', user_preference, :confirm => 'Are you sure you want to reset your preferences?', :method => :delete %><br>
 

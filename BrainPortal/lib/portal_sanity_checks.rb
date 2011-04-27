@@ -136,7 +136,7 @@ class PortalSanityChecks < CbrainChecker
     #-----------------------------------------------------------------------------
 
     everyone_group=Group.find_by_name('everyone')
-    User.find(:all, :include => [:groups, :user_preference]).each do |u|
+    User.find(:all, :include => :groups).each do |u|
       unless u.group_ids.include? everyone_group.id
         puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
         groups = u.group_ids
@@ -160,11 +160,6 @@ class PortalSanityChecks < CbrainChecker
         puts "C> \t- '#{user_group.name}' group not used for user '#{u.login}'. Resetting user list."
         user_group.users = [u]
         user_group.save!
-      end
-      
-      unless u.user_preference
-        puts "C> \t- User #{u.login} doesn't have a user preference resource. Creating one."
-        UserPreference.create!(:user_id => u.id)
       end
     end
   end

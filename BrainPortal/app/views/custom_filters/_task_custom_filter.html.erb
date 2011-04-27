@@ -6,11 +6,10 @@
 <p>
   Status:<br>
   <%= select_tag 'data[status]',
-      '<option></option>' +
       grouped_options_for_select( [
           [ 'Standard Cycle',        CbrainTask::RUNNING_STATUS + CbrainTask::COMPLETED_STATUS ],
-          [ 'Waiting For Something', CbrainTask::QUEUED_STATUS - CbrainTask::RUNNING_STATUS ],
-          [ 'Failed In Some Way',    CbrainTask::FAILED_STATUS ],
+          [ 'Waiting',               CbrainTask::QUEUED_STATUS - CbrainTask::RUNNING_STATUS ],
+          [ 'Failed',                CbrainTask::FAILED_STATUS ],
           [ 'Restarting',            CbrainTask::RESTART_STATUS ],
           [ 'Recovering',            CbrainTask::RECOVER_STATUS ]
         ],

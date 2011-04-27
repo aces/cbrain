@@ -107,11 +107,6 @@ describe User do
     @user.save.should  be(false)
   end
   
-  it "should create a user_preferences record on create" do
-    @user.save
-    @user.user_preference.instance_of?(UserPreference).should be true
-  end
-  
   it "should create a new UserGroup with my login on create" do
     @user.login = "this_group_should_exit"
     @user.save

@@ -39,12 +39,12 @@ class UsersController < ApplicationController
   # GET /user/1
   # GET /user/1.xml
   def show #:nodoc:
-    @user = User.find(params[:id], :include => [:groups, :user_preference])
+    @user = User.find(params[:id], :include => :groups)
     
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
-    @default_data_provider  = @user.user_preference.data_provider rescue nil
-    @default_bourreau       = @user.user_preference.bourreau      rescue nil
+    @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
+    @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"]) 
     @log                    = @user.getlog()
 
     stats = ApplicationController.helpers.gather_filetype_statistics(
@@ -121,7 +121,7 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
-    
+    params[:user] ||= {}
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
     
     params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
@@ -158,6 +158,13 @@ class UsersController < ApplicationController
         end
       end
       @user.site = current_user.site
+    end
+    
+    if params[:meta]
+      meta_data = params[:meta]
+      meta_data.each do |k, v|
+        @user.meta[k] = v
+      end
     end
       
     respond_to do |format|

@@ -98,7 +98,11 @@ module Kernel
       @@__DEBUG_TIMER__.timed_puts(message, colour)
     else
       @@__DEBUG_TIMER__ = DebugTimer.new
-      puts message
+      method = "puts"
+      if colour
+        method = "puts_#{colour}"
+      end
+      send method, message
     end
   end
 

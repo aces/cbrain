@@ -14,7 +14,6 @@ class Bourreau < RemoteResource
   Revision_info="$Id$"
   
   has_many :statistics,        :dependent => :destroy
-  has_many :user_preferences,  :dependent => :nullify
   has_many :cbrain_tasks
   has_many :tool_configs, :dependent => :destroy
   has_and_belongs_to_many :tools

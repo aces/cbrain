@@ -27,17 +27,13 @@ require 'digest/sha1'
 #* CustomFilter
 #* Tag
 #* Feedback
-#*Has* *one*:
-#* UserPreference
 #*Has* *and* *belongs* *to* *many*:
 #* Group
 #
 #=Dependencies
-#[<b>On Create</b>] Creating a user will create an associated UserPreference
-#                   resource.
 #[<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
 #                    Userfile, RemoteResource or DataProvider resources.
-#                    Destroying a user will destroy the associated UserPreference,
+#                    Destroying a user will destroy the associated 
 #                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
@@ -58,8 +54,7 @@ class User < ActiveRecord::Base
   validate_on_update        :immutable_login
   validate                  :site_manager_check
   
-  before_create             :create_user_preference,
-                            :add_system_groups
+  before_create             :add_system_groups
   before_save               :encrypt_password
   after_update              :system_group_site_update
   before_destroy            :validate_destroy
@@ -83,7 +78,6 @@ class User < ActiveRecord::Base
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
   has_many                :feedbacks,       :dependent => :destroy
-  has_one                 :user_preference, :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
 
   
@@ -270,10 +264,6 @@ class User < ActiveRecord::Base
     if self.login && Group.find_by_name(self.login)
       errors.add(:login, "already in use by an existing group.")
     end
-  end
-  
-  def create_user_preference #:nodoc:
-    self.build_user_preference
   end
   
   def immutable_login #:nodoc:

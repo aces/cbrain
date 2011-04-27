@@ -109,7 +109,7 @@ class UserfilesController < ApplicationController
     # Pagination variables
     #------------------------------
 
-    @user_pref_page_length = (current_user.user_preference.other_options["userfiles_per_page"] || Userfile::Default_num_pages).to_i
+    @user_pref_page_length = (current_user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages).to_i
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
     if @filter_params["pagination"] == "on"
       @userfiles_per_page = @user_pref_page_length
@@ -178,7 +178,7 @@ class UserfilesController < ApplicationController
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
-    @preferred_bourreau_id = current_user.user_preference.bourreau_id
+    @preferred_bourreau_id = current_user.meta["pref_bourreau_id"]
 
     # For the 'new' panel
     @userfile = Userfile.new( :group_id => current_user.own_group.id )

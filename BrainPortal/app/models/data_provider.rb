@@ -183,8 +183,6 @@ require 'digest/md5'
 # *Belongs* *to*:
 # * User
 # * Group
-# *Has* *many*:
-# * UserPreference
 class DataProvider < ActiveRecord::Base
 
   Revision_info="$Id$"
@@ -215,7 +213,6 @@ class DataProvider < ActiveRecord::Base
 
   belongs_to  :user
   belongs_to  :group
-  has_many    :user_preferences,  :dependent => :nullify
   has_many    :userfiles
 
   # These DataProvider subclasses don't use the owner's login in their organizational structures, so 

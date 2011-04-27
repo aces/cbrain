@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110323202155) do
+ActiveRecord::Schema.define(:version => 20110427184518) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -302,17 +302,6 @@ ActiveRecord::Schema.define(:version => 20110323202155) do
   add_index "tools", ["cbrain_task_class"], :name => "index_tools_on_cbrain_task_class"
   add_index "tools", ["group_id"], :name => "index_tools_on_group_id"
   add_index "tools", ["user_id"], :name => "index_tools_on_user_id"
-
-  create_table "user_preferences", :force => true do |t|
-    t.integer  "user_id"
-    t.integer  "data_provider_id"
-    t.text     "other_options"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "bourreau_id"
-  end
-
-  add_index "user_preferences", ["user_id"], :name => "index_user_preferences_on_user_id"
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"

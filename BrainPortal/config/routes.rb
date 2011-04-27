@@ -10,7 +10,6 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :sites
   map.resources :custom_filters
   map.resources :tool_configs
-  map.resources :user_preferences
   map.resources :tags
   map.resources :statistics
 

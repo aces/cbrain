@@ -6,7 +6,7 @@
      "data-url"         => '/bourreaux/load_info'
    }
    select_attributes[:include_blank] = "Random Execution Server" if @bourreaux.size > 1
-   selected_by_default = current_user.user_preference.bourreau_id.to_s
+   selected_by_default = current_user.meta["pref_bourreau_id"]
    @bourreau = selected_by_default.blank? ? nil : Bourreau.find_by_id(selected_by_default)
 %>
 

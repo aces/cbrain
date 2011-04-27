@@ -23,8 +23,8 @@ class PortalController < ApplicationController
     
     @num_files              = current_user.userfiles.size
     @groups                 = current_user.has_role?(:admin) ? current_user.groups(:order => :name) : current_user.available_groups(:order => :name)
-    @default_data_provider  = current_user.user_preference.data_provider rescue nil
-    @default_bourreau       = current_user.user_preference.bourreau      rescue nil
+    @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
+    @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])     
         
     if current_user.has_role? :admin
       @active_users = Session.active_users

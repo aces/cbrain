@@ -127,8 +127,8 @@ module SelectBoxHelper
   def data_provider_select(parameter_name = "data_provider_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
-    if selector.nil? && current_user.user_preference
-      selector = current_user.user_preference.data_provider_id
+    if selector.nil?
+      selector = current_user.meta["pref_data_provider_id"]
     end
     data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
   
@@ -164,8 +164,8 @@ module SelectBoxHelper
   def bourreau_select(parameter_name = "bourreau_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
-    if selector.nil? && current_user.user_preference
-      selector = current_user.user_preference.bourreau_id
+    if selector.nil?
+      selector = current_user.meta["pref_bourreau_id"]
     end
     bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
   
