@@ -110,7 +110,7 @@ module CbrainUiHelper
       capture = eval("method(:capture)", block.binding)
       concat = eval("method(:concat)", block.binding)
       head = "<h3><a href=\"#\">#{header}</a></h3>"
-      body = "<div>#{capture.call(&block)}</div>"
+      body = "<div style=\"display: none\">#{capture.call(&block)}</div>"
       concat.call(head)
       concat.call(body)
     end
@@ -221,7 +221,7 @@ module CbrainUiHelper
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     concat("<span #{atts}>")
     concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    concat("<div #{content_id} class=\"drop_down_menu\">")
+    concat("<div #{content_id} style=\"display: none\" class=\"drop_down_menu\">")
     concat(content)
     concat("</div>")
     concat("</span>")
