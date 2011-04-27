@@ -20,6 +20,38 @@ class ActiveRecord::Base
   include ActRecMetaData
   after_destroy :destroy_all_meta_data
 
+  # Update meta information to the record based on
+  # the content of a hash +myparams+.
+  #
+  # Example: let's say that when posting to update object @myobj,
+  # the form also sent this to the controller:
+  #
+  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A' } ... }
+  #
+  # Then calling
+  #
+  #   @myobj.add_meta_data_from_form(params[:meta], [ :def, :xyz ])
+  #
+  # will result in two meta data pieces of information added
+  # to the object @myobj, like this:
+  #
+  #   @myobj.meta[:def] = 'z'
+  #   @myobj.meta[:xyz] = 'A'
+  #
+  # +meta_keys+ can be provided to limit the set of keys to
+  # be updated; the default is the keyword :all which means all
+  # keys in +myparams+ .
+  # 
+  # See ActRecMetaData for more information.
+  def update_meta_data(myparams = {}, meta_keys = :all)
+    return true if meta_keys.is_a?(Array) && meta_keys.empty?
+    meta_keys = myparams.keys if meta_keys == :all
+    meta_keys.each do |key|
+      self.meta[key] = myparams[key] # assignment of nil deletes the key
+    end
+    true
+  end
+
   ###################################################################
   # ActiveRecord Added Behavior For Logging
   ###################################################################

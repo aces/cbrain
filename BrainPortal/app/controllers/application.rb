@@ -528,11 +528,7 @@ class ApplicationController < ActionController::Base
   # See ActRecMetaData for more information.
   def add_meta_data_from_form(target_object, meta_keys = [], myparams = params)
     return true if meta_keys.empty?
-    form_meta = myparams[:meta] || {}
-    meta_keys.each do |key|
-      target_object.meta[key] = form_meta[key] # assignment of nil deletes the key
-    end
-    true
+    target_object.update_meta_data(myparams[:meta], meta_keys)
   end
 
 end

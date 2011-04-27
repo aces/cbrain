@@ -212,6 +212,7 @@ module ActRecMetaData
       md = md_cache[mykey]
       return nil unless md
       orig = md.meta_value
+      md_cache.delete(mykey)
       md.destroy
       return orig
     end
