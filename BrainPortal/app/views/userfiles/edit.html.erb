@@ -73,7 +73,7 @@
    
     <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Project:</th>
-        <td><%= f.collection_select(:group_id,  @user_groups, :id, :name, {}, :disabled => !@userfile.has_owner_access?(current_user) || @userfile.format_source_id) %></td>
+        <td><%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s }, { :disabled => !@userfile.has_owner_access?(current_user) || @userfile.format_source_id } %></td>
         <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
