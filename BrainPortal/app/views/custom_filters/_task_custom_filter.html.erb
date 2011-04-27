@@ -30,10 +30,10 @@
 </p>
 <p>
    Owner:<br>
-   <%= select :data, :user_id, current_user.available_users.map{ |u| [u.login, u.id.to_s] }, :include_blank  => true, :selected  => custom_filter.data["user_id"]  %>
+   <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
 </p> 
 <p>
    Execution Server:<br>
-   <%= select :data, :bourreau_id, Bourreau.find_all_accessible_by_user(current_user).map{ |b| [b.name, b.id.to_s] }, :include_blank  => true, :selected  => custom_filter.data["bourreau_id"]  %>
+   <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user), :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
 
