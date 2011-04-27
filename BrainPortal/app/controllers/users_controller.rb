@@ -160,12 +160,7 @@ class UsersController < ApplicationController
       @user.site = current_user.site
     end
     
-    if params[:meta]
-      meta_data = params[:meta]
-      meta_data.each do |k, v|
-        @user.meta[k] = v
-      end
-    end
+    add_meta_data_from_form(@user, [:pref_userfiles_per_page, :pref_bourreau_id, :pref_data_provider_id])
       
     respond_to do |format|
       if @user.save
