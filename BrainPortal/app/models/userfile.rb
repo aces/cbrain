@@ -625,22 +625,44 @@ class Userfile < ActiveRecord::Base
   ##############################################
   
   def next_available_file(user, options = {})
-    userfiles = Userfile.find_all_accessible_by_user(user, options)
-    return nil if userfiles.empty?
-    return nil if self.id >= userfiles.last.id
+    access_options = {}
+    access_options[:access_requested] = options.delete :access_requested
     
-    file = userfiles.find{ |u| u.id > self.id }
+    scope = Userfile.scoped(options)
+    scope = scope.scoped(:conditions => ["userfiles.id > ?", self.id], :order => "id")
+    unless user.has_role?(:admin)
+      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+    end
+
+    file = scope.first
+    if user.has_role? :site_manager
+      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id > ?", self.id]).first
+      if !file || (site_file && site_file.id < file.id)
+        file = site_file 
+      end
+    end
     
     file
   end
 
   def previous_available_file(user, options = {})
-    userfiles = Userfile.find_all_accessible_by_user(user, options)
-    return nil if userfiles.empty?
-    return nil if self.id <= userfiles.first.id
+    access_options = {}
+    access_options[:access_requested] = options.delete :access_requested
     
-    file = userfiles[userfiles.rindex{ |u| u.id < self.id }]
+    scope = Userfile.scoped(options)
+    scope = scope.scoped(:conditions => ["userfiles.id < ?", self.id], :order => "id")
+    unless user.has_role?(:admin)
+      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+    end
 
+    file = scope.last
+    if user.has_role? :site_manager
+      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id < ?", self.id]).last
+      if !file || (site_file && site_file.id < file.id)
+        file = site_file 
+      end
+    end
+    
     file
   end
   

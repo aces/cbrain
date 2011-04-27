@@ -6,7 +6,7 @@
 <div class="generalbox">
 
   <%= 
-    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
+    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :write,
                                :html  => {:class  => "action_link"}) 
   %>
   <br>
