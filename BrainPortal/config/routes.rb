@@ -11,7 +11,6 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :custom_filters
   map.resources :tool_configs
   map.resources :tags
-  map.resources :statistics
 
   # Standard CRUD resources, with extra methods
   map.resources :feedbacks,      :collection => { :delete_feedback => :delete }

@@ -21,7 +21,6 @@ class CbrainTask < ActiveRecord::Base
   Revision_info="$Id$"
 
   before_validation     :set_group
-  before_create         :record_statistics
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id
@@ -575,11 +574,6 @@ class CbrainTask < ActiveRecord::Base
     
       self.group_id = owner.own_group.id
     end
-  end
-   
-  def record_statistics #:nodoc:
-    @statistic = Statistic.new(:bourreau_id  => self.bourreau_id, :user_id => self.user_id, :task_name => self.class.name)
-    @statistic.update_stats
   end
 
 end

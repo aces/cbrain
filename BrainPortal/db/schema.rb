@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110427184518) do
+ActiveRecord::Schema.define(:version => 20110428180355) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -187,7 +187,9 @@ ActiveRecord::Schema.define(:version => 20110427184518) do
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
     t.string   "time_zone"
+    t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
+    t.text     "dp_ignore_patterns"
     t.string   "cms_class"
     t.string   "cms_default_queue"
     t.string   "cms_extra_qsub_args"
@@ -196,8 +198,6 @@ ActiveRecord::Schema.define(:version => 20110427184518) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
-    t.text     "dp_ignore_patterns"
-    t.string   "site_url_prefix"
     t.string   "help_url"
     t.integer  "rr_timeout"
   end
@@ -227,15 +227,6 @@ ActiveRecord::Schema.define(:version => 20110427184518) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description"
-  end
-
-  create_table "statistics", :force => true do |t|
-    t.integer  "bourreau_id"
-    t.integer  "user_id"
-    t.string   "task_name"
-    t.integer  "count"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "sync_status", :force => true do |t|
@@ -305,7 +296,7 @@ ActiveRecord::Schema.define(:version => 20110427184518) do
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"
-    t.integer  "size",             :limit => 24, :precision => 24, :scale => 0
+    t.integer  "size"
     t.integer  "user_id"
     t.integer  "parent_id"
     t.datetime "created_at"
@@ -314,7 +305,7 @@ ActiveRecord::Schema.define(:version => 20110427184518) do
     t.string   "task"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                                :default => false
+    t.boolean  "group_writable",   :default => false
     t.integer  "num_files"
     t.integer  "format_source_id"
   end

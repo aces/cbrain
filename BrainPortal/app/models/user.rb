@@ -73,7 +73,6 @@ class User < ActiveRecord::Base
   belongs_to              :site
 
   # The following resources are destroyed automatically when the user is destroyed.
-  has_many                :statistics,      :dependent => :destroy
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
