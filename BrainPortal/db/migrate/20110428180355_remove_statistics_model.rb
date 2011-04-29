@@ -10,5 +10,6 @@ class RemoveStatisticsModel < ActiveRecord::Migration
       t.string :task_name
       t.integer :count
       t.timestamps
+    end
   end
 end
