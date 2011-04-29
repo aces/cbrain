@@ -16,7 +16,6 @@ require 'cbrain_exception'
 class CBRAIN
 
   Revision_info="$Id$"
-  Redmine_Version="1.3.9"
 
   public
 
@@ -27,12 +26,17 @@ class CBRAIN
   System_Uname       = `uname -a`.chomp
   ENV['PATH']        = "#{RAILS_ROOT}/vendor/cbrain/bin:#{ENV['PATH']}"
 
+  # CBRAIN plugins locations
+  Plugins_Dir          = "#{RAILS_ROOT}/cbrain_plugins"
+  TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
+  UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
+
   $CBRAIN_StartTime_Revision = "???"  # numeric; will be filled in by validation script
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
   # of 'monit' which clears the environment of almost everything!
-  ENV['HOME'] = Rails_UserHome        # Most notably, Net::SFTP needs this
+  ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP needs this
 
   # File creation umask
   File.umask(0027)  # octal literal

@@ -528,7 +528,7 @@ class ApplicationController < ActionController::Base
   # See ActRecMetaData for more information.
   def add_meta_data_from_form(target_object, meta_keys = [], myparams = params)
     return true if meta_keys.empty?
-    target_object.update_meta_data(myparams[:meta], meta_keys)
+    target_object.update_meta_data(myparams[:meta] || {}, meta_keys)
   end
 
 end

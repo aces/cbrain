@@ -89,12 +89,6 @@ class Group < ActiveRecord::Base
   def reassign_models_to_owner_group #:nodoc:
     group_has_many_model_list = Group.reflect_on_all_associations.select { |a| a.macro == :has_many }.map { |a| a.name }
     objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }
-    #objlist = self.userfiles +
-    #          self.remote_resources +
-    #          self.data_providers +
-    #          self.cbrain_tasks +
-    #          self.tags +
-    #          self.tools
     user_id_to_own_group_id = {}
     objlist.each do |obj|
       own_group_id = user_id_to_own_group_id[obj.user_id] ||= obj.user.own_group.id

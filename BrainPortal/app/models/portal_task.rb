@@ -599,13 +599,13 @@ class PortalTask < CbrainTask
 end
 
 # Patch: pre-load all model files for the subclasses
-Dir.chdir(File.join(RAILS_ROOT, "cbrain_plugins", "cbrain_task")) do
+Dir.chdir(CBRAIN::TasksPlugins_Dir) do
   Dir.glob("*.rb").each do |model|
     next if model == "cbrain_task_class_loader.rb"
     model.sub!(/.rb$/,"")
     unless CbrainTask.const_defined? model.classify
       #puts_blue "Loading CbrainTask subclass #{model.classify} from #{model}.rb ..."
-      require_dependency "#{model}.rb"
+      require_dependency "#{CBRAIN::TasksPlugins_Dir}/#{model}.rb"
     end
   end
 end
