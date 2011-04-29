@@ -4,10 +4,11 @@ class RemoveStatisticsModel < ActiveRecord::Migration
   end
 
   def self.down
-    t.integer :bourreau_id
-    t.integer :user_id
-    t.string :task_name
-    t.integer :count
-    t.timestamps
+    create_table :statistics do |t|
+      t.integer :bourreau_id
+      t.integer :user_id
+      t.string :task_name
+      t.integer :count
+      t.timestamps
   end
 end
