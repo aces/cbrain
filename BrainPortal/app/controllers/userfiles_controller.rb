@@ -92,9 +92,10 @@ class UserfilesController < ApplicationController
       
     @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
     sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
-    case sort_table
-    when "users"
+    if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
+    end
+    case sort_table
     when "groups"
       joins << :group
     when "data_providers"
@@ -626,16 +627,10 @@ class UserfilesController < ApplicationController
   end
   
   def quality_control #:nodoc:
-    if params[:done]
-      flash[:notice] = "QC done."
-      redirect_to "/userfiles"
-      return
-    end
-    
     @filelist = params[:file_ids] || []
   end
   
-  def quality_control_panel
+  def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1    
     

@@ -365,6 +365,11 @@ module CbrainUiHelper
       options["data-method"] = method.to_s.upcase
     end
     
+    data = options.delete(:data)
+    if data
+      options["data-data"] = h data.to_json
+    end
+    
     #This builds an html attribute string from the html_opts hash
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     

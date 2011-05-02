@@ -180,10 +180,14 @@ function load_behaviour(event){
       var url = current_element.attr("data-url");
       var error_message = current_element.attr("data-error");
       var replace = current_element.attr("data-replace");
+      var data = current_element.attr("data-data");
+      if(data) data = jQuery.parseJSON(data);
+      
       jQuery.ajax({
         type: method,
         url: url,
         dataType: 'html',
+        data: data,
         success: function(data) {
             var new_content = jQuery(data);
             if(replace == "true"){
@@ -501,6 +505,7 @@ jQuery(
      });
      return false;
    });
+   
 
    //Allows a textfield to submit an ajax request independently of
    //the surrounding form. Submission is triggered when the ENTER
