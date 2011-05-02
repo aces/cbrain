@@ -6,7 +6,7 @@
    <div class="userfiles_tool_selector">
     <%= ajax_onchange_select(
        "conversion_operation", 
-       url_for(:controller  => :tools, :action  => :bourreau_select), 
+       url_for(:controller  => :tools, :action => :bourreau_select), 
        current_user.available_conversion_tools.inject('<option value="">Select a Conversion Operation</option>') { |options, tool| options += "<option value='#{tool.id}'>#{tool.select_menu_text}</option>"},
           :target  => "#bourreau_select_convert", 
           :target_text  => "<span class='warning'>Loading...</span>"
@@ -32,6 +32,4 @@
    <% end %>
    <br>
 <% end %>
-
-<br>
 

@@ -1,13 +1,18 @@
 
+<%
+# uniq_id needed because there can be several load_info DIVs in the page
+uniq_id = rand(100000).to_s 
+%>
 <% select_attributes = {
      "class"            => 'request_on_change',
      "data-target-text" => "&nbsp;",
-     "data-target"      => '#load_info',
+     "data-target"      => "#load_info_#{uniq_id}",
      "data-url"         => '/bourreaux/load_info'
    }
    select_attributes[:include_blank] = "Random Execution Server" if @bourreaux.size > 1
    selected_by_default = current_user.meta["pref_bourreau_id"]
    @bourreau = selected_by_default.blank? ? nil : Bourreau.find_by_id(selected_by_default)
+   @bourreau = @bourreaux[0] if @bourreaux.size == 1
 %>
 
 <%= bourreau_select("bourreau_id",
@@ -18,11 +23,12 @@
                    )
 %>
 
-<% if @bourreaux.size > 0 && @bourreau %>
   <br/>
   <br/>
-  <div id="load_info">
+
+  <div id="load_info_<%= uniq_id %>">
+  <% if @bourreaux.size > 0 && @bourreau %>
     <%= render :partial => 'bourreaux/load_info', :locals => { :bourreau => @bourreau } %>
+  <% end %>
   </div>
-<% end %>
 
