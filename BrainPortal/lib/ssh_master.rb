@@ -305,6 +305,7 @@ class SshMaster
         subpid = Process.fork do
           begin
             self.write_pidfile(Process.pid,:force)  # Overwrite
+            $stdin.close rescue nil
             $stdout.reopen(self.diag_path, "a")
             $stdout.sync = true
             $stderr.reopen($stdout)

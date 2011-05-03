@@ -107,7 +107,7 @@ class Bourreau < RemoteResource
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
     start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv} -p #{port} 2>&1'"
-    self.write_to_remote_shell_command(start_command, :stdout=>captfile) {|io| io.write(db_yml)}
+    self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true

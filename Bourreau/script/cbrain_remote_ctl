@@ -76,8 +76,8 @@ def tunnel_to_secondary_host(host, http_port, db_port, args)
   proxymaster.add_tunnel(:forward, http_port.to_i, 'localhost', http_port.to_i)
   proxymaster.add_tunnel(:reverse,   db_port.to_i, 'localhost',   db_port.to_i)
   unless proxymaster.start('Proxy')
-    puts "Cannot start secondary tunnel to '#{host}'."
-    exit 20
+    puts "Cannot start proxy master channel to '#{host}'."
+    Kernel.exit(20)
   end
   myscript = __FILE__
   myscript = (Pathname.getwd + myscript).to_s if myscript !~ /^\//
@@ -87,7 +87,7 @@ def tunnel_to_secondary_host(host, http_port, db_port, args)
   if args.size == 1 && args[0] == 'stop'
     proxymaster.stop
   end
-  exit 0
+  Kernel.exit(0)
 end
 
 # Run-time paths
