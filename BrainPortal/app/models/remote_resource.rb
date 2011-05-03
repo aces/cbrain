@@ -718,7 +718,7 @@ class RemoteResource < ActiveRecord::Base
     userlist.compact!
     userlist.uniq!
 
-    CBRAIN::spawn_with_active_records(User.find_by_login('admin'),"Cache Cleanup") do
+    CBRAIN::spawn_with_active_records(:admin, "Cache Cleanup") do
       targetfiles = Userfile.find(:all, :conditions => { :user_id => userlist })
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil

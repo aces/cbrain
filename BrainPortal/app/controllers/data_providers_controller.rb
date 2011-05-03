@@ -547,7 +547,7 @@ class DataProvidersController < ApplicationController
     # Nothing else do to if no automatic operation required.
     if (move_or_copy != "MOVE" && move_or_copy != "COPY") || !new_dp || newly_registered_userfiles.size == 0
       if newly_registered_userfiles.size > 0
-        CBRAIN.spawn_with_active_records("Set Sizes After Register") do
+        CBRAIN.spawn_with_active_records(:admin, "Set Sizes After Register") do
           newly_registered_userfiles.each do |userfile|
             userfile.set_size! rescue true
           end
@@ -573,7 +573,7 @@ class DataProvidersController < ApplicationController
       flash[:error] += "No files are left to #{move_or_copy.downcase} !\n"
     else
       flash[:notice] += "Warning! #{to_operate.size} files are now being #{past_tense} in background.\n"
-      CBRAIN.spawn_with_active_records("#{move_or_copy} Registered Files") do
+      CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
         errors = ""
         num_ok  = 0
         num_err = 0

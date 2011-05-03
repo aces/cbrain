@@ -239,6 +239,10 @@ class Message < ActiveRecord::Base
 
     # Find the group(s) associated with the destination
     groups = case destination
+              when :admin
+                [ Group.find_by_login('admin') ]
+              when :nobody
+                []
               when Group, User, Site
                 [ destination.own_group ]
               when Array

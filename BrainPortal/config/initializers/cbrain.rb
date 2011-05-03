@@ -129,17 +129,6 @@ class CBRAIN
     end
   end
   
-  # This method is just like spawn_with_active_records() except
-  # that the block will be spawn only when +condition+ is
-  # false; otherwise the block is executed in the current process.
-  #
-  # This is useful on the portal side when you have a block of
-  # instructions where in some circumstances you want it spawned
-  # and in others you want to wait until it's finished.
-  def self.spawn_with_active_records_unless(condition,destination = nil, taskname = 'Internal Background Task', &block)
-    self.spawn_with_active_records_if(!condition,destination, taskname, &block)
-  end
-
   # This method runs a Ruby block in the background, as a separate subprocess,
   # but without any access to the services provided by Rails (no ActiveRecords,
   # no DB, all filehandles closed except for STDIN, STDOUT and STDERR). If
