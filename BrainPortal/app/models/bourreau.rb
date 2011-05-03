@@ -91,15 +91,22 @@ class Bourreau < RemoteResource
     db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
 
     # What port the Rails Bourreau will listen to?
-    port = self.has_actres_tunnelling_info?  ?   self.tunnel_actres_port : self.actres_port
+    port = self.has_actres_tunnelling_info?  ?   self.tunnel_actres_port : self.actres_port # actres_port no longer supported
 
     # File to capture command output.
     captfile = "/tmp/start.out.#{Process.pid}"
+
+    # If the remote host is actually just a frontend before the REAL
+    # host, add the "-R host -H http_port -D db_port" special options to the command
+    proxy_args = ""
+    if ! self.proxied_host.blank?
+      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+    end
   
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl start -e #{myrailsenv} -p #{port} 2>&1'"
+    start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv} -p #{port} 2>&1'"
     self.write_to_remote_shell_command(start_command, :stdout=>captfile) {|io| io.write(db_yml)}
 
     out = File.read(captfile) rescue ""
@@ -122,7 +129,15 @@ class Bourreau < RemoteResource
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
     return false unless self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
-    stop_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl stop"
+    # If the remote host is actually just a frontend before the REAL
+    # host, add the "-R host -H http_port -D db_port" special options to the command
+    proxy_args = ""
+    if ! self.proxied_host.blank?
+      port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
+      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+    end
+
+    stop_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} stop"
     confirm=""
     self.read_from_remote_shell_command(stop_command) {|io| confirm = io.read}   
     self.stop_tunnels

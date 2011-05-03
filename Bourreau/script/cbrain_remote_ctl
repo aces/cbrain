@@ -45,8 +45,9 @@
 # which will result in killing the rails app.
 
 
-# This script is written in a way that depends
-# on as few ruby libraries as possible.
+require 'rubygems'
+require 'active_support'
+require File.dirname(__FILE__) + '/../lib/ssh_master.rb' # ugly
 
 
 #########################
@@ -55,8 +56,8 @@
 
 # Usage
 def usage(basename)
-    puts "Usage: #{basename} start -e <environment> -p <port>\n" +
-         "       #{basename} stop"
+    puts "Usage: #{basename} [-R host -H http_port -D db_port] start -e <environment> -p <port>\n" +
+         "       #{basename} [-R host -H http_port -D db_port] stop"
     Kernel.exit(10)
 end
 
@@ -64,6 +65,29 @@ end
 def fatal(message)
     puts message
     Kernel.exit(20)
+end
+
+# Establish a SSH tunnel to a secondary host
+# where this script will be effectively run.
+def tunnel_to_secondary_host(host, http_port, db_port, args)
+  myuid   = Process.uid
+  mylogin = Etc.getpwuid(myuid).name
+  proxymaster = SshMaster.find_or_create(mylogin,host,22)
+  proxymaster.add_tunnel(:forward, http_port.to_i, 'localhost', http_port.to_i)
+  proxymaster.add_tunnel(:reverse,   db_port.to_i, 'localhost',   db_port.to_i)
+  unless proxymaster.start('Proxy')
+    puts "Cannot start secondary tunnel to '#{host}'."
+    exit 20
+  end
+  myscript = __FILE__
+  myscript = (Pathname.getwd + myscript).to_s if myscript !~ /^\//
+  proxymaster.remote_shell_command_writer("bash -c \"ruby #{myscript} #{args.join(" ")} 2>&1\"" ) do |fh|
+    fh.write(STDIN.read) unless args.size == 1 && args[0] == 'stop'
+  end
+  if args.size == 1 && args[0] == 'stop'
+    proxymaster.stop
+  end
+  exit 0
 end
 
 # Run-time paths
@@ -74,6 +98,16 @@ fullprog = basename =~ /^\// ? basename : cwd + "/" + basename
 # Rails-specific paths
 rails_home = fullprog.sub(/\/script\/.+$/,"")
 pidfile    = "#{rails_home}/tmp/pids/mongrel.pid"
+
+# Automatic redirection to a secondary host
+if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
+  remhost   = ARGV[1]
+  httpport  = ARGV[3]
+  dbport    = ARGV[5]
+  ARGV.shift(6)
+  tunnel_to_secondary_host(remhost, httpport, dbport, ARGV)
+  exit 0
+end
 
 # Check usage
 usage(basename) if ARGV.size !=1 && ARGV.size != 5    # 1 or 5 args!

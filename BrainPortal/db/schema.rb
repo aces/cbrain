@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110428180355) do
+ActiveRecord::Schema.define(:version => 20110503162527) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -187,9 +187,7 @@ ActiveRecord::Schema.define(:version => 20110428180355) do
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
     t.string   "time_zone"
-    t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
-    t.text     "dp_ignore_patterns"
     t.string   "cms_class"
     t.string   "cms_default_queue"
     t.string   "cms_extra_qsub_args"
@@ -198,8 +196,11 @@ ActiveRecord::Schema.define(:version => 20110428180355) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
+    t.text     "dp_ignore_patterns"
+    t.string   "site_url_prefix"
     t.string   "help_url"
     t.integer  "rr_timeout"
+    t.string   "proxied_host"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
