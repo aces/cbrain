@@ -112,10 +112,14 @@ class UserfilesController < ApplicationController
 
     @user_pref_page_length = (current_user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages).to_i
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
-    if @filter_params["pagination"] == "on"
-      @userfiles_per_page = @user_pref_page_length
+    if [:html, :js].include?(request.format.to_sym)
+      if @filter_params["pagination"] == "on"
+        @userfiles_per_page = @user_pref_page_length
+      else
+        @userfiles_per_page = 400 # even when not paginating, there's a limit!
+      end
     else
-      @userfiles_per_page = 400 # even when not paginating, there's a limit!
+      @userfiles_per_page = 999_999_999
     end
     @current_page = params[:page] || 1
     offset = (@current_page.to_i - 1) * @userfiles_per_page
@@ -128,7 +132,7 @@ class UserfilesController < ApplicationController
 
     # ---- NO tree sort ----
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
-    if @filter_params["tree_sort"] == "off"
+    if @filter_params["tree_sort"] == "off" || [:html, :js].include?(request.format.to_sym)
       @userfiles_total = filtered_scope.size
       ordered_real     = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
     # ---- WITH tree sort ----
@@ -188,6 +192,7 @@ class UserfilesController < ApplicationController
       format.html
       format.js
       format.xml  { render :xml => @userfiles }
+      format.csv
     end
   end
 

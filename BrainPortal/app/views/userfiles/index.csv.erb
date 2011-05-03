@@ -1,0 +1,4 @@
+<% delimeter = params[:delimeter] || "," -%>
+<% @userfiles.each do |u| -%>
+<%= ([u.name] + u.tags.map(&:name)).join(delimeter) %>
+<% end -%>
