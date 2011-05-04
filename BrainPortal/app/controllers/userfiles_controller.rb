@@ -132,7 +132,7 @@ class UserfilesController < ApplicationController
 
     # ---- NO tree sort ----
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
-    if @filter_params["tree_sort"] == "off" || [:html, :js].include?(request.format.to_sym)
+    if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @userfiles_total = filtered_scope.size
       ordered_real     = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
     # ---- WITH tree sort ----
