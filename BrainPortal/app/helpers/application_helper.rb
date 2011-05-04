@@ -42,6 +42,7 @@ module ApplicationHelper
     end
   end
 
+  # Add a tooltip to a block of html
   def add_tool_tip(message, element='span', &block)
     content = capture(&block)
     
@@ -54,6 +55,7 @@ module ApplicationHelper
     concat("</#{element}>")
   end
  
+  # Return +content+ only if condition evaluates to true.
   def string_if(condition, content)
     if condition
       content
@@ -75,6 +77,8 @@ module ApplicationHelper
      #pretty
   end
   
+  # Sets which of the menu tabs at the top of the page is 
+  # selected.
   def set_selected(param_controller, current_item)
     if(current_item == :user_site_show && 
       params[:controller].to_s == 'sites' &&

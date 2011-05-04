@@ -42,10 +42,16 @@ class ApplicationController < ActionController::Base
 
   private
   
+  # Returns the name of the model class associated with a given contoller. By default
+  # takes the name from the name of the controller, but can be redefined in subclasses
+  # as needed.
   def resource_class
     @resource_class ||= Class.const_get self.class.to_s.sub(/Controller$/, "").singularize
   end
   
+  # Convenience method to determine wether a given model has the provided attribute.
+  # Note: mainly for security reasons; this allows easy sanitization of parameters related
+  # to attributes.
   def table_column?(model, attribute)
     column = attribute
     klass = Class.const_get model.to_s.classify
@@ -55,6 +61,10 @@ class ApplicationController < ActionController::Base
     false   
   end
   
+  # Easy and safe filtering based on individual attributes or named scopes.
+  # Simply adding <att>=<val> to a URL on an index page that uses this method
+  # will automatically filter as long as <att> is a valid attribute or named
+  # scope.
   def base_filtered_scope(filtered_scope = resource_class.scoped({}))
     @filter_params["filter_hash"].each do |att, val|
       if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
@@ -125,6 +135,8 @@ class ApplicationController < ActionController::Base
     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
   end
 
+  # Set up the current_session variable. Mainly used to set up the filter hash to be
+  # used by index actions.
   def set_session
     current_controller = params[:controller]
     params[current_controller] ||= {}
@@ -151,6 +163,7 @@ class ApplicationController < ActionController::Base
     @filter_params = current_session.params_for(params[:controller])
   end
   
+  # Force the user to change their password if they just did a reset.
   def password_reset
     if current_user && current_user.password_reset && params[:controller] != "sessions"
       unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
@@ -198,6 +211,8 @@ class ApplicationController < ActionController::Base
     end
   end
   
+  # Redirect to the index page if available and wasn't the source of
+  # the exception, otherwise to welcome page.
   def default_redirect
     if self.respond_to?(:index) && params[:action] != "index"
       {:action => :index}
@@ -210,6 +225,7 @@ class ApplicationController < ActionController::Base
   # CBRAIN Messaging System Filters
   ########################################################################
 
+  # Redirect normal users to the login page if the portal is locked.
   def check_if_locked
     if BrainPortal.current_resource.portal_locked?
       flash.now[:error] ||= ""
@@ -226,8 +242,8 @@ class ApplicationController < ActionController::Base
     end
   end
     
+  # Find new messages to be displayed at the top of the page.
   def prepare_messages
-
     return unless current_user
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
     

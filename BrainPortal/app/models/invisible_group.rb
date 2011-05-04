@@ -16,7 +16,7 @@ class InvisibleGroup < SystemGroup
     user.has_role? :admin
   end
 
-  def can_be_edited_by?(user)
+  def can_be_edited_by?(user) #:nodoc:
     user.has_role? :admin
   end
   

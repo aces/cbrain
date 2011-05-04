@@ -7,6 +7,7 @@ module SelectBoxHelper
   # Selector Helpers
   #################################################################################
   
+  # Create options for a select box with optgroups.
   def grouped_options_for_select(grouped_options, selected_key = nil, prompt = nil)
     body = ''
     body << content_tag(:option, prompt, :value => "") if prompt

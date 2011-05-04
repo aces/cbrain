@@ -569,6 +569,15 @@ module CbrainUiHelper
     ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
   end
   
+  ################################################################
+  #
+  # Filter update link helpers
+  #
+  ################################################################
+  
+  # Add to currently active filters. Options include:
+  # [:parameter] which filter parameter to adjust (default to :filter_hash).
+  # [:value]     the value to update it with.
   def filter_add_link(name, options = {})
     filter_param = options.delete(:parameter) || :filter_hash
     values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
@@ -582,12 +591,21 @@ module CbrainUiHelper
     build_filter_link name, params_hash, options
   end
   
+  # Remove a filter from those currently active. +key+ is the filter 
+  # attribute to be adjusted.
+  # 
+  # Options:
+  # [:parameter] which filter to adjust (defaults to :filter_hash). 
   def filter_remove_link(name, key, options = {})
     filter_param = options.delete(:parameter) || :filter_hash
     params_hash = {:remove => {filter_param => key}}
     build_filter_link name, params_hash, options
   end
   
+  # Clear a filter. The option :clear_params can be used in two ways.
+  # The first is to set it to the name of a know filter. The second is to
+  # set the value to clear_<x>, where +x+ is the prefix of a 'type' of filter.
+  # In the latter case, all filters with the given prefix will be cleared.
   def filter_clear_link(name, options = {})
     cleared_params = options.delete(:clear_params) || :clear_filter
     if !cleared_params.is_a?(Array) && cleared_params.to_s =~ /^clear_/
@@ -599,6 +617,8 @@ module CbrainUiHelper
     build_filter_link name, params_hash, options
   end
   
+  # Combines the functionality of filter_add_link and filter_clear_link. 
+  # A filter is cleared and than a new value is added to the the empty filter.
   def filter_reset_link(name, options = {})
     filter_param = options.delete(:parameter) || :filter_hash
     values       = options.delete(:value)   if options.has_key?(:value) #Value and filters synonymous but filters takes priority
@@ -618,7 +638,7 @@ module CbrainUiHelper
     build_filter_link name, params_hash, options
   end
   
-  def build_filter_link(name, params_hash, options = {})
+  def build_filter_link(name, params_hash, options = {}) #:nodoc:
     controller   = options.delete(:controller) || params[:controller]
     if options.has_key?(:ajax) 
       ajax         = options.delete(:ajax)

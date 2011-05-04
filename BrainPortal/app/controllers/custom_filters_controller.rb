@@ -18,7 +18,7 @@ class CustomFiltersController < ApplicationController
   
   Revision_info="$Id$"
 
-  def new
+  def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.send(:subclasses).map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
@@ -27,7 +27,7 @@ class CustomFiltersController < ApplicationController
     @custom_filter = filter_class.new
   end
 
-  def edit
+  def edit #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
   end
 
