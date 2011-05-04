@@ -136,7 +136,7 @@
          <% build_tabs do |tb| %>
            <% tb.tab("Summary") do %>
              <% begin %>
-               <%= render :partial => "tasks/show_params/#{@task.name.underscore}", :locals => { :task => @task, :params => @task.params } %>
+               <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params => @task.params } %>
              <% rescue ActionView::MissingTemplate %>
                <pre>Problem loading summary view (no template provided by task author).</pre>
              <% rescue => ex %>

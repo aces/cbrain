@@ -33,7 +33,7 @@
 
 <div class="generalbox">
 <%= form.error_messages %>
-<%= render :partial => "tasks/cbrain_task/#{@task.name.underscore}",
+<%= render :partial => task_partial('task_params'),
            :locals  => { :params  => @task.params, :form => form }
  %>
 </div>
