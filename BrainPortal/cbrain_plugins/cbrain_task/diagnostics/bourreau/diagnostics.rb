@@ -130,14 +130,25 @@ class CbrainTask::Diagnostics < ClusterTask
       echo "============================================================="
       echo ""
 
-      echo "---- Host Info ---"
-      hostname
+      echo "---- Host Info ----"
       uname -a
       uptime
       echo ""
 
-      echo "---- Environment ---"
-      env
+      if test -f /etc/issue ; then
+        echo "---- Issue ----"
+        cat /etc/issue
+        echo ""
+      fi
+
+      if test -e /proc/cpuinfo ; then
+        echo "---- CPU Info ----"
+        cat /proc/cpuinfo | sort | uniq
+        echo ""
+      fi
+
+      echo "---- Environment ----"
+      env | sort
       echo ""
 
     _DIAGNOSTIC COMMANDS_
