@@ -58,7 +58,7 @@ class Tool < ActiveRecord::Base
     @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
       { :tool_id => self.id, :bourreau_id => nil } )
   end
-  
+
   private
   
   def set_default_attributes #:nodoc:

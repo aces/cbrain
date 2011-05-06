@@ -654,8 +654,9 @@ class TasksController < ApplicationController
     @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
 
     # Find the list of Bourreaux that are both available and support the tool
-    tool       = @task.tool
-    @bourreaux = tool.bourreaux.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    tool         = @task.tool
+    bourreau_ids = tool.bourreaux.map &:id
+    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user, :conditions => { :online => true, :id => bourreau_ids } )
 
     # Presets
     unless @task.class.properties[:no_presets]

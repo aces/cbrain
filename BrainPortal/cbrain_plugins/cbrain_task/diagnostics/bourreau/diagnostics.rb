@@ -147,6 +147,10 @@ class CbrainTask::Diagnostics < ClusterTask
         echo ""
       fi
 
+      echo "---- Limits ----"
+      ulimit -a
+      echo ""
+
       echo "---- Environment ----"
       env | sort
       echo ""

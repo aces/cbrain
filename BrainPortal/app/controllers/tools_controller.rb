@@ -33,8 +33,9 @@ class ToolsController < ApplicationController
       return
     end
     
-    @tool      = current_user.available_tools.find(params[:current_value])
-    @bourreaux = @tool.bourreaux.find_all_accessible_by_user(current_user, :conditions  => {:online  => true})
+    @tool        = current_user.available_tools.find(params[:current_value])
+    bourreau_ids = @tool.bourreaux.map &:id
+    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user, :conditions  => {:online  => true, :id => bourreau_ids})
     @bourreaux.reject! do |b|
       tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => @tool.id, :bourreau_id => b.id })
       ! ( tool_configs.detect { |tc| tc.can_be_accessed_by?(current_user) } ) # need at least one config available for user
