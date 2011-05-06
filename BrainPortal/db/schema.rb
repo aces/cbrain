@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110503162527) do
+ActiveRecord::Schema.define(:version => 20110506152411) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -20,14 +20,6 @@ ActiveRecord::Schema.define(:version => 20110503162527) do
   end
 
   add_index "active_record_logs", ["ar_id", "ar_class"], :name => "index_active_record_logs_on_ar_id_and_ar_class"
-
-  create_table "bourreaux_tools", :id => false, :force => true do |t|
-    t.integer "tool_id"
-    t.integer "bourreau_id"
-  end
-
-  add_index "bourreaux_tools", ["bourreau_id"], :name => "index_bourreaux_tools_on_bourreau_id"
-  add_index "bourreaux_tools", ["tool_id"], :name => "index_bourreaux_tools_on_tool_id"
 
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"

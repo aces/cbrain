@@ -15,10 +15,16 @@ class Bourreau < RemoteResource
   
   has_many :cbrain_tasks
   has_many :tool_configs, :dependent => :destroy
-  has_and_belongs_to_many :tools
 
   attr_accessor :operation_messages # no need to store in DB
 
+  # Return the list of tools installed on this bourreau.
+  # A tool is considered installed if there is at least one
+  # ToolConfig object for it on that bourreau.
+  def tools
+    Tool.find_all_by_id((ToolConfig.find_all_by_bourreau_id(self.id).map &:tool_id).uniq.compact)
+  end
+  
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config

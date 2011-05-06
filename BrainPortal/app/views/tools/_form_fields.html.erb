@@ -48,8 +48,8 @@
   <table class="simple" width="100%">
     <% for bourreau in @bourreaux %>
       <tr>
-          <th colspan="6" class="centered white_text"><%= link_to_bourreau_if_accessible(bourreau) %>
-            ( Enabled? <%= check_box_tag "tool[bourreau_ids][]", bourreau.id, @tool && @tool.bourreaux.include?(bourreau) %> )
+          <th colspan="6" class="centered white_text">
+            <%= link_to_bourreau_if_accessible(bourreau) %>
           </th>
       </tr>
       <% tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => @tool.id }) %>

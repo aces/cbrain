@@ -74,18 +74,16 @@
           tcs_bad = tcs.size - tcs_ok
         %>
         <td>
-          <% green_color = tool_enabled ? 'green' : 'orange' %>
           <% if tcs_bad == 0 && tcs_ok == 0 %>
             <%= html_colorize("-") %>
           <% elsif tcs_bad == 0 %>
-            <%= html_colorize("#{tcs_ok} OK", green_color) %>
+            <%= html_colorize("#{tcs_ok} OK", "green") %>
           <% elsif tcs_ok == 0 %>
             <%= html_colorize("#{tcs_bad} NO") %>
           <% else %>
-            <%= html_colorize("#{tcs_ok} OK", green_color) %>,
+            <%= html_colorize("#{tcs_ok} OK", "green") %>,
             <%= html_colorize("#{tcs_bad} NO") %>
           <% end %>
-          <%= red_if(! tool_enabled, "", "(but disabled)", :color2 => 'orange') if tcs_bad > 0 || tcs_ok > 0 %>
         </td>
       <% end %>
     </tr>
