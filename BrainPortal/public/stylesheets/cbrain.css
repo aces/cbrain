@@ -426,8 +426,17 @@ h1.warning {
    white-space: normal !important;
 }
 
+.no_left_right_padding {
+   padding-left: 0 !important;
+   padding-right: 0 !important;
+}
+
 .left {
     text-align: left !important;
+}
+
+.right {
+    text-align: right !important;
 }
 
 .left_align {

@@ -523,7 +523,7 @@ class Userfile < ActiveRecord::Base
   #Note: Requires that the +users+ table be joined, either
   #of the <tt>:join</tt> or <tt>:include</tt> options.
   def self.restrict_site_on_query(user, scope)
-    scope.scoped(:conditions => ["(users.site_id = ?)", user.site_id])
+    scope.scoped(:conditions => ["(users.site_id = ?)", user.site_id], :joins => :user)
   end
 
   #Set the attribute by which to sort the file list
