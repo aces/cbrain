@@ -66,7 +66,6 @@ class ToolsController < ApplicationController
       return
     end
 
-    params[:tool][:bourreau_ids] ||= []
     @tool = Tool.new(params[:tool])
 
     task_class = @tool.cbrain_task_class || "CbrainTask::Object"
@@ -131,7 +130,6 @@ class ToolsController < ApplicationController
   # PUT /tools/1
   # PUT /tools/1.xml
   def update #:nodoc:
-    params[:tool][:bourreau_ids] ||= []
     @tool = current_user.available_tools.find(params[:id])
     respond_to do |format|
       if @tool.update_attributes(params[:tool])
