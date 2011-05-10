@@ -128,11 +128,12 @@ class UserfilesController < ApplicationController
     # Final paginated array of objects
     #------------------------------
 
-    includes = [ :user, :data_provider, :sync_status, :tags, :group ] # used only when fetching objects for renadering the page
+    includes = [ :user, :data_provider, :sync_status, :tags, :group ] # used only when fetching objects for rendering the page
 
     # ---- NO tree sort ----
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
+      filtered_scope   = filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       @userfiles_total = filtered_scope.size
       ordered_real     = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
     # ---- WITH tree sort ----
