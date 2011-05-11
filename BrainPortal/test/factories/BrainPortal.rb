@@ -55,7 +55,7 @@ Factory.define :data_provider do |data_provider|
   data_provider.user {|user| user.association(:user)}
   data_provider.group {|group| group.association(:group)}
   data_provider.read_only true
-  data_provider.type {"CbrainLocalDataProvider"}
+  data_provider.class {"CbrainLocalDataProvider"}
 end
 
 #Tool Factory
