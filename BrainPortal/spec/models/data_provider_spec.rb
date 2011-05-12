@@ -13,7 +13,7 @@ require 'spec_helper'
 
 describe DataProvider do
   before(:each) do 
-    #objects required in tests below
+    #objects required in tests below    
     @provider = Factory.create(:data_provider)
     @admin = Factory.create(:user, :role => "admin")
     @user = Factory.create(:user)
@@ -133,48 +133,6 @@ describe DataProvider do
         true
       end
     end
-
-        
-    it ".is_alive? should set the time_of_death field to current time if the provider is down and time_of_death is nil" do
-      @provider.instance_eval do
-        def impl_is_alive?
-          false
-        end
-      end
-      
-      @provider.time_of_death = nil 
-      @provider.is_alive?
-      (@provider.time_of_death - Time.now).should be_< 1.minute
-    end
-
-    it ".is_alive? should set the provider to offline if the time_of_death field is 1 minute old and impl_is_alive? returns false" do
-      @provider.instance_eval do 
-        def impl_is_alive?
-          false
-        end
-      end
-      @provider.time_of_death = 1.minute.ago
-      @provider.is_alive? 
-      @provider.online.should be false
-    end
-    it ".is_alive? should reset the time_of_death to now if the time_of_death field is < 2 minute old and impl_is_alive? returns false" do
-      @provider.instance_eval do 
-        def impl_is_alive?
-          false
-        end
-      end
-      @provider.time_of_death = 5.minute.ago
-      @provider.is_alive? 
-      (@provider.time_of_death-Time.now).should be_< 1.minute and @provider.online.should be true
-      
-    end
-    
-    it ".is_alive? should reset the time_of_death field if data_provider comes back online" do
-      @provider.time_of_death = Time.now
-      @provider.is_alive?
-      @provider.time_of_death.should be nil
-    end
-
     
     it "should return false when is_browsable? is called" do
       @provider.is_browsable?.should be(false)
@@ -211,8 +169,7 @@ describe DataProvider do
     
     it "should return false that random user has owner access" do
       @provider.has_owner_access?(@random_dude)
-    end
-    
+    end   
     
     #################
     # sync_to_cache #
@@ -220,7 +177,7 @@ describe DataProvider do
     
     it "should raise an exception if sync_to_cache is called on an offline provider" do
       @provider.online = false
-      lambda{@provider.sync_to_cache(@userfile)}.should raise_error "Error: provider is offline."
+      lambda{@provider.sync_to_cache(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is offline.")
     end
     
     it "should return true when sync_to_cache is called and the provider is online and impl_sync_to_cache returns true" do
@@ -248,12 +205,12 @@ describe DataProvider do
     
     it "should raise an exception when sync_to_provider is called with an offline provider" do
       @provider.online = false
-      lambda{@provider.sync_to_provider(@userfile)}.should raise_error("Error: provider is offline.")
+      lambda{@provider.sync_to_provider(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is offline.")
     end
     
     it "should raise an exception when sync_to_provider is called with read_only provider" do
       @provider.read_only = true
-      lambda{@provider.sync_to_provider(@userfile)}.should raise_error "Error: provider is read_only."    
+      lambda{@provider.sync_to_provider(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is read_only.")
     end
     
     it "should return true when sync_to_provider is called on an online and rw provider and impl_sync_to_provider returns true" do
@@ -276,12 +233,12 @@ describe DataProvider do
     
     it "should raise an exception when cache_prepare is called and provider is offline" do
       @provider.online = false 
-      lambda{@provider.cache_prepare(@userfile)}.should raise_error "Error: provider is offline."
+      lambda{@provider.cache_prepare(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is offline.")
     end
     
     it "should raise an exception when cache_prepare is called on read only provider" do
        @provider.read_only = true
-       lambda{@provider.cache_prepare(@userfile)}.should raise_error "Error: provider is read_only."
+       lambda{@provider.cache_prepare(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is read_only.")
     end
     
     it "should return true when mkdir_cache_subdirs returns true (dp online and rw)" do
@@ -297,9 +254,9 @@ describe DataProvider do
     # cache_full_path #  
     ###################
     
-    it "should raise an exception when cache_full_path is called on an offline provider" do
+    it "should not raise an exception when cache_full_path is called on an offline provider" do
       @provider.online = false
-      lambda{@provider.cache_full_path(@userfile)}.should raise_error "Error: provider is offline."
+      lambda{@provider.cache_full_path(@userfile)}.should_not raise_error
     end
     
     it "should return the value of cache_full_pathname(userfile) when cache_full_path is called on online provider" do
@@ -318,14 +275,14 @@ describe DataProvider do
     
     it "should raise an exception when provider is offline and cache_readhandle is called" do
       @provider.online = false
-      lambda{@provider.cache_readhandle(@userfile)}.should raise_error "Error: provider is offline."
+      lambda{@provider.cache_readhandle(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is offline.")
     end
     
     it "should raise an error when trying to use cache_readhandle on non-existant file" do 
       def cache_full_pathname(usefile)
         true
       end
-      lambda{@provider.cache_readhandle(@userfile)}.should raise_error Errno::ENOENT
+      lambda{@provider.cache_readhandle(@userfile)}.should raise_error(CbrainError, "Error: read handle cannot be provided for non-file.")
     end
     
     #####################
@@ -334,12 +291,12 @@ describe DataProvider do
     
     it "should raise an exception when I call cache_writehandle on offline provider" do
       @provider.online = false
-      lambda{@provider.cache_writehandle(@userfile)}.should raise_error "Error: provider is offline."
+      lambda{@provider.cache_writehandle(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is offline.")
     end
     
     it "should raise an exception when I call cache_writehandle on a read_only provider" do
       @provider.read_only = true
-      lambda{@provider.cache_writehandle(@userfile)}.should raise_error "Error: provider is read_only."
+      lambda{@provider.cache_writehandle(@userfile)}.should raise_error(CbrainError, "Error: provider #{@provider.name} is read_only.")
     end
     
     it "should raise an exception if I call cache_writehandle with an fake file" do

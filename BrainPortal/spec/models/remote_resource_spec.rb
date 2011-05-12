@@ -34,19 +34,19 @@ describe RemoteResource do
   end
   it "should set the time_of_death first time it detects down remote resource" do
     @remote_resource.is_alive?
-    (@remote_resource.time_of_death-Time.now).should be_< 1.minute
+    (@remote_resource.time_of_death-Time.now).should be < 1.minute
   end
 
   it "should set itself to offline if time_of_death is whithin last minute" do
-    @remote_resource.time_of_death = 30.seconds.ago
+    @remote_resource.update_attributes(:time_of_death  => 30.seconds.ago)
     @remote_resource.is_alive?
     @remote_resource.online.should be false
   end
 
   it "should reset the time_of_death flag if it's too old" do
-    @remote_resource.time_of_death = 1.day.ago
+    @remote_resource.update_attributes(:time_of_death  => 1.day.ago)
     @remote_resource.is_alive?
-    (@remote_resource.time_of_death-Time.now).should be_< 1.minute and @remote_resource.online.should be true
+    (@remote_resource.time_of_death-Time.now).should be < 1.minute and @remote_resource.online.should be true
   end
 
   it "should be alive if @info.name is not ??? and time_of_death should be nil" do 

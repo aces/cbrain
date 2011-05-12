@@ -120,8 +120,8 @@ class CbrainSystemChecks < CbrainChecker
       File.chmod(0700,cache_root)
     end
 
-    raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
-      dp_current_rev && dp_current_rev =~ /^\d+/
+    #raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
+    #  dp_current_rev && dp_current_rev =~ /^\d+/
 
     if dp_init_rev.to_i > 0 && dp_init_rev.to_i <= DataProvider::DataProviderCache_RevNeeded # Before Pierre's upgrade
       puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."

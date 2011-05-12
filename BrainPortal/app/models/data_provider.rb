@@ -1084,7 +1084,7 @@ class DataProvider < ActiveRecord::Base
   #     "/CbrainCacheDir"
   # This is a class method.
   def self.cache_rootdir #:nodoc:
-    @cache_rootdir ||= RemoteResource.current_resource.dp_cache_dir
+    @cache_rootdir = RemoteResource.current_resource.dp_cache_dir if @cache_rootdir.blank?
     cb_error "No cache directory for Data Providers configured!" if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
     @cache_rootdir = Pathname.new(@cache_rootdir)
   end

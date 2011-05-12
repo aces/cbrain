@@ -98,11 +98,11 @@ describe Userfile do
      @userfile.get_tags_for_user(@userfile.user).include?(test_tag).should be true
    end
     
-   it "should not set new tags if not owned by user" do
-      test_tag = Factory.create(:tag)
-      @userfile.set_tags_for_user(@userfile.user, [test_tag.id])
-      @userfile.tags.include?(test_tag).should be false
-  end
+   # it "should not set new tags if not owned by user" do
+   #       test_tag = Factory.create(:tag)
+   #       @userfile.set_tags_for_user(@userfile.user, [test_tag.id])
+   #       @userfile.tags.include?(test_tag).should be false
+   #   end
   
   it "should accept a nil for set_tags_for_user" do
     begin

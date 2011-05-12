@@ -65,7 +65,6 @@ end
 
 Factory.define :tool do |tool|
   tool.name             { Factory.next :tool_name }
-  tool.drmaa_class      {"drmaa_class X"}
   tool.user             {|user| user.association(:user)}
   tool.group            {|group| group.association(:group)}
   tool.category         {"scientific tool"}
@@ -73,7 +72,7 @@ end
   
 #Userfile factory
 Factory.sequence :userfile_name do |n|
-  "File #{n}"
+  "File_#{n}"
 end
 
 Factory.define :userfile do |userfile|
@@ -91,6 +90,7 @@ end
 Factory.define :tag do |tag|
   tag.name {Factory.next :tag_name}
   tag.user {|user| user.association(:user)}
+  tag.group {|group| group.association(:group)}
 end
 
 
@@ -100,8 +100,8 @@ Factory.sequence :rr_name do |n|
 end
 
 Factory.define :remote_resource do |remote_resource|
-  remote_resource.name {Factory.next :rr_name}
-  remote_resource.user {|user| user.association(:user)}
-  remote_resource.group {Group.find_by_name('everyone')}
+  remote_resource.name   {Factory.next :rr_name}
+  remote_resource.user   {|user| user.association(:user)}
+  remote_resource.group  {Group.find_by_name('everyone')}
   remote_resource.online { true }
 end

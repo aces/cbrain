@@ -58,7 +58,6 @@ elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema:load/
 elsif ! first_arg.nil? && first_arg.include?("spec") #if running the test suite, make model sane and run the validation
   PortalSanityChecks.check(:all)
   CbrainSystemChecks.check(:all)
-  PortalSanityChecks.check(:all)
   PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity])
 else
   CbrainSystemChecks.check(:all)

@@ -46,20 +46,10 @@ describe Tool do
     @tool.valid?.should be false
   end
   
-  it "should create a description if none is present" do
-    @tool.description = nil
-    @tool.valid?.should be true
-  end
-  
   it "should keep description if present" do
      @tool.description = "keep this"
      @tool.save
      @tool.description.should == "keep this"
-   end
-  
-  it "should create a select_menu_text if none is present" do
-    @tool.select_menu_text = nil
-    @tool.valid?.should be true
   end
   
   it "should keep select_menu_text if present" do
