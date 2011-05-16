@@ -21,7 +21,7 @@ class BourreauWorker < Worker
   # this worker)
   ActiveTasks = [ 'Setting Up', 'Queued', 'On CPU',    # 'New' must NOT be here!
                   'On Hold', 'Suspended',
-                  'Data Ready', 'Post Processing',
+                  'Post Processing',
                   'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess', # The Recovering states, not Recover
                   'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess', # The Restarting states, not Restart
                 ]

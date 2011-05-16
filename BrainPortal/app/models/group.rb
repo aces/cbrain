@@ -70,18 +70,7 @@ class Group < ActiveRecord::Base
 
   # Returns a 'group category name' as seen by +as_user+.
   def pretty_category_name(as_user)
-    return 'Invisible Project'       if self.is_a?(InvisibleGroup)
-    return 'Site Project'            if self.is_a?(SiteGroup)
-    return 'User Project'            if self.is_a?(UserGroup)
-    return 'System Project'          if self.is_a?(SystemGroup)
-    if self.is_a?(WorkGroup)
-      if self.users.size == 1
-        return 'My Work Project' if self.users[0].id == as_user.id
-        return "Personal Work Project of #{self.users[0].login}"
-      end
-      return 'Shared Work Project'
-    end
-    return self.class.to_s.underscore.humanize.sub(/group/,"Project")
+    self.class.to_s.underscore.titleize.sub(/group/i,"Project")
   end
 
   private

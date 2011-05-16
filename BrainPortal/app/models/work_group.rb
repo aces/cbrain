@@ -15,6 +15,14 @@ class WorkGroup < Group
 
   Revision_info="$Id$"
   
+  def pretty_category_name(as_user)
+    if self.users.size == 1
+      return 'My Work Project' if self.users[0].id == as_user.id
+      return "Personal Work Project of #{self.users[0].login}"
+    end
+    return 'Shared Work Project'
+  end
+  
   def can_be_edited_by?(user)
     if user.has_role? :admin
       return true
