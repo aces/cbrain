@@ -27,7 +27,23 @@ Factory.define :group do |group|
   group.name { Factory.next :group_name }
 end
 
-Factory.define :work_group do |work_group|
+Factory.define :site_group do |site_group| 
+  site_group.name { Factory.next :group_name }
+end
+
+Factory.define :system_group do |system_group| 
+  system_group.name { Factory.next :group_name }
+end
+
+Factory.define :user_group do |user_group| 
+  user_group.name { Factory.next :group_name }
+end
+
+Factory.define :invisible_group do |invisible_group| 
+  invisible_group.name { Factory.next :group_name }
+end
+
+Factory.define :work_group do |work_group| 
   work_group.name { Factory.next :group_name }
 end
 
