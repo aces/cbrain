@@ -22,6 +22,7 @@ class Feedback < ActiveRecord::Base
   Revision_info="$Id$"
 
   belongs_to :user
+  validates_presence_of     :details, :summary
   
 end
 

@@ -105,3 +105,9 @@ Factory.define :remote_resource do |remote_resource|
   remote_resource.group  {Group.find_by_name('everyone')}
   remote_resource.online { true }
 end
+
+Factory.define :feedback do |feedback|
+  feedback.user     {|user| user.association(:user)}
+  feedback.summary  {"subject"}
+  feedback.details  {"core"}
+end

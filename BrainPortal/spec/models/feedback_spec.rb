@@ -9,7 +9,7 @@
 #
 
 
-require 'spec_helper'
+require 'spec/spec_helper'
 
 describe Feedback do
   before(:each) do 
