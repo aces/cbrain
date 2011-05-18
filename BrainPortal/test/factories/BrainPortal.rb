@@ -60,12 +60,6 @@ Factory.sequence :data_provider_name do |n|
   "test_dataprovider#{n}"
 end
 
-class DataProvider 
-  def mkdir_cache_providerdir
-    true
-  end
-end
-
 Factory.define :data_provider do |data_provider|
   data_provider.name {Factory.next :data_provider_name}
   data_provider.user {|user| user.association(:user)}
@@ -80,10 +74,10 @@ Factory.sequence :tool_name do |n|
 end
 
 Factory.define :tool do |tool|
-  tool.name             { Factory.next :tool_name }
-  tool.user             {|user| user.association(:user)}
-  tool.group            {|group| group.association(:group)}
-  tool.category         {"scientific tool"}
+  tool.name     { Factory.next :tool_name }
+  tool.user     {|user| user.association(:user)}
+  tool.group    {|group| group.association(:group)}
+  tool.category {"scientific tool"}
 end
   
 #Userfile factory

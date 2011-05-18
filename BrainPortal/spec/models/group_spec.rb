@@ -10,7 +10,7 @@ describe Group do
     end
   end
   
-  describe "#pretty_category_name" do
+  describe "#pretty_category_name" do    
     it "should give InvisibleGroup the pretty name 'Invisible Project'" do
       Factory.create(:invisible_group).pretty_category_name(current_user).should == "Invisible Project"
     end
@@ -49,7 +49,7 @@ describe Group do
     end
   end
   
-  describe "can_be_accessed_by?" do
+  describe "#can_be_accessed_by?" do
     it "should allow admin access to any group" do
       user = Factory.create(:user, :role => "admin")
       group = Factory.create(:group)
