@@ -12,6 +12,7 @@ require 'remarkable_rails'
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
 Dir[File.expand_path(File.join(File.dirname(__FILE__),'support','**','*.rb'))].each {|f| require f}
+BrainPortal.current_resource.update_attribute(:dp_cache_dir, "/x/y/z")
 
 Spec::Runner.configure do |config|
   # If you're not using ActiveRecord you should remove these
@@ -53,5 +54,3 @@ Spec::Runner.configure do |config|
   #
   # For more information take a look at Spec::Runner::Configuration and Spec::Runner
 end
-
-BrainPortal.current_resource.update_attribute(:dp_cache_dir, "/x/y/z")
