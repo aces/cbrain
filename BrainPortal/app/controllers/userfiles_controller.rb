@@ -389,9 +389,6 @@ class UserfilesController < ApplicationController
 
     # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
-    if data_provider_id.blank?
-      data_provider_id = DataProvider.find_first_online_rw(current_user).id
-    end
 
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.

@@ -215,10 +215,6 @@ class DataProvider < ActiveRecord::Base
   belongs_to  :group
   has_many    :userfiles
 
-  # These DataProvider subclasses don't use the owner's login in their organizational structures, so 
-  # changing the owner of a Userfile stored on them won't cause any problems.
-  ALLOW_FILE_OWNER_CHANGE = ["SshDataProvider", "EnCbrainSmartDataProvider", "EnCbrainLocalDataProvider", "EnCbrainSshDataProvider"]
-
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
@@ -309,7 +305,7 @@ class DataProvider < ActiveRecord::Base
   end
   
   def allow_file_owner_change? #:nodoc:
-    ALLOW_FILE_OWNER_CHANGE.include? self.class.name
+    false
   end
 
 
@@ -367,7 +363,6 @@ class DataProvider < ActiveRecord::Base
   # The value returned is a Pathname object, so be careful
   # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
-    #cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cache_full_pathname(userfile)
   end
   
@@ -503,7 +498,6 @@ class DataProvider < ActiveRecord::Base
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
-    # cb_error "Error: provider #{self.name} is offline."   unless self.online?
     SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/ProviderName/username/34/45/basename"
@@ -574,7 +568,6 @@ class DataProvider < ActiveRecord::Base
         entry = File.lstat(file_name)
         type = entry.ftype.to_sym
         next unless types.include?(type)
-        #next if file_name == "." || file_name == ".."
         next if is_excluded?(file_name)
 
         fileinfo               = FileInfo.new
@@ -591,7 +584,6 @@ class DataProvider < ActiveRecord::Base
               fileinfo.send("#{meth}=", val)
             end
           rescue => e
-            #puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
         end
@@ -667,7 +659,7 @@ class DataProvider < ActiveRecord::Base
                        } )
 
     if target_exists
-      return true  if target_exists.id == userfile.id  # Same !?!
+      return true  if target_exists.id == userfile.id  # Same !?! I feel like this is impossible.
       return false if ! crush
       return false if target_exists.class != userfile.class # must be of same class
       target_exists.destroy # ok, we destroy the destination
@@ -871,19 +863,6 @@ class DataProvider < ActiveRecord::Base
   #################################################################
   # Utility Non-API
   #################################################################
-
-  # This method is a TRANSITION utility method; it returns
-  # any provider that's read/write for the user. The method
-  # is used by interface pages not yet modified to ask the
-  # user where files nead to be stored. The hope is that
-  # it will return the main provider by default.
-  def self.find_first_online_rw(user)
-    providers = self.find(:all, :conditions => { :online => true, :read_only => false })
-    providers = providers.select { |p| p.can_be_accessed_by?(user) }
-    raise "No online rw provider found for user '#{user.login}'" if providers.size == 0
-    providers.sort! { |a,b| a.id <=> b.id }
-    providers[0]
-  end
 
   # Returns the site this data provider belongs to.
   def site

@@ -14,12 +14,16 @@ Factory.define :group do |group|
   group.name { Factory.next :group_name }
 end
 
-Factory.define :site_group do |site_group| 
-  site_group.name { Factory.next :group_name }
+Factory.define :work_group do |work_group| 
+  work_group.name { Factory.next :group_name }
 end
 
 Factory.define :system_group do |system_group| 
   system_group.name { Factory.next :group_name }
+end
+
+Factory.define :site_group do |site_group| 
+  site_group.name { Factory.next :group_name }
 end
 
 Factory.define :user_group do |user_group| 
@@ -28,10 +32,6 @@ end
 
 Factory.define :invisible_group do |invisible_group| 
   invisible_group.name { Factory.next :group_name }
-end
-
-Factory.define :work_group do |work_group| 
-  work_group.name { Factory.next :group_name }
 end
 
 Factory.define :site  do |site|
@@ -61,6 +61,20 @@ Factory.define :userfile do |userfile|
     userfile.association     :data_provider
     # userfile.tags_attributes {{:one => {:tag_id => Factory(:tag).id}}}
     # userfile.tags { |tags| [tags.association :userfile]}
+end
+
+Factory.define :single_file do |single_file|
+    single_file.sequence(:name) { |n| "file_#{n}" }
+    single_file.association     :user
+    single_file.association     :group
+    single_file.association     :data_provider
+end
+
+Factory.define :file_collection do |file_collection|
+    file_collection.sequence(:name) { |n| "file_#{n}" }
+    file_collection.association     :user
+    file_collection.association     :group
+    file_collection.association     :data_provider
 end
 
 Factory.define :tag do |tag|
