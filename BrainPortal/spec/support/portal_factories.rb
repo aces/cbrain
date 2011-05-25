@@ -59,10 +59,13 @@ Factory.define :userfile do |userfile|
     userfile.association     :user
     userfile.association     :group
     userfile.association     :data_provider
+    # userfile.tags_attributes {{:one => {:tag_id => Factory(:tag).id}}}
+    # userfile.tags { |tags| [tags.association :userfile]}
 end
 
 Factory.define :tag do |tag|
   tag.sequence(:name) { |n| "tag_#{n}" }
+  # tag.userfiles       { |userfiles| [userfiles.association(:tag)]}
   tag.association     :user
   tag.association     :group
 end
@@ -74,8 +77,31 @@ Factory.define :remote_resource do |remote_resource|
   remote_resource.online          true
 end
 
+Factory.define :brain_portal do |brain_portal|
+  brain_portal.sequence(:name) { |n| "bp_#{n}"}
+  brain_portal.association :user
+  brain_portal.group  Group.find_by_name('everyone')
+  brain_portal.online true 
+end
+
 Factory.define :feedback do |feedback|
   feedback.association :user
   feedback.summary     "subject"
   feedback.details     "core"
 end
+
+Factory.define :custom_filter do |custom_filter|
+  custom_filter.sequence(:name) { |n| "cf_#{n}"}
+  custom_filter.association :user
+end
+
+Factory.define :userfile_custom_filter do |userfile_custom_filter|
+  userfile_custom_filter.sequence(:name) { |n| "ucf_#{n}"}
+  userfile_custom_filter.association :user
+end
+
+Factory.define :task_custom_filter do |task_custom_filter|
+  task_custom_filter.sequence(:name) { |n| "tcf_#{n}"}
+  task_custom_filter.association :user
+end
+
