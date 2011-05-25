@@ -22,6 +22,10 @@ class EnCbrainSmartDataProvider < DataProvider
   def after_initialize #:nodoc:
     self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
   end
+  
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
 
 end
 

@@ -26,6 +26,10 @@ class EnCbrainSshDataProvider < SshDataProvider
   def is_browsable? #:nodoc:
     false
   end
+  
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
 
   def impl_sync_to_provider(userfile) #:nodoc:
     threelevels = cache_subdirs_from_id(userfile.id)

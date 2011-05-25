@@ -32,6 +32,10 @@ class EnCbrainLocalDataProvider < LocalDataProvider
 
   Revision_info="$Id$"
 
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
+
   def cache_prepare(userfile) #:nodoc:
     SyncStatus.ready_to_modify_cache(userfile) do
       threelevels = cache_subdirs_from_id(userfile.id)

@@ -39,6 +39,10 @@ class SshDataProvider < DataProvider
   def is_browsable? #:nodoc:
     true
   end
+  
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
 
   def impl_sync_to_cache(userfile) #:nodoc:
     localfull   = cache_full_path(userfile)
