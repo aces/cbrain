@@ -46,7 +46,6 @@ Factory.define :data_provider do |data_provider|
   data_provider.class           {"CbrainLocalDataProvider"}
 end
 
-
 Factory.define :tool do |tool|
   tool.sequence(:name) { |n| "tool_#{n}" }
   tool.association     :user
@@ -59,8 +58,13 @@ Factory.define :userfile do |userfile|
     userfile.association     :user
     userfile.association     :group
     userfile.association     :data_provider
-    # userfile.tags_attributes {{:one => {:tag_id => Factory(:tag).id}}}
-    # userfile.tags { |tags| [tags.association :userfile]}
+end
+
+Factory.define :niak_fmri_study do |userfile|
+    userfile.sequence(:name) { |n| "file_#{n}" }
+    userfile.association     :user
+    userfile.association     :group
+    userfile.association     :data_provider
 end
 
 Factory.define :single_file do |single_file|
@@ -79,7 +83,6 @@ end
 
 Factory.define :tag do |tag|
   tag.sequence(:name) { |n| "tag_#{n}" }
-  # tag.userfiles       { |userfiles| [userfiles.association(:tag)]}
   tag.association     :user
   tag.association     :group
 end
@@ -117,5 +120,41 @@ end
 Factory.define :task_custom_filter do |task_custom_filter|
   task_custom_filter.sequence(:name) { |n| "tcf_#{n}"}
   task_custom_filter.association :user
+end
+
+Factory.define :bourreau do |bourreau|
+  bourreau.sequence(:name) { |n| "bourreau_#{n}"}
+  bourreau.association :user
+  bourreau.association :group
+end
+
+Factory.define :tool_config do |tool_config|
+  tool_config.description "desc1"
+end
+
+Factory.define :cbrain_task do |cbrain_task|
+  cbrain_task.status      "New"
+  cbrain_task.association :bourreau
+  cbrain_task.association :user
+  cbrain_task.association :group
+  cbrain_task.association :tool_config
+end
+
+Factory.define "cbrain_task/diagnostics" do |cbrain_task|
+  cbrain_task.status      "New"
+  cbrain_task.type "CbrainTask::Diagnostics"
+  cbrain_task.association :bourreau
+  cbrain_task.association :user
+  cbrain_task.association :group
+  cbrain_task.association :tool_config
+end
+
+Factory.define "cbrain_task/civet" do |cbrain_task|
+  cbrain_task.status      "New"
+  cbrain_task.type "CbrainTask::Civet"
+  cbrain_task.association :bourreau
+  cbrain_task.association :user
+  cbrain_task.association :group
+  cbrain_task.association :tool_config
 end
 
