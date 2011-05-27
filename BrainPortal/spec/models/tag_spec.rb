@@ -9,7 +9,7 @@
 #
 
 
-require 'spec/spec_helper'
+require 'spec_helper'
 
 describe Tag do
   before(:each) do 
