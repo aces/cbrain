@@ -2,5 +2,5 @@ config/database.yml
 config/initializers/config_portal.rb
 \#*\#
 *~
-log/
-tmp/
+*.DS_Store
+coverage/
