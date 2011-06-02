@@ -12,21 +12,8 @@
 require 'spec_helper'
 
 describe UserfileCustomFilter do
-  let(:tag1) do
-    t = double(:tag)
-    t.stub!(:id).and_return(1)
-    t.stub!(:name).and_return("tag_1")
-    t.as_null_object
-    t
-  end
-  let(:tag2) do
-    t = double(:tag)
-    t.stub!(:id).and_return(2)
-    t.stub!(:name).and_return("tag_2")
-    t.as_null_object
-    t
-  end
-
+  let(:tag1) { double("tag1", :id => 1, :name => "tag_1").as_null_object }
+  let(:tag2) { double("tag2", :id => 2, :name => "tag_2").as_null_object }
   let(:ucf)  {Factory.create(:userfile_custom_filter, :data =>  { "tags" => [tag1.name.to_s,tag2.name.to_s]})}
 
   describe "#filter_scope" do
