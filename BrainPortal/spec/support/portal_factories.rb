@@ -130,6 +130,8 @@ end
 
 Factory.define :tool_config do |tool_config|
   tool_config.description "desc1"
+  tool_config.association :bourreau
+  tool_config.association :group
 end
 
 Factory.define :cbrain_task do |cbrain_task|
@@ -142,7 +144,7 @@ end
 
 Factory.define "cbrain_task/diagnostics" do |cbrain_task|
   cbrain_task.status      "New"
-  cbrain_task.type "CbrainTask::Diagnostics"
+  cbrain_task.add_attribute( :type, "CbrainTask::Diagnostics")
   cbrain_task.association :bourreau
   cbrain_task.association :user
   cbrain_task.association :group
@@ -151,10 +153,16 @@ end
 
 Factory.define "cbrain_task/civet" do |cbrain_task|
   cbrain_task.status      "New"
-  cbrain_task.type "CbrainTask::Civet"
+  cbrain_task.add_attribute( :type,"CbrainTask::Civet")
   cbrain_task.association :bourreau
   cbrain_task.association :user
   cbrain_task.association :group
   cbrain_task.association :tool_config
 end
+
+Factory.define :message do |message|
+  message.association :user  
+end
+
+
 

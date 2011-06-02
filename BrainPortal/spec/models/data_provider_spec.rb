@@ -170,20 +170,27 @@ describe DataProvider do
        provider.read_only = true
        lambda{provider.cache_prepare(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
-    it "should raise an exception if passed a string argument" do
-      lambda{provider.cache_prepare("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
-    end
-    describe "creating a cache subdirectory" do
+    context "creating a cache subdirectory" do
       before(:each) do
+        SyncStatus.stub!(:ready_to_modify_cache).and_yield
         DataProvider.stub!(:cache_rootdir).and_return("cache")
+        File.stub!(:directory?).and_return(false)
         Dir.stub!(:mkdir)
       end
-      it "should find the cache root" do
-        DataProvider.should_receive(:cache_rootdir).and_return("cache")
-        provider.cache_full_path(userfile).should be true
+      it "should ensure that the cache is ready to be modified" do
+        SyncStatus.should_receive(:ready_to_modify_cache)
+        provider.cache_prepare(userfile).should be_true
       end
-      it "should create the subdirectory" do
+      it "should raise an exception if passed a string argument" do
+        lambda{provider.cache_prepare("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
+      end
+      it "should create the subdirectory if it does not exist" do
         Dir.should_receive(:mkdir).at_least(:once)
+        provider.cache_prepare(userfile).should be_true
+      end
+      it "should not create the subdirectory" do
+        File.stub!(:directory?).and_return(true)
+        Dir.should_not_receive(:mkdir)
         provider.cache_prepare(userfile).should be_true
       end
     end
@@ -193,7 +200,7 @@ describe DataProvider do
     it "should raise an exception if called with a string argument" do
       lambda{provider.cache_full_path("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
     end
-    describe "building a cache directory" do
+    context "building a cache directory" do
       before(:each) do
         DataProvider.stub!(:cache_rootdir).and_return("cache")
         provider.stub!(:cache_subdirs_path).and_return("subdirs")
@@ -229,7 +236,7 @@ describe DataProvider do
     it "should raise an exception if I try to read a non userfile" do 
       lambda{provider.cache_readhandle(userfile)}.should raise_error(CbrainError, "Error: read handle cannot be provided for non-file.")
     end
-    describe "opening a readhandle" do
+    context "opening a readhandle" do
       before(:each) do
         provider.stub!(:cache_full_path).and_return("cache_path")
         File.stub!(:file?).and_return(true)
@@ -263,7 +270,7 @@ describe DataProvider do
       userfile = Factory.build(:single_file)
       lambda{provider.cache_writehandle(userfile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
     end
-    describe "opening a writehandle" do
+    context "opening a writehandle" do
       before(:each) do
         provider.stub!(:cache_prepare)
         provider.stub!(:cache_full_path).and_return("cache_path")
@@ -308,7 +315,7 @@ describe DataProvider do
       File.stub!(:exists?).and_return(false)
       lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: file does not exist/)
     end
-    describe "checking file type conflicts" do
+    context "checking file type conflicts" do
       before(:each) do
         File.stub!(:exists?).and_return(true)
         File.stub!(:directory?).and_return(false)
@@ -325,7 +332,7 @@ describe DataProvider do
         lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible normal file .+ given for a FileCollection./)
       end
     end
-    describe "copying from local file" do
+    context "copying from local file" do
       before(:each) do
         provider.stub!(:cache_prepare)
         provider.stub!(:cache_full_path).and_return("cache_path")
@@ -375,7 +382,7 @@ describe DataProvider do
       provider.read_only = true
       lambda{provider.cache_copy_to_local_file(userfile, "localpath")}.should raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
-    describe "copying to local file" do
+    context "copying to local file" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:cache_prepare)
@@ -435,7 +442,7 @@ describe DataProvider do
       userfile.stub!(:is_locally_cached?).and_return(false)
       lambda{provider.cache_collection_index(userfile)}.should raise_error(CbrainError, "Error: userfile #{userfile.name} with ID #{userfile.id} is not cached.")
     end
-    describe "producing a list of files" do
+    context "producing a list of files" do
       let(:file_collection) {Factory.build(:file_collection)}
       let(:file_entry) do
         file_entry = double("file_entry").as_null_object
@@ -511,7 +518,7 @@ describe DataProvider do
       userfile.stub!(:user_id).and_return(conflict_file.user_id)
       provider.provider_rename(userfile, "abc").should be_false
     end
-    describe "renaming on the provider" do
+    context "renaming on the provider" do
       before(:each) do
         provider.stub!(:cache_erase)
         provider.stub_chain(:userfiles, :first).and_return(nil)
@@ -563,7 +570,7 @@ describe DataProvider do
       userfile.stub!(:id).and_return(nil)
       provider.provider_move_to_otherprovider(userfile, other_provider).should be_false
     end
-    describe "moving the userfile" do
+    context "moving the userfile" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:provider_erase)
@@ -641,7 +648,7 @@ describe DataProvider do
       userfile.stub!(:id).and_return(nil)
       provider.provider_copy_to_otherprovider(userfile, other_provider).should be_false
     end
-    describe "copying the userfile" do
+    context "copying the userfile" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:provider_erase)

@@ -48,17 +48,6 @@ class Tool < ActiveRecord::Base
     Bourreau.find_all_by_id((ToolConfig.find_all_by_tool_id(self.id).map &:bourreau_id).uniq.compact)
   end
 
-  #Find a random bourreau on which this tool is available and to which +user+ has access.
-  def select_random_bourreau_for(user)
-    available_group_ids = user.group_ids
-    bourreau_list = Bourreau.find(:all, :conditions => { :group_id => available_group_ids, :online => true }).select(&:is_alive?)
-    bourreau_list = bourreau_list & self.bourreaux
-    if bourreau_list.empty?
-      cb_error("Unable to find an execution server. Please notify your administrator of the problem.")
-    end
-    bourreau_list.slice(rand(bourreau_list.size)).id
-  end
-
   # Returns the single ToolConfig object that describes the configuration
   # for this tool for all Bourreaux, or nil if it doesn't exist.
   def global_tool_config

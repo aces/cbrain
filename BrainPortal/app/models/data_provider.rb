@@ -304,7 +304,19 @@ class DataProvider < ActiveRecord::Base
     false
   end
   
-  def allow_file_owner_change? #:nodoc:
+  # This predicate returns true if the structure of the files
+  # on the data provider side allow us to assign and reassign
+  # the CBRAIN ownership of the registered files without problem.
+  # Note that this is not related at all to the ownership restrictions
+  # on the files on the provider's host.
+  #
+  # Some old data provider subclasses (such as *Vault*) used to
+  # create subdirectories with the CBRAIN user's login name in
+  # a component, which made re-assigning the file to another user
+  # problematic. Modern DPs such as *EnCbrain* don't have this
+  # problem, the files are stored in hashes subdirectories with
+  # only the ID used for the component paths.
+  def allow_file_owner_change?
     false
   end
 

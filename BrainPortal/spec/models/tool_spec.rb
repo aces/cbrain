@@ -11,58 +11,42 @@
 require 'spec_helper'
 
 describe Tool do
-  before(:each) do
-    @tool = Factory.build(:tool)
-  end
-  
-  it "should create a tool with valid attributes given" do
-    @tool.save
-  end
-  
-  it "should require a name" do
-    @tool.name = nil
-    @tool.save.should be false
-  end
-  
-  it "should require a unique name" do
-    @tool.name = "A tool"
-    @tool.save
-    bad_tool = Factory.build(:tool, :name => "A tool")
-    bad_tool.valid?.should be false
-  end
-  
-  it "should require a user" do
-    @tool.user = nil
-    @tool.valid?.should be false
-  end
-  
-  it "should require a group" do
-    @tool.group = nil
-    @tool.valid?.should be false
-  end
-  
-  it "should require a category" do
-    @tool.category = nil
-    @tool.valid?.should be false
-  end
-  
+  let(:tool) {Factory.build(:tool, :id => 1)}
+
   it "should keep description if present" do
-     @tool.description = "keep this"
-     @tool.save
-     @tool.description.should == "keep this"
+   tool.description = "keep this"
+   tool.save
+   tool.description.should == "keep this"
   end
   
   it "should keep select_menu_text if present" do
-    @tool.select_menu_text = "keep this"
-    @tool.save
-    @tool.select_menu_text.should == "keep this"
+    tool.select_menu_text = "keep this"
+    tool.save
+    tool.select_menu_text.should == "keep this"
   end
   
   it "should validate that category is in the Categories constant" do
-    @tool.category = "this is wrong"
-    @tool.valid?.should be false
+    tool.category = "this is wrong"
+    tool.should_not be_valid
   end
   
-  #Should it check for a valid category?
+  describe "#bourreaux" do
+    it "should return the list of bourreaux where this tool is installed" do
+      tool_config = Factory.create(:tool_config, :tool => tool)
+      tool.bourreaux.should =~ [tool_config.bourreau]
+    end
+  end
+
+  describe "#global_tool_config" do
+    it "should return the single ToolConfig that describes the configuration for this tool for all Bourreaux" do
+      tool_config1 = Factory.create(:tool_config, :id => 1, :tool_id => tool.id, :bourreau_id => nil)
+      tool.global_tool_config.should == tool_config1
+    end
+    it "should return nil if no single ToolConfig exist for this tool" do
+      tool_config1 = Factory.create(:tool_config, :id => 1, :tool_id => tool.id)
+      tool.global_tool_config.should == nil  
+    end
+  end
   
 end
+
