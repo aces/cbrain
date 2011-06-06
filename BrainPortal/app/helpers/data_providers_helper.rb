@@ -62,12 +62,17 @@ module DataProvidersHelper
                end
 
     # All files that belong to these users on these data providers
+    hide_empty_users     = false
+    hide_empty_providers = false
     if users.nil? && providers.nil?
       filelist = Userfile.find(:all)
+      hide_empty_users = hide_empty_providers = true
     elsif users.nil?
       filelist = Userfile.find(:all, :conditions => { :data_provider_id => dplist })
+      hide_empty_users = true
     elsif providers.nil?
       filelist = Userfile.find(:all, :conditions => { :user_id => userlist })
+      hide_empty_providers = true
     else
       filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
     end
@@ -77,6 +82,11 @@ module DataProvidersHelper
     users_index = userlist.index_by &:id
     dp_index    = dplist.index_by   &:id
     rr_index    = rrlist.index_by   &:id
+
+    # Record which users and DP ids have at least some data
+    user_ids_seen = {}
+    dp_ids_seen   = {}
+    rr_ids_seen   = {}
 
     # Stats structure. It represents a two-dimensional table
     # where rows are users and columns are data providers.
@@ -97,6 +107,9 @@ module DataProvidersHelper
 
       data_provider_id  = userfile.data_provider_id
       dp                = dp_index[data_provider_id]
+
+      user_ids_seen[user_id]        = true
+      dp_ids_seen[data_provider_id] = true
 
       # up_cell is normal cell for one user on one dp
       # tp_cell is total cell for all users on one dp
@@ -122,6 +135,8 @@ module DataProvidersHelper
         next if accessed_before && accessed_at > accessed_before
         next if accessed_after  && accessed_at < accessed_after
 
+        rr_ids_seen[rr_id] = true
+
         # rr_cell is normal cell for one user on one remote resource
         # tr_cell is total cell for all users on one remote resource
         rr_cell = stats[user][rr]            ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
@@ -142,9 +157,9 @@ module DataProvidersHelper
       end
     end
 
-    dps_final   =    dp_index.values.sort { |a,b| a.name  <=> b.name  }
-    rrs_final   =    rr_index.values.sort { |a,b| a.name  <=> b.name  }
-    users_final = users_index.values.sort { |a,b| a.login <=> b.login }
+    users_final = users_index.values.select { |x| user_ids_seen[x.id] }.sort { |a,b| a.login <=> b.login }
+    dps_final   =    dp_index.values.select { |x|   dp_ids_seen[x.id] }.sort { |a,b| a.name  <=> b.name  }
+    rrs_final   =    rr_index.values.select { |x|   rr_ids_seen[x.id] }.sort { |a,b| a.name  <=> b.name  }
 
     stats['!users!']       = users_final
     stats['!users+all?!']  = users_final
