@@ -43,7 +43,6 @@ Factory.define :data_provider do |data_provider|
   data_provider.association     :user
   data_provider.association     :group
   data_provider.read_only       true
-  data_provider.class           {"CbrainLocalDataProvider"}
 end
 
 Factory.define :tool do |tool|
@@ -88,10 +87,11 @@ Factory.define :tag do |tag|
 end
 
 Factory.define :remote_resource do |remote_resource|
-  remote_resource.sequence(:name) { |n| "rr_#{n}" }
-  remote_resource.association     :user
-  remote_resource.group           Group.find_by_name('everyone')
-  remote_resource.online          true
+  remote_resource.sequence(:name)    { |n| "rr_#{n}" }
+  remote_resource.association        :user
+  remote_resource.group              Group.find_by_name('everyone')
+  remote_resource.online             true
+  remote_resource.dp_ignore_patterns ["x", "y", "z"]
 end
 
 Factory.define :brain_portal do |brain_portal|
