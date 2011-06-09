@@ -3,7 +3,7 @@ require 'time'
 #Helper methods for all views.
 module ApplicationHelper
 
-  Revision_info="$Id$"
+  Revision_info="$Id: application_helper.rb 1987 2011-05-04 18:40:57Z tsherif $"
 
   #################################################################################
   # Layout Helpers

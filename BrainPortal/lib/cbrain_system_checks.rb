@@ -11,8 +11,6 @@ class CbrainSystemChecks < CbrainChecker
   
   Revision_info="$Id$"
 
-
-
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
   def self.a002_ensure_Rails_can_find_itself
@@ -86,7 +84,7 @@ class CbrainSystemChecks < CbrainChecker
     end
 
     Rails.configuration.time_zone = my_time_zone
-    Rails::Initializer.new(Rails.configuration).initialize_time_zone
+    #Rails::Initializer.new(Rails.configuration).initialize_time_zone
 
   end
   

@@ -8,12 +8,16 @@
 # Superclass to all *BrainPortal* controllers. Contains
 # helper methods for checking various aspects of the current
 # session.
+
+require 'authenticated_system'
+#require 'exception_loggable' 
+
 class ApplicationController < ActionController::Base
 
   Revision_info="$Id$"
 
   include AuthenticatedSystem
-  include ExceptionLoggable
+#  include ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
@@ -88,7 +92,7 @@ class ApplicationController < ActionController::Base
     if Time.zone.blank? || Time.zone.name != syszone
       puts "\e[1;33;41mRESETTING TIME ZONE FROM #{Time.zone.name rescue "unset"} to #{syszone}.\e[0m"
       Rails.configuration.time_zone = syszone
-      Rails::Initializer.new(Rails.configuration).initialize_time_zone
+      #Rails::Initializer.new(Rails.configuration).initialize_time_zone
     #else
     #  testtime = Userfile.first.created_at
     #  puts "\e[1;33;41mTIME ZONE STAYS SAME: #{syszone} TEST: #{testtime}\e[0m"
@@ -575,16 +579,16 @@ rescue => error
   end
 end
 
-LoggedExceptionsController.class_eval do
-  # set the same session key as the app
-  session :session_key => Rails.configuration.action_controller[:session][:session_key]
-  
-  include AuthenticatedSystem
-
-  protect_from_forgery :secret => Rails.configuration.action_controller[:session][:secret]
-
-  before_filter :login_required, :admin_role_required
-
-  # optional, sets the application name for the rss feeds
-  self.application_name = "BrainPortal"
-end
+#LoggedExceptionsController.class_eval do
+#  # set the same session key as the app
+#  session :session_key => Rails.configuration.action_controller[:session][:session_key]
+#  
+#  include AuthenticatedSystem
+#
+#  protect_from_forgery :secret => Rails.configuration.action_controller[:session][:secret]
+#
+#  before_filter :login_required, :admin_role_required
+#
+#  # optional, sets the application name for the rss feeds
+#  self.application_name = "BrainPortal"
+#end

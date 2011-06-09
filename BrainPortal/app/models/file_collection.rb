@@ -10,7 +10,6 @@
 # $Id$
 #
 
-require 'ftools'
 require 'fileutils'
 require 'find'
 

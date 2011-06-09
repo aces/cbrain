@@ -7,7 +7,7 @@
 # $Id$
 #
 
-require 'sys/proctable'
+#require 'sys/proctable'
 require 'log4r'
 
 # = Worker Class
@@ -58,7 +58,7 @@ class Worker
 
   Revision_info="$Id$"
 
-  include Sys
+  #include Sys
   include Log4r
 
   PIDFILES_DIR = Pathname.new(RAILS_ROOT) + "tmp/pids"

@@ -9,7 +9,6 @@
 # $Id$
 #
 
-require 'mongrel'
 require 'cbrain_exception'
 
 # CBRAIN constants and some global utility methods.
@@ -47,10 +46,6 @@ class CBRAIN
   # Most of the code in this method comes from a blog entry
   # by {Scott Persinger}[http://geekblog.vodpod.com/?p=26].
   #
-  # The forking code has been modified to call a special
-  # CBRAIN patch to Mongrel to make sure its sockets
-  # are closed.
-  #
   # In case of an untrapped exception being raised in the background code,
   # a CBRAIN Message will be sent to +destination+ (which can be a Group,
   # a User, a Site, or the keywords :nobody or :admin) with +taskname+ being
@@ -64,7 +59,6 @@ class CBRAIN
     childpid = Kernel.fork do
 
       # Child code starts here
-      Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
       reader.close # Not needed in the child!
 
       # Create subchild
@@ -76,8 +70,6 @@ class CBRAIN
         # Background code execution
         begin
           $0 = "#{taskname}" # Clever!
-          # Monkey-patch Mongrel to not remove its pid file in the child
-          Mongrel::Configurator.class_eval("def remove_pid_file; true; end")
           ActiveRecord::Base.establish_connection(dbconfig)
           yield
 
@@ -139,7 +131,6 @@ class CBRAIN
     childpid = Kernel.fork do
 
       # Child code starts here
-      Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
       reader.close # Not needed in the child!
 
       # Create subchild
