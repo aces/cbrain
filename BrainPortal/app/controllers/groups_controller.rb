@@ -138,17 +138,20 @@ class GroupsController < ApplicationController
 
   def common_form_elements
     @group_id_2_user_counts = {}
-    User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+    #User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+    User.joins(:groups).select( "group_id, count(group_id) as total" ).group("group_id").each do |user|
       @group_id_2_user_counts[user.group_id.to_i] = user.total
     end
 
     @group_id_2_userfile_counts = {}
-    Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+    #Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+    Userfile.select( "group_id, count(group_id) as total" ).group("group_id").each do |user|
       @group_id_2_userfile_counts[userfile.group_id] = userfile.total
     end
 
     @group_id_2_task_counts = {}
-    CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+    #CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+    CbrainTask.select( "group_id, count(group_id) as total" ).group("group_id").each do |user|
       @group_id_2_task_counts[task.group_id] = task.total
     end
   end

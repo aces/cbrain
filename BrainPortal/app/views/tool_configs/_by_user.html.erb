@@ -65,7 +65,7 @@
         <% tool_enabled = tool.bourreaux.include?(bourreau) %>
 
         <%
-          tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => tool.id })
+          tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => tool.id )
           if bourreau.can_be_accessed_by?(user) && tool.can_be_accessed_by?(user)
             tcs_ok = tcs.count { |tc| tc.can_be_accessed_by?(user) }
           else
@@ -112,7 +112,7 @@
       <%
          tot_tcs = 0; tool2tcs = {};
          bourreau_tools.each do |t|
-           tcs = ToolConfig.find(:all, :conditions => { :bourreau_id => bourreau.id, :tool_id => t.id })
+           tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => t.id )
            #tot_tcs += tcs.size
 tot_tcs += tcs.size > 0 ? tcs.size : 1
            tool2tcs[t] = tcs

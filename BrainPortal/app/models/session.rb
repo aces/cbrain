@@ -53,7 +53,7 @@ class Session
   
   #Returns the list of currently active users on the system.
   def self.active_users(options = {})
-    active_sessions = session_class.find(:all, :conditions =>
+    active_sessions = session_class.where(
       ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
     )
     user_ids = active_sessions.map &:user_id
@@ -76,7 +76,7 @@ class Session
   
   def self.recent_activity(n = 10, options = {}) #:nodoc:
     scope = User.scoped(options)
-    last_sessions = session_class.find(:all, :conditions => "sessions.user_id IS NOT NULL", :order  => "sessions.updated_at DESC")
+    last_sessions = session_class.where( "sessions.user_id IS NOT NULL" ).order("sessions.updated_at DESC")
     entries = []
     
     last_sessions.each do |sess|

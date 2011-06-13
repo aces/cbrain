@@ -289,7 +289,7 @@ class ClusterTask < CbrainTask
     end
     group_id_for_file = attlist.delete(:group_id) || self.group_id
     cb_error "Cannot assign group to file." unless group_id_for_file
-    results = klass.find(:all, :conditions => attlist)
+    results = klass.where( attlist )
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always

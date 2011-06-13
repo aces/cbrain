@@ -28,8 +28,8 @@ class Bourreau < RemoteResource
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config
-    @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
-      { :tool_id => nil, :bourreau_id => self.id } )
+    @global_tool_config_cache ||= ToolConfig.where(
+      { :tool_id => nil, :bourreau_id => self.id ).first
   end
 
   # Returns the Scir subclass

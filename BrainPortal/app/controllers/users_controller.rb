@@ -218,7 +218,7 @@ class UsersController < ApplicationController
   end
   
   def send_password #:nodoc:
-    @user = User.find(:first, :conditions  => {:login  => params[:login], :email  => params[:email]})
+    @user = User.where( :login  => params[:login], :email  => params[:email] ).first
     
     if @user
       @user.password_reset = true

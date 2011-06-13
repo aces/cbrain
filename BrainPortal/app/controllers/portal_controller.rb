@@ -51,10 +51,7 @@ class PortalController < ApplicationController
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).collect(&:id)
-    @tasks = CbrainTask.find(:all, :conditions => {
-                                       :user_id     => current_user.id,
-                                       :bourreau_id => bourreau_ids
-                                     } )
+    @tasks = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids )
     @tasks_by_status = @tasks.hashed_partitions do |task|
       case task.status
       when /((#{CbrainTask::COMPLETED_STATUS.join('|')}))/o

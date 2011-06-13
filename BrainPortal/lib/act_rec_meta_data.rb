@@ -282,7 +282,7 @@ module ActRecMetaData
       subclasses = [ self.to_s ] + self.subclasses.map { |sc| sc.name.to_s }
       conditions = { :ar_class => subclasses, :meta_key => mykey }
       conditions[:meta_value] = myval unless myval.nil?
-      matched = MetaDataStore.find(:all, :conditions => conditions)
+      matched = MetaDataStore.where(conditions)
       objects = matched.map do |md|
         md_ar_id    = md.ar_id
         md_ar_class = md.ar_class

@@ -12,7 +12,7 @@ Given /^I am logged in as "([^\"]*)" with password "([^\"]*)" and I accepted the
 end
 
 Given /^the following user records$/ do |table|
-  User.find(:all).each do |u|
+  User.all.each do |u|
     if u.login != "admin"
       u.destroy
     end

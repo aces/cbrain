@@ -1011,11 +1011,11 @@ class UserfilesController < ApplicationController
         destbase = basename + ".gz"
       end
 
-      if Userfile.find(:first, :conditions => {
-                                 :name             => destbase,
-                                 :user_id          => userfile.user_id,
-                                 :data_provider_id => userfile.data_provider_id
-                               })
+      if Userfile.where(
+           :name             => destbase,
+           :user_id          => userfile.user_id,
+           :data_provider_id => userfile.data_provider_id
+         ).first
         (skipped_messages["Filename collision"] ||= []) << userfile
         next
       end
@@ -1165,12 +1165,11 @@ class UserfilesController < ApplicationController
     all_files.each do |file_name|
       if file_name =~ /\//
         nested_files << file_name
-      elsif Userfile.find(:first, :conditions => {
-                                     :name             => file_name,
-                                     :user_id          => user_id,
-                                     :data_provider_id => data_provider_id
-                                     }
-                         )
+      elsif Userfile.where(
+              :name             => file_name,
+              :user_id          => user_id,
+              :data_provider_id => data_provider_id
+            ).first
         failed_files << file_name
       else
         successful_files << file_name

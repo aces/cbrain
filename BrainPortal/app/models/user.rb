@@ -219,7 +219,7 @@ class User < ActiveRecord::Base
   # Returns the SystemGroup associated with the user; this is a
   # group with the same name as the user.
   def system_group
-    @own_group ||= SystemGroup.find(:first, :conditions => { :name => self.login } )
+    @own_group ||= SystemGroup.where( :name => self.login ).first
   end
 
   # An alias for system_group()
@@ -315,7 +315,7 @@ class User < ActiveRecord::Base
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.find(:first, :conditions => {:name => self.login})
+    system_group = SystemGroup.where( :name => self.login ).first
     system_group.destroy if system_group
   end
   

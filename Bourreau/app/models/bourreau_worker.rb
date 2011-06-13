@@ -55,7 +55,7 @@ class BourreauWorker < Worker
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
     worker_log.debug "Finding list of ready tasks."
-    tasks_todo = CbrainTask.find(:all, :conditions => { :status => ReadyTasks, :bourreau_id => @rr_id } )
+    tasks_todo = CbrainTask.where( :status => ReadyTasks, :bourreau_id => @rr_id )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode.

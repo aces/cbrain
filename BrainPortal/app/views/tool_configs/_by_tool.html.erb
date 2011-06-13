@@ -40,7 +40,7 @@
          end
       %>
 
-      <% tcs = ToolConfig.find(:all, :conditions => { :tool_id => tool.id, :bourreau_id => bourreau.id }) %>
+      <% tcs = ToolConfig.where( :tool_id => tool.id, :bourreau_id => bourreau.id ) %>
       <% if tcs.size == 0 %>
         <tr class="<%= cycle("list-odd", "list-even") %>">
           <td class="left_align no_wrap">

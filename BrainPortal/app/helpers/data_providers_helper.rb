@@ -62,15 +62,10 @@ module DataProvidersHelper
                end
 
     # All files that belong to these users on these data providers
-    if users.nil? && providers.nil?
-      filelist = Userfile.find(:all)
-    elsif users.nil?
-      filelist = Userfile.find(:all, :conditions => { :data_provider_id => dplist })
-    elsif providers.nil?
-      filelist = Userfile.find(:all, :conditions => { :user_id => userlist })
-    else
-      filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
-    end
+    filelist = Userfile.where( {} )
+    filelist = filelist.where( :user_id          => userlist ) if ! users.nil?
+    filelist = filelist.where( :data_provider_id => dplist   ) if ! providers.nil?
+    filelist = filelist.all
 
     # Arrays and hashes used to record the names of the
     # rows and columns of the report
@@ -197,7 +192,7 @@ module DataProvidersHelper
     fileclasses_totcount = {}
     user_totcount        = {}
     userlist.each do |user|
-      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => dp_ids, :user_id => user.id })
+      userfiles = Userfile.where( :data_provider_id => dp_ids, :user_id => user.id )
       user_fileclass_count[user] ||= {}
       user_totcount[user]        ||= 0
       userfiles.each do |u|

@@ -106,7 +106,7 @@ class PortalSanityChecks < CbrainChecker
       everyone_group.save!
     end
 
-    unless User.find(:first, :conditions => {:login  => 'admin'})
+    unless User.where( :login  => 'admin' ).first
       puts "C> \t- Admin user does not exist yet. Creating one."
       
       pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
@@ -136,7 +136,7 @@ class PortalSanityChecks < CbrainChecker
     #-----------------------------------------------------------------------------
 
     everyone_group=Group.find_by_name('everyone')
-    User.find(:all, :include => :groups).each do |u|
+    User.includes(:groups).each do |u|
       unless u.group_ids.include? everyone_group.id
         puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
         groups = u.group_ids
@@ -224,7 +224,7 @@ class PortalSanityChecks < CbrainChecker
     puts "C> Ensuring that userfiles all have a group..."
     #-----------------------------------------------------------------------------
 
-    missing_gid = Userfile.find(:all, :conditions => { :group_id => nil })
+    missing_gid = Userfile.where( :group_id => nil )
     missing_gid.each do |file|
       user   = file.user
       raise "Error: cannot find a user for file '#{file.id}' ?!?" unless user

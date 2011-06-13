@@ -1,10 +1,10 @@
 
 <%
     if current_user.has_role? :admin
-      work_groups  = WorkGroup.find(:all)
+      work_groups  = WorkGroup.all
       invis_groups = InvisibleGroup.all
     elsif current_user.has_role? :site_manager
-      work_groups  = current_user.site.groups.find(:all, :conditions  => {:type  => "WorkGroup"})
+      work_groups  = current_user.site.groups.where( :type  => "WorkGroup" )
       invis_groups = []
     else
       work_groups  = []

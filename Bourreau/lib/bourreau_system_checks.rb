@@ -156,12 +156,12 @@ script when CBRAIN was upgraded.
             :description     => desc,
             :script_prologue => script
          }
-         tc = ToolConfig.find(:first, :conditions => myattributes)
+         tc = ToolConfig.where( myattributes ).first
          if tc
            puts "Exists OK"
            next
          end
-         tc = ToolConfig.new(myattributes)
+         tc = ToolConfig.new( myattributes )
          env_array = []
          env_array << [ "MNI_QUARANTINE_ROOT", CBRAIN::Quarantine_dir ]
          env_array << [ "MNI_CIVET_ROOT",      CBRAIN::CIVET_dir      ] if toolname =~ /civet/i

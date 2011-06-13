@@ -62,7 +62,7 @@ class BourreauxController < ApplicationController
     end
     
     begin
-       tasks = CbrainTask.find(:all, :conditions => { :bourreau_id => @bourreau.id, :user_id => (myusers.map &:id) }, :include => :user )
+       tasks = CbrainTask.where( :bourreau_id => @bourreau.id, :user_id => (myusers.map &:id) ).includes( :user )
     rescue
        tasks = []
     end
@@ -161,7 +161,7 @@ class BourreauxController < ApplicationController
     add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default ] + syms_limit_users )
 
     if old_dp_cache_dir != @bourreau.dp_cache_dir
-      old_ss = SyncStatus.find(:all, :conditions => { :remote_resource_id => @bourreau.id })
+      old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
       old_ss.each do |ss|
         ss.destroy rescue true
       end
@@ -203,7 +203,7 @@ class BourreauxController < ApplicationController
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    tasks_left = CbrainTask.find(:all, :conditions => { :bourreau_id => id }).count
+    tasks_left = CbrainTask.where( :bourreau_id => id ).count
     cb_notice "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy

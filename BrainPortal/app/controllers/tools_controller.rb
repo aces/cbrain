@@ -19,7 +19,7 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @tools     = base_filtered_scope(current_user.available_tools).find(:all, :include  => [:user, :group], :order  => "tools.name")
+    @tools     = base_filtered_scope(current_user.available_tools).includes( [:user, :group] ).order("tools.name")
     
     respond_to do |format|
       format.html # index.html.erb
@@ -37,7 +37,7 @@ class ToolsController < ApplicationController
     bourreau_ids = @tool.bourreaux.map &:id
     @bourreaux   = Bourreau.find_all_accessible_by_user(current_user, :conditions  => {:online  => true, :id => bourreau_ids})
     @bourreaux.reject! do |b|
-      tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => @tool.id, :bourreau_id => b.id })
+      tool_configs = ToolConfig.where( :tool_id => @tool.id, :bourreau_id => b.id )
       ! ( tool_configs.detect { |tc| tc.can_be_accessed_by?(current_user) } ) # need at least one config available for user
     end
     
@@ -157,8 +157,8 @@ class ToolsController < ApplicationController
   end
       
   def tool_management #:nodoc:
-      @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
-      @bourreaux = Bourreau.find(:all)
+      @tools = Tool.includes( [ :bourreaux ] ).order("tools.name")
+      @bourreaux = Bourreau.all
   end
 
 end

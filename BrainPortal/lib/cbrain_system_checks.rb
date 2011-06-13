@@ -137,7 +137,7 @@ class CbrainSystemChecks < CbrainChecker
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."
-      synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => myself.id })
+      synclist = SyncStatus.where( :remote_resource_id => myself.id )
       synclist.each do |ss|
         ss.destroy rescue true
       end

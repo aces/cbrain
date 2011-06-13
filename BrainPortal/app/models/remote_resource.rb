@@ -131,7 +131,7 @@ class RemoteResource < ActiveRecord::Base
   # When a remote resource is destroyed, clean up the SyncStatus table
   def after_destroy
     rr_id = self.id
-    SyncStatus.find(:all, :conditions => { :remote_resource_id => rr_id }).each do |ss|
+    SyncStatus.where( :remote_resource_id => rr_id ).each do |ss|
       ss.destroy rescue true
     end
     true
@@ -368,7 +368,7 @@ class RemoteResource < ActiveRecord::Base
   # to the values of the field +cache_md5+ ). It returns
   # the remote resource object found if successful.
   def self.valid_token?(token)
-    RemoteResource.find(:first, :conditions => { :cache_md5 => token })
+    RemoteResource.where( :cache_md5 => token ).first
   end
 
   # Returns a constant HEX token representing a unique,
@@ -719,7 +719,7 @@ class RemoteResource < ActiveRecord::Base
     userlist.uniq!
 
     CBRAIN::spawn_with_active_records(:admin, "Cache Cleanup") do
-      targetfiles = Userfile.find(:all, :conditions => { :user_id => userlist })
+      targetfiles = Userfile.where( :user_id => userlist )
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil
         next unless syncstatus

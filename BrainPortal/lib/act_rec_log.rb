@@ -340,10 +340,7 @@ module ActRecLog
     myid    = self.id
     myclass = self.class.to_s
     return nil if myid.blank?
-    ActiveRecordLog.find(
-       :first,
-       :conditions => { :ar_id => myid, :ar_class => myclass }
-    )
+    ActiveRecordLog.where( :ar_id => myid, :ar_class => myclass ).first
   end
 
   def active_record_log_find_or_create #:nodoc:

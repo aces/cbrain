@@ -362,7 +362,7 @@ class DataProvidersController < ApplicationController
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
     end
 
-    registered_files = Userfile.find(:all, :conditions => {:data_provider_id => @provider.id}).index_by(&:name)
+    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
@@ -480,7 +480,7 @@ class DataProvidersController < ApplicationController
       # Unregister old files
 
       if do_unreg
-        userfile = Userfile.find(:first, :conditions => { :name => basename, :data_provider_id => provider_id } )
+        userfile = Userfile.where(:name => basename, :data_provider_id => provider_id).first
         unless userfile
           num_skipped += 1
           next
@@ -559,7 +559,7 @@ class DataProvidersController < ApplicationController
 
     # Alright, we need to move or copy the files
     collisions = newly_registered_userfiles.select do |u|
-      found = Userfile.find(:first, :conditions => { :name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id })
+      found = Userfile.where(:name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id).first
       found ? true : false
     end
     to_operate = newly_registered_userfiles - collisions

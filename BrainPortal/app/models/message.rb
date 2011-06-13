@@ -72,16 +72,13 @@ class Message < ActiveRecord::Base
     allusers.each do |user|
 
       # Find or create message object
-      mess = user.messages.find(
-               :first,
-               :conditions => {
-                   :message_type => type,
-                   :header       => header,
-                   :description  => description,
-                   :read         => false,
-                   :critical     => critical 
-               }
-             ) || 
+      mess = user.messages.where(
+               :message_type => type,
+               :header       => header,
+               :description  => description,
+               :read         => false,
+               :critical     => critical 
+             ).first || 
              Message.new(
                :user_id      => user.id,
                :message_type => type,

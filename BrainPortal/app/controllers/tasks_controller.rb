@@ -22,8 +22,9 @@ class TasksController < ApplicationController
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     bourreau_ids = @bourreaux.map &:id
     
+    # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
     if current_project
-      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
+      scope = CbrainTask.where( :group_id => current_project.id )
     else
       scope = current_user.available_tasks
     end
@@ -34,18 +35,24 @@ class TasksController < ApplicationController
     @task_projects = {}
     @task_status   = {}
     
-    header_scope = scope.scoped( :conditions => "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
-    header_scope = header_scope.scoped( :conditions => { :bourreau_id => bourreau_ids })
+    header_scope = scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+    header_scope = header_scope.where( :bourreau_id => bourreau_ids )
 
-    header_scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
-                      :group => "cbrain_tasks.type" ).each { |t| @task_types[t.class.name] = t.count }
-    header_scope.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
-                      :group => "cbrain_tasks.user_id" ).each { |t| @task_owners[t.user] = t.count if t.user }
-    header_scope.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
-                      :group => "cbrain_tasks.group_id" ).each { |t| @task_projects[t.group] = t.count if t.group }
-    header_scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
-                      :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
-    
+    header_scope.select( "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count" ).group("cbrain_tasks.type").each do |t|
+      @task_types[t.class.name] = t.count
+    end
+
+    header_scope.select( "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count" ).group("cbrain_tasks.user_id").each do |t|
+      @task_owners[t.user] = t.count if t.user
+    end
+
+    header_scope.select( "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count" ).group("cbrain_tasks.group_id").each do |t|
+      @task_projects[t.group] = t.count if t.group
+    end
+
+    header_scope.select( "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count" ).group("cbrain_tasks.status").each do |t|
+      @task_status[t.status] = t.count
+    end
     
     scope = base_filtered_scope(scope)
     
@@ -213,7 +220,7 @@ class TasksController < ApplicationController
     # Offer latest accessible tool config as default
     if @task.bourreau_id
       tool = @task.tool
-      toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
+      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
       @task.tool_config = lastest_toolconfig if lastest_toolconfig
@@ -663,9 +670,9 @@ class TasksController < ApplicationController
       site_preset_tasks = []
       unless current_user.site.blank?
         manager_ids = current_user.site.managers.map &:id
-        site_preset_tasks = CbrainTask.find(:all, :conditions => { :status => 'SitePreset', :user_id => manager_ids })
+        site_preset_tasks = CbrainTask.where( :status => 'SitePreset', :user_id => manager_ids )
       end
-      own_preset_tasks = current_user.cbrain_tasks.find(:all, :conditions => { :type => @task.class.to_s, :status => 'Preset' })
+      own_preset_tasks = current_user.cbrain_tasks.where( :type => @task.class.to_s, :status => 'Preset' )
       @own_presets  = own_preset_tasks.collect  { |t| [ t.description, t.id ] }
       @site_presets = site_preset_tasks.collect { |t| [ "#{t.description} (by #{t.user.login})", t.id ] }
       @all_presets = []
@@ -694,7 +701,7 @@ class TasksController < ApplicationController
 
     if commit_button =~ /load preset/i
       preset_id = params[:load_preset_id] # used for delete too
-      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+      if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.restore_untouchable_attributes(old_params, :include_unpresetable => true)
@@ -713,7 +720,7 @@ class TasksController < ApplicationController
 
     if commit_button =~ /delete preset/i
       preset_id = params[:load_preset_id] # used for delete too
-      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+      if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         if preset.user_id == current_user.id
           preset.delete
           flash[:notice] += "Deleted preset '#{preset.description}'.\n"
@@ -733,7 +740,7 @@ class TasksController < ApplicationController
         preset.description = preset_name
       else
         preset_id = params[:save_preset_id]
-        preset    = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+        preset    = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         cb_error "No such preset ID '#{preset_id}'" unless preset
         if preset.user_id != current_user.id
           flash[:error] += "Cannot update a preset that does not belong to you.\n"

@@ -701,10 +701,10 @@ class Userfile < ActiveRecord::Base
   # no SyncStatus object currently exists for the file.
   def local_sync_status(refresh = false)
     @syncstat = nil if refresh
-    @syncstat ||= SyncStatus.find(:first, :conditions => {
+    @syncstat ||= SyncStatus.where(
       :userfile_id        => self.id,
       :remote_resource_id => CBRAIN::SelfRemoteResourceId
-    } )
+    ).first
   end
 
   # Returns whether this userfile's contents has been
@@ -878,13 +878,13 @@ class Userfile < ActiveRecord::Base
   end
   
   def validate_associations
-    unless DataProvider.find(:first, :conditions => {:id => self.data_provider_id})
+    unless DataProvider.where( :id => self.data_provider_id ).first
       errors.add(:data_provider, "does not exist.")
     end
-    unless User.find(:first, :conditions => {:id => self.user_id})
+    unless User.where( :id => self.user_id ).first
       errors.add(:user, "does not exist.")
     end
-    unless Group.find(:first, :conditions => {:id => self.group_id})
+    unless Group.where( :id => self.group_id ).first
       errors.add(:group, "does not exist.")
     end
   end

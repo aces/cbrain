@@ -652,11 +652,11 @@ class DataProvider < ActiveRecord::Base
     return false unless userfile.id # must be a fully saved file
 
     # Find existing destination, if any
-    target_exists = Userfile.find(:first,
-        :conditions => { :name             => new_name,
-                         :data_provider_id => otherprovider.id,
-                         :user_id          => new_user_id
-                       } )
+    target_exists = Userfile.where(
+                      :name             => new_name,
+                      :data_provider_id => otherprovider.id,
+                      :user_id          => new_user_id
+                    ).first
 
     if target_exists
       return true  if target_exists.id == userfile.id  # Same !?! I feel like this is impossible.
@@ -733,11 +733,11 @@ class DataProvider < ActiveRecord::Base
     return false unless userfile.id # must be a fully saved file
 
     # Find existing destination, if any
-    target_exists = Userfile.find(:first,
-        :conditions => { :name             => new_name,
-                         :data_provider_id => otherprovider.id,
-                         :user_id          => new_user_id,
-                       } )
+    target_exists = Userfile.where(
+                      :name             => new_name,
+                      :data_provider_id => otherprovider.id,
+                      :user_id          => new_user_id,
+                    ).first
 
     return true  if target_exists && target_exists.id == userfile.id  # Same !
     return false if target_exists && ! crush

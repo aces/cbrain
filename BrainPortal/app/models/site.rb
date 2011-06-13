@@ -34,7 +34,7 @@ class Site < ActiveRecord::Base
   
   #Returns users that have manager access to this site (site managers or admins).
   def managers
-    self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
+    self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end
   
   #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
@@ -96,7 +96,7 @@ class Site < ActiveRecord::Base
   # Returns the SystemGroup associated with the site; this is a
   # group with the same name as the site.
   def system_group
-    SystemGroup.find(:first, :conditions => { :name => self.name } )
+    SystemGroup.where( :name => self.name ).first
   end
 
   # An alias for system_group()
@@ -191,7 +191,7 @@ class Site < ActiveRecord::Base
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.find(:first, :conditions => {:name => self.name})
+    system_group = SystemGroup.where( :name => self.name ).first
     system_group.destroy if system_group
   end
 end
