@@ -880,63 +880,11 @@ class DataProvider < ActiveRecord::Base
   def site
     @site ||= self.user.site
   end
-
-
-
-  #################################################################
-  # ActiveRecord callbacks
-  #################################################################
-
-  # Ensure that the system will be in a valid state if this data provider is destroyed.
-  def validate_destroy
-    unless self.userfiles.empty?
-      cb_error "You cannot remove a provider that has still files registered on it."
-    end
-  end
-
-
-
-  #################################################################
-  # Implementation-dependant method placeholders
-  # All of these methods MUST be implemented in subclasses.
-  #################################################################
-
-  protected
-
-  def impl_is_alive? #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
-  def impl_sync_to_cache(userfile) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
-  def impl_sync_to_provider(userfile) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
-  def impl_provider_erase(userfile) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
-  def impl_provider_rename(userfile,newname) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
-  def impl_provider_list_all(user=nil) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
   
-  def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
   
-  def impl_provider_readhandle(userfile, *args) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
 
   #################################################################
-  # Internal cache-handling methods
+  # Class-level cache-handling methods
   #################################################################
 
   # Returns (and creates if necessary) a unique key
@@ -956,7 +904,6 @@ class DataProvider < ActiveRecord::Base
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       return @@key          unless @@key.blank?
     end
-
     # Create a key. We MD5 the hostname, the cache root dir
     # and the time. This should be good enough. It will still
     # work even if the directory is moved about or the computer
@@ -964,7 +911,6 @@ class DataProvider < ActiveRecord::Base
     keystring  = Socket.gethostname + "|" + cache_root + "|" + Time.now.to_i.to_s
     md5encoder = Digest::MD5.new
     @@key      = md5encoder.hexdigest(keystring).to_s
-
     # Try to write it back. If the file suddenly has appeared,
     # we ignore our own key and use THAT one instead (race condition).
     begin
@@ -975,12 +921,12 @@ class DataProvider < ActiveRecord::Base
       return @@key
     rescue # Oh? Open write failed? Some other process has created it underneath us.
       if ! File.exist?(key_file)
-        raise "Error: could not create a proper Data Provider Cache Key in file '#{key_file}' !"
+        raise "Error: could not create a proper Data Provider Cache Key in file '#{key_file}'!"
       end
       sleep 2+rand(5) # make sure other process writing to it is done
       @@key = File.read(key_file)
       @@key.gsub!(/\W+/,"") unless @@key.blank?
-      raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}' !" if @@key.blank?
+      raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}'!" if @@key.blank?
       return @@key
     end
   end
@@ -1083,7 +1029,62 @@ class DataProvider < ActiveRecord::Base
   def self.rsync_ignore_patterns #:nodoc:
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
   end
+  
+  
+  #################################################################
+  # ActiveRecord callbacks
+  #################################################################
 
+  # Ensure that the system will be in a valid state if this data provider is destroyed.
+  def validate_destroy
+    unless self.userfiles.empty?
+      cb_error "You cannot remove a provider that has still files registered on it."
+    end
+  end
+  
+
+  #################################################################
+  # Implementation-dependant method placeholders
+  # All of these methods MUST be implemented in subclasses.
+  #################################################################
+
+  protected
+
+  def impl_is_alive? #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  def impl_sync_to_cache(userfile) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  def impl_sync_to_provider(userfile) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  def impl_provider_erase(userfile) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  def impl_provider_rename(userfile,newname) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  def impl_provider_list_all(user=nil) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+  
+  def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+  
+  def impl_provider_readhandle(userfile, *args) #:nodoc:
+    raise "Error: method not yet implemented in subclass."
+  end
+
+  #################################################################
+  # Internal cache-handling methods
+  #################################################################
 
 
   # Returns an array of two subdirectory levels where a file

@@ -165,4 +165,3 @@ Factory.define :message do |message|
 end
 
 
-
