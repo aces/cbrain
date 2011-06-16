@@ -19,7 +19,8 @@ class ScirPbs < Scir
     def update_job_info_cache
       @job_info_cache = {}
       jid = 'Dummy'
-      IO.popen("qstat -f #{Scir.cbrain_config[:default_queue] || ""} 2>/dev/null","r") do |fh|
+      #IO.popen("qstat -f #{Scir.cbrain_config[:default_queue] || ""} 2>/dev/null","r") do |fh|
+      IO.popen("qstat -f 2>/dev/null","r") do |fh|
         fh.readlines.each do |line|
           if line =~ /^Job\s+id\s*:\s*(\S+)/i
             jid = Regexp.last_match[1]
