@@ -736,7 +736,7 @@ class DataProvider < ActiveRecord::Base
     target_exists = Userfile.where(
                       :name             => new_name,
                       :data_provider_id => otherprovider.id,
-                      :user_id          => new_user_id,
+                      :user_id          => new_user_id
                     ).first
 
     return true  if target_exists && target_exists.id == userfile.id  # Same !
