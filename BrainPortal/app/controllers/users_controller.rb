@@ -67,23 +67,23 @@ class UsersController < ApplicationController
     # request forgery protection.
     # uncomment at your own risk
     # reset_session
-    
+    params[:user] ||= {}
     login     = params[:user].delete :login
     role      = params[:user].delete :role
     group_ids = params[:user].delete :group_ids
     site_id   = params[:user].delete :site_id
 
     no_password_reset_needed = params.delete(:no_password_reset_needed) == "1"
-    
+ 
     @user = User.new(params[:user])
-    
+
     if current_user.has_role? :admin
       @user.login     = login     if login
       @user.role      = role      if role
       @user.group_ids = group_ids if group_ids
       @user.site_id   = site_id   if site_id
     end
-    
+
     if current_user.has_role? :site_manager
       @user.login     = login     if login
       @user.group_ids = group_ids if group_ids
@@ -184,9 +184,9 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
     end
-    
+
     @destroyed = false
-        
+ 
     @user.destroy
     @destroyed = true
     respond_to do |format|

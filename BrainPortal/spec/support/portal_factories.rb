@@ -1,5 +1,5 @@
 Factory.define :user do |user|
-  user.full_name             "Bob Brainiac"
+  user.sequence(:full_name)  { |n| "Bob #{n}" }           
   user.sequence(:login)      { |n| "user#{n}" }
   user.sequence(:email)      { |n| "user#{n}@example.com" }
   user.password              "password"
