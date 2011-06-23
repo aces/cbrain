@@ -76,7 +76,7 @@ class Bourreau < RemoteResource
     self.online = true
 
     unless self.has_remote_control_info?
-      self.operation_messages = "Not configrued for remote control."
+      self.operation_messages = "Not configured for remote control."
       return false
     end
 
