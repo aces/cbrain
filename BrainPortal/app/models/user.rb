@@ -50,8 +50,8 @@ class User < ActiveRecord::Base
   validates_length_of       :login,    :within => 3..40
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :case_sensitive => false
-  validate_on_create        :prevent_group_collision
-  validate_on_update        :immutable_login
+  validate                  :prevent_group_collision,    :on => :create
+  validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   
   before_create             :add_system_groups
@@ -170,15 +170,15 @@ class User < ActiveRecord::Base
   #Return the list of groups available to this user based on role.
   def available_groups(options = {})
     if self.has_role? :admin
-      group_scope = Group.scoped(options)
+      group_scope = Group.where(options)
     elsif self.has_role? :site_manager
-      group_scope = Group.scoped(:conditions => ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
-      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])      
+      group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+      group_scope = group_scope.where("groups.name <> 'everyone'")
+      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
     else                  
-      group_scope = self.groups.scoped(options)
-      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
-      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])
+      group_scope = self.groups.where(options)
+      group_scope = group_scope.where("groups.name <> 'everyone'")
+      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
     end
     
     group_scope
@@ -337,7 +337,7 @@ class User < ActiveRecord::Base
   def destroy_user_sessions #:nodoc:
     myid = self.id
     return true unless myid # defensive
-    sessions = Session.all.select do |s|
+    sessions = CbrainSession.all.select do |s|
       (s.user_id && s.user_id == myid) ||
       (s.data && s.data[:user_id] && s.data[:user_id] == myid)
     end

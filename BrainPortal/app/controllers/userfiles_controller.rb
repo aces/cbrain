@@ -179,7 +179,7 @@ class UserfilesController < ApplicationController
     #------------------------------
 
     @user_tags      = current_user.available_tags
-    @user_groups    = current_user.available_groups(:order => "type")
+    @user_groups    = current_user.available_groups.order("type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }

@@ -1,4 +1,4 @@
-<% form_tag :action  => :create_parent_child do %>
+<%= form_tag :action  => :create_parent_child do %>
   <% for file in @userfiles %>
     <%= hidden_field_tag "child_ids[]", file.id %>
   <% end %>

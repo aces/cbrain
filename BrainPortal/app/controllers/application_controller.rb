@@ -23,8 +23,6 @@ class ApplicationController < ActionController::Base
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
   helper        :all # include all helpers, all the time
 
-  filter_parameter_logging :password, :login, :email, :full_name, :role
-
   before_filter :set_cache_killer
   before_filter :check_if_locked
   before_filter :prepare_messages
@@ -90,7 +88,8 @@ class ApplicationController < ActionController::Base
     syszone = myself.time_zone
     return true unless syszone && ActiveSupport::TimeZone[syszone]
     if Time.zone.blank? || Time.zone.name != syszone
-      puts "\e[1;33;41mRESETTING TIME ZONE FROM #{Time.zone.name rescue "unset"} to #{syszone}.\e[0m"
+      #puts "\e[1;33;41mRESETTING TIME ZONE FROM '#{Time.zone.name rescue "unset"}' to '#{syszone}'.\e[0m"
+      Time.zone = ActiveSupport::TimeZone[syszone]
       Rails.configuration.time_zone = syszone
       #Rails::Initializer.new(Rails.configuration).initialize_time_zone
     #else
@@ -290,9 +289,9 @@ class ApplicationController < ActionController::Base
     result = current_user && user && (current_user == user || current_user.role == 'admin' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
   end
   
-  #Returns the current session as a Session object.
+  #Returns the current session as a CbrainSession object.
   def current_session
-    @session ||= Session.new(session, params)
+    @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
   end
   
   #Returns currently active project.
@@ -455,7 +454,7 @@ class ApplicationController < ActionController::Base
       color = options[:color1]
       string = string1
     end
-    return color ? html_colorize(string,color) : string
+    return color ? html_colorize(string,color) : string.html_safe
   end
 
   # Returns a string of text colorized in HTML.
@@ -463,7 +462,7 @@ class ApplicationController < ActionController::Base
   #   <SPAN STYLE="COLOR:color">text</SPAN>
   # The default color is 'red'.
   def html_colorize(text, color = "red", options = {})
-    "<span style=\"color: #{color}\">#{text}</span>"
+    "<span style=\"color: #{color}\">#{text}</span>".html_safe
   end
   
   #Directive to be used in controllers to make

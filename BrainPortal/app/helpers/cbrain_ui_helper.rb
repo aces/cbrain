@@ -28,10 +28,11 @@ module CbrainUiHelper
 
      capture(bar,&block)  #Load content into bar object
 
-     concat("<div #{atts}>")
-     concat(bar.tab_titles)
-     concat(bar.tab_divs)
-     concat("</div>")
+     safe_concat("<div #{atts}>")
+     safe_concat(bar.tab_titles)
+     safe_concat(bar.tab_divs)
+     safe_concat("</div>")
+     ""
    end
   
   ############################################################
@@ -47,7 +48,7 @@ module CbrainUiHelper
     end
     
     def tab_titles
-      "<ul>\n" + @tab_titles + "\n</ul>\n"
+      ("<ul>\n" + @tab_titles + "\n</ul>\n").html_safe
     end
     
  
@@ -65,9 +66,10 @@ module CbrainUiHelper
       #                                       #
       #This can be either a partial or a block#
       #########################################
-      @tab_divs += "<div id=#{name.gsub(/\s+/,'_')}>\n" 
+      @tab_divs += "<div id=#{name.gsub(/\s+/,'_')}>\n"
       @tab_divs += capture.call(&block)
-      @tab_divs += "</div>\n"      
+      @tab_divs += "</div>\n"
+      ""
     end
   end
   
@@ -95,9 +97,10 @@ module CbrainUiHelper
     
     content = capture(AccordionBuilder.new, &block)
     
-    concat("<div #{atts}>")
-    concat(content)
-    concat("</div>")
+    safe_concat("<div #{atts}>")
+    safe_concat(content)
+    safe_concat("</div>")
+    ""
   end
   
   ############################################################
@@ -107,12 +110,13 @@ module CbrainUiHelper
   #############################################################
   class AccordionBuilder
     def section(header, &block)
-      capture = eval("method(:capture)", block.binding)
-      concat = eval("method(:concat)", block.binding)
+      capture     = eval("method(:capture)",     block.binding)
+      safe_concat = eval("method(:safe_concat)", block.binding)
       head = "<h3><a href=\"#\">#{header}</a></h3>"
       body = "<div style=\"display: none\">#{capture.call(&block)}</div>"
-      concat.call(head)
-      concat.call(body)
+      safe_concat.call(head)
+      safe_concat.call(body)
+      ""
     end
   end
   
@@ -129,13 +133,14 @@ module CbrainUiHelper
     
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
-    concat("<div #{atts}>")
-    concat("<span class=\"current_text\">#{initial_text}</span>")
-    concat(form_tag_html(:action  => url_for(url), :class  => "inline_edit_form")) 
-    concat("#{field_label}")
-    concat(text_field_tag(name, initial_value, :class => "inline_edit_input")) 
-    concat("</form>")
-    concat("</div>") 
+    safe_concat("<div #{atts}>")
+    safe_concat("<span class=\"current_text\">#{initial_text}</span>")
+    safe_concat(form_tag_html(:action  => url_for(url), :class  => "inline_edit_form")) 
+    safe_concat("#{field_label}")
+    safe_concat(text_field_tag(name, initial_value, :class => "inline_edit_input")) 
+    safe_concat("</form>")
+    safe_concat("</div>") 
+    ""
   end
   
   #Create a tooltip that displays html when mouseovered.
@@ -153,14 +158,15 @@ module CbrainUiHelper
     
     content = capture(&block) # here, new calls to html_tool_tip can be made.
     
-    concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
-    concat(text)
-    concat("</span>")
+    safe_concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
+    safe_concat(text)
+    safe_concat("</span>")
     
     content_class = options.delete(:tooltip_div_class) || "html_tool_tip"
-    concat("<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">")
-    concat(content)
-    concat("</div>")
+    safe_concat("<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">")
+    safe_concat(content)
+    safe_concat("</div>")
+    ""
   end
   
   #Create an overlay dialog box with a link as the button.
@@ -185,12 +191,13 @@ module CbrainUiHelper
     
     content = capture(&block)
 
-    concat("<#{element} class=\"overlay_dialog\">")
-    concat("<a #{atts}>#{name}</a>")
-    concat("<div class=\"overlay_content\" style=\"display: none;\">")
-    concat(content)
-    concat("</div>")
-    concat("</#{element}>")
+    safe_concat("<#{element} class=\"overlay_dialog\">")
+    safe_concat("<a #{atts}>#{name}</a>")
+    safe_concat("<div class=\"overlay_content\" style=\"display: none;\">")
+    safe_concat(content)
+    safe_concat("</div>")
+    safe_concat("</#{element}>")
+    ""
   end
   
   #Create a button with a drop down menu
@@ -219,13 +226,13 @@ module CbrainUiHelper
     end
 
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
-    concat("<span #{atts}>")
-    concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    concat("<div #{content_id} style=\"display: none\" class=\"drop_down_menu\">")
-    concat(content)
-    concat("</div>")
-    concat("</span>")
-           
+    safe_concat("<span #{atts}>")
+    safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
+    safe_concat("<div #{content_id} ABCD=1 style=\"display: none\" class=\"drop_down_menu\">")
+    safe_concat(content)
+    safe_concat("</div>")
+    safe_concat("</span>")
+    ""
   end
   
 
@@ -244,7 +251,7 @@ module CbrainUiHelper
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button"
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
-    return "<input type=\"submit\" value=\"#{value}\" #{atts} />"
+    return "<input type=\"submit\" value=\"#{value}\" #{atts} />".html_safe
   end
   
   #Create a standard link that requires a confirmation.
@@ -294,7 +301,7 @@ module CbrainUiHelper
     options[:class] +=  " show_toggle"
     
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-    return" <#{element_type} #{atts}>#{text}</#{element_type}>"
+    return " <#{element_type} #{atts}>#{text}</#{element_type}>".html_safe
   end
   
   #Create a checkbox that will select or deselect all checkboxes on the page 
@@ -307,7 +314,7 @@ module CbrainUiHelper
     options["data-checkbox-class"] = checkbox_class
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
     
-    "<input type='checkbox' #{atts}/>"
+    "<input type='checkbox' #{atts}/>".html_safe
   end
   
   #Create a select box with options +select_options+ that will manipulate
@@ -324,6 +331,7 @@ module CbrainUiHelper
     result =  "<select #{atts}>\n"
     result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
     result += "</select>"
+    result.html_safe
   end
   
   ###########################################
@@ -375,9 +383,10 @@ module CbrainUiHelper
     
     initial_content = capture(&block)
     
-    concat("<#{element} #{atts}>") 
-    concat(initial_content)
-    concat("</#{element}>")
+    safe_concat("<#{element} #{atts}>") 
+    safe_concat(initial_content)
+    safe_concat("</#{element}>")
+    ""
   end
   
   #Request some js through ajax to be run on the current page.
@@ -390,7 +399,7 @@ module CbrainUiHelper
     #This builds an html attribute string from the html_opts hash
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
-    "<div #{atts}></div>" 
+    "<div #{atts}></div>".html_safe
   end
   
   #Staggered load elements request their content one at a time.
@@ -410,9 +419,10 @@ module CbrainUiHelper
       initial_content = ""
     end
     
-    concat("<#{element} #{atts}>") 
-    concat(initial_content)
-    concat("</#{element}>")
+    safe_concat("<#{element} #{atts}>") 
+    safe_concat(initial_content)
+    safe_concat("</#{element}>")
+    ""
   end
   
   
@@ -469,10 +479,10 @@ module CbrainUiHelper
     
     initial_content=capture(&block)+((render partial unless !partial) || "")
     
-    concat("<#{element} data-url=\"#{url}\" #{atts}>") 
-    concat(initial_content)
-    concat("</#{element}>")
-    
+    safe_concat("<#{element} data-url=\"#{url}\" #{atts}>") 
+    safe_concat(initial_content)
+    safe_concat("</#{element}>")
+    ""
   end
   
   #Creates a text field that will sends an ajax
@@ -554,7 +564,7 @@ module CbrainUiHelper
     
     options["data-url"] = url
     
-    select_tag(name, option_tags, options)
+    select_tag(name, option_tags.html_safe, options)
   end
   
   #Sort links meant specifically for sorting tables.

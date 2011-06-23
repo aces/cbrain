@@ -257,7 +257,7 @@
       </p>
 
       <p><label>Override maximum number of active tasks per user:</label>
-      <% array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
+      <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
         <% metkey = "task_limit_user_#{user.id}".to_sym %>
         <%= link_to_user_with_tooltip(user) %>:
         </td><td class="no_left_right_padding">

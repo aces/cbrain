@@ -42,7 +42,7 @@ class CbrainTask < ActiveRecord::Base
   # as necessary.
   serialize :params
   
-  named_scope :status, lambda { |s|  
+  scope :status, lambda { |s|  
                          case s.to_sym
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
@@ -62,7 +62,7 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
   
-  named_scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})).current_scoped_methods[:find] }
+  scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})).current_scoped_methods[:find] }
 
   # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current

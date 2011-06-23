@@ -19,8 +19,8 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:    
-    @system_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
-    @work_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @system_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["SystemGroup"] | SystemGroup.descendants.map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @work_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["WorkGroup"] | WorkGroup.descendants.map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
     
     #For new panel
     @group = WorkGroup.new

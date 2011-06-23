@@ -9,7 +9,7 @@
 <p>
    File Format:<br>
    
-      <%= select :data, :type, Userfile.send(:subclasses).sort_by(&:name).map{ |u| [u.pretty_type, u.name] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
+      <%= select :data, :type, Userfile.descendants.sort_by(&:name).map{ |u| [u.pretty_type, u.name] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
    
 </p>
 <p>
@@ -55,7 +55,7 @@
               <% for tag in current_user.available_tags %>
                   <tr class="<%= cycle('list-odd', 'list-even') %>">
                     <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, custom_filter.tags.include?(tag.name)) %></td>
-                    <td><%= h(tag.name) -%></td>
+                    <td><%= tag.name -%></td>
                   </tr>
               <% end %>
             </table>

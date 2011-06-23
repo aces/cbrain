@@ -79,15 +79,15 @@
             <% end %>
           </td>
           <td class="left_align">
-            <% array_to_table(users, :rows => 1, :table_class => 'simple') do |user,r,c| %>
+            <%= array_to_table(users, :rows => 1, :table_class => 'simple') do |user,r,c| %>
               <%
                 user_can_access_tc = tc.can_be_accessed_by?(user)
                 access_ok          = user_can_access_bourreau[user] && user_can_access_tool[user] && user_can_access_tc
               %>
               <% if access_ok %>
-                <%= h user.login %>
+                <%= user.login %>
               <% else %>
-                <% html_tool_tip(html_colorize(user.login)) do %>
+                <%= html_tool_tip(html_colorize(user.login)) do %>
                   <%= "* Execution Server's project<br/>"      unless user_can_access_bourreau[user] %>
                   <%= "* Tool's project<br/>"                  unless user_can_access_tool[user] %>
                   <%= "* Version configuration's project<br/>" unless user_can_access_tc %>

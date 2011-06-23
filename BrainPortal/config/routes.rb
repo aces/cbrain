@@ -1,3 +1,6 @@
+
+# CBRAIN Routing Table
+
 ActionController::Routing::Routes.draw do |map|
 
   # Session
@@ -61,3 +64,4 @@ ActionController::Routing::Routes.draw do |map|
   map.connect "logged_exceptions/:action/:id",    :controller => "logged_exceptions" 
 
 end
+

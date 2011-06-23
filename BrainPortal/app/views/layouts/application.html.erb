@@ -1,14 +1,33 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">
+<%
+
+#
+# CBRAIN Project
+#
+# Main web site layout
+#
+# $Id: application.html.erb 1311 2010-07-28 19:27:07Z prioux $
+#
+
+-%>
 <html>
-<head>
-  <title>BrainPortal</title>
-  <%= stylesheet_link_tag :all %>
-  <%= javascript_include_tag :defaults %>
-  <%= csrf_meta_tag %>
-</head>
-<body>
 
-<%= yield %>
+  <head>
+    <title>CBRAIN <%= yield :title %></title>
+    <link rel="shortcut icon" type="image/giv" href="/images/favicon.gif" />
+    <%= stylesheet_link_tag  "cbrain", "jquery-ui", "macacc", :media => "all" %>
+    <%= javascript_include_tag "tableH" %>
+    <script type="text/javascript" src="/javascripts/o3djs/base.js"></script>
+    <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "processing" %>
+    <%= javascript_include_tag "brainbrowser", "mniobj", "dataset", "macacc_collection", "civet", "thickness" %> 
+    <%= javascript_include_tag "cbrain" %>
+  </head>
 
-</body>
+  <body id="cbrain">     
+    <%= render :partial => 'layouts/section_account' %>
+    <%= render :partial => 'layouts/section_menu'    %>
+    <%= render :partial => 'layouts/section_main'    %>
+    <%= render :partial => 'layouts/section_footer'  %>
+  </body>
+
 </html>

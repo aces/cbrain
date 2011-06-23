@@ -105,10 +105,10 @@ class AdjustTimestampsToUtc < ActiveRecord::Migration
 
   def self.apply_offset(offset)
 
-    models = ActiveRecord::Base.send(:subclasses).select { |c| c.superclass == ActiveRecord::Base }
+    models = ActiveRecord::Base.descendants.select { |c| c.superclass == ActiveRecord::Base }
     models.each do |model|
 
-      next if model.name == 'CGI::Session::ActiveRecordStore::Session'
+      next if model.name == "ActiveRecord::SessionStore::Session"
 
       puts "\n"
       puts "============================================"

@@ -3,9 +3,7 @@
 
 <h1>Launch <%= @task.pretty_name %> Task</h1>
 
-<%
-     form_for(:cbrain_task, @task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder ) do |form|
--%>
+<%= form_for(@task, :name => :cbrain_task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder ) do |form| -%>
 
 <% # Hidden fields -%>
 <%= hidden_field_tag :tool_id, params[:tool_id] %>

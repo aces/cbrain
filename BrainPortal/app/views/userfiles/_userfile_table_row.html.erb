@@ -36,11 +36,11 @@
             if u.available?
               cb = check_box_tag("file_ids[]", u.id.to_s, false)
             else
-              cb = "<input type='checkbox' DISABLED />"
+              cb = "<input type='checkbox' DISABLED />".html_safe
             end
             cb = "<span class=\"format_#{userfile.id}\" style=\"display:none\">#{cb}</span>"
-            link_to_userfile_if_accessible(u,current_user,:name => u.format_name) + " #{cb}"
-          end.join(", ") 
+            link_to_userfile_if_accessible(u,current_user,:name => u.format_name) + " #{cb}".html_safe
+          end.join(", ").html_safe
         %>
       <% end %>
    </td>
@@ -50,7 +50,7 @@
    <% unless @filter_params["details"] == 'off' %>
    <td class="userfiles_details"><%= link_to_user_if_accessible(userfile.user) %></td>
    <td class="userfiles_details">
-      <% html_tool_tip(to_localtime(userfile.created_at,:date), :offset_x => 0, :offset_y => 20) do %>
+      <%= html_tool_tip(to_localtime(userfile.created_at,:date), :offset_x => 0, :offset_y => 20) do %>
         Created: <%= userfile.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %><br/>
         Updated: <%= userfile.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %>
       <% end %>
@@ -58,7 +58,7 @@
    <% end %>
 
    <% if userfile.size != nil %>
-      <td><span title="<%= userfile.size %> bytes"><%= h(userfile.format_size) -%></span></td>
+      <td><span title="<%= userfile.size %> bytes"><%= userfile.format_size -%></span></td>
    <% else %>
      <td><font color="red">unknown</font></td>
    <% end %>

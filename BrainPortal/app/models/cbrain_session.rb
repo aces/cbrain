@@ -26,12 +26,13 @@
 #*Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
 #
 #*Note*: this is not a database-backed model.
-class Session
+class CbrainSession
 
   Revision_info="$Id$"
   
-  def initialize(session, params) #:nodoc:
-    @session = session
+  def initialize(session, params, sess_model) #:nodoc:
+    @session       = session # rails session
+    @session_model = sess_model # active record model that stores the session
     
     @session[:persistent_userfile_ids] ||= {}
 
@@ -43,12 +44,12 @@ class Session
   
   #Mark this session as active in the database.
   def activate
-    @session.model.update_attributes!(:user_id => @session[:user_id], :active => true)
+    @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
   end
   
   #Mark this session as inactive in the database.
   def deactivate
-    @session.model.update_attributes!(:active => false)
+    @session_model.update_attributes!(:active => false)
   end
   
   #Returns the list of currently active users on the system.
@@ -67,7 +68,7 @@ class Session
   end
   
   def self.session_class #:nodoc:
-    CGI::Session::ActiveRecordStore::Session
+     ActiveRecord::SessionStore::Session
   end
 
   def self.all #:nodoc:
@@ -81,14 +82,17 @@ class Session
     
     last_sessions.each do |sess|
       break if entries.size >= n
-      user = User.find(sess.user_id)
+      next  if sess.user_id.blank?
+      user = User.find_by_id(sess.user_id)
+      next unless user
+      sessdata = (sess.data || {}) rescue {}
       entries << {
         :user           => user,
         :active         => sess.active?,
         :last_access    => sess.updated_at,
-        :remote_ip      => sess.data[:guessed_remote_ip],    # can be nil
-        :remote_host    => sess.data[:guessed_remote_host],  # can be nil
-        :raw_user_agent => sess.data[:raw_user_agent],       # can be nil
+        :remote_ip      => sessdata["guessed_remote_ip"],    # can be nil, must be fecthed with string not symbol
+        :remote_host    => sessdata["guessed_remote_host"],  # can be nil, must be fecthed with string not symbol
+        :raw_user_agent => sessdata["raw_user_agent"],       # can be nil, must be fecthed with string not symbol
       }
     end
     
@@ -101,9 +105,9 @@ class Session
   # for tracking no matter what, like the
   # :guessed_remote_host and the :raw_user_agent
   def clear_data!
-    @session.data.each do |k,v|
+    @session.each do |k,v|
       next if [ :guessed_remote_host, :raw_user_agent ].include?(k)
-      @session[k] = nil
+      @session.delete(k)
     end
   end
   
@@ -174,7 +178,7 @@ class Session
   #Hash-like assignment to session attributes.
   def []=(key, value)
     if key == :user_id
-      @session.model.update_attributes!(:user_id => value)
+      @session_model.update_attributes!(:user_id => value)
     end
     @session[key] = value
   end

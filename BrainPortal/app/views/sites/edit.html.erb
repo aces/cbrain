@@ -5,7 +5,7 @@
 
 <div class="generalbox">
 
-  <% form_for(@site) do |f| %>
+  <%= form_for(@site) do |f| %>
 
     <%= f.error_messages %>
 
@@ -47,7 +47,7 @@
       <table class="button_table">
         <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
           <tr>
-            <td class="left_align"><%= h(group.name) -%></td>
+            <td class="left_align"><%= group.name -%></td>
             <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s, @site.groups.include?(group)) %></td>
           </tr>
         <% end %>

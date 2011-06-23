@@ -10,7 +10,7 @@
         <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
       </td>
       <td class="left">
-        <% on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
+        <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
           <% if launch_time %>
             <%= "#{tasks.first.pretty_name} (Batch)" %>
           <% else %>
@@ -31,7 +31,7 @@
         <% if launch_time %>
           <% stat_cnt = tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
           <% report   = stat_cnt.keys.sort.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
-          <%= report %>
+          <%= report.html_safe %>
         <% end %>
       </td>
     </tr>

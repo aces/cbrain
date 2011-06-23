@@ -92,7 +92,7 @@ class ToolsController < ApplicationController
     successes = []
     failures  = ""
 
-    PortalTask.send(:subclasses).map(&:name).sort.each do |tool|
+    PortalTask.descendants.map(&:name).sort.each do |tool|
       next if current_user.available_tools.find_by_cbrain_task_class(tool) # already exists
       @tool = Tool.new(
                   :name               => tool.sub(/^CbrainTask::/, ""),

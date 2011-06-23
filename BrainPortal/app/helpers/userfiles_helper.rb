@@ -12,7 +12,7 @@ module UserfilesHelper
   #current ordering is 'tree view'.
   def tree_view_icon(tree_sort, level)
     if tree_sort == 'on'
-      '&nbsp' * 4 * level + '&#x21b3;'
+      ('&nbsp' * 4 * level + '&#x21b3;').html_safe
     end
   end
   
@@ -79,7 +79,7 @@ module UserfilesHelper
       "<div class=\"display_row\">" +
         "<div class=\"display_cell\">#{previous_typed_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_typed_file_link(@userfile, options.clone)}</div>" +
       "</div>" +
-    "</div>"
+    "</div>".html_safe
   end
   
   #Create a link for object files in a civet collection
@@ -95,7 +95,7 @@ module UserfilesHelper
   
   def data_link(file_name, userfile)
     display_name = Pathname.new(file_name).basename.to_s
-    matched_class = SingleFile.send(:subclasses).unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
+    matched_class = SingleFile.descendants.unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
     if file_name[-4, 4] == ".obj"
       link_to h(display_name), "#", "data-content-url" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content, :collection_file  => file_name), "data-content" => url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :content),
       "class"  => "o3d_link", "data-viewer" =>  "#{display_userfile_path(userfile, :viewer  => "civet_collection/obj_viewer", :apply_div  => false, :collection_file  => file_name)}"
@@ -118,7 +118,7 @@ module UserfilesHelper
   # HTML returned is a green checkmark, and for
   # "Corrupted" it's a red 'x'.
   def status_html_symbol(statkeyword)
-    case statkeyword
+    html = case statkeyword
       when "InSync"
         '<font color="green">&#10003;</font>'
       when "ProvNewer"
@@ -134,16 +134,18 @@ module UserfilesHelper
       else
         '<font color="red">?</font>'
     end
+    html.html_safe
   end
   
   #Create a collapsable "Content" box for userfiles show page.
   def content_viewer(&block)
-    concat('<div id="userfile_contents_display">')
-    concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
-    concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
-    concat(capture(&block))
-    concat('</div>')
-    concat('</div>')
+    safe_concat('<div id="userfile_contents_display">')
+    safe_concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
+    safe_concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
+    safe_concat(capture(&block))
+    safe_concat('</div>')
+    safe_concat('</div>')
+    ""
   end
   
 end

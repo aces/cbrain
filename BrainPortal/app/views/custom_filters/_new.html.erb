@@ -5,7 +5,7 @@
 
 <div class="generalbox">
 
-  <% ajax_form_for :custom_filter, custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
+  <%= ajax_form_for :custom_filter, custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
     <%= hidden_field_tag :filter_class, filter_type %>
     <%= f.error_messages %>
 

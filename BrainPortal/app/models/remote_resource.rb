@@ -68,6 +68,7 @@ class RemoteResource < ActiveRecord::Base
   belongs_to  :group
   has_many    :sync_status
 
+  after_destroy :after_destroy_clean_sync_status
 
 
   ############################################################################
@@ -129,7 +130,7 @@ class RemoteResource < ActiveRecord::Base
   ############################################################################
 
   # When a remote resource is destroyed, clean up the SyncStatus table
-  def after_destroy
+  def after_destroy_clean_sync_status
     rr_id = self.id
     SyncStatus.where( :remote_resource_id => rr_id ).each do |ss|
       ss.destroy rescue true

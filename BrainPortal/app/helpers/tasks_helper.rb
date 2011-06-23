@@ -30,7 +30,7 @@ module TasksHelper
   # Shows a bent-arrow character indented by +level+ 'spaces'
   # (actually, four NBSPs per level)
   def task_tree_view_icon(level)
-    ('&nbsp' * 4 * level) + '&#x21b3;'
+    (('&nbsp' * 4 * level) + '&#x21b3;').html_safe
   end
 
   StatesToColor = {

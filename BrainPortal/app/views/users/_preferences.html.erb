@@ -1,6 +1,6 @@
 <h3>Account preferences for <%= @user.login %></h3>
 
-<% form_tag user_path(@user), :method => :put do %>
+<%= form_tag user_path(@user), :method => :put do %>
   <p>
    <label>Userfiles per page:</label>
    <%= select :meta, :pref_userfiles_per_page, ["25", "50", "75", "100", "200"], :selected => (@user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages ) %>

@@ -1,6 +1,6 @@
 <% @_syncstatus_rr_cache ||= {} %>
 <% @_syncstatus_rr_cache[syncstat.remote_resource_id] ||= syncstat.remote_resource %>
-<% html_tool_tip status_html_symbol(syncstat.status) do %>
+<%= html_tool_tip status_html_symbol(syncstat.status) do %>
   <%= @_syncstatus_rr_cache[syncstat.remote_resource_id].class.to_s + " '" + @_syncstatus_rr_cache[syncstat.remote_resource_id].name + "' : " + status_html_symbol(syncstat.status) + " (" + syncstat.status + ")" %>
   <% if syncstat.status == 'InSync' -%>
     <br>

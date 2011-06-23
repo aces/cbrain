@@ -3,7 +3,7 @@
 
 <% 
  stats = ApplicationController.helpers.gather_filetype_statistics(
-           :users     => @user.available_users,
+           :users     => @user.available_users.all,
            :providers => DataProvider.all
          )
  user_fileclass_count = stats[:user_fileclass_count]
@@ -13,7 +13,7 @@
 
 <%= javascript_tag "var current_options = null;" %>
 
-<h2>Account details for <%= h @user.full_name %></h2>
+<h2>Account details for <%= @user.full_name %></h2>
 
   <div class="display_cell">
 
@@ -40,15 +40,15 @@
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>City:</th>
-       <td><%= h(@user.city) %></td>
+       <td><%= @user.city %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Country:</th>
-        <td><%= h(@user.country) %></td>
+        <td><%= @user.country %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Time Zone:</th>
-       <td><%= h(@user.time_zone || "(Unset)") %></td>
+       <td><%= @user.time_zone || "(Unset)" %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Last Connected:</th>
@@ -73,14 +73,14 @@
   </div>
 
 <div class="display_cell" style="padding: 1em;">
-  <% build_accordion do |acc| %>
-    <% acc.section "Edit Account Info" do %>
+  <%= build_accordion do |acc| %>
+    <%= acc.section "Edit Account Info" do %>
       <%= render :partial => "account_info" %>   
     <% end %>
-    <% acc.section "Change Password" do %>
+    <%= acc.section "Change Password" do %>
       <%= render :partial => "change_password" %>   
     <% end %>
-    <% acc.section "Edit Preferences" do %>
+    <%= acc.section "Edit Preferences" do %>
       <%= render :partial => "preferences" %>   
     <% end %>
   <% end %>
@@ -106,7 +106,7 @@
      <tr class=<%= cycle("list-even", "list-odd") %> >
        <td><%= link_to_group_if_accessible(group) %></td>
        <td><%= group.pretty_category_name(current_user) %></td>
-       <td><% array_to_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+       <td><%= array_to_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
      </tr>
    <% end %>
 
@@ -116,16 +116,12 @@
 
   <P>
 
-  <div class="generalbox">
-
    <%= render :partial => 'layouts/file_counts',
               :locals => { :fileclasses_totcount => fileclasses_totcount,
                            :user_fileclass_count => user_fileclass_count,
                            :user_totcount        => user_totcount
                          }
    %>
-
-  </div>
 
   <P>
 

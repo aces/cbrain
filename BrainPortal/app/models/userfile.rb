@@ -74,15 +74,15 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :level
   attr_accessor           :tree_children
   
-  named_scope             :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
-  named_scope             :file_format, lambda { |f|
-                                          format_filter = Userfile.send(:subclasses).map(&:to_s).find{ |c| c == f }
+  scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
+  scope                   :file_format, lambda { |f|
+                                          format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
                                           format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
                                           format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
                                           {:conditions  => "userfiles.type='#{format_filter}'#{format_ids}"}
                                         }
-  named_scope             :has_no_parent, :conditions => {:parent_id => nil}
-  named_scope             :has_no_child,  lambda {
+  scope                   :has_no_parent, :conditions => {:parent_id => nil}
+  scope                   :has_no_child,  lambda {
                                             all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             { :conditions => "userfiles.id NOT IN (#{all_parents})" }
                                           }
@@ -166,7 +166,7 @@ class Userfile < ActiveRecord::Base
     base_class = SingleFile     if self <= SingleFile
     base_class = FileCollection if self <= FileCollection
     
-    @valid_file_classes = base_class.send(:subclasses).unshift(base_class)
+    @valid_file_classes = base_class.descendants.unshift(base_class)
   end
 
   # Instance version of the class method.
@@ -361,7 +361,7 @@ class Userfile < ActiveRecord::Base
   end
 
   #Converts a filter request sent as a POST parameter from the
-  #Userfile index page into the format used by the Session model
+  #Userfile index page into the format used by the CbrainSession model
   #to store currently active filters.
   def self.get_filter_name(type, term)
     case type

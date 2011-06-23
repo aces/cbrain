@@ -20,7 +20,7 @@ class CustomFiltersController < ApplicationController
 
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
-    unless CustomFilter.send(:subclasses).map(&:name).include?(filter_param)
+    unless CustomFilter.descendants.map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end    
     filter_class  = Class.const_get(filter_param)
@@ -35,7 +35,7 @@ class CustomFiltersController < ApplicationController
   # POST /custom_filters.xml
   def create #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
-    unless CustomFilter.send(:subclasses).map(&:name).include?(filter_param)
+    unless CustomFilter.descendants.map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
     params[:data] ||= {}

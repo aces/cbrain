@@ -3,7 +3,7 @@
 
 <h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
 
-<% form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
+<%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post) do %>
       
   <table class="resource_list" id="dp_browse_table">
     <%= render :partial => 'dp_browse_table' %>

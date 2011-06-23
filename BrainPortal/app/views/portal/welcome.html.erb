@@ -12,10 +12,10 @@
 
       <% if @active_users %>
         <p>
-        <strong>Users currently online:</strong> <% array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
+        <strong>Users currently online:</strong> <%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
         </p>
         <p><strong>Recent activity:</strong></p>
-        <% array_to_table(Session.recent_activity, :table_class => 'simple', :td_class => 'no_wrap', :cols => 1) do |entry,r,c| %>
+        <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :td_class => 'no_wrap', :cols => 1) do |entry,r,c| %>
           <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
           <%= entry[:active] ? "Active" : "Logged out" %>
           <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
@@ -30,12 +30,12 @@
             <br/>
             <small>
               From
-              <% html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
-                <%= h(entry[:remote_ip] || entry[:remote_host]) %>
+              <%= html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
+                <%= entry[:remote_ip] || entry[:remote_host] %>
               <% end %>
               with
-              <% html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
-                <%= h(entry[:raw_user_agent] || 'unknown') %>
+              <%= html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
+                <%= entry[:raw_user_agent] || 'unknown' %>
               <% end %>
             </small>
           <% end %>
@@ -43,8 +43,8 @@
       <% end %>
 
       <br>
-        There are currently <%= Session.count %> entries in the sessions table.<br>
-      <% form_tag home_path do %>
+        There are currently <%= CbrainSession.count %> entries in the sessions table.<br>
+      <%= form_tag home_path do %>
         Clear sessions older than
         <%= select_tag :clear_sessions, options_for_select( [
              [ "One month ago",     1.month.to_i   ],
@@ -56,7 +56,7 @@
       <% end %>
       <br>
 
-      <% form_tag home_path do %>
+      <%= form_tag home_path do %>
         <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
               <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
@@ -95,11 +95,11 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-       <strong>Projects you belong to:</strong>  <% array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
+       <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <% array_to_table(current_user.available_tools.map(&:name).sort, :table_class => 'simple', :td_class => 'no_wrap', :cols => 4) %>
+      <%= array_to_table(current_user.available_tools(:conditions => "category <> 'background'").map(&:name).sort, :table_class => 'simple', :td_class => 'no_wrap', :cols => 4) %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>

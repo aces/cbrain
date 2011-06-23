@@ -4,7 +4,7 @@
     <% if render_for == :index %>
       <%= check_box_tag("message_ids[]", mess.id.to_s, false, :class => 'messlist') %>
       <% unless @show_users.blank? %>
-        ( <%= h(mess.user.login) %> )
+        ( <%= mess.user.login %> )
       <% end %>
     <% end %>
     &nbsp;

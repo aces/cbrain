@@ -18,7 +18,7 @@ module SelectBoxHelper
       body << content_tag(:optgroup, options_for_select(group[1], selected_key), :label => group[0])
     end
   
-    body
+    body.html_safe
   end
   
   #Create a standard user select box for selecting a user id for a form.
@@ -147,7 +147,7 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+      grouped_options = "<option value=\"\">#{blank_label}</option>".html_safe + grouped_options
     end
     
     select_tag parameter_name, grouped_options, select_tag_options
@@ -188,7 +188,7 @@ module SelectBoxHelper
       
       select_tag parameter_name, options, select_tag_options
     else
-      "<strong style=\"color:red\">No Execution Servers Available</strong>"
+      "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe
     end
   end
 

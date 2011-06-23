@@ -501,7 +501,7 @@ class DataProvidersController < ApplicationController
       fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
-        if subtype == "Unset" || (!Userfile.send(:subclasses).map(&:name).include?(subtype))
+        if subtype == "Unset" || (!Userfile.descendants.map(&:name).include?(subtype))
           flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
           num_skipped += 1
           next

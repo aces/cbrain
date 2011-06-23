@@ -47,12 +47,12 @@ module ApplicationHelper
     content = capture(&block)
     
     if message.blank?
-      concat(content)
+      safe_concat(content)
       return
     end
-    concat("<#{element} title='#{message}'>")
-    concat(content)
-    concat("</#{element}>")
+    safe_concat("<#{element} title='#{message}'>")
+    safe_concat(content)
+    safe_concat("</#{element}>")
   end
  
   # Return +content+ only if condition evaluates to true.
@@ -84,11 +84,11 @@ module ApplicationHelper
       params[:controller].to_s == 'sites' &&
       params[:action].to_s == 'show' &&
       params[:id].to_s == current_user.site_id.to_s)
-      'id="selected"'
+      'class="selected"'.html_safe
     elsif(param_controller.to_s == current_item.to_s)
-      'id="selected"'
+      'class="selected"'.html_safe
     else
-      'id="unselected"'
+      'class="unselected"'.html_safe
     end
   end
 
@@ -102,7 +102,7 @@ module ApplicationHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;"
+    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;".html_safe
   end
 
 
@@ -198,7 +198,7 @@ module ApplicationHelper
       end
     end
     
-    icon || ""
+    icon.html_safe
   end
 
 

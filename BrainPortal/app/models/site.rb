@@ -14,7 +14,7 @@ class Site < ActiveRecord::Base
                                                                
   validates_presence_of     :name
   validates_uniqueness_of   :name
-  validate_on_create        :prevent_group_collision
+  validate                  :prevent_group_collision, :on => :create
   
   after_create           :create_system_group
   

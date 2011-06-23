@@ -63,7 +63,7 @@ class ClusterTask < CbrainTask
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
   QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
 
-
+  before_destroy :before_destroy_terminate_and_rm_workdir
 
   ##################################################################
   # Core Object Methods
@@ -786,7 +786,7 @@ class ClusterTask < CbrainTask
   ##################################################################
 
   # All object destruction also implies termination!
-  def before_destroy #:nodoc:
+  def before_destroy_terminate_and_rm_workdir #:nodoc:
     self.terminate rescue true
     self.remove_cluster_workdir
     true

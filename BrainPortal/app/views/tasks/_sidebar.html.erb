@@ -17,11 +17,11 @@
 
 <p/>
 
-<% build_accordion do |acc| %>
-  <% acc.section "Filter Tasks" do %>
+<%= build_accordion do |acc| %>
+  <%= acc.section "Filter Tasks" do %>
     <%= render :partial => 'tasks/filters' %>
   <% end %>
-  <% acc.section "Help" do %>
+  <%= acc.section "Help" do %>
     <%= overlay_ajax_link "Task Info", "/doc/tasks/task_info.html" %>
   <% end %>
 <% end %>

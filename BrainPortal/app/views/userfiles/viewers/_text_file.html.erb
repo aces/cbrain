@@ -6,9 +6,9 @@
 %>
 
 <% if params[:content_viewer] == "off" %>
-  <PRE><%= h(File.read(path)) %></PRE>
+  <PRE><%= File.read(path) %></PRE>
 <% else %>
   <% overlay_content_link "Show Displayable Content", :class => "action_link" do %>
-    <PRE><%= h(File.read(path)) %></PRE>
+    <PRE><%= File.read(path) %></PRE>
   <% end %>
 <% end %>

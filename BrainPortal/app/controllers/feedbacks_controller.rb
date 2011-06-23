@@ -19,6 +19,7 @@ class FeedbacksController < ApplicationController
   # GET /feedbacks.xml
   def index #:nodoc:
     @feedbacks = base_filtered_scope
+    @feedback  = Feedback.new
 
     respond_to do |format|
       format.html # index.html.erb

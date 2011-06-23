@@ -779,12 +779,12 @@ pre {
     color: #555555;
 }
 
-#selected a {
+.selected a {
     background-color: white;
     color: #05A3D6;
 }
 
-#unselected a {
+.unselected a {
     color: white;
 }
 

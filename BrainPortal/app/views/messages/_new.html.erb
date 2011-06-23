@@ -1,12 +1,12 @@
 
-<% ajax_form_for :message, @message, :url => { :action => "create" }, :datatype => "script" do |f| %>
+<%= ajax_form_for :message, @message, :url => { :action => "create" }, :datatype => "script" do |f| %>
 
   <%= f.error_messages %>
   
   <p>
     To users of project: <%= group_select(:group_id,
             {
-              :groups  => current_user.available_groups(:order => :name),
+              :groups  => current_user.available_groups.order(:name),
               :selector => @group_id, # :group_id is not an attribute of Message.
             },
             { :include_blank => true }

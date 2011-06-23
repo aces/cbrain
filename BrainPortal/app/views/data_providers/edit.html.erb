@@ -7,7 +7,7 @@
 
    <%= error_messages_for :provider %>
    
-   <% form_for :data_provider, @provider, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+   <%= form_for :data_provider, @provider, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
       <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
 
@@ -22,8 +22,8 @@
 <table>
   <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
   <% @ssh_keys.each do |pair| %>
-    <tr><th><%= h(pretty_ssh_key(pair[0])) %></th></tr>
-    <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= h(pretty_ssh_key(pair[1])) %></PRE></SMALL></SMALL></td></tr>
+    <tr><th><%= pretty_ssh_key(pair[0]) %></th></tr>
+    <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
   <% end %>
 </table>
 

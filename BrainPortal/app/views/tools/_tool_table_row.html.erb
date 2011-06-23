@@ -1,8 +1,8 @@
 
 <tr class="<%= cycle("list-odd", "list-even") %> row_highlight" id="tool_<%= tool.id %>">
-  <td><%= h tool.name %></td>
+  <td><%= tool.name %></td>
   <td><%= overlay_description(tool.description) %></td>
-  <td><%= h tool.category %></td>
+  <td><%= tool.category %></td>
   <td><%= link_to_user_with_tooltip(tool.user) %>
   <td><%= link_to_group_if_accessible(tool.group) %></td>
   <td class="left">

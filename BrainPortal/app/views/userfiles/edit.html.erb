@@ -11,7 +11,7 @@
   %>
   <br>
 
-<% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
+<%= form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
 
   <%= f.error_messages %>
 
@@ -38,7 +38,7 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Size:</th>
-      <td><%= h(@userfile.format_size) %></td>
+      <td><%= @userfile.format_size %></td>
       <td><% if @userfile.size && @userfile.size >= 1_000 -%>
           = <%= @userfile.size %> bytes
           <% end -%>
@@ -90,7 +90,7 @@
     <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Data Provider:</th>
         <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-      ( <%= h(@userfile.data_provider.class.to_s) %> )
+      ( <%= @userfile.data_provider.class.to_s %> )
         </td>
       <td>
         <% @userfile.sync_status.each do |syncstat| %>
@@ -100,12 +100,12 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
         <th class="right_align">Local Data Provider (cache) path:</th>
-        <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
+        <td colspan="2"><%= @userfile.cache_full_path %></td>
     </tr>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
         <tr class="<%= cycle('list-odd', 'list-even') %>">
             <th class="right_align">Remote SSH Data Provider path:</th>
-            <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+            <td colspan="2"><%= @userfile.data_provider.provider_full_path(@userfile) %></td>
         </tr>
       <% end %>
     <% end %>

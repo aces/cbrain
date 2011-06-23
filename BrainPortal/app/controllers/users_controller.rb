@@ -47,14 +47,6 @@ class UsersController < ApplicationController
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"]) 
     @log                    = @user.getlog()
 
-    stats = ApplicationController.helpers.gather_filetype_statistics(
-              :users     => @user.available_users,
-              :providers => DataProvider.all
-            )
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_totcount        = stats[:user_totcount]
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
