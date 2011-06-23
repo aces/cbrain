@@ -97,7 +97,7 @@ class RemoteResource < ActiveRecord::Base
   # Returns the RemoteResource object representing
   # the current Rails application.
   def self.current_resource
-    self.find(CBRAIN::SelfRemoteResourceId) # not cached; multiple instances of mongrel!
+    RemoteResource.find(CBRAIN::SelfRemoteResourceId) # not cached; multiple instances of mongrel!
   end
 
   # Returns a copy of the Rails DB configuration hash currently

@@ -79,9 +79,10 @@ end
 
 Factory.define :tool do |tool|
   tool.sequence(:name) { |n| "tool_#{n}" }
-  tool.association     :user
-  tool.association     :group
-  tool.category        "scientific tool"
+  tool.association       :user
+  tool.association       :group
+  tool.category          "scientific tool"
+  tool.cbrain_task_class "CbrainTask::Snoozer"
 end
 
 Factory.define :userfile do |userfile|
@@ -156,8 +157,9 @@ end
 
 Factory.define :bourreau do |bourreau|
   bourreau.sequence(:name) { |n| "bourreau_#{n}"}
-  bourreau.association :user
-  bourreau.association :group
+  bourreau.association     :user
+  bourreau.association     :group
+  bourreau.cms_class       "ScirSge"
 end
 
 Factory.define :tool_config do |tool_config|
