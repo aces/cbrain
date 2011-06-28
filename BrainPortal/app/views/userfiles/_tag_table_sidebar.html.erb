@@ -3,7 +3,7 @@
 <%= overlay_ajax_link 'Create Tag', new_tag_path %>
 
 <ul class="filter_menu">
-  <%  current_user.available_tags(:include => :group).each do |tag| %>
+  <%  current_user.available_tags.includes(:group).each do |tag| %>
 
     <li id="tag_<%= tag.id %>" class="tag">
       <%= render :partial => 'tags/tag_li', :locals  => {:tag  => tag} %>

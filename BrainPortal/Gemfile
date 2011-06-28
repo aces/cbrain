@@ -37,4 +37,11 @@ gem "log4r"
 gem "nokogiri"
 gem "mysql"
 gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
+gem "thin"
 
+group :development, :test do
+  gem "test-unit"
+  gem "wirble"
+  gem "looksee"
+  gem "hirb"
+end

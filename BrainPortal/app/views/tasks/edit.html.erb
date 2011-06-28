@@ -3,7 +3,7 @@
 
 <h1>Edit Task <%= @task.pretty_name %></h1>
 
-<%= form_for(@task, :name => :cbrain_task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form| -%>
+<%= form_for(@task, :as => :cbrain_task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form| -%>
 
 <% # Hidden fields -%>
 <%= hidden_field_tag :toolname, @task.name %>

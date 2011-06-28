@@ -2,7 +2,7 @@
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
   <td><%= link_to_user_if_accessible(user) %></td>
   <td class="left"><%= user.full_name %></td>
-  <td><%= auto_link_email_addresses user.email %></td>
+  <td><%= auto_link_email_addresses user.email.html_safe %></td>
   <td><%= user.last_connected_at ? to_localtime(user.last_connected_at,:datetime) : "Unknown" %></td>
   <% groups = user.available_groups.sort{|a, b| a.name.casecmp(b.name)} %>
   <td>

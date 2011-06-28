@@ -37,59 +37,59 @@ class Site < ActiveRecord::Base
     self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end
   
-  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_all(options = {})
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = Userfile.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope
   end
   
-  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_all(options = {})
-    scope = RemoteResource.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = RemoteResource.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope
   end
   
-  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_all(options = {})
-    scope = DataProvider.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = DataProvider.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope
   end
   
-  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_all(options = {})
-    scope = Tool.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = Tool.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope
   end
   
-  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_id(id, options = {})
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = Userfile.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope.find(id)
   end
   
-  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_id(id, options = {})
-    scope = RemoteResource.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = RemoteResource.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope.find(id)
   end
   
-  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_id(id, options = {})
-    scope = DataProvider.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = DataProvider.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope.find(id)
   end
   
-  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_id(id, options = {})
-    scope = Tool.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id])
+    scope = Tool.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] )
     scope.find(id)
   end
   

@@ -58,12 +58,12 @@ class CbrainSession
       ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
     )
     user_ids = active_sessions.map &:user_id
-    scope = User.scoped(options)
-    scope.scoped( :conditions => { :id => user_ids } )
+    scope = User.where(options)
+    scope.where( :id => user_ids )
   end
   
   def self.count(options = {}) #:nodoc:
-    scope = session_class.scoped({})
+    scope = session_class.where(options)
     scope.count
   end
   
@@ -76,7 +76,6 @@ class CbrainSession
   end
   
   def self.recent_activity(n = 10, options = {}) #:nodoc:
-    scope = User.scoped(options)
     last_sessions = session_class.where( "sessions.user_id IS NOT NULL" ).order("sessions.updated_at DESC")
     entries = []
     

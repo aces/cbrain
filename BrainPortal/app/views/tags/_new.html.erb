@@ -2,7 +2,7 @@
 
 <div class="generalbox">
 
-  <%= ajax_form_for :tag, @tag, :url => {:controller  => "tags", :action => "create" }, :datatype  => "script" do |f| %>
+  <%= ajax_form_for @tag, :as => :tag, :url => {:controller  => "tags", :action => "create" }, :datatype  => "script" do |f| %>
     <%= f.error_messages %>
 
     <p>

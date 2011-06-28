@@ -113,9 +113,9 @@
         <th class="right_align">Tags:</th>
         <td colspan="2">
             <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
-            <% overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
+            <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
               <% if current_user.available_tags.count > 0 %>
-                <%= form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
+                <%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
                   <%= hidden_field_tag "file_ids[]", @userfile.id %>
                   <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
                   <select name="tags[]" multiple="multiple" style="width:150px" >

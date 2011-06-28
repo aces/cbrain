@@ -11,7 +11,7 @@
   %>
   <br>
 
-<%= form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
+<%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update }, :html => { :method => :put } do |f| %>
 
   <%= f.error_messages %>
 

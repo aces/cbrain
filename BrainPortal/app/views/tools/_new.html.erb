@@ -1,6 +1,6 @@
 <% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user) %>
 
-<%= ajax_form_for :tool, @tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= ajax_form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
   <p><%= f.submit "Create new tool" %></p>

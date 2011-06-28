@@ -313,7 +313,7 @@ class UserfilesController < ApplicationController
     state = @userfile.local_sync_status
     @sync_status = state.status if state
 
-    @user_groups = current_user.available_groups(:order => "type")
+    @user_groups = current_user.available_groups.order(:type)
 
     @tags = current_user.available_tags
 
@@ -575,7 +575,7 @@ class UserfilesController < ApplicationController
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.available_tags
-        @user_groups = current_user.available_groups(:order => "type")
+        @user_groups = current_user.available_groups.order(:type)
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end

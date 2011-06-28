@@ -190,6 +190,7 @@ module CbrainUiHelper
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
     content = capture(&block)
+    return "" if content.blank?
 
     safe_concat("<#{element} class=\"overlay_dialog\">")
     safe_concat("<a #{atts}>#{name}</a>")

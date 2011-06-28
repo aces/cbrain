@@ -32,7 +32,7 @@
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Email:</th>
-       <td><%= auto_link_email_addresses @user.email %></td>
+       <td><%= auto_link_email_addresses @user.email.html_safe %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Site:</th>

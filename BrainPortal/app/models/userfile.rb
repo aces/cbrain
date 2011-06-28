@@ -390,18 +390,18 @@ class Userfile < ActiveRecord::Base
       type, term = filter.split(':')
       case type
       when 'name'
-        scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{term}%"])
+        scope = scope.where( ["(userfiles.name LIKE ?)", "%#{term}%"] )
       when 'custom'
         custom_filter = UserfileCustomFilter.find_by_name(term)
         scope = custom_filter.filter_scope(scope)
       when 'file'
         case term
         when 'cw5'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
+          scope = scope.where( ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
         when 'flt'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.flt"])
+          scope = scope.where( ["(userfiles.name LIKE ?)", "%.flt"])
         when 'mls'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.mls"])
+          scope = scope.where( ["(userfiles.name LIKE ?)", "%.mls"])
         end
       end
     end
@@ -523,7 +523,7 @@ class Userfile < ActiveRecord::Base
   #Note: Requires that the +users+ table be joined, either
   #of the <tt>:join</tt> or <tt>:include</tt> options.
   def self.restrict_site_on_query(user, scope)
-    scope.scoped(:conditions => ["(users.site_id = ?)", user.site_id])
+    scope.where( ["(users.site_id = ?)", user.site_id])
   end
 
   #Set the attribute by which to sort the file list
@@ -629,14 +629,14 @@ class Userfile < ActiveRecord::Base
     access_options[:access_requested] = options.delete :access_requested
     
     scope = Userfile.scoped(options)
-    scope = scope.scoped(:conditions => ["userfiles.id > ?", self.id], :order => "id")
+    scope = scope.where( ["userfiles.id > ?", self.id], :order => "id")
     unless user.has_role?(:admin)
       scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
 
     file = scope.first
     if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id > ?", self.id]).first
+      site_file = user.site.userfiles_find_all(options).where( ["userfiles.id > ?", self.id]).first
       if !file || (site_file && site_file.id < file.id)
         file = site_file 
       end
@@ -650,14 +650,14 @@ class Userfile < ActiveRecord::Base
     access_options[:access_requested] = options.delete :access_requested
     
     scope = Userfile.scoped(options)
-    scope = scope.scoped(:conditions => ["userfiles.id < ?", self.id], :order => "id")
+    scope = scope.where( ["userfiles.id < ?", self.id], :order => "id")
     unless user.has_role?(:admin)
       scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
 
     file = scope.last
     if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id < ?", self.id]).last
+      site_file = user.site.userfiles_find_all(options).where( ["userfiles.id < ?", self.id]).last
       if !file || (site_file && site_file.id < file.id)
         file = site_file 
       end

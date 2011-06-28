@@ -172,7 +172,8 @@ class User < ActiveRecord::Base
     if self.has_role? :admin
       group_scope = Group.where(options)
     elsif self.has_role? :site_manager
-      group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+      group_scope = Group.where(options)
+      group_scope = group_scope.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
       group_scope = group_scope.where("groups.name <> 'everyone'")
       group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
     else                  
@@ -185,27 +186,27 @@ class User < ActiveRecord::Base
   end
   
   def available_tags(options = {})
-    Tag.scoped(options).scoped(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids])
+    Tag.where(options).where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
   
   def available_tasks(options = {})
     if self.has_role? :admin
-      CbrainTask.scoped(options)
+      CbrainTask.where(options)
     elsif self.has_role? :site_manager
-      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids] )
     else
-      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids])
+      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
     end
   end
   
   #Return the list of users under this user's control based on role.
   def available_users(options = {})
     if self.has_role? :admin
-      user_scope = User.scoped(options)
+      user_scope = User.where(options)
     elsif self.has_role? :site_manager
-      user_scope = self.site.users.scoped(options)
+      user_scope = self.site.users.where(options)
     else
-      user_scope = User.scoped(:conditions => {:id => self.id}).scoped(options)
+      user_scope = User.where( :id => self.id ).where(options)
     end
     
     user_scope

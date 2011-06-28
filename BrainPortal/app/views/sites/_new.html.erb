@@ -1,5 +1,5 @@
 
-<%= ajax_form_for :site, @site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= ajax_form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <%= f.error_messages %>
 

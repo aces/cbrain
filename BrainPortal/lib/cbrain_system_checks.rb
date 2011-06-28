@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Runtime system checks common to borth Portal and Bourreau
+# Runtime system checks common to both Portal and Bourreau
 #
 # $Id$
 #

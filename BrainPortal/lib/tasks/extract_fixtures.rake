@@ -1,5 +1,5 @@
 #Code from 'Rails Recipes' by Chad Fowler
-require 'yaml/encoding' 
+#require 'yaml/encoding' 
 class String 
   alias :old_to_yaml :to_yaml 
   def to_yaml(opts = {}) 

@@ -1,6 +1,6 @@
 
 
-<%= ajax_form_for :bourreau, @bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
    <%= f.error_messages %>
 

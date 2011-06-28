@@ -72,6 +72,7 @@ module UserfilesHelper
   end
   
   def file_link_table(userfile, options = {})
+    (
     "<div class=\"display_table\" style=\"width:100%\">" +
       "<div class=\"display_row\">" +
         "<div class=\"display_cell\">#{previous_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_file_link(@userfile, options.clone)}</div>" + 
@@ -79,7 +80,8 @@ module UserfilesHelper
       "<div class=\"display_row\">" +
         "<div class=\"display_cell\">#{previous_typed_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_typed_file_link(@userfile, options.clone)}</div>" +
       "</div>" +
-    "</div>".html_safe
+    "</div>"
+    ).html_safe
   end
   
   #Create a link for object files in a civet collection

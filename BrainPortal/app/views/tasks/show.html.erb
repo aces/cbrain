@@ -133,8 +133,8 @@
       
       <tr class="<%= cycle('list-odd', 'list-even') %>">
          <td class="property_list_details" colspan="2">
-         <% build_tabs do |tb| %>
-           <% tb.tab("Summary") do %>
+         <%= build_tabs do |tb| %>
+           <%= tb.tab("Summary") do %>
              <% begin %>
                <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params => @task.params } %>
              <% rescue ActionView::MissingTemplate %>
@@ -144,7 +144,7 @@
                <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
              <% end %>
            <% end %>
-           <% tb.tab("Raw") do %>
+           <%= tb.tab("Raw") do %>
              <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
            <% end %>
          <% end %>
@@ -206,15 +206,15 @@
 
       <tr>
         <td class="property_list_details" colspan="2">
-          <% build_tabs do |tb| %>
-            <% tb.tab("Standard Out") do %>
+          <%= build_tabs do |tb| %>
+            <%= tb.tab("Standard Out") do %>
               <pre class="standard_out"><%= prettystdout -%></pre>
             <% end %>
-            <% tb.tab("Standard Error") do %>
+            <%= tb.tab("Standard Error") do %>
               <pre class="standard_out"><%= prettystderr -%></pre>
             <% end %>
             <% if current_user.has_role?(:admin) %>
-              <% tb.tab("Script") do %>
+              <%= tb.tab("Script") do %>
                 <pre class="script_preview"><%= prettyscript %></pre>
               <% end %>
             <% end %>

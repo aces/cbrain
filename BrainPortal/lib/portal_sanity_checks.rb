@@ -239,6 +239,24 @@ class PortalSanityChecks < CbrainChecker
   
 
 
+  # ToolConfigs must belong to a group or everyone
+  def self.ensure_that_all_toolconfigs_have_a_group
+    
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring that toolconfigs all gave a group..."
+    #-----------------------------------------------------------------------------
+
+    everyone_group = Group.find_by_name("everyone")
+    missing_gid    = ToolConfig.where( :group_id => nil )
+    missing_gid.each do |tc|
+      tc.group_id = everyone_group.id
+      tc.save!
+    end
+
+  end
+
+
+
   #Makes sure that the portal is registered as a remote ressource or adds it
   def self.ensure_that_rails_app_is_a_remote_resource
 

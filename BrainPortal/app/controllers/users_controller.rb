@@ -24,7 +24,7 @@ class UsersController < ApplicationController
     
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
-    @users = base_filtered_scope current_user.available_users(:include => [:groups, :site], :order  => sort_order )
+    @users = base_filtered_scope current_user.available_users.includes( [:groups, :site] ).order( sort_order )
     
     #For the 'new' panel
     @user = User.new

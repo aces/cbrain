@@ -75,37 +75,37 @@ class UserfileCustomFilter < CustomFilter
       term = '%' + term
     end
     
-    scope.scoped(:conditions  => ["#{query}", term])
+    scope.where( ["#{query}", term] )
   end
   
   #Return +scope+ modified to filter the Userfile entry's creation date.
   def scope_date(scope)
-    scope.scoped(:conditions  => ["DATE(userfiles.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["date_term"]])
+    scope.where( ["DATE(userfiles.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["date_term"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's size.
   def scope_size(scope)
-    scope.scoped(:conditions  => ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_i * 1000)])
+    scope.where( ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_i * 1000)])
   end
   
   #Return +scope+ modified to filter the Userfile entry's owner.
   def scope_user(scope)
-    scope.scoped(:conditions  => ["userfiles.user_id = ?", self.data["user_id"]])
+    scope.where( ["userfiles.user_id = ?", self.data["user_id"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's group ownership.
   def scope_group(scope)
-    scope.scoped(:conditions  => ["userfiles.group_id = ?", self.data["group_id"]])
+    scope.where( ["userfiles.group_id = ?", self.data["group_id"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's data provider.
   def scope_dp(scope)
-    scope.scoped(:conditions  => ["userfiles.data_provider_id = ?", self.data["data_provider_id"]])
+    scope.where( ["userfiles.data_provider_id = ?", self.data["data_provider_id"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's type.
   def scope_type(scope)
-    scope.scoped(:conditions  => {:type  =>  self.data["type"]})
+    scope.where( :type  =>  self.data["type"] )
   end
   
 end

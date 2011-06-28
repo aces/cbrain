@@ -20,7 +20,7 @@
 
   <p>
 
-   <%= form_for :tool_config, @tool_config, :url => { :controller => :tool_configs, :action => :update, :id => (@tool_config.id || "NEW") }, :html  => { :method  => :put } do |f| %>
+   <%= form_for @tool_config, :as => :tool_config, :url => { :controller => :tool_configs, :action => :update, :id => (@tool_config.id || "NEW") }, :html  => { :method  => :put } do |f| %>
      <%= f.error_messages %>
 
      <%= render :partial => 'form_fields', :locals => { :f => f } %>

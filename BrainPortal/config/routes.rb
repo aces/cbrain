@@ -24,7 +24,7 @@ ActionController::Routing::Routes.draw do |map|
                                  :collection => { :request_password => :get,
                                                   :send_password    => :post }
 
-  map.resources :groups,         :member     => { :switch           => :post }
+  map.resources :groups,         :member     => { :switch           => :get }
 
   map.resources :bourreaux,      :member     => { :start => :post, :stop => :post, :row_data  => :get },
                                  :collection => { :refresh_ssh_keys => :post, :load_info => :get } 
