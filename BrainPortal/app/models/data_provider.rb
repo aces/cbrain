@@ -185,7 +185,7 @@ require 'digest/md5'
 # * Group
 class DataProvider < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
 

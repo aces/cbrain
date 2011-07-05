@@ -56,9 +56,9 @@ class SshMaster
 
   include Sys  # for ProcTable
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
-  CONTROL_SOCKET_DIR_1 = (self.const_get('RAILS_ROOT') rescue nil) ? "#{RAILS_ROOT}/tmp/sockets" : "/tmp"
+  CONTROL_SOCKET_DIR_1 = (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
 
   # Internal timing limits; conservative enough and should not need to be changed.

@@ -12,7 +12,7 @@
 #
 class IncomingVaultSshDataProvider < VaultSshDataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def is_browsable? #:nodoc:
     true

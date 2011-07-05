@@ -11,7 +11,7 @@
 
 class CbrainTransitionException < StandardError
 
-   Revision_info="$Id$"
+   Revision_info=CbrainFileRevision[__FILE__]
 
    attr_accessor :original_object, :from_state, :to_state, :found_state
 

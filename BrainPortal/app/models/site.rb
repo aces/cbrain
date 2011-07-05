@@ -10,7 +10,7 @@
 
 class Site < ActiveRecord::Base
   
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
                                                                
   validates_presence_of     :name
   validates_uniqueness_of   :name

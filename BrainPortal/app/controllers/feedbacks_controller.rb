@@ -13,7 +13,7 @@
 class FeedbacksController < ApplicationController
   before_filter :login_required
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   # GET /feedbacks
   # GET /feedbacks.xml
@@ -89,7 +89,6 @@ class FeedbacksController < ApplicationController
   # DELETE /feedbacks/1.xml
   def destroy #:nodoc:
     @feedback = Feedback.find(params[:id])
-    @destroyed = @feedback.destroy
 
     respond_to do |format|
       format.html { redirect_to(feedbacks_url) }

@@ -3,7 +3,7 @@
 
 module TableMakerHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Renders an +array+ into a 2D table. This method is
   # useful when the +array+ contains a set of elements all

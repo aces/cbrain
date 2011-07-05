@@ -19,7 +19,7 @@
 #* User
 class Feedback < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   belongs_to :user
   validates_presence_of     :details, :summary

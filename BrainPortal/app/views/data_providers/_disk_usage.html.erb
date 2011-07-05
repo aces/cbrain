@@ -43,14 +43,14 @@
             
             <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text">
               <%= 
-                filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;"),
+                filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe,
                                   :controller => :userfiles,
                                   :filters => filters,
                                   :ajax => false
               %>
               <BR>
               <%= 
-                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;"),
+                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;").html_safe,
                                   :controller => :userfiles,
                                   :filters => filters,
                                   :ajax => false
@@ -58,17 +58,17 @@
               <% if cell[:unknowns] > 0 %>
                 <BR>
                 <%= 
-                  filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;"),
+                  filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;").html_safe,
                                     :controller => :userfiles,
                                     :filters => filters,
                                     :ajax => false
                 %>
               <% end %>
             </td>
-          <% end %>    <% # end column iteration -%>
+          <% end %>    <%# end column iteration %>
 
       </tr>
-    <% end %>    <% # end row iteration -%>
+    <% end %>    <%# end row iteration %>
 
   </table>
    
@@ -138,9 +138,9 @@
               <% end %>
             </td>
 
-          <% end %>    <% # end column iteration -%>
+          <% end %>    <%# end column iteration %>
       </tr>
-    <% end %>    <% # end row iteration -%>
+    <% end %>    <%# end row iteration %>
 
     <tr>
       <th COLSPAN="<%= 1+@report_rrs.size %>">

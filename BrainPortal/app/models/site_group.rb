@@ -13,6 +13,6 @@
 # of a Site.
 class SiteGroup < SystemGroup
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
 end

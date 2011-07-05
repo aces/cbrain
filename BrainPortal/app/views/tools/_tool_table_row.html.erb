@@ -34,13 +34,13 @@
 
   <td>
     <% help_path = "/doc/tasks/#{tool_plain_name}_options.html" %>
-    <% if File.exist?( RAILS_ROOT + "/public" + help_path ) %>
+    <% if File.exist?( Rails.root.to_s + "/public" + help_path ) %>
       <%= overlay_ajax_link "Help", help_path %>
     <% end %>
   </td>
   <td>
     <% info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html" %>
-    <% if File.exist?( RAILS_ROOT + "/public" + info_path ) %>
+    <% if File.exist?( Rails.root.to_s + "/public" + info_path ) %>
       <%= overlay_ajax_link "Info", info_path %>
     <% end %>
   </td>

@@ -14,7 +14,7 @@ require 'fileutils'
 #RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available
 
@@ -272,7 +272,7 @@ class UserfilesController < ApplicationController
     elsif viewer_name =~ /[\w\/]+/
       viewer_path = viewer_name.split("/")
       viewer_name = viewer_path.pop
-      if File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
+      if File.exists?(Rails.root.to_s + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
         @partial = viewer_path.push(viewer_name).join("/")
       end
     end
@@ -668,7 +668,7 @@ class UserfilesController < ApplicationController
     
     @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
     partial_base = "userfiles/quality_control/"
-    if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
+    if File.exists?(Rails.root.to_s + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
       @partial = partial_base + @userfile.class.name.underscore
     else
       @partial = partial_base + "default"

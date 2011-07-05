@@ -13,7 +13,7 @@
 #A subclass of ClusterTask to run diagnostics.
 class CbrainTask::Diagnostics < ClusterTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Overrides the default addlog() method such that each
   # log entry is also sent to STDOUT.

@@ -13,7 +13,7 @@
 
 class Scir
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Returns the full revision info string as created by SVN;
   # the value returned is for the current class or subclass.

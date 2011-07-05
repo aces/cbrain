@@ -26,11 +26,11 @@ require 'socket'
 
 class PortalSanityChecks < CbrainChecker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #Checks to see if the validation was run since last change
   def self.done?
-    if SanityCheck.find_by_revision_info(Revision_info)
+    if SanityCheck.find_by_revision_info(Revision_info.to_s)
       true
     else
       false
@@ -50,7 +50,7 @@ class PortalSanityChecks < CbrainChecker
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
       puts "C> \t- Adding new sanity check record."
-      SanityCheck.new(:revision_info => Revision_info).save! #Adding new SanityCheck record
+      SanityCheck.new(:revision_info => Revision_info.to_s).save! #Adding new SanityCheck record
       
       #-----------------------------------------------------------------------------
       # Rescue: for the cases when the Rails application is started as part of

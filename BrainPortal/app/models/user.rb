@@ -37,7 +37,7 @@ require 'digest/sha1'
 #                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:

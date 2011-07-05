@@ -36,7 +36,7 @@ require 'set'
 #
 class Userfile < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   Default_num_pages = "50"
 
@@ -506,11 +506,11 @@ class Userfile < ActiveRecord::Base
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
         
     if access_requested.to_sym == :read
-      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
-                                            user.id, user.group_ids, data_provider_ids])
+      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
+                                            user.id, user.group_ids, data_provider_ids] )
     else
-      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
-                                            user.id, user.group_ids, data_provider_ids])
+      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
+                                            user.id, user.group_ids, data_provider_ids] )
     end
     
     scope
@@ -623,47 +623,36 @@ class Userfile < ActiveRecord::Base
   ##############################################
   # Sequential traversal methods.
   ##############################################
-  
-  def next_available_file(user, options = {})
+
+  def available_files(user, options = {}) # should be in user model ?
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
-    
-    scope = Userfile.scoped(options)
-    scope = scope.where( ["userfiles.id > ?", self.id], :order => "id")
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+
+    if user.has_role? :site_manager
+      scope = user.site.userfiles_find_all
+    else
+      scope = user.userfiles
     end
 
-    file = scope.first
-    if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).where( ["userfiles.id > ?", self.id]).first
-      if !file || (site_file && site_file.id < file.id)
-        file = site_file 
-      end
-    end
-    
-    file
+    scope = scope.where( options[:conditions] ) if options[:conditions] # old API
+    scope = scope.joins( options[:joins]      ) if options[:joins] # old API
+    scope = scope.order('userfiles.id')
+
+    #unless user.has_role?(:admin)
+    #  scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+    #end
+
+    scope
+  end
+  
+  def next_available_file(user, options = {})
+    scope = available_files(user, options)
+    scope.where( ["userfiles.id > ?", self.id] ).first
   end
 
   def previous_available_file(user, options = {})
-    access_options = {}
-    access_options[:access_requested] = options.delete :access_requested
-    
-    scope = Userfile.scoped(options)
-    scope = scope.where( ["userfiles.id < ?", self.id], :order => "id")
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    end
-
-    file = scope.last
-    if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).where( ["userfiles.id < ?", self.id]).last
-      if !file || (site_file && site_file.id < file.id)
-        file = site_file 
-      end
-    end
-    
-    file
+    scope = available_files(user, options)
+    scope.where( ["userfiles.id < ?", self.id] ).last
   end
   
   ##############################################

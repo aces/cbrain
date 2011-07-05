@@ -3,7 +3,7 @@
 
 module TasksHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Given a plain name for a task's private partial, such
   # as 'my_stuff' or :my_stuff, will return a full path

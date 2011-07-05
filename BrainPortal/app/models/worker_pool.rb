@@ -23,7 +23,7 @@
 #
 class WorkerPool
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # The array of workers in the pool.
   attr_accessor :workers #TODO: read only?

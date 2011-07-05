@@ -15,7 +15,7 @@
 # and more efficient EnCbrainLocalDataProvider will be used.
 class EnCbrainSmartDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include SmartDataProviderInterface
 

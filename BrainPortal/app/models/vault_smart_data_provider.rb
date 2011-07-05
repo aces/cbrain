@@ -15,7 +15,7 @@
 # and more efficient VaultLocalDataProvider will be used.
 class VaultSmartDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include SmartDataProviderInterface
 

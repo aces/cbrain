@@ -12,7 +12,7 @@
 #A subclass of PortalTask to launch diagnostics.
 class CbrainTask::Diagnostics < PortalTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   validate :validate_input_fields
 

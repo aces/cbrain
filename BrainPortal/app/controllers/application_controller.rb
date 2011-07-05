@@ -10,19 +10,20 @@
 # session.
 
 require 'authenticated_system'
-#require 'exception_loggable' 
+require 'exception_logger' 
 
 class ApplicationController < ActionController::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include AuthenticatedSystem
-#  include ExceptionLoggable
+  include ExceptionLogger::ExceptionLoggable
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
   helper        :all # include all helpers, all the time
 
+  before_filter :always_activate_session
   before_filter :set_cache_killer
   before_filter :check_if_locked
   before_filter :prepare_messages
@@ -80,6 +81,11 @@ class ApplicationController < ActionController::Base
     filtered_scope
   end
 
+  def always_activate_session
+    session[:cbrain_toggle] = (1 - (session[:cbrain_toggle] || 0))
+    true
+  end
+
   # This method adjust the Rails app's time zone in the rare
   # cases where the admin has changed it in the DB using the
   # interface.
@@ -90,7 +96,7 @@ class ApplicationController < ActionController::Base
     if Time.zone.blank? || Time.zone.name != syszone
       #puts "\e[1;33;41mRESETTING TIME ZONE FROM '#{Time.zone.name rescue "unset"}' to '#{syszone}'.\e[0m"
       Time.zone = ActiveSupport::TimeZone[syszone]
-      Rails.configuration.time_zone = syszone
+      CbrainRailsPortal::Application.config.time_zone = syszone
       #Rails::Initializer.new(Rails.configuration).initialize_time_zone
     #else
     #  testtime = Userfile.first.created_at
@@ -107,7 +113,7 @@ class ApplicationController < ActionController::Base
   def activate_user_time_zone #:nodoc:
     return yield unless current_user # nothing to do if no user logged in
     userzone = current_user.time_zone
-    return yield unless userzone && ActiveSupport::TimeZone[userzone] # nothing to do if no user zone or zone is incorrent
+    return yield unless userzone && ActiveSupport::TimeZone[userzone] # nothing to do if no user zone or zone is incorrect
     return yield if Time.zone && Time.zone.name == userzone # nothing to do if user's zone is same as system's
     Time.use_zone(ActiveSupport::TimeZone[userzone]) do
       yield
@@ -185,11 +191,11 @@ class ApplicationController < ActionController::Base
     begin
       yield
     rescue ActiveRecord::RecordNotFound => e
-      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
+      raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
     rescue ActionController::UnknownAction => e
-      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
+      raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The page you requested does not exist."
       redirect_to default_redirect
     rescue CbrainException => cbm
@@ -204,10 +210,10 @@ class ApplicationController < ActionController::Base
         format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
       end
     rescue => e
-      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
+      raise e if Rails.env == 'development' #Want to see stack trace in dev.
       
-      Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       log_exception(e)
+      Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
       redirect_to default_redirect
       return
@@ -309,7 +315,7 @@ class ApplicationController < ActionController::Base
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
     respond_to do |format|
-      format.html { render(:file => (RAILS_ROOT + '/public/' + status.to_s + '.html'), :status  => status) }
+      format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s + '.html'), :status  => status) }
       format.xml  { head status }
     end 
   end
@@ -554,7 +560,7 @@ end
 
 # Patch: Load all models so single-table inheritance works properly.
 begin
-  Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+  Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
     Dir.glob("*.rb").each do |model|
       model.sub!(/.rb$/,"")
       require_dependency "#{model}.rb" unless Object.const_defined? model.classify
@@ -562,7 +568,7 @@ begin
   end
   
   #Load userfile file types
-  Dir.chdir(File.join(RAILS_ROOT, "app", "models", "userfiles")) do
+  Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
     Dir.glob("*.rb").each do |model|
       model.sub!(/.rb$/,"")
       require_dependency "#{model}.rb" unless Object.const_defined? model.classify
@@ -578,16 +584,3 @@ rescue => error
   end
 end
 
-#LoggedExceptionsController.class_eval do
-#  # set the same session key as the app
-#  session :session_key => Rails.configuration.action_controller[:session][:session_key]
-#  
-#  include AuthenticatedSystem
-#
-#  protect_from_forgery :secret => Rails.configuration.action_controller[:session][:secret]
-#
-#  before_filter :login_required, :admin_role_required
-#
-#  # optional, sets the application name for the rss feeds
-#  self.application_name = "BrainPortal"
-#end

@@ -1,7 +1,7 @@
 #UI helpers
 module CbrainUiHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #Create tab bars in the interface.
   #Content is provided with a block.

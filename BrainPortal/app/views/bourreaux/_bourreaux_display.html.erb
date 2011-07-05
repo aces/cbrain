@@ -43,7 +43,7 @@
 
   <% for bour in @bourreaux %>
     <% if bour.is_a?(Bourreau) && bour.online? %>
-      <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
+      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
                            :id             => "bourreau_#{bour.id}",
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}", 
                            :error_message  => "<td colspan=\"#{numcol}\" class=\"loading_message\">Information for '#{bour.name}' unavailable</td>" do %>

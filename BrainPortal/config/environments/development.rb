@@ -24,3 +24,21 @@ CbrainRailsPortal::Application.configure do
   config.action_dispatch.best_standards_support = :builtin
 end
 
+
+CbrainRailsPortal::Application.config.after_initialize do
+
+  LoggedExceptionsController.class_eval do
+    # set the same session key as the app
+    #session :session_key => CbrainRailsPortal::Application.config.secret_token
+
+    include AuthenticatedSystem
+
+    protect_from_forgery :secret => CbrainRailsPortal::Application.config.secret_token
+
+    before_filter :login_required, :admin_role_required
+
+    # optional, sets the application name for the rss feeds
+    self.application_name = "BrainPortal"
+  end
+
+end

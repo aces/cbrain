@@ -56,7 +56,7 @@ require 'cbrain_exception'
 #Instructions in the files themselves will indicate how to integrate your task into the system.
 class ClusterTask < CbrainTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # These basenames might get modified with suffixes appended to them.
   QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{id}.sh"
@@ -421,7 +421,7 @@ class ClusterTask < CbrainTask
   def supplemental_cbrain_tool_config_init #:nodoc:
     "\n" +
     "# CBRAIN Bourreau-side initializations\n" +
-    "export PATH=\"#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH\"\n"
+    "export PATH=\"#{Rails.root.to_s + "/vendor/cbrain/bin"}:$PATH\"\n"
   end
 
 

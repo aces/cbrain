@@ -1,15 +1,16 @@
 
-<% info        = bour.info            %>
-<% diskrev     = info.lc_rev;             diskrev = "????" if diskrev == "???" %>
-<% runrev      = info.starttime_revision; runrev  = "????" if runrev  == "???" %>
-<% worker_pids = info.worker_pids     %>
-<% worker_pids = nil if worker_pids == "???" %>
-<% tasks_tot   = info.tasks_tot %>
-<% tasks_max   = info.tasks_max %>
-<% tasks_max   = 'unlimited' if tasks_max.to_s == '0' %>
-<% isbourreau  = bour.is_a?(Bourreau) %>
-<% num_running = isbourreau ? CbrainTask.where( :bourreau_id => bour.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0 %>
-
+<%
+   info        = bour.info
+   diskrev     = info.revision
+   runrev      = info.starttime_revision
+   worker_pids = info.worker_pids
+   worker_pids = nil if worker_pids == "???"
+   tasks_tot   = info.tasks_tot
+   tasks_max   = info.tasks_max
+   tasks_max   = 'unlimited' if tasks_max.to_s == '0'
+   isbourreau  = bour.is_a?(Bourreau)
+   num_running = isbourreau ? CbrainTask.where( :bourreau_id => bour.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
+%>
 
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_to_bourreau_if_accessible(bour) %></td>

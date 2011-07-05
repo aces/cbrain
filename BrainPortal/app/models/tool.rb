@@ -5,8 +5,6 @@
 #
 # Original author: Angela McCloskey
 #
-# Revision_info="$Id$"
-#
 
 #Model representing CBrain tools. 
 #The purpose of the tools model is to create an inventory of the tools for each bourreau.
@@ -25,7 +23,7 @@
 #* Bourreau
 class Tool < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
   

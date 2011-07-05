@@ -14,7 +14,7 @@ require 'cbrain_exception'
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   public
 
@@ -23,10 +23,10 @@ class CBRAIN
   Rails_UserName     = Etc.getpwuid(Rails_UserId).name
   Rails_UserHome     = Etc.getpwuid(Rails_UserId).dir
   System_Uname       = `uname -a`.chomp
-  ENV['PATH']        = "#{RAILS_ROOT}/vendor/cbrain/bin:#{ENV['PATH']}"
+  ENV['PATH']        = "#{Rails.root.to_s}/vendor/cbrain/bin:#{ENV['PATH']}"
 
   # CBRAIN plugins locations
-  Plugins_Dir          = "#{RAILS_ROOT}/cbrain_plugins"
+  Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
   TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
   UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
 

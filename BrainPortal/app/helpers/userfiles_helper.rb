@@ -1,7 +1,7 @@
 #Helper methods for Userfile views.
 module UserfilesHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #Alternate toggle for session attributes that switch between values 'on' and 'off'.
   def set_toggle(old_value)

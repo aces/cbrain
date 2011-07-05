@@ -18,7 +18,7 @@
 #
 class CbrainTask < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_validation     :set_group
 

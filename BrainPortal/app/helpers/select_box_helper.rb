@@ -1,7 +1,7 @@
 #Helper methods for resource select boxes.
 module SelectBoxHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #################################################################################
   # Selector Helpers

@@ -16,7 +16,7 @@ class CustomFiltersController < ApplicationController
   layout false
   api_available
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify

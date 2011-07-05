@@ -12,7 +12,7 @@
 # A subclass of CbrainTask to launch <%= class_name %>.
 class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   ################################################################
   # For full documentation on how to write CbrainTasks,

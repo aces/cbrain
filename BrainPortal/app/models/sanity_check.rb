@@ -11,7 +11,7 @@
 
 class SanityCheck < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   validates_presence_of :revision_info
 

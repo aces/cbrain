@@ -14,7 +14,7 @@ require 'socket'
 #the remote Rails application is a Bourreau or a BrainPortal,
 #or the current Rails application running locally.
 #
-#=General Attributes:
+#==General Attributes:
 #[*name*] A string representing a the name of the remote resource.
 #[*online*] A boolean value set to whether or not the resource is online.
 #[*read_only*] A boolean value set to whether or not the resource is read only.
@@ -49,7 +49,7 @@ require 'socket'
 #* Group
 class RemoteResource < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
 
@@ -105,7 +105,7 @@ class RemoteResource < ActiveRecord::Base
   # being used. This is a hash representing one DB config in
   # database.yml.
   def self.current_resource_db_config(railsenv = nil)
-    railsenv ||= (ENV["RAILS_ENV"] || 'production')
+    railsenv ||= (Rails.env || 'production')
     myconfigs  = ActiveRecord::Base.configurations
     myconfig   = myconfigs[railsenv].dup
     myconfig
@@ -450,22 +450,40 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
+    # This used to correspond to the 'svn info' command's output.
     revinfo = { 'Revision'            => 'unknown',
                 'Last Changed Author' => 'unknown',
                 'Last Changed Rev'    => 'unknown',
                 'Last Changed Date'   => 'unknown'
               }
 
-    IO.popen("svn info #{RAILS_ROOT} 2>/dev/null","r") do |fh|
-      fh.each do |line|
-        if line.match(/^Revision|Last Changed/i)
-          comps = line.split(/:\s*/,2)
-          field = comps[0]
-          value = comps[1].gsub!(/\s*$/,"")
-          revinfo[field]=value
-        end
+    #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
+    #Pierre Rioux
+    #Tue Jun 28 17:50:26 2011 -0400
+    #9f4c090
+    Dir.chdir(Rails.root.to_s) do
+      IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
+        fh.readline rescue true # skip first line
+        commit = fh.readline.strip rescue "ExcepCommit"
+        author = fh.readline.strip rescue "ExcepAuthor"
+        date   = fh.readline.strip rescue "ExcepDate"
+        revinfo['Revision']            = "C-#{commit}" # TODO: change to official release tag
+        revinfo['Last Changed Author'] = author
+        revinfo['Last Changed Rev']    = commit
+        revinfo['Last Changed Date']   = date
       end
     end
+
+    #IO.popen("svn info #{Rails.root.to_s} 2>/dev/null","r") do |fh|
+    #  fh.each do |line|
+    #    if line.match(/^Revision|Last Changed/i)
+    #      comps = line.split(/:\s*/,2)
+    #      field = comps[0]
+    #      value = comps[1].gsub!(/\s*$/,"")
+    #      revinfo[field]=value
+    #    end
+    #  end
+    #end
 
     info = RemoteResourceInfo.new(
 

@@ -3,7 +3,7 @@ require 'time'
 #Helper methods for all views.
 module ApplicationHelper
 
-  Revision_info="$Id: application_helper.rb 1987 2011-05-04 18:40:57Z tsherif $"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #################################################################################
   # Layout Helpers
@@ -124,11 +124,12 @@ module ApplicationHelper
     cropped_header = crop_text_to(options[:header_width] || 50,header)
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
-    h(cropped_header) + " " + capture do
+    link = h(cropped_header) + " " + capture do
       overlay_content_link("(more)", :enclosing_element => 'span' ) do
-        "<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>"
+        ("<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>").html_safe
       end
     end
+    link.html_safe
   end
 
   # Creates a link called "(info)" that presents as an overlay

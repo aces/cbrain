@@ -12,7 +12,7 @@
 # A subclass of PortalTask to parallelize other tasks.
 class CbrainTask::Parallelizer < PortalTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def self.properties #:nodoc:
     { :no_presets => true }

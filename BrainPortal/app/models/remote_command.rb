@@ -22,7 +22,7 @@
 # are used by all CBRAIN Rails applications.
 class RemoteCommand < RestrictedHash
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # List of allowed keys in the hash
   self.allowed_keys=[

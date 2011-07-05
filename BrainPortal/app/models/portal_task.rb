@@ -15,7 +15,7 @@
 # See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,

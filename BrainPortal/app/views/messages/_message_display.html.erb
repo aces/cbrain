@@ -1,7 +1,7 @@
 
 <%- flash.each do |name, msg| -%>
   <% unless msg.blank? %>
-    <%= content_tag :div, h(msg).gsub(/\n/, '<BR>'), :id => "flash_#{name}" %>
+    <%= content_tag :div, (h(msg).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
   <% end %>
 <%- end -%>
 

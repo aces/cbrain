@@ -13,7 +13,7 @@
 
 class ScirUnix < Scir
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   class Session < Scir::Session
 

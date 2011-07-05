@@ -13,7 +13,7 @@
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required,        :except => [:request_password, :send_password]  
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
@@ -100,7 +100,7 @@ class UsersController < ApplicationController
         flash[:notice] += "Since this user has no proper E-Mail address, no welcome E-Mail was sent."
       else
         flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
-        CbrainMailer.deliver_registration_confirmation(@user,params[:user][:password],no_password_reset_needed) rescue nil
+        CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
     end
     
@@ -177,10 +177,12 @@ class UsersController < ApplicationController
       @user = current_user.site.users.find(params[:id])
     end
     
-    @destroyed = false
-        
-    @user.destroy
-    @destroyed = true
+    if @user.destroy 
+      flash[:notice] = "User '#{@user.login}' destroyed"
+    else
+      flash[:error]  = "User '#{@user.login}' NOT destroyed?!?"
+    end
+
     respond_to do |format|
       format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'user' }}
       format.xml  { head :ok }
@@ -216,7 +218,7 @@ class UsersController < ApplicationController
       @user.password_reset = true
       @user.set_random_password
       if @user.save
-        CbrainMailer.deliver_forgotten_password(@user)
+        CbrainMailer.forgotten_password(@user).deliver
         flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
         flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
         redirect_to login_path

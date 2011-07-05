@@ -12,7 +12,7 @@
 # A subclass of ClusterTask to run <%= class_name %>.
 class <%= "CbrainTask::#{class_name}" %> < ClusterTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   ################################################################
   # For full documentation on how to write CbrainTasks,

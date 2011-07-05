@@ -12,7 +12,7 @@
 #RESTful controller for the Group resource.
 class GroupsController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required
 

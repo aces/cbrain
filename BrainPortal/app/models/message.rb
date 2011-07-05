@@ -12,7 +12,7 @@ require 'socket'
 
 class Message < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   belongs_to :user
 
@@ -111,10 +111,10 @@ class Message < ActiveRecord::Base
     end
     
     if send_email
-      CbrainMailer.deliver_message(allusers,
+      CbrainMailer.cbrain_message(allusers,
         :subject  => header,
-        :body     => "#{description}\n\n#{var_text}"
-      )
+        :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
+      ).deliver
     end
 
     messages_sent

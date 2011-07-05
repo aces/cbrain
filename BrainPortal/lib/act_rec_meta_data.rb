@@ -59,7 +59,7 @@
 #
 module ActRecMetaData
 
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
@@ -247,7 +247,7 @@ module ActRecMetaData
     allmeta = self.meta.all
     @_cbrain_meta = nil
     return true unless allmeta
-    allmeta.each { |m| m.destroy_without_callbacks }
+    MetaDataStore.delete(allmeta.map &:id) # was: destroy_without_callbacks
     true
   end
 

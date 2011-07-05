@@ -51,7 +51,7 @@
 #                (specified by its cache_trust_expire).
 class SyncStatus < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   CheckInterval   = 10.seconds
   CheckMaxWait    = 24.hours

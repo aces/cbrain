@@ -12,7 +12,7 @@
 #Controller for the entry point into the system.
 class PortalController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #Display a user's home page with information about their account.
   def welcome #:nodoc:
@@ -45,9 +45,9 @@ class PortalController < ApplicationController
           flash.now[:error] = ""        
         end
       end
-    elsif current_user.has_role? :site_manager
-      @active_users = CbrainSession.active_users(:conditions  => {:site_id  => current_user.site_id})
-      @active_users.unshift(current_user) unless @active_users.include?(current_user)
+    #elsif current_user.has_role? :site_manager
+    #  @active_users = CbrainSession.active_users.where( :site_id  => current_user.site_id )
+    #  @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).collect(&:id)

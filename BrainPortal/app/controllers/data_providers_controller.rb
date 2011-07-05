@@ -12,7 +12,7 @@
 #Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available :except => [:disk_usage, :cleanup, :register]
 
@@ -58,7 +58,7 @@ class DataProvidersController < ApplicationController
     @ssh_keys = get_ssh_public_keys
 
     stats = ApplicationController.helpers.gather_filetype_statistics(
-              :users     => current_user.available_users,
+              :users     => current_user.available_users.all,
               :providers => @provider
             )
     @user_fileclass_count = stats[:user_fileclass_count]

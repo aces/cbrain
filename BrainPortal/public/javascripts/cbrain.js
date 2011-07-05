@@ -362,16 +362,16 @@ jQuery(
      var url = button.attr("href");
      var target = button.attr("data-target");
      var target_text = button.attr("data-target-text");
-     var confirm_message = button.attr('data-confirm');
+     //var confirm_message = button.attr('data-confirm');
      var data_method = button.attr("data-method");
      if(!data_type) data_type = "script";
      if(!data_method) data_method = "DELETE";
      
-     if(confirm_message){
-        if(!confirm(confirm_message)){
-          return false;
-        };
-     }
+     //if(confirm_message){
+     //   if(!confirm(confirm_message)){
+     //     return false;
+     //   };
+     //}
     
      if(target){
        if(!target_text){

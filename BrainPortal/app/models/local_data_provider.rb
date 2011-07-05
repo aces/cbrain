@@ -21,7 +21,7 @@
 # For the list of API methods, see the DataProvider superclass.
 class LocalDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?

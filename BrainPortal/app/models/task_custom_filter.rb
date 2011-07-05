@@ -20,7 +20,7 @@
 #[*bourreau_id*] The bourreau_id of the bourreau to filter against.
 class TaskCustomFilter < CustomFilter
                           
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #See CustomFilter
   def filter_scope(scope)

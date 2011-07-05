@@ -10,7 +10,7 @@
 # This model represents the group specific to a user.
 class InvisibleGroup < SystemGroup
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
     user.has_role? :admin

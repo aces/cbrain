@@ -15,7 +15,7 @@
 # and more efficient CbrainLocalDataProvider will be used.
 class CbrainSmartDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include SmartDataProviderInterface
 

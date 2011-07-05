@@ -15,7 +15,7 @@
 #This model is not an ActiveRecord class.
 class BourreauWorker < Worker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Tasks that are considered actually active (not necessarily handled by
   # this worker)
@@ -34,7 +34,7 @@ class BourreauWorker < Worker
 
   # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
   def setup
-    ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
+    ENV["PATH"] = Rails.root.to_s + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
     @rr = RemoteResource.current_resource

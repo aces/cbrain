@@ -56,13 +56,13 @@ require 'log4r'
 #
 class Worker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #include Sys
   include Log4r
 
-  PIDFILES_DIR = Pathname.new(RAILS_ROOT) + "tmp/pids"
-  LOGFILES_DIR = Pathname.new(RAILS_ROOT) + "log"
+  PIDFILES_DIR = Pathname.new(Rails.root.to_s) + "tmp/pids"
+  LOGFILES_DIR = Pathname.new(Rails.root.to_s) + "log"
 
   # --- Public attributes ---
   public

@@ -9,7 +9,7 @@
 
 class ToolConfigsController < ApplicationController
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required
   before_filter :admin_role_required

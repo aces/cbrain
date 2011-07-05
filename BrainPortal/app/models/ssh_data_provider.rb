@@ -22,7 +22,7 @@ require 'net/sftp'
 #
 class SshDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def impl_is_alive? #:nodoc:
     ssh_opts = self.ssh_shared_options

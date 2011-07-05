@@ -1,7 +1,7 @@
 
 module DataProvidersHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def class_param_for_name(name, klass=Userfile) #:nodoc:
     matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }

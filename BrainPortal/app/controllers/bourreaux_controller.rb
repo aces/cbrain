@@ -13,7 +13,7 @@
 # All actions except +index+ and +show+ require *admin* privileges.
 class BourreauxController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   api_available :except  => :row_data
 
@@ -199,7 +199,6 @@ class BourreauxController < ApplicationController
   def destroy #:nodoc:
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
-    @destroyed = false
     
     cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
@@ -207,7 +206,6 @@ class BourreauxController < ApplicationController
     cb_notice "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
 
     if @bourreau.destroy
-      @destroyed = true
       flash[:notice] = "Execution Server successfully deleted."
     else
       flash[:error] = "Execution Server destruction failed."

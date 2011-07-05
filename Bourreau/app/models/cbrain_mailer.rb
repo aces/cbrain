@@ -13,7 +13,7 @@
 #Message.
 class CbrainMailer < ActionMailer::Base
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #Send an e-mail notification of a CBRAIN message.
   #Meant to be used by Message.send_message.

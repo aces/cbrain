@@ -62,7 +62,7 @@ class AdjustTimestampsToUtc < ActiveRecord::Migration
   Rails application has the proper time zone configured
   in this file:
 
-     #{RAILS_ROOT}/config/environment.rb
+     #{Rails.root.to_s}/config/environment.rb
 
   Edit the file and change this line so it says:
 

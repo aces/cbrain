@@ -24,7 +24,7 @@
 #
 class MetaDataStore < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   self.table_name = "meta_data_store" # singular
 

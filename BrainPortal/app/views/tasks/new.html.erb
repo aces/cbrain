@@ -23,7 +23,7 @@
 
 <h2>Task Parameters
   <% help_doc = "/doc/tasks/#{@task.name.underscore}_options.html" %>
-  <% if File.exists?( RAILS_ROOT + "/public" + help_doc ) %>
+  <% if File.exists?( Rails.root.to_s + "/public" + help_doc ) %>
     <%= overlay_ajax_link "(Help)", help_doc, :class  => "task_help_link" %>
   <% end %>
   :

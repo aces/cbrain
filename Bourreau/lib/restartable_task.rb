@@ -12,7 +12,7 @@
 
 module RestartableTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Just returns true; it's the responsability
   # of the CbrainTask developer to write the

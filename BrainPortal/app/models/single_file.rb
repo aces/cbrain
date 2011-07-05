@@ -15,7 +15,7 @@ require 'fileutils'
 #Represents a single file uploaded to the system (as opposed to a FileCollection).
 class SingleFile < Userfile
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   # Forces calculation and setting of the size attribute.
   def set_size!

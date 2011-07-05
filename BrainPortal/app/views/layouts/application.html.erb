@@ -15,12 +15,14 @@
   <head>
     <title>CBRAIN <%= yield :title %></title>
     <link rel="shortcut icon" type="image/giv" href="/images/favicon.gif" />
-    <%= stylesheet_link_tag  "cbrain", "jquery-ui", "macacc", :media => "all" %>
     <%= javascript_include_tag "tableH" %>
     <script type="text/javascript" src="/javascripts/o3djs/base.js"></script>
     <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "processing" %>
     <%= javascript_include_tag "brainbrowser", "mniobj", "dataset", "macacc_collection", "civet", "thickness" %> 
     <%= javascript_include_tag "cbrain" %>
+    <%= csrf_meta_tag %>
+    <%= stylesheet_link_tag  "cbrain", "jquery-ui", "macacc", :media => "all" %>
+    <%= javascript_include_tag "rails" %>
   </head>
 
   <body id="cbrain">     

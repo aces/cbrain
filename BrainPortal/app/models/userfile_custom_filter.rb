@@ -21,7 +21,7 @@
 #[*tags*] A serialized hash of tags to filter on.
 class UserfileCustomFilter < CustomFilter
                           
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #See CustomFilter
   def filter_scope(scope)

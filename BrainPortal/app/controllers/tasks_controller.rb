@@ -12,7 +12,7 @@
 #Restful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available
 

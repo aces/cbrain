@@ -28,7 +28,7 @@
 #*Note*: this is not a database-backed model.
 class CbrainSession
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def initialize(session, params, sess_model) #:nodoc:
     @session       = session # rails session
@@ -57,7 +57,7 @@ class CbrainSession
     active_sessions = session_class.where(
       ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
     )
-    user_ids = active_sessions.map &:user_id
+    user_ids = active_sessions.map(&:user_id).uniq
     scope = User.where(options)
     scope.where( :id => user_ids )
   end

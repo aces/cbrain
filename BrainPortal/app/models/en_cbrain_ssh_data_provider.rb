@@ -21,7 +21,7 @@
 #
 class EnCbrainSshDataProvider < SshDataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def is_browsable? #:nodoc:
     false

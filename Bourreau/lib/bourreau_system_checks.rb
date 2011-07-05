@@ -13,7 +13,7 @@ require 'socket'
 
 class BourreauSystemChecks < CbrainChecker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def self.a021_ensure_old_configuration_variables_are_unset
 

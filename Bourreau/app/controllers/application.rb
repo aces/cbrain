@@ -3,7 +3,7 @@
 
 class ApplicationController < ActionController::Base #:nodoc:
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   helper :all # include all helpers, all the time  
 
@@ -23,14 +23,14 @@ class ApplicationController < ActionController::Base #:nodoc:
   
   #Patch: Load all models so single-table inheritance works properly.
   begin
-    Dir.chdir(File.join(RAILS_ROOT, "app", "models")) do
+    Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
       Dir.glob("*.rb").each do |model|
         model.sub!(/.rb$/,"")
         require_dependency "#{model}.rb" unless Object.const_defined? model.classify
       end
     end
     #Load userfile file types
-    Dir.chdir(File.join(RAILS_ROOT, "app", "models", "userfiles")) do
+    Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
       Dir.glob("*.rb").each do |model|
         model.sub!(/.rb$/,"")
         require_dependency "#{model}.rb" unless Object.const_defined? model.classify
