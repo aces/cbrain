@@ -19,7 +19,7 @@ class SitesController < ApplicationController
   # GET /sites
   # GET /sites.xml
   def index #:nodoc:
-    @sites = base_filtered_scope Site.scoped(:include  => [:users, :groups], :order => "sites.name")
+    @sites = base_filtered_scope Site.where({}).includes( [:users, :groups] ).order("sites.name")
 
     respond_to do |format|
       format.html # index.html.erb

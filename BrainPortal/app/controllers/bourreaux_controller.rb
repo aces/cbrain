@@ -21,7 +21,7 @@ class BourreauxController < ApplicationController
   before_filter :manager_role_required, :except  => [:index, :show, :row_data]
    
   def index #:nodoc:
-    @bourreaux = base_filtered_scope RemoteResource.find_all_accessible_by_user(current_user, :order  => "remote_resources.type DESC, remote_resources.id")
+    @bourreaux = base_filtered_scope RemoteResource.find_all_accessible_by_user(current_user).order("remote_resources.type DESC, remote_resources.id")
     
     #For the new form
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id

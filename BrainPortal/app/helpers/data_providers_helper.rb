@@ -63,8 +63,8 @@ module DataProvidersHelper
 
     # All files that belong to these users on these data providers
     filelist = Userfile.where( {} )
-    filelist = filelist.where( :user_id          => userlist ) if ! users.nil?
-    filelist = filelist.where( :data_provider_id => dplist   ) if ! providers.nil?
+    filelist = filelist.where( :user_id          => userlist.map(&:id) ) if ! users.nil?
+    filelist = filelist.where( :data_provider_id => dplist.map(&:id)   ) if ! providers.nil?
     filelist = filelist.all
 
     # Arrays and hashes used to record the names of the

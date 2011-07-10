@@ -52,7 +52,7 @@ class UserfilesController < ApplicationController
     
     #Apply filters
     filtered_scope = base_filtered_scope
-    filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
+    filtered_scope = filtered_scope.where( :format_source_id => nil )
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
@@ -61,12 +61,12 @@ class UserfilesController < ApplicationController
     
     #filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
     unless tag_filters.blank?
-      filtered_scope = filtered_scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
+      filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
 
     # Filter by current project
     if current_project
-      filtered_scope = filtered_scope.scoped(:conditions => { :group_id  => current_project.id } )
+      filtered_scope = filtered_scope.where( :group_id  => current_project.id )
     end
 
     # Restrict by 'view all' or not
@@ -80,7 +80,7 @@ class UserfilesController < ApplicationController
         filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
       end
     else
-      filtered_scope = filtered_scope.scoped(:conditions => {:user_id => current_user.id})
+      filtered_scope = filtered_scope.where( :user_id => current_user.id )
     end
     
     #------------------------------
@@ -155,7 +155,7 @@ class UserfilesController < ApplicationController
 
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
-      real_subset       = filtered_scope.all(:include => includes, :conditions => { :id => userfile_ids })
+      real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
       page_of_userfiles.each do |simple|
@@ -181,9 +181,9 @@ class UserfilesController < ApplicationController
     @user_tags      = current_user.available_tags
     @user_groups    = current_user.available_groups.order("type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
-    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
+    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user).where( :online => true )
     @preferred_bourreau_id = current_user.meta["pref_bourreau_id"]
 
     # For the 'new' panel
@@ -740,7 +740,7 @@ class UserfilesController < ApplicationController
 
     # Destination provider
     data_provider_id = params[:data_provider_id]
-    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
+    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user).where( :online => true, :read_only => false )
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym

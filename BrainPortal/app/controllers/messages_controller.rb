@@ -60,7 +60,7 @@ class MessagesController < ApplicationController
     else
       scope = scope.scoped(:conditions => {:user_id => current_user.id})
     end
-    @messages = scope.scoped(:order => "last_sent DESC" )
+    @messages = scope.order( "last_sent DESC" )
     
     respond_to do |format|
       format.html # index.html.erb
@@ -95,7 +95,7 @@ class MessagesController < ApplicationController
       format.xml  { render :xml => @message, :status => :created, :location => @message }
       
       format.js do
-        @messages = current_user.messages.all(:order  => "last_sent DESC")
+        @messages = current_user.messages.order( "last_sent DESC" )
         
         render :action  => :create
       end
@@ -120,7 +120,7 @@ class MessagesController < ApplicationController
       end
       format.js do
         prepare_messages
-        @messages = current_user.messages.all(:order  => "last_sent DESC")
+        @messages = current_user.messages.order( "last_sent DESC" )
          render :action  => "update_tables"
       end
     end
@@ -149,7 +149,7 @@ class MessagesController < ApplicationController
       flash.now[:error] = "Could not delete message."
     end
     prepare_messages
-    @messages = current_user.messages.all(:order  => "last_sent DESC")
+    @messages = current_user.messages.order( "last_sent DESC" )
     
     respond_to do |format|
       format.js { render :action  => "update_tables" }

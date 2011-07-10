@@ -40,7 +40,7 @@ class CbrainTask < ActiveRecord::Base
   # containing job-specific parameters; it's up to each
   # subclass of CbrainTask to find/use/define its content
   # as necessary.
-  serialize :params
+  serialize_as_indifferent_hash :params
   
   scope :status, lambda { |s|  
                          case s.to_sym
@@ -97,7 +97,7 @@ class CbrainTask < ActiveRecord::Base
   #     :for_setup => { "T#{n}" => "Queued" }
   #
   # unless a more restrictive prerequisite is already supplied for task 'n'.
-  serialize :prerequisites
+  serialize_as_indifferent_hash :prerequisites
 
   ##################################################################
   # Status Lists

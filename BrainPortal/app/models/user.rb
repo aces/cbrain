@@ -127,13 +127,13 @@ class User < ActiveRecord::Base
   def remember_me_until(time) #:nodoc:
     self.remember_token_expires_at = time
     self.remember_token            = encrypt("#{email}--#{remember_token_expires_at}")
-    save(false)
+    save(:validate => false)
   end
 
   def forget_me #:nodoc:
     self.remember_token_expires_at = nil
     self.remember_token            = nil
-    save(false)
+    save(:validate => false)
   end
 
   # Returns true if the user has just been activated.
@@ -151,20 +151,20 @@ class User < ActiveRecord::Base
     if self.has_role? :admin
       Tool.scoped(options)
     elsif self.has_role? :site_manager
-      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
     else
-      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
     end
   end
   
   #Find the scientific tools that this user has access to.
   def available_scientific_tools(options = {})
-    self.available_tools(options).scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
+    self.available_tools(options).where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
   def available_conversion_tools(options = {})
-    self.available_tools(options).scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
+    self.available_tools(options).where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.

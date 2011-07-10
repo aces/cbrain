@@ -104,7 +104,7 @@ class BourreauWorker < Worker
 
           # Bourreau global limit
           if bourreau_max_tasks > 0
-            bourreau_active_tasks_cnt ||= CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
+            bourreau_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id ).count
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
             if bourreau_active_tasks_cnt >= bourreau_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}): Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
@@ -115,7 +115,7 @@ class BourreauWorker < Worker
 
           # User specific limit
           if user_max_tasks > 0
-            user_active_tasks_cnt ||= CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
+            user_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id ).count
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
             if user_active_tasks_cnt >= user_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}) Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."

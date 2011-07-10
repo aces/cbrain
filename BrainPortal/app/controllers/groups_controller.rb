@@ -73,7 +73,7 @@ class GroupsController < ApplicationController
         format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        @users = current_user.available_users.where( "users.login<>'admin'", :order => :login )
+        @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.js
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end

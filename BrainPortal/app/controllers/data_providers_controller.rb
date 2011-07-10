@@ -234,7 +234,7 @@ class DataProvidersController < ApplicationController
   end
   
   def disk_usage #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user)
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all
 
     # List of cache update offsets we support
     big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
@@ -303,7 +303,7 @@ class DataProvidersController < ApplicationController
                        end
 
     # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Create disk usage statistics table
     stats_options = { :users            => userlist,

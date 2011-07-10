@@ -39,7 +39,7 @@ class CustomFilter < ActiveRecord::Base
       
   Revision_info=CbrainFileRevision[__FILE__]
 
-  serialize     :data
+  serialize_as_indifferent_hash :data
       
   belongs_to    :user
     
@@ -61,15 +61,15 @@ class CustomFilter < ActiveRecord::Base
   
   #Wrapper for the data attaribute. Ensures it's always initialized.
   def data
-    unless self.read_attribute(:data)
-       self.write_attribute(:data, {})
+    unless read_attribute(:data)
+       write_attribute(:data, {})
     end
-    self.read_attribute(:data) 
+    read_attribute(:data) 
   end
   
   #Virtual attribute for mass assigning to the data hash.
   def data=(new_data)
-    self.write_attribute(:data, new_data)
+    write_attribute(:data, new_data)
   end
   
   private

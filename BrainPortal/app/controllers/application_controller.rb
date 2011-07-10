@@ -10,7 +10,6 @@
 # session.
 
 require 'authenticated_system'
-require 'exception_logger' 
 
 class ApplicationController < ActionController::Base
 
@@ -18,6 +17,7 @@ class ApplicationController < ActionController::Base
 
   include AuthenticatedSystem
   include ExceptionLogger::ExceptionLoggable
+  rescue_from Exception, :with => :log_exception_handler
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
@@ -190,14 +190,17 @@ class ApplicationController < ActionController::Base
   def catch_cbrain_message
     begin
       yield
+
     rescue ActiveRecord::RecordNotFound => e
       raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
+
     rescue ActionController::UnknownAction => e
       raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The page you requested does not exist."
       redirect_to default_redirect
+
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
@@ -209,15 +212,16 @@ class ApplicationController < ActionController::Base
         format.js   { render :partial  => "shared/flash_update", :status  => cbm.status } 
         format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
       end
+
     rescue => e
-      raise e if Rails.env == 'development' #Want to see stack trace in dev.
-      
-      log_exception(e)
+#      raise if Rails.env == 'development' #Want to see stack trace in dev. Also will log it in exception logger
+      log_exception(e) # explicit logging in exception logger, since we won't re-raise it now.
       Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
       redirect_to default_redirect
-      return
+
     end
+
   end
   
   # Redirect to the index page if available and wasn't the source of
@@ -254,12 +258,13 @@ class ApplicationController < ActionController::Base
   # Find new messages to be displayed at the top of the page.
   def prepare_messages
     return unless current_user
+    return if     request.format.blank?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
     
     @display_messages = []
     
-    unread_messages = current_user.messages.all(:conditions  => { :read => false }, :order  => "last_sent DESC")
-    @unread_message_count = unread_messages.size
+    unread_messages = current_user.messages.where( :read => false ).order( "last_sent DESC" )
+    @unread_message_count = unread_messages.count
     
     unread_messages.each do |mess|
       if mess.expiry.blank? || mess.expiry > Time.now
@@ -517,7 +522,7 @@ class ApplicationController < ActionController::Base
   #Before filter that checks that blocks certain actions
   #from the API
   def api_validity_check
-    if request.format.to_sym == :xml
+    if request.format && request.format.to_sym == :xml
       valid_actions = self.class.api_actions || []
       current_action = params[:action].to_sym
       
