@@ -21,6 +21,7 @@ class ApplicationController < ActionController::Base
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
+  helper_method :view_pluralize
   helper        :all # include all helpers, all the time
 
   before_filter :always_activate_session
@@ -474,6 +475,11 @@ class ApplicationController < ActionController::Base
   # The default color is 'red'.
   def html_colorize(text, color = "red", options = {})
     "<span style=\"color: #{color}\">#{text}</span>".html_safe
+  end
+
+  # Calls the view helper method 'pluralize'
+  def view_pluralize(*args) #:nodoc:
+    ApplicationController.helpers.pluralize(*args)
   end
   
   #Directive to be used in controllers to make

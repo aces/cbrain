@@ -450,40 +450,27 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    # This used to correspond to the 'svn info' command's output.
-    revinfo = { 'Revision'            => 'unknown',
-                'Last Changed Author' => 'unknown',
-                'Last Changed Rev'    => 'unknown',
-                'Last Changed Date'   => 'unknown'
-              }
-
-    #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
-    #Pierre Rioux
-    #Tue Jun 28 17:50:26 2011 -0400
-    #9f4c090
-    Dir.chdir(Rails.root.to_s) do
-      IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
-        fh.readline rescue true # skip first line
-        commit = fh.readline.strip rescue "ExcepCommit"
-        author = fh.readline.strip rescue "ExcepAuthor"
-        date   = fh.readline.strip rescue "ExcepDate"
-        revinfo['Revision']            = "C-#{commit}" # TODO: change to official release tag
-        revinfo['Last Changed Author'] = author
-        revinfo['Last Changed Rev']    = commit
-        revinfo['Last Changed Date']   = date
+    @git_tag    ||= ""
+    @git_commit ||= ""
+    @git_author ||= ""
+    @git_date   ||= ""
+    if @git_tag.blank?
+      Dir.chdir(Rails.root.to_s) do
+        IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
+          #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
+          #9f4c090
+          #Pierre Rioux
+          #Tue Jun 28 17:50:26 2011 -0400
+          fh.readline rescue true # skip first line
+          @git_commit = fh.readline.strip rescue "ExcepCommit"
+          @git_author = fh.readline.strip rescue "ExcepAuthor"
+          @git_date   = fh.readline.strip rescue "ExcepDate"
+        end
+        IO.popen("git tag --contains HEAD","r") do |fh|
+          @git_tag = fh.readline rescue "C-#{@git_commit}"
+        end
       end
     end
-
-    #IO.popen("svn info #{Rails.root.to_s} 2>/dev/null","r") do |fh|
-    #  fh.each do |line|
-    #    if line.match(/^Revision|Last Changed/i)
-    #      comps = line.split(/:\s*/,2)
-    #      field = comps[0]
-    #      value = comps[1].gsub!(/\s*$/,"")
-    #      revinfo[field]=value
-    #    end
-    #  end
-    #end
 
     info = RemoteResourceInfo.new(
 
@@ -501,10 +488,10 @@ class RemoteResource < ActiveRecord::Base
       :ssh_public_key     => @ssh_public_key,
 
       # Svn info
-      :revision           => revinfo['Revision'],
-      :lc_author          => revinfo['Last Changed Author'],
-      :lc_rev             => revinfo['Last Changed Rev'],
-      :lc_date            => revinfo['Last Changed Date'],
+      :revision           => @git_tag,
+      :lc_author          => @git_author,
+      :lc_rev             => @git_commit,
+      :lc_date            => @git_date,
       :starttime_revision => $CBRAIN_StartTime_Revision
 
     )

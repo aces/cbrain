@@ -110,7 +110,7 @@ class ToolsController < ApplicationController
 
     respond_to do |format|
       if successes.size > 0
-        flash[:notice] = "#{@template.pluralize(successes.size, "tool")} successfully registered:\n"
+        flash[:notice] = "#{view_pluralize(successes.size, "tool")} successfully registered:\n"
         successes.each do |tool|
           flash[:notice] += "Name: #{tool.name} Class: #{tool.cbrain_task_class}\n"
         end

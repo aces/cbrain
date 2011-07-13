@@ -218,6 +218,8 @@ class Message < ActiveRecord::Base
       timestamp    = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z]")
       current_text += timestamp + " " + varlines[0] + "\n"
       varlines.shift
+puts_blue "CT=#{current_text.encoding}"
+varlines.each { |l| puts "LT=#{l.encoding}" }
       current_text += varlines.join("\n") + "\n" if varlines.size > 0
     end
 

@@ -619,10 +619,10 @@ class UserfilesController < ApplicationController
     end
     
     if success_count > 0
-      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{@template.pluralize(success_count, "files")}."
+      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{view_pluralize(success_count, "files")}."
     end
     if failure_count > 0
-      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(failure_count, "files")}."
+      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{view_pluralize(failure_count, "files")}."
     end
     
     redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
@@ -826,21 +826,21 @@ class UserfilesController < ApplicationController
 
     if operation == 'clear' || operation == 'replace'
       cleared_count = current_session.persistent_userfile_ids_clear
-      flash[:notice] += "#{@template.pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
+      flash[:notice] += "#{view_pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
     end
 
     if operation == 'add'   || operation == 'replace'
       added_count   = current_session.persistent_userfile_ids_add(filelist)
-      flash[:notice] += "#{@template.pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
+      flash[:notice] += "#{view_pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
     end
 
     if operation == 'remove'
       removed_count = current_session.persistent_userfile_ids_remove(filelist)
-      flash[:notice] += "#{@template.pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
+      flash[:notice] += "#{view_pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
     end
 
     persistent_ids = current_session.persistent_userfile_ids_list
-    flash[:notice] += "Total of #{@template.pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
+    flash[:notice] += "Total of #{view_pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
       persistent_ids.size > 0 && (added_count > 0 || removed_count > 0 || cleared_count > 0)
 
     flash[:notice] += "No changes made to the persistent list of userfiles." if
@@ -867,10 +867,10 @@ class UserfilesController < ApplicationController
     end
   
     if deleted_count > 0
-      flash[:notice] = "#{@template.pluralize(deleted_count, "files")} deleted.\n"
+      flash[:notice] = "#{view_pluralize(deleted_count, "files")} deleted.\n"
     end
     if unregistered_count > 0
-      flash[:notice] = "#{@template.pluralize(unregistered_count, "files")} unregistered.\n"
+      flash[:notice] = "#{view_pluralize(unregistered_count, "files")} unregistered.\n"
     end
     
     redirect_to :action => :index, :format => request.format.to_sym
@@ -1063,10 +1063,10 @@ class UserfilesController < ApplicationController
   
     info_message = ""
     if to_compress.size > 0
-      info_message += "#{@template.pluralize(to_compress.size, "files")} being compressed in background.\n"
+      info_message += "#{view_pluralize(to_compress.size, "files")} being compressed in background.\n"
     end
     if to_uncompress.size > 0
-      info_message += "#{@template.pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
+      info_message += "#{view_pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
     end
     skipped_messages.each do |mess,userfiles|
       info_message += "Warning: some files were skipped; Reason: #{mess}; Files: "

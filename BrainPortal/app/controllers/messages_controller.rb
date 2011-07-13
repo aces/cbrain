@@ -137,7 +137,7 @@ class MessagesController < ApplicationController
       message_obj.destroy
     end
     
-    flash[:notice] = "#{@template.pluralize(deleted_count, "items")} deleted.\n" 
+    flash[:notice] = "#{view_pluralize(deleted_count, "items")} deleted.\n" 
     redirect_to :action => :index
   end
 

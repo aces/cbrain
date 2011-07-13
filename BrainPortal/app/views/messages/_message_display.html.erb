@@ -1,8 +1,7 @@
 
 <%- flash.each do |name, msg| -%>
-  <% unless msg.blank? %>
-    <%= content_tag :div, (h(msg).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
-  <% end %>
+  <% next if msg.blank? %>
+  <%= render :partial => 'messages/flash_display', :locals => { :msg => msg, :type => name } %>
 <%- end -%>
 
 <% unless @display_messages.blank? %>
