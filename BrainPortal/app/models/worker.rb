@@ -54,11 +54,14 @@ require 'log4r'
 #   wake_up()
 #   is_alive?()
 #
+
+require 'sys/proctable'
+
 class Worker
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  #include Sys
+  include Sys
   include Log4r
 
   PIDFILES_DIR = Pathname.new(Rails.root.to_s) + "tmp/pids"
@@ -198,11 +201,6 @@ class Worker
       Kernel.at_exit { self.delete_pidfile }
 
       begin
-        # This sleep is needed unfortunately to give the time for the
-        # proxy side to call its own create_pidfile() so that a quick
-        # succession of start() followed by is_alive?() returns true.
-        sleep 5  # TODO: re-engineer this potential race_condition.
-
         # Initialize logger
         if self.worker_log && self.worker_log.is_a?(Symbol) && self.worker_log == :auto
           log = Logger.new self.pretty_name
@@ -246,10 +244,15 @@ class Worker
 
         self.worker_log.debug "Registered signal handlers for INT, TERM and USR1."
 
+        # This sleep is needed unfortunately to give the time for the
+        # proxy side to call its own create_pidfile() so that a quick
+        # succession of start() followed by is_alive?() returns true.
+        sleep 5  # TODO: re-engineer this potential race_condition.
+
         # Create pidfile
         self.create_pidfile # will crush the pidfile created by proxy; see race_condition.
 
-        # Execute method that does regular work (implemented by subclasses of Worker)
+        # Initialize the code that does regular work (implemented by subclasses of Worker)
         self.main_loop
 
       # Raise exceptions back to the spawn method so it can send a Message

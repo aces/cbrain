@@ -1,6 +1,5 @@
-ActionController::Routing::Routes.draw do |map|
+CbrainRailsBourreau::Application.routes.draw do
 
-  # Control channel
-  map.resources :controls,               :controller => :controls
+  resources :controls,       :controller => :controls
 
 end

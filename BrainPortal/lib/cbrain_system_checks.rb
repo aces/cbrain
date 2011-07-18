@@ -83,7 +83,7 @@ class CbrainSystemChecks < CbrainChecker
       puts "C> \t- Time zone set to '#{my_time_zone}'."
     end
 
-    CbrainRailsPortal::Application.config.time_zone = my_time_zone
+    Rails::Application.config.time_zone = my_time_zone
     Time.zone = my_time_zone
     #Rails::Initializer.new(Rails.configuration).initialize_time_zone
 

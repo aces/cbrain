@@ -1,7 +1,7 @@
 <% custom_filter ||= @custom_filter %>
 <p>
    Task:<br>
-   <%= select :data, :type, PortalTask.descendants.map(&:to_s).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
+   <%= select :data, :type, current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
 </p>
 <p>
   Status:<br>
