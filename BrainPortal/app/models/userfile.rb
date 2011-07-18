@@ -82,7 +82,7 @@ class Userfile < ActiveRecord::Base
                                           {:conditions  => "userfiles.type='#{format_filter}'#{format_ids}"}
                                         }
   scope                   :has_no_parent, :conditions => {:parent_id => nil}
-  scope                   :has_no_child,  lambda {
+  scope                   :has_no_child,  lambda { |ignored|
                                             all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             { :conditions => "userfiles.id NOT IN (#{all_parents})" }
                                           }

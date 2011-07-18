@@ -112,7 +112,7 @@
     
   </table>
 
-  <P>
+  <P/>
   
   <% if current_user.available_tags.count > 0 %>
     Tags for this file:<br>
@@ -120,19 +120,17 @@
         <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
     </select>
   <% end %>
-  
-  <P>
 
   <% if @userfile.can_be_accessed_by?(current_user)  %>
+    <BR/>
     <%= submit_tag "Update Fields", :class => "button" %>
-    <BR>
   <% end %>
 
 <% end %> <!-- form -->
 
 
 <% unless @userfile.is_locally_synced? %>
-    <P>
+    <BR/>
     
     <% if @sync_status =~ /^To/ %>
       <p>The content of this data file is currently being synchronized.</p>
@@ -147,7 +145,7 @@
 
 <% end %>
 
-  <P>
+<BR/>
 
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
 

@@ -428,7 +428,7 @@ class DataProvider < ActiveRecord::Base
         yield
       else # a normal file, just crush it
         localpath += rel_path if rel_path
-        File.open(localpath,"w") do |fh|
+        File.open(localpath,"w:BINARY") do |fh|
           yield(fh)
         end
       end

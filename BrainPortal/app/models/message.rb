@@ -199,6 +199,13 @@ class Message < ActiveRecord::Base
                        
       :send_email    => true
     )
+  rescue => ex
+    puts_red "Exception raised while trying to report an exception!"
+    puts_yellow "The original exception was: #{exception.class.to_s}: #{exception.message}\n"
+    puts exception.backtrace.join("\n")
+    puts_yellow "The new exception is: #{ex.class.to_s}: #{ex.message}\n"
+    puts ex.backtrace.join("\n")
+    return true
   end
 
   # Will append the text document in argument to the
@@ -218,8 +225,6 @@ class Message < ActiveRecord::Base
       timestamp    = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z]")
       current_text += timestamp + " " + varlines[0] + "\n"
       varlines.shift
-puts_blue "CT=#{current_text.encoding}"
-varlines.each { |l| puts "LT=#{l.encoding}" }
       current_text += varlines.join("\n") + "\n" if varlines.size > 0
     end
 

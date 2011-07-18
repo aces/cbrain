@@ -416,7 +416,7 @@ class UserfilesController < ApplicationController
       if ! userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
-          flash[:error] += field.capitalize + " " + error + ".\n"
+          flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
         redirect_to redirect_path
         return
@@ -428,7 +428,10 @@ class UserfilesController < ApplicationController
         localpath = upload_stream.local_path rescue "" # optimize for large files
         if localpath.blank?
           begin
-            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            File.open(tmpcontentfile, "w:BINARY") do |io|
+              file_content = upload_stream.read
+              io.write(file_content)
+            end
             userfile.cache_copy_from_local_file(tmpcontentfile)
             userfile.size = File.size(tmpcontentfile) rescue 0
           ensure
@@ -485,7 +488,7 @@ class UserfilesController < ApplicationController
 
         CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
-            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
             collection.extract_collection_from_archive_file(tmpcontentfile)
             Message.send_message(current_user,
                                   :message_type  => 'notice', 
@@ -523,7 +526,7 @@ class UserfilesController < ApplicationController
     # Do it in background.
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+        File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
         extract_from_archive(tmpcontentfile,attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true

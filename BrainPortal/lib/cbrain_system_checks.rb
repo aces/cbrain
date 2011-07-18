@@ -84,6 +84,7 @@ class CbrainSystemChecks < CbrainChecker
     end
 
     CbrainRailsPortal::Application.config.time_zone = my_time_zone
+    Time.zone = my_time_zone
     #Rails::Initializer.new(Rails.configuration).initialize_time_zone
 
   end
@@ -160,7 +161,7 @@ class CbrainSystemChecks < CbrainChecker
     $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
 
     #-----------------------------------------------------------------------------
-    puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
+    puts "C> Current application tag or revision: #{$CBRAIN_StartTime_Revision}"
     #-----------------------------------------------------------------------------
 
   end

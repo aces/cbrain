@@ -8,7 +8,7 @@
   <table class="message_display_table">
     <tr><th colspan="3">New or important messages</th></tr>
     <% for mess in @display_messages %>
-      <%= render :partial  => "messages/message_table_row", :locals  => {:mess  => mess, :render_for => :top } %>
+      <%= render(:partial  => "messages/message_table_row", :locals  => {:mess  => mess, :render_for => :top }) rescue "Oh oh. Talk to devs!" %>
     <% end %>
   </table>
   <P>

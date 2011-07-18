@@ -70,7 +70,7 @@ class CbrainSshDataProvider < SshDataProvider
     newpath = newpath.to_s
 
     # We should create a nice state machine for the remote rename operations
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
 
       begin
         sftp.mkdir!(newlev1)

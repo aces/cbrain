@@ -380,13 +380,13 @@ jQuery(
        jQuery(target).html(target_text);
      }
       
-//     jQuery.ajax({
-//       url: url,
-//       type: data_method,
-//       dataType: data_type,
-//       resetForm: false
-//       }
-//     );
+     jQuery.ajax({
+       url: url,
+       type: data_method,
+       dataType: data_type,
+       resetForm: false
+       }
+     );
      return false;
    }); 
    
@@ -560,11 +560,11 @@ jQuery(
      if(!method) method = enclosing_form.attr("data-method");
      if(!method) method = "POST";
      
-     if(confirm_message){
-         if(!confirm(confirm_message)){
-           return false;
-         };
-     }
+     //if(confirm_message){
+     //    if(!confirm(confirm_message)){
+     //      return false;
+     //    };
+     //}
      if(ajax_submit != "false"){
        enclosing_form.ajaxSubmit({
          url: url,
@@ -588,14 +588,14 @@ jQuery(
    jQuery('.external_submit_button').live('click', function(e) {
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
-     if(confirm_message) {
-       if(confirm(confirm_message)) {
-	       form.submit();
-       }
-     }
-     else {
+     //if(confirm_message) {
+     //  if(confirm(confirm_message)) {
+     //    form.submit();
+     //  }
+     //}
+     //else {
        form.submit();
-     }
+     //}
      return false;
    });
     

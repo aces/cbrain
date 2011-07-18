@@ -27,5 +27,9 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
     end
   end
 
+  def allow_file_owner_change? #:nodoc:
+    false
+  end
+
 end
 
