@@ -146,7 +146,7 @@ module ApplicationHelper
                        "</div>\n"
     capture do
        overlay_content_link("(info)", :enclosing_element => 'span') do
-         all_descriptions
+         all_descriptions.html_safe
        end
     end
   end

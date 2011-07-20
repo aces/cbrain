@@ -23,7 +23,7 @@
 
     <% if mess.read %>
       <%= 
-         delete_button 'Mark&nbsp;as&nbsp;Unread',  message_path(mess, :read => "false"),
+         delete_button 'Mark&nbsp;as&nbsp;Unread', message_path(mess, :read => "false"),
                  :class => 'action_link', 
                  :method  => "PUT",
                  :target  => ".message_display_#{mess.id}", 

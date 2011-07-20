@@ -466,8 +466,10 @@ class RemoteResource < ActiveRecord::Base
           @git_author = fh.readline.strip rescue "ExcepAuthor"
           @git_date   = fh.readline.strip rescue "ExcepDate"
         end
+        #IO.popen("git describe --all --always HEAD","r") do |fh|
+        #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
         IO.popen("git tag --contains HEAD","r") do |fh|
-          @git_tag = fh.readline rescue "C-#{@git_commit}"
+          @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
         end
       end
     end

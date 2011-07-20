@@ -70,11 +70,12 @@ class CBRAIN
         # Background code execution
         begin
           $0 = "#{taskname}" # Clever!
+          Process.setpgrp rescue true
           ActiveRecord::Base.establish_connection(dbconfig)
           yield
 
         # Background untrapped exception handling
-        rescue ActiveRecord::StatementInvalid => e
+        rescue ActiveRecord::StatementInvalid, Mysql::Error => e
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
@@ -143,6 +144,7 @@ class CBRAIN
         # Background code execution
         begin
           $0 = "#{taskname}" # Clever!
+          Process.setpgrp rescue true
           yield
         rescue => itswrong
           puts "Exception raised in spawn_fully_independent():\n"

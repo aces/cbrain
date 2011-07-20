@@ -260,21 +260,21 @@ module CbrainUiHelper
     options[:confirm] = confirmation
     options_setup("confirm_link", options)
     
-    link_to name.html_safe, url, options
+    link_to name.to_s.html_safe, url, options
   end
   
   def confirm_button(name, url, confirmation, options = {})
     options[:confirm] = confirmation
     options_setup("confirm_link", options)
     
-    button_to name.html_safe, url, options
+    button_to name.to_s.html_safe, url, options
   end
   
   def confirm_submit(name, confirmation, options = {})
     options[:confirm] = confirmation
     options_setup("confirm_link", options)
     
-    submit_tag name.html_safe, options
+    submit_tag name.to_s.html_safe, options
   end
   
   #Create an element that will toggle between hiding and showing another element.
@@ -513,7 +513,7 @@ module CbrainUiHelper
   def overlay_ajax_link(name, url, options = {})
     options[:overlay] = true
     
-    ajax_link name.html_safe, url, options
+    ajax_link name.to_s.html_safe, url, options
   end
   
   #Create a link that will submin an ajax_request to +url+
@@ -531,7 +531,7 @@ module CbrainUiHelper
   def ajax_link(name, url, options = {})
     options_setup("ajax_link", options)
     
-    link_to name.html_safe, url, options 
+    link_to name.to_s.html_safe, url, options 
   end
   
   #Create a link that will submit an ajax request. The 
@@ -545,9 +545,10 @@ module CbrainUiHelper
   #               prior to sending the request.
   #[:confirm] Confirm message to display before sending the request.
   def delete_button(name, url, options = {})
+    options[:method] ||= 'DELETE'
     options_setup("delete_button", options)
     
-    link_to name.html_safe, url, options
+    link_to name.to_s.html_safe, url, options
   end
   
   #A select box that will update the page onChange.
@@ -664,7 +665,7 @@ module CbrainUiHelper
       options[:datatype] ||= :script
       ajax_link name, url, options
     else
-      link_to name.html_safe, url, options
+      link_to name.to_s.html_safe, url, options
     end
   end
   

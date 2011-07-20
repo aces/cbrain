@@ -380,14 +380,14 @@ jQuery(
        jQuery(target).html(target_text);
      }
       
-     jQuery.ajax({
-       url: url,
-       type: data_method,
-       dataType: data_type,
-       resetForm: false
-       }
-     );
-     return false;
+     //jQuery.ajax({
+     //  url: url,
+     //  type: data_method,
+     //  dataType: data_type,
+     //  resetForm: false
+     //  }
+     //);
+     return true;
    }); 
    
 

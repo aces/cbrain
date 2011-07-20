@@ -304,6 +304,7 @@ class SshMaster
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
         subpid = Process.fork do
           begin
+            Process.setpgrp rescue true
             self.write_pidfile(Process.pid,:force)  # Overwrite
             $stdin.close rescue nil
             $stdout.reopen(self.diag_path, "a")
@@ -385,6 +386,7 @@ class SshMaster
     signal_name = "SIGURG"
     alarm_pid = Process.fork do
       begin
+        Process.setpgrp rescue true
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
         Signal.trap("TERM") do
           debugTrace("Alarm subprocess #{$$} for #{@key}: told to exit with TERM.")

@@ -41,7 +41,7 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :groups do
     member do
-      get 'switch'
+      post 'switch'
     end
   end
 
@@ -94,7 +94,7 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :tasks do
     collection do
-      post 'new'
+      post 'new', :path => 'new', :as => 'new'
       post 'operation'
       get  'batch_list'
     end
@@ -109,8 +109,9 @@ CbrainRailsPortal::Application.routes.draw do
   end
 
   # Special named routes
+  root                  :to               => 'portal#credits'
   match                 '/home'           => 'portal#welcome'
-  match                 ''                => 'portal#credits'
+  #match                 ''                => 'portal#credits'
   match                 '/about_us'       => 'portal#about_us'
   match                 '/login'          => 'sessions#new'
   match                 '/session_status' => 'sessions#show'
