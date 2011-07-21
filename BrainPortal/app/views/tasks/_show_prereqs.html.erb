@@ -17,7 +17,7 @@
    end
 %>
   <tr>
-    <td><%= otask ? (link_to otaskname, task_path(tid)) : h(otaskname) %> <%= ostate %></td>
+    <td><%= otask ? (link_to otaskname, task_path(tid)) : otaskname %> <%= ostate.html_safe %></td>
     <td><%= pstate %></td>
   </tr>
 <% end %>
