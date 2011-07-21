@@ -258,7 +258,6 @@ class RemoteResource < ActiveRecord::Base
       remote_port = self.tunnel_actres_port
       master.add_tunnel(:forward, local_port, "localhost", remote_port)
     end
-
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
     return false unless master.start("#{self.class.to_s}_#{self.name}")
@@ -668,7 +667,7 @@ class RemoteResource < ActiveRecord::Base
       )
       return
     end
-
+    
     # Check that the sender is legitimate
     sender_token   = command.sender_token || "-nope-"
     sender = RemoteResource.valid_token?(sender_token)
@@ -683,7 +682,6 @@ class RemoteResource < ActiveRecord::Base
     end
 
     #puts "RemoteResource Processing Command: #{command.inspect}"
-    
     self.send("process_command_#{command.command}", command)
 
   end

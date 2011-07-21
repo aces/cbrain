@@ -59,7 +59,7 @@ class CustomFilter < ActiveRecord::Base
     @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter$/, "").tableize
   end
   
-  #Wrapper for the data attaribute. Ensures it's always initialized.
+  #Wrapper for the data attribute. Ensures it's always initialized.
   def data
     unless read_attribute(:data)
        write_attribute(:data, {})

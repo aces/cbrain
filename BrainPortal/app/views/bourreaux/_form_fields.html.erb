@@ -262,7 +262,7 @@
         <%= link_to_user_with_tooltip(user) %>:
         </td><td class="no_left_right_padding">
         <%= select_tag "meta[#{metkey}]",
-            options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
+            options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
                                 @bourreau.meta[metkey] )
         %>
       <% end %>

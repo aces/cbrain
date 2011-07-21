@@ -41,9 +41,16 @@ gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
 gem "thin"
 gem "exception_logger", "~> 0.1.10"
 
-group :development, :test do
-  gem "test-unit"
+group :development do
   gem "wirble"
   gem "looksee"
   gem "hirb"
 end
+
+group :test do
+  gem "test-unit"
+  gem "rspec"
+  gem "rspec-rails"
+  gem "factory_girl"
+end
+

@@ -15,12 +15,7 @@ describe DataProvider do
   
   let(:provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
   
-  let(:userfile) do
-    u = double("userfile")
-    u.stub!(:name).and_return("userfile_double") 
-    u.stub!(:id).and_return(123)
-    u
-  end
+  let(:userfile) { mock_model(Userfile, :name => "userfile_mock") }
   
   describe "validations" do
     it "should create a new instance given valid attributes" do
@@ -95,7 +90,7 @@ describe DataProvider do
     end
   end
   
-  describe "#is_alive" do
+  describe "#is_alive?" do
      it "should return false when is_alive? is called on offline provider" do
        provider.online = false
        provider.is_alive?.should be(false)
@@ -113,7 +108,7 @@ describe DataProvider do
    
     it "should raise and exception when is_alive! is called with an offline provider" do
       provider.online = false
-      lambda{provider.is_alive!}.should raise_error
+      lambda{provider.is_alive!}.should raise_error(CbrainError, "Error: provider #{provider.name} is not accessible right now.")
     end
   end
   
@@ -170,20 +165,27 @@ describe DataProvider do
        provider.read_only = true
        lambda{provider.cache_prepare(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
-    it "should raise an exception if passed a string argument" do
-      lambda{provider.cache_prepare("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
-    end
-    describe "creating a cache subdirectory" do
+    context "creating a cache subdirectory" do
       before(:each) do
+        SyncStatus.stub!(:ready_to_modify_cache).and_yield
         DataProvider.stub!(:cache_rootdir).and_return("cache")
+        File.stub!(:directory?).and_return(false)
         Dir.stub!(:mkdir)
       end
-      it "should find the cache root" do
-        DataProvider.should_receive(:cache_rootdir).and_return("cache")
-        provider.cache_full_path(userfile).should be true
+      it "should ensure that the cache is ready to be modified" do
+        SyncStatus.should_receive(:ready_to_modify_cache)
+        provider.cache_prepare(userfile).should be_true
       end
-      it "should create the subdirectory" do
+      it "should raise an exception if passed a string argument" do
+        lambda{provider.cache_prepare("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
+      end
+      it "should create the subdirectory if it does not exist" do
         Dir.should_receive(:mkdir).at_least(:once)
+        provider.cache_prepare(userfile).should be_true
+      end
+      it "should not attempt to create the subdirectory if it already exists" do
+        File.stub!(:directory?).and_return(true)
+        Dir.should_not_receive(:mkdir)
         provider.cache_prepare(userfile).should be_true
       end
     end
@@ -193,7 +195,7 @@ describe DataProvider do
     it "should raise an exception if called with a string argument" do
       lambda{provider.cache_full_path("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
     end
-    describe "building a cache directory" do
+    context "building a cache directory" do
       before(:each) do
         DataProvider.stub!(:cache_rootdir).and_return("cache")
         provider.stub!(:cache_subdirs_path).and_return("subdirs")
@@ -229,7 +231,7 @@ describe DataProvider do
     it "should raise an exception if I try to read a non userfile" do 
       lambda{provider.cache_readhandle(userfile)}.should raise_error(CbrainError, "Error: read handle cannot be provided for non-file.")
     end
-    describe "opening a readhandle" do
+    context "opening a readhandle" do
       before(:each) do
         provider.stub!(:cache_full_path).and_return("cache_path")
         File.stub!(:file?).and_return(true)
@@ -263,7 +265,7 @@ describe DataProvider do
       userfile = Factory.build(:single_file)
       lambda{provider.cache_writehandle(userfile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
     end
-    describe "opening a writehandle" do
+    context "opening a writehandle" do
       before(:each) do
         provider.stub!(:cache_prepare)
         provider.stub!(:cache_full_path).and_return("cache_path")
@@ -308,7 +310,7 @@ describe DataProvider do
       File.stub!(:exists?).and_return(false)
       lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: file does not exist/)
     end
-    describe "checking file type conflicts" do
+    context "checking file type conflicts" do
       before(:each) do
         File.stub!(:exists?).and_return(true)
         File.stub!(:directory?).and_return(false)
@@ -325,7 +327,7 @@ describe DataProvider do
         lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible normal file .+ given for a FileCollection./)
       end
     end
-    describe "copying from local file" do
+    context "copying from local file" do
       before(:each) do
         provider.stub!(:cache_prepare)
         provider.stub!(:cache_full_path).and_return("cache_path")
@@ -375,7 +377,7 @@ describe DataProvider do
       provider.read_only = true
       lambda{provider.cache_copy_to_local_file(userfile, "localpath")}.should raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
-    describe "copying to local file" do
+    context "copying to local file" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:cache_prepare)
@@ -435,14 +437,9 @@ describe DataProvider do
       userfile.stub!(:is_locally_cached?).and_return(false)
       lambda{provider.cache_collection_index(userfile)}.should raise_error(CbrainError, "Error: userfile #{userfile.name} with ID #{userfile.id} is not cached.")
     end
-    describe "producing a list of files" do
+    context "producing a list of files" do
       let(:file_collection) {Factory.build(:file_collection)}
-      let(:file_entry) do
-        file_entry = double("file_entry").as_null_object
-        file_entry.stub!(:name).and_return("file")
-        file_entry.stub!(:ftype).and_return(:file)
-        file_entry
-      end
+      let(:file_entry) {double("file_entry", :name => "file", :ftype => :file).as_null_object}
       
       before(:each) do
         provider.stub!(:cache_full_path).and_return(Pathname.new("cache_path"))
@@ -511,7 +508,7 @@ describe DataProvider do
       userfile.stub!(:user_id).and_return(conflict_file.user_id)
       provider.provider_rename(userfile, "abc").should be_false
     end
-    describe "renaming on the provider" do
+    context "renaming on the provider" do
       before(:each) do
         provider.stub!(:cache_erase)
         provider.stub_chain(:userfiles, :first).and_return(nil)
@@ -563,7 +560,7 @@ describe DataProvider do
       userfile.stub!(:id).and_return(nil)
       provider.provider_move_to_otherprovider(userfile, other_provider).should be_false
     end
-    describe "moving the userfile" do
+    context "moving the userfile" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:provider_erase)
@@ -571,12 +568,8 @@ describe DataProvider do
         SyncStatus.stub!(:ready_to_modify_cache)
       end
       describe "if a target file already exists" do
-        let(:target_file) do
-          tf = double("target_file")
-          tf.stub!(:name).and_return("target_file")
-          tf.stub!(:id).and_return(321)
-          tf
-        end
+        let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
+        
         before(:each) do
           Userfile.stub!(:find).and_return(target_file)
         end
@@ -641,7 +634,7 @@ describe DataProvider do
       userfile.stub!(:id).and_return(nil)
       provider.provider_copy_to_otherprovider(userfile, other_provider).should be_false
     end
-    describe "copying the userfile" do
+    context "copying the userfile" do
       before(:each) do
         provider.stub!(:sync_to_cache)
         provider.stub!(:provider_erase)
@@ -649,12 +642,8 @@ describe DataProvider do
         SyncStatus.stub!(:ready_to_modify_cache)
       end
       describe "if a target file already exists" do
-        let(:target_file) do
-          tf = double("target_file")
-          tf.stub!(:name).and_return("target_file")
-          tf.stub!(:id).and_return(321)
-          tf
-        end
+        let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
+        
         before(:each) do
           Userfile.stub!(:find).and_return(target_file)
         end
@@ -733,5 +722,207 @@ describe DataProvider do
       provider.site.should == provider.user.site
     end
   end
-  
+  describe "#validate_destroy" do
+    it "should prevent desctruction if associated userfiles still exist" do
+      destroyed_provider = Factory.create(:data_provider, :userfiles => [Factory.create(:userfile)])
+      lambda{ destroyed_provider.destroy }.should raise_error    
+    end
+    it "should allow desctruction if no associated userfiles still exist" do
+      destroyed_provider = Factory.create(:data_provider)
+      lambda { destroyed_provider.destroy }.should change{ DataProvider.count }.by(-1)
+    end
+  end
+  describe "#cache_md5" do
+    before(:each) do
+      DataProvider.instance_eval { @@key = nil }
+    end
+    
+    it "should get md5 from file, if it exists" do
+      File.stub!(:exist?).and_return(true)
+      File.should_receive(:read).and_return("XYZ")
+      DataProvider.cache_md5.should == "XYZ"
+    end
+    
+    it "should create the md5 file, if it does not exist" do
+      File.stub!(:exist?).and_return(false)
+      IO.stub!(:sysopen)
+      fh = double("file_handle").as_null_object
+      IO.should_receive(:open).and_return(fh)
+      DataProvider.cache_md5
+    end
+    
+    context "when creating the file fails" do
+      before(:each) do
+        IO.stub!(:sysopen).and_raise(StandardError)
+      end
+      it "should raise an exception if the file doesn't exist" do
+        File.stub!(:exist?).and_return(false)
+        lambda {DataProvider.cache_md5}.should raise_error
+      end
+      context "if the file already exist" do
+        let(:key) {double("key", :blank? => false).as_null_object}
+        before(:each) do
+          File.stub!(:exist?).and_return(false, true)
+          DataProvider.stub!(:sleep)
+          File.stub!(:read).and_return(key)
+        end
+        it "should read the file" do
+          File.should_receive(:read).and_return(key)
+          DataProvider.cache_md5
+        end
+        it "should raise an exception if the key is blank" do
+          key.stub!(:blank?).and_return(true)
+          lambda {DataProvider.cache_md5}.should raise_error
+        end
+      end
+    end
+  end
+  describe "#cache_revision_of_last_init" do
+    let(:cache_rev)       {double("cache_rev").as_null_object}
+    before(:each) do
+      DataProvider.stub!(:class_variable_defined?).and_return(false)
+      DataProvider.stub!(:this_is_a_proper_cache_dir!)
+      File.stub!(:exist?).and_return(true)
+      File.stub!(:read).and_return(cache_rev)
+    end
+    it "should check if the cache revision variable is already defined" do
+      DataProvider.should_receive(:class_variable_defined?).and_return(false)
+      DataProvider.cache_revision_of_last_init
+    end
+    it "should check if the cache dir is valid" do
+      DataProvider.should_receive(:this_is_a_proper_cache_dir!).and_return(true)
+      DataProvider.cache_revision_of_last_init
+    end
+    it "should check if the information already exists in a file" do
+      File.should_receive(:exist?).and_return(true)
+      DataProvider.cache_revision_of_last_init
+    end
+    it "should read information from the file if it exists" do
+      File.should_receive(:read).and_return(cache_rev)
+      DataProvider.cache_revision_of_last_init
+    end
+    context "when the information does not already exist in a file" do
+      let(:file_descriptor) {double("fd").as_null_object}
+      let(:file_handle)     {double("fh").as_null_object}
+      before(:each) do
+        File.stub!(:exist?).and_return(false)
+        DataProvider.stub_chain(:revision_info, :svn_id_rev).and_return("rev_info")
+        IO.stub!(:sysopen).and_return(file_descriptor)
+        IO.stub!(:open).and_return(file_handle)
+      end
+      it "should open a file" do
+        IO.should_receive(:open).and_return(file_handle)
+        DataProvider.cache_revision_of_last_init
+      end
+      it "should attempt to write to the file" do
+        file_handle.should_receive(:syswrite)
+        DataProvider.cache_revision_of_last_init
+      end
+      it "should close the file" do
+        file_handle.should_receive(:close)
+        DataProvider.cache_revision_of_last_init
+      end
+      context "when the write fails" do
+        before(:each) do
+          IO.stub!(:sysopen).and_raise(StandardError)
+        end
+        it "should raise an exception if the file does not exist" do
+          File.stub!(:exist?).and_return(false)
+          lambda {DataProvider.cache_revision_of_last_init}.should raise_error
+        end
+        context "because the file was just created" do
+          before(:each) do
+            File.stub!(:exist?).and_return(false, true)
+            DataProvider.stub!(:sleep)
+          end
+          it "should read the file" do
+            File.should_receive(:read).and_return(cache_rev)
+            DataProvider.cache_revision_of_last_init
+          end
+          it "should raise an exception if the revision info is blank" do
+            cache_rev.stub!(:blank?).and_return(true)
+            lambda {DataProvider.cache_revision_of_last_init}.should raise_error
+          end
+        end
+      end
+    end
+  end
+  describe "#this_is_a_proper_cache_dir!" do
+    let(:cache_root) { "/cache_root" }
+    before(:each) do
+      File.stub!(:directory?).and_return(true)
+      File.stub!(:readable?).and_return(true)
+      File.stub!(:writable?).and_return(true)
+      File.stub!(:exist?).and_return(false)
+      Dir.stub!(:entries).and_return([])
+    end
+    it "should return true if all goes well" do
+      DataProvider.this_is_a_proper_cache_dir!(cache_root).should be_true
+    end
+    it "should raise an exception if the cache root is blank" do
+      lambda {DataProvider.this_is_a_proper_cache_dir!("")}.should raise_error
+    end
+    it "should raise an exception if the cache root is a system tmp directory" do
+      lambda {DataProvider.this_is_a_proper_cache_dir!("/tmp")}.should raise_error
+    end
+    it "should return true if told not to check the file system, even if cache root doesn't exist" do
+      File.stub!(:directory?).and_return(false)
+      DataProvider.this_is_a_proper_cache_dir!(cache_root, false).should be_true
+    end
+    it "should raise an exception if the cache root doesn't exist" do
+      File.stub!(:directory?).and_return(false)
+      lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
+    end
+    it "should raise an exception if the cache root isn't readable" do
+      File.stub!(:readable?).and_return(false)
+      lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
+    end
+    it "should raise an exception if the cache root isn't writable" do
+      File.stub!(:writable?).and_return(false)
+      lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
+    end
+    it "should return true if the revision file exists" do
+      File.stub!(:exists?).and_return(true)
+      DataProvider.this_is_a_proper_cache_dir!(cache_root).should be_true
+    end
+    it "should raise an exception if unable to read the contents of the cache root" do
+      Dir.stub!(:entries).and_return(nil)
+      lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
+    end
+    it "should raise an exception if the cache root is not empty" do
+      Dir.stub!(:entries).and_return(["file1", "file2"])
+      lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
+    end
+  end
+  describe "#cache_rootdir" do
+    before(:each) do
+      @old_cache_rootdir = DataProvider.instance_eval { @cache_rootdir}
+      DataProvider.instance_eval { @cache_rootdir = nil }
+    end
+    after(:each) do
+      DataProvider.instance_eval { @cache_rootdir = @old_cache_rootdir }
+    end
+    it "should return the app's cache directory" do
+      current_resource = double("current_ressource")
+      RemoteResource.stub!(:current_resource).and_return(current_resource)
+      current_resource.should_receive(:dp_cache_dir).and_return("cache_dir")
+      DataProvider.cache_rootdir
+    end
+    it "should raise an exception if the cache directory is blank" do
+      RemoteResource.stub_chain(:current_resource, :dp_cache_dir).and_return("")
+      lambda {DataProvider.cache_rootdir}.should raise_error
+    end
+    it "should raise an exception if the cache directory is not a string or a path" do
+      RemoteResource.stub_chain(:current_resource, :dp_cache_dir).and_return(123)
+      lambda {DataProvider.cache_rootdir}.should raise_error
+    end
+  end
+  describe "#rsync_ignore_patterns" do
+    it "should return the app's rsync ignore patterns" do
+      current_resource = double("current_ressource")
+      RemoteResource.stub!(:current_resource).and_return(current_resource)
+      current_resource.should_receive(:dp_ignore_patterns)
+      DataProvider.rsync_ignore_patterns
+    end
+  end
 end

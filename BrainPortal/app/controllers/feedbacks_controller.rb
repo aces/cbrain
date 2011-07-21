@@ -92,7 +92,7 @@ class FeedbacksController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to(feedbacks_url) }
-      format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'feedback' }}
+      format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'feedback' } }
       format.xml  { head :ok }
     end
   end

@@ -215,7 +215,7 @@ class ApplicationController < ActionController::Base
       end
 
     rescue => e
-#      raise if Rails.env == 'development' #Want to see stack trace in dev. Also will log it in exception logger
+      raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
       log_exception(e) # explicit logging in exception logger, since we won't re-raise it now.
       Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."

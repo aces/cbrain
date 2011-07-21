@@ -28,12 +28,22 @@ module SmartDataProviderInterface
       @provider = @network_provider
     end
     @provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+    def @provider.save # for safety, intercept and prevent all saves
+      cb_error "Internal error: attempt to save() real provider object for SmartDataProvider '#{self.name}'."
+    end
+    def @provider.save! # for safety, intercept and prevent all saves
+      cb_error "Internal error: attempt to save!() real provider object for SmartDataProvider '#{self.name}'."
+    end
     @provider
   end
 
   # This method returns the real data provider used
   # for implementing the behavior of all the methods
   # in the provider API. It is useful for debugging.
+  # Attempts to save() the real provider will be prevented
+  # by special intercept code when setting up the current
+  # provider; this is for security reasons, as it's never
+  # needed.
   def real_provider
     @provider
   end
@@ -70,6 +80,10 @@ module SmartDataProviderInterface
 
   def is_fast_syncing? #:nodoc:
     @provider.is_fast_syncing?
+  end
+
+  def allow_file_owner_change? #:nodoc:
+    @provider.allow_file_owner_change?
   end
 
   def sync_to_cache(userfile) #:nodoc:

@@ -85,7 +85,7 @@ class UserfileCustomFilter < CustomFilter
   
   #Return +scope+ modified to filter the Userfile entry's size.
   def scope_size(scope)
-    scope.where( ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_i * 1000)])
+    scope.where( ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_f * 1000)])
   end
   
   #Return +scope+ modified to filter the Userfile entry's owner.
