@@ -201,7 +201,7 @@ class ApplicationController < ActionController::Base
         format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
       end
     rescue => e
-      raise if ENV['RAILS_ENV'] == 'development' #Want to see stack trace in dev.
+      raise unless ENV['RAILS_ENV'] == 'production' #Want to see stack trace in dev.
       
       Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       log_exception(e)
