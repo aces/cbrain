@@ -1,10 +1,23 @@
 
 <% @paginated_list.each do |launch_time| %>
-  <% tasks             = @tasks[launch_time].sort { |t1,t2| t1.cmp_by_batch_rank(t2) } %>
-  <% launch_time_id    = launch_time ? launch_time.to_i : 0 %>
-  <% launch_time_param = launch_time.to_s(:db) if launch_time %>
+  <% task_info         = @tasks[launch_time] %>
 
-  <% if tasks.size > 1 %>
+  <% if task_info[:num_tasks] == 1 %>
+
+    <%= render :partial => 'task_table_row',
+               :locals  => { :task             => task_info[:first_task],
+                             :task_available   => @bourreau_status[task_info[:first_task].bourreau.id] ? true : false,
+                             :is_child         => false,
+                           }
+    %>
+
+  <% else %>
+
+    <% launch_time_id    = launch_time ? launch_time.to_i : 0 %>
+    <% launch_time_param = launch_time.to_s(:db) if launch_time %>
+    <% first_task = task_info[:first_task] %>
+    <% statuses   = task_info[:statuses] %>
+    <% num_tasks  = task_info[:num_tasks] %>
     <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
       <td>
         <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
@@ -12,36 +25,29 @@
       <td class="left">
         <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
           <% if launch_time %>
-            <%= "#{tasks.first.pretty_name} (Batch)" %>
+            <%= "#{first_task.pretty_name} (Batch)" %>
           <% else %>
             <%= "(Various)" %>
           <% end %>
         <% end %>
       </td>
-      <td><%= overlay_description(tasks.first.description, :header_width => 35) %></td>
-      <td><%= link_to_user_if_accessible(tasks.first.user) %></td>
+      <td><%= overlay_description(first_task.description, :header_width => 35) %></td>
+      <td><%= link_to_user_if_accessible(first_task.user) %></td>
       <td colspan="2" class="left_align">
         <% if launch_time %>
-          <%= pluralize(tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
+          <%= pluralize(num_tasks, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
         <% else %>
-          <%= pluralize(tasks.size, "old job") %>
+          <%= pluralize(num_tasks, "old job") %>
         <% end %>
       </td>
       <td colspan="<%= current_project ? "3" : "4" %>" class="left_align">
         <% if launch_time %>
-          <% stat_cnt = tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
-          <% report   = stat_cnt.keys.sort.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
+          <% report   = statuses.keys.sort.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
           <%= report.html_safe %>
         <% end %>
       </td>
     </tr>
-  <% else %>
-    <%= render :partial => 'task_table_row',
-               :locals  => { :task             => tasks[0],
-                             :task_available   => @bourreau_status[tasks[0].bourreau.id] ? true : false,
-                             :is_child         => false,
-                           }
-    %>
+
   <% end %>
 
 <% end %>

@@ -75,7 +75,7 @@ class TasksController < ApplicationController
       sort_dir   = 'DESC'
     end
 
-    scope = scope.includes( [:bourreau, :user, :group] ).order( "#{sort_order} #{sort_dir}" ).readonly
+    scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
     @total_tasks = scope.count    # number of TASKS
     @total_entries = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
@@ -90,22 +90,25 @@ class TasksController < ApplicationController
     
     if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
-      launch_times   = scope.offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
-      if launch_times.include? nil
-        @tasks = scope.where( ["cbrain_tasks.launch_time IN (?) OR cbrain_tasks.launch_time IS ?", launch_times, nil])
-      else
-        @tasks = scope.where( :launch_time => launch_times )
+      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
+      @tasks = {} # hash lt => task_info
+      launch_times.each do |lt|
+         first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
+         tasks_in_batch = scope.where(:launch_time => lt).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
+         statuses = {}
+         tot_tasks = 0
+         tasks_in_batch.each do |stat_info|
+           the_stat = stat_info.status =~ /Fail/ ? "Failed" : stat_info.status
+           the_cnt  = stat_info.status_count.to_i
+           statuses[the_stat] ||= 0
+           statuses[the_stat] += the_cnt
+           tot_tasks          += the_cnt
+         end
+         @tasks[lt] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
       end
-      seen_keys    = {}
-      pagination_list = []
-      @tasks = @tasks.all.hashed_partition do |task|
-        lt               = task.launch_time
-        pagination_list << lt unless seen_keys[lt]
-        seen_keys[lt]    = true
-        lt
-      end
+      pagination_list = launch_times
     else
-      @tasks = scope.offset( offset ).limit( @tasks_per_page )
+      @tasks = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
       pagination_list = @tasks.all
     end
     
