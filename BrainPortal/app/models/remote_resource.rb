@@ -632,7 +632,8 @@ class RemoteResource < ActiveRecord::Base
 
     # Send local
     if self.id == CBRAIN::SelfRemoteResourceId
-      return self.class.process_command(command)
+      self.class.process_command(command)
+      return command
     end
 
     # Send remote
