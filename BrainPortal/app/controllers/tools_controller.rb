@@ -95,7 +95,6 @@ class ToolsController < ApplicationController
       @tool = Tool.new(
                   :name               => tool.sub(/^CbrainTask::/, ""),
                   :cbrain_task_class  => tool,
-                  :bourreau_ids       => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
                   :user_id            => User.find_by_login("admin").id,
                   :group_id           => Group.everyone.id,
                   :category           => "scientific tool" 
@@ -155,7 +154,7 @@ class ToolsController < ApplicationController
   end
       
   def tool_management #:nodoc:
-      @tools = Tool.includes( [ :bourreaux ] ).order("tools.name")
+      @tools = Tool.order("tools.name")
       @bourreaux = Bourreau.all
   end
 
