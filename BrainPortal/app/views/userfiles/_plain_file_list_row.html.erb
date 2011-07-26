@@ -6,7 +6,7 @@
 <% end %>
 
 <td class="left">
-    <%= "&nbsp" * 6 * file.depth %>
+    <%= ("&nbsp" * 6 * file.depth).html_safe %>
     <% if file.symbolic_type == :directory %>
       <%= image_tag "/images/folder_icon_solid.png" %>
     <% else %>

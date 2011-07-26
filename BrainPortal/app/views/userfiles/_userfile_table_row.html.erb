@@ -29,7 +29,7 @@
       <% end %>
       <% if userfile.formats.size > 0 %>
         <br>
-        <%= "&nbsp;" * (userfile.level * 5) %> 
+        <%= ("&nbsp;" * ((userfile.level || 0) * 5)).html_safe %> 
          <%= show_hide_toggle "Formats", ".format_#{userfile.id}", :class  => "action_link" %> 
         <%= 
           userfile.formats.map do |u| 
