@@ -90,7 +90,7 @@ describe TagsController do
       let(:real_tag) {Factory.create(:tag, :name => "name", :user_id => current_user.id)}
       
       it "should find the requested tag" do
-        get :edit, :id => real_tag.id
+        put :update, :id => real_tag.id
         assigns[:tag].should == real_tag
       end
       it "should render the create page when js is requested" do
@@ -107,12 +107,7 @@ describe TagsController do
           put :update, :id => real_tag.id
           response.should redirect_to(:action => :index, :controller => :userfiles)
         end
-        
       end
-
-      # html case
-      # response.should redirect_to(:action => :index, :controller => :userfiles)
-
       
       context "when update fails" do
         it "should render the edit page" do
