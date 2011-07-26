@@ -17,7 +17,7 @@
   <% end %>
 
   <% if file_list.size > 100 %>
-    <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td class="left"> <%= "&nbsp" * 6 * file_list.first.depth %> ... <%= image_tag "/images/lotsa_files_icon.png" %> <%= pluralize(file_list.size-100, "more entry") %></td><td></td></tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>"><td></td><td class="left"> <%= ("&nbsp;" * 6 * file_list.first.depth).html_safe %> ... <%= image_tag "/images/lotsa_files_icon.png" %> <%= pluralize(file_list.size-100, "more entry") %></td><td></td></tr>
   <% end %>
 <% end %>
 
