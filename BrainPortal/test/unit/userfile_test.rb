@@ -77,7 +77,7 @@ class UserfileTest < ActiveSupport::TestCase
   def give_data_provider_id(userfile)
     return if userfile.data_provider_id
     unless self.instance_variable_defined?('@prov_id')
-      prov = DataProvider.find_by_name("TestVault") || DataProvider.find(:first)
+      prov = DataProvider.find_by_name("TestVault") || DataProvider.first
       @prov_id = prov.id
     end
     userfile.data_provider_id = @prov_id

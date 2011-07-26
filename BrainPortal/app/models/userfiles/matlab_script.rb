@@ -10,7 +10,7 @@
 
 class MatlabScript < TextFile
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def self.file_name_pattern
     /\.m$/i

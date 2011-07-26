@@ -51,7 +51,7 @@
 #                (specified by its cache_trust_expire).
 class SyncStatus < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   CheckInterval   = 10.seconds
   CheckMaxWait    = 24.hours
@@ -468,10 +468,10 @@ class SyncStatus < ActiveRecord::Base
     puts "SYNC: Status: #{state.pretty} Create" if   state && DebugMessages
     puts "SYNC: Status: Exist"                  if ! state && DebugMessages
     # if we can't create it (because of validation rules), it already exists
-    state ||= self.find(:first, :conditions => {
-                                :userfile_id        => userfile_id,
-                                :remote_resource_id => CBRAIN::SelfRemoteResourceId,
-                                })
+    state ||= self.where(
+                     :userfile_id        => userfile_id,
+                     :remote_resource_id => CBRAIN::SelfRemoteResourceId,
+                   ).first
     state.invalidate_old_status
     state
   end
@@ -481,7 +481,7 @@ class SyncStatus < ActiveRecord::Base
   # OTHER than the one for +res_id+; you can set
   # +res_id+ to +nil+ to get them all.
   def self.get_status_of_other_caches(userfile_id,res_id = CBRAIN::SelfRemoteResourceId)
-    states = self.find(:all, :conditions => { :userfile_id => userfile_id } )
+    states = self.where( :userfile_id => userfile_id )
     if res_id
       states = states.select { |s| s.remote_resource_id != res_id }
     end

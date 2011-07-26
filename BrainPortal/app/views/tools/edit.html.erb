@@ -2,7 +2,7 @@
 <% title 'Edit Tool' %>
 
 <div class="generalbox">
-  <% form_for(@tool) do |f| %>
+  <%= form_for(@tool) do |f| %>
     <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
     <p>
       <%= f.submit "Update tool" %>

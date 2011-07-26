@@ -20,7 +20,7 @@
 #* Userfile
 class Tag < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   validates_presence_of   :name, :user_id, :group_id
   validates_uniqueness_of :name, :scope => :group_id

@@ -362,16 +362,16 @@ jQuery(
      var url = button.attr("href");
      var target = button.attr("data-target");
      var target_text = button.attr("data-target-text");
-     var confirm_message = button.attr('data-confirm');
+     //var confirm_message = button.attr('data-confirm');
      var data_method = button.attr("data-method");
      if(!data_type) data_type = "script";
      if(!data_method) data_method = "DELETE";
      
-     if(confirm_message){
-        if(!confirm(confirm_message)){
-          return false;
-        };
-     }
+     //if(confirm_message){
+     //   if(!confirm(confirm_message)){
+     //     return false;
+     //   };
+     //}
     
      if(target){
        if(!target_text){
@@ -380,14 +380,14 @@ jQuery(
        jQuery(target).html(target_text);
      }
       
-     jQuery.ajax({
-       url: url,
-       type: data_method,
-       dataType: data_type,
-       resetForm: false
-       }
-     );
-     return false;
+     //jQuery.ajax({
+     //  url: url,
+     //  type: data_method,
+     //  dataType: data_type,
+     //  resetForm: false
+     //  }
+     //);
+     return true;
    }); 
    
 
@@ -443,7 +443,7 @@ jQuery(
    
    //html_tool_tip_code based on xstooltip provided by
    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-   jQuery(".html_tool_tip_trigger").live("mouseover", function(){
+   jQuery(".html_tool_tip_trigger").bind("mouseover", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
@@ -462,7 +462,7 @@ jQuery(
       }
       
       tool_tip.show();
-   }).live("mouseout", function(){
+   }).bind("mouseout", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
@@ -560,11 +560,11 @@ jQuery(
      if(!method) method = enclosing_form.attr("data-method");
      if(!method) method = "POST";
      
-     if(confirm_message){
-         if(!confirm(confirm_message)){
-           return false;
-         };
-     }
+     //if(confirm_message){
+     //    if(!confirm(confirm_message)){
+     //      return false;
+     //    };
+     //}
      if(ajax_submit != "false"){
        enclosing_form.ajaxSubmit({
          url: url,
@@ -588,14 +588,14 @@ jQuery(
    jQuery('.external_submit_button').live('click', function(e) {
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
-     if(confirm_message) {
-       if(confirm(confirm_message)) {
-	       form.submit();
-       }
-     }
-     else {
+     //if(confirm_message) {
+     //  if(confirm(confirm_message)) {
+     //    form.submit();
+     //  }
+     //}
+     //else {
        form.submit();
-     }
+     //}
      return false;
    });
     

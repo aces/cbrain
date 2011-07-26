@@ -12,7 +12,7 @@ require 'socket'
 
 class Message < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   belongs_to :user
 
@@ -72,16 +72,13 @@ class Message < ActiveRecord::Base
     allusers.each do |user|
 
       # Find or create message object
-      mess = user.messages.find(
-               :first,
-               :conditions => {
-                   :message_type => type,
-                   :header       => header,
-                   :description  => description,
-                   :read         => false,
-                   :critical     => critical 
-               }
-             ) || 
+      mess = user.messages.where(
+               :message_type => type,
+               :header       => header,
+               :description  => description,
+               :read         => false,
+               :critical     => critical 
+             ).first || 
              Message.new(
                :user_id      => user.id,
                :message_type => type,
@@ -114,10 +111,10 @@ class Message < ActiveRecord::Base
     end
     
     if send_email
-      CbrainMailer.deliver_message(allusers,
+      CbrainMailer.cbrain_message(allusers,
         :subject  => header,
-        :body     => "#{description}\n\n#{var_text}"
-      )
+        :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
+      ).deliver
     end
 
     messages_sent
@@ -202,6 +199,13 @@ class Message < ActiveRecord::Base
                        
       :send_email    => true
     )
+  rescue => ex
+    puts_red "Exception raised while trying to report an exception!"
+    puts_yellow "The original exception was: #{exception.class.to_s}: #{exception.message}\n"
+    puts exception.backtrace.join("\n")
+    puts_yellow "The new exception is: #{ex.class.to_s}: #{ex.message}\n"
+    puts ex.backtrace.join("\n")
+    return true
   end
 
   # Will append the text document in argument to the

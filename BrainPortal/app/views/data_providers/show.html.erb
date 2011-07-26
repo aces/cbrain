@@ -1,7 +1,7 @@
 
 <% title 'Data Provider Info' %>
 
-<h2>Information about Data Provider '<%= h(@provider.name) %>'</h2>
+<h2>Information about Data Provider '<%= @provider.name %>'</h2>
 
 <div class="generalbox">
 
@@ -25,24 +25,24 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Name</th>
-          <td><%= h(@provider.name) %></td>
+          <td><%= @provider.name %></td>
       </tr>
 
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Class</th>
-          <td><%= h(@provider.class.to_s) %></td>
+          <td><%= @provider.class.to_s %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Revision Info (DataProvider)</th>
-          <td><%= h(DataProvider.revision_info.svn_id_pretty_rev_author_date) %></td>
+          <td><%= DataProvider.revision_info.svn_id_pretty_rev_author_date %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Revision Info (<%= @provider.class.to_s %>)</th>
-          <td><%= h(@provider.revision_info.svn_id_pretty_rev_author_date) %></td>
+          <td><%= @provider.revision_info.svn_id_pretty_rev_author_date %></td>
       </tr>
 
       <% end %>
@@ -73,22 +73,22 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Time Zone</th>
-          <td><%= h(@provider.time_zone || "(Unset)") %></td>
+          <td><%= @provider.time_zone || "(Unset)" %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Status</th>
-          <td><%= h(@provider.online ? "Online" : "Offline") %></td>
+          <td><%= @provider.online ? "Online" : "Offline" %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Mode</th>
-          <td><%= h(@provider.read_only ? "Read Only" : "Read/Write") %></td>
+          <td><%= @provider.read_only ? "Read Only" : "Read/Write" %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Syncability</th>
-          <td><%= h(@provider.not_syncable ? "NOT syncable" : "Fully syncable") %></td>
+          <td><%= @provider.not_syncable ? "NOT syncable" : "Fully syncable" %></td>
       </tr>
 
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
@@ -99,22 +99,22 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Remote Host</th>
-          <td><%= h(@provider.remote_host) %></td>
+          <td><%= @provider.remote_host %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Remote User</th>
-          <td><%= h(@provider.remote_user) %></td>
+          <td><%= @provider.remote_user %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Remote Directory</th>
-          <td><%= h(@provider.remote_dir) %></td>
+          <td><%= @provider.remote_dir %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Remote Port</th>
-          <td><%= h(@provider.remote_port) %></td>
+          <td><%= @provider.remote_port %></td>
       </tr>
 
       <% end %>
@@ -151,7 +151,7 @@
   <table>
     <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
     <% @ssh_keys.each do |pair| %>
-      <tr><th><%= h(pair[0]) %></th></tr>
+      <tr><th><%= pair[0] %></th></tr>
       <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
     <% end %>
   </table>

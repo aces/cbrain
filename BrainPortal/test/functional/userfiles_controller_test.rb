@@ -63,7 +63,7 @@ class UserfilesControllerTest < ActionController::TestCase
     
     file = Userfile.find_by_name(new_name)
     assert file.tags.count == 1
-    assert file.tags.find(:first).id == tags(:tags_001).id
+    assert file.tags.first.id == tags(:tags_001).id
     assert file.name == new_name
     
     assert_redirected_to userfiles_path

@@ -12,7 +12,7 @@
 
 class ActiveRecordLog < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
 end
 

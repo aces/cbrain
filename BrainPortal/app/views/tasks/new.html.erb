@@ -1,11 +1,9 @@
 
-<% title "Launch " + @task.pretty_name %>
+<% title "Launch " + @task.name %>
 
 <h1>Launch <%= @task.pretty_name %> Task</h1>
 
-<%
-     form_for(:cbrain_task, @task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder ) do |form|
--%>
+<%= form_for(@task, :as => :cbrain_task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder ) do |form| -%>
 
 <% # Hidden fields -%>
 <%= hidden_field_tag :tool_id, params[:tool_id] %>
@@ -25,7 +23,7 @@
 
 <h2>Task Parameters
   <% help_doc = "/doc/tasks/#{@task.name.underscore}_options.html" %>
-  <% if File.exists?( RAILS_ROOT + "/public" + help_doc ) %>
+  <% if File.exists?( Rails.root.to_s + "/public" + help_doc ) %>
     <%= overlay_ajax_link "(Help)", help_doc, :class  => "task_help_link" %>
   <% end %>
   :

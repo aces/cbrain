@@ -5,12 +5,12 @@
 
 <table class = "property_list">
    <tr>
-     <th class = "center_align_heading" colspan="2"><%= h @feedback.summary %></th>
+     <th class = "center_align_heading" colspan="2"><%= @feedback.summary %></th>
    </tr>
 
    <tr>
       <td> <%= link_to_user_with_tooltip(@feedback.user) %> </td>
-      <td> <%= h(to_localtime(@feedback.created_at,:datetime)) %> </td>
+      <td> <%= to_localtime(@feedback.created_at,:datetime) %> </td>
    </tr>
 
    <tr>

@@ -1,6 +1,6 @@
 <div class="menu_bar menu_bar_left">
   <% if check_role(:admin) || check_role(:site_manager) %>
-    <% button_with_dropdown_menu('Create New Server', :partial => 'new', :content_id => "new_bourreau", :button_id => "new_bourreau_button") %>
+    <%= button_with_dropdown_menu('Create New Server', :partial => 'new', :content_id => "new_bourreau", :button_id => "new_bourreau_button") %>
     <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
   <% end %>
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
@@ -43,11 +43,11 @@
 
   <% for bour in @bourreaux %>
     <% if bour.is_a?(Bourreau) && bour.online? %>
-      <% staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
+      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
                            :id             => "bourreau_#{bour.id}",
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}", 
                            :error_message  => "<td colspan=\"#{numcol}\" class=\"loading_message\">Information for '#{bour.name}' unavailable</td>" do %>
-         <td colspan="<%= numcol %>" class="loading_message">Fetching information for '<%= h(bour.name) %>' ...</td>
+         <td colspan="<%= numcol %>" class="loading_message">Fetching information for '<%= bour.name %>' ...</td>
       <% end %>
     <% else %>
       <%= render :partial => 'bourreau_table_row', :locals => { :bourreau => bour } %>

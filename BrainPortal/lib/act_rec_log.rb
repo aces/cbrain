@@ -167,7 +167,7 @@
 # 
 module ActRecLog
 
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Add a log +message+ to the CBRAIN logging system
   # The first time a message is created, some revision
@@ -312,7 +312,7 @@ module ActRecLog
     end
     arl = self.active_record_log
     return true unless arl
-    arl.destroy_without_callbacks
+    ActiveRecordLog.delete(arl.id) # was: destroy_without_callbacks
     true
   end
 
@@ -340,10 +340,7 @@ module ActRecLog
     myid    = self.id
     myclass = self.class.to_s
     return nil if myid.blank?
-    ActiveRecordLog.find(
-       :first,
-       :conditions => { :ar_id => myid, :ar_class => myclass }
-    )
+    ActiveRecordLog.where( :ar_id => myid, :ar_class => myclass ).first
   end
 
   def active_record_log_find_or_create #:nodoc:

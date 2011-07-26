@@ -3,7 +3,7 @@
 
 module TasksHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Given a plain name for a task's private partial, such
   # as 'my_stuff' or :my_stuff, will return a full path
@@ -30,7 +30,7 @@ module TasksHelper
   # Shows a bent-arrow character indented by +level+ 'spaces'
   # (actually, four NBSPs per level)
   def task_tree_view_icon(level)
-    ('&nbsp' * 4 * level) + '&#x21b3;'
+    (('&nbsp' * 4 * level) + '&#x21b3;').html_safe
   end
 
   StatesToColor = {

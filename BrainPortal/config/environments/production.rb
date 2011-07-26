@@ -1,33 +1,67 @@
-require 'socket'
+CbrainRailsPortal::Application.configure do
+  # Settings specified here will take precedence over those in config/application.rb
 
-# Settings specified here will take precedence over those in config/environment.rb
+  # The production environment is meant for finished, "live" apps.
+  # Code is not reloaded between requests
+  config.cache_classes = true
 
-# The production environment is meant for finished, "live" apps.
-# Code is not reloaded between requests
-config.cache_classes = true
+  # Full error reports are disabled and caching is turned on
+  config.consider_all_requests_local       = false
+  config.action_controller.perform_caching = true
 
-# Use a different logger for distributed setups
-# config.logger = SyslogLogger.new
+  # Specifies the header that your server uses for sending files
+  config.action_dispatch.x_sendfile_header = "X-Sendfile"
 
-# Full error reports are disabled and caching is turned on
-config.action_controller.consider_all_requests_local = false
-config.action_controller.perform_caching             = true
+  # For nginx:
+  # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
 
-# Use a different cache store in production
-# config.cache_store = :mem_cache_store
+  # If you have no front-end server that supports something like X-Sendfile,
+  # just comment this out and Rails will serve the files
 
-# Enable serving of images, stylesheets, and javascripts from an asset server
-# config.action_controller.asset_host                  = "http://assets.example.com"
+  # See everything in the log (default is :info)
+  # config.log_level = :debug
 
-# Disable delivery errors, bad email addresses will be ignored
-# config.action_mailer.raise_delivery_errors = false
+  # Use a different logger for distributed setups
+  # config.logger = SyslogLogger.new
 
-# Don't care if the mailer can't send
-config.action_mailer.delivery_method       = :smtp
-config.action_mailer.raise_delivery_errors = false
+  # Use a different cache store in production
+  # config.cache_store = :mem_cache_store
 
-config.action_mailer.smtp_settings = {
-  :address  =>  "mailhost.mcgill.ca",
-  :port     =>  25,
-  :domain   =>  Socket.gethostname
-}
+  # Disable Rails's static asset server
+  # In production, Apache or nginx will already do this
+  config.serve_static_assets = true
+
+  # Enable serving of images, stylesheets, and javascripts from an asset server
+  # config.action_controller.asset_host = "http://assets.example.com"
+
+  # Disable delivery errors, bad email addresses will be ignored
+  # config.action_mailer.raise_delivery_errors = false
+
+  # Enable threaded mode
+  # config.threadsafe!
+
+  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+  # the I18n.default_locale when a translation can not be found)
+  config.i18n.fallbacks = true
+
+  # Send deprecation notices to registered listeners
+  config.active_support.deprecation = :notify
+end
+
+CbrainRailsPortal::Application.config.after_initialize do
+
+  LoggedExceptionsController.class_eval do
+    # set the same session key as the app
+    #session :session_key => CbrainRailsPortal::Application.config.secret_token
+
+    include AuthenticatedSystem
+
+    protect_from_forgery :secret => CbrainRailsPortal::Application.config.secret_token
+
+    before_filter :login_required, :admin_role_required
+
+    # optional, sets the application name for the rss feeds
+    self.application_name = "BrainPortal"
+  end
+
+end

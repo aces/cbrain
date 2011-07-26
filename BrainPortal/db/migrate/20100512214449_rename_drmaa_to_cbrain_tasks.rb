@@ -12,7 +12,7 @@ class DrmaaTask < RawTask
 end
 
 sci_names = []
-Dir.entries("#{RAILS_ROOT}/app/models").each do |e|
+Dir.entries("#{Rails.root.to_s}/app/models").each do |e|
   next unless e =~ /\.rb$/ && e =~ /^drmaa_/ && e !~ /drmaa_task/
   e.sub!(/\.rb$/,"")
   e.sub!(/^drmaa_/,"")
@@ -20,7 +20,7 @@ Dir.entries("#{RAILS_ROOT}/app/models").each do |e|
   sci_names |= [ e ]
 end
 
-Dir.entries("#{RAILS_ROOT}/app/models/cbrain_task").each do |e|
+Dir.entries("#{Rails.root.to_s}/app/models/cbrain_task").each do |e|
   next unless e =~ /\.rb$/ && e !~ /web_interface/
   e.sub!(/\.rb$/,"")
   e = e.camelize

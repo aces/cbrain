@@ -593,7 +593,7 @@ pre {
 /* % Format for flash messages (notice/system/error) */
 /* % ######################################################### */
 
-#flash_notice {
+.flash_notice {
     z-index: 0;
     border: 2px solid green;
     padding-top: 1em;
@@ -607,7 +607,7 @@ pre {
     background-color: #ddffdd;
 }
 
-#flash_system {
+.flash_system {
     z-index: 0;
     border: 2px solid #00ffff;
     padding-top: 1em;
@@ -621,7 +621,7 @@ pre {
     background-color: #ddeeff;
 }
 
-#flash_error {
+.flash_error {
     z-index: 0;
     border: 2px solid red;
     padding-top: 1em;
@@ -779,12 +779,12 @@ pre {
     color: #555555;
 }
 
-#selected a {
+.selected a {
     background-color: white;
     color: #05A3D6;
 }
 
-#unselected a {
+.unselected a {
     color: white;
 }
 

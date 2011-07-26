@@ -58,12 +58,12 @@
       <td></td>
     <% end %>
 
-    <td class="left"><%= h(fi_name) %></td>
+    <td class="left"><%= fi_name %></td>
 
-    <td><%= h(fi_size) %></td>
+    <td><%= fi_size %></td>
 
     <% if fi_userfile %>
-      <td><%= h(fi_userfile.class.to_s) %></td>
+      <td><%= fi_userfile.class.to_s %></td>
     <% else %>
        <% if ! fi_ok %>
          <td><%= html_colorize("Unacceptable?") %></td>
@@ -86,14 +86,14 @@
        <% end %>
     <% end %>
 
-    <td><%= h(to_localtime(Time.at(fi_mtime),:datetime)) %></td>
+    <td><%= to_localtime(Time.at(fi_mtime),:datetime) %></td>
 
     <% if fi_userfile %>
       <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
     <% else %>
       <td>No</td>
     <% end %>
-    <td><%= h(fi_message) %></td>
+    <td><%= fi_message %></td>
   </tr>
 
 <% end %> <!-- each fileinfo -->

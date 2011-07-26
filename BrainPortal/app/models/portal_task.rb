@@ -15,7 +15,7 @@
 # See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
@@ -604,7 +604,7 @@ Dir.chdir(CBRAIN::TasksPlugins_Dir) do
     next if model == "cbrain_task_class_loader.rb"
     model.sub!(/.rb$/,"")
     unless CbrainTask.const_defined? model.classify
-      #puts_blue "Loading CbrainTask subclass #{model.classify} from #{model}.rb ..."
+#      puts_blue "Loading CbrainTask subclass #{model.classify} from #{model}.rb ..."
       require_dependency "#{CBRAIN::TasksPlugins_Dir}/#{model}.rb"
     end
   end

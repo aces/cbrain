@@ -3,7 +3,7 @@
 
 <div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-    <% button_with_dropdown_menu('Leave Message', :partial => 'new', :content_id => 'new_message', :button_id => "new_message_button") %>
+    <%= button_with_dropdown_menu('Leave Message', :partial => 'new', :content_id => 'new_message', :button_id => "new_message_button") %>
   <% end %>
   <% unless @filter_params["filter_hash"].blank? %>
     <%= render :partial => "shared/manage_filter_button" %>
@@ -15,7 +15,7 @@
 
 <P>
 
-<% form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
+<%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
 
   <table class="resource_list" id="message_table">
      <%= render :partial => 'message_table' %>
@@ -25,7 +25,7 @@
 
 <% if current_user.has_role? :admin %>
 
-  <% form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
+  <%= form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
 
     <%
       offset_times = [

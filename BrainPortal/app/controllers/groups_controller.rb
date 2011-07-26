@@ -12,19 +12,23 @@
 #RESTful controller for the Group resource.
 class GroupsController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required
 
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:    
-    @system_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["SystemGroup"] | SystemGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
-    @work_groups = base_filtered_scope current_user.available_groups(:conditions  => {:type  => ["WorkGroup"] | WorkGroup.send(:subclasses).map(&:name)}, :include => [:site], :order  => "groups.type, groups.name")
+    @system_groups = base_filtered_scope current_user.available_groups(
+      :type => (["SystemGroup"] | SystemGroup.descendants.map(&:name))
+    ).includes(:site).order("groups.type, groups.name")
+    @work_groups = base_filtered_scope current_user.available_groups(
+      :type => (["WorkGroup"] | WorkGroup.descendants.map(&:name))
+    ).includes(:site).order("groups.type, groups.name")
     
     #For new panel
     @group = WorkGroup.new
-    @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
+    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
 
     common_form_elements()
 
@@ -41,11 +45,11 @@ class GroupsController < ApplicationController
   # GET /groups/1/edit
   def edit  #:nodoc:
     if current_user.has_role? :admin
-      @group = current_user.available_groups.find(params[:id], :conditions => {:type => [ "WorkGroup", "InvisibleGroup" ]})
+      @group = current_user.available_groups.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
     else
-      @group = current_user.available_groups.find(params[:id], :conditions => {:type => "WorkGroup"})
+      @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
     end
-    @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
   end
 
   # POST /groups
@@ -69,7 +73,7 @@ class GroupsController < ApplicationController
         format.js
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
-        @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login)
+        @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.js
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -80,7 +84,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   def update #:nodoc:
     if current_user.has_role? :admin
-      @group = Group.find(params[:id], :conditions => { :type => [ "WorkGroup", "InvisibleGroup" ] })
+      @group = Group.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
     else
       @group = WorkGroup.find(params[:id])
     end
@@ -99,7 +103,7 @@ class GroupsController < ApplicationController
         format.html { redirect_to groups_path }
         format.xml  { head :ok }
       else
-        @users = current_user.available_users(:conditions => "users.login<>'admin'", :order => :login).reject{|u| u.login == 'admin'}
+        @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login).reject{|u| u.login == 'admin'}
         format.html { render :action => "edit" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
@@ -138,17 +142,20 @@ class GroupsController < ApplicationController
 
   def common_form_elements
     @group_id_2_user_counts = {}
-    User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+    #User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
+    User.joins(:groups).select( "group_id, count(group_id) as total" ).group("group_id").each do |user|
       @group_id_2_user_counts[user.group_id.to_i] = user.total
     end
 
     @group_id_2_userfile_counts = {}
-    Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+    #Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
+    Userfile.select( "group_id, count(group_id) as total" ).group("group_id").each do |userfile|
       @group_id_2_userfile_counts[userfile.group_id] = userfile.total
     end
 
     @group_id_2_task_counts = {}
-    CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+    #CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
+    CbrainTask.select( "group_id, count(group_id) as total" ).group("group_id").each do |task|
       @group_id_2_task_counts[task.group_id] = task.total
     end
   end

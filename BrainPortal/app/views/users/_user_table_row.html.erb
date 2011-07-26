@@ -1,22 +1,22 @@
 
 <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="user_<%= user.id %>">
   <td><%= link_to_user_if_accessible(user) %></td>
-  <td class="left"><%= h(user.full_name) %></td>
-  <td><%= auto_link_email_addresses user.email %></td>
+  <td class="left"><%= user.full_name %></td>
+  <td><%= auto_link_email_addresses user.email.html_safe %></td>
   <td><%= user.last_connected_at ? to_localtime(user.last_connected_at,:datetime) : "Unknown" %></td>
   <% groups = user.available_groups.sort{|a, b| a.name.casecmp(b.name)} %>
   <td>
       <% if groups.size > 0 %>
-        <% html_tool_tip(pluralize(groups.size,"project"), :offset_x => 60 ) do %>
-          <% array_to_table(groups, :table_class => 'simple', :ratio => "3:1") { |g,r,c| g.name } %>
+        <%= html_tool_tip(pluralize(groups.size,"project"), :offset_x => 60 ) do %>
+          <%= array_to_table(groups, :table_class => 'simple', :ratio => "3:1") { |g,r,c| g.name } %>
         <% end %>
       <% end %>
   </td>
-  <td><%= h user.role.humanize %></td>
+  <td><%= user.role.humanize %></td>
   <td><%= link_to_site_if_accessible(user.site) %></td>
-  <td><%= h user.city %></td>
-  <td><%= h user.country %></td>
-  <td><%= h(user.time_zone || "(Unset)") %></td>
+  <td><%= user.city %></td>
+  <td><%= user.country %></td>
+  <td><%= user.time_zone || "(Unset)" %></td>
   <td>
     <%= 
       filter_reset_link h(user.userfiles.count), :controller => :userfiles, 

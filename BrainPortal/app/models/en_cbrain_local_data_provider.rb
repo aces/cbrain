@@ -30,7 +30,7 @@ require 'fileutils'
 #
 class EnCbrainLocalDataProvider < LocalDataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def allow_file_owner_change? #:nodoc:
     true

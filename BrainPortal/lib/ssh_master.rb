@@ -56,9 +56,9 @@ class SshMaster
 
   include Sys  # for ProcTable
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
-  CONTROL_SOCKET_DIR_1 = (self.const_get('RAILS_ROOT') rescue nil) ? "#{RAILS_ROOT}/tmp/sockets" : "/tmp"
+  CONTROL_SOCKET_DIR_1 = (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
 
   # Internal timing limits; conservative enough and should not need to be changed.
@@ -304,6 +304,7 @@ class SshMaster
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
         subpid = Process.fork do
           begin
+            Process.setpgrp rescue true
             self.write_pidfile(Process.pid,:force)  # Overwrite
             $stdin.close rescue nil
             $stdout.reopen(self.diag_path, "a")
@@ -385,6 +386,7 @@ class SshMaster
     signal_name = "SIGURG"
     alarm_pid = Process.fork do
       begin
+        Process.setpgrp rescue true
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
         Signal.trap("TERM") do
           debugTrace("Alarm subprocess #{$$} for #{@key}: told to exit with TERM.")

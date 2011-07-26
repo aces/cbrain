@@ -24,8 +24,8 @@
 
 <p/>
 
-<% build_accordion do |acc| %>
-  <% acc.section "Filter Files" do %>
+<%= build_accordion do |acc| %>
+  <%= acc.section "Filter Files" do %>
     <%= render :partial => 'userfiles/filters' %>
     <div id="tag_table_sidebar">
       <%= render :partial => 'userfiles/tag_table_sidebar' %>
@@ -38,11 +38,11 @@
     </ul>
   <% end %>
 
-  <% acc.section "Upload File" do %>
+  <%= acc.section "Upload File" do %>
     <%= render :partial => "userfiles/new" %> 
   <% end %>
 
-  <% acc.section "Help" do %>
+  <%= acc.section "Help" do %>
         <%= overlay_ajax_link "Tools Info", "/doc/userfiles/tools_overview.html" %>
         <br>
         <%= overlay_ajax_link "File Formats Info", "/doc/userfiles/file_formats_overview.html" %>

@@ -2,16 +2,14 @@
 #
 # CBRAIN Project
 #
-# Runtime system checks common to borth Portal and Bourreau
+# Runtime system checks common to both Portal and Bourreau
 #
 # $Id$
 #
 
 class CbrainSystemChecks < CbrainChecker
   
-  Revision_info="$Id$"
-
-
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
@@ -23,8 +21,8 @@ class CbrainSystemChecks < CbrainChecker
 
     myname       = ENV["CBRAIN_RAILS_APP_NAME"]
     myname     ||= CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
-    mytype       = RAILS_ROOT =~ /BrainPortal$/ ? "BrainPortal" : "Bourreau"
-    myshorttype  = RAILS_ROOT =~ /BrainPortal$/ ? "portal"      : "bourreau"
+    mytype       = Rails.root.to_s =~ /BrainPortal$/ ? "BrainPortal" : "Bourreau"
+    myshorttype  = Rails.root.to_s =~ /BrainPortal$/ ? "portal"      : "bourreau"
     if myname.blank?
       puts "C> \t- No name given to this #{mytype} Rails application."
       puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
@@ -54,7 +52,7 @@ class CbrainSystemChecks < CbrainChecker
 
     if mytype == "BrainPortal"
       puts "C> \t- BrainPortal named '#{myname} is not registered in database, please run"
-      puts "C> \t  this command: 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'."
+      puts "C> \t  this command: 'rake db:sanity:check RAILS_ENV=#{Rails.env}'."
     else
       puts "C> \t- Bourreau named '#{myname} is not registered in database, please add"
       puts "C> \t  it using the interface, or check the value of 'CBRAIN_RAILS_APP_NAME' in"
@@ -85,8 +83,9 @@ class CbrainSystemChecks < CbrainChecker
       puts "C> \t- Time zone set to '#{my_time_zone}'."
     end
 
-    Rails.configuration.time_zone = my_time_zone
-    Rails::Initializer.new(Rails.configuration).initialize_time_zone
+    Rails::Application.config.time_zone = my_time_zone
+    Time.zone = my_time_zone
+    #Rails::Initializer.new(Rails.configuration).initialize_time_zone
 
   end
   
@@ -139,7 +138,7 @@ class CbrainSystemChecks < CbrainChecker
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."
-      synclist = SyncStatus.find(:all, :conditions => { :remote_resource_id => myself.id })
+      synclist = SyncStatus.where( :remote_resource_id => myself.id )
       synclist.each do |ss|
         ss.destroy rescue true
       end
@@ -159,10 +158,10 @@ class CbrainSystemChecks < CbrainChecker
   def self.a080_ensure_set_starttime_revision
 
     # Global for the whole Rails process
-    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.lc_rev
+    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
 
     #-----------------------------------------------------------------------------
-    puts "C> Current Remote Resource revision number: #{$CBRAIN_StartTime_Revision}"
+    puts "C> Current application tag or revision: #{$CBRAIN_StartTime_Revision}"
     #-----------------------------------------------------------------------------
 
   end

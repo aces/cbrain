@@ -36,7 +36,7 @@ require 'set'
 #
 class Userfile < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   Default_num_pages = "50"
 
@@ -74,15 +74,15 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :level
   attr_accessor           :tree_children
   
-  named_scope             :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
-  named_scope             :file_format, lambda { |f|
-                                          format_filter = Userfile.send(:subclasses).map(&:to_s).find{ |c| c == f }
+  scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
+  scope                   :file_format, lambda { |f|
+                                          format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
                                           format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
                                           format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
                                           {:conditions  => "userfiles.type='#{format_filter}'#{format_ids}"}
                                         }
-  named_scope             :has_no_parent, :conditions => {:parent_id => nil}
-  named_scope             :has_no_child,  lambda {
+  scope                   :has_no_parent, :conditions => {:parent_id => nil}
+  scope                   :has_no_child,  lambda { |ignored|
                                             all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             { :conditions => "userfiles.id NOT IN (#{all_parents})" }
                                           }
@@ -166,7 +166,7 @@ class Userfile < ActiveRecord::Base
     base_class = SingleFile     if self <= SingleFile
     base_class = FileCollection if self <= FileCollection
     
-    @valid_file_classes = base_class.send(:subclasses).unshift(base_class)
+    @valid_file_classes = base_class.descendants.unshift(base_class)
   end
 
   # Instance version of the class method.
@@ -361,7 +361,7 @@ class Userfile < ActiveRecord::Base
   end
 
   #Converts a filter request sent as a POST parameter from the
-  #Userfile index page into the format used by the Session model
+  #Userfile index page into the format used by the CbrainSession model
   #to store currently active filters.
   def self.get_filter_name(type, term)
     case type
@@ -390,18 +390,18 @@ class Userfile < ActiveRecord::Base
       type, term = filter.split(':')
       case type
       when 'name'
-        scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%#{term}%"])
+        scope = scope.where( ["(userfiles.name LIKE ?)", "%#{term}%"] )
       when 'custom'
         custom_filter = UserfileCustomFilter.find_by_name(term)
         scope = custom_filter.filter_scope(scope)
       when 'file'
         case term
         when 'cw5'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
+          scope = scope.where( ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
         when 'flt'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.flt"])
+          scope = scope.where( ["(userfiles.name LIKE ?)", "%.flt"])
         when 'mls'
-          scope = scope.scoped(:conditions => ["(userfiles.name LIKE ?)", "%.mls"])
+          scope = scope.where( ["(userfiles.name LIKE ?)", "%.mls"])
         end
       end
     end
@@ -506,11 +506,11 @@ class Userfile < ActiveRecord::Base
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
         
     if access_requested.to_sym == :read
-      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
-                                            user.id, user.group_ids, data_provider_ids])
+      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
+                                            user.id, user.group_ids, data_provider_ids] )
     else
-      scope = scope.scoped(:conditions  => ["((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
-                                            user.id, user.group_ids, data_provider_ids])
+      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
+                                            user.id, user.group_ids, data_provider_ids] )
     end
     
     scope
@@ -523,7 +523,7 @@ class Userfile < ActiveRecord::Base
   #Note: Requires that the +users+ table be joined, either
   #of the <tt>:join</tt> or <tt>:include</tt> options.
   def self.restrict_site_on_query(user, scope)
-    scope.scoped(:conditions => ["(users.site_id = ?)", user.site_id])
+    scope.where( ["(users.site_id = ?)", user.site_id])
   end
 
   #Set the attribute by which to sort the file list
@@ -623,47 +623,36 @@ class Userfile < ActiveRecord::Base
   ##############################################
   # Sequential traversal methods.
   ##############################################
-  
-  def next_available_file(user, options = {})
+
+  def available_files(user, options = {}) # should be in user model ?
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
-    
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:conditions => ["userfiles.id > ?", self.id], :order => "id")
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+
+    if user.has_role? :site_manager
+      scope = user.site.userfiles_find_all
+    else
+      scope = user.userfiles
     end
 
-    file = scope.first
-    if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id > ?", self.id]).first
-      if !file || (site_file && site_file.id < file.id)
-        file = site_file 
-      end
-    end
-    
-    file
+    scope = scope.where( options[:conditions] ) if options[:conditions] # old API
+    scope = scope.joins( options[:joins]      ) if options[:joins] # old API
+    scope = scope.order('userfiles.id')
+
+    #unless user.has_role?(:admin)
+    #  scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+    #end
+
+    scope
+  end
+  
+  def next_available_file(user, options = {})
+    scope = available_files(user, options)
+    scope.where( ["userfiles.id > ?", self.id] ).first
   end
 
   def previous_available_file(user, options = {})
-    access_options = {}
-    access_options[:access_requested] = options.delete :access_requested
-    
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:conditions => ["userfiles.id < ?", self.id], :order => "id")
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    end
-
-    file = scope.last
-    if user.has_role? :site_manager
-      site_file = user.site.userfiles_find_all(options).scoped(:conditions => ["userfiles.id < ?", self.id]).last
-      if !file || (site_file && site_file.id < file.id)
-        file = site_file 
-      end
-    end
-    
-    file
+    scope = available_files(user, options)
+    scope.where( ["userfiles.id < ?", self.id] ).last
   end
   
   ##############################################
@@ -701,10 +690,10 @@ class Userfile < ActiveRecord::Base
   # no SyncStatus object currently exists for the file.
   def local_sync_status(refresh = false)
     @syncstat = nil if refresh
-    @syncstat ||= SyncStatus.find(:first, :conditions => {
+    @syncstat ||= SyncStatus.where(
       :userfile_id        => self.id,
       :remote_resource_id => CBRAIN::SelfRemoteResourceId
-    } )
+    ).first
   end
 
   # Returns whether this userfile's contents has been
@@ -878,13 +867,13 @@ class Userfile < ActiveRecord::Base
   end
   
   def validate_associations
-    unless DataProvider.find(:first, :conditions => {:id => self.data_provider_id})
+    unless DataProvider.where( :id => self.data_provider_id ).first
       errors.add(:data_provider, "does not exist.")
     end
-    unless User.find(:first, :conditions => {:id => self.user_id})
+    unless User.where( :id => self.user_id ).first
       errors.add(:user, "does not exist.")
     end
-    unless Group.find(:first, :conditions => {:id => self.group_id})
+    unless Group.where( :id => self.group_id ).first
       errors.add(:group, "does not exist.")
     end
   end

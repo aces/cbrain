@@ -26,11 +26,11 @@ require 'socket'
 
 class PortalSanityChecks < CbrainChecker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #Checks to see if the validation was run since last change
   def self.done?
-    if SanityCheck.find_by_revision_info(Revision_info)
+    if SanityCheck.find_by_revision_info(Revision_info.to_s)
       true
     else
       false
@@ -50,7 +50,7 @@ class PortalSanityChecks < CbrainChecker
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
       puts "C> \t- Adding new sanity check record."
-      SanityCheck.new(:revision_info => Revision_info).save! #Adding new SanityCheck record
+      SanityCheck.new(:revision_info => Revision_info.to_s).save! #Adding new SanityCheck record
       
       #-----------------------------------------------------------------------------
       # Rescue: for the cases when the Rails application is started as part of
@@ -106,7 +106,7 @@ class PortalSanityChecks < CbrainChecker
       everyone_group.save!
     end
 
-    unless User.find(:first, :conditions => {:login  => 'admin'})
+    unless User.where( :login  => 'admin' ).first
       puts "C> \t- Admin user does not exist yet. Creating one."
       
       pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
@@ -136,7 +136,7 @@ class PortalSanityChecks < CbrainChecker
     #-----------------------------------------------------------------------------
 
     everyone_group=Group.find_by_name('everyone')
-    User.find(:all, :include => :groups).each do |u|
+    User.includes(:groups).each do |u|
       unless u.group_ids.include? everyone_group.id
         puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
         groups = u.group_ids
@@ -224,7 +224,7 @@ class PortalSanityChecks < CbrainChecker
     puts "C> Ensuring that userfiles all have a group..."
     #-----------------------------------------------------------------------------
 
-    missing_gid = Userfile.find(:all, :conditions => { :group_id => nil })
+    missing_gid = Userfile.where( :group_id => nil )
     missing_gid.each do |file|
       user   = file.user
       raise "Error: cannot find a user for file '#{file.id}' ?!?" unless user
@@ -237,6 +237,24 @@ class PortalSanityChecks < CbrainChecker
     
   end
   
+
+
+  # ToolConfigs must belong to a group or everyone
+  def self.ensure_that_all_toolconfigs_have_a_group
+    
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring that toolconfigs all gave a group..."
+    #-----------------------------------------------------------------------------
+
+    everyone_group = Group.find_by_name("everyone")
+    missing_gid    = ToolConfig.where( :group_id => nil )
+    missing_gid.each do |tc|
+      tc.group_id = everyone_group.id
+      tc.save!
+    end
+
+  end
+
 
 
   #Makes sure that the portal is registered as a remote ressource or adds it

@@ -11,7 +11,7 @@
 #This model represents a remote execution server.
 class Bourreau < RemoteResource
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   has_many :cbrain_tasks
   has_many :tool_configs, :dependent => :destroy
@@ -28,8 +28,7 @@ class Bourreau < RemoteResource
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config
-    @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
-      { :tool_id => nil, :bourreau_id => self.id } )
+    @global_tool_config_cache ||= ToolConfig.where( :tool_id => nil, :bourreau_id => self.id ).first
   end
 
   # Returns the Scir subclass
@@ -91,7 +90,7 @@ class Bourreau < RemoteResource
     end
 
     # What environment will it run under?
-    myrailsenv = ENV["RAILS_ENV"] || "production"
+    myrailsenv = Rails.env || "production"
 
     # If we tunnel the DB, we get a non-blank yml file here
     db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
@@ -439,7 +438,7 @@ class Bourreau < RemoteResource
       unless blogger
         blogger = Log4r::Logger.new('BourreauWorker')
         blogger.add(Log4r::RollingFileOutputter.new('bourreau_workers_outputter',
-                      :filename  => "#{RAILS_ROOT}/log/BourreauWorkers.combined..log",
+                      :filename  => "#{Rails.root}/log/BourreauWorkers.combined..log",
                       :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
                       :maxsize   => 1000000, :trunc => 600000))
         blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO

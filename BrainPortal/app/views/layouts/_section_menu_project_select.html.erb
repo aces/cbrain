@@ -6,7 +6,7 @@
 
 <div id="active_project_div">
   <h1>Active Project:</h1> 
-    <% button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu") do %>
+    <%= button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu") do %>
       <div id="project_menu_items">
         <small>
           Choosing an Active Project affects the visibility of<br/>
@@ -17,26 +17,29 @@
         <% projects = current_user.available_groups.group_by{|p| p.class.to_s == "WorkGroup" ? "WorkGroup" : "SystemGroup"} %>
         <% work_projects = (projects["WorkGroup"] || []).sort   { |a,b| a.name <=> b.name } %>
         <% sys_projects  = (projects["SystemGroup"] || []).sort { |a,b| a.name <=> b.name } %>
+
         <% unless work_projects.blank? %>
           Work Projects <%= show_hide_toggle "(show/hide)", "#work_project_selections", :class  => "action_link" %><P/>
           <div id="work_project_selections">
-            <% array_to_table(work_projects, :table_class => 'simple', :cols => 4) do |group,r,c| %>
+            <%= array_to_table(work_projects, :table_class => 'simple', :cols => 4) do |group,r,c| %>
               <%= link_to "#{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], :redirect_action  => params[:action], :redirect_id  => params[:id]), {:method  => :post}
               %>
             <% end %>
           </div>
           <P/>
         <% end %>
+
         <% unless sys_projects.blank? %>
           System Projects <%= show_hide_toggle "(show/hide)", "#system_project_selections", :class  => "action_link"  %><P/>
           <div id="system_project_selections" style="display:none">
-            <% array_to_table(sys_projects, :table_class => 'simple', :cols => 4) do |group,r,c| %>
+            <%= array_to_table(sys_projects, :table_class => 'simple', :cols => 4) do |group,r,c| %>
               <%= 
                   link_to "#{group.name}", switch_group_path(group, :redirect_controller  => params[:controller], :redirect_action  => params[:action], :redirect_id  => params[:id]), {:method  => :post}
               %>
           <% end %>
           </div>
         <% end %>
+
         <% unless current_project.blank? %>
           <P/>
           <%= 
@@ -49,7 +52,7 @@
                                                  {:method  => :post} 
           %>
         <% end %>
-      <% end %>
       </div>          
+    <% end %>
 </div>
 

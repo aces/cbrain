@@ -19,10 +19,10 @@
         <th>Site</th>
     </tr>
     <td>
-       <%= h(@group.name) %>
+       <%= @group.name %>
     </td>
     <td>
-        <% array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered') { |u,r,c| link_to_user_with_tooltip(u) } %>
+        <%= array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered') { |u,r,c| link_to_user_with_tooltip(u) } %>
     </td>
     <td>
        <%= link_to_site_if_accessible(@group.site) %>

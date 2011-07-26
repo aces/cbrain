@@ -47,6 +47,7 @@
 
 require 'rubygems'
 require 'active_support'
+require File.dirname(__FILE__) + '/../lib/cbrain_file_revision.rb' # ugly
 require File.dirname(__FILE__) + '/../lib/ssh_master.rb' # ugly
 
 
@@ -113,7 +114,7 @@ end
 usage(basename) if ARGV.size !=1 && ARGV.size != 5    # 1 or 5 args!
 
 # To help diagnose problems, print Ruby's version.
-puts "You are using Ruby #{VERSION}"
+puts "You are using Ruby #{RUBY_VERSION}"
 
 #############################################################
 # Stop
@@ -193,7 +194,7 @@ Dir.chdir(rails_home) do
   # Note that the options for 'cbrain_mongrel_rails' are the same as
   # for 'mongrel_rails', but they are different from 'script/server'
   # (in particular, -b becomes -a).
-  cmd = "script/cbrain_mongrel_rails start -d -p #{port} -e #{environment} -a 127.0.0.1 -P #{pidfile}"
+  cmd = "script/cbrain_rails_server server thin -d -p #{port} -e #{environment} -b 127.0.0.1 -P #{pidfile}"
   system(cmd) # the -d will start it in background
 end
 
@@ -219,9 +220,9 @@ if status_message =~ /STARTED/i # see Bourreau's validation.rb
   puts "Bourreau Started."
 else
   puts "Bourreau Failed."
-  puts "Here are the last 100 lines of mongrel's log:"
+  puts "Here are the last 100 lines of the server's log:"
   Dir.chdir(rails_home) do
-    system("tail -100 log/mongrel.log")
+    system("tail -100 log/server.log")
   end
 end
 Kernel.exit(0)

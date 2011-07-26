@@ -22,7 +22,7 @@ require 'net/sftp'
 #
 class SshDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def impl_is_alive? #:nodoc:
     ssh_opts = self.ssh_shared_options
@@ -96,7 +96,7 @@ class SshDataProvider < DataProvider
     oldpath   = oldpath.to_s
     newpath   = newpath.to_s
 
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       begin
         att = sftp.lstat!(newpath)
         return false # means file exists already
@@ -104,10 +104,12 @@ class SshDataProvider < DataProvider
         # Nothing to do! An exception means everything is OK, so just go on.
       end
       begin
+puts "OLD=#{oldpath} NEW=#{newpath}"
         sftp.rename!(oldpath,newpath)
         userfile.name = newname
         return true
       rescue => ex
+puts_blue "ex problem #{ex.class} #{ex.message}"
         return false
       end
     end
@@ -127,7 +129,7 @@ class SshDataProvider < DataProvider
     attlist = [ 'symbolic_type', 'size', 'permissions',
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       sftp.dir.foreach(self.browse_remote_dir(user)) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
@@ -174,7 +176,7 @@ class SshDataProvider < DataProvider
     types.map!(&:to_sym)
     
     
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => 'publickey') do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
        entries = []
        if userfile.is_a? FileCollection
          if directory == :all

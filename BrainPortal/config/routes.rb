@@ -1,63 +1,187 @@
-ActionController::Routing::Routes.draw do |map|
+
+# CBRAIN Routing Table
+
+CbrainRailsPortal::Application.routes.draw do
 
   # Session
-  map.resource  :session
+  resource  :session
 
   # Control channel
-  map.resources :controls,                        :controller => :controls
+  resources :controls,       :controller => :controls
 
   # Standard CRUD resources
-  map.resources :sites
-  map.resources :custom_filters
-  map.resources :tool_configs
-  map.resources :tags
+  resources :sites
+  resources :custom_filters
+  resources :tool_configs
+  resources :tags
 
   # Standard CRUD resources, with extra methods
-  map.resources :feedbacks,      :collection => { :delete_feedback => :delete }
 
-  map.resources :messages,       :collection => { :delete_messages => :delete }
+  resources :feedbacks do
+    collection do
+      delete 'delete_feedback'
+    end
+  end
 
-  map.resources :users,          :member     => { :switch           => :post },
-                                 :collection => { :request_password => :get,
-                                                  :send_password    => :post }
+  resources :messages do
+    collection do
+      delete 'delete_messages'
+    end
+  end
 
-  map.resources :groups,         :member     => { :switch           => :post }
+  resources :users do
+    member do
+      post 'switch'
+    end
+    collection do
+      get  'request_password'
+      post 'send_password'
+    end
+  end
 
-  map.resources :bourreaux,      :member     => { :start => :post, :stop => :post, :row_data  => :get },
-                                 :collection => { :refresh_ssh_keys => :post, :load_info => :get } 
+  resources :groups do
+    member do
+      post 'switch'
+    end
+  end
 
-  map.resources :data_providers, :member     => { :browse  => :get,  :register   => :post, :is_alive => :get },
-                                 :collection => { :cleanup => :post, :disk_usage => :get }
+  resources :bourreaux do
+    member do
+      post 'start'
+      post 'stop'
+      get  'row_data'
+    end
+    collection do
+      post 'refresh_ssh_keys'
+      get  'load_info'
+    end
+  end
 
-  map.resources :userfiles,      :member     => { :content => :get, :display  => :get, :sync_to_cache => :post, :extract_from_collection  => :post }, 
-                                 :collection => { :download              => :get,
-                                                  :new_parent_child      => :get,
-                                                  :create_parent_child   => :post,
-                                                  :delete_files          => :delete, 
-                                                  :create_collection     => :post,
-                                                  :update_multiple       => :put,  
-                                                  :change_provider       => :post, 
-                                                  :compress              => :post,
-                                                  :quality_control       => :post,
-                                                  :quality_control_panel => :post,
-                                                  :manage_persistent     => :post,
-                                                  :sync_multiple         => :post }
-  
-  map.resources :tasks,          :collection => { :new => :post, :operation => :post, :batch_list => :get }
-  
-  map.resources :tools,          :collection => { :bourreau_select  => :get, :tool_management => :get, :assign_tools => :post, :delete_tools => :delete }
+  resources :data_providers do
+    member do
+      get  'browse'
+      post 'register'
+      get  'is_alive'
+    end
+    collection do
+      post 'cleanup'
+      get  'disk_usage'
+    end
+  end
+
+  resources :userfiles do
+    member do
+      get  'content'
+      get  'display'
+      post 'sync_to_cache'
+      post 'extract_from_collection'
+    end
+    collection do
+      get    'download'
+      get    'new_parent_child'
+      post   'create_parent_child'
+      delete 'delete_files'
+      post   'create_collection'
+      put    'update_multiple'
+      post   'change_provider'
+      post   'compress'
+      post   'quality_control'
+      post   'quality_control_panel'
+      post   'manage_persistent'
+      post   'sync_multiple'
+    end
+  end
+
+  resources :tasks do
+    collection do
+      post 'new', :path => 'new', :as => 'new'
+      post 'operation'
+      get  'batch_list'
+    end
+  end
+
+  resources :tools do
+    collection do
+      get    'bourreau_select'
+      get    'tool_management'
+      post   'assign_tools'
+    end
+  end
 
   # Special named routes
-  map.home             '/home',                   :controller => 'portal',   :action => 'welcome'
-  map.information      '',                        :controller => 'portal',   :action => 'credits'
-  map.about_us         '/about_us',               :controller => 'portal',   :action => 'about_us'
-  map.login            '/login',                  :controller => 'sessions', :action => 'new'
-  map.session_status   '/session_status',         :controller => 'sessions', :action => 'show'
-  map.logout           '/logout',                 :controller => 'sessions', :action => 'destroy'
-  map.jiv              '/jiv',                    :controller => 'jiv',      :action => 'index'
-  map.jiv_display      '/jiv/show',               :controller => 'jiv',      :action => 'show'
+  root                  :to               => 'portal#credits'
+  match                 '/home'           => 'portal#welcome'
+  #match                 ''                => 'portal#credits'
+  match                 '/about_us'       => 'portal#about_us'
+  match                 '/login'          => 'sessions#new'
+  match                 '/session_status' => 'sessions#show'
+  match                 '/logout'         => 'sessions#destroy'
+  match                 '/jiv'            => 'jiv#index'
+  match                 '/jiv/show'       => 'jiv#show'
   
   # Individual maps
-  map.connect "logged_exceptions/:action/:id",    :controller => "logged_exceptions" 
+  match "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
 end
+
+# 
+# 
+# Nana::Application.routes.draw do
+#   # The priority is based upon order of creation:
+#   # first created -> highest priority.
+# 
+#   # Sample of regular route:
+#   #   match 'products/:id' => 'catalog#view'
+#   # Keep in mind you can assign values other than :controller and :action
+# 
+#   # Sample of named route:
+#   #   match 'products/:id/purchase' => 'catalog#purchase', :as => :purchase
+#   # This route can be invoked with purchase_url(:id => product.id)
+# 
+#   # Sample resource route (maps HTTP verbs to controller actions automatically):
+#   #   resources :products
+# 
+#   # Sample resource route with options:
+#   #   resources :products do
+#   #     member do
+#   #       get 'short'
+#   #       post 'toggle'
+#   #     end
+#   #
+#   #     collection do
+#   #       get 'sold'
+#   #     end
+#   #   end
+# 
+#   # Sample resource route with sub-resources:
+#   #   resources :products do
+#   #     resources :comments, :sales
+#   #     resource :seller
+#   #   end
+# 
+#   # Sample resource route with more complex sub-resources
+#   #   resources :products do
+#   #     resources :comments
+#   #     resources :sales do
+#   #       get 'recent', :on => :collection
+#   #     end
+#   #   end
+# 
+#   # Sample resource route within a namespace:
+#   #   namespace :admin do
+#   #     # Directs /admin/products/* to Admin::ProductsController
+#   #     # (app/controllers/admin/products_controller.rb)
+#   #     resources :products
+#   #   end
+# 
+#   # You can have the root of your site routed with "root"
+#   # just remember to delete public/index.html.
+#   # root :to => "welcome#index"
+# 
+#   # See how all your routes lay out with "rake routes"
+# 
+#   # This is a legacy wild controller route that's not recommended for RESTful applications.
+#   # Note: This route will make all actions in every controller accessible via GET requests.
+#   # match ':controller(/:action(/:id(.:format)))'
+# end
+# 

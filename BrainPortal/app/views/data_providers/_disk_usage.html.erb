@@ -13,7 +13,7 @@
     <tr>
       <th></th>
       <% @report_dps_all.each do |col| %>
-        <th><%= h(col.is_a?(String) ? col : col.name) %></th>
+        <th><%= col.is_a?(String) ? col : col.name %></th>
       <% end %>
     </tr>
       
@@ -43,14 +43,14 @@
             
             <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text">
               <%= 
-                filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;"),
+                filter_reset_link pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe,
                                   :controller => :userfiles,
                                   :filters => filters,
                                   :ajax => false
               %>
               <BR>
               <%= 
-                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;"),
+                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;").html_safe,
                                   :controller => :userfiles,
                                   :filters => filters,
                                   :ajax => false
@@ -58,17 +58,17 @@
               <% if cell[:unknowns] > 0 %>
                 <BR>
                 <%= 
-                  filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;"),
+                  filter_reset_link pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;").html_safe,
                                     :controller => :userfiles,
                                     :filters => filters,
                                     :ajax => false
                 %>
               <% end %>
             </td>
-          <% end %>    <% # end column iteration -%>
+          <% end %>    <%# end column iteration %>
 
       </tr>
-    <% end %>    <% # end row iteration -%>
+    <% end %>    <%# end row iteration %>
 
   </table>
    
@@ -84,7 +84,7 @@
 
 <% if @report_rrs.size > 0 && @report_users_all.size > 0 %>
 
-  <% ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
+  <%= ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
 
   <h3>Disk Usage Statistics for Server's DP Caches</h3>
    
@@ -94,9 +94,9 @@
       <th></th>
       <% @report_rrs.each do |col| %>
         <th><% if col.is_a?(String) %>
-              <%= h(col) %>
+              <%= col %>
             <% else %>
-              <%= h(col.name) %>
+              <%= col.name %>
               <br/><small><%= col.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
             <% end %>
         </th>
@@ -123,10 +123,10 @@
 
             <% cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) %>
 
-            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;") %><BR>
-              <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;") %>
+            <td bgcolor="<%= cellcolor %>" class="dp_disk_stats_text"><%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe %><BR>
+              <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;").html_safe %>
               <% if cell[:unknowns] > 0 %>
-                <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;") %>
+                <BR><%= pluralize(cell[:unknowns],"unknown").gsub(/ /,"&nbsp;").html_safe %>
               <% end %>
                 
               <% # Check box for cleaning the cache -%>
@@ -138,9 +138,9 @@
               <% end %>
             </td>
 
-          <% end %>    <% # end column iteration -%>
+          <% end %>    <%# end column iteration %>
       </tr>
-    <% end %>    <% # end row iteration -%>
+    <% end %>    <%# end row iteration %>
 
     <tr>
       <th COLSPAN="<%= 1+@report_rrs.size %>">
@@ -161,7 +161,7 @@
   <!-- Refresh form -->
   <!-- *********************************** -->
 
-  <% ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
+  <%= ajax_form_tag(url_for(:action  => :disk_usage),  :target  => "#disk_usage", :method  => "GET") do %>
     Files reported in the <em>Caches</em> report were last accessed between
     <%= select_tag("cache_older",   options_for_select( @offset_times, @cache_older )) %> and
     <%= select_tag("cache_younger", options_for_select( @offset_times, @cache_younger )) %>

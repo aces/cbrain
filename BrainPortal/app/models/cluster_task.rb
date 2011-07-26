@@ -56,14 +56,14 @@ require 'cbrain_exception'
 #Instructions in the files themselves will indicate how to integrate your task into the system.
 class ClusterTask < CbrainTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # These basenames might get modified with suffixes appended to them.
   QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{id}.sh"
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
   QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
 
-
+  before_destroy :before_destroy_terminate_and_rm_workdir
 
   ##################################################################
   # Core Object Methods
@@ -289,7 +289,7 @@ class ClusterTask < CbrainTask
     end
     group_id_for_file = attlist.delete(:group_id) || self.group_id
     cb_error "Cannot assign group to file." unless group_id_for_file
-    results = klass.find(:all, :conditions => attlist)
+    results = klass.where( attlist )
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always
@@ -421,7 +421,7 @@ class ClusterTask < CbrainTask
   def supplemental_cbrain_tool_config_init #:nodoc:
     "\n" +
     "# CBRAIN Bourreau-side initializations\n" +
-    "export PATH=\"#{RAILS_ROOT + "/vendor/cbrain/bin"}:$PATH\"\n"
+    "export PATH=\"#{Rails.root.to_s + "/vendor/cbrain/bin"}:$PATH\"\n"
   end
 
 
@@ -786,7 +786,7 @@ class ClusterTask < CbrainTask
   ##################################################################
 
   # All object destruction also implies termination!
-  def before_destroy #:nodoc:
+  def before_destroy_terminate_and_rm_workdir #:nodoc:
     self.terminate rescue true
     self.remove_cluster_workdir
     true

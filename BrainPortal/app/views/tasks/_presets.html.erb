@@ -8,7 +8,7 @@
 <tr>
   <td><strong>Load a preset configuration:</strong></td>
   <td><%= select_tag :load_preset_id, 
-    "<option value=\"\">(Select a preset to load)</option>" +
+    "<option value=\"\">(Select a preset to load)</option>".html_safe +
     grouped_options_for_select(@all_presets)
       %>
   </td>
@@ -18,7 +18,7 @@
 <tr>
   <td><strong>Save as a preset configuration:</strong></td>
   <td><%= select_tag :save_preset_id,
-          "<option value=\"\">(Select a preset to save)</option>" +
+          "<option value=\"\">(Select a preset to save)</option>".html_safe +
           options_for_select(@own_presets)
       %><strong> or as new name:</strong>
       <%= text_field_tag :save_preset_name, "", :size => 20 %>

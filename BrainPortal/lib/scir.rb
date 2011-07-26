@@ -13,7 +13,7 @@
 
 class Scir
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Returns the full revision info string as created by SVN;
   # the value returned is for the current class or subclass.
@@ -91,7 +91,7 @@ class Scir
   def self.job_template_builder(subclassname,*args)
     subclass = Class.const_get(subclassname.to_s) rescue Object
     raise "Invalid subclass name #{subclass}" unless subclass < self
-    job = subclass.const_get("JobTemplate").new(*args)
+    job = subclass.const_get("JobTemplate").new_jobtemplate(*args)
     job
   end
 
@@ -183,9 +183,9 @@ class Scir
     end
 
     def self.new_jobtemplate(params = {})
-      subclassname = Scir.jobtemplate_subclass
-      subclass     = Class.const_get(subclassname)
-      returning subclass.new(params) do |job|
+      #subclassname = Scir.jobtemplate_subclass
+      #subclass     = Class.const_get(subclassname)
+      returning self.new(params) do |job|
         job.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job.queue.blank? )
       end
     end

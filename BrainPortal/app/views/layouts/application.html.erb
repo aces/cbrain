@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">
+<!DOCTYPE html>
 <%
 
 #
@@ -10,24 +10,36 @@
 #
 
 -%>
-<html>
+<html lang="en">
 
   <head>
     <title>CBRAIN <%= yield :title %></title>
     <link rel="shortcut icon" type="image/giv" href="/images/favicon.gif" />
+
+    <%= csrf_meta_tag %>
     <%= stylesheet_link_tag  "cbrain", "jquery-ui", "macacc", :media => "all" %>
+  </head>
+
+  <body id="cbrain">     
+
+    <!-- Main HTML Content -->
+
+    <%= render :partial => 'layouts/section_account' %>
+    <%= render :partial => 'layouts/section_menu'    %>
+    <%= render :partial => 'layouts/section_main'    %>
+    <%= render :partial => 'layouts/section_footer'  %>
+
+    <!-- Scripts -->
+
     <%= javascript_include_tag "tableH" %>
     <script type="text/javascript" src="/javascripts/o3djs/base.js"></script>
     <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "processing" %>
     <%= javascript_include_tag "brainbrowser", "mniobj", "dataset", "macacc_collection", "civet", "thickness" %> 
     <%= javascript_include_tag "cbrain" %>
-  </head>
+    <%= javascript_include_tag "rails" %>
 
-  <body id="cbrain">     
-    <%= render :partial => 'layouts/section_account' %>
-    <%= render :partial => 'layouts/section_menu'    %>
-    <%= render :partial => 'layouts/section_main'    %>
-    <%= render :partial => 'layouts/section_footer'  %>
+    <!-- Dynamically Appended Body Elements Below This -->
+
   </body>
 
 </html>

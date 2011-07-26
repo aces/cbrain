@@ -9,7 +9,7 @@
 
 class ToolConfigsController < ApplicationController
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required
   before_filter :admin_role_required
@@ -60,10 +60,10 @@ class ToolConfigsController < ApplicationController
     @bourreau_glob_config = nil
     
     @tool_config          = config if config.tool_id && config.bourreau_id
-    @tool_glob_config     = ToolConfig.find(:first, :conditions =>
-      { :tool_id => config.tool_id, :bourreau_id => nil }) if config.tool_id
-    @bourreau_glob_config = ToolConfig.find(:first, :conditions =>
-      { :tool_id => nil,            :bourreau_id => config.bourreau_id }) if config.bourreau_id
+    @tool_glob_config     =
+      ToolConfig.where( :tool_id => config.tool_id, :bourreau_id => nil                ).first if config.tool_id
+    @bourreau_glob_config =
+      ToolConfig.where( :tool_id => nil,            :bourreau_id => config.bourreau_id ).first if config.bourreau_id
   end
 
   # The 'new' action is special in this controller.
@@ -80,7 +80,7 @@ class ToolConfigsController < ApplicationController
     bourreau_id = nil if bourreau_id.blank? # allowed, means ALL remote resources
     cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
 
-    @tool_config   = ToolConfig.find(:first, :conditions => { :tool_id => tool_id, :bourreau_id => bourreau_id } ) if tool_id.blank? || bourreau_id.blank?
+    @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ) if tool_id.blank? || bourreau_id.blank?
     @tool_config ||= ToolConfig.new(                        { :tool_id => tool_id, :bourreau_id => bourreau_id } )
 
     @tool_config.env_array ||= []
@@ -123,7 +123,7 @@ class ToolConfigsController < ApplicationController
     @tool_config   = nil
     @tool_config   = ToolConfig.find(id) unless id.blank?
     cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
-    @tool_config ||= ToolConfig.find(:first, :conditions => { :tool_id => form_tool_id, :bourreau_id => form_bourreau_id } ) if form_tool_id.blank? || form_bourreau_id.blank?
+    @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ) if form_tool_id.blank? || form_bourreau_id.blank?
     @tool_config ||= ToolConfig.new(                        { :tool_id => form_tool_id, :bourreau_id => form_bourreau_id } )
 
     # Security: no matter what the form says, we use the ids from the DB if the object existed.

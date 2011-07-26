@@ -13,7 +13,7 @@
 #to resources (as opposed to SystemGroup). 
 class WorkGroup < Group
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def pretty_category_name(as_user)
     if self.users.size == 1

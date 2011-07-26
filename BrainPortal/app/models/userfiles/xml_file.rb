@@ -10,7 +10,7 @@
 
 class XMLFile < TextFile
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def self.file_name_pattern
     /\.xml$/i

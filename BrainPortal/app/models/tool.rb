@@ -5,8 +5,6 @@
 #
 # Original author: Angela McCloskey
 #
-# Revision_info="$Id$"
-#
 
 #Model representing CBrain tools. 
 #The purpose of the tools model is to create an inventory of the tools for each bourreau.
@@ -25,7 +23,7 @@
 #* Bourreau
 class Tool < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
   
@@ -48,11 +46,21 @@ class Tool < ActiveRecord::Base
     Bourreau.find_all_by_id((ToolConfig.find_all_by_tool_id(self.id).map &:bourreau_id).uniq.compact)
   end
 
+  #Find a random bourreau on which this tool is available and to which +user+ has access.
+  def select_random_bourreau_for(user)
+    available_group_ids = user.group_ids
+    bourreau_list = Bourreau.where( :group_id => available_group_ids, :online => true ).select(&:is_alive?)
+    bourreau_list = bourreau_list & self.bourreaux
+    if bourreau_list.empty?
+      cb_error("Unable to find an execution server. Please notify your administrator of the problem.")
+    end
+    bourreau_list.slice(rand(bourreau_list.size)).id
+  end
+
   # Returns the single ToolConfig object that describes the configuration
   # for this tool for all Bourreaux, or nil if it doesn't exist.
   def global_tool_config
-    @global_tool_config_cache ||= ToolConfig.find(:first, :conditions =>
-      { :tool_id => self.id, :bourreau_id => nil } )
+    @global_tool_config_cache ||= ToolConfig.where( :tool_id => self.id, :bourreau_id => nil ).first
   end
 
   private

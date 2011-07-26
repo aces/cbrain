@@ -22,7 +22,7 @@
     <% end %>
     <td><%= link_to_bourreau_if_accessible(task.bourreau) %></td>
     <td><%= colored_status(task.status) %></td>
-    <td><%= h(task.run_number) %></td>
-    <td><%= h(to_localtime(task.created_at,:datetime)) -%></td>
-    <td><%= h(to_localtime(task.updated_at,:datetime)) -%></td>
+    <td><%= task.run_number %></td>
+    <td><%= to_localtime(task.created_at,:datetime) -%></td>
+    <td><%= to_localtime(task.updated_at,:datetime) -%></td>
   </tr>

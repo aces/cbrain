@@ -3,7 +3,7 @@
 
 module TableMakerHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Renders an +array+ into a 2D table. This method is
   # useful when the +array+ contains a set of elements all
@@ -62,7 +62,7 @@ module TableMakerHelper
       else
         formatted = array
       end
-      concat formatted.join(joiner)
+      safe_concat formatted.join(joiner)
       return ""
     end
 
@@ -83,24 +83,24 @@ module TableMakerHelper
     tr_callback ||= Proc.new { |rownum|       "<tr#{trclass}>" }
     td_callback ||= Proc.new { |elem,row,col| "<td#{tdclass}>#{elem}</td>" }
 
-    concat "<table#{tableclass}#{tableid}>\n"
+    safe_concat "<table#{tableclass}#{tableid}>\n"
     array.each_with_index do |elem,i|
       col = i % cols
       row = i / cols
       if col == 0
-        concat "  " + tr_callback.call(row) + "\n"
+        safe_concat "  " + tr_callback.call(row) + "\n"
       end
       formatted_elem = block_given? ? capture { yield(elem,row,col) } : elem
-      concat "    " + td_callback.call(formatted_elem,row,col) + "\n"
+      safe_concat "    " + td_callback.call(formatted_elem,row,col) + "\n"
       if col + 1 == cols
-        concat "  </tr>\n"
+        safe_concat "  </tr>\n"
       end
     end
     num_missing_tds = (cols - 1) - ((numelems-1) % cols)
     if num_missing_tds > 0
-      concat "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
+      safe_concat "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
     end
-    concat "</table>\n"
+    safe_concat "</table>\n"
     ""
   end
 

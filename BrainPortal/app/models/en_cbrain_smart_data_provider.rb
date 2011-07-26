@@ -15,11 +15,13 @@
 # and more efficient EnCbrainLocalDataProvider will be used.
 class EnCbrainSmartDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include SmartDataProviderInterface
 
-  def after_initialize #:nodoc:
+  after_initialize :after_initialize_select_provider
+
+  def after_initialize_select_provider #:nodoc:
     self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
   end
   
