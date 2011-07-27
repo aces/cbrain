@@ -10,11 +10,11 @@ describe ToolsController do
         session[:user_id] = current_user.id
       end
   
-      describe "index" do
+      describe "index", :current => true do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:find).and_return([tool])
+          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
         end
-  
+        
         it "should assign @tools" do
           get :index
           assigns[:tools].should == [tool]
@@ -40,7 +40,7 @@ describe ToolsController do
         
         it "should display error text if go in rescue" do
           get(:bourreau_select, {'current_value' => "abc"})
-          response.should include_text('No Execution Servers')
+          response.body.should =~ /No Execution Servers/
         end
       end
   
@@ -73,8 +73,8 @@ describe ToolsController do
             flash[:notice].should  be_true
           end
           it "should render 'shared_create' if no errors appears and @tools.save is OK" do
-            post(:create, :tool => {:name => "name"})
-            response.should render_template("shared/_create/")
+            post(:create, :tool => {:name => "name"}, :format => "js")
+            response.should render_template("shared/_create")
           end          
         end
 
@@ -87,8 +87,8 @@ describe ToolsController do
           end
           
           it "should render 'shared_create' if errors appears and/or @tools.save failed" do
-            post(:create, :tool => {:name => "name"})
-            response.should render_template("shared/_create/")
+            post(:create, :tool => {:name => "name"},:format => "js")
+            response.should render_template("shared/_create")
           end
         end
       
@@ -162,7 +162,7 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:find).and_return([tool])
+          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
         end
   
         it "should assign @tools" do
@@ -180,7 +180,7 @@ describe ToolsController do
   
         it "should render empty text if current_value is empty" do
           get(:bourreau_select, {'current_value' => ""})
-          response.should have_text("")
+          response.should =~ ""
         end
   
         it "should render bourreau_select" do
@@ -244,7 +244,7 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:find).and_return([tool])
+          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
         end
   
         it "should assign @tools" do
@@ -323,13 +323,6 @@ describe ToolsController do
     describe "index" do
       it "should redirect the login page" do
         get :index
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
-    
-    describe "show" do
-      it "should redirect the login page" do
-        get :show, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
     end
