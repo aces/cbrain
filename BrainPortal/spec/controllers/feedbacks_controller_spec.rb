@@ -57,7 +57,7 @@ describe FeedbacksController do
             post :create
           end
           it "should render shared create js script" do
-            post :create
+            post :create, :format => "js"
             response.should render_template("shared/_create")
           end
         end
@@ -70,7 +70,7 @@ describe FeedbacksController do
             post :create
           end
           it "should render shared create js script" do
-            post :create
+            post :create, :format => "js"
             response.should render_template("shared/_create")
           end
         end
@@ -82,7 +82,7 @@ describe FeedbacksController do
       end
       describe "show" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id.to_s)
+          Feedback.should_receive(:find).with(feedback.id)
           get :show, :id => feedback.id
         end
         it "should render the show page" do
@@ -92,7 +92,7 @@ describe FeedbacksController do
       end
       describe "edit" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id.to_s)
+          Feedback.should_receive(:find).with(feedback.id)
           get :edit, :id => feedback.id
         end
         it "should render the edit page" do
@@ -102,7 +102,7 @@ describe FeedbacksController do
       end
       describe "update" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id.to_s)
+          Feedback.should_receive(:find).with(feedback.id)
           put :update, :id => feedback.id
         end
         it "should update the record" do
@@ -132,7 +132,7 @@ describe FeedbacksController do
       end
       describe "destroy" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id.to_s)
+          Feedback.should_receive(:find).with(feedback.id)
           delete :destroy, :id => feedback.id
         end
         it "should destroy the record" do

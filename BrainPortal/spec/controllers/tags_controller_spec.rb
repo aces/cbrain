@@ -147,19 +147,6 @@ describe TagsController do
 
   
   context "when the user is not logged in" do
-    describe "index" do
-      it "should redirect the login page" do
-        get :index
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
-    
-    describe "show" do
-      it "should redirect the login page" do
-        get :show, :id => 1
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
     
     describe "edit" do
       it "should redirect the login page" do
