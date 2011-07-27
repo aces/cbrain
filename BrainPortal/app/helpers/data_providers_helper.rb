@@ -1,10 +1,10 @@
 
 module DataProvidersHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def class_param_for_name(name, klass=Userfile) #:nodoc:
-    matched_class = klass.send(:subclasses).unshift(klass).find{ |c| name =~ c.file_name_pattern }
+    matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }
     
     if matched_class
       "#{matched_class.name}-#{name}"
@@ -62,20 +62,10 @@ module DataProvidersHelper
                end
 
     # All files that belong to these users on these data providers
-    hide_empty_users     = false
-    hide_empty_providers = false
-    if users.nil? && providers.nil?
-      filelist = Userfile.find(:all)
-      hide_empty_users = hide_empty_providers = true
-    elsif users.nil?
-      filelist = Userfile.find(:all, :conditions => { :data_provider_id => dplist })
-      hide_empty_users = true
-    elsif providers.nil?
-      filelist = Userfile.find(:all, :conditions => { :user_id => userlist })
-      hide_empty_providers = true
-    else
-      filelist = Userfile.find(:all, :conditions => { :user_id => userlist, :data_provider_id => dplist })
-    end
+    filelist = Userfile.where( {} )
+    filelist = filelist.where( :user_id          => userlist.map(&:id) ) if ! users.nil?
+    filelist = filelist.where( :data_provider_id => dplist.map(&:id)   ) if ! providers.nil?
+    filelist = filelist.all
 
     # Arrays and hashes used to record the names of the
     # rows and columns of the report
@@ -212,7 +202,7 @@ module DataProvidersHelper
     fileclasses_totcount = {}
     user_totcount        = {}
     userlist.each do |user|
-      userfiles = Userfile.find(:all, :conditions => { :data_provider_id => dp_ids, :user_id => user.id })
+      userfiles = Userfile.where( :data_provider_id => dp_ids, :user_id => user.id )
       user_fileclass_count[user] ||= {}
       user_totcount[user]        ||= 0
       userfiles.each do |u|

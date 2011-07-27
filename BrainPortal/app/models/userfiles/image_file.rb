@@ -10,7 +10,7 @@
 
 class ImageFile < SingleFile
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   has_viewer :partial  => "image_file", :if  => :is_locally_synced?
   

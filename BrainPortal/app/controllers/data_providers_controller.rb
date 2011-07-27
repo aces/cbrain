@@ -12,7 +12,7 @@
 #Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available :except => [:disk_usage, :cleanup, :register]
 
@@ -58,7 +58,7 @@ class DataProvidersController < ApplicationController
     @ssh_keys = get_ssh_public_keys
 
     stats = ApplicationController.helpers.gather_filetype_statistics(
-              :users     => current_user.available_users,
+              :users     => current_user.available_users.all,
               :providers => @provider
             )
     @user_fileclass_count = stats[:user_fileclass_count]
@@ -234,7 +234,7 @@ class DataProvidersController < ApplicationController
   end
   
   def disk_usage #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user)
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all
 
     # List of cache update offsets we support
     big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
@@ -303,7 +303,7 @@ class DataProvidersController < ApplicationController
                        end
 
     # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Create disk usage statistics table
     stats_options = { :users            => userlist,
@@ -362,7 +362,7 @@ class DataProvidersController < ApplicationController
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
     end
 
-    registered_files = Userfile.find(:all, :conditions => {:data_provider_id => @provider.id}).index_by(&:name)
+    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
@@ -480,7 +480,7 @@ class DataProvidersController < ApplicationController
       # Unregister old files
 
       if do_unreg
-        userfile = Userfile.find(:first, :conditions => { :name => basename, :data_provider_id => provider_id } )
+        userfile = Userfile.where(:name => basename, :data_provider_id => provider_id).first
         unless userfile
           num_skipped += 1
           next
@@ -501,7 +501,7 @@ class DataProvidersController < ApplicationController
       fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
-        if subtype == "Unset" || (!Userfile.send(:subclasses).map(&:name).include?(subtype))
+        if subtype == "Unset" || (!Userfile.descendants.map(&:name).include?(subtype))
           flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
           num_skipped += 1
           next
@@ -559,7 +559,7 @@ class DataProvidersController < ApplicationController
 
     # Alright, we need to move or copy the files
     collisions = newly_registered_userfiles.select do |u|
-      found = Userfile.find(:first, :conditions => { :name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id })
+      found = Userfile.where(:name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id).first
       found ? true : false
     end
     to_operate = newly_registered_userfiles - collisions

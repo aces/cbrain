@@ -14,7 +14,7 @@ require 'socket'
 #the remote Rails application is a Bourreau or a BrainPortal,
 #or the current Rails application running locally.
 #
-#=General Attributes:
+#==General Attributes:
 #[*name*] A string representing a the name of the remote resource.
 #[*online*] A boolean value set to whether or not the resource is online.
 #[*read_only*] A boolean value set to whether or not the resource is read only.
@@ -49,7 +49,7 @@ require 'socket'
 #* Group
 class RemoteResource < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
 
@@ -68,6 +68,7 @@ class RemoteResource < ActiveRecord::Base
   belongs_to  :group
   has_many    :sync_status
 
+  after_destroy :after_destroy_clean_sync_status
 
 
   ############################################################################
@@ -104,7 +105,7 @@ class RemoteResource < ActiveRecord::Base
   # being used. This is a hash representing one DB config in
   # database.yml.
   def self.current_resource_db_config(railsenv = nil)
-    railsenv ||= (ENV["RAILS_ENV"] || 'production')
+    railsenv ||= (Rails.env || 'production')
     myconfigs  = ActiveRecord::Base.configurations
     myconfig   = myconfigs[railsenv].dup
     myconfig
@@ -129,9 +130,9 @@ class RemoteResource < ActiveRecord::Base
   ############################################################################
 
   # When a remote resource is destroyed, clean up the SyncStatus table
-  def after_destroy
+  def after_destroy_clean_sync_status
     rr_id = self.id
-    SyncStatus.find(:all, :conditions => { :remote_resource_id => rr_id }).each do |ss|
+    SyncStatus.where( :remote_resource_id => rr_id ).each do |ss|
       ss.destroy rescue true
     end
     true
@@ -367,7 +368,7 @@ class RemoteResource < ActiveRecord::Base
   # to the values of the field +cache_md5+ ). It returns
   # the remote resource object found if successful.
   def self.valid_token?(token)
-    RemoteResource.find(:first, :conditions => { :cache_md5 => token })
+    RemoteResource.where( :cache_md5 => token ).first
   end
 
   # Returns a constant HEX token representing a unique,
@@ -448,19 +449,26 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    revinfo = { 'Revision'            => 'unknown',
-                'Last Changed Author' => 'unknown',
-                'Last Changed Rev'    => 'unknown',
-                'Last Changed Date'   => 'unknown'
-              }
-
-    IO.popen("svn info #{RAILS_ROOT} 2>/dev/null","r") do |fh|
-      fh.each do |line|
-        if line.match(/^Revision|Last Changed/i)
-          comps = line.split(/:\s*/,2)
-          field = comps[0]
-          value = comps[1].gsub!(/\s*$/,"")
-          revinfo[field]=value
+    @git_tag    ||= ""
+    @git_commit ||= ""
+    @git_author ||= ""
+    @git_date   ||= ""
+    if @git_tag.blank?
+      Dir.chdir(Rails.root.to_s) do
+        IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
+          #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
+          #9f4c090
+          #Pierre Rioux
+          #Tue Jun 28 17:50:26 2011 -0400
+          fh.readline rescue true # skip first line
+          @git_commit = fh.readline.strip rescue "ExcepCommit"
+          @git_author = fh.readline.strip rescue "ExcepAuthor"
+          @git_date   = fh.readline.strip rescue "ExcepDate"
+        end
+        #IO.popen("git describe --all --always HEAD","r") do |fh|
+        #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
+        IO.popen("git tag --contains HEAD","r") do |fh|
+          @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
         end
       end
     end
@@ -481,10 +489,10 @@ class RemoteResource < ActiveRecord::Base
       :ssh_public_key     => @ssh_public_key,
 
       # Svn info
-      :revision           => revinfo['Revision'],
-      :lc_author          => revinfo['Last Changed Author'],
-      :lc_rev             => revinfo['Last Changed Rev'],
-      :lc_date            => revinfo['Last Changed Date'],
+      :revision           => @git_tag,
+      :lc_author          => @git_author,
+      :lc_rev             => @git_commit,
+      :lc_date            => @git_date,
       :starttime_revision => $CBRAIN_StartTime_Revision
 
     )
@@ -624,7 +632,8 @@ class RemoteResource < ActiveRecord::Base
 
     # Send local
     if self.id == CBRAIN::SelfRemoteResourceId
-      return self.class.process_command(command)
+      self.class.process_command(command)
+      return command
     end
 
     # Send remote
@@ -717,7 +726,7 @@ class RemoteResource < ActiveRecord::Base
     userlist.uniq!
 
     CBRAIN::spawn_with_active_records(:admin, "Cache Cleanup") do
-      targetfiles = Userfile.find(:all, :conditions => { :user_id => userlist })
+      targetfiles = Userfile.where( :user_id => userlist )
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil
         next unless syncstatus

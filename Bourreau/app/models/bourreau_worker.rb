@@ -15,7 +15,7 @@
 #This model is not an ActiveRecord class.
 class BourreauWorker < Worker
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Tasks that are considered actually active (not necessarily handled by
   # this worker)
@@ -34,7 +34,7 @@ class BourreauWorker < Worker
 
   # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
   def setup
-    ENV["PATH"] = RAILS_ROOT + "/vendor/cbrain/bin:" + ENV["PATH"]
+    ENV["PATH"] = Rails.root.to_s + "/vendor/cbrain/bin:" + ENV["PATH"]
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
     @rr = RemoteResource.current_resource
@@ -55,7 +55,7 @@ class BourreauWorker < Worker
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
     worker_log.debug "Finding list of ready tasks."
-    tasks_todo = CbrainTask.find(:all, :conditions => { :status => ReadyTasks, :bourreau_id => @rr_id } )
+    tasks_todo = CbrainTask.where( :status => ReadyTasks, :bourreau_id => @rr_id )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode.
@@ -104,7 +104,7 @@ class BourreauWorker < Worker
 
           # Bourreau global limit
           if bourreau_max_tasks > 0
-            bourreau_active_tasks_cnt ||= CbrainTask.count( :conditions => { :status => ActiveTasks, :bourreau_id => @rr_id } )
+            bourreau_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id ).count
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
             if bourreau_active_tasks_cnt >= bourreau_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}): Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
@@ -115,7 +115,7 @@ class BourreauWorker < Worker
 
           # User specific limit
           if user_max_tasks > 0
-            user_active_tasks_cnt ||= CbrainTask.count(:conditions => { :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id })
+            user_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id ).count
             worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
             if user_active_tasks_cnt >= user_max_tasks
               worker_log.info "Task #{task.bname_tid} (#{task.status}) Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."

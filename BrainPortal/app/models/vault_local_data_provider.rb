@@ -28,7 +28,7 @@
 #
 class VaultLocalDataProvider < LocalDataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def cache_prepare(userfile) #:nodoc:
     SyncStatus.ready_to_modify_cache(userfile) do

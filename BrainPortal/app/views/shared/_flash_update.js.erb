@@ -1,16 +1,11 @@
-<% if ! flash[:notice].nil? && ! flash[:notice].empty? %>
-   if(jQuery('#flash_notice').length > 0){
-     jQuery('#flash_notice').html("<%= flash[:notice].gsub(/\n/,'<BR>') %>");
-   }else{
-     jQuery('#main').prepend(jQuery("<p class=\"notice\" id=\"flash_notice\"><%= flash[:notice].gsub(/\n/,'<BR>') %></p>"));
-   }
-    <% flash.discard(:notice) %>
+
+<% [ :notice, :error ].each do |type| %>
+
+  <% next if flash[type].nil? || flash[type].blank? %>
+
+  jQuery('.flash_<%= type %>').remove();
+  jQuery('#main').prepend(jQuery(<%= html_for_js(render :partial  => "messages/flash_display", :locals => { :type => type, :msg => flash[type] }) %>));
+  <% flash.discard(type) %>
+
 <% end %>
-<% if ! flash[:error].nil? && ! flash[:error].empty? %>
-   if(jQuery('#flash_error').length > 0){
-     jQuery('#flash_error').html("<%= flash[:error].gsub(/\n/,'<BR>') %>");
-   }else{
-     jQuery('#main').prepend(jQuery("<p class=\"error\" id=\"flash_error\"><%= flash[:error].gsub(/\n/,'<BR>') %></p>"));
-   }
-    <% flash.discard(:error) %>
-<% end %>
+

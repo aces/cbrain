@@ -24,7 +24,7 @@
 #   value = obj[:myattr]
 class RestrictedHash < Hash
 
-   Revision_info="$Id$"
+   Revision_info=CbrainFileRevision[__FILE__]
 
    # This must be a 'Class Instance Variable', not a class variable.
    @allowed_keys = {}

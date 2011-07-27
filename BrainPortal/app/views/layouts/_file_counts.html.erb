@@ -16,7 +16,7 @@
   <tr>
     <th>User</th>
     <% sorted_classes.each do |klass| %>
-      <th><%= h(klass) %></th>
+      <th><%= klass %></th>
     <% end %>
     <th>Total</th>
   </tr>
@@ -26,7 +26,7 @@
     <% usertot      = user_totcount[user] || 0 %>
     <% next if usertot == 0 %>
     <tr>
-      <td><%= h(login) %></td>
+      <td><%= login %></td>
       <% sorted_classes.each do |klass| %>
         <% count = klass_counts[klass] || "" %>
         <td><%= filter_reset_link h(count), :controller => :userfiles, :filters => {:user_id => user.id, :file_format => klass}, :clear_params => :clear_filter, :ajax => false %></td>

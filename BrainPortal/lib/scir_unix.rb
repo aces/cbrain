@@ -13,7 +13,7 @@
 
 class ScirUnix < Scir
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   class Session < Scir::Session
 
@@ -91,7 +91,7 @@ class ScirUnix < Scir
       command = job.qsub_command
       pid = Process.fork do
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
-        Process.setpgrp        rescue true
+        Process.setpgrp rescue true
         Kernel.exec("/bin/bash","-c",command)
         Process.exit!(0) # should never get here
       end

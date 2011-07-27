@@ -1,7 +1,7 @@
 # Helpers for resource links.
 module ResourceLinkHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   # Creates a link to the show page of a +userfile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is
@@ -199,15 +199,18 @@ module ResourceLinkHelper
   # user object) and adds a tooltip with a summary of the
   # user's information (full name, site and city).
   def link_to_user_with_tooltip(user, cur_user = current_user, options = {})
+    return "(None)" if user.blank?
     cb_error "This method requires the first argument to be a User object." unless user.is_a?(User)
     capture do
       html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 60 ) do
+        (
         "<div class=\"left_align\">\n" +
         "#{user.full_name}<br>\n" +
         (user.city.blank?  ? "" : "City: #{user.city}<br/>\n") +
         (user.site.blank?  ? "" : "Site: #{user.site.name}<br/>\n") +
         (user.email.blank? ? "" : "Email: #{user.email}<br/>\n") +
         "</div>"
+        ).html_safe
       end
     end
   end

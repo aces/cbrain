@@ -11,7 +11,7 @@
 
 class CbrainTask::Parallelizer < ClusterTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   def setup #:nodoc:
     true

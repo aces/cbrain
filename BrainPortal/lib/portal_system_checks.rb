@@ -11,7 +11,7 @@
 
 class PortalSystemChecks < CbrainChecker
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations
@@ -27,7 +27,7 @@ class PortalSystemChecks < CbrainChecker
         pending_migrations.each do |pending_migration|
           puts "C> \t\t- %4d %s" % [pending_migration.version, pending_migration.name]
         end
-        puts "C> \t- Please run \"rake db:migrate RAILS_ENV=#{ENV['RAILS_ENV']}\" to update"
+        puts "C> \t- Please run \"rake db:migrate RAILS_ENV=#{Rails.env}\" to update"
         puts "C> \t  your database then try again."
         Kernel.exit(1)
       end
@@ -44,7 +44,7 @@ class PortalSystemChecks < CbrainChecker
 
     unless PortalSanityChecks.done? 
       puts "C> \t- Error: You must check the sanity of the models. Please run this\n"
-      puts "C> \t         command: 'rake db:sanity:check RAILS_ENV=#{ENV['RAILS_ENV']}'." 
+      puts "C> \t         command: 'rake db:sanity:check RAILS_ENV=#{Rails.env}'." 
       Kernel.exit(1)
     end
   end

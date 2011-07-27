@@ -12,7 +12,7 @@
 #Restful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available
 
@@ -22,8 +22,9 @@ class TasksController < ApplicationController
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     bourreau_ids = @bourreaux.map &:id
     
+    # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
     if current_project
-      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
+      scope = CbrainTask.where( :group_id => current_project.id )
     else
       scope = current_user.available_tasks
     end
@@ -34,23 +35,29 @@ class TasksController < ApplicationController
     @task_projects = {}
     @task_status   = {}
     
-    header_scope = scope.scoped( :conditions => "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
-    header_scope = header_scope.scoped( :conditions => { :bourreau_id => bourreau_ids })
+    header_scope = scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+    header_scope = header_scope.where( :bourreau_id => bourreau_ids )
 
-    header_scope.find(:all, :select => "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count", 
-                      :group => "cbrain_tasks.type" ).each { |t| @task_types[t.class.name] = t.count }
-    header_scope.find(:all, :select => "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count", 
-                      :group => "cbrain_tasks.user_id" ).each { |t| @task_owners[t.user] = t.count if t.user }
-    header_scope.find(:all, :select => "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count", 
-                      :group => "cbrain_tasks.group_id" ).each { |t| @task_projects[t.group] = t.count if t.group }
-    header_scope.find(:all, :select => "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count", 
-                      :group => "cbrain_tasks.status" ).each { |t| @task_status[t.status] = t.count }
-    
+    header_scope.select( "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count" ).group("cbrain_tasks.type").each do |t|
+      @task_types[t.class.name] = t.count
+    end
+
+    header_scope.select( "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count" ).group("cbrain_tasks.user_id").each do |t|
+      @task_owners[t.user] = t.count if t.user
+    end
+
+    header_scope.select( "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count" ).group("cbrain_tasks.group_id").each do |t|
+      @task_projects[t.group] = t.count if t.group
+    end
+
+    header_scope.select( "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count" ).group("cbrain_tasks.status").each do |t|
+      @task_status[t.status] = t.count
+    end
     
     scope = base_filtered_scope(scope)
     
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.scoped( :conditions => { :bourreau_id => bourreau_ids } )
+      scope = scope.where( :bourreau_id => bourreau_ids )
     end
 
     if request.format.to_sym == :xml
@@ -68,16 +75,10 @@ class TasksController < ApplicationController
       sort_dir   = 'DESC'
     end
 
-    scope = scope.scoped(:include  => [:bourreau, :user, :group], 
-                         :readonly => false, 
-                         :order    => "#{sort_order} #{sort_dir}" )
+    scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
-    @tasks = scope
-    
-    pagination_list = @tasks
-    @total_tasks = @tasks.size # number of TASKS
-
-    @total_entries = @tasks.size # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
+    @total_tasks = scope.count    # number of TASKS
+    @total_entries = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
     @standard_tasks_per_page = 20
@@ -88,24 +89,26 @@ class TasksController < ApplicationController
     offset = (page - 1) * @tasks_per_page
     
     if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
-      @total_entries = @tasks.count(:select => "DISTINCT launch_time")
-      launch_times = @tasks.all(:offset  => offset, :limit  => @tasks_per_page, :group => :launch_time).map(&:launch_time)
-      if launch_times.include? nil
-        @tasks = @tasks.scoped(:conditions => ["cbrain_tasks.launch_time IN (?) OR cbrain_tasks.launch_time IS ?", launch_times, nil])
-      else
-        @tasks = @tasks.scoped(:conditions => {:launch_time => launch_times})
+      @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
+      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
+      @tasks = {} # hash lt => task_info
+      launch_times.each do |lt|
+         first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
+         tasks_in_batch = scope.where(:launch_time => lt).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
+         statuses = {}
+         tot_tasks = 0
+         tasks_in_batch.each do |stat_info|
+           the_stat = stat_info.status =~ /Fail/ ? "Failed" : stat_info.status
+           the_cnt  = stat_info.status_count.to_i
+           statuses[the_stat] ||= 0
+           statuses[the_stat] += the_cnt
+           tot_tasks          += the_cnt
+         end
+         @tasks[lt] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
       end
-      seen_keys    = {}
-      pagination_list = []
-      @tasks = @tasks.all.hashed_partition do |task|
-        lt               = task.launch_time
-        pagination_list << lt unless seen_keys[lt]
-        seen_keys[lt]    = true
-        lt
-      end
+      pagination_list = launch_times
     else
-      @total_entries = @tasks.count
-      @tasks = @tasks.scoped(:offset  => offset, :limit  => @tasks_per_page)
+      @tasks = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
       pagination_list = @tasks.all
     end
     
@@ -126,24 +129,21 @@ class TasksController < ApplicationController
   
   def batch_list
     if current_project
-      scope = CbrainTask.scoped(:conditions  => { :group_id  => current_project.id })
+      scope = CbrainTask.where( :group_id  => current_project.id )
     else
       scope = current_user.available_tasks
     end
     
-    
     scope = base_filtered_scope(scope)
     
-    scope = scope.scoped(:conditions => {:launch_time => params[:launch_time]})
+    scope = scope.where( :launch_time => params[:launch_time] )
     
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.scoped( :conditions => { :bourreau_id => @bourreaux.map(&:id) } )
+      scope = scope.where( :bourreau_id => @bourreaux.map(&:id) )
     end
 
-    scope = scope.scoped(:include  => [:bourreau, :user, :group], 
-                         :readonly => false, 
-                         :order    => "cbrain_tasks.rank" )
+    scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank" ).readonly(false)
         
     @tasks = scope                     
     @bourreau_status = {}
@@ -213,7 +213,7 @@ class TasksController < ApplicationController
     # Offer latest accessible tool config as default
     if @task.bourreau_id
       tool = @task.tool
-      toolconfigs = ToolConfig.find(:all, :conditions => { :bourreau_id => @task.bourreau_id, :tool_id => tool.id })
+      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
       @task.tool_config = lastest_toolconfig if lastest_toolconfig
@@ -537,9 +537,9 @@ class TasksController < ApplicationController
     tasklist    = params[:tasklist]  || []
     batch_ids   = params[:batch_ids] || []
     if batch_ids.delete "nil"
-      tasklist += CbrainTask.all(:conditions => {:launch_time => nil}).map(&:id)
+      tasklist += CbrainTask.where( :launch_time => nil ).map(&:id)
     end
-    tasklist += CbrainTask.all(:conditions => {:launch_time => batch_ids}).map(&:id)
+    tasklist += CbrainTask.where( :launch_time => batch_ids ).map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -620,7 +620,7 @@ class TasksController < ApplicationController
 
       if do_in_spawn
         Message.send_message(current_user, {
-          :header        => "Finished sending #{operation} to #{tasklist.size} tasks.",
+          :header        => "Finished sending #{operation} to your tasks.",
           :message_type  => :notice,
           :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
           }
@@ -651,21 +651,21 @@ class TasksController < ApplicationController
   # Some useful variables for the views for 'new' and 'edit'
   def initialize_common_form_values #:nodoc:
 
-    @data_providers   = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    @data_providers   = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
     bourreau_ids = tool.bourreaux.map &:id
-    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user, :conditions => { :online => true, :id => bourreau_ids } )
+    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids )
 
     # Presets
     unless @task.class.properties[:no_presets]
       site_preset_tasks = []
       unless current_user.site.blank?
         manager_ids = current_user.site.managers.map &:id
-        site_preset_tasks = CbrainTask.find(:all, :conditions => { :status => 'SitePreset', :user_id => manager_ids })
+        site_preset_tasks = CbrainTask.where( :status => 'SitePreset', :user_id => manager_ids )
       end
-      own_preset_tasks = current_user.cbrain_tasks.find(:all, :conditions => { :type => @task.class.to_s, :status => 'Preset' })
+      own_preset_tasks = current_user.cbrain_tasks.where( :type => @task.class.to_s, :status => 'Preset' )
       @own_presets  = own_preset_tasks.collect  { |t| [ t.description, t.id ] }
       @site_presets = site_preset_tasks.collect { |t| [ "#{t.description} (by #{t.user.login})", t.id ] }
       @all_presets = []
@@ -694,7 +694,7 @@ class TasksController < ApplicationController
 
     if commit_button =~ /load preset/i
       preset_id = params[:load_preset_id] # used for delete too
-      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+      if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.restore_untouchable_attributes(old_params, :include_unpresetable => true)
@@ -713,7 +713,7 @@ class TasksController < ApplicationController
 
     if commit_button =~ /delete preset/i
       preset_id = params[:load_preset_id] # used for delete too
-      if (! preset_id.blank?) && preset = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+      if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         if preset.user_id == current_user.id
           preset.delete
           flash[:notice] += "Deleted preset '#{preset.description}'.\n"
@@ -733,7 +733,7 @@ class TasksController < ApplicationController
         preset.description = preset_name
       else
         preset_id = params[:save_preset_id]
-        preset    = CbrainTask.find(:first, :conditions => { :id => preset_id, :status => [ 'Preset', 'SitePreset' ] })
+        preset    = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         cb_error "No such preset ID '#{preset_id}'" unless preset
         if preset.user_id != current_user.id
           flash[:error] += "Cannot update a preset that does not belong to you.\n"

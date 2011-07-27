@@ -15,11 +15,13 @@
 # and more efficient VaultLocalDataProvider will be used.
 class VaultSmartDataProvider < DataProvider
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   include SmartDataProviderInterface
 
-  def after_initialize #:nodoc:
+  after_initialize :after_initialize_select_provider
+
+  def after_initialize_select_provider #:nodoc:
     self.select_local_or_network_provider(VaultLocalDataProvider,VaultSshDataProvider)
   end
 

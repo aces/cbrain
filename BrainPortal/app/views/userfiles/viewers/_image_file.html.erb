@@ -10,7 +10,7 @@
 <% if params[:content_viewer] == "off" %>
   <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
 <% else %>
-  <% overlay_content_link "Show Displayable Content", :class => "action_link" do %>
+  <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
     <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
   <% end %>
 <% end %>

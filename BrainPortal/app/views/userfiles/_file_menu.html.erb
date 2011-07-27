@@ -1,21 +1,21 @@
 <div class="menu_bar">
   <span class="button_set">  
 
-    <% button_with_dropdown_menu("Scientific Tools")  do %>
+    <%= button_with_dropdown_menu("Scientific Tools")  do %>
       <%= render :partial => 'userfiles/tool_management_scientific' %>
     <% end %>
 
-    <% button_with_dropdown_menu("Conversion Tools")  do %>
+    <%= button_with_dropdown_menu("Conversion Tools")  do %>
       <%= render :partial => 'userfiles/tool_management_conversion' %>
     <% end %>
 
-    <% button_with_dropdown_menu("Download") do %>
+    <%= button_with_dropdown_menu("Download") do %>
       Specify Download File Name (optional):
       <%= text_field_tag :specified_filename %>
       <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :method  => :get) %>
     <% end %>
 
-    <% button_with_dropdown_menu("Update Attributes") do %>
+    <%= button_with_dropdown_menu("Update Attributes") do %>
         <h4>Tags</h4>
         <%= render :partial => 'userfiles/tag_table' %>
         <hr>
@@ -30,6 +30,7 @@
         <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
+                                                     :datatype => 'html',
                                                      :overlay => true,
                                                      :method  => :get) 
         %>
@@ -53,7 +54,7 @@
         Synchronize Files Locally: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
     <% end %>
 
-    <% button_with_dropdown_menu("Move/Copy", :class => 'centered') do %>
+    <%= button_with_dropdown_menu("Move/Copy", :class => 'centered') do %>
         <p>
           To Data Provider:
           <%= data_provider_select("data_provider_id") %>
@@ -70,7 +71,7 @@
     <% end %>
 
     <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
-    <% button_with_dropdown_menu(select_label, :class => 'centered') do %>
+    <%= button_with_dropdown_menu(select_label, :class => 'centered') do %>
       <p class="left_align">
       This panel manages your list of <em>persistently</em> selected files.<br/>
       This list is maintained even when you switch from page to page.<br/>

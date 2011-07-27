@@ -9,7 +9,7 @@ by all the other users too!
 
 <P>
 
-<% ajax_form_for :feedback, @feedback, :url => { :action => "create" }, :datatype => "script"  do |f| -%>
+<%= ajax_form_for @feedback, :as => :feedback, :url => { :action => "create" }, :datatype => "script"  do |f| -%>
 
   <%= f.error_messages %>
   <p>

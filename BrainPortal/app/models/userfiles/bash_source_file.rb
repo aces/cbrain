@@ -6,7 +6,7 @@
 
 class BashSourceFile < TextFile
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def self.pretty_type
     "Bash script"

@@ -50,10 +50,10 @@
     <th>Remote Resources</th>
   </tr>
   <tr>
-    <td><% array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
-    <td><% array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|g,r,c| link_to_group_if_accessible(g)} %></td>
-    <td><% array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
-    <td><% array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
+    <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+    <td><%= array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|g,r,c| link_to_group_if_accessible(g)} %></td>
+    <td><%= array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
+    <td><%= array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
   </tr>
 </table>
 

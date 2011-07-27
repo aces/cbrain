@@ -37,7 +37,7 @@ end
 
 class String
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Given a revision info string such as
   #
@@ -47,7 +47,7 @@ class String
   # (the first number after the file name). If the
   # string is unparsable, it returns "(rev?)".
   def svn_id_rev
-    if revm = self.match(/\s+(\d+)\s+/)
+    if revm = self.match(/\s+([\da-fA-F]+)\s+/)
       revm[1]
     else
       "(rev?)"
@@ -89,7 +89,7 @@ class String
   # it will return the time (but not the date).
   # If the string is unparsable, it returns "(time?)".
   def svn_id_time
-    if revm = self.match(/(\d\d:\d\d:\d\d\S*)/)
+    if revm = self.match(/(\d\d:\d\d:\d\d\S*(\s[+-]\d+)?)/)
       revm[1]
     else
       "(time?)"
@@ -103,8 +103,8 @@ class String
   # it will return the author.
   # If the string is unparsable, it returns "(author?)".
   def svn_id_author
-    if revm = self.match(/(\S*)\s+\$$/)
-      revm[1]
+    if revm = self.match(/\d\d:\d\d:\d\d\S*(\s[+-]\d+)?\s+(\S.*\S)\s+\$$/)
+      revm[2]
     else
       "(author?)"
     end

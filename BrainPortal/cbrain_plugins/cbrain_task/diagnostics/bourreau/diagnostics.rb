@@ -13,7 +13,7 @@
 #A subclass of ClusterTask to run diagnostics.
 class CbrainTask::Diagnostics < ClusterTask
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Overrides the default addlog() method such that each
   # log entry is also sent to STDOUT.
@@ -169,9 +169,9 @@ class CbrainTask::Diagnostics < ClusterTask
       commands << "echo \"Type=#{mytype}\""
       commands << "echo \"Start=`date`\""
       if mytype == 'SingleFile'
-        commands << "wc -c #{full}"
+        commands << "wc -c #{full} 2>&1"
       else
-        commands << "du -s #{full}"
+        commands << "du -s #{full} 2>&1"
       end
       commands << "echo \"End=`date`\""
     end
@@ -185,6 +185,9 @@ class CbrainTask::Diagnostics < ClusterTask
       commands << "\n"
     end
 
+    commands << "\n"
+    commands << "echo Diagnostics Script Ending\n" # we check for this sentence in save_results()
+
     commands
   end
   
@@ -196,14 +199,24 @@ class CbrainTask::Diagnostics < ClusterTask
 
     self.addlog "Starting diagnostics postprocessing."
 
+    # Read cluster job's out and err files.
+    stdout_text = File.read(self.stdout_cluster_filename) rescue nil
+    stderr_text = File.read(self.stderr_cluster_filename) rescue "(Exception)"
+
     %w[ CBRAIN_GLOBAL_BOURREAU_CONFIG_ID CBRAIN_GLOBAL_TOOL_CONFIG_ID CBRAIN_TOOL_CONFIG_ID ].each do |var|
        self.addlog("Environment check: #{var}=#{ENV[var] || "(Unset)"}")
+    end
+
+    if stdout_text.nil? || stdout_text !~ /Diagnostics Script Ending/ # see end of cluster_commands()
+      self.addlog "Error: cluster script did not produce expected output."
+      self.addlog "Post Processing might have been triggered too soon."
+      return false # -> "Failed On Cluster"
     end
 
     if mybool(params[:cluster_crash])
       params[:cluster_crash]=nil if mybool(params[:crash_will_reset])
       self.addlog "Pretending that the cluster job failed."
-      return false
+      return false # -> "Failed On Cluster"
     end
 
     # Stuff needed for report
@@ -223,8 +236,6 @@ class CbrainTask::Diagnostics < ClusterTask
       params.delete(:report_id)
     elsif report.save
       report.cache_writehandle do |fh|
-        stdout_text = File.read(self.stdout_cluster_filename) rescue "(Exception)"
-        stderr_text = File.read(self.stderr_cluster_filename) rescue "(Exception)"
         fh.write( <<-"REPORT_DIAGNOSTICS" )
 
 ######################

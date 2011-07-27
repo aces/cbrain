@@ -12,7 +12,7 @@
 
 class ScirMoab < Scir
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   class Session < Scir::Session
 
@@ -81,7 +81,8 @@ class ScirMoab < Scir
     end
 
     def terminate(jid)
-      IO.popen("mjobctl -c #{shell_escape(jid)} 2>&1","r") do |i|
+      #IO.popen("mjobctl -c #{shell_escape(jid)} 2>&1","r") do |i|
+      IO.popen("canceljob #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.read
         raise "Error deleting: #{p.join("\n")}" unless p =~ /job '\S+' cancelled/i
         return

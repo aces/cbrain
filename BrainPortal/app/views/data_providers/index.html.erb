@@ -10,7 +10,7 @@
 <P>
 
 <div id="disk_usage">   
-  <% on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => "<span class='loading_message'>Loading...</span>"}) do %>
+  <%= on_click_ajax_replace({:url  =>  url_for(:action  => :disk_usage), :position  => :replace, :before  => "<span class='loading_message'>Loading...</span>"}) do %>
     <a href="#" class="action_link">Click here to view disk usage statistics</a>
   <% end %>
 </div>

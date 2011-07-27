@@ -11,7 +11,7 @@
     break
   end
 
-  myshorttype = RAILS_ROOT =~ /BrainPortal$/ ? "portal" : "bourreau"
+  myshorttype = Rails.root.to_s =~ /BrainPortal$/ ? "portal" : "bourreau"
   dirname     = File.dirname(__FILE__)
   model       = basename.sub(/.rb$/,"")
   bytype_code = "#{dirname}/#{model}/#{myshorttype}/#{model}.rb"

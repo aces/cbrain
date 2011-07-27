@@ -23,7 +23,7 @@
 #
 class ToolConfig < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   serialize      :env_array
 
@@ -32,20 +32,20 @@ class ToolConfig < ActiveRecord::Base
   has_many       :cbrain_tasks
   belongs_to     :group        # can be nil; means 'everyone' in that case.
 
-  # Provides a default group_id (backward compatibility)
-  def group #:nodoc:
-    Group.find(self.group_id)
-  end
-
-  # Provides a default group_id (backward compatibility)
-  def group_id #:nodoc:
-    myid = self.read_attribute(:group_id)
-    return myid if myid
-
-    myid = Group.everyone.id
-    self.write_attribute(:group_id, myid)
-    myid
-  end
+  ## Provides a default group_id (backward compatibility)
+  #def group #:nodoc:
+  #  Group.find(self.group_id)
+  #end
+  #
+  ## Provides a default group_id (backward compatibility)
+  #def group_id #:nodoc:
+  #  myid = self.read_attribute(:group_id)
+  #  return myid if myid
+  #
+  #  myid = Group.everyone.id
+  #  self.update_attribute( { :group_id =>  myid } )
+  #  myid
+  #end
 
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.

@@ -11,7 +11,7 @@
 #RESTful controller for the Site resource.
 class SitesController < ApplicationController
   
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   before_filter :login_required 
   before_filter :admin_role_required, :except  => :show
@@ -19,7 +19,7 @@ class SitesController < ApplicationController
   # GET /sites
   # GET /sites.xml
   def index #:nodoc:
-    @sites = base_filtered_scope Site.scoped(:include  => [:users, :groups], :order => "sites.name")
+    @sites = base_filtered_scope Site.where({}).includes( [:users, :groups] ).order("sites.name")
 
     respond_to do |format|
       format.html # index.html.erb

@@ -59,7 +59,7 @@
 #
 module ActRecMetaData
 
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
@@ -184,7 +184,7 @@ module ActRecMetaData
     # Reloads the cached set of MetaDataStore objects
     # associated with the current ActiveRecord object.
     def reload_cache #:nodoc:
-      meta_data_records = MetaDataStore.scoped( :conditions => { :ar_id => self.ar_id, :ar_class => self.ar_class } )
+      meta_data_records = MetaDataStore.where( :ar_id => self.ar_id, :ar_class => self.ar_class )
       self.md_cache     = meta_data_records.index_by { |ar| ar.meta_key }
     end
 
@@ -247,7 +247,7 @@ module ActRecMetaData
     allmeta = self.meta.all
     @_cbrain_meta = nil
     return true unless allmeta
-    allmeta.each { |m| m.destroy_without_callbacks }
+    MetaDataStore.delete(allmeta.map &:id) # was: destroy_without_callbacks
     true
   end
 
@@ -282,12 +282,12 @@ module ActRecMetaData
       subclasses = [ self.to_s ] + self.subclasses.map { |sc| sc.name.to_s }
       conditions = { :ar_class => subclasses, :meta_key => mykey }
       conditions[:meta_value] = myval unless myval.nil?
-      matched = MetaDataStore.find(:all, :conditions => conditions)
+      matched = MetaDataStore.where(conditions)
       objects = matched.map do |md|
         md_ar_id    = md.ar_id
         md_ar_class = md.ar_class
         found_class = Class.const_get(md_ar_class)
-        obj = found_class.find(md_ar_id, options.dup) rescue nil # NEEDS DUP!
+        obj = found_class.where(options[:conditions] || {}).find(md_ar_id) rescue nil
         obj
       end
       objects.compact!

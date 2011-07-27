@@ -7,7 +7,7 @@
 
 class DebugTimer
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def self.start(message = "Timer starting at: #{Time.now}")
     puts message

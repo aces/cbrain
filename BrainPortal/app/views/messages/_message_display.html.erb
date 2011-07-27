@@ -1,15 +1,14 @@
 
 <%- flash.each do |name, msg| -%>
-  <% unless msg.blank? %>
-    <%= content_tag :div, h(msg).gsub(/\n/, '<BR>'), :id => "flash_#{name}" %>
-  <% end %>
+  <% next if msg.blank? %>
+  <%= render :partial => 'messages/flash_display', :locals => { :msg => msg, :type => name } %>
 <%- end -%>
 
 <% unless @display_messages.blank? %>
   <table class="message_display_table">
     <tr><th colspan="3">New or important messages</th></tr>
     <% for mess in @display_messages %>
-      <%= render :partial  => "messages/message_table_row", :locals  => {:mess  => mess, :render_for => :top } %>
+      <%= render(:partial  => "messages/message_table_row", :locals  => {:mess  => mess, :render_for => :top }) rescue "Oh oh. Talk to devs!" %>
     <% end %>
   </table>
   <P>

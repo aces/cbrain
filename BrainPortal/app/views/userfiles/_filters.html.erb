@@ -3,11 +3,11 @@
      
 <ul class="filter_menu">
   
-  <% SingleFile.send(:subclasses).each do |sf| %>
+  <% SingleFile.descendants.each do |sf| %>
     <li><%= filter_add_link sf.pretty_type.pluralize, :filters => {:file_format  => sf.name} %></li>
   <% end %>
   
-  <% FileCollection.send(:subclasses).each do |fc| %>
+  <% FileCollection.descendants.each do |fc| %>
     <li><%= filter_add_link fc.pretty_type.pluralize, :filters => {:file_format  => fc.name} %></li>
   <% end %>
 </ul>

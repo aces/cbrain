@@ -10,11 +10,11 @@
 
 class Site < ActiveRecord::Base
   
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
                                                                
   validates_presence_of     :name
   validates_uniqueness_of   :name
-  validate_on_create        :prevent_group_collision
+  validate                  :prevent_group_collision, :on => :create
   
   after_create           :create_system_group
   
@@ -34,69 +34,69 @@ class Site < ActiveRecord::Base
   
   #Returns users that have manager access to this site (site managers or admins).
   def managers
-    self.users.find(:all, :conditions  =>  ["(users.role IN (?))", ["admin", "site_manager"]]) || []
+    self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []
   end
   
-  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_all(options = {})
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = Userfile.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
   
-  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_all(options = {})
-    scope = RemoteResource.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = RemoteResource.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
   
-  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_all(options = {})
-    scope = DataProvider.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = DataProvider.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
   
-  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_all(options = {})
-    scope = Tool.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = Tool.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
   
-  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_id(id, options = {})
-    scope = Userfile.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = Userfile.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
   
-  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_id(id, options = {})
-    scope = RemoteResource.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = RemoteResource.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
   
-  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_id(id, options = {})
-    scope = DataProvider.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = DataProvider.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
   
-  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord find options).
+  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_id(id, options = {})
-    scope = Tool.scoped(options)
-    scope = scope.scoped(:joins => :user, :conditions => ["users.site_id = ?", self.id], :readonly => false)
+    scope = Tool.where(options)
+    scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
   
   # Returns the SystemGroup associated with the site; this is a
   # group with the same name as the site.
   def system_group
-    SystemGroup.find(:first, :conditions => { :name => self.name } )
+    SystemGroup.where( :name => self.name ).first
   end
 
   # An alias for system_group()
@@ -191,7 +191,7 @@ class Site < ActiveRecord::Base
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.find(:first, :conditions => {:name => self.name})
+    system_group = SystemGroup.where( :name => self.name ).first
     system_group.destroy if system_group
   end
 end

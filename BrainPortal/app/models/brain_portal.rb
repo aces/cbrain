@@ -11,7 +11,7 @@
 # This model represents a BrainPortal RAILS app.
 class BrainPortal < RemoteResource
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def lock! #:nodoc:
     self.update_attributes!(:portal_locked => true)

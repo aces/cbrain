@@ -3,9 +3,9 @@
     <th colspan="1"/>                                               <!-- name -->
     <th colspan="1"/>                                               <!-- group -->
     <% if @filter_params["details"] == 'on' %>    
-      <th colspan="3"/>                                           <!-- owner site time zone -->
+      <th colspan="3"/>                                             <!-- owner site time zone -->
     <% end %>
-    <th colspan="3"><%= h(table_title) %></th>                    <!-- online alive mode -->
+    <th colspan="3"><%= table_title %></th>                         <!-- online alive mode -->
     <% if @filter_params["details"] == 'on' %>
       <th colspan="2"/> <!-- syncability description -->
     <% end %>

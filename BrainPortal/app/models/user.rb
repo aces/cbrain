@@ -37,7 +37,7 @@ require 'digest/sha1'
 #                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
@@ -50,8 +50,8 @@ class User < ActiveRecord::Base
   validates_length_of       :login,    :within => 3..40
   validates_length_of       :email,    :within => 3..100
   validates_uniqueness_of   :login, :case_sensitive => false
-  validate_on_create        :prevent_group_collision
-  validate_on_update        :immutable_login
+  validate                  :prevent_group_collision,    :on => :create
+  validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   
   before_create             :add_system_groups
@@ -127,13 +127,13 @@ class User < ActiveRecord::Base
   def remember_me_until(time) #:nodoc:
     self.remember_token_expires_at = time
     self.remember_token            = encrypt("#{email}--#{remember_token_expires_at}")
-    save(false)
+    save(:validate => false)
   end
 
   def forget_me #:nodoc:
     self.remember_token_expires_at = nil
     self.remember_token            = nil
-    save(false)
+    save(:validate => false)
   end
 
   # Returns true if the user has just been activated.
@@ -151,61 +151,62 @@ class User < ActiveRecord::Base
     if self.has_role? :admin
       Tool.scoped(options)
     elsif self.has_role? :site_manager
-      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
     else
-      Tool.scoped(options).scoped(:conditions  => ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
     end
   end
   
   #Find the scientific tools that this user has access to.
   def available_scientific_tools(options = {})
-    self.available_tools(options).scoped(:conditions  => {:category  => "scientific tool"}, :order  => "tools.select_menu_text" )
+    self.available_tools(options).where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
   def available_conversion_tools(options = {})
-    self.available_tools(options).scoped(:conditions  => {:category  => "conversion tool"}, :order  => "tools.select_menu_text" )
+    self.available_tools(options).where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
   def available_groups(options = {})
     if self.has_role? :admin
-      group_scope = Group.scoped(options)
+      group_scope = Group.where(options)
     elsif self.has_role? :site_manager
-      group_scope = Group.scoped(:conditions => ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
-      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])      
+      group_scope = Group.where(options)
+      group_scope = group_scope.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+      group_scope = group_scope.where("groups.name <> 'everyone'")
+      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
     else                  
-      group_scope = self.groups.scoped(options)
-      group_scope = group_scope.scoped(:conditions => "groups.name<>'everyone'")
-      group_scope = group_scope.scoped(:conditions => ["groups.type NOT IN (?)", InvisibleGroup.send(:subclasses).map(&:to_s).push("InvisibleGroup") ])
+      group_scope = self.groups.where(options)
+      group_scope = group_scope.where("groups.name <> 'everyone'")
+      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
     end
     
     group_scope
   end
   
   def available_tags(options = {})
-    Tag.scoped(options).scoped(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids])
+    Tag.where(options).where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
   
   def available_tasks(options = {})
     if self.has_role? :admin
-      CbrainTask.scoped(options)
+      CbrainTask.where(options)
     elsif self.has_role? :site_manager
-      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
+      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids] )
     else
-      CbrainTask.scoped(options).scoped(:conditions  => ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids])
+      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
     end
   end
   
   #Return the list of users under this user's control based on role.
   def available_users(options = {})
     if self.has_role? :admin
-      user_scope = User.scoped(options)
+      user_scope = User.where(options)
     elsif self.has_role? :site_manager
-      user_scope = self.site.users.scoped(options)
+      user_scope = self.site.users.where(options)
     else
-      user_scope = User.scoped(:conditions => {:id => self.id}).scoped(options)
+      user_scope = User.where( :id => self.id ).where(options)
     end
     
     user_scope
@@ -219,7 +220,7 @@ class User < ActiveRecord::Base
   # Returns the SystemGroup associated with the user; this is a
   # group with the same name as the user.
   def system_group
-    @own_group ||= SystemGroup.find(:first, :conditions => { :name => self.login } )
+    @own_group ||= SystemGroup.where( :name => self.login ).first
   end
 
   # An alias for system_group()
@@ -315,7 +316,7 @@ class User < ActiveRecord::Base
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.find(:first, :conditions => {:name => self.login})
+    system_group = SystemGroup.where( :name => self.login ).first
     system_group.destroy if system_group
   end
   
@@ -337,7 +338,7 @@ class User < ActiveRecord::Base
   def destroy_user_sessions #:nodoc:
     myid = self.id
     return true unless myid # defensive
-    sessions = Session.all.select do |s|
+    sessions = CbrainSession.all.select do |s|
       (s.user_id && s.user_id == myid) ||
       (s.data && s.data[:user_id] && s.data[:user_id] == myid)
     end

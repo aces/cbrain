@@ -11,7 +11,7 @@
 # a RAILS redirect structure.
 class CbrainException < StandardError
 
-   Revision_info="$Id$"
+   Revision_info=CbrainFileRevision[__FILE__]
 
    attr_accessor :redirect
    attr_accessor :status

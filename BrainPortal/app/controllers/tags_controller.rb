@@ -12,7 +12,7 @@
 #RESTful controller for the Tag resource.
 class TagsController < ApplicationController
 
-  Revision_info = "$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_filter :login_required
   layout false

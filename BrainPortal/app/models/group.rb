@@ -27,7 +27,7 @@
 #                    have their group set to their owner's SystemGroup.
 class Group < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   after_destroy           :reassign_models_to_owner_group
   

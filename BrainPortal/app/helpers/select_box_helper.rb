@@ -1,7 +1,7 @@
 #Helper methods for resource select boxes.
 module SelectBoxHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #################################################################################
   # Selector Helpers
@@ -18,7 +18,7 @@ module SelectBoxHelper
       body << content_tag(:optgroup, options_for_select(group[1], selected_key), :label => group[0])
     end
   
-    body
+    body.html_safe
   end
   
   #Create a standard user select box for selecting a user id for a form.
@@ -32,7 +32,7 @@ module SelectBoxHelper
   def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
-    users    = options[:user] || current_user.available_users
+    users    = options[:users] || current_user.available_users
   
     if selector.respond_to?(:user_id)
       selected = selector.user_id.to_s
@@ -48,7 +48,7 @@ module SelectBoxHelper
       grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
     end
     
-    select_tag parameter_name, grouped_options, select_tag_options
+    select_tag parameter_name, grouped_options.html_safe, select_tag_options
   end
   
   #Create a standard groups select box for selecting a group id for a form.
@@ -113,7 +113,7 @@ module SelectBoxHelper
       grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
     end
     
-    select_tag parameter_name, grouped_options, select_tag_options
+    select_tag parameter_name, grouped_options.html_safe, select_tag_options
   end
   
   #Create a standard data provider select box for selecting a data provider id for a form.
@@ -147,10 +147,10 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+      grouped_options = "<option value=\"\">#{blank_label}</option>".html_safe + grouped_options
     end
     
-    select_tag parameter_name, grouped_options, select_tag_options
+    select_tag parameter_name, grouped_options.html_safe, select_tag_options
   end
   
   #Create a standard bourreau select box for selecting a bourreau id for a form.
@@ -186,9 +186,9 @@ module SelectBoxHelper
         options = "<option value=\"\">#{blank_label}</option>" + options
       end
       
-      select_tag parameter_name, options, select_tag_options
+      select_tag parameter_name, options.html_safe, select_tag_options
     else
-      "<strong style=\"color:red\">No Execution Servers Available</strong>"
+      "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe
     end
   end
 
@@ -287,7 +287,7 @@ module SelectBoxHelper
       grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
     end
     
-    select_tag parameter_name, grouped_options, select_tag_options
+    select_tag parameter_name, grouped_options.html_safe, select_tag_options
   end
 
 end

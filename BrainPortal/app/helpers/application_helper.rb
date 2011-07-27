@@ -3,7 +3,7 @@ require 'time'
 #Helper methods for all views.
 module ApplicationHelper
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #################################################################################
   # Layout Helpers
@@ -47,12 +47,12 @@ module ApplicationHelper
     content = capture(&block)
     
     if message.blank?
-      concat(content)
+      safe_concat(content)
       return
     end
-    concat("<#{element} title='#{message}'>")
-    concat(content)
-    concat("</#{element}>")
+    safe_concat("<#{element} title='#{message}'>")
+    safe_concat(content)
+    safe_concat("</#{element}>")
   end
  
   # Return +content+ only if condition evaluates to true.
@@ -84,11 +84,11 @@ module ApplicationHelper
       params[:controller].to_s == 'sites' &&
       params[:action].to_s == 'show' &&
       params[:id].to_s == current_user.site_id.to_s)
-      'id="selected"'
+      'class="selected"'.html_safe
     elsif(param_controller.to_s == current_item.to_s)
-      'id="selected"'
+      'class="selected"'.html_safe
     else
-      'id="unselected"'
+      'class="unselected"'.html_safe
     end
   end
 
@@ -102,7 +102,7 @@ module ApplicationHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;"
+    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;".html_safe
   end
 
 
@@ -124,11 +124,12 @@ module ApplicationHelper
     cropped_header = crop_text_to(options[:header_width] || 50,header)
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
-    h(cropped_header) + " " + capture do
+    link = h(cropped_header) + " " + capture do
       overlay_content_link("(more)", :enclosing_element => 'span' ) do
-        "<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>"
+        ("<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>").html_safe
       end
     end
+    link.html_safe
   end
 
   # Creates a link called "(info)" that presents as an overlay
@@ -145,7 +146,7 @@ module ApplicationHelper
                        "</div>\n"
     capture do
        overlay_content_link("(info)", :enclosing_element => 'span') do
-         all_descriptions
+         all_descriptions.html_safe
        end
     end
   end
@@ -198,7 +199,7 @@ module ApplicationHelper
       end
     end
     
-    icon || ""
+    icon.html_safe
   end
 
 
@@ -230,8 +231,10 @@ module ApplicationHelper
   # HTML in a document.
   def html_for_js(string)
     # "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
-    return "''" unless string
-    "'" + (string.gsub(/(\\|\r?\n|[\n\r'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } ) + "'" # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!!!!!!!!!!
+    return "''".html_safe if string.nil? || string == ""
+    with_substititions = string.gsub(/(\\|\r?\n|[\n\r'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!
+    with_quotes = "'#{with_substititions}'"
+    with_quotes.html_safe
   end
 
 end

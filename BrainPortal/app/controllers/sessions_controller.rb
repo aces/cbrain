@@ -15,7 +15,7 @@
 #Handles logging in and loggin out of the system.
 class SessionsController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   api_available
 

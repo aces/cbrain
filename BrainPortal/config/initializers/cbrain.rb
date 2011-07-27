@@ -9,13 +9,12 @@
 # $Id$
 #
 
-require 'mongrel'
 require 'cbrain_exception'
 
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   public
 
@@ -24,10 +23,10 @@ class CBRAIN
   Rails_UserName     = Etc.getpwuid(Rails_UserId).name
   Rails_UserHome     = Etc.getpwuid(Rails_UserId).dir
   System_Uname       = `uname -a`.chomp
-  ENV['PATH']        = "#{RAILS_ROOT}/vendor/cbrain/bin:#{ENV['PATH']}"
+  ENV['PATH']        = "#{Rails.root.to_s}/vendor/cbrain/bin:#{ENV['PATH']}"
 
   # CBRAIN plugins locations
-  Plugins_Dir          = "#{RAILS_ROOT}/cbrain_plugins"
+  Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
   TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
   UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
 
@@ -47,10 +46,6 @@ class CBRAIN
   # Most of the code in this method comes from a blog entry
   # by {Scott Persinger}[http://geekblog.vodpod.com/?p=26].
   #
-  # The forking code has been modified to call a special
-  # CBRAIN patch to Mongrel to make sure its sockets
-  # are closed.
-  #
   # In case of an untrapped exception being raised in the background code,
   # a CBRAIN Message will be sent to +destination+ (which can be a Group,
   # a User, a Site, or the keywords :nobody or :admin) with +taskname+ being
@@ -64,7 +59,6 @@ class CBRAIN
     childpid = Kernel.fork do
 
       # Child code starts here
-      Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
       reader.close # Not needed in the child!
 
       # Create subchild
@@ -76,13 +70,12 @@ class CBRAIN
         # Background code execution
         begin
           $0 = "#{taskname}" # Clever!
-          # Monkey-patch Mongrel to not remove its pid file in the child
-          Mongrel::Configurator.class_eval("def remove_pid_file; true; end")
+          Process.setpgrp rescue true
           ActiveRecord::Base.establish_connection(dbconfig)
           yield
 
         # Background untrapped exception handling
-        rescue ActiveRecord::StatementInvalid => e
+        rescue ActiveRecord::StatementInvalid, Mysql::Error => e
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
@@ -139,7 +132,6 @@ class CBRAIN
     childpid = Kernel.fork do
 
       # Child code starts here
-      Mongrel::HttpServer.cbrain_force_close_server_socket # special to CBRAIN
       reader.close # Not needed in the child!
 
       # Create subchild
@@ -152,6 +144,7 @@ class CBRAIN
         # Background code execution
         begin
           $0 = "#{taskname}" # Clever!
+          Process.setpgrp rescue true
           yield
         rescue => itswrong
           puts "Exception raised in spawn_fully_independent():\n"

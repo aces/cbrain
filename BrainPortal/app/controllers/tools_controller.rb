@@ -6,12 +6,10 @@
 #
 # Original author: Angela McCloskey
 #
-# Revision_info="$Id$"
-#
 
 class ToolsController < ApplicationController
  
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
  
   before_filter :login_required
   before_filter :admin_role_required, :except  => [:index, :bourreau_select]
@@ -19,7 +17,7 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @tools     = base_filtered_scope(current_user.available_tools).find(:all, :include  => [:user, :group], :order  => "tools.name")
+    @tools     = base_filtered_scope(current_user.available_tools).includes( [:user, :group] ).order("tools.name")
     
     respond_to do |format|
       format.html # index.html.erb
@@ -35,9 +33,9 @@ class ToolsController < ApplicationController
     
     @tool        = current_user.available_tools.find(params[:current_value])
     bourreau_ids = @tool.bourreaux.map &:id
-    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user, :conditions  => {:online  => true, :id => bourreau_ids})
+    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :online  => true, :id => bourreau_ids )
     @bourreaux.reject! do |b|
-      tool_configs = ToolConfig.find(:all, :conditions => { :tool_id => @tool.id, :bourreau_id => b.id })
+      tool_configs = ToolConfig.where( :tool_id => @tool.id, :bourreau_id => b.id )
       ! ( tool_configs.detect { |tc| tc.can_be_accessed_by?(current_user) } ) # need at least one config available for user
     end
     
@@ -92,12 +90,11 @@ class ToolsController < ApplicationController
     successes = []
     failures  = ""
 
-    PortalTask.send(:subclasses).map(&:name).sort.each do |tool|
+    PortalTask.descendants.map(&:name).sort.each do |tool|
       next if current_user.available_tools.find_by_cbrain_task_class(tool) # already exists
       @tool = Tool.new(
                   :name               => tool.sub(/^CbrainTask::/, ""),
                   :cbrain_task_class  => tool,
-                  :bourreau_ids       => Bourreau.find_all_accessible_by_user(current_user).map(&:id),
                   :user_id            => User.find_by_login("admin").id,
                   :group_id           => Group.everyone.id,
                   :category           => "scientific tool" 
@@ -112,7 +109,7 @@ class ToolsController < ApplicationController
 
     respond_to do |format|
       if successes.size > 0
-        flash[:notice] = "#{@template.pluralize(successes.size, "tool")} successfully registered:\n"
+        flash[:notice] = "#{view_pluralize(successes.size, "tool")} successfully registered:\n"
         successes.each do |tool|
           flash[:notice] += "Name: #{tool.name} Class: #{tool.cbrain_task_class}\n"
         end
@@ -157,8 +154,8 @@ class ToolsController < ApplicationController
   end
       
   def tool_management #:nodoc:
-      @tools = Tool.find(:all, :include  => [:bourreaux], :order  => "tools.name")
-      @bourreaux = Bourreau.find(:all)
+      @tools = Tool.order("tools.name")
+      @bourreaux = Bourreau.all
   end
 
 end

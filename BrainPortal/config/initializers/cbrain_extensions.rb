@@ -65,6 +65,61 @@ class ActiveRecord::Base
     options[:root] ||= self.class.to_s.gsub("::", "-")
     original_to_xml(options)
   end
+
+
+  ###################################################################
+  # ActiveRecord Added Behavior For Serialization
+  ###################################################################
+
+  # This directive is just like ActiveRecord's serialize directive,
+  # but it makes sure that the hash will be reconstructed as
+  # a HashWithIndifferentAccess ; it is meant to be backwards compatible
+  # with old DBs where the records were saved as Hash, so it will
+  # update them as they are reloaded using a after_initialize callback.
+  def self.serialize_as_indifferent_hash(*attlist)
+    attlist.each do |att|
+      raise "Attribute '#{att}' not a symbol?!?" unless att.is_a?(Symbol)
+      serialize att, BasicObject # we use this to record which attributes are to be indifferent.
+      #serialize att
+    end
+    after_initialize :ensure_serialized_hash_are_indifferent
+  end
+
+  # Call this method in a :after_initialize callback, passsing it
+  # a list of attributes that are supposed to be serialized hash
+  # with indifferent access; if they are, nothing happens. If they
+  # happen to be ordinary hashes, they'll be upgraded.
+  def ensure_serialized_hash_are_indifferent #:nodoc:
+    to_update = {}
+    ser_attinfo = self.class.serialized_attributes
+    attlist = ser_attinfo.keys.select { |att| ser_attinfo[att] == BasicObject }
+    #attlist = ser_attinfo.keys
+    attlist.each do |att|
+      the_hash = read_attribute(att) # value of serialized attribute, as reconstructed by ActiveRecord
+      if the_hash.is_a?(Hash) && ! the_hash.is_a?(HashWithIndifferentAccess)
+#puts_blue "Oh oh, must fix #{self.class.name}-#{self.id} -> #{att}"
+        #new_hash = HashWithIndifferentAccess.new_from_hash_copying_default(the_hash)
+        new_hash = the_hash.with_indifferent_access
+        to_update[att] = new_hash
+      end
+    end
+
+    unless to_update.empty?
+      # Proper code that is supposed to update it once and for all in the DB:
+
+      #self.update_attributes(to_update) # reactive once YAML dumping is fixed in Rails
+
+      # Unfortunately, currently a HashWithIndifferentAccess is serialized EXACTLY as a Hash, so
+      # it doesn't save any differently in the DB. To prevent unnecessary writes and rewrites of
+      # always the same serialized Hash, we'll just update the attribute in memory instead:
+      to_update.each do |att,val|
+        write_attribute(att,val)
+      end
+    end
+
+    true
+  end
+
 end
 
 
@@ -138,60 +193,6 @@ module Kernel
     end
   end
 
-end
-
-
-###################################################################
-# CBRAIN Patches To Mongrel
-###################################################################
-module Mongrel
-
-  #
-  # CBRAIN patches to its HTTP Server.
-  #
-  # These patches are mostly required by the CBRAIN methods
-  # spawn_with_active_records(), spawn_with_active_records_if()
-  # and spawn_fully_independent().
-  #
-  class HttpServer
-
-    alias original_configure_socket_options configure_socket_options
-    alias original_process_client           process_client
-
-    # This is a patch to Mongrel::HttpServer to make sure
-    # that Mongrel's internal listen socket is configured
-    # with the close-on-exec flag.
-    def configure_socket_options
-      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC) rescue true
-      @@cbrain_socket = @socket
-      original_configure_socket_options
-    end
-
-    # This is a patch to Mongrel::HttpServer to make sure
-    # that Mongrel's internal listen socket is configured
-    # with the close-on-exec flag. We also record the two
-    # socket endpoints of the server's HTTP channel, so
-    # that we can quickly close them in the patch method
-    # cbrain_force_close_server_socket()
-    def process_client(client)
-      @@cbrain_client_socket ||= {}
-      @@cbrain_client_socket[Thread.current.object_id] = client
-      original_process_client(client)
-      @@cbrain_client_socket.delete(Thread.current.object_id)
-    end
-
-    # This CBRAIN patch method allows explicitely to close
-    # Mongrel's main acceptor socket (stored in a class variable)
-    # and the client's socket (stored in a class hash, by thread).
-    def self.cbrain_force_close_server_socket
-      begin
-        @@cbrain_socket.close                                  rescue true
-        @@cbrain_client_socket[Thread.current.object_id].close rescue true
-      rescue
-      end
-    end
-  
-  end
 end
 
 

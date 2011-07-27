@@ -14,7 +14,7 @@
     </tr>
   
     <% @bourreaux.each do |bourreau| %>
-      <% form_tag({:controller => "bourreaux", :action => "update", :id => bourreau.id}, :method => :put) do %>
+      <%= form_tag({:controller => "bourreaux", :action => "update", :id => bourreau.id}, :method => :put) do %>
         <%= hidden_field_tag :tool_management, "true" %>
         <%= hidden_field_tag "bourreau[tool_ids][]", [] %>
         <tr>    

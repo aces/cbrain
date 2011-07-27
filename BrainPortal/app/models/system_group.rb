@@ -20,6 +20,6 @@
 #These groups are *not* meant to be modified.
 class SystemGroup < Group
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
 end

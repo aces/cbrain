@@ -1,5 +1,5 @@
 
-<% ajax_form_for :site, @site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= ajax_form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <%= f.error_messages %>
 
@@ -41,7 +41,7 @@
     <table class="button_table">
       <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
         <tr>
-          <td class="left_align"><%= h(group.name) -%></td>
+          <td class="left_align"><%= group.name -%></td>
           <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
         </tr>
       <% end %>

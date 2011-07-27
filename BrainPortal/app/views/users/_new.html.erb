@@ -1,7 +1,7 @@
 
 <%= error_messages_for :user %>
 
-<% ajax_form_for :user, @user, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= ajax_form_for @user, :as => :user, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <div class="display_cell">
     <p><%= f.label :full_name, "Full Name" %><br/>

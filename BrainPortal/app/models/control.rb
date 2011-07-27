@@ -30,7 +30,7 @@
 # shuffled back and forth is so polymorphic.
 class Control < ActiveResource::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
 end
 

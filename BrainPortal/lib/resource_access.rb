@@ -17,7 +17,7 @@
 # with at least the attributes +user_id+ and +group_id+.
 module ResourceAccess
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:

@@ -1,15 +1,16 @@
 
-<% info        = bour.info            %>
-<% diskrev     = info.lc_rev;             diskrev = "????" if diskrev == "???" %>
-<% runrev      = info.starttime_revision; runrev  = "????" if runrev  == "???" %>
-<% worker_pids = info.worker_pids     %>
-<% worker_pids = nil if worker_pids == "???" %>
-<% tasks_tot   = info.tasks_tot %>
-<% tasks_max   = info.tasks_max %>
-<% tasks_max   = 'unlimited' if tasks_max.to_s == '0' %>
-<% isbourreau  = bour.is_a?(Bourreau) %>
-<% num_running = isbourreau ? CbrainTask.count(:all, :conditions => { :bourreau_id => bour.id, :status => CbrainTask::ACTIVE_STATUS }) : 0 %>
-
+<%
+   info        = bour.info
+   diskrev     = info.revision
+   runrev      = info.starttime_revision
+   worker_pids = info.worker_pids
+   worker_pids = nil if worker_pids == "???"
+   tasks_tot   = info.tasks_tot
+   tasks_max   = info.tasks_max
+   tasks_max   = 'unlimited' if tasks_max.to_s == '0'
+   isbourreau  = bour.is_a?(Bourreau)
+   num_running = isbourreau ? CbrainTask.where( :bourreau_id => bour.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
+%>
 
 <td><%= isbourreau ? "Execution" : "Portal" %></td>
 <td><%= link_to_bourreau_if_accessible(bour) %></td>
@@ -20,14 +21,14 @@
 <td><%= link_to_group_if_accessible(bour.group) %></td>
 <% if @filter_params["details"] == 'on' %>
   <td><%= link_to_site_if_accessible(bour.site_affiliation) %></td>
-  <td><%= h(bour.time_zone || "(Unset)") %></td>
+  <td><%= bour.time_zone || "(Unset)" %></td>
 <% end %>
 <td><%= red_if( ! bour.online,      "Yes", "Offline" ) %></td>
 <td>
     <% if info.name == "???" %>
       <%= html_colorize("Down!") %>
     <% else %>
-      <% html_tool_tip("Yes") do %>
+      <%= html_tool_tip("Yes") do %>
         Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
         (for <%= pretty_elapsed(info.uptime.to_i) %>)
       <% end %>
@@ -38,7 +39,7 @@
   <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>
   <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
   <td>
-      <% html_tool_tip(num_running == 0 ?  "0" :
+      <%= html_tool_tip(num_running == 0 ?  "0" :
          filter_reset_link(num_running, :controller => :tasks, :filters  => { :bourreau_id => bour.id, :status => :active }, :ajax => false),
          :tooltip_div_class => 'white_bg html_tool_tip'
          ) do %>

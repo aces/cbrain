@@ -24,17 +24,17 @@
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Name</th>
-      <td class="left_align"><%= h(@bourreau.name) %></td>
+      <td class="left_align"><%= @bourreau.name %></td>
     </tr>
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Class</th>
-      <td class="left_align"><%= h(@bourreau.class.to_s) %></td>
+      <td class="left_align"><%= @bourreau.class.to_s %></td>
     </tr>
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Revision Info (Client Side)</th>
-      <td class="left_align"><%= h(Bourreau.revision_info.svn_id_pretty_rev_author_date) %></td>
+      <td class="left_align"><%= Bourreau.revision_info.svn_id_pretty_rev_author_date %></td>
     </tr>
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -63,12 +63,12 @@
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Time Zone</th>
-      <td class="left_align"><%= h(@bourreau.time_zone || "(Unset)") %></td>
+      <td class="left_align"><%= @bourreau.time_zone || "(Unset)" %></td>
     </tr>
 
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Status</th>
-      <td class="left_align"><%= h(@bourreau.online ? "Online" : "Offline") %></td>
+      <td class="left_align"><%= @bourreau.online ? "Online" : "Offline" %></td>
     </tr>
 
     <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
@@ -79,12 +79,12 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host</th>
-        <td class="left_align"><%= h(@bourreau.actres_host) %></td>
+        <td class="left_align"><%= @bourreau.actres_host %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Port</th>
-        <td class="left_align"><%= h(@bourreau.actres_port) %></td>
+        <td class="left_align"><%= @bourreau.actres_port %></td>
       </tr>
 
       <tr>
@@ -93,22 +93,22 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host</th>
-        <td class="left_align"><%= h(@bourreau.ssh_control_host) %></td>
+        <td class="left_align"><%= @bourreau.ssh_control_host %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>User</th>
-        <td class="left_align"><%= h(@bourreau.ssh_control_user) %></td>
+        <td class="left_align"><%= @bourreau.ssh_control_user %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Port</th>
-        <td class="left_align"><%= h(@bourreau.ssh_control_port) %></td>
+        <td class="left_align"><%= @bourreau.ssh_control_port %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Rails Server Directory</th>
-        <td class="left_align"><%= h(@bourreau.ssh_control_rails_dir) %></td>
+        <td class="left_align"><%= @bourreau.ssh_control_rails_dir %></td>
       </tr>
 
       <tr>
@@ -118,13 +118,13 @@
       <% if is_bourreau %>
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Database Server Remote Tunnel Port</th>
-        <td class="left_align"><%= h(@bourreau.tunnel_mysql_port) %></td>
+        <td class="left_align"><%= @bourreau.tunnel_mysql_port %></td>
       </tr>
       <% end %>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>ActiveResource Remote Tunnel Port</th>
-        <td class="left_align"><%= h(@bourreau.tunnel_actres_port) %></td>
+        <td class="left_align"><%= @bourreau.tunnel_actres_port %></td>
       </tr>
 
       <tr>
@@ -133,7 +133,7 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Cache Expiration Timeout (in seconds)</th>
-        <td class="left_align"><%= h(@bourreau.cache_trust_expire) %></td>
+        <td class="left_align"><%= @bourreau.cache_trust_expire %></td>
       </tr>
 
     <% end %>
@@ -163,28 +163,28 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host name</th>
-        <td class="left_align"><%= h(@info.host_name) %></td>
+        <td class="left_align"><%= @info.host_name %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host IP address</th>
-        <td class="left_align"><%= h(@info.host_ip) %></td>
+        <td class="left_align"><%= @info.host_ip %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host OS type</th>
-        <td class="left_align"><%= h(@info.host_uname) %></td>
+        <td class="left_align"><%= @info.host_uname %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host uptime</th>
-        <td class="left_align"><%= h(@info.host_uptime) %></td>
+        <td class="left_align"><%= @info.host_uptime %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Server uptime</th>
         <td class="left_align">
-          Up since: <%= h(to_localtime(@info.uptime.to_i.ago,:datetime)) %><br>
+          Up since: <%= to_localtime(@info.uptime.to_i.ago,:datetime) %><br>
           (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
         </td>
       </tr>
@@ -206,21 +206,21 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Number of tasks (running/max)</th>
-        <td class="left_align"><%= h(@info.tasks_tot + " / " + @info.tasks_max) %></td>
+        <td class="left_align"><%= @info.tasks_tot + " / " + @info.tasks_max %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Cluster Management System</th>
         <td class="left_align">
-          Type: <%= h(@info.bourreau_cms) %><br>
-          Rev:  <%= h(@info.bourreau_cms_rev.svn_id_pretty_rev_author_date) %>
+          Type: <%= @info.bourreau_cms %><br>
+          Rev:  <%= @info.bourreau_cms_rev.svn_id_pretty_rev_author_date %>
         </td>
       </tr>
       <% end %>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>SSH Public Key</th>
-        <td class="left_align"><SMALL><SMALL><PRE class="ssh_key"><%= h(@info.ssh_public_key.strip) %><PRE></SMALL></SMALL></td>
+        <td class="left_align"><SMALL><SMALL><PRE class="ssh_key"><%= @info.ssh_public_key.strip %><PRE></SMALL></SMALL></td>
       </tr>
 
     <% end %>
@@ -238,7 +238,7 @@
     <tr>
       <th>User</th>
       <% @statuses_list.each do |stat| %>
-        <th><%= h(stat) %></th>
+        <th><%= stat %></th>
       <% end %>
     </tr>
     <% sorted_users = @user_tasks_info.keys.sort { |a,b| a.login <=> b.login } %>

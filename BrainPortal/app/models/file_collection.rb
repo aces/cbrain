@@ -10,7 +10,6 @@
 # $Id$
 #
 
-require 'ftools'
 require 'fileutils'
 require 'find'
 
@@ -19,7 +18,7 @@ require 'find'
 #the userfiles table. 
 class FileCollection < Userfile 
   
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   has_viewer :file_collection
   

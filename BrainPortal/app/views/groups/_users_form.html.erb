@@ -46,7 +46,7 @@
   <% end %>
 
   <label>Users in project:</label>
-  <% array_to_table(@users,
+  <%= array_to_table(@users,
       :cols        => 5,
       :table_class => 'button_table',
       :td_class    => 'left_align no_wrap'
@@ -68,13 +68,13 @@
   <br/>
 
   <label>Quick select based on other work Projects:</label>
-  <% array_to_table(@other_work_groups,
+  <%= array_to_table(@other_work_groups,
       :cols        => 5,
       :table_class => 'button_table',
       :td_class    => 'left_align no_wrap'
       ) do |group,r,c| %>
         <%= select_all_checkbox "workgroup_#{group.id}", :id => "workgroup_#{group.id}" %>
-        <label for="workgroup_<%= group.id %>"><%= h(group.name) -%></label>
+        <label for="workgroup_<%= group.id %>"><%= group.name -%></label>
   <% end %>
 
 <% end %>
@@ -92,13 +92,13 @@
   <br/>
 
   <label>Quick select based on other site Projects:</label>
-  <% array_to_table(@other_site_groups,
+  <%= array_to_table(@other_site_groups,
       :cols        => 5,
       :table_class => 'button_table',
       :td_class    => 'left_align no_wrap'
       ) do |group,r,c| %>
         <%= select_all_checkbox "sitegroup_#{group.id}", :id => "sitegroup_#{group.id}" %>
-        <label for="sitegroup_<%= group.id %>"><%= h(group.name) -%></label>
+        <label for="sitegroup_<%= group.id %>"><%= group.name -%></label>
   <% end %>
 
 <% end %>

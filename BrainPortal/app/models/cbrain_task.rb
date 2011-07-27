@@ -18,7 +18,7 @@
 #
 class CbrainTask < ActiveRecord::Base
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   before_validation     :set_group
 
@@ -40,9 +40,9 @@ class CbrainTask < ActiveRecord::Base
   # containing job-specific parameters; it's up to each
   # subclass of CbrainTask to find/use/define its content
   # as necessary.
-  serialize :params
+  serialize_as_indifferent_hash :params
   
-  named_scope :status, lambda { |s|  
+  scope :status, lambda { |s|  
                          case s.to_sym
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
@@ -62,7 +62,7 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
   
-  named_scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})).current_scoped_methods[:find] }
+  scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})) }
 
   # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current
@@ -97,7 +97,7 @@ class CbrainTask < ActiveRecord::Base
   #     :for_setup => { "T#{n}" => "Queued" }
   #
   # unless a more restrictive prerequisite is already supplied for task 'n'.
-  serialize :prerequisites
+  serialize_as_indifferent_hash :prerequisites
 
   ##################################################################
   # Status Lists
@@ -176,7 +176,7 @@ class CbrainTask < ActiveRecord::Base
   # a task and a tool; it's based on the class name stored
   # in one of the tool's attribute.
   def self.tool
-    @tool_cache ||= Tool.find(:first, :conditions => { :cbrain_task_class => self.to_s })
+    @tool_cache ||= Tool.where( :cbrain_task_class => self.to_s ).first
   end
 
   # Same as the class method of the same name.

@@ -1,7 +1,7 @@
 
 <% title "File Info" %>
 
-<h2>File details for <%= h @userfile.name %></h2>
+<h2>File details for <%= @userfile.name %></h2>
 
 <div class="generalbox">
 
@@ -20,7 +20,7 @@
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Name:</th>
-      <td colspan="2"><%= h @userfile.name %></td>
+      <td colspan="2"><%= @userfile.name %></td>
     </tr>
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
@@ -41,7 +41,7 @@
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Size:</th>
-      <td><%= h(@userfile.format_size) %></td>
+      <td><%= @userfile.format_size %></td>
       <td><% if @userfile.size && @userfile.size >= 1_000 -%>
           = <%= @userfile.size %> bytes
           <% end -%>
@@ -56,7 +56,7 @@
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Children:</th>
-      <td><% array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 1 ) {|u,r,c| link_to_userfile_if_accessible(u)} %></td>
+      <td><%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 1 ) {|u,r,c| link_to_userfile_if_accessible(u)} %></td>
       <td></td>
     </tr>
  
@@ -68,7 +68,7 @@
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Modified at:</th>
-      <td><%=h(to_localtime(@userfile.updated_at,:datetime)) %></td>
+      <td><%= to_localtime(@userfile.updated_at,:datetime) %></td>
       <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
     </tr>
  
@@ -80,14 +80,14 @@
     
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Project permission on file:</th>
-      <td><%= h @userfile.group_writable? ? "Read/Write" : "Read" %></td>
+      <td><%= @userfile.group_writable? ? "Read/Write" : "Read" %></td>
       <td></td>
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Data Provider:</th>
       <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-      ( <%= h(@userfile.data_provider.class.to_s) %> )
+      ( <%= @userfile.data_provider.class.to_s %> )
       </td>
       <td>
           <% @userfile.sync_status.each do |syncstat| %>
@@ -99,12 +99,12 @@
     <% if current_user.has_role? :admin %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th class="right_align">Local Data Provider (cache) path:</th>
-          <td colspan="2"><%= h(@userfile.cache_full_path) %></td>
+          <td colspan="2"><%= @userfile.cache_full_path %></td>
       </tr>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
       <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th class="right_align">Remote SSH Data Provider path:</th>
-          <td colspan="2"><%= h(@userfile.data_provider.provider_full_path(@userfile)) %></td>
+          <td colspan="2"><%= @userfile.data_provider.provider_full_path(@userfile) %></td>
       </tr>
       <% end %>
     <% end %>
@@ -113,9 +113,9 @@
         <th class="right_align">Tags:</th>
         <td colspan="2">
             <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
-            <% overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
+            <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
               <% if current_user.available_tags.count > 0 %>
-                <% form_for :userfile, @userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
+                <%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
                   <%= hidden_field_tag "file_ids[]", @userfile.id %>
                   <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
                   <select name="tags[]" multiple="multiple" style="width:150px" >
@@ -159,7 +159,7 @@
     <fieldset>
       <legend>Contents</legend>
       <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-        <% ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
+        <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
           <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
           <%= submit_tag "Change View" %>
         <% end %>

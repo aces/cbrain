@@ -1,6 +1,6 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper #:nodoc:
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
 end

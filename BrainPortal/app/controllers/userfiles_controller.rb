@@ -14,7 +14,7 @@ require 'fileutils'
 #RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available
 
@@ -51,7 +51,7 @@ class UserfilesController < ApplicationController
     
     #Apply filters
     filtered_scope = base_filtered_scope
-    filtered_scope = filtered_scope.scoped(:conditions => { :format_source_id => nil } )
+    filtered_scope = filtered_scope.where( :format_source_id => nil )
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
@@ -60,12 +60,12 @@ class UserfilesController < ApplicationController
     
     #filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
     unless tag_filters.blank?
-      filtered_scope = filtered_scope.scoped(:conditions => "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})")
+      filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
 
     # Filter by current project
     if current_project
-      filtered_scope = filtered_scope.scoped(:conditions => { :group_id  => current_project.id } )
+      filtered_scope = filtered_scope.where( :group_id  => current_project.id )
     end
 
     # Restrict by 'view all' or not
@@ -79,7 +79,7 @@ class UserfilesController < ApplicationController
         filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
       end
     else
-      filtered_scope = filtered_scope.scoped(:conditions => {:user_id => current_user.id})
+      filtered_scope = filtered_scope.where( :user_id => current_user.id )
     end
     
     #------------------------------
@@ -154,7 +154,7 @@ class UserfilesController < ApplicationController
       page_of_userfiles = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
-      real_subset       = filtered_scope.all(:include => includes, :conditions => { :id => userfile_ids })
+      real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
       page_of_userfiles.each do |simple|
@@ -178,11 +178,11 @@ class UserfilesController < ApplicationController
     #------------------------------
 
     @user_tags      = current_user.available_tags
-    @user_groups    = current_user.available_groups(:order => "type")
+    @user_groups    = current_user.available_groups.order("type")
     @default_group  = SystemGroup.find_by_name(current_user.login).id
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user, :conditions => { :online => true } )
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
-    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user,     :conditions => { :online => true } )
+    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user).where( :online => true )
     @preferred_bourreau_id = current_user.meta["pref_bourreau_id"]
 
     # For the 'new' panel
@@ -271,7 +271,7 @@ class UserfilesController < ApplicationController
     elsif viewer_name =~ /[\w\/]+/
       viewer_path = viewer_name.split("/")
       viewer_name = viewer_path.pop
-      if File.exists?(RAILS_ROOT + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
+      if File.exists?(Rails.root.to_s + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
         @partial = viewer_path.push(viewer_name).join("/")
       end
     end
@@ -312,7 +312,7 @@ class UserfilesController < ApplicationController
     state = @userfile.local_sync_status
     @sync_status = state.status if state
 
-    @user_groups = current_user.available_groups(:order => "type")
+    @user_groups = current_user.available_groups.order(:type)
 
     @tags = current_user.available_tags
 
@@ -415,7 +415,7 @@ class UserfilesController < ApplicationController
       if ! userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
-          flash[:error] += field.capitalize + " " + error + ".\n"
+          flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
         redirect_to redirect_path
         return
@@ -427,7 +427,10 @@ class UserfilesController < ApplicationController
         localpath = upload_stream.local_path rescue "" # optimize for large files
         if localpath.blank?
           begin
-            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            File.open(tmpcontentfile, "w:BINARY") do |io|
+              file_content = upload_stream.read
+              io.write(file_content)
+            end
             userfile.cache_copy_from_local_file(tmpcontentfile)
             userfile.size = File.size(tmpcontentfile) rescue 0
           ensure
@@ -484,7 +487,7 @@ class UserfilesController < ApplicationController
 
         CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
-            File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+            File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
             collection.extract_collection_from_archive_file(tmpcontentfile)
             Message.send_message(current_user,
                                   :message_type  => 'notice', 
@@ -522,7 +525,7 @@ class UserfilesController < ApplicationController
     # Do it in background.
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        File.open(tmpcontentfile, "w") { |io| io.write(upload_stream.read) }
+        File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
         extract_from_archive(tmpcontentfile,attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
@@ -574,7 +577,7 @@ class UserfilesController < ApplicationController
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.available_tags
-        @user_groups = current_user.available_groups(:order => "type")
+        @user_groups = current_user.available_groups.order(:type)
         format.html { render :action  => 'edit' }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
@@ -618,10 +621,10 @@ class UserfilesController < ApplicationController
     end
     
     if success_count > 0
-      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{@template.pluralize(success_count, "files")}."
+      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{view_pluralize(success_count, "files")}."
     end
     if failure_count > 0
-      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{@template.pluralize(failure_count, "files")}."
+      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{view_pluralize(failure_count, "files")}."
     end
     
     redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
@@ -667,7 +670,7 @@ class UserfilesController < ApplicationController
     
     @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
     partial_base = "userfiles/quality_control/"
-    if File.exists?(RAILS_ROOT + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
+    if File.exists?(Rails.root.to_s + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
       @partial = partial_base + @userfile.class.name.underscore
     else
       @partial = partial_base + "default"
@@ -739,7 +742,7 @@ class UserfilesController < ApplicationController
 
     # Destination provider
     data_provider_id = params[:data_provider_id]
-    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user, :conditions =>  {:online => true, :read_only => false})
+    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user).where( :online => true, :read_only => false )
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym
@@ -825,21 +828,21 @@ class UserfilesController < ApplicationController
 
     if operation == 'clear' || operation == 'replace'
       cleared_count = current_session.persistent_userfile_ids_clear
-      flash[:notice] += "#{@template.pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
+      flash[:notice] += "#{view_pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
     end
 
     if operation == 'add'   || operation == 'replace'
       added_count   = current_session.persistent_userfile_ids_add(filelist)
-      flash[:notice] += "#{@template.pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
+      flash[:notice] += "#{view_pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
     end
 
     if operation == 'remove'
       removed_count = current_session.persistent_userfile_ids_remove(filelist)
-      flash[:notice] += "#{@template.pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
+      flash[:notice] += "#{view_pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
     end
 
     persistent_ids = current_session.persistent_userfile_ids_list
-    flash[:notice] += "Total of #{@template.pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
+    flash[:notice] += "Total of #{view_pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
       persistent_ids.size > 0 && (added_count > 0 || removed_count > 0 || cleared_count > 0)
 
     flash[:notice] += "No changes made to the persistent list of userfiles." if
@@ -866,10 +869,10 @@ class UserfilesController < ApplicationController
     end
   
     if deleted_count > 0
-      flash[:notice] = "#{@template.pluralize(deleted_count, "files")} deleted.\n"
+      flash[:notice] = "#{view_pluralize(deleted_count, "files")} deleted.\n"
     end
     if unregistered_count > 0
-      flash[:notice] = "#{@template.pluralize(unregistered_count, "files")} unregistered.\n"
+      flash[:notice] = "#{view_pluralize(unregistered_count, "files")} unregistered.\n"
     end
     
     redirect_to :action => :index, :format => request.format.to_sym
@@ -1010,11 +1013,11 @@ class UserfilesController < ApplicationController
         destbase = basename + ".gz"
       end
 
-      if Userfile.find(:first, :conditions => {
-                                 :name             => destbase,
-                                 :user_id          => userfile.user_id,
-                                 :data_provider_id => userfile.data_provider_id
-                               })
+      if Userfile.where(
+           :name             => destbase,
+           :user_id          => userfile.user_id,
+           :data_provider_id => userfile.data_provider_id
+         ).first
         (skipped_messages["Filename collision"] ||= []) << userfile
         next
       end
@@ -1062,10 +1065,10 @@ class UserfilesController < ApplicationController
   
     info_message = ""
     if to_compress.size > 0
-      info_message += "#{@template.pluralize(to_compress.size, "files")} being compressed in background.\n"
+      info_message += "#{view_pluralize(to_compress.size, "files")} being compressed in background.\n"
     end
     if to_uncompress.size > 0
-      info_message += "#{@template.pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
+      info_message += "#{view_pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
     end
     skipped_messages.each do |mess,userfiles|
       info_message += "Warning: some files were skipped; Reason: #{mess}; Files: "
@@ -1164,12 +1167,11 @@ class UserfilesController < ApplicationController
     all_files.each do |file_name|
       if file_name =~ /\//
         nested_files << file_name
-      elsif Userfile.find(:first, :conditions => {
-                                     :name             => file_name,
-                                     :user_id          => user_id,
-                                     :data_provider_id => data_provider_id
-                                     }
-                         )
+      elsif Userfile.where(
+              :name             => file_name,
+              :user_id          => user_id,
+              :data_provider_id => data_provider_id
+            ).first
         failed_files << file_name
       else
         successful_files << file_name

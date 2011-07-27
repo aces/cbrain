@@ -26,7 +26,7 @@ class CbrainChecker
 
   include Singleton
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   #Collects all the checks and start methods defined in the class 
   #Puts them in an array to be used by the run_checks command. 

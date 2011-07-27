@@ -16,7 +16,7 @@
 # We support 'show' and 'create' only.
 class ControlsController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
 
   api_available
 

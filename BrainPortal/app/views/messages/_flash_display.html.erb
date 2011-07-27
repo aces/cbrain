@@ -1,0 +1,9 @@
+
+<%
+  # This partial requires two variables:
+  # msg  : the content of the flash message
+  # type : either 'notice' or 'error'
+%>
+
+<%= content_tag :div, (h(msg).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{type}" %>
+

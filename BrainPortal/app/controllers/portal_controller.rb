@@ -12,7 +12,7 @@
 #Controller for the entry point into the system.
 class PortalController < ApplicationController
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
   #Display a user's home page with information about their account.
   def welcome #:nodoc:
@@ -22,16 +22,16 @@ class PortalController < ApplicationController
     end
     
     @num_files              = current_user.userfiles.size
-    @groups                 = current_user.has_role?(:admin) ? current_user.groups(:order => :name) : current_user.available_groups(:order => :name)
+    @groups                 = current_user.has_role?(:admin) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])     
         
     if current_user.has_role? :admin
-      @active_users = Session.active_users
+      @active_users = CbrainSession.active_users
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         unless params[:clear_sessions].blank?
-          Session.session_class.destroy_all(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago])
+          CbrainSession.session_class.destroy_all(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago])
         end
         if params[:lock_portal] == "lock"
           BrainPortal.current_resource.lock!
@@ -45,16 +45,13 @@ class PortalController < ApplicationController
           flash.now[:error] = ""        
         end
       end
-    elsif current_user.has_role? :site_manager
-      @active_users = Session.active_users(:conditions  => {:site_id  => current_user.site_id})
-      @active_users.unshift(current_user) unless @active_users.include?(current_user)
+    #elsif current_user.has_role? :site_manager
+    #  @active_users = CbrainSession.active_users.where( :site_id  => current_user.site_id )
+    #  @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).collect(&:id)
-    @tasks = CbrainTask.find(:all, :conditions => {
-                                       :user_id     => current_user.id,
-                                       :bourreau_id => bourreau_ids
-                                     } )
+    @tasks = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids )
     @tasks_by_status = @tasks.hashed_partitions do |task|
       case task.status
       when /((#{CbrainTask::COMPLETED_STATUS.join('|')}))/o

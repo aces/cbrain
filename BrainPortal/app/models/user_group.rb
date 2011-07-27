@@ -12,6 +12,6 @@
 # This model represents the group specific to a user.
 class UserGroup < SystemGroup
 
-  Revision_info="$Id$"
+  Revision_info=CbrainFileRevision[__FILE__]
   
 end
