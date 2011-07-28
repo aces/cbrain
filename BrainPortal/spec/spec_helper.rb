@@ -6,6 +6,7 @@ require 'rspec/rails'
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
+BrainPortal.current_resource.update_attribute(:dp_cache_dir, "/x/y/z")
 
 RSpec.configure do |config|
   # == Mock Framework
