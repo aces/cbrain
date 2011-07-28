@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ToolsController do
   let(:tool) {mock_model(Tool).as_null_object}
-
+  
   context "with a logged in user" do
     context "user is an admin" do
       let(:current_user) {Factory.create(:user, :role => "admin")}
@@ -30,7 +30,7 @@ describe ToolsController do
   
         it "should render empty text if current_value is empty" do
           get(:bourreau_select, {'current_value' => ""})
-          response.should have_text("")
+          response.body.should be_empty
         end
   
         it "should render bourreau_select" do
@@ -48,7 +48,7 @@ describe ToolsController do
   
         it "should redirect to tools" do
           get(:edit, {"id" => "1"})
-          response.should redirect_to("tools")
+          response.should redirect_to("/tools")
         end
       end
   
@@ -56,8 +56,9 @@ describe ToolsController do
         let(:mock_tool) {mock_model(Tool).as_null_object}
         
         it "should autoload_all_tools if autoload is defined" do
+          controller.stub!(:render)
           controller.should_receive(:autoload_all_tools)
-          post(:create, {"autoload" => "true"})
+          post :create, :tool => {}, :autoload => "true", :format => "js"
         end
 
         context "when save is successful" do
@@ -131,20 +132,20 @@ describe ToolsController do
           Tool.all.should_not include(real_tool)
         end
         it "should display a jQuery" do
-          delete :destroy, :id => real_tool.id
-          response.should include_text("jQuery")
+          delete :destroy, :id => real_tool.id, :format => "js"
+          response.body.should =~ /jQuery/
         end
       end
   
       describe "tool_managment" do
   
         it "should call find on Tool" do
-          Tool.should_receive(:find)
+          Tool.should_receive(:order)
           get :tool_management
         end
   
         it "should assign bourreaux" do
-          Bourreau.should_receive(:find)
+          Bourreau.should_receive(:all)
           get :tool_management
         end
         it "should render tamplate tool_manager" do
@@ -180,7 +181,7 @@ describe ToolsController do
   
         it "should render empty text if current_value is empty" do
           get(:bourreau_select, {'current_value' => ""})
-          response.should =~ ""
+          response.body.should be_empty
         end
   
         it "should render bourreau_select" do
@@ -190,7 +191,7 @@ describe ToolsController do
         
         it "should display error text if go in rescue" do
           get(:bourreau_select, {'current_value' => "abc"})
-          response.should include_text('No Execution Servers')
+          response.body.should =~ /No Execution Servers/
         end
       end
   
@@ -262,7 +263,7 @@ describe ToolsController do
   
         it "should render empty text if current_value is empty" do
           get(:bourreau_select, {'current_value' => ""})
-          response.should have_text("")
+          response.body.should be_empty
         end
   
         it "should render bourreau_select" do
@@ -272,7 +273,7 @@ describe ToolsController do
         
         it "should display error text if go in rescue" do
           get(:bourreau_select, {'current_value' => "abc"})
-          response.should include_text('No Execution Servers')
+          response.body.should =~ /No Execution Servers/
         end
       end
   
