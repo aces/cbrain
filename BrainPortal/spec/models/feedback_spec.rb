@@ -22,8 +22,10 @@ describe Feedback do
     @feedback.valid?.should be(true)
   end
   
-  it { should belong_to(:user) }
-
+  it "should be associate with user" do
+    Feedback.reflect_on_association(:user).should_not be_nil
+  end
+  
   it "should not save without a summary" do
     @feedback.summary = nil
     @feedback.save.should be(false) 
