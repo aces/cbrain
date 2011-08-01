@@ -29,7 +29,7 @@ describe Site do
   end
   
   it "should return the array of managers whened asked" do
-    @site.managers.is_a?(Array).should be(true)
+    @site.managers.should == [@site_manager]
   end
   
   it "should set new managers on save" do

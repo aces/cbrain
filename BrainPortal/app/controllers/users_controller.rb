@@ -184,7 +184,7 @@ class UsersController < ApplicationController
     end
 
     respond_to do |format|
-      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'user' }}
+      format.js { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'user' }}
       format.xml  { head :ok }
     end
   end
@@ -213,7 +213,7 @@ class UsersController < ApplicationController
   
   def send_password #:nodoc:
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
-    
+
     if @user
       @user.password_reset = true
       @user.set_random_password

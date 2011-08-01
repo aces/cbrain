@@ -124,17 +124,17 @@ describe ResourceAccess do
       
     it "should return all resources for admins" do
       user.role = "admin"
-      DataProvider.find_all_accessible_by_user(user).should =~ [free_resource, group_resource, site_resource, owned_resource]
+      DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should == [free_resource, group_resource, site_resource, owned_resource].sort_by(&:id)
     end
     
     it "should return owned, group and site-associated resources for site managers" do
       user.role = "site_manager"
-      DataProvider.find_all_accessible_by_user(user).should =~ [group_resource, site_resource, owned_resource]
+      DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should =~ [group_resource, site_resource, owned_resource].sort_by(&:id)
     end
     
     it "should return owned and group-associated resources for regular users" do
       user.role = "user"
-      DataProvider.find_all_accessible_by_user(user).should =~ [group_resource, owned_resource]
+      DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should =~ [group_resource, owned_resource].sort_by(&:id)
     end
   end
   

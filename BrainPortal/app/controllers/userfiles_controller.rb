@@ -30,7 +30,6 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
-
     #------------------------------
     # Filtered scope
     #------------------------------
@@ -43,7 +42,7 @@ class UserfilesController < ApplicationController
     @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
     @filter_params["filter_tags_array"]           ||= [] 
     @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
-        
+   
     # Prepare custom filters
     custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
         
@@ -111,6 +110,7 @@ class UserfilesController < ApplicationController
     #------------------------------
 
     @user_pref_page_length = (current_user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages).to_i
+
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
     if [:html, :js].include?(request.format.to_sym)
       if @filter_params["pagination"] == "on"
@@ -152,7 +152,6 @@ class UserfilesController < ApplicationController
 
       # Paginate the list of simple objects
       page_of_userfiles = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
-
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
       real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )
@@ -173,7 +172,7 @@ class UserfilesController < ApplicationController
       pager.total_entries = @userfiles_total
       pager
     end
-    
+
     #------------------------------
     # Other view variables
     #------------------------------
