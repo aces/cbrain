@@ -74,6 +74,7 @@ describe RemoteResource do
     end
     it "should prevent saving if the cache path is not absolute" do
       remote_resource.dp_cache_dir = "not/absolute"
+      remote_resource.save
       remote_resource.should have(1).error_on(:dp_cache_dir)
     end
     context "on the Portal app" do
@@ -85,10 +86,12 @@ describe RemoteResource do
       end 
       it "should be invalid if the cache path is invalid" do
         DataProvider.stub!(:this_is_a_proper_cache_dir!).and_return(false)
+        portal_resource.save
         portal_resource.should have(1).error_on(:dp_cache_dir)
       end
       it "should be invalid if the cache dir check raises an exception" do
         DataProvider.stub!(:this_is_a_proper_cache_dir!).and_raise(StandardError)
+        portal_resource.save
         portal_resource.should have(1).error_on(:dp_cache_dir)
       end
     end
@@ -483,7 +486,7 @@ describe RemoteResource do
     end
   end
   describe "#send_command" do
-    let(:command) {mock_model(RemoteCommand).as_null_object}
+    let(:command) {double(RemoteCommand, :is_a? => true).as_null_object}
     before(:each) do
       remote_resource.stub!(:site)
       Control.stub!(:new).and_return(double("control").as_null_object)
