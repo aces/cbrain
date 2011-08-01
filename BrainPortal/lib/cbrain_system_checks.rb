@@ -105,10 +105,19 @@ class CbrainSystemChecks < CbrainChecker
       return
     end
 
-    dp_init_rev    = DataProvider.cache_revision_of_last_init rescue nil # will be "0" if unknown, nil if erroneous
-    dp_current_rev = DataProvider.revision_info.svn_id_rev
+    DataProvider.revision_info.self_update # just to make sure we have it
+    dp_disk_rev = DataProvider.cache_revision_of_last_init rescue nil # will be "Unknown" if unknown, nil if erroneous
+    dp_code_rev = DateTime.parse("#{DataProvider.revision_info.date} #{DataProvider.revision_info.time}") rescue nil
+    dp_need_rev = DateTime.parse(DataProvider::DataProviderCache_RevNeeded) rescue nil
 
-    if dp_init_rev.nil? # NIL check important, see method above
+    raise "Serious Internal Error: I cannot get a 'code' DateTime revision value for DataProvider?!?" unless
+      dp_code_rev.is_a?(DateTime)
+    raise "Serious Internal Error: I cannot get a 'need' DateTime revision value from DataProvider hardcoded constant?!?" unless
+      dp_need_rev.is_a?(DateTime)
+    raise "Serious Internal Error: DataProvider 'code' DateTime (#{dp_code_rev.inspect}) is earlier than 'need' DateTime (#{dp_need_rev.inspect}) ?!?" if
+      dp_code_rev < dp_need_rev
+
+    if dp_disk_rev.nil? # NIL check important, see method above
       puts "C> \t- SKIPPING! Cache root directory '#{cache_root}' is invalid! Fix with the interface, please."
       return
     end
@@ -119,16 +128,16 @@ class CbrainSystemChecks < CbrainChecker
       File.chmod(0700,cache_root)
     end
 
-    #raise "Serious Internal Error: I cannot get a numeric SVN revision number for DataProvider?!?" unless
-    #  dp_current_rev && dp_current_rev =~ /^\d+/
-
-    if dp_init_rev.to_i > 0 && dp_init_rev.to_i <= DataProvider::DataProviderCache_RevNeeded # Before Pierre's upgrade
-      puts "C> \t- Data Provider Caches are being wiped (Rev: #{dp_init_rev} vs #{dp_current_rev})..."
+    if ( ! dp_disk_rev.is_a?(DateTime) ) || dp_disk_rev < dp_need_rev # Before Pierre's upgrade
+      puts "C> \t- Data Provider Caches need to be wiped..."
+      puts "C> \t  Disk Rev: '#{dp_disk_rev.inspect}'"
+      puts "C> \t  Need Rev: '#{dp_need_rev.inspect}'"
+      puts "C> \t  Code Rev: '#{dp_code_rev.inspect}'"
       puts "C> \t- WARNING: This could take a long time so you should not"
       puts "C> \t  start another instance of this Rails application."
       Dir.chdir(cache_root) do
         Dir.foreach(".") do |entry|
-          next unless File.directory?(entry) && entry !~ /^\./ # ignore ., .. and .*_being_deleted.*
+          next unless File.directory?(entry) && entry =~ /^\d\d+$/ # only subdirectories named '00', '123' etc
           newname = ".#{entry}_being_deleted.#{Process.pid}"
           renamed_ok = File.rename(entry,newname) rescue false
           if renamed_ok
@@ -142,7 +151,7 @@ class CbrainSystemChecks < CbrainChecker
       synclist.each do |ss|
         ss.destroy rescue true
       end
-      puts "C> \t- Re-recording DataProvider revision number in cache."
+      puts "C> \t- Re-recording DataProvider 'code' DateTime in cache."
       DataProvider.cache_revision_of_last_init(:force)
     end
 

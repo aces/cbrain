@@ -620,7 +620,7 @@ class TasksController < ApplicationController
 
       if do_in_spawn
         Message.send_message(current_user, {
-          :header        => "Finished sending #{operation} to your tasks.",
+          :header        => "Finished sending '#{operation}' to your tasks.",
           :message_type  => :notice,
           :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
           }

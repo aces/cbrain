@@ -60,7 +60,7 @@
 
     <td class="left"><%= fi_name %></td>
 
-    <td><%= fi_size %></td>
+    <td><%= fi_type == :regular ? fi_size : "-" %></td>
 
     <% if fi_userfile %>
       <td><%= fi_userfile.class.to_s %></td>

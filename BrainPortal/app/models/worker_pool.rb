@@ -55,11 +55,14 @@ class WorkerPool
     end
 
     # Create additional workers if needed.
+    delay = 0
     while (pool.workers.size < desired_number_of_workers) do
       worker = worker_class.new(initializers)
       worker.start
       pool.workers << worker
+      delay = 3
     end
+    sleep delay if delay > 0
     return pool
   end
 

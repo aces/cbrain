@@ -257,12 +257,16 @@ class DataProvider < ActiveRecord::Base
   # This value is used to trigger DP cache wipes
   # in the validation code (see CbrainSystemChecks)
   # Instructions: when the caching system changes,
-  # increase this number to the highest SVN rev
+  # put a legal DateTime value here that is
   # BEFORE the commit that implements the change,
   # then commit this file with the new caching system.
-  # It's important that this value always be less than
-  # the revision number above in Revision_info.
-  DataProviderCache_RevNeeded = 959
+  # It's important that this value always be BEFORE
+  # the date of the GIT commit that implements the
+  # system change, so that DP cache wipes get triggered.
+  # When the cache is wiped, the DateTime of the current
+  # DataProvider commit will be written in DP_CACHE_ID_FILE
+  # which means a later date than the one hardcoded below.
+  DataProviderCache_RevNeeded = "2011-01-01 12:00:00 -0400"
 
   # Basenames for special files in caching system
   DP_CACHE_ID_FILE  = "DP_Cache_Rev.id"
@@ -900,7 +904,7 @@ class DataProvider < ActiveRecord::Base
     cache_root = cache_rootdir
     key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     if File.exist?(key_file)
-      @@key = File.read(key_file)  # a MD5 string, 32 hex characters
+      @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       return @@key          unless @@key.blank?
     end
@@ -908,7 +912,7 @@ class DataProvider < ActiveRecord::Base
     # and the time. This should be good enough. It will still
     # work even if the directory is moved about or the computer
     # renamed, as long as the key file is left there.
-    keystring  = Socket.gethostname + "|" + cache_root + "|" + Time.now.to_i.to_s
+    keystring  = Socket.gethostname + "|" + cache_root.to_s + "|" + Time.now.to_i.to_s
     md5encoder = Digest::MD5.new
     @@key      = md5encoder.hexdigest(keystring).to_s
     # Try to write it back. If the file suddenly has appeared,
@@ -916,7 +920,7 @@ class DataProvider < ActiveRecord::Base
     begin
       fd = IO::sysopen(key_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       fh = IO.open(fd)
-      fh.syswrite(@@key)
+      fh.syswrite("#{@@key}\n")
       fh.close
       return @@key
     rescue # Oh? Open write failed? Some other process has created it underneath us.
@@ -924,21 +928,21 @@ class DataProvider < ActiveRecord::Base
         raise "Error: could not create a proper Data Provider Cache Key in file '#{key_file}'!"
       end
       sleep 2+rand(5) # make sure other process writing to it is done
-      @@key = File.read(key_file)
+      @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}'!" if @@key.blank?
       return @@key
     end
   end
 
-  # This method returns the revision number of the last time
+  # This method returns the revision DateTime of the last time
   # the caching system was initialized. If the revision
-  # number is unknown, then a string value of "0" is returned and
-  # the method will immediately store the current revision
-  # number. The value is stored in a file at the top of the
+  # number is unknown, then a string value of "Unknown" is returned
+  # and the method will immediately store the current revision
+  # DateTime. The value is stored in a file at the top of the
   # caching system's directory structure.
   def self.cache_revision_of_last_init(force = nil)
-    return @@cache_rev if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
+    return DateTime.parse(@@cache_rev) if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
 
     # Check that the root seems OK
     cache_root = self.cache_rootdir # a Pathname obj
@@ -947,13 +951,16 @@ class DataProvider < ActiveRecord::Base
     # Try to read rev from special file in cache root directory
     rev_file = (cache_root + DP_CACHE_ID_FILE).to_s
     if ! force && File.exist?(rev_file)
-      @@cache_rev = File.read(rev_file)  # a numeric ID as ASCII
-      @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
-      return @@cache_rev          unless @@cache_rev.blank?
+      @@cache_rev = File.read(rev_file) rescue "" # a alphanumeric ID as ASCII
+      @@cache_rev = ""   if     @@cache_rev.blank? || @@cache_rev !~ /^\d\d\d\d-\d\d-\d\d/
+      @@cache_rev.strip!
+      return DateTime.parse(@@cache_rev) unless @@cache_rev.blank?
+      File.unlink(rev_file) rescue true
     end
 
-    # Lets use the current revision number then.
-    @@cache_rev = self.revision_info.svn_id_rev
+    # Let's use the current revision date/time then.
+    self.revision_info.self_update
+    @@cache_rev = "#{self.revision_info.date} #{self.revision_info.time}"
 
     # Try to write it back. If the file suddenly has appeared,
     # we ignore our own rev and use THAT one instead (race condition).
@@ -966,16 +973,17 @@ class DataProvider < ActiveRecord::Base
       fh = IO.open(fd)
       fh.syswrite(@@cache_rev + "\n")
       fh.close
-      return "0" # String Zero, to indicate it was unknown.
-    rescue # Oh? Open write failed? Some other process has created it underneath us.
+      return "Unknown" # String to indicate it WAS unknown.
+    rescue => ex # Oh? Open write failed? Some other process has created it underneath us.
       if ! File.exist?(rev_file)
-        raise "Error: could not create a proper Data Provider Cache Revision Number in file '#{rev_file}' !"
+        raise "Error: could not create a proper Data Provider Cache Revision DateTime in file '#{rev_file}' !"
       end
       sleep 2+rand(5) # make sure other process writing to it is done
-      @@cache_rev = File.read(rev_file)
-      @@cache_rev.gsub!(/\D+/,"") unless @@cache_rev.blank?
+      @@cache_rev = File.read(rev_file) rescue ""
+      @@cache_rev = "" if @@cache_rev.blank? || @@cache_rev !~ /^\d\d\d\d-\d\d-\d\d/
+      @@cache_rev.strip!
       raise "Error: could not read a proper Data Provider Cache Revision Number from file '#{rev_file}' !" if @@cache_rev.blank?
-      return "0" # String Zero, to indicate it was unknown.
+      return "Unknown" # String to indicate it WAS unknown.
     end
   end
 

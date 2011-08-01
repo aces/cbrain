@@ -279,9 +279,10 @@ module ActRecMetaData
       cb_error "Cannot search for MetaDataStore objects!"     if     self <= MetaDataStore
       cb_error "Search key must be defined!"                  if     mykey.nil?
       mykey = mykey.to_s
-      subclasses = [ self.to_s ] + self.subclasses.map { |sc| sc.name.to_s }
+      subclasses = [ self.to_s ] + self.descendants.map { |sc| sc.name.to_s }
       conditions = { :ar_class => subclasses, :meta_key => mykey }
-      conditions[:meta_value] = myval unless myval.nil?
+      conditions[:meta_value] = myval.to_yaml unless myval.nil?  # temp patch, because Rails doesn't serialize
+      #conditions[:meta_value] = myval         unless myval.nil?  # proper code once Rails developers fix bug
       matched = MetaDataStore.where(conditions)
       objects = matched.map do |md|
         md_ar_id    = md.ar_id
