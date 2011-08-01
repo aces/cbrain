@@ -663,7 +663,7 @@ class DataProvider < ActiveRecord::Base
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
-    # Find existing destination, if any
+    # Find existing destination, if any    
     target_exists = Userfile.where(
                       :name             => new_name,
                       :data_provider_id => otherprovider.id,
@@ -908,7 +908,7 @@ class DataProvider < ActiveRecord::Base
     # and the time. This should be good enough. It will still
     # work even if the directory is moved about or the computer
     # renamed, as long as the key file is left there.
-    keystring  = Socket.gethostname + "|" + cache_root + "|" + Time.now.to_i.to_s
+    keystring  = Socket.gethostname + "|" + cache_root.to_s + "|" + Time.now.to_i.to_s
     md5encoder = Digest::MD5.new
     @@key      = md5encoder.hexdigest(keystring).to_s
     # Try to write it back. If the file suddenly has appeared,

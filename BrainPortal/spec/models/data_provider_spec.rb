@@ -15,7 +15,7 @@ describe DataProvider do
   
   let(:provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
   
-  let(:userfile) { mock_model(Userfile, :name => "userfile_mock") }
+  let(:userfile) { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
   
   describe "validations" do
     it "should create a new instance given valid attributes" do
@@ -203,15 +203,15 @@ describe DataProvider do
       end
       it "should find the cache root" do
         DataProvider.should_receive(:cache_rootdir).and_return("cache")
-        provider.cache_full_path(userfile).should be true
+        provider.cache_full_path(userfile).should be_true
       end
       it "should determine the cache subdirectory" do
         provider.should_receive(:cache_subdirs_path).and_return("subdirs")
-        provider.cache_full_path(userfile).should be true
+        provider.cache_full_path(userfile).should be_true
       end
       it "should use the userfile name" do
         userfile.should_receive(:name).and_return("userfile")
-        provider.cache_full_path(userfile).should be true
+        provider.cache_full_path(userfile).should be_true
       end
     end
   end
@@ -287,7 +287,7 @@ describe DataProvider do
       end
       it "should open a writehandle" do
         SyncStatus.stub!(:ready_to_modify_cache).and_yield
-        File.should_receive(:open).with(anything, "w")
+        File.should_receive(:open).with(anything, "w:BINARY")
         provider.cache_writehandle(userfile)
       end
       it "should sync the userfile back to the provider" do
@@ -531,9 +531,6 @@ describe DataProvider do
   end
   describe "#provider_move_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
-    before(:each) do
-      userfile.as_null_object
-    end
     it "should raise an exception if offline"do
       provider.online = false
       lambda{provider.provider_move_to_otherprovider(userfile, other_provider)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -571,10 +568,10 @@ describe DataProvider do
         let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
         
         before(:each) do
-          Userfile.stub!(:find).and_return(target_file)
+          Userfile.stub_chain(:where, :first).and_return(target_file)
         end
         it "should return true if trying to move to same userfile" do
-          Userfile.stub!(:find).and_return(userfile)
+          Userfile.stub_chain(:where, :first).and_return(userfile)
           provider.provider_move_to_otherprovider(userfile, other_provider).should be_true
         end
         it "should return false if target exists and crushing disallowed" do
@@ -612,9 +609,6 @@ describe DataProvider do
   end
   describe "#provider_copy_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
-    before(:each) do
-      userfile.as_null_object
-    end
     it "should raise an exception if offline" do
       provider.online = false
       lambda{provider.provider_copy_to_otherprovider(userfile, other_provider)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -645,10 +639,10 @@ describe DataProvider do
         let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
         
         before(:each) do
-          Userfile.stub!(:find).and_return(target_file)
+          Userfile.stub_chain(:where, :first).and_return(target_file)
         end
         it "should return true if trying to move to same userfile" do
-          Userfile.stub!(:find).and_return(userfile)
+          Userfile.stub_chain(:where, :first).and_return(userfile)
           provider.provider_copy_to_otherprovider(userfile, other_provider).should be_true
         end
         it "should return false if target exists and crushing disallowed" do
@@ -734,7 +728,7 @@ describe DataProvider do
   end
   describe "#cache_md5" do
     before(:each) do
-      DataProvider.instance_eval { @@key = nil }
+      DataProvider.class_variable_set("@@key", nil)
     end
     
     it "should get md5 from file, if it exists" do
@@ -778,7 +772,7 @@ describe DataProvider do
     end
   end
   describe "#cache_revision_of_last_init" do
-    let(:cache_rev)       {double("cache_rev").as_null_object}
+    let(:cache_rev)       {double("cache_rev", :blank? => false).as_null_object}
     before(:each) do
       DataProvider.stub!(:class_variable_defined?).and_return(false)
       DataProvider.stub!(:this_is_a_proper_cache_dir!)
@@ -922,6 +916,7 @@ describe DataProvider do
       current_resource = double("current_ressource")
       RemoteResource.stub!(:current_resource).and_return(current_resource)
       current_resource.should_receive(:dp_ignore_patterns)
+      DataProvider.instance_variable_set("@ig_patterns", nil)
       DataProvider.rsync_ignore_patterns
     end
   end
