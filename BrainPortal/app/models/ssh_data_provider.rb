@@ -104,12 +104,10 @@ class SshDataProvider < DataProvider
         # Nothing to do! An exception means everything is OK, so just go on.
       end
       begin
-puts "OLD=#{oldpath} NEW=#{newpath}"
         sftp.rename!(oldpath,newpath)
         userfile.name = newname
         return true
       rescue => ex
-puts_blue "ex problem #{ex.class} #{ex.message}"
         return false
       end
     end

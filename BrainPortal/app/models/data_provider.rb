@@ -667,7 +667,7 @@ class DataProvider < ActiveRecord::Base
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
-    # Find existing destination, if any
+    # Find existing destination, if any    
     target_exists = Userfile.where(
                       :name             => new_name,
                       :data_provider_id => otherprovider.id,

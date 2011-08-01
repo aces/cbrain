@@ -15,25 +15,6 @@ require 'spec_helper'
 describe ToolConfig do
   let(:tool_config) {Factory.create(:tool_config)}
 
-  describe "#group" do
-    
-    it "should provides a default group_id" do
-      tool_config.group.should be == Group.find(tool_config.group_id)
-    end
-  end
-
-  describe "#group_id" do
-    
-    it "should return group_id of tool_config if is defined" do
-      tool_config.group_id.should be == Group.find(tool_config.group_id).id
-    end
-    
-    it "should return group_id of everyone group if group_id is nil" do
-      tool_config.group_id = nil
-      tool_config.group_id.should be == Group.everyone.id
-    end
-  end
-
   describe "#can_be_accessed_by?" do
     
     it "should allow admin access to any group" do

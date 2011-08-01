@@ -89,7 +89,8 @@ class FeedbacksController < ApplicationController
   # DELETE /feedbacks/1.xml
   def destroy #:nodoc:
     @feedback = Feedback.find(params[:id])
-
+    @feedback.destroy
+    
     respond_to do |format|
       format.html { redirect_to(feedbacks_url) }
       format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'feedback' } }

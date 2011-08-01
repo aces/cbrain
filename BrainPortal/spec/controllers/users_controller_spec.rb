@@ -48,7 +48,7 @@ describe UsersController do
         end
         it "should only show users from site" do
           get :index
-          assigns[:users].should =~ User.all(:conditions => {:site_id => site_manager.site_id})
+          assigns[:users].sort_by(&:id).should =~ User.all(:conditions => {:site_id => site_manager.site_id}).sort_by(&:id)
         end
       end
       context "with regular user" do
@@ -96,12 +96,12 @@ describe UsersController do
           end
           it "should send a confirmation email if email is valid" do
             mock_user.stub!(:email).and_return("me@here.com")
-            CbrainMailer.should_receive(:deliver_registration_confirmation)
+            CbrainMailer.should_receive(:registration_confirmation)
             post :create, :user => {}
           end
           it "should not send a confirmation email if email is invalid" do
             mock_user.stub!(:email).and_return("invalid_email")
-            CbrainMailer.should_not_receive(:deliver_registration_confirmation)
+            CbrainMailer.should_not_receive(:registration_confirmation)
             post :create, :user => {}
           end
         end
@@ -143,7 +143,7 @@ describe UsersController do
     end
     describe "send_password" do
       before(:each) do
-        CbrainMailer.stub!(:deliver_forgotten_password)
+        CbrainMailer.stub_chain(:forgotten_password, :deliver)
       end
       context "when user is found" do
         it "should set the users 'password reset' flag" do
@@ -156,14 +156,14 @@ describe UsersController do
         end
         context "when reset is succesful" do
           it "should send an e-mail" do
-            CbrainMailer.should_receive(:deliver_forgotten_password)
+            CbrainMailer.should_receive(:forgotten_password)
             post :send_password, :login => user.login, :email => user.email
           end
         end
         context "when reset fails" do
           it "should display flash message about problem" do
             mock_user = mock_model(User, :save => false).as_null_object
-            User.stub!(:find).and_return(mock_user)
+            User.stub_chain(:where, :first).and_return(mock_user)
             post :send_password
             flash[:error].should =~ /^Unable to reset password/
           end
@@ -171,7 +171,7 @@ describe UsersController do
       end
       context "when user is not found" do
         before(:each) do
-          User.stub!(:find).and_return(nil)
+          User.stub_chain(:where, :first).and_return(nil)
         end
         it "should display flash message about problem" do
           post :send_password
@@ -327,7 +327,7 @@ describe UsersController do
           User.all.should_not include(user)
         end
         it "should render shared destroy js partial" do
-          delete :destroy, :id => user.id
+          delete :destroy, :id => user.id, :format => "js"
           response.should render_template("shared/_destroy")
         end
       end
@@ -355,8 +355,14 @@ describe UsersController do
       end
     end
     describe "switch" do
-      before(:each) do
-        session.stub!(:model).and_return(double("session_class").as_null_object)
+      let(:current_session) do
+        h = Hash.new
+        h.stub!(:params_for)
+        h.stub!(:clear_data!)
+        h
+      end
+      before(:each) do      
+       controller.stub!(:current_session).and_return(current_session)
       end
       context "with admin user" do
         before(:each) do
@@ -364,7 +370,7 @@ describe UsersController do
         end
         it "should switch the current user" do
           post :switch, :id => user.id
-          session[:user_id].should == user.id
+          current_session[:user_id].should == user.id
         end
         it "should redirect to the welcome page" do
           post :switch, :id => user.id
@@ -377,11 +383,11 @@ describe UsersController do
         end
         it "should allow switching to a user from the site" do
           post :switch, :id => site_user.id
-          session[:user_id].should == site_user.id
+          current_session[:user_id].should == site_user.id
         end
         it "should not allow switching to a user not from the site" do
           post :switch, :id => user.id
-          session[:user_id].should_not == user.id
+          current_session[:user_id].should_not == user.id
         end
       end
       context "with regular user" do
@@ -407,12 +413,6 @@ describe UsersController do
     describe "show" do
       it "should redirect the login page" do
         get :show, :id => 1
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
-    describe "edit" do
-      it "should redirect the login page" do
-        get :edit, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
     end
