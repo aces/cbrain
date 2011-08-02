@@ -60,7 +60,7 @@ class ToolsController < ApplicationController
   def create #:nodoc:
 
     if params[:autoload]
-      self.autoload_all_tools
+      autoload_all_tools
       return
     end
 
@@ -85,6 +85,42 @@ class ToolsController < ApplicationController
     end
   end
 
+  # PUT /tools/1
+  # PUT /tools/1.xml
+  def update #:nodoc:
+    @tool = current_user.available_tools.find(params[:id])
+    respond_to do |format|
+      if @tool.update_attributes(params[:tool])
+        flash[:notice] = 'Tool was successfully updated.'
+        format.html { redirect_to(tools_path) }
+        format.xml  { head :ok }
+      else
+        format.html { render :action => "edit" }
+        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
+  
+  
+  # DELETE /tools/1                                 
+    # DELETE /tools/1.xml                           
+  def destroy #:nodoc:                              
+      @tool = current_user.available_tools.find(params[:id])  
+      @tool.destroy                                           
+                                                              
+      respond_to do |format|                                  
+        format.js { render :text  => "jQuery('#tool_#{@tool.id}').remove();" }                                          
+        format.xml  { head :ok }                              
+      end                                                     
+  end
+      
+  def tool_management #:nodoc:
+      @tools = Tool.order("tools.name")
+      @bourreaux = Bourreau.all
+  end
+
+  private
+  
   def autoload_all_tools #:nodoc:
 
     successes = []
@@ -122,40 +158,6 @@ class ToolsController < ApplicationController
       format.html { redirect_to tools_path }
     end
 
-  end
-
-  # PUT /tools/1
-  # PUT /tools/1.xml
-  def update #:nodoc:
-    @tool = current_user.available_tools.find(params[:id])
-    respond_to do |format|
-      if @tool.update_attributes(params[:tool])
-        flash[:notice] = 'Tool was successfully updated.'
-        format.html { redirect_to(tools_path) }
-        format.xml  { head :ok }
-      else
-        format.html { render :action => "edit" }
-        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
-      end
-    end
-  end
-  
-  
-  # DELETE /tools/1                                 
-    # DELETE /tools/1.xml                           
-  def destroy #:nodoc:                              
-      @tool = current_user.available_tools.find(params[:id])  
-      @tool.destroy                                           
-                                                              
-      respond_to do |format|                                  
-        format.js { render :text  => "jQuery('#tool_#{@tool.id}').remove();" }                                          
-        format.xml  { head :ok }                              
-      end                                                     
-  end
-      
-  def tool_management #:nodoc:
-      @tools = Tool.order("tools.name")
-      @bourreaux = Bourreau.all
   end
 
 end
