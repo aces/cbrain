@@ -127,7 +127,9 @@ class CbrainFileRevision
     @author   = "UnknownAuthor"
 
     Dir.chdir(dirname) do
-      File.popen("git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./'#{@basename}' 2>/dev/null","r") do |fh|
+      # If symlink, try to deref
+      target = File.symlink?(@basename) ? File.readlink(@basename) : @basename
+      File.popen("git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./'#{target}' 2>/dev/null","r") do |fh|
         line = fh.readline.strip rescue ""
         if line =~ /\d\d\d\d-\d\d-\d\d/
           @git_last_commit_info = line
