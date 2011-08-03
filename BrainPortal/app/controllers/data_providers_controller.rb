@@ -14,7 +14,7 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  api_available :except => [:disk_usage, :cleanup, :register]
+  api_available :except => [:disk_usage, :cleanup]
 
   before_filter :login_required
   before_filter :manager_role_required, :only  => [:new, :create]
@@ -441,7 +441,7 @@ class DataProvidersController < ApplicationController
     end
 
     basenames = params[:basenames] || []
-    filetypes  = params[:filetypes] || []
+    filetypes = params[:filetypes] || []
     do_unreg  = params[:commit] =~ /unregister/i
 
     # Automatic MOVE or COPY operation?
@@ -475,6 +475,8 @@ class DataProvidersController < ApplicationController
     flash[:error]  = ""
     flash[:notice] = ""
 
+    legal_subtypes = Userfile.descendants.map(&:name).index_by { |x| x }
+
     basenames.each do |basename|
 
       # Unregister old files
@@ -501,7 +503,7 @@ class DataProvidersController < ApplicationController
       fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
-        if subtype == "Unset" || (!Userfile.descendants.map(&:name).include?(subtype))
+        if subtype == "Unset" || ( ! legal_subtypes[subtype] )
           flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
           num_skipped += 1
           next
@@ -553,7 +555,16 @@ class DataProvidersController < ApplicationController
           end
         end
       end
-      redirect_to :action => :browse
+      respond_to do |format|
+        format.html { redirect_to :action => :browse }
+        format.xml { render :xml =>
+                      { :notice => flash[:notice],
+                        :error  => flash[:error],
+                        :userfiles => newly_registered_userfiles,
+                        :userfiles_in_transit => []
+                      }
+                   }
+      end
       return
     end
 
@@ -611,7 +622,16 @@ class DataProvidersController < ApplicationController
       end # spawn
     end # if move or copy
 
-    redirect_to :action => :browse
+    respond_to do |format|
+      format.html { redirect_to :action => :browse }
+      format.xml { render :xml =>
+                    { :notice => flash[:notice],
+                      :error  => flash[:error],
+                      :userfiles => newly_registered_userfiles,
+                      :userfiles_in_transit => to_operate
+                    }
+                 }
+    end
 
   end
 

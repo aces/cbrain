@@ -19,6 +19,13 @@ class SessionsController < ApplicationController
   
   api_available
 
+  def new #:nodoc:
+    respond_to do |format|
+      format.html
+      format.xml
+    end
+  end
+
   def create #:nodoc:
     self.current_user = User.authenticate(params[:login], params[:password])
         

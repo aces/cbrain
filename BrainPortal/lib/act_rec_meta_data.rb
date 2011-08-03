@@ -244,6 +244,7 @@ module ActRecMetaData
   # called manually too.
   def destroy_all_meta_data
     return true if self.is_a?(MetaDataStore)
+    return true if self.new_record? || ! self.id # ignore records with no ID
     allmeta = self.meta.all
     @_cbrain_meta = nil
     return true unless allmeta
