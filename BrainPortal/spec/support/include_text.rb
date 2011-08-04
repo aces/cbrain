@@ -3,7 +3,11 @@ module RSpec::Rails
     RSpec::Matchers.define :include_text do |text|
       match do |response_or_text|
         @content = response_or_text.respond_to?(:body) ? response_or_text.body : response_or_text
-        @content.include?(text)
+        if text.is_a?(Regexp)
+          @content =~ text
+        else
+          @content.include?(text)
+        end
       end
 
       failure_message_for_should do |text|

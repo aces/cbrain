@@ -772,7 +772,7 @@ describe DataProvider do
     end
   end
   describe "#cache_revision_of_last_init" do
-    let(:cache_rev)       {double("cache_rev", :blank? => false).as_null_object}
+    let(:cache_rev)       { "1234-12-12" }
     before(:each) do
       DataProvider.stub!(:class_variable_defined?).and_return(false)
       DataProvider.stub!(:this_is_a_proper_cache_dir!)
@@ -780,7 +780,8 @@ describe DataProvider do
       File.stub!(:read).and_return(cache_rev)
     end
     it "should check if the cache revision variable is already defined" do
-      DataProvider.should_receive(:class_variable_defined?).and_return(false)
+      DataProvider.class_variable_set("@@cache_rev", Time.now.to_s)
+      DataProvider.should_receive(:class_variable_defined?).and_return(true)
       DataProvider.cache_revision_of_last_init
     end
     it "should check if the cache dir is valid" do
@@ -800,7 +801,7 @@ describe DataProvider do
       let(:file_handle)     {double("fh").as_null_object}
       before(:each) do
         File.stub!(:exist?).and_return(false)
-        DataProvider.stub_chain(:revision_info, :svn_id_rev).and_return("rev_info")
+        DataProvider.stub_chain(:revision_info).and_return(double("rev_info").as_null_object)
         IO.stub!(:sysopen).and_return(file_descriptor)
         IO.stub!(:open).and_return(file_handle)
       end
