@@ -742,7 +742,7 @@ class UserfilesController < ApplicationController
 
     # Destination provider
     data_provider_id = params[:data_provider_id]
-    new_provider = DataProvider.find_accessible_by_user(data_provider_id,current_user).where( :online => true, :read_only => false )
+    new_provider = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym

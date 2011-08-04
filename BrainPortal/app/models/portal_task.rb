@@ -556,7 +556,7 @@ class PortalTask < CbrainTask
   # (like ActiveRecord thinks the params attributes are named)
   # it will remove that part and return the rest. And otherwise,
   # it invokes the superclass method.
-  def self.human_attribute_name(attname)
+  def self.human_attribute_name(attname,options={})
     prettyhash = self.pretty_params_names || {}
     shortname = (attname =~ /^cbrain_task_params_/) ? attname.sub(/^cbrain_task_params_/,"") : nil
     # We try to guess many ways that the task programmer could have
@@ -578,7 +578,7 @@ class PortalTask < CbrainTask
        end
     end
     return shortname if shortname
-    super(attname)
+    super(attname,options)
   end
 
   # Restores from old_params any attributes listed in the
