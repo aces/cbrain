@@ -28,31 +28,31 @@
 <tr>
   <th>Setup</th>
     <TD>Crash?  <%= form.params_check_box  :setup_crash                       %></TD>
-    <TD>Delay:  <%= form.params_text_field :setup_delay,           :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :setup_delay,           :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :recover_setup                     %></TD>
-    <TD>Delay:  <%= form.params_text_field :recover_setup_delay,   :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_setup_delay,   :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_setup                     %></TD>
-    <TD>Delay:  <%= form.params_text_field :restart_setup_delay,   :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_setup_delay,   :size => 6 %></TD>
 </tr>
 
 <tr>
   <th>Cluster</th>
     <TD>Crash?  <%= form.params_check_box  :cluster_crash                     %></TD>
-    <TD>Delay:  <%= form.params_text_field :cluster_delay,         :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :cluster_delay,         :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :recover_cluster                   %></TD>
-    <TD>Delay:  <%= form.params_text_field :recover_cluster_delay, :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_cluster_delay, :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_cluster                   %></TD>
-    <TD>Delay:  <%= form.params_text_field :restart_cluster_delay, :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_cluster_delay, :size => 6 %></TD>
 </tr>
 
 <tr>
   <th>PostProcess</th>
     <TD>Crash?  <%= form.params_check_box  :postpro_crash                     %></TD>
-    <TD>Delay:  <%= form.params_text_field :postpro_delay,         :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :postpro_delay,         :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :recover_postpro                   %></TD>
-    <TD>Delay:  <%= form.params_text_field :recover_postpro_delay, :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :recover_postpro_delay, :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_postpro                   %></TD>
-    <TD>Delay:  <%= form.params_text_field :restart_postpro_delay, :size => 4 %></TD>
+    <TD>Delay:  <%= form.params_text_field :restart_postpro_delay, :size => 6 %></TD>
 </tr>
 
 </table>
@@ -60,6 +60,10 @@
 <p/>
 
 <strong>Crashes will reset to false after they are first triggered:</strong><%= form.params_check_box :crash_will_reset %>
+
+<p/>
+
+<small>Note: Delays can be entered as '12..20' or '12-20' to indicate a value randomly chosen in the range.</small>
 
 </div>
 

@@ -49,6 +49,12 @@ class Bourreau < RemoteResource
     @scir_session_cache
   end
 
+
+
+  ############################################################################
+  # Remote Control Methods
+  ############################################################################
+
   # Start a Bourreau remotely. As a requirement for this to work,
   # we need the following attributes set in the Bourreau
   # object:
@@ -181,7 +187,7 @@ class Bourreau < RemoteResource
     return info
   end
 
-  protected
+  protected # internal methods for remote control operations above
 
   def build_db_yml_for_tunnel(railsenv) #:nodoc:
     myconfig = self.class.current_resource_db_config(railsenv) # a copy of the active config
@@ -246,7 +252,7 @@ class Bourreau < RemoteResource
 
 
   ############################################################################
-  # Commands Implemented by Bourreaux
+  # Control Commands Implemented by Bourreaux
   ############################################################################
 
   protected

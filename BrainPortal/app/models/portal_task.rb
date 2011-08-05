@@ -51,6 +51,7 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
+    "New"                              => [               "Terminated"              ],
     "Queued"                           => [ "Duplicated", "Terminated", "On Hold"   ],
     "On Hold"                          => [ "Duplicated", "Terminated", "Queued"    ],
     "On CPU"                           => [ "Duplicated", "Terminated", "Suspended" ],

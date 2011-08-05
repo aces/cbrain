@@ -25,7 +25,7 @@
 <p>
    Creation Date:<br>
    <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => custom_filter.data["created_date_type"]  %>
-   <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse(custom_filter.data["created_date_term"] || Time.now.to_s) %>
+   <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse((custom_filter.data["created_date_term"] || Time.now).to_s) %>
 </p>
 <p>
    Owner:<br>
