@@ -93,6 +93,13 @@ class CbrainTask::CbSerializer < ClusterTask
     false
   end
 
+  # Since the 'setup' of a serializer does nothing (see above in setup()),
+  # a failure to setup is rather unlikely! It if happens, it's some sort of system
+  # problem, so we just allow 'recovery' by retrying the whole thing.
+  def recover_from_setup_failure #:nodoc:
+    true
+  end
+
   def restart_at_setup #:nodoc:
     unless self.all_subtasks_are?(/Completed|Failed|Terminated/)
       self.addlog("This task can only be restarted at Setup if its subtasks are all either Completed, Failed, or Terminated.")

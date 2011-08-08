@@ -141,7 +141,7 @@ class ToolConfigsController < ApplicationController
        env_name = keyval[:name].strip
        env_val  = keyval[:value].strip
        next if env_name.blank? && env_val.blank?
-       if env_name !~ /^[A-Z][A-Z0-9_]+$/
+       if env_name !~ /^[A-Z][A-Z0-9_]+$/i
          @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
        elsif env_val !~ /\S/
          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")

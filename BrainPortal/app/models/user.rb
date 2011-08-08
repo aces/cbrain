@@ -339,8 +339,9 @@ class User < ActiveRecord::Base
     myid = self.id
     return true unless myid # defensive
     sessions = CbrainSession.all.select do |s|
+      data = s.data rescue {} # old sessions can have problems being reconstructed
       (s.user_id && s.user_id == myid) ||
-      (s.data && s.data[:user_id] && s.data[:user_id] == myid)
+      (data && data[:user_id] && data[:user_id] == myid)
     end
     sessions.each do |s|
       s.destroy rescue true

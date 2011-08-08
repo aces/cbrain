@@ -148,6 +148,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your setup()
   # method is naturally recoverable.
   def recover_from_setup_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -163,6 +164,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your bash commands
   # returned by cluster_commands() are naturally recoverable.
   def recover_from_cluster_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -177,6 +179,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your save_results()
   # method is naturally recoverable.
   def recover_from_post_processing_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -193,6 +196,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your setup()
   # method is naturally restartable.
   def restart_at_setup
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
@@ -209,6 +213,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your bash commands
   # returned by cluster_commands() are naturally restartable.
   def restart_at_cluster
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
@@ -225,6 +230,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your save_results()
   # method is naturally restartable.
   def restart_at_post_processing
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
