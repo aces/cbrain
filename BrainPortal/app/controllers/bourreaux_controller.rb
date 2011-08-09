@@ -45,6 +45,7 @@ class BourreauxController < ApplicationController
   end
   
   def show #:nodoc:
+    @users    = current_user.available_users
     @bourreau = RemoteResource.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
