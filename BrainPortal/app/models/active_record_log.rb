@@ -14,5 +14,7 @@ class ActiveRecordLog < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  force_text_attribute_encoding 'UTF-8', :log
+
 end
 

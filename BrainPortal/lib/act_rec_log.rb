@@ -202,7 +202,8 @@ module ActRecLog
       else
         arl.update_attributes( { :log => log } )
       end
-    rescue
+    rescue => ex
+      #puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
       false
     end
   end
@@ -321,7 +322,7 @@ module ActRecLog
   # doesn't yet have an ID; this method
   # sends that tmp log to the real log
   # record. It is usually called automatically
-  # as a after_create callback.
+  # as a after_create() callback.
   def propagate_tmp_log #:nodoc:
     return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return false if self.new_record? || self.id.blank?

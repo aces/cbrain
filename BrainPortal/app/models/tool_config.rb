@@ -32,6 +32,9 @@ class ToolConfig < ActiveRecord::Base
   has_many       :cbrain_tasks
   belongs_to     :group        # can be nil; means 'everyone' in that case.
 
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
+
   ## Provides a default group_id (backward compatibility)
   #def group #:nodoc:
   #  Group.find(self.group_id)
@@ -57,7 +60,7 @@ class ToolConfig < ActiveRecord::Base
   # to represent the 'name' of the version.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
+    raise "Internal error: can't parse description!?!" unless description =~ /^(.*\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end
