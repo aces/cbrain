@@ -198,7 +198,7 @@
       
         <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Log verbosity</th>
-          <td class="left_align"><%= ['?', 'Normal', 'Debug info' ][@bourreau.workers_verbose] %></td>
+          <td class="left_align"><%= ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0] %></td>
         </tr>
       
         <tr>
