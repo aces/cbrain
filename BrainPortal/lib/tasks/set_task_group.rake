@@ -1,7 +1,7 @@
 desc 'Initial setting of task groups (tasks unassigned to a group will be assigned to their owner\'s group).' 
 
 namespace :db do
-  task :set_task_group, :needs  => :environment do |t|  
+  task :set_task_group => :environment do |t|  
     all_tasks = CbrainTask.all
     puts "Checking groups for #{all_tasks.size} tasks."
     num_updates = 0

@@ -215,6 +215,9 @@ class DataProvider < ActiveRecord::Base
   belongs_to  :group
   has_many    :userfiles
 
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
+
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
@@ -884,8 +887,16 @@ class DataProvider < ActiveRecord::Base
   def site
     @site ||= self.user.site
   end
-  
-  
+
+  # Returns the first line of the description.
+  def short_description
+    description = self.description || ""
+    raise "Internal error: can't parse description!?!" unless description =~ /^(.*\n?)/ # the . doesn't match \n
+    header = Regexp.last_match[1].strip
+    header
+  end
+
+
 
   #################################################################
   # Class-level cache-handling methods

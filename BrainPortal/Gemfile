@@ -40,6 +40,7 @@ gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
 #gem "sys-proctable", "~> 0.7.6"
 gem "thin"
 gem "exception_logger", "~> 0.1.10"
+gem "psych"
 
 group :development do
   gem "wirble"

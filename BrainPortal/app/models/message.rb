@@ -16,6 +16,9 @@ class Message < ActiveRecord::Base
 
   belongs_to :user
 
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description, :variable_text
+
   attr_accessor :send_email
   
   # Send a new message to a user, the users of a group, or a site.
@@ -112,7 +115,7 @@ class Message < ActiveRecord::Base
     
     if send_email
       CbrainMailer.cbrain_message(allusers,
-        :subject  => header,
+        :subject  => header.strip,
         :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
       ).deliver
     end
@@ -277,6 +280,7 @@ class Message < ActiveRecord::Base
   # will return
   #    "abcde <a href="/my/path" class="action_link">name</a>"
   def self.parse_markup(string)
+    cb_error "We MUST receive a string already known to be HTML_SAFE!" unless string.html_safe?
     arr = string.split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context
@@ -286,7 +290,7 @@ class Message < ActiveRecord::Base
       link.sub!("/tasks/show/","/tasks/")  # adjustment to old URL API for tasks
       arr[i] = "<a href=\"#{link}\" class=\"action_link\">#{name}</a>"
     end
-    arr.join
+    arr.join.html_safe
   end
 
 end

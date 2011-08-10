@@ -67,6 +67,49 @@ class ActiveRecord::Base
   end
 
 
+
+  ###################################################################
+  # ActiveRecord Added Behavior For Data Typing
+  ###################################################################
+
+  cattr_accessor :cbrain_forced_attribute_encodings # cattr_accessor is from Rails
+
+  # This directive adds an after_initalize() callback such that
+  # attributes stored as :text in the schema are always reloaded
+  # with a forced encoding. In a model:
+  #
+  #   force_attribute_encoding encoding_name, :att [, :att, ...]
+  def self.force_text_attribute_encoding(encoding_name, *attlist)
+    to_adjust = self.cbrain_forced_attribute_encodings ||= {}
+    enc = Encoding.find(encoding_name) rescue nil
+    raise "No such encoding '#{encoding_name}'." unless enc
+    raise "Need a list of :text attributes to adjust." if attlist.empty?
+    attlist.each do |att|
+      raise "Attribute '#{att}' not a symbol?!?" unless att.is_a?(Symbol)
+      colinfo = self.columns_hash[att.to_s] || self.columns_hash[att]
+      raise "No such attribute '#{att}' for model #{self.name}"  unless colinfo
+      raise "Attribute '#{att}' is not of type :text in the DB!" unless colinfo.type == :text
+      to_adjust[att] = encoding_name
+    end
+    after_initialize :adjust_forced_attribute_encodings
+  end
+
+  # Called automatically after a record is reloaded (it's an
+  # after_initalize() callback) if the directive
+  # force_text_attribute_encoding was used.
+  def adjust_forced_attribute_encodings #:nodoc:
+    to_adjust = self.class.cbrain_forced_attribute_encodings
+    return true unless to_adjust
+    return true if     to_adjust.empty?
+    to_adjust.each do |att,enc_name|
+      self.send(att).force_encoding(enc_name) rescue nil # seems to work in Rails 3.0.7, and record not ".changed?"
+      #self.write_attribute(att, self.send(att).force_encoding(enc_name)) rescue nil # seems to work in Rails 3.0.7
+    end
+    true
+  end
+
+
+
   ###################################################################
   # ActiveRecord Added Behavior For Serialization
   ###################################################################

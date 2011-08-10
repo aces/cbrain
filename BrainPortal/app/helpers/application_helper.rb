@@ -110,9 +110,9 @@ module ApplicationHelper
   # in a two-element array.
   def split_description(description="")
     return [ "", "" ] if description.blank?
-    raise "Internal error: can't parse description!?!" unless description =~ /^\s*(\S.*)\n?([\000-\277]*)$/
+    raise "Internal error: can't parse description!?!" unless description =~ /^(.*\n?)/ # the . doesn't match \n , which is OK!
     header = Regexp.last_match[1].strip
-    body   = Regexp.last_match[2].strip
+    body   = (description[header.size,999] || "").strip
     return [ header, body ]
   end
 
@@ -124,11 +124,10 @@ module ApplicationHelper
     cropped_header = crop_text_to(options[:header_width] || 50,header)
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
-    link = h(cropped_header) + " " + capture do
+    link = h(cropped_header) + " " + 
       overlay_content_link("(more)", :enclosing_element => 'span' ) do
         ("<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>").html_safe
       end
-    end
     link.html_safe
   end
 
@@ -137,18 +136,20 @@ module ApplicationHelper
   def overlay_data_providers_descriptions(data_providers = nil)
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
     paragraphs = data_providers.collect do |dp|
-      "<h3>#{h(dp.name)}</h3>\n" +
-      "<pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>\n"
+      one_description = <<-"HTML"
+        <h3>#{h(dp.name)}</h3>
+        <pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
+      HTML
     end
-    all_descriptions = "<h2>Data Providers Descriptions</h2>\n" +
-                       "<div class=\"generalbox\">\n" +
-                        paragraphs.join("") +
-                       "</div>\n"
-    capture do
+    all_descriptions = <<-"HTML"
+      <h2>Data Providers Descriptions</h2>
+      <div class="generalbox">#{paragraphs.join("")}</div>
+    HTML
+    link =
        overlay_content_link("(info)", :enclosing_element => 'span') do
          all_descriptions.html_safe
        end
-    end
+    link.html_safe
   end
 
 

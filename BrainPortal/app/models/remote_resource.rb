@@ -70,6 +70,10 @@ class RemoteResource < ActiveRecord::Base
 
   after_destroy :after_destroy_clean_sync_status
 
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
+
+
 
   ############################################################################
   # Pseudo-attributes Access
@@ -442,7 +446,7 @@ class RemoteResource < ActiveRecord::Base
     time_zone_name    = Time.zone ? Time.zone.name : ""
 
     if @host_ip == ""
-      hostinfo = ( Socket.gethostbyname(@host_name) rescue [ nil, nil, nil, "\000\000\000\000" ] )
+      hostinfo = ( Socket.gethostbyname(@host_name) rescue [ nil, nil, nil, "\x00\x00\x00\x00" ] )
       hostinfo[3].each_byte do |b|
         @host_ip += "." unless @host_ip.blank?
         @host_ip += b.to_s

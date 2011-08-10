@@ -41,6 +41,9 @@ class CbrainTask < ActiveRecord::Base
   # subclass of CbrainTask to find/use/define its content
   # as necessary.
   serialize_as_indifferent_hash :params
+
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
   
   scope :status, lambda { |s|  
                          case s.to_sym
@@ -228,6 +231,15 @@ class CbrainTask < ActiveRecord::Base
      cmp = ( self.created_at  <=>  othertask.created_at ) if cmp == 0
      cmp = ( self.id          <=>  othertask.id         ) if cmp == 0
      cmp
+  end
+
+  # Returns the first line of the description. This is usually
+  # used to represent the 'name' for presets.
+  def short_description
+    description = self.description || ""
+    raise "Internal error: can't parse description!?!" unless description =~ /^(.*\n?)/ # the . doesn't match \n
+    header = Regexp.last_match[1].strip
+    header
   end
 
 

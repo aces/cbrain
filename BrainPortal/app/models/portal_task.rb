@@ -558,8 +558,9 @@ class PortalTask < CbrainTask
   # it will remove that part and return the rest. And otherwise,
   # it invokes the superclass method.
   def self.human_attribute_name(attname,options={})
+    sattname   = attname.to_s # string version of attname, which is usually a symbol now
     prettyhash = self.pretty_params_names || {}
-    shortname = (attname =~ /^cbrain_task_params_/) ? attname.sub(/^cbrain_task_params_/,"") : nil
+    shortname  = (sattname =~ /^cbrain_task_params_/i) ? sattname.sub(/^cbrain_task_params_/i,"") : nil
     # We try to guess many ways that the task programmer could have
     # stored his 'pretty' names in the hash, including forgetting to call
     # to_la_id() on the keys.
@@ -571,15 +572,15 @@ class PortalTask < CbrainTask
          next if extended.has_key?(id_att)
          extended[id_att] = name
        end
-       return extended[attname]        if extended.has_key?(attname)
-       return extended[attname.to_sym] if extended.has_key?(attname.to_sym)
+       return extended[sattname]        if extended.has_key?(sattname)
+       return extended[sattname.to_sym] if extended.has_key?(sattname.to_sym)
        if shortname
          return extended[shortname]        if extended.has_key?(shortname)
          return extended[shortname.to_sym] if extended.has_key?(shortname.to_sym)
        end
     end
     return shortname if shortname
-    super(attname,options)
+    super(attname,options) # not sattname
   end
 
   # Restores from old_params any attributes listed in the

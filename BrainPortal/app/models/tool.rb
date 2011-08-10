@@ -40,6 +40,9 @@ class Tool < ActiveRecord::Base
   has_many                :tool_configs, :dependent => :destroy
   has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
+
   #Find a random bourreau on which this tool is available and to which +user+ has access.
   def select_random_bourreau_for(user)
     available_group_ids = user.group_ids

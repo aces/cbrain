@@ -61,8 +61,7 @@
           </td>
         <% end %>
           <td class="left_align no_wrap">
-            <% header,body = split_description(tc.description) %>
-            <%= link_to header, edit_tool_config_path(tc) %>
+            <%= link_to tc.short_description, edit_tool_config_path(tc) %>
             in project '<%= link_to_group_if_editable(tc.group) %>'
           </td>
           <td class="left_align no_wrap">
