@@ -74,7 +74,7 @@
       
       <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th>Task Description</th>
-          <td class="left_align"><%= simple_format(@task.description) %></td>
+          <td class="left_align"><%= simple_format(h(@task.description)) %></td>
       </tr>
 
       <tr class="<%= cycle('list-odd', 'list-even') %>">

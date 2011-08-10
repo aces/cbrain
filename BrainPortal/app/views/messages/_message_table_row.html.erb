@@ -8,7 +8,7 @@
       <% end %>
     <% end %>
     &nbsp;
-    <%= show_hide_toggle Message.parse_markup( h(mess.header) ).html_safe, "#message_table_details_#{mess.id}" %>
+    <%= show_hide_toggle Message.parse_markup( h(mess.header) ), "#message_table_details_#{mess.id}" %>
 
     <div id="message_table_details_<%= mess.id %>" class="no_wrap" style="display:none">
       <%= render :partial  => 'messages/message_details', :locals  => {:mess  => mess} %>

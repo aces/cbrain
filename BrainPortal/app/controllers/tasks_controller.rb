@@ -666,8 +666,8 @@ class TasksController < ApplicationController
         site_preset_tasks = CbrainTask.where( :status => 'SitePreset', :user_id => manager_ids )
       end
       own_preset_tasks = current_user.cbrain_tasks.where( :type => @task.class.to_s, :status => 'Preset' )
-      @own_presets  = own_preset_tasks.collect  { |t| [ t.description, t.id ] }
-      @site_presets = site_preset_tasks.collect { |t| [ "#{t.description} (by #{t.user.login})", t.id ] }
+      @own_presets  = own_preset_tasks.collect  { |t| [ t.short_description, t.id ] }
+      @site_presets = site_preset_tasks.collect { |t| [ "#{t.short_description} (by #{t.user.login})", t.id ] }
       @all_presets = []
       @all_presets << [ "Site Presets",     @site_presets ] if @site_presets.size > 0
       @all_presets << [ "Personal Presets", @own_presets  ] if @own_presets.size > 0
@@ -705,7 +705,7 @@ class TasksController < ApplicationController
           @task.tool_config = preset.tool_config
         end
         @task.bourreau = @task.tool_config.bourreau if @task.tool_config
-        flash[:notice] += "Loaded preset '#{preset.description}'.\n"
+        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
       end
@@ -716,7 +716,7 @@ class TasksController < ApplicationController
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         if preset.user_id == current_user.id
           preset.delete
-          flash[:notice] += "Deleted preset '#{preset.description}'.\n"
+          flash[:notice] += "Deleted preset '#{preset.short_description}'.\n"
         else
           flash[:notice] += "Cannot delete a preset that doesn't belong to you.\n"
         end
@@ -747,7 +747,7 @@ class TasksController < ApplicationController
         preset.params.delete(untouch) # no need to save these eh?
       end
       preset.save!
-      flash[:notice] += "Saved preset '#{preset.description}'.\n"
+      flash[:notice] += "Saved preset '#{preset.short_description}'.\n"
     end
   end
 

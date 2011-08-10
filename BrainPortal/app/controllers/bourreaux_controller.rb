@@ -62,24 +62,22 @@ class BourreauxController < ApplicationController
       @user_tasks_info[user]['TOTAL'] = 0
     end
     
-    begin
-       tasks = CbrainTask.where( :bourreau_id => @bourreau.id, :user_id => (myusers.map &:id) ).includes( :user )
-    rescue
-       tasks = []
+    myusers.each do |user|
+      tasks_stats = CbrainTask.where( :bourreau_id => @bourreau.id, :user_id => user.id ).select("status, count(status) as stat_count").group(:status)
+
+      tasks_stats.each do |t|
+        status     = t.status
+        stat_count = t.stat_count.to_i
+        @statuses[status]               ||= 0
+        @statuses[status]                += stat_count
+        @statuses['TOTAL']               += stat_count
+        @user_tasks_info[user]          ||= {}
+        @user_tasks_info[user][status]    = stat_count
+        @user_tasks_info[user]['TOTAL'] ||= 0
+        @user_tasks_info[user]['TOTAL']  += stat_count
+      end
     end
 
-    tasks.each do |t|
-      user    = t.user
-      status  = t.status
-      @statuses[status]               ||= 0
-      @statuses[status]                += 1
-      @statuses['TOTAL']               += 1
-      @user_tasks_info[user]          ||= {}
-      @user_tasks_info[user][status]  ||= 0
-      @user_tasks_info[user][status]   += 1
-      @user_tasks_info[user]['TOTAL'] ||= 0
-      @user_tasks_info[user]['TOTAL']  += 1
-    end
     @statuses_list = @statuses.keys.sort.reject { |s| s == 'TOTAL' }
     @statuses_list << 'TOTAL'
 

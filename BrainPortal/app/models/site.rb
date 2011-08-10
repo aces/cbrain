@@ -30,8 +30,11 @@ class Site < ActiveRecord::Base
   has_many        :users,  :dependent => :nullify, :after_remove  => [:user_system_group_remove, :remove_user_from_site_group]
   has_many        :groups, :dependent => :nullify
   
-  attr_accessor           :manager_ids
+  # CBRAIN extension
+  force_text_attribute_encoding 'UTF-8', :description
   
+  attr_accessor           :manager_ids
+
   #Returns users that have manager access to this site (site managers or admins).
   def managers
     self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []

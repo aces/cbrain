@@ -192,13 +192,13 @@ module CbrainUiHelper
     content = capture(&block)
     return "" if content.blank?
 
-    safe_concat("<#{element} class=\"overlay_dialog\">")
-    safe_concat("<a #{atts}>#{name}</a>")
-    safe_concat("<div class=\"overlay_content\" style=\"display: none;\">")
-    safe_concat(content)
-    safe_concat("</div>")
-    safe_concat("</#{element}>")
-    ""
+    html = <<-"HTML"
+    <#{element} class="overlay_dialog">
+      <a #{atts}>#{name}</a>
+      <div class="overlay_content" style="display: none;">#{content}</div>
+    </#{element}>
+    HTML
+    html.html_safe
   end
   
   #Create a button with a drop down menu

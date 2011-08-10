@@ -7,7 +7,7 @@
 <% unless log.blank? %>
   <%= build_accordion do |acc| %>
     <%= acc.section h(title) do %>
-      <pre><%= Message.parse_markup(h(log)).html_safe %></pre>
+      <pre><%= Message.parse_markup(h(log)) %></pre>
     <% end %>
   <% end %>
 <% end %>
