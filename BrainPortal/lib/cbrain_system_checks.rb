@@ -83,9 +83,12 @@ class CbrainSystemChecks < CbrainChecker
       puts "C> \t- Time zone set to '#{my_time_zone}'."
     end
 
-    Rails::Application.config.time_zone = my_time_zone
+    if myself.is_a? BrainPortal
+      CbrainRailsPortal::Application.config.time_zone = my_time_zone
+    elsif myself.is_a? Bourreau
+      CbrainRailsBourreau::Application.config.time_zone = my_time_zone
+    end
     Time.zone = my_time_zone
-    #Rails::Initializer.new(Rails.configuration).initialize_time_zone
 
   end
   
