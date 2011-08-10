@@ -11,9 +11,9 @@
 
 require 'cbrain_exception'
 
-require 'yaml'
-require 'psych'
-YAML::ENGINE.yamler = 'psych'
+#require 'yaml'
+#require 'psych'
+#YAML::ENGINE.yamler = 'psych'
 
 # CBRAIN constants and some global utility methods.
 class CBRAIN
