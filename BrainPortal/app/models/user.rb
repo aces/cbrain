@@ -79,7 +79,7 @@ class User < ActiveRecord::Base
   has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
 
-  force_text_attribute_encoding 'UTF-8', :full_name
+  force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
   
   
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
