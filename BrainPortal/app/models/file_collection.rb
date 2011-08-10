@@ -109,7 +109,6 @@ class FileCollection < Userfile
   #Returns the status of the merge as a *symbol*:
   #[*success*] if the merge is successful.
   #[*collision*] if the collections share common file names (the merge is aborted in this case).
-  #[*failure*] if the merge failed for some other reason.
   def merge_collections(userfiles)    
     full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}    
     
