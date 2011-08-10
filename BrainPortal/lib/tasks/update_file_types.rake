@@ -1,6 +1,6 @@
 namespace :db do
   desc "Update file types on all userfiles (set report to 'true' to get update report without actually performing the update)"
-  task :update_file_types , :report, :needs  => :environment do |t, args|  
+  task :update_file_types , [:report] => :environment do |t, args|  
     args.with_defaults(:report => "false")
     if args.report.to_s.downcase == "true"  
       report = true

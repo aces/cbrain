@@ -258,7 +258,6 @@ class UserfilesController < ApplicationController
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path
     end
-  
   end
   
   def display
@@ -375,8 +374,9 @@ class UserfilesController < ApplicationController
   #            (the +collection+ option has no such limitations).
   def create #:nodoc:
 
-    flash[:error]  ||= ""
-    flash[:notice] ||= ""
+    flash[:error]     ||= ""
+    flash[:notice]    ||= ""
+    params[:userfile] ||= {}
     redirect_path = params[:redirect_to] || {:action  => :index}
 
     # Get the upload stream object
@@ -440,6 +440,7 @@ class UserfilesController < ApplicationController
           userfile.cache_copy_from_local_file(localpath)
           userfile.size = File.size(userfile.cache_full_path) rescue 0
         end
+
         userfile.save
         userfile.addlog_context(self,"Uploaded by #{current_user.login}")
         current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
@@ -448,6 +449,7 @@ class UserfilesController < ApplicationController
                              :header  => "SingleFile Uploaded", 
                              :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}]]"
                              )
+
       end # spawn
       
       redirect_to redirect_path
@@ -505,7 +507,7 @@ class UserfilesController < ApplicationController
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"
         collection.errors.each do |field, error|
-          flash[:error] += field.capitalize + " " + error + ".\n"
+          flash[:error] += field.to_s.capitalize + " " + error + ".\n"
         end
         redirect_to redirect_path
       end # save collection
