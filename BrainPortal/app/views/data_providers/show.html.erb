@@ -27,11 +27,16 @@
           <th>Name</th>
           <td><%= @provider.name %></td>
       </tr>
+      
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Description</th>
+          <td><%= overlay_description(@provider.description) %></td>
+      </tr>
 
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Class</th>
+          <th>Type</th>
           <td><%= @provider.class.to_s %></td>
       </tr>
 
@@ -46,11 +51,6 @@
       </tr>
 
       <% end %>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Description</th>
-          <td><%= overlay_description(@provider.description) %></td>
-      </tr>
 
       <tr>
         <th colspan="2" class="subtitle">Access information</th>
@@ -94,7 +94,7 @@
       <% if check_role(:admin) || @provider.user_id == current_user.id %>
 
       <tr>
-        <th colspan="2" class="subtitle">Network Parameters</th>
+        <th colspan="2" class="subtitle">SSH parameters for remote Data Providers</th>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -108,14 +108,40 @@
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Remote Directory</th>
-          <td><%= @provider.remote_dir %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Remote Port</th>
           <td><%= @provider.remote_port %></td>
       </tr>
+      
+      <tr>
+        <th colspan="2" class="subtitle">Physical data location</th>
+      </tr>
+      
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Remote Directory</th>
+          <td><%= @provider.remote_dir %></td>
+      </tr>
+      
+      <tr>
+        <th colspan="2" class="subtitle">Other properties</th>
+      </tr>
+
+      <% if @provider.is_browsable? %>
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+            <th>Files must be copied/moved upon registration</th>
+            <td><%= @provider.meta["must_move"] ? "True" : "False" %></td>
+        </tr>
+
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+            <th>Files will always be erased upon de-registration</th>
+            <td><%= @provider.meta["must_erase"] ? "True" : "False" %></td>
+        </tr>
+      <% end %>
+
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Cannot be used for uploading files in the file manager</th>
+          <td><%= @provider.meta["no_uploads"] ? "True" : "False" %></td>
+      </tr>
+
 
       <% end %>
 

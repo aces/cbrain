@@ -88,7 +88,7 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host</th>
-        <td class="left_align"><%= @info.host_name == @bourreau.ssh_control_host ? @bourreau.ssh_control_host : html_colorize(@bourreau.ssh_control_host, "red") %></td>
+        <td class="left_align"><%= @bourreau.ssh_control_host %></td>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -156,7 +156,7 @@
     
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Type of cluster</th>
-      <td class="left_align"><%= @bourreau.cms_class == @info.bourreau_cms ? @bourreau.cms_class : html_colorize(@bourreau.cms_class, "red") %></td>
+      <td class="left_align"><%= @bourreau.cms_class %></td>
     </tr>
     
     <tr class="<%= cycle("list-odd", "list-even") %>">
