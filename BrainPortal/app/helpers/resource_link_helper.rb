@@ -105,6 +105,8 @@ module ResourceLinkHelper
   # the link (the default is the group's name) and a
   # :path (the default is the show path).
   def link_to_group_if_accessible(group, cur_user = current_user, options = {})
+    the_id = group.is_a?(Group) ? group.id : ( group.to_i rescue 0 )
+    return "everyone" if the_id == Group.everyone.id && ! cur_user.has_role?(:admin) # special case
     link_to_model_if_accessible(Group,group,:name,cur_user,options)
   end
 

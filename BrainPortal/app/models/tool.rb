@@ -38,13 +38,7 @@ class Tool < ActiveRecord::Base
   belongs_to              :user
   belongs_to              :group
   has_many                :tool_configs, :dependent => :destroy
-
-  # Return the list of bourreaux where this tool is installed.
-  # A tool is considered installed if there is at least one
-  # ToolConfig object for it on that bourreau.
-  def bourreaux 
-    Bourreau.find_all_by_id((ToolConfig.find_all_by_tool_id(self.id).map &:bourreau_id).uniq.compact)
-  end
+  has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
   #Find a random bourreau on which this tool is available and to which +user+ has access.
   def select_random_bourreau_for(user)

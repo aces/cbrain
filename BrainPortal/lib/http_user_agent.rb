@@ -55,12 +55,13 @@ class HttpUserAgent
       next unless comp =~ /^(\S+)\/(\S+)$/
       name  = Regexp.last_match[1]
       value = Regexp.last_match[2]
+      next if keyvals.has_key?(name.downcase) # first match has priority
       keyvals[name.downcase] = value
       lastname = name
     end
 
     # Identify the browser
-    priority_list = [ 'Konqueror', 'Chrome', 'Safari', 'Opera', 'Firefox', 'MSIE', lastname ]
+    priority_list = [ 'Konqueror', 'Chrome', 'Safari', 'Opera', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
     priority_list.each do |name|
       lcname = name.downcase
       next unless keyvals.has_key?(lcname)
@@ -71,21 +72,23 @@ class HttpUserAgent
 
     # Identify the OS and architecture
     self.os_name = case adj_ua # case statement mostly from D. Meyer's code
-      when /iPad/                  ; 'iPad'
-      when /iPod/                  ; 'iPod'
-      when /iPhone/                ; 'iPhone'
-      when /windows nt 6\.0/i      ; 'Windows Vista'
-      when /windows nt 6\.\d+/i    ; 'Windows 7'
-      when /windows nt 5\.2/i      ; 'Windows 2003'
-      when /windows nt 5\.1/i      ; 'Windows XP'
-      when /windows nt 5\.0/i      ; 'Windows 2000'
-      when /os x (\d+)[._](\d+)/i  ; "OS X #{$1}.#{$2}"
-      when /os x/i                 ; "OS X"
-      when /ubuntu/i               ; "Ubuntu"
-      when /linux/i                ; "Linux"
-      when /wii/i                  ; "Wii"
-      when /playstation/i          ; "Playstation"
-      else                         ; "Unknown"
+      when /iPad/                       ; 'iPad'
+      when /iPod/                       ; 'iPod'
+      when /iPhone/                     ; 'iPhone'
+      when /windows nt 6\.0/i           ; 'Windows Vista'
+      when /windows nt 6\.\d+/i         ; 'Windows 7'
+      when /windows nt 5\.2/i           ; 'Windows 2003'
+      when /windows nt 5\.1/i           ; 'Windows XP'
+      when /windows nt 5\.0/i           ; 'Windows 2000'
+      when /os x (\d+)[._]([\d\._]+)/i  ; "OS X #{$1}.#{$2}"
+      when /os x/i                      ; "OS X"
+      when /Darwin(\/(\S+))?/i          ; "Darwin #{$2}"
+      when /(Nintendo\w*\s*\w*)/i       ; "#{$1}"
+      when /ubuntu/i                    ; "Ubuntu"
+      when /linux(\/(\S+))?/i           ; "Linux #{$2}"
+      when /wii/i                       ; "Wii"
+      when /playstation/i               ; "Playstation"
+      else                              ; "Unknown"
     end
 
     # TODO implement os_version and os_arch

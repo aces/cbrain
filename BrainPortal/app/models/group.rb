@@ -33,6 +33,7 @@ class Group < ActiveRecord::Base
   
   validates_presence_of   :name
   validates_uniqueness_of :name
+  validate                :validate_groupname
   
   has_many                :tools
   has_and_belongs_to_many :users 
@@ -71,6 +72,20 @@ class Group < ActiveRecord::Base
   # Returns a 'group category name' as seen by +as_user+.
   def pretty_category_name(as_user)
     self.class.to_s.underscore.titleize.sub(/group/i,"Project")
+  end
+
+  # Returns true of +name+ is a legal group name. Also called
+  # by active record validations.
+  def self.is_legal_groupname?(name)
+    return true if name && name.match(/^[a-zA-Z0-9][\w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/)
+    false
+  end
+
+  # ActiveRecord validation.
+  def validate_groupname #:nodoc:
+    unless Group.is_legal_groupname?(self.name)
+      errors.add(:name, "contains invalid characters.")
+    end
   end
 
   private

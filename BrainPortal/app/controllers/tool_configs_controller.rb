@@ -80,8 +80,8 @@ class ToolConfigsController < ApplicationController
     bourreau_id = nil if bourreau_id.blank? # allowed, means ALL remote resources
     cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
 
-    @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ) if tool_id.blank? || bourreau_id.blank?
-    @tool_config ||= ToolConfig.new(                        { :tool_id => tool_id, :bourreau_id => bourreau_id } )
+    @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first if tool_id.blank? || bourreau_id.blank?
+    @tool_config ||= ToolConfig.new(   :tool_id => tool_id, :bourreau_id => bourreau_id )
 
     @tool_config.env_array ||= []
 
@@ -123,8 +123,8 @@ class ToolConfigsController < ApplicationController
     @tool_config   = nil
     @tool_config   = ToolConfig.find(id) unless id.blank?
     cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
-    @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ) if form_tool_id.blank? || form_bourreau_id.blank?
-    @tool_config ||= ToolConfig.new(                        { :tool_id => form_tool_id, :bourreau_id => form_bourreau_id } )
+    @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ).first if form_tool_id.blank? || form_bourreau_id.blank?
+    @tool_config ||= ToolConfig.new(   :tool_id => form_tool_id, :bourreau_id => form_bourreau_id )
 
     # Security: no matter what the form says, we use the ids from the DB if the object existed.
     form_tool_config.tool_id     = @tool_config.tool_id
@@ -141,7 +141,7 @@ class ToolConfigsController < ApplicationController
        env_name = keyval[:name].strip
        env_val  = keyval[:value].strip
        next if env_name.blank? && env_val.blank?
-       if env_name !~ /^[A-Z][A-Z0-9_]+$/
+       if env_name !~ /^[A-Z][A-Z0-9_]+$/i
          @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
        elsif env_val !~ /\S/
          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")

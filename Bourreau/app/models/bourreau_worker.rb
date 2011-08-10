@@ -17,8 +17,7 @@ class BourreauWorker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  # Tasks that are considered actually active (not necessarily handled by
-  # this worker)
+  # Tasks that are considered actually active (not necessarily handled by this worker)
   ActiveTasks = [ 'Setting Up', 'Queued', 'On CPU',    # 'New' must NOT be here!
                   'On Hold', 'Suspended',
                   'Post Processing',
@@ -54,7 +53,7 @@ class BourreauWorker < Worker
 
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
-    worker_log.debug "Finding list of ready tasks."
+    worker_log.debug "-----------------------------------------------"
     tasks_todo = CbrainTask.where( :status => ReadyTasks, :bourreau_id => @rr_id )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
@@ -67,7 +66,7 @@ class BourreauWorker < Worker
     # some kind of DB activity; some DB servers close their socket otherwise.
     # We enter sleep mode once we find no task to process for three normal
     # scan cycles in a row.
-    if tasks_todo.size == 0
+    if tasks_todo.empty?
       @zero_task_found += 1 # count the normal scan cycles with no tasks
       if @zero_task_found >= 3 # three in a row?
         worker_log.info "No tasks need handling, going to sleep for one hour."
@@ -77,68 +76,91 @@ class BourreauWorker < Worker
     end
     @zero_task_found = 0
 
+    # Very recent tasks need to rest a little, so we skip them.
+    tasks_todo.reject! { |task| task.updated_at > 20.seconds.ago }
+    return if tasks_todo.empty?
+
+    # Partition tasks into two sets: 'decrease activity' and 'increase activity'.
+    # Actually, 'decrease' means 'decrease or stay the same', or in other
+    # words, 'not increase'.
+    by_activity = tasks_todo.hashed_partition do |t|
+      (t.status =~ /^(New|Recover.*|Restart.*)$/) ? :increase : :decrease
+    end
+
+    # Process all tasks that decrease activity
+    # Usually, 'Queued', 'On CPU' or 'Data Ready'
+    tasks_todo = by_activity[:decrease] || []
+    worker_log.debug "There are #{tasks_todo.size} ready tasks that may decrease activity." if tasks_todo.size > 0
+    tasks_todo.shuffle.each do |task|
+      timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
+      Time.use_zone(timezone) do
+        process_task(task) # this can take a long time...
+      end
+      return if stop_signal_received? # stop everything, return control to framework in order to exit
+    end
+
+    # At this point, we process tasks that INCREASE activity, so we'll need
+    # to check user and bourreau limits as we proceed.
+    tasks_todo = by_activity[:increase] || []
+    return if tasks_todo.empty?
+    worker_log.debug "There are #{tasks_todo.size} ready tasks that will increase activity."
+
     # Get limits from meta data store
     @rr.meta.reload # reload limits if needed.
     bourreau_max_tasks = @rr.meta[:task_limit_total].to_i # nil or "" or 0 means infinite
 
-    # Processes each task in the ready list
-    by_user = tasks_todo.group_by { |t| t.user_id }
+    # Prepare relation for 'active tasks on this Bourreau'
+    bourreau_active_tasks = CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id )
+
+    # Group tasks by user and process each sublist of tasks
+    by_user  = tasks_todo.group_by { |t| t.user_id }
     user_ids = by_user.keys.shuffle # go through users in random order
-    bourreau_active_task_cnt = nil # we initialize this here because later we assign using ||=
-    user_active_task_cnt     = nil # we initialize this here because later we assign using ||=
     while user_ids.size > 0  # loop for each user
       user_id        = user_ids.pop
       user_max_tasks = @rr.meta["task_limit_user_#{user_id}".to_sym]
       user_max_tasks = @rr.meta[:task_limit_user_default] if user_max_tasks.blank?
       user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
+      user_tasks     = by_user[user_id].shuffle # go through tasks in random order
 
-      task_group = by_user[user_id].shuffle # go through tasks in random order
-      while task_group.size > 0 # loop for each task
-        task = task_group.pop
+      # Loop for each task
+      while user_tasks.size > 0
 
-        # Very recent tasks need to rest a little
-        next if task.updated_at > 20.seconds.ago
-
-        # Enforce limit on number of New, Recover* or Restart* tasks.
-        if task.status =~ /^(New|Recover.*|Restart.*)$/
-
-          # Bourreau global limit
-          if bourreau_max_tasks > 0
-            bourreau_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id ).count
-            worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): This Bourreau has a total of #{bourreau_active_tasks_cnt} active tasks, max is #{bourreau_max_tasks}"
-            if bourreau_active_tasks_cnt >= bourreau_max_tasks
-              worker_log.info "Task #{task.bname_tid} (#{task.status}): Found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
-              next # next task
-            end
-            bourreau_active_tasks_cnt = nil # allow recount later
+        # Bourreau global limit.
+        # If exceeded, there's nothing more we can do for this cycle of 'do_regular_work'
+        if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
+          bourreau_active_tasks_cnt = bourreau_active_tasks.count
+          if bourreau_active_tasks_cnt >= bourreau_max_tasks
+            worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
+            return # done for this cycle
           end
+        end
 
-          # User specific limit
-          if user_max_tasks > 0
-            user_active_tasks_cnt ||= CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id, :user_id => user_id ).count
-            worker_log.debug "  Limit #{task.bname_tid} (#{task.status}): User ##{user_id} has #{user_active_tasks_cnt} active tasks, max is #{user_max_tasks}"
-            if user_active_tasks_cnt >= user_max_tasks
-              worker_log.info "Task #{task.bname_tid} (#{task.status}) Found #{user_active_tasks_cnt} active tasks for user ##{user_id}, but the limit is #{user_max_tasks}. Skipping."
-              next # next task
-            end
-            user_active_tasks_cnt = nil # allow recount later
+        # User specific limit.
+        # If exceeded, there's nothing more we can do for this user, so we go to the next
+        if user_max_tasks > 0 # i.e. 'if there is a limit configured'
+          user_active_tasks_cnt = bourreau_active_tasks.where( :user_id => user_id ).count
+          if user_active_tasks_cnt >= user_max_tasks
+            worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Skipping."
+            break # go to next user
           end
-
         end
 
         # Alright, move the task along its lifecycle
+        task = user_tasks.pop
         timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
         Time.use_zone(timezone) do
           process_task(task) # this can take a long time...
         end
 
-        break if stop_signal_received?
+        return if stop_signal_received? # stop everything, return control to framework in order to exit
 
       end # each task
 
-      break if stop_signal_received?
+      return if stop_signal_received? # stop everything, return control to framework in order to exit
 
     end # each user
+
+    # This ends this cycle of do_regular_work.
 
   end
 
@@ -225,15 +247,11 @@ class BourreauWorker < Worker
         end
 
       #####################################################################
-      when /^Recover (\S+)/
+      when /^Recover (Setup|Cluster|PostProcess)/
         notification_needed = false
         fromwhat = Regexp.last_match[1]
         task.status_transition!(task.status,"Recovering #{fromwhat}")  # 'Recover X' to 'Recovering X'
-        recover_method = nil
-        recover_method = :recover_from_setup_failure           if fromwhat == 'Setup'
-        recover_method = :recover_from_cluster_failure         if fromwhat == 'Cluster'
-        recover_method = :recover_from_post_processing_failure if fromwhat == 'PostProcess'
-        canrecover = false
+
         # Check special case where we can reconnect to a running task!
         if fromwhat =~ /Cluster|PostProcess/
           clusterstatus = task.send :cluster_status  # this is normally a protected method
@@ -244,22 +262,37 @@ class BourreauWorker < Worker
             return
           end
         end
+
+        # Check if we can recover
+        recover_method = nil
+        recover_method = :recover_from_setup_failure           if fromwhat == 'Setup'
+        recover_method = :recover_from_cluster_failure         if fromwhat == 'Cluster'
+        recover_method = :recover_from_post_processing_failure if fromwhat == 'PostProcess'
+        canrecover = false
         task.addlog_context(self,"Attempting to run recovery method '#{recover_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrecover = Dir.chdir(task.full_cluster_workdir) do
-            task.send(recover_method)  # custom recovery method written by task programmer
+          workdir    = task.full_cluster_workdir || ""
+          workdir_ok = (! workdir.blank?) && File.directory?(workdir)
+          task.addlog("Task work directory invalid or does not exist.") unless workdir_ok
+          if ! workdir_ok
+            canrecover = (fromwhat == 'Setup' ? true : false)
+          else
+            canrecover = Dir.chdir(workdir) do
+              task.send(recover_method)  # custom recovery method written by task programmer
+            end
           end
         rescue => ex
           task.addlog_exception(ex,"Recovery method '#{recover_method}' raised an exception:")
           canrecover = false
         end
+
+        # Trigger recovery if all OK
         if !canrecover
           task.addlog("Cannot recover from '#{fromwhat}' failure. Returning task to Failed state.")
           task.status = "Failed To Setup"       if     fromwhat    == 'Setup'
           task.status = "Failed On Cluster"     if     fromwhat    == 'Cluster'
           task.status = "Failed To PostProcess" if     fromwhat    == 'PostProcess'
-          task.status = "Failed UNKNOWN!"       unless task.status =~ /^Failed/ # should never happen
         else # OK, we have the go ahead to retry the task
           task.addlog("Successful recovery from '#{fromwhat}' failure, now we retry it.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
@@ -275,16 +308,17 @@ class BourreauWorker < Worker
           else # simpler cases, we just reset the status and let the task return to main flow.
             task.status = "New"                    if fromwhat    == 'Setup'
             task.status = "Data Ready"             if fromwhat    == 'PostProcess'
-            task.status = "Failed UNKNOWN!"        if task.status =~ /^Recover/ # should never happen
           end
         end
         task.save
 
       #####################################################################
-      when /^Restart (\S+)/
+      when /^Restart (Setup|Cluster|PostProcess)/
         notification_needed = false
         fromwhat = Regexp.last_match[1]
         task.status_transition!(task.status,"Restarting #{fromwhat}")  # 'Restart X' to 'Restarting X'
+
+        # Check if we can restart
         restart_method = nil
         restart_method = :restart_at_setup                   if fromwhat == 'Setup'
         restart_method = :restart_at_cluster                 if fromwhat == 'Cluster'
@@ -293,13 +327,22 @@ class BourreauWorker < Worker
         task.addlog_context(self,"Attempting to run restart method '#{restart_method}'.")
         begin
           task.addlog_current_resource_revision
-          canrestart = Dir.chdir(task.full_cluster_workdir) do
-            task.send(restart_method)  # custom restart preparation method written by task programmer
+          workdir    = task.full_cluster_workdir || ""
+          workdir_ok = (! workdir.blank?) && File.directory?(workdir)
+          task.addlog("Task work directory invalid or does not exist.") unless workdir_ok
+          if ! workdir_ok
+            canrestart = false
+          else
+            canrestart = Dir.chdir(workdir) do
+              task.send(restart_method)  # custom restart preparation method written by task programmer
+            end
           end
         rescue => ex
           task.addlog_exception(ex,"Restart preparation method '#{restart_method}' raised an exception:")
           canrestart = false
         end
+
+        # Trigger restart if all OK
         if !canrestart
           task.addlog("Cannot restart at '#{fromwhat}'. Returning task status to Completed.")
           task.status = "Completed"
@@ -320,7 +363,6 @@ class BourreauWorker < Worker
           else # simpler cases, we just reset the status and let the task return to main flow.
             task.status = "New"                    if fromwhat    == 'Setup'
             task.status = "Data Ready"             if fromwhat    == 'PostProcess'
-            task.status = "Failed UNKNOWN!"        if task.status =~ /^Restart/ # should never happen
           end
         end
         task.save
@@ -362,7 +404,8 @@ class BourreauWorker < Worker
 
   # Any other error is critical and fatal; we're already
   # trapping all exceptions in setup_and_submit_job() and post_process(),
-  # so if an exception went through anyway, it's a CODING BUG.
+  # so if an exception went through anyway, it's a CODING BUG
+  # in this worker's logic.
   rescue Exception => e
     worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e

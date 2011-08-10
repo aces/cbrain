@@ -31,7 +31,7 @@ class PortalController < ApplicationController
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         unless params[:clear_sessions].blank?
-          CbrainSession.session_class.destroy_all(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago])
+          CbrainSession.session_class.where(["updated_at < ?", params[:clear_sessions].to_i.seconds.ago]).delete_all
         end
         if params[:lock_portal] == "lock"
           BrainPortal.current_resource.lock!

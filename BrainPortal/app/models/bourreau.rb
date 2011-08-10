@@ -15,16 +15,10 @@ class Bourreau < RemoteResource
   
   has_many :cbrain_tasks
   has_many :tool_configs, :dependent => :destroy
+  has_many :tools, :through => :tool_configs, :uniq => true
 
   attr_accessor :operation_messages # no need to store in DB
 
-  # Return the list of tools installed on this bourreau.
-  # A tool is considered installed if there is at least one
-  # ToolConfig object for it on that bourreau.
-  def tools
-    Tool.find_all_by_id((ToolConfig.find_all_by_bourreau_id(self.id).map &:tool_id).uniq.compact)
-  end
-  
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config
@@ -54,6 +48,12 @@ class Bourreau < RemoteResource
     @scir_session_cache = Scir.session_builder(self.scir_class) # e.g. ScirUnix::Session.new()
     @scir_session_cache
   end
+
+
+
+  ############################################################################
+  # Remote Control Methods
+  ############################################################################
 
   # Start a Bourreau remotely. As a requirement for this to work,
   # we need the following attributes set in the Bourreau
@@ -187,7 +187,7 @@ class Bourreau < RemoteResource
     return info
   end
 
-  protected
+  protected # internal methods for remote control operations above
 
   def build_db_yml_for_tunnel(railsenv) #:nodoc:
     myconfig = self.class.current_resource_db_config(railsenv) # a copy of the active config
@@ -252,7 +252,7 @@ class Bourreau < RemoteResource
 
 
   ############################################################################
-  # Commands Implemented by Bourreaux
+  # Control Commands Implemented by Bourreaux
   ############################################################################
 
   protected

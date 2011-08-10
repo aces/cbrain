@@ -148,6 +148,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your setup()
   # method is naturally recoverable.
   def recover_from_setup_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -163,6 +164,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your bash commands
   # returned by cluster_commands() are naturally recoverable.
   def recover_from_cluster_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -177,6 +179,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your save_results()
   # method is naturally recoverable.
   def recover_from_post_processing_failure
+    self.addlog("This task is not programmed for recovery.")
     false
   end
 
@@ -193,6 +196,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your setup()
   # method is naturally restartable.
   def restart_at_setup
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
@@ -209,6 +213,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your bash commands
   # returned by cluster_commands() are naturally restartable.
   def restart_at_cluster
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
@@ -225,6 +230,7 @@ class ClusterTask < CbrainTask
   # returns true; this is useful if your save_results()
   # method is naturally restartable.
   def restart_at_post_processing
+    self.addlog("This task is not programmed for restarts.")
     false
   end
 
@@ -605,8 +611,12 @@ class ClusterTask < CbrainTask
     # Cluster job termination
     if cur_status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
       self.scir_session.terminate(self.cluster_jobid)
-      self.status = "Terminated"
-      return true
+      return self.status_transition(cur_status,"Terminated")
+    end
+
+    # New tasks are simply marked as Terminated
+    if cur_status == "New"
+      return self.status_transition(cur_status,"Terminated")
     end
 
     # Stuck or lost jobs executing Ruby code
@@ -625,7 +635,7 @@ class ClusterTask < CbrainTask
           self.status = "Terminated"
       end
       self.addlog("Terminating a task that is too old and stuck at '#{cur_status}'; now at '#{self.status}'")
-      return true
+      return self.save
     end
 
     # Otherwise, we don't do nothin'
@@ -636,45 +646,45 @@ class ClusterTask < CbrainTask
 
   # Suspend the task (if it's currently in an appropriate state.)
   def suspend
-    return unless self.status == "On CPU"
+    return false unless self.status == "On CPU"
     begin
       self.scir_session.suspend(self.cluster_jobid)
-      self.status = "Suspended"
+      self.status_transition(self.status, "Suspended")
     rescue
-      # nothing to do
+      false
     end
   end
 
   # Resume processing the task if it was suspended.
   def resume
     begin
-      return unless self.status == "Suspended"
+      return false unless self.status == "Suspended"
       self.scir_session.resume(self.cluster_jobid)
-      self.status = "On CPU"
+      self.status_transition(self.status, "On CPU")
     rescue
-      # nothing to do
+      false
     end
   end
 
   # Put the task on hold if it is currently queued.
   def hold
-    return unless self.status == "Queued"
+    return false unless self.status == "Queued"
     begin
       self.scir_session.hold(self.cluster_jobid)
-      self.status = "On Hold"
+      self.status_transition(self.status, "On Hold")
     rescue
-      # nothing to do
+      false
     end
   end
 
   # Release the task from state On Hold.
   def release
     begin
-      return unless self.status == "On Hold"
+      return false unless self.status == "On Hold"
       self.scir_session.release(self.cluster_jobid)
-      self.status = "Queued"
+      self.status_transition(self.status, "Queued")
     rescue
-      # nothing to do
+      false
     end
   end
 
@@ -695,32 +705,34 @@ class ClusterTask < CbrainTask
       self.addlog("Resetting prerequisites checking for '#{failed_where}'.")
       self.status = "New"        if failed_where == "Setup"
       self.status = "Data Ready" if failed_where == "PostProcess"
-      return
+      return self.save
     end
     begin
-      return unless curstat =~ /^Failed (To Setup|On Cluster|To PostProcess)$/
+      return false unless curstat =~ /^Failed (To Setup|On Cluster|To PostProcess)$/
       failedwhen = Regexp.last_match[1]
       self.addlog("Scheduling recovery from '#{curstat}'.")
       self.status = "Recover Setup"       if failedwhen == "To Setup"
       self.status = "Recover Cluster"     if failedwhen == "On Cluster"
       self.status = "Recover PostProcess" if failedwhen == "To PostProcess"
+      return self.save
     rescue
-      # nothing to do
+      false
     end
   end
 
   # This triggers the restart mechanism for all Completed tasks.
   # This simply sets a special value in the 'status' field
-  # that will be handled by the Bourreau Worker.
+  # that will be handled by the Bourreau Worker. The +atwhat+
+  # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
     begin
-      return unless self.status =~ /Completed|Terminated/
-      return unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
+      return false unless self.status =~ /Completed|Terminated/
+      return false unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
       atwhat = "Setup" if self.status == "Terminated" # forced
       self.addlog("Scheduling restart at '#{atwhat}'.")
-      self.status="Restart #{atwhat}" # will be handled by worker
+      return self.status_transition(self.status, "Restart #{atwhat}") # will be handled by worker
     rescue
-      # nothing to do
+      false
     end
   end
 
@@ -1040,6 +1052,13 @@ class ClusterTask < CbrainTask
     impl_date    = impl_revinfo.svn_id_date
     impl_time    = impl_revinfo.svn_id_time
     self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' rev. '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
+
+    # Erase leftover STDOUT and STDERR files; necessary
+    # because some cluster management systems just append
+    # to them, which can confuse CBRAIN tasks trying to parse
+    # them at PostProcessing.
+    File.unlink(self.stdout_cluster_filename) rescue true
+    File.unlink(self.stderr_cluster_filename) rescue true
 
     # Some jobs are meant only to be fully configured by never actually submitted.
     if self.meta[:configure_only]
