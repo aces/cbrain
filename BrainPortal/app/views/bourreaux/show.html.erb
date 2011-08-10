@@ -141,90 +141,93 @@
         <td class="left_align"><%= @bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire %></td>
       </tr>
 
-      <tr>
-          <th colspan="2" class="subtitle">Tool Version Configuration</th>
-      </tr>
+      <% if is_bourreau %>
+    
+        <tr>
+            <th colspan="2" class="subtitle">Tool Version Configuration</th>
+        </tr>
+        
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Common configuration for all tasks</th>
+          <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
+          <td class="left_align"><%= tool_config ? (link_to "Show", tool_config_path( :id => tool_config)) : "No tool config" %></td>
+        </tr>
       
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Common configuration for all tasks</th>
-        <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
-        <td class="left_align"><%= tool_config ? (link_to "Show", tool_config_path( :id => tool_config)) : "No tool config" %></td>
-      </tr>
+        <tr>
+            <th colspan="2" class="subtitle">Cluster Management System Configuration</th>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Type of cluster</th>
+          <td class="left_align"><%= @bourreau.cms_class %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Path to shared work directory</th>
+          <td class="left_align"><%= @bourreau.cms_shared_dir %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Default queue name</th>
+          <td class="left_align"><%= @bourreau.cms_default_queue %></td>
+        </tr>
     
-      <tr>
-          <th colspan="2" class="subtitle">Cluster Management System Configuration</th>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Type of cluster</th>
-        <td class="left_align"><%= @bourreau.cms_class %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Path to shared work directory</th>
-        <td class="left_align"><%= @bourreau.cms_shared_dir %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Default queue name</th>
-        <td class="left_align"><%= @bourreau.cms_default_queue %></td>
-      </tr>
-  
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Extra 'qsub' options</th>
-        <td class="left_align"><%= @bourreau.cms_extra_qsub_args %></td>
-      </tr>
-     
-      <tr>
-          <th colspan="2" class="subtitle">Bourreau Workers Configuration</th>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Number of Workers</th>
-        <td class="left_align"><%= @bourreau.workers_instances %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Check interval</th>
-        <td class="left_align"><%= @bourreau.workers_chk_time %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Log destination</th>
-        <td class="left_align"><%= @bourreau.workers_log_to %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Log verbosity</th>
-        <td class="left_align"><%= ['?', 'Normal', 'Debug info' ][@bourreau.workers_verbose] %></td>
-      </tr>
-    
-      <tr>
-          <th colspan="2" class="subtitle">Task Limits</th>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Maximum total number of active tasks</th>
-        <td class="left_align"><%= @bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]%></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Default maximum number of active tasks for each user</th>
-        <td class="left_align"><%= @bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"] %></td>
-      </tr>
-    
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Maximum number of active tasks per user</th>
-        <td>  
-        <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
-          <% metkey = "task_limit_user_#{user.id}".to_sym %>
-          <%= link_to_user_with_tooltip(user) %>:
-          </td><td class="no_left_right_padding">
-              <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
-        <% end %>
-        </td>
-      </tr>
-   
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Extra 'qsub' options</th>
+          <td class="left_align"><%= @bourreau.cms_extra_qsub_args %></td>
+        </tr>
+       
+        <tr>
+            <th colspan="2" class="subtitle">Bourreau Workers Configuration</th>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Number of Workers</th>
+          <td class="left_align"><%= @bourreau.workers_instances %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Check interval</th>
+          <td class="left_align"><%= @bourreau.workers_chk_time %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Log destination</th>
+          <td class="left_align"><%= @bourreau.workers_log_to %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Log verbosity</th>
+          <td class="left_align"><%= ['?', 'Normal', 'Debug info' ][@bourreau.workers_verbose] %></td>
+        </tr>
+      
+        <tr>
+            <th colspan="2" class="subtitle">Task Limits</th>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Maximum total number of active tasks</th>
+          <td class="left_align"><%= @bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]%></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Default maximum number of active tasks for each user</th>
+          <td class="left_align"><%= @bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"] %></td>
+        </tr>
+      
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Maximum number of active tasks per user</th>
+          <td>  
+          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
+            <% metkey = "task_limit_user_#{user.id}".to_sym %>
+            <%= link_to_user_with_tooltip(user) %>:
+            </td><td class="no_left_right_padding">
+                <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
+          <% end %>
+          </td>
+        </tr>
+        
+      <% end %>
     <% end %>
 
     <tr>
