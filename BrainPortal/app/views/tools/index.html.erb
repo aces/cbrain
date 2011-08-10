@@ -14,7 +14,7 @@
 
     <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => " button" %>
     <% unless @filter_params["filter_hash"].blank? %>
-      <%= render :partial => "shared/manage_filter_button" %>
+      <%= render :partial => "shared/manage_filter_button", :locals => {:model => :tool}  %>
     <% end %>
   <% end %>
 

@@ -6,7 +6,7 @@
     <%= button_with_dropdown_menu('Leave Message', :partial => 'new', :content_id => 'new_message', :button_id => "new_message_button") %>
   <% end %>
   <% unless @filter_params["filter_hash"].blank? %>
-    <%= render :partial => "shared/manage_filter_button" %>
+    <%= render :partial => "shared/manage_filter_button", :locals => {:model => :message}  %>
   <% end %>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 

@@ -5,7 +5,7 @@
         <ul class="filter_menu">
             <% @filter_params["filter_hash"].each do |key, value| %>
                 <li>
-                  <%= crop_text_to(30, display_filter(:cbrain_task, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                  <%= crop_text_to(30, display_filter(model, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
                 </li>
             <% end %>
         </ul>
