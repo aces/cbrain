@@ -15,6 +15,7 @@ class Site < ActiveRecord::Base
   validates_presence_of     :name
   validates_uniqueness_of   :name
   validate                  :prevent_group_collision, :on => :create
+  validate                  :validate_sitename
   
   after_create           :create_system_group
   
@@ -34,6 +35,20 @@ class Site < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description
   
   attr_accessor           :manager_ids
+
+  # Returns true of +name+ is a legal site name. Also called
+  # by active record validations.
+  def self.is_legal_sitename?(name)
+    return true if Group.is_legal_groupname?(name) # because sites and groups are related
+    false
+  end
+
+  # ActiveRecord validation.
+  def validate_sitename #:nodoc:
+    unless Site.is_legal_sitename?(self.name)
+      errors.add(:name, "contains invalid characters.")
+    end
+  end
 
   #Returns users that have manager access to this site (site managers or admins).
   def managers

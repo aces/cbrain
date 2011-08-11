@@ -299,7 +299,7 @@ class String
     self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
   end
 
-  # Considers self as a pattern to with substitutions
+  # Considers self as a pattern to which substitutions
   # are to be applied; the substitutions are found in
   # self by recognizing keywords surreounded by
   # '{}' (curly braces) and those keywords are looked
