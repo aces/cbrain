@@ -73,9 +73,7 @@ class UserfilesController < ApplicationController
       @filter_params["view_all"] ||= 'on'
     end
     if @filter_params["view_all"] == 'on'
-      if current_user.has_role?(:site_manager)
-        filtered_scope = Userfile.restrict_site_on_query(current_user, filtered_scope)
-      elsif current_user.has_role?(:user)
+      unless current_user.has_role?(:admin)
         filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
       end
     else

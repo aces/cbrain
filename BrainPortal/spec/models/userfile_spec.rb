@@ -425,9 +425,6 @@ describe Userfile do
   describe "#self.restrict_access_on_query" do
   end
 
-  describe "#self.restrict_site_on_query" do
-  end
-
   describe "#self.set_order" do
     it "Check if no more used"
   end

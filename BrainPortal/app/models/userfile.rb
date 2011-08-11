@@ -462,13 +462,8 @@ class Userfile < ActiveRecord::Base
     unless user.has_role?(:admin)
       scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
-
-
-    if user.has_role? :site_manager
-      scope.find(id) rescue user.site.userfiles_find_id(id, options)
-    else
-      scope.find(id)
-    end
+    
+    scope.find(id)
   end
 
   #Find all userfiles accessible by +user+.
@@ -489,12 +484,7 @@ class Userfile < ActiveRecord::Base
       scope = Userfile.restrict_access_on_query(user, scope, access_options)      
     end
 
-
-    if user.has_role? :site_manager
-      user.site.userfiles_find_all(options) | scope.all
-    else
-      scope.all
-    end
+    scope.all
   end
 
   #This method takes in an array to be used as the :+conditions+
@@ -504,26 +494,23 @@ class Userfile < ActiveRecord::Base
     access_requested = options[:access_requested] || :write
     
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
-        
-    if access_requested.to_sym == :read
-      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)))", 
-                                            user.id, user.group_ids, data_provider_ids] )
-    else
-      scope = scope.where( [ "((userfiles.user_id = ?) OR (userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?) AND userfiles.group_writable = true))", 
-                                            user.id, user.group_ids, data_provider_ids] )
+    
+    query_user_string = "userfiles.user_id = ?"
+    query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
+    if access_requested.to_sym != :read
+      query_group_string += " AND userfiles.group_writable = true"
+    end
+    query_string = "(#{query_user_string}) OR (#{query_group_string})"
+    query_array  = [user.id, user.group_ids, data_provider_ids]
+    if user.has_role? :site_manager
+      scope = scope.joins(:user).readonly(false)
+      query_string += "OR (users.site_id = ?)"
+      query_array  << user.site_id
     end
     
+    scope = scope.where( [query_string] + query_array)
+    
     scope
-  end
-
-  #This method takes in an array to be used as the :+conditions+
-  #parameter for Userfile.find and modifies it to restrict based
-  #on the site.
-  #
-  #Note: Requires that the +users+ table be joined, either
-  #of the <tt>:join</tt> or <tt>:include</tt> options.
-  def self.restrict_site_on_query(user, scope)
-    scope.where( ["(users.site_id = ?)", user.site_id])
   end
 
   #Set the attribute by which to sort the file list
