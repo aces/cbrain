@@ -37,12 +37,6 @@ describe ToolConfig do
   end
 
   describe "#short_description" do
-    
-    it "should raise an exception if description is blank" do
-      tool_config.description = nil
-      lambda {tool_config.short_description}.should raise_error
-    end
-    
     it "should return first line of description" do
       first_line  = "desc1_part1"
       second_line = "desc1_part2"

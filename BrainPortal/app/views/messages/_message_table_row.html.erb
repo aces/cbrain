@@ -1,6 +1,6 @@
-<tr class=" message_display_<%= mess.id %> <%= "#{cycle("list-odd", "list-even")} row_highlight" if mess.read? %>">
+<tr class=" message_display_<%= mess.id %>">
 
-  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>left_side wrap">
+  <td class="<%= "#{mess.message_type}_display "%>left_side wrap<%= mess.read? ? " message_read" : " message_unread" %>">
     <% if render_for == :index %>
       <%= check_box_tag("message_ids[]", mess.id.to_s, false, :class => 'messlist') %>
       <% unless @show_users.blank? %>
@@ -15,11 +15,11 @@
     </div>
   </td>
 
-  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>middle">
+  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
     <%= to_localtime(mess.last_sent, :datetime) %>
   </td>
 
-  <td class="<%= "#{mess.message_type}_display " unless mess.read? %>right_side">
+  <td class="<%= "#{mess.message_type}_display "%>right_side<%= mess.read? ? " message_read" : " message_unread" %>">
 
     <% if mess.read %>
       <%= 

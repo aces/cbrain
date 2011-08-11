@@ -8,7 +8,7 @@
               :datatype  => 'script', :class  => "button"
   %>
   <% unless @filter_params["filter_hash"].blank? %>
-    <%= render :partial => "shared/manage_filter_button" %>
+    <%= render :partial => "shared/manage_filter_button", :locals => {:model => :bourreau} %>
   <% end %>
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
