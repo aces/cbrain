@@ -444,6 +444,17 @@ class Userfile < ActiveRecord::Base
     false
   end
 
+  #Returns a scope representing the set of files accessible to the
+  #given user.
+  def self.accessible_for_user(user, options)
+    access_options = {}
+    access_options[:access_requested] = options.delete :access_requested
+    
+    scope = self.scoped(options)
+    scope = Userfile.restrict_access_on_query(user, scope, access_options)      
+    
+    scope
+  end
 
   #Find userfile identified by +id+ accessible by +user+.
   #
@@ -454,16 +465,7 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    access_options = {}
-    access_options[:access_requested] = options.delete :access_requested
-    
-    scope = self.scoped(options)
-    
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    end
-    
-    scope.find(id)
+    self.accessible_for_user(user, options).find(id)
   end
 
   #Find all userfiles accessible by +user+.
@@ -475,22 +477,15 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    access_options = {}
-    access_options[:access_requested] = options.delete :access_requested
-    
-    scope = self.scoped(options)
-    
-    unless user.has_role?(:admin)
-      scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    end
-
-    scope.all
+    self.accessible_for_user(user, options).all
   end
 
   #This method takes in an array to be used as the :+conditions+
   #parameter for Userfile.find and modifies it to restrict based
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
+    return scope if user.has_role? :admin
+    
     access_requested = options[:access_requested] || :write
     
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
@@ -610,36 +605,13 @@ class Userfile < ActiveRecord::Base
   ##############################################
   # Sequential traversal methods.
   ##############################################
-
-  def available_files(user, options = {}) # should be in user model ?
-    access_options = {}
-    access_options[:access_requested] = options.delete :access_requested
-
-    if user.has_role? :site_manager
-      scope = user.site.userfiles_find_all
-    else
-      scope = user.userfiles
-    end
-
-    scope = scope.where( options[:conditions] ) if options[:conditions] # old API
-    scope = scope.joins( options[:joins]      ) if options[:joins] # old API
-    scope = scope.order('userfiles.id')
-
-    #unless user.has_role?(:admin)
-    #  scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    #end
-
-    scope
-  end
   
   def next_available_file(user, options = {})
-    scope = available_files(user, options)
-    scope.where( ["userfiles.id > ?", self.id] ).first
+    Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id > ?", self.id] ).first
   end
 
   def previous_available_file(user, options = {})
-    scope = available_files(user, options)
-    scope.where( ["userfiles.id < ?", self.id] ).last
+    Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id < ?", self.id] ).last
   end
   
   ##############################################
