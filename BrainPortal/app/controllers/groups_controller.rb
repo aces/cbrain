@@ -118,6 +118,7 @@ class GroupsController < ApplicationController
     @group.destroy
 
     respond_to do |format|
+      format.html { redirect_to :action => :index }
       format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'group' }}
       format.xml  { head :ok }
     end
