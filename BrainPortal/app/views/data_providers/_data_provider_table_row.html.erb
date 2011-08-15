@@ -18,6 +18,14 @@
     <td><%= html_colorize("No","red") %></td>
     <td><%= html_colorize("No","red") %></td>
   <% end %>
+  <td>
+    <% file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => data_provider.id }).count %>
+    <% if file_count > 0 %>
+      <%= filter_reset_link file_count.to_s, :controller => :userfiles, :filters => { :data_provider_id => data_provider.id }, :ajax => false %>
+    <% else %>
+      0
+    <% end %>
+  </td>
   <td><%= data_provider.read_only ? "Read Only" : "Read/Write" %></td>
   <% if @filter_params["details"] == 'on' %>
     <td><%= data_provider.not_syncable ? "NOT syncable" : "Fully syncable" %></td>

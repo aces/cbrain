@@ -25,7 +25,11 @@
   <% end %>
       
   <% if @providers["CBRAIN Official Storage"].nil? || @providers["CBRAIN Official Storage"].empty? %>
-    <tr class="list-odd"><td colspan="13">There are no providers in this list.</td></tr>
+    <% if @filter_params["details"] == 'on' %>
+      <tr class="list-odd"><td colspan="14">There are no providers in this list.</td></tr>
+    <% else %>
+      <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
+    <% end %>
   <% end %>
 
 </table>
@@ -41,7 +45,11 @@
   <% end %>
 
   <% if @providers.nil? || @providers.empty? %>
-    <tr class="list-odd"><td colspan="12">There are no providers in this list.</td></tr>
+    <% if @filter_params["details"] == 'on' %>
+      <tr class="list-odd"><td colspan="14">There are no providers in this list.</td></tr>
+    <% else %>
+      <tr class="list-odd"><td colspan="9">There are no providers in this list.</td></tr>
+    <% end %>
   <% end %>
 
 </table>
