@@ -34,10 +34,9 @@ describe EnCbrainSshDataProvider do
 
   describe "#impl_sync_to_provider" do
     
-    it "should copy the file to the cache" do
+    it "should create directory" do
       en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      File.stub!(:exist?).and_return(true)
       SshDataProvider.class_eval { def impl_sync_to_provider(userfile); end; }
       en_cbrain_ssh_data_provider.should_receive(:bash_this).with(/mkdir/)
       en_cbrain_ssh_data_provider.impl_sync_to_provider(userfile)

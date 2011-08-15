@@ -49,6 +49,22 @@ Factory.define :data_provider do |data_provider|
   data_provider_factory.call(data_provider)
 end
 
+Factory.define :cbrain_smart_data_provider do |cbrain_smart_data_provider|
+  data_provider_factory.call(cbrain_smart_data_provider)
+end
+
+Factory.define :cbrain_ssh_data_provider do |cbrain_ssh_data_provider|
+  data_provider_factory.call(cbrain_ssh_data_provider)
+end
+
+Factory.define :vault_smart_data_provider do |vault_smart_data_provider|
+  data_provider_factory.call(vault_smart_data_provider)
+end
+
+Factory.define :vault_ssh_data_provider do |vault_ssh_data_provider|
+  data_provider_factory.call(vault_ssh_data_provider)
+end
+
 Factory.define :vault_local_data_provider do |vault_local_data_provider|
   data_provider_factory.call(vault_local_data_provider)
 end                
