@@ -214,8 +214,9 @@ class User < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    @can_be_accessed_cache       ||= {}
-    @can_be_accessed_cache[user] ||= user.available_users.include?(self)
+    return true if user.has_role? :admin
+    return true if user.has_role?(:site_manager) && self.site_id == user.site_id
+    self.id == user.id
   end
   
   # Returns the SystemGroup associated with the user; this is a
