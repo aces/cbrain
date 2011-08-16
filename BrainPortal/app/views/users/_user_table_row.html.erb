@@ -19,13 +19,13 @@
   <td><%= user.time_zone || "(Unset)" %></td>
   <td>
     <%= 
-      filter_reset_link h(Userfile.where(:user_id => user.id).count),
+      filter_reset_link (@users_file_counts[user.id] || 0).to_s,
       :controller => :userfiles, :filters => {:user_id => user.id}, :ajax  => false 
     %>
   </td>
   <td>
     <%= 
-      filter_reset_link h(CbrainTask.where(:user_id => user.id).count),
+      filter_reset_link (@users_task_counts[user.id] || 0).to_s,
       :controller => :tasks, :filters => {:user_id => user.id}, :ajax  => false 
     %>
   </td>
