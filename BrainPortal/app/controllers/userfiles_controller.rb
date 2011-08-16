@@ -1050,7 +1050,7 @@ class UserfilesController < ApplicationController
             userfile.sync_to_provider
             done_ok << userfile
           rescue => e
-            error_messages += "Internal error (un)compresssing for '#{userfile.name}': #{e.message}.\n";
+            error_messages += "Internal error (un)compresssing for '#{userfile.name}': #{e.message}.\n"
           end
         end
         Message.send_message(current_user,

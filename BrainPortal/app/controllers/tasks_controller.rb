@@ -295,6 +295,22 @@ class TasksController < ApplicationController
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
+    # For historical reasons, the web interface sends both a tool_id and a tool_config_id.
+    # Only the tool_config_id is really necessary, as itself the tool_config object supplies
+    # the tool_id and the bourreau_id.
+    # For support with the external APIs, we'll try to guess missing values if we
+    # only receive a tool_config_id.
+    params_tool_config_id = params[:cbrain_task][:tool_config_id] # can be nil
+    tool_config = ToolConfig.find(params_tool_config_id) rescue nil
+    tool_config = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
+                             tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
+    if tool_config
+      params[:tool_id]                   = tool_config.tool_id     # replace whatever was there or not
+      params[:cbrain_task][:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
+    else
+      params[:cbrain_task][:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
+    end
+
     # A brand new task object!
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
@@ -442,7 +458,7 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
-      format.xml { render :xml  => tasklist }
+      format.xml  { render :xml => tasklist }
     end  
   end
 

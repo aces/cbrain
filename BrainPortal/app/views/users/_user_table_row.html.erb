@@ -19,14 +19,14 @@
   <td><%= user.time_zone || "(Unset)" %></td>
   <td>
     <%= 
-      filter_reset_link h(user.userfiles.count), :controller => :userfiles, 
-                                                 :filters => {:user_id => user.id}, :ajax  => false 
+      filter_reset_link h(Userfile.where(:user_id => user.id).count),
+      :controller => :userfiles, :filters => {:user_id => user.id}, :ajax  => false 
     %>
   </td>
   <td>
     <%= 
-      filter_reset_link h(user.cbrain_tasks.count), :controller => :tasks, 
-                                                    :filters => {:user_id => user.id}, :ajax  => false 
+      filter_reset_link h(CbrainTask.where(:user_id => user.id).count),
+      :controller => :tasks, :filters => {:user_id => user.id}, :ajax  => false 
     %>
   </td>
   <% if user.login == 'admin' %>

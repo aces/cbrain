@@ -56,6 +56,13 @@ class ToolConfig < ActiveRecord::Base
     self.group.can_be_accessed_by?(user)
   end
 
+  # Returns true if both the bourreau and the tool associated
+  # with the tool_config are defined and can be accessed by the user.
+  def bourreau_and_tool_can_be_accessed_by?(user)
+    self.bourreau && self.bourreau.can_be_accessed_by?(user) &&
+    self.tool     && self.tool.can_be_accessed_by?(user)
+  end
+
   # Returns the first line of the description. This is used
   # to represent the 'name' of the version.
   def short_description

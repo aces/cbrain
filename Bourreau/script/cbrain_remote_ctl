@@ -215,7 +215,7 @@ end
 
 # Return a message to indicate to our calling context
 # whether or not the server started.
-status_message = File.read(status_file) rescue "FAILED\n";
+status_message = File.read(status_file) rescue "FAILED\n"
 if status_message =~ /STARTED/i # see Bourreau's validation.rb
   puts "Bourreau Started."
 else
