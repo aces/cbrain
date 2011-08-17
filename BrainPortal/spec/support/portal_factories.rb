@@ -122,7 +122,7 @@ end
 Factory.define :remote_resource do |remote_resource|
   remote_resource.sequence(:name)    { |n| "rr_#{n}" }
   remote_resource.association        :user
-  remote_resource.group              Group.find_by_name('everyone')
+  remote_resource.group              Group.everyone
   remote_resource.online             true
   remote_resource.dp_ignore_patterns ["x", "y", "z"]
 end
@@ -130,7 +130,7 @@ end
 Factory.define :brain_portal do |brain_portal|
   brain_portal.sequence(:name) { |n| "bp_#{n}"}
   brain_portal.association :user
-  brain_portal.group  Group.find_by_name('everyone')
+  brain_portal.group  Group.everyone
   brain_portal.online true 
 end
 

@@ -99,7 +99,7 @@ class Site < ActiveRecord::Base
   # Returns the SystemGroup associated with the site; this is a
   # group with the same name as the site.
   def system_group
-    SystemGroup.where( :name => self.name ).first
+    @own_group ||= SiteGroup.where( :name => self.name ).first
   end
 
   # An alias for system_group()
@@ -115,12 +115,11 @@ class Site < ActiveRecord::Base
     if user.has_role? :site_manager
       user.update_attributes!(:role  => "user")
     end
-    SystemGroup.find_by_name(user.login).update_attributes!(:site => nil)
+    user.own_group.update_attributes!(:site => nil)
   end
   
   def remove_user_from_site_group(user) #:nodoc:
-    site_group = SystemGroup.find_by_name(self.name)
-    site_group.users.delete(user)
+    self.own_group.users.delete(user)
   end
   
   def save_old_manager_ids #:nodoc:
@@ -165,7 +164,7 @@ class Site < ActiveRecord::Base
     end
     
     User.find(@new_user_ids).each do |user|
-      SystemGroup.find_by_name(user.login).update_attributes!(:site  => self)
+      user.own_group.update_attributes!(:site  => self)
       unless user.groups.exists? site_group
         user.groups << site_group
       end
@@ -183,18 +182,18 @@ class Site < ActiveRecord::Base
   def system_group_rename #:nodoc:
     if self.changed.include?("name")
       old_name = self.changes["name"].first
-      SystemGroup.find_by_name(old_name).update_attributes!(:name => self.name)
+      SiteGroup.find_by_name(old_name).update_attributes!(:name => self.name)
     end
   end
   
   def prevent_group_collision #:nodoc:
-    if self.name && Group.find_by_name(self.name)
-      errors.add(:name, "already in use by an existing group.")
+    if self.name && SystemGroup.find_by_name(self.name)
+      errors.add(:name, "already in use by an existing project.")
     end
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.where( :name => self.name ).first
+    system_group = self.own_group
     system_group.destroy if system_group
   end
 end

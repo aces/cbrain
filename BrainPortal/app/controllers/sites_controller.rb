@@ -66,7 +66,7 @@ class SitesController < ApplicationController
     @site = Site.find(params[:id])
     params[:site][:user_ids] ||= []
     params[:site][:manager_ids] ||= []
-    params[:site][:group_ids] ||= [SystemGroup.find_by_name(@site.name)]
+    params[:site][:group_ids] ||= [@site.own_group.id]
     
 
     respond_to do |format|

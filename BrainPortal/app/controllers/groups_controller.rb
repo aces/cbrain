@@ -66,6 +66,12 @@ class GroupsController < ApplicationController
       @group.site = current_user.site
     end
 
+    unless @group.user_ids.blank?
+      @group.user_ids &= current_user.available_users.map(&:id)
+    end
+   
+    @group.creator_id = current_user.id
+
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Project was successfully created.'
@@ -96,6 +102,16 @@ class GroupsController < ApplicationController
     else
       @group.type = 'WorkGroup'
     end
+    
+    unless current_user.has_role? :admin
+      params[:group][:site_id] = current_user.site_id
+    end
+
+    unless params[:group][:user_ids].blank?
+      params[:group][:user_ids] &= current_user.available_users.map{ |u| u.id.to_s  }
+    end
+
+    params[:group].delete :creator_id #creator_id is immutable
 
     respond_to do |format|
       if @group.update_attributes(params[:group])
