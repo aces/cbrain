@@ -172,11 +172,16 @@ class GroupsController < ApplicationController
       @group_id_2_data_provider_counts[data_provider.group_id] = data_provider.total
     end
 
-    @group_id_2_remote_resource_counts = {}
-    RemoteResource.select( "group_id, count(group_id) as total" ).group("group_id").each do |remote_resource|
-      @group_id_2_remote_resource_counts[remote_resource.group_id] = remote_resource.total
+    @group_id_2_bourreau_counts = {}
+    Bourreau.select( "group_id, count(group_id) as total" ).group("group_id").each do |bourreau|
+      @group_id_2_bourreau_counts[bourreau.group_id] = bourreau.total
     end
     
+    @group_id_2_brain_portal_counts = {}
+    BrainPortal.select( "group_id, count(group_id) as total" ).group("group_id").each do |brain_portal|
+      @group_id_2_brain_portal_counts[brain_portal.group_id] = brain_portal.total
+    end
+
   end
 
 end

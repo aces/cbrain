@@ -25,7 +25,6 @@
         0
       <% end %>
   </td>
-  <td><%= @group_id_2_tag_counts[group.id].to_i || 0 %></td>
   <td>
       <% if (@group_id_2_data_provider_counts[group.id] || 0).to_i > 0 %>
         <%= filter_reset_link @group_id_2_data_provider_counts[group.id], :controller => :data_providers, :filters  => {:group_id => group.id}, :ajax => false %>
@@ -34,8 +33,15 @@
       <% end %>
   </td>
   <td>
-      <% if (@group_id_2_remote_resource_counts[group.id] || 0).to_i > 0 %>
-        <%= filter_reset_link @group_id_2_remote_resource_counts[group.id], :controller => :bourreaux, :filters  => {:group_id => group.id}, :ajax => false %>
+      <% if (@group_id_2_brain_portal_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_brain_portal_counts[group.id], :controller => :bourreaux, :filters  => {:group_id => group.id, :type => "BrainPortal"}, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
+   <td>
+      <% if (@group_id_2_bourreau_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_bourreau_counts[group.id], :controller => :bourreaux, :filters  => {:group_id => group.id, :type => "Bourreau"}, :ajax => false %>
       <% else %>
         0
       <% end %>
