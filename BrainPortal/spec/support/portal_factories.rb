@@ -38,44 +38,61 @@ Factory.define :site  do |site|
   site.sequence(:name) { |n| "site_#{n}" }
 end
 
-Factory.define :data_provider do |data_provider|
+data_provider_factory = Proc.new do |data_provider|
   data_provider.sequence(:name) { |n| "dataprovider_#{n}" }
   data_provider.association     :user
   data_provider.association     :group
   data_provider.read_only       true
 end
 
+Factory.define :data_provider do |data_provider|
+  data_provider_factory.call(data_provider)
+end
+
+Factory.define :cbrain_smart_data_provider do |cbrain_smart_data_provider|
+  data_provider_factory.call(cbrain_smart_data_provider)
+end
+
+Factory.define :cbrain_ssh_data_provider do |cbrain_ssh_data_provider|
+  data_provider_factory.call(cbrain_ssh_data_provider)
+end
+
+Factory.define :vault_smart_data_provider do |vault_smart_data_provider|
+  data_provider_factory.call(vault_smart_data_provider)
+end
+
+Factory.define :vault_ssh_data_provider do |vault_ssh_data_provider|
+  data_provider_factory.call(vault_ssh_data_provider)
+end
+
 Factory.define :vault_local_data_provider do |vault_local_data_provider|
-  vault_local_data_provider.sequence(:name) { |n| "vault_local_dataprovider_#{n}" }
-  vault_local_data_provider.association     :user
-  vault_local_data_provider.association     :group
-  vault_local_data_provider.read_only       true
-  vault_local_data_provider.class           {"VaultLocalDataProvider"}
+  data_provider_factory.call(vault_local_data_provider)
 end                
 
 Factory.define :local_data_provider do |local_data_provider|
-  local_data_provider.sequence(:name) { |n| "local_dataprovider_#{n}" }
-  local_data_provider.association     :user
-  local_data_provider.association     :group
-  local_data_provider.read_only       true
-  local_data_provider.class           {"LocalDataProvider"}
+ data_provider_factory.call(local_data_provider)
 end             
 
+Factory.define :en_cbrain_smart_data_provider do |en_cbrain_smart_data_provider|
+  data_provider_factory.call(en_cbrain_smart_data_provider)
+end
+
+Factory.define :en_cbrain_ssh_data_provider do |en_cbrain_ssh_data_provider|
+  data_provider_factory.call(en_cbrain_ssh_data_provider)
+end 
+
 Factory.define :en_cbrain_local_data_provider do |en_cbrain_local_data_provider|
-  en_cbrain_local_data_provider.sequence(:name) { |n| "en_cbrain_local_data_provider_#{n}" }
-  en_cbrain_local_data_provider.association     :user
-  en_cbrain_local_data_provider.association     :group
-  en_cbrain_local_data_provider.read_only       true
-  en_cbrain_local_data_provider.class           {"EnCbrainLocalDataProvider"}
+  data_provider_factory.call(en_cbrain_local_data_provider)
 end     
 
 Factory.define :cbrain_local_data_provider do |cbrain_local_data_provider|
-  cbrain_local_data_provider.sequence(:name) { |n| "cbrain_local_data_provider_#{n}" }
-  cbrain_local_data_provider.association     :user
-  cbrain_local_data_provider.association     :group
-  cbrain_local_data_provider.read_only       true
-  cbrain_local_data_provider.class           {"CbrainLocalDataProvider"}
-end     
+  data_provider_factory.call(cbrain_local_data_provider)
+end
+
+Factory.define :incoming_vault_ssh_data_provider do |incoming_vault_ssh_data_provider|
+  data_provider_factory.call(incoming_vault_ssh_data_provider)
+end
+                             
 
 Factory.define :tool do |tool|
   tool.sequence(:name) { |n| "tool_#{n}" }

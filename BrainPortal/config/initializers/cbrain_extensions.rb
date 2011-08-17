@@ -17,7 +17,9 @@ class ActiveRecord::Base
   ###################################################################
   # ActiveRecord Added Behavior For MetaData
   ###################################################################
+
   include ActRecMetaData
+
   after_destroy :destroy_all_meta_data
 
   # Update meta information to the record based on
@@ -52,19 +54,17 @@ class ActiveRecord::Base
     true
   end
 
+
+
   ###################################################################
   # ActiveRecord Added Behavior For Logging
   ###################################################################
+
   include ActRecLog
+
   after_destroy :destroy_log
   after_create  :propagate_tmp_log
 
-  alias original_to_xml to_xml
-  
-  def to_xml(options = {})
-    options[:root] ||= self.class.to_s.gsub("::", "-")
-    original_to_xml(options)
-  end
 
 
 
@@ -170,6 +170,7 @@ end
 ###################################################################
 # CBRAIN Kernel extensions
 ###################################################################
+
 module Kernel
 
   private
@@ -299,7 +300,7 @@ class String
     self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
   end
 
-  # Considers self as a pattern to with substitutions
+  # Considers self as a pattern to which substitutions
   # are to be applied; the substitutions are found in
   # self by recognizing keywords surreounded by
   # '{}' (curly braces) and those keywords are looked
@@ -363,38 +364,8 @@ class Array
     end
     partitions
   end
+
   alias hashed_partitions hashed_partition
-  
-  def to_xml(options = {})
-    raise "Not all elements respond to to_xml" unless all? { |e| e.respond_to? :to_xml }
-    require 'builder' unless defined?(Builder)
-  
-    options = options.dup
-    options[:root]     ||= "records"
-    options[:indent]   ||= 2
-    options[:builder]  ||= Builder::XmlMarkup.new(:indent => options[:indent])
-  
-    root     = options.delete(:root).to_s
-    children = options.delete(:children)
-  
-    if !options.has_key?(:dasherize) || options[:dasherize]
-      root = root.dasherize
-    end
-  
-    options[:builder].instruct! unless options.delete(:skip_instruct)
-  
-    opts = options.clone
-  
-    xml = options[:builder]
-    if empty?
-      xml.tag!(root, options[:skip_types] ? {} : {:type => "array"})
-    else
-      xml.tag!(root, options[:skip_types] ? {} : {:type => "array"}) {
-        yield xml if block_given?
-        each { |e| e.to_xml(opts.merge({ :skip_instruct => true })) }
-      }
-    end
-  end
   
 end
 

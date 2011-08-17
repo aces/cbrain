@@ -25,6 +25,16 @@ class UsersController < ApplicationController
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
     @users = base_filtered_scope current_user.available_users.includes( [:groups, :site] ).order( sort_order )
+
+    # Precompute file and task counts.
+    @users_file_counts = {}
+    @users_task_counts = {}
+    Userfile.where(:user_id => @users.map(&:id)).select("user_id, count(user_id) as u_cnt").group(:user_id).all.each do |t|
+      @users_file_counts[t.user_id] = t.u_cnt
+    end
+    CbrainTask.where(:user_id => @users.map(&:id)).select("user_id, count(user_id) as u_cnt").group(:user_id).all.each do |t|
+      @users_task_counts[t.user_id] = t.u_cnt
+    end
     
     #For the 'new' panel
     @user = User.new

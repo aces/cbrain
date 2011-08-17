@@ -237,7 +237,7 @@ class CbrainTask < ActiveRecord::Base
   # used to represent the 'name' for presets.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^(.*\n?)/ # the . doesn't match \n
+    raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end

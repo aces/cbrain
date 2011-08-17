@@ -165,7 +165,7 @@ class BourreauxController < ApplicationController
         ss.destroy rescue true
       end
       info_message = "Since the Data Provider cache directory has been changed, all\n" +
-                     "synchronization status objects were reset.\n";
+                     "synchronization status objects were reset.\n"
       unless old_dp_cache_dir.blank?
         host = @bourreau.ssh_control_host
         host = @bourreau.actres_host      if host.blank?

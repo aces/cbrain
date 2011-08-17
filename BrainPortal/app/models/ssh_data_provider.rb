@@ -29,7 +29,7 @@ class SshDataProvider < DataProvider
     return false unless @master.is_alive?
     dir  = remote_shell_escape(self.remote_dir)
     text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
-    return(text.blank? ? true : false);
+    return(text.blank? ? true : false)
   rescue
     false
   end

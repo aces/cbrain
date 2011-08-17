@@ -36,6 +36,43 @@ describe ToolConfig do
     end
   end
 
+  describe "#bourreau_and_tool_can_be_accessed_by?" do
+
+    let(:bourreau) { double("bourreau", :can_be_accessed_by? => true) }
+    let(:tool)     { double("tool",     :can_be_accessed_by? => true) }
+    let(:user)     { double("user") }
+
+    before(:each) do
+      tool_config.stub!(:bourreau).and_return(bourreau)
+      tool_config.stub!(:tool).and_return(tool)
+    end
+
+    it "should return true if both the bourreau and tool are accessible to the user" do
+      tool_config.bourreau_and_tool_can_be_accessed_by?(user).should be_true
+    end
+
+    it "should return false if the bourreau is unset" do
+      tool_config.stub!(:bourreau).and_return(nil)
+      tool_config.bourreau_and_tool_can_be_accessed_by?(user).should be_false
+    end
+
+    it "should return false if the tool is unset" do
+      tool_config.stub!(:tool).and_return(nil)
+      tool_config.bourreau_and_tool_can_be_accessed_by?(user).should be_false
+    end
+
+    it "should return false if the bourreau is unaccessible" do
+      bourreau.stub!(:can_be_accessed_by?).and_return(false)
+      tool_config.bourreau_and_tool_can_be_accessed_by?(user).should be_false
+    end
+
+    it "should return false if the tool is unaccessible" do
+      tool.stub!(:can_be_accessed_by?).and_return(false)
+      tool_config.bourreau_and_tool_can_be_accessed_by?(user).should be_false
+    end
+    
+  end
+
   describe "#short_description" do
     it "should return first line of description" do
       first_line  = "desc1_part1"
