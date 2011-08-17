@@ -54,7 +54,7 @@ class User < ActiveRecord::Base
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   
-  before_create             :add_system_groups
+  before_create              :add_system_groups
   before_save               :encrypt_password
   after_update              :system_group_site_update
   before_destroy            :validate_destroy
@@ -69,7 +69,7 @@ class User < ActiveRecord::Base
   has_many                :data_providers
   has_many                :remote_resources
   has_many                :cbrain_tasks
-  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :groups   
   belongs_to              :site
 
   # The following resources are destroyed automatically when the user is destroyed.
@@ -81,6 +81,15 @@ class User < ActiveRecord::Base
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
   
+  #Return the admin user
+  def self.admin
+    @admin ||= self.find_by_login("admin")
+  end
+  
+  #Return all users with role 'admin'
+  def self.all_admins
+    @all_admins ||= self.find_all_by_role("admin")
+  end
   
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
   def self.authenticate(login, password)
@@ -222,7 +231,7 @@ class User < ActiveRecord::Base
   # Returns the SystemGroup associated with the user; this is a
   # group with the same name as the user.
   def system_group
-    @own_group ||= SystemGroup.where( :name => self.login ).first
+    @own_group ||= UserGroup.where( :name => self.login ).first
   end
 
   # An alias for system_group()
@@ -263,8 +272,8 @@ class User < ActiveRecord::Base
   end
    
   def prevent_group_collision #:nodoc:
-    if self.login && Group.find_by_name(self.login)
-      errors.add(:login, "already in use by an existing group.")
+    if self.login && SystemGroup.find_by_name(self.login)
+      errors.add(:login, "already in use by an existing project.")
     end
   end
   
@@ -295,18 +304,16 @@ class User < ActiveRecord::Base
   end
   
   def system_group_site_update  #:nodoc:
-    SystemGroup.find_by_name(self.login).update_attributes(:site_id => self.site_id)
+    self.own_group.update_attributes(:site_id => self.site_id)
     
     if self.changed.include?("site_id")
       unless self.changes["site_id"].first.blank?
         old_site = Site.find(self.changes["site_id"].first)
-        old_site_group = SystemGroup.find_by_name(old_site.name)
-        old_site_group.users.delete(self)
+        old_site.own_group.users.delete(self)
       end
       unless self.changes["site_id"].last.blank?
         new_site = Site.find(self.changes["site_id"].last)
-        new_site_group = SystemGroup.find_by_name(new_site.name)
-        new_site_group.users << self
+        new_site.own_group.users << self
       end
     end
   end
@@ -323,7 +330,7 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    userGroup = UserGroup.new(:name => self.login, :site  => self.site)
+    userGroup = UserGroup.new(:name => self.login, :site  => self.site, :creator_id => User.admin.id)
     userGroup.save!
     
     everyoneGroup = Group.everyone

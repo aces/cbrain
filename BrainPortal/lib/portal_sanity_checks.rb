@@ -96,7 +96,7 @@ class PortalSanityChecks < CbrainChecker
     puts "C> Ensuring that required groups and users have been created..."
     #-----------------------------------------------------------------------------
 
-    everyone_group = Group.find_by_name("everyone")
+    everyone_group = Group.everyone
     if ! everyone_group
       puts "C> \t- SystemGroup 'everyone' does not exist. Creating it."
       everyone_group = SystemGroup.create!(:name  => "everyone")
@@ -135,7 +135,7 @@ class PortalSanityChecks < CbrainChecker
     puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
     #-----------------------------------------------------------------------------
 
-    everyone_group=Group.find_by_name('everyone')
+    everyone_group = Group.everyone
     User.includes(:groups).each do |u|
       unless u.group_ids.include? everyone_group.id
         puts "C> \t- User #{u.login} doesn't belong to group 'everyone'. Adding them."
@@ -145,7 +145,7 @@ class PortalSanityChecks < CbrainChecker
         u.save!
       end
       
-      user_group = Group.find_by_name(u.login)
+      user_group = u.own_group
       if ! user_group
         puts "C> \t- User #{u.login} doesn't have their own system group. Creating one."
         user_group = UserGroup.create!(:name  => u.login)
@@ -174,7 +174,7 @@ class PortalSanityChecks < CbrainChecker
     #-----------------------------------------------------------------------------
 
     Site.all.each do |s|
-      site_group = Group.find_by_name(s.name)
+      site_group = s.own_group
       if ! site_group
         puts "C> \t- Site #{s.name} doesn't have their own site group. Creating one."
         site_group = SiteGroup.create!(:name  => s.name, :site_id => s.id)
@@ -228,7 +228,7 @@ class PortalSanityChecks < CbrainChecker
     missing_gid.each do |file|
       user   = file.user
       raise "Error: cannot find a user for file '#{file.id}' ?!?" unless user
-      ugroup = SystemGroup.find_by_name(user.login)
+      ugroup = user.own_group
       raise "Error: cannot find a SystemGroup for user '#{user.login}' ?!?" unless ugroup
       puts "C> \t- Adjusted file '#{file.name}' to group '#{ugroup.name}'."
       file.group = ugroup
@@ -246,7 +246,7 @@ class PortalSanityChecks < CbrainChecker
     puts "C> Ensuring that toolconfigs all gave a group..."
     #-----------------------------------------------------------------------------
 
-    everyone_group = Group.find_by_name("everyone")
+    everyone_group = Group.everyone
     missing_gid    = ToolConfig.where( :group_id => nil )
     missing_gid.each do |tc|
       tc.group_id = everyone_group.id
@@ -272,7 +272,7 @@ class PortalSanityChecks < CbrainChecker
     unless brainportal
       puts "C> \t- Creating a new BrainPortal record for this RAILS app."
       admin  = User.find_by_login('admin')
-      gadmin = Group.find_by_name('admin')
+      gadmin = admin.own_group
       brainportal = BrainPortal.create!(
                                         :name        => myname,
                                         :user_id     => admin.id,
@@ -359,6 +359,23 @@ class PortalSanityChecks < CbrainChecker
       new_group = t.user.own_group
       t.group_id = new_group.id
       t.save!
+    end
+  end
+  
+  def self.ensure_groups_have_creator_id
+    
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring groups have a creator_id..."
+    #-----------------------------------------------------------------------------
+    
+    admin_user = User.find_by_login("admin")
+    
+    Group.all.each do |g|
+      if g.creator_id.nil?
+        g.creator_id = admin_user.id
+        g.save!
+        puts "C> \t- Group '#{g.name}' had creator set to 'admin'"
+      end
     end
   end
 

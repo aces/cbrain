@@ -175,7 +175,7 @@ class UserfilesController < ApplicationController
 
     @user_tags      = current_user.available_tags
     @user_groups    = current_user.available_groups.order("type")
-    @default_group  = SystemGroup.find_by_name(current_user.login).id
+    @default_group  = current_user.own_group.id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user).where( :online => true )
@@ -640,7 +640,7 @@ class UserfilesController < ApplicationController
     @current_index = @current_index.to_i
     
     admin_user     = User.find_by_login("admin")
-    everyone_group = Group.find_by_name("everyone")
+    everyone_group = Group.everyone
     
     pass_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
     fail_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)

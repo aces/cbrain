@@ -59,4 +59,16 @@ describe Group do
     end
   end
   
+  describe "#default_creator" do
+    it "should set creator to admin id if not set" do
+      admin_user_id = User.find_by_login("admin").id
+      new_group = Factory.create(:group, :creator_id => nil)
+      new_group.creator_id.should == admin_user_id
+    end
+    it "should not set creator if already set" do
+      new_user_id = Factory.create(:user).id
+      new_group = Factory.create(:group, :creator_id => new_user_id)
+      new_group.creator_id.should == new_user_id
+    end
+  end
 end

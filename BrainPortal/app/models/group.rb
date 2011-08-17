@@ -29,10 +29,11 @@ class Group < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  before_save             :set_default_creator
   after_destroy           :reassign_models_to_owner_group
   
   validates_presence_of   :name
-  validates_uniqueness_of :name
+  validates_uniqueness_of :name, :scope => :creator_id
   validate                :validate_groupname
   
   has_many                :tools
@@ -42,11 +43,11 @@ class Group < ActiveRecord::Base
   has_many                :remote_resources
   has_many                :cbrain_tasks
   has_many                :tags
-  belongs_to              :site 
+  belongs_to              :site
 
   # Returns the unique and special group 'everyone'
   def self.everyone
-    @everyone ||= self.find_by_name('everyone')
+    @everyone ||= SystemGroup.find_by_name('everyone')
   end
 
   # Returns itself; this method is here to make it symetrical
@@ -89,6 +90,14 @@ class Group < ActiveRecord::Base
   end
 
   private
+  
+  #Set creator id if it's not set.
+  def set_default_creator #:nodoc:
+    admin_user = User.find_by_login("admin")
+    if self.creator_id.nil? && admin_user #if admin doesn't exist it should mean that it's a new system.
+      self.creator_id = admin_user.id
+    end
+  end
   
   def reassign_models_to_owner_group #:nodoc:
     group_has_many_model_list = Group.reflect_on_all_associations.select { |a| a.macro == :has_many }.map { |a| a.name }
