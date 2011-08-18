@@ -18,6 +18,34 @@
         0
       <% end %>
   </td>
+  <td>
+      <% if (@group_id_2_tool_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_tool_counts[group.id], :controller => :tools, :filters  => {:group_id => group.id}, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
+  <td>
+      <% if (@group_id_2_data_provider_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_data_provider_counts[group.id], :controller => :data_providers, :filters  => {:group_id => group.id}, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
+  <td>
+      <% if (@group_id_2_brain_portal_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_brain_portal_counts[group.id], :controller => :bourreaux, :filters  => {:group_id => group.id, :type => "BrainPortal"}, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
+   <td>
+      <% if (@group_id_2_bourreau_counts[group.id] || 0).to_i > 0 %>
+        <%= filter_reset_link @group_id_2_bourreau_counts[group.id], :controller => :bourreaux, :filters  => {:group_id => group.id, :type => "Bourreau"}, :ajax => false %>
+      <% else %>
+        0
+      <% end %>
+  </td>
   <td><%= link_to 'Switch', switch_group_path(group), :class => 'action_link', :method  => :post %></td>
   <% if group.can_be_edited_by?(current_user) %>
     <td><%= link_to 'Edit', edit_group_path(group), :class => 'action_link' %></td>

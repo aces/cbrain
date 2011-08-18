@@ -66,6 +66,12 @@ class GroupsController < ApplicationController
       @group.site = current_user.site
     end
 
+    unless @group.user_ids.blank?
+      @group.user_ids &= current_user.available_users.map(&:id)
+    end
+   
+    @group.creator_id = current_user.id
+
     respond_to do |format|
       if @group.save
         flash[:notice] = 'Project was successfully created.'
@@ -96,6 +102,16 @@ class GroupsController < ApplicationController
     else
       @group.type = 'WorkGroup'
     end
+    
+    unless current_user.has_role? :admin
+      params[:group][:site_id] = current_user.site_id
+    end
+
+    unless params[:group][:user_ids].blank?
+      params[:group][:user_ids] &= current_user.available_users.map{ |u| u.id.to_s  }
+    end
+
+    params[:group].delete :creator_id #creator_id is immutable
 
     respond_to do |format|
       if @group.update_attributes(params[:group])
@@ -143,22 +159,45 @@ class GroupsController < ApplicationController
 
   def common_form_elements
     @group_id_2_user_counts = {}
-    #User.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id", :joins => :groups).each do |user|
     User.joins(:groups).select( "group_id, count(group_id) as total" ).group("group_id").each do |user|
       @group_id_2_user_counts[user.group_id.to_i] = user.total
     end
 
     @group_id_2_userfile_counts = {}
-    #Userfile.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |userfile|
     Userfile.select( "group_id, count(group_id) as total" ).group("group_id").each do |userfile|
       @group_id_2_userfile_counts[userfile.group_id] = userfile.total
     end
 
     @group_id_2_task_counts = {}
-    #CbrainTask.find(:all, :select => "group_id, count(group_id) as total", :group => "group_id").each do |task|
     CbrainTask.select( "group_id, count(group_id) as total" ).group("group_id").each do |task|
       @group_id_2_task_counts[task.group_id] = task.total
     end
+
+    @group_id_2_tool_counts = {}
+    Tool.select( "group_id, count(group_id) as total" ).group("group_id").each do |tool|
+      @group_id_2_tool_counts[tool.group_id] = tool.total
+    end
+
+    @group_id_2_tag_counts = {}
+    Tag.select( "group_id, count(group_id) as total" ).group("group_id").each do |tag|
+      @group_id_2_tag_counts[tag.group_id] = tag.total
+    end
+
+    @group_id_2_data_provider_counts = {}
+    DataProvider.select( "group_id, count(group_id) as total" ).group("group_id").each do |data_provider|
+      @group_id_2_data_provider_counts[data_provider.group_id] = data_provider.total
+    end
+
+    @group_id_2_bourreau_counts = {}
+    Bourreau.select( "group_id, count(group_id) as total" ).group("group_id").each do |bourreau|
+      @group_id_2_bourreau_counts[bourreau.group_id] = bourreau.total
+    end
+    
+    @group_id_2_brain_portal_counts = {}
+    BrainPortal.select( "group_id, count(group_id) as total" ).group("group_id").each do |brain_portal|
+      @group_id_2_brain_portal_counts[brain_portal.group_id] = brain_portal.total
+    end
+
   end
 
 end

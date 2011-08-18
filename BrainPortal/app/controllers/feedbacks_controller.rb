@@ -52,7 +52,7 @@ class FeedbacksController < ApplicationController
     respond_to do |format|
       if @feedback.save
         flash[:notice] = 'Feedback was successfully created.'
-        Message.send_message( Group.find_by_name('admin'), {
+        Message.send_message( User.admin.own_group, {
                               :message_type   => :notice,
                               :header         => "New feeback is available!",
                               :description    => nil,

@@ -95,10 +95,10 @@ describe User do
     @user.valid?.should  be(false)
   end
   
-  it "should prevent me from using another work_group name as login name" do
-    Factory.create(:work_group, :name => "my_name_is_group")
+  it "should prevent me from using another system group name as login name" do
+    Factory.create(:system_group, :name => "my_name_is_group")
     @user.login = "my_name_is_group"
-    @user.save.should be(false)
+    @user.should_not be_valid
   end
   
   it "should prevent me from changing my login name" do
@@ -116,7 +116,7 @@ describe User do
   
   it "should add me to the everyone group" do
     @user.save
-    @user.groups.include?(SystemGroup.find_by_name("everyone")).should be(true)
+    @user.groups.include?(Group.everyone).should be(true)
   end
   
   it "should add me to the site group" do

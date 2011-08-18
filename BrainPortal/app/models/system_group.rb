@@ -21,5 +21,15 @@
 class SystemGroup < Group
 
   Revision_info=CbrainFileRevision[__FILE__]
+    
+  private
+  
+  #All system groups considered created by admin
+  def set_default_creator #:nodoc:
+    admin_user = User.find_by_login("admin")
+    if admin_user && self.creator_id != admin_user.id #if admin doesn't exist it should mean that it's a new system.
+      self.creator_id = admin_user.id
+    end
+  end
   
 end
