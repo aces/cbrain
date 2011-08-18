@@ -14,7 +14,13 @@
 
 <table id="work_project_table" class="resource_list">
 
-  <tr><th colspan="14">Work Projects</th></tr>
+  <tr>
+  <% if current_user.has_role?(:admin) %>
+    <th colspan="14">Work Projects</th>       
+  <% else %>
+    <th colspan="9">Work Projects</th>
+  <% end %>
+  </tr>
   <tr>
     <th class="subtitle">Name</th>
     <th class="subtitle">Type</th>
@@ -22,10 +28,12 @@
     <th class="subtitle">Users</th>
     <th class="subtitle">Files</th>
     <th class="subtitle">Tasks</th>
-    <th class="subtitle">Tools</th>
-    <th class="subtitle">Data providers</th>
-    <th class="subtitle">Portal</th>
-    <th class="subtitle">Execution</th>
+    <% if current_user.has_role?(:admin) %>
+      <th class="subtitle">Tools</th>
+      <th class="subtitle">Data providers</th>
+      <th class="subtitle">Portal</th>
+      <th class="subtitle">Execution</th>
+    <% end %>
     <th class="subtitle" colspan="3"/>
   </tr>
 
@@ -38,7 +46,13 @@
 <p>
 
 <table id="system_project_table" class="resource_list">
-  <tr><th colspan="14">System Projects</th></tr>
+  <tr>
+  <% if current_user.has_role?(:admin) %>
+    <th colspan="14">Work Projects</th>       
+  <% else %>
+    <th colspan="9">Work Projects</th>
+  <% end %>
+  </tr>
   <tr>
     <th class="subtitle">Name</th>
     <th class="subtitle">Type</th>
@@ -46,10 +60,12 @@
     <th class="subtitle">Users</th>
     <th class="subtitle">Files</th>
     <th class="subtitle">Tasks</th>
-    <th class="subtitle">Tools</th>
-    <th class="subtitle">Data providers</th>
-    <th class="subtitle">Portal</th>
-    <th class="subtitle">Execution</th>
+    <% if current_user.has_role?(:admin) %>
+      <th class="subtitle">Tools</th>
+      <th class="subtitle">Data providers</th>
+      <th class="subtitle">Portal</th>
+      <th class="subtitle">Execution</th>
+    <% end %>
     <th class="subtitle" colspan="3"/>
   </tr>
 

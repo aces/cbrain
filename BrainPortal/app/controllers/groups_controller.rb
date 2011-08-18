@@ -178,11 +178,6 @@ class GroupsController < ApplicationController
       @group_id_2_tool_counts[tool.group_id] = tool.total
     end
 
-    @group_id_2_tag_counts = {}
-    Tag.select( "group_id, count(group_id) as total" ).group("group_id").each do |tag|
-      @group_id_2_tag_counts[tag.group_id] = tag.total
-    end
-
     @group_id_2_data_provider_counts = {}
     DataProvider.select( "group_id, count(group_id) as total" ).group("group_id").each do |data_provider|
       @group_id_2_data_provider_counts[data_provider.group_id] = data_provider.total
