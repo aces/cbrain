@@ -12,21 +12,68 @@
     </div>
   <% end %>
   <P>
-  <table class= "resource_list">
+  
+  <table class="property_list">
     <tr>
+      <th colspan="2" class="subtitle">Project information</th>
+    </tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Name</th>
-        <th>Members</th>
+        <td><%= @group.name %></td>
+    </tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+        <th>Type</th>
+        <td><%= @group.pretty_category_name(current_user) %></td>
+    </tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Site</th>
+        <td>
+          <%= link_to_site_if_accessible(@group.site) %>
+        </td>
     </tr>
-    <td>
-       <%= @group.name %>
-    </td>
-    <td>
-        <%= array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered') { |u,r,c| link_to_user_with_tooltip(u) } %>
-    </td>
-    <td>
-       <%= link_to_site_if_accessible(@group.site) %>
-    </td>
+     <tr class="<%= cycle("list-odd", "list-even") %>">
+        <th>Users</th>
+        <td>
+          <%= array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered') { |u,r,c| link_to_user_with_tooltip(u) }%>
+        </td>
     </tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+        <th>Files</th>
+        <td>
+          <%= array_to_table(@group.userfiles.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |uf,r,c| link_to_userfile_if_accessible(uf) } %>
+        </td>
+    </tr>
+    <tr class="<%= cycle("list-odd", "list-even") %>">
+        <th>Tasks</th>
+        <td>
+          <%= array_to_table(@group.cbrain_tasks.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |t,r,c| link_to_task_if_accessible(t) } %>
+        </td>
+    </tr>
+    <% if current_user.has_role?(:admin) %>
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Tools</th>
+          <td>
+            <%= array_to_table(@group.tools.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |t,r,c| t.name } %>
+          </td>
+      </tr>
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Data providers</th>
+          <td>
+            <%= array_to_table(@group.data_providers.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |dp,r,c| link_to_data_provider_if_accessible(dp) } %>
+          </td>
+      </tr>
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Portal</th>
+          <td>
+            <%= array_to_table(BrainPortal.where( :group_id => @group.id).all.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |b,r,c| link_to_bourreau_if_accessible(b) } %>
+          </td>
+      </tr>
+          <tr class="<%= cycle("list-odd", "list-even") %>">
+          <th>Execution</th>
+          <td>
+            <%= array_to_table(Bourreau.where( :group_id => @group.id).all.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |b,r,c| link_to_bourreau_if_accessible(b) } %>
+          </td>
+      </tr>
+    <% end %>
   </table>
 </div>

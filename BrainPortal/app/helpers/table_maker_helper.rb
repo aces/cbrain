@@ -54,6 +54,8 @@ module TableMakerHelper
   def array_to_table(array,options = {})
     numelems  = array.size
 
+    return "" if numelems == 0
+
     if options[:min_data] && numelems < options[:min_data]
       joiner = options[:min_data_join] || ", "
       formatted = []
