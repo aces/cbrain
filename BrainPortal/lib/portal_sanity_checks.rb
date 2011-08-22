@@ -119,6 +119,7 @@ class PortalSanityChecks < CbrainChecker
       admin.role                  = 'admin'
       admin.password_reset        = 'true'
       admin.save!
+      admin.own_group.update_attributes!(:creator_id => admin.id)
       puts("C> ******************************************************")
       puts("C> *  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
       puts("C> * CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")

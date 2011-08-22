@@ -330,7 +330,7 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    userGroup = UserGroup.new(:name => self.login, :site  => self.site, :creator_id => User.admin.id)
+    userGroup = UserGroup.new(:name => self.login, :site  => self.site)
     userGroup.save!
     
     everyoneGroup = Group.everyone
