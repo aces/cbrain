@@ -470,8 +470,9 @@ class CbrainTask < ActiveRecord::Base
     cb_error "Cannot add a prerequisite based on a task that has no ID yet!" if otask_id.blank?
     cb_error "Cannot add a prerequisite for a task that depends on itself!"  if self.id == otask_id
     ttid = "T#{otask_id}"
-    prereqs         = self.prerequisites || {}
-    task_list       = prereqs[for_what]  ||= {}
+    prereqs              = (self.prerequisites || {}).with_indifferent_access
+    prereqs[for_what]  ||= {} # will be transformed into IndifferentAccess!!!
+    task_list            = prereqs[for_what]
     if needed_state == '-'
       task_list.delete(ttid)
     else

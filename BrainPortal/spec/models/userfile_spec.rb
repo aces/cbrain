@@ -40,23 +40,71 @@ describe Userfile do
                                        :data_provider => userfile.data_provider )
     bad_file.valid?.should be false
   end
-#----
-  context "Class Viewer" do
   
+  describe Userfile::Viewer do
+    let(:viewer) {Userfile::Viewer.new({:name => "name", :partial => "partial"})}
+
     describe "#initialize" do
+      
+      it "should transform string into hash" do
+        name = "name"
+        viewer_test    = Userfile::Viewer.new(name)
+        name_result    = name.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2')
+        partial_result = name.to_s.underscore
+        viewer_test.name.should    == name_result
+        viewer_test.partial.should == partial_result 
+      end
     end
 
     describe "#initialize_from_hash" do
+      
+      it "should return cbrain error if atts have no key name and no key partial" do
+        lambda{viewer.initialize_from_hash({})}.should raise_error(CbrainError)
+      end
+
+      it "should return cbrain error if we have an unknow viewer" do
+        lambda{viewer.initialize_from_hash({:name => "name", :partial => "partial", :other => "other"})}.should raise_error(CbrainError)
+      end
+
+      it "should raise cbrain error if condition does not respond_to :to_proc" do
+        String.stub!(:respond_to?).and_return(false)
+        lambda{viewer.initialize_from_hash({:name => "name", :partial => "partial", :if => "condition"})}.should raise_error(CbrainError)
+      end
     end
 
     describe "#valid_for?" do
+      let(:viewer_with_condition) {Userfile::Viewer.new({:name => "name", :partial => "partial", :if => lambda {|u| u.name == "userfile_name"}})}
+
+      it "should return true if @conditions is empty" do
+        Array.stub!(:empty?).and_return(true)
+        viewer.valid_for?(userfile).should be_true
+      end
+
+      it "should call call on condition" do
+        userfile.name = "userfile_name"
+        viewer_with_condition.valid_for?(userfile).should be_true 
+      end
+    end
+    
+    describe "#==" do 
+      let(:other1)  {Userfile::Viewer.new({:name => "name", :partial => "partial"})}
+      let(:other2)  {Userfile::Viewer.new({:name => "other", :partial => "partial"})}
+      
+      it "should return false if other is not a Viewer" do
+        viewer.==("other1").should be_false
+      end
+
+      it "should return true if Viewer have same name" do
+        viewer.==(other1).should be_true
+      end
+
+      it "should return false if Viewer have different name" do
+        viewer.==(other2).should be_false
+      end
     end
 
-    describe "==" do
-    end
   end
-
-#----
+  
   describe "#viewers" do
     
     it "should call class.class_viewers" do
@@ -87,7 +135,7 @@ describe Userfile do
   
   describe "#self.pseudo_sort_columns" do
     
-    it "should return a pesudo array" do
+    it "should return a pseudo array" do
       userfile
       Userfile.pseudo_sort_columns.should be == ["tree_sort"]
     end
@@ -117,7 +165,7 @@ describe Userfile do
   describe "#self.valid_file_classes" do
     
     it "should return an array with current classe and all subclasses" do
-      global_size = SingleFile.send(:subclasses).size + 1
+      global_size = SingleFile.send(:descendants).size + 1
       SingleFile.valid_file_classes.size.should be == global_size 
     end
   end
@@ -224,7 +272,6 @@ describe Userfile do
      let(:userfile1) {Factory.create(:userfile)}
      let(:userfile2) {Factory.create(:userfile)}
 
-     it "To check"
      it "should return an array containing all format_source" do
        userfile.add_format(userfile).inspect
        userfile.add_format(userfile2).size.should be == 2
@@ -245,10 +292,11 @@ describe Userfile do
       userfile.format_names
     end
 
-    it "should call formats.map.push.compact on source_file" do
-      pending
-      "Voir si appeller su format)source ou self"
-      source_file = double("source_file")
+    it "should concatenate format_name and result of format.map" do
+      userfile.stub!(:format_source).and_return(nil)
+      userfile.stub!(:format_name).and_return(1)
+      userfile.stub_chain(:formats, :map).and_return([2,3])
+      userfile.format_names.should =~ [1,2,3]
     end
   end
 
@@ -258,6 +306,7 @@ describe Userfile do
       userfile.stub!(:get_format).and_return(true)
       userfile.has_format?("format").should be_true
     end
+    
     it "should return false if get_format return false" do
       userfile.stub!(:get_format).and_return(false)
       userfile.has_format?("format").should be_false
@@ -265,7 +314,7 @@ describe Userfile do
   end
 
   describe "#get_format" do
-     
+    
     it "should return self if self.format_name.to_s.downcase == f.to_s.downcase" do
       f = double("format")
       f.stub_chain(:to_s, :downcase).and_return(f)
@@ -279,14 +328,19 @@ describe Userfile do
       userfile.get_format(f).should be == userfile
     end
     
-    it "should call formats.all.find on self in other case"
+    it "should call formats.all.find on self in other case" do
+      f = double("format")
+      userfile.should_receive(:formats).and_return(Userfile)
+      userfile.get_format(f)
+    end
+    
   end
   
   #Testing the get_tags_for_user method
   describe "#get_tags_for_user" do
     
     it "should return no tags when user and files has no tags" do
-      userfile.get_tags_for_user(userfile.user)
+      userfile.get_tags_for_user(userfile.user).should be_empty
     end
     
     it "should return it's tags crossed with the user when get_tags_for_user(user) is called and the file has tags" do
@@ -308,57 +362,103 @@ describe Userfile do
      end
    end
 
-  describe "#set_tags_for_user" do 
-    it "should accept a nil for set_tags_for_user" do
-      begin
-        userfile.set_tags_for_user(userfile.user, nil)
-      rescue
-        false
-      end
+  describe "#set_tags_for_user" do
+    let(:tag1) {Factory.create(:tag, :id => 1, :name => "tag_1")}
+    let(:tag2) {Factory.create(:tag, :id => 2, :name => "tag_2")}
+    let(:tag3) {Factory.create(:tag, :id => 3, :name => "tag_3")}
+    
+    it "should accept a nil for set_tags_for_user so no addition in tag_ids" do
+      userfile.set_tags_for_user(userfile.user, nil)
+      userfile.tag_ids.should be_empty
     end
+    
+    it "should add tags arg to userfile.tag_ids if not already in userfile.tag_ids" do
+      tag1; tag2; tag3;
+      userfile.tag_ids = [1,2]
+      userfile.set_tags_for_user(userfile.user, [3])
+      userfile.tag_ids.should =~ [1,2,3]
+    end
+    
+    it "should not add tags arg to userfile.tag_ids if already in userfile.tag_ids" do
+      tag1; tag2; tag3;
+      userfile.tag_ids = [1,2]
+      userfile.set_tags_for_user(userfile.user, [1])
+      userfile.tag_ids.should =~ [1,2]
+    end 
   end
 
   describe "#self.tree_sort" do
-  end
+    let(:userfile1) {Factory.create(:userfile, :parent_id => userfile.id)}
+    let(:userfile2) {Factory.create(:userfile, :parent_id => userfile1.id)}
+    let(:userfile3) {Factory.create(:userfile, :parent_id => userfile2.id)}
+    let(:userfile4) {Factory.create(:userfile)}
+    let(:userfile5) {Factory.create(:userfile, :parent_id => userfile4.id)}
+    
+    it "should return sorted tree" do
+      Userfile.tree_sort([userfile, userfile2, userfile3, userfile1]).should be == 
+        [userfile, userfile1, userfile2, userfile3]
+    end
 
-  describe "#all_tree_children" do
+    it "should return sorted tree" do
+      Userfile.tree_sort([userfile5, userfile, userfile2, userfile3, userfile1,userfile4]).should be ==
+        [userfile4, userfile5, userfile, userfile1, userfile2, userfile3]
+    end
+
+    it "should assign level for each userfiles" do
+      Userfile.tree_sort([userfile5, userfile, userfile2, userfile3, userfile1,userfile4])
+      userfile.level.should be  == 0
+      userfile1.level.should be == 1
+      userfile2.level.should be == 2
+      userfile3.level.should be == 3
+      userfile4.level.should be == 0
+      userfile5.level.should be == 1
+    end
+    
   end
 
   describe "#level" do
+    
+    it "should assigns 0 to @level" do
+      userfile.level.should be == 0 
+    end
+
   end
 
   describe "#self.paginate" do
-  end
 
-  describe "#self.apply_tag_filters_for_user" do
-  end
+    it "should set per_page to 10 if per_page < 10" do
+      pager = double('pager')
+      WillPaginate::Collection.should_receive(:create).with(1,10).and_yield(pager)
+      pager.should_receive(:replace)
+      pager.stub!(:total_entries=)
+      Userfile.paginate([1],1,1)
+    end
 
-  describe "#self.get_filter_name" do
-
-    it "should return nil if type is name_search term.blank? is false"
+    it "should set per_page to 200 if per_page > 200" do
+      pager = double('pager')
+      WillPaginate::Collection.should_receive(:create).with(1,200).and_yield(pager)
+      pager.should_receive(:replace)
+      pager.stub!(:total_entries=)
+      Userfile.paginate([1],1,300)
+    end
     
-    it "should return nil if type is name_search term.blank? is false"
-    
-    it "should return nil if type is name_search term.blank? is false"
+    it "should call replace only once if we have no files" do
+      pager = double('pager')
+      WillPaginate::Collection.stub!(:create).and_yield(pager)
+      pager.should_receive(:replace)
+      pager.stub!(:total_entries=)
+      Userfile.paginate([1],1,10)
+     end
 
-    it "should return nil if type is name_search term.blank? is true"
+     it "should call total_entries= only once if we have no files" do
+      pager = double('pager')
+      WillPaginate::Collection.stub!(:create).and_yield(pager)
+      pager.stub!(:replace)
+      pager.should_receive(:total_entries=).and_return(true)
+      Userfile.paginate([1],1,10)
+     end
 
-    it "should return nil if type is tag_search term.blank? is true"
-    
-    it "should return nil if type is format_search term.blank? is true"
-
-    it "should return file:cw5"
-
-    it "should return file:flt"
-
-    it "should return file:mls"
-
-    it "should return nil if no case is good"
-  
-  end
-
-  describe "#self.add_filters_to_scope" do
-  end
+   end
 
   describe "#can_be_accessed_by?" do
     let(:user) {Factory.create(:user)}
@@ -368,7 +468,12 @@ describe Userfile do
       userfile.can_be_accessed_by?(user).should be_true
      end
      
-    it "should return true if user is site_manager of the site" 
+     it "should return true if user is site_manager of the site" do
+       userfile.stub_chain(:user, :site_id).and_return(user.site_id)
+       userfile.stub_chain(:group, :site_id).and_return(user.site_id)
+       user.role = "site_manager"
+       userfile.can_be_accessed_by?(user).should be_true
+     end
    
     it "should return true if user.id is same as self user.id" do
       user.id = userfile.user_id
@@ -394,7 +499,6 @@ describe Userfile do
   end
 
   describe "#has_owner_access?" do
-  
     let(:user) {Factory.create(:user)}
   
     it "should return true if user is admin" do
@@ -402,8 +506,13 @@ describe Userfile do
       userfile.has_owner_access?(user).should be_true
     end
 
-    it "should return true if user is site_manager of the site" 
-
+    it "should return true if user is site_manager of the site" do
+       userfile.stub_chain(:user, :site_id).and_return(user.site_id)
+       userfile.stub_chain(:group, :site_id).and_return(user.site_id)
+       user.role = "site_manager"
+       userfile.can_be_accessed_by?(user).should be_true
+    end
+    
     it "should return true if user is same as self user.id" do
       user.id = userfile.user_id
       userfile.can_be_accessed_by?(user).should be_true
@@ -414,19 +523,88 @@ describe Userfile do
       user.role = "other"
       userfile.can_be_accessed_by?(user).should be_false
     end
+ 
   end
 
+  describe "#self.accessible_for_user" do
+    let(:user) {Factory.create(:user)}
+                                
+    it "should call scoped with options" do
+      userfile
+      options = {}
+      Userfile.should_receive(:scoped).with(options)
+      Userfile.stub!(:restrict_access_on_query)
+      Userfile.accessible_for_user(user, options)
+    end
+
+    it "should call restrict_access_on_query" do
+      userfile
+      options = {}
+      Userfile.stub!(:scoped)
+      Userfile.should_receive(:restrict_access_on_query).and_return("scope")
+      Userfile.accessible_for_user(user, options).should be == "scope"
+    end
+  
+  end
+  
   describe "#self.find_accessible_by_user" do
+    let(:user) {Factory.create(:user)}
+
+    it "should call accessible_for_user" do
+      userfile
+      Userfile.should_receive(:accessible_for_user).and_return(Userfile)
+      Userfile.find_accessible_by_user(userfile.id, user)
+    end
+    
   end
 
-  describe "#self.find_all_accessible_by_user" do
+  describe "#find_all_accessible_by_user" do
+    let(:user) {Factory.create(:user)}
+    
+    it "should call accessible_for_user" do
+      userfile
+      Userfile.should_receive(:accessible_for_user).and_return(Userfile)
+      Userfile.find_all_accessible_by_user(user)
+    end
+    
   end
 
   describe "#self.restrict_access_on_query" do
-  end
+    let!(:user)      {Factory.create(:user)}
+    let!(:user1)     {Factory.create(:user, :site_id => user.site_id)}
+    let!(:userfile1) {Factory.create(:userfile, :user_id => user.id, :group_writable => true)}
+    let!(:userfile2) {Factory.create(:userfile, :user_id => user.id, :group_writable => false)}
+    let!(:userfile3) {Factory.create(:userfile, :user_id => user1.id)}
+    let!(:userfile4) {Factory.create(:userfile)}
+    
+    it "should return scope if user is admin" do
+      user.role = "admin"
+      scope = Userfile.scoped({})
+      Userfile.restrict_access_on_query(user,scope).should be == scope
+    end
 
-  describe "#self.set_order" do
-    it "Check if no more used"
+    it "should return only file writable by user" do
+      scope = Userfile.scoped({})
+      Userfile.restrict_access_on_query(user,scope).all.should be =~ [userfile1]
+    end
+
+    it "should return all file of user" do
+      scope = Userfile.scoped({})
+      Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all.should be =~ [userfile1,userfile2]
+    end
+
+    it "should return file of all user and file where userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)" do
+      scope = Userfile.scoped({})
+      DataProvider.stub_chain(:find_all_accessible_by_user, :map).and_return([userfile3.data_provider_id])     
+      Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all.should be =~ [userfile1,userfile2,userfile3]
+    end
+
+    it "should return all file test site manager case" do
+      user.role = "site_manager"
+      scope = Userfile.scoped({})
+      Userfile.restrict_access_on_query(user,scope).all.should be =~ [userfile1, userfile2, userfile3]
+    end 
+    
   end
 
   describe "#self.is_legal_filename?" do
@@ -462,8 +640,17 @@ describe Userfile do
   end
 
   describe "#set_size" do
-    it "should call set_size! if size is blank"
-    it "should not call set_size! if size is not blank"
+    it "should call set_size! if size is blank" do
+      userfile.stub_chain(:size, :blank?).and_return(true)
+      userfile.should_receive(:set_size!)
+      userfile.set_size
+    end
+    it "should not call set_size! if size is not blank" do 
+      userfile.stub_chain(:size, :blank?).and_return(false)
+      userfile.should_not_receive(:set_size!)
+      userfile.set_size
+    end
+    
   end
 
   describe "#set_size!" do
@@ -502,15 +689,84 @@ describe Userfile do
   end
 
   describe "#move_to_child_of" do
+    let(:userfile1) {Factory.create(:userfile)}
+    
+    it "should raise error if self.id == userfile.id" do
+      lambda{userfile.move_to_child_of(userfile)}.should raise_error 
+    end
+
+    it "should raise error if self.descendants.include?(userfile)" do
+      userfile.stub_chain(:descendants, :include?).and_return(true)
+      lambda{userfile.move_to_child_of(userfile1)}.should raise_error
+    end 
+
+    it "should set parent.id to userfile.id if no error was raised" do
+      userfile.stub_chain(:descendants, :include?).and_return(false)
+      userfile.move_to_child_of(userfile1)
+      userfile.parent_id.should be == userfile1.id
+    end
+
+    it "should return true if all it's ok" do
+      userfile.stub_chain(:descendants, :include?).and_return(false)
+      userfile.move_to_child_of(userfile1).should be_true
+    end
+  
   end
 
   describe "#descendants" do
+    let(:userfile1) {Factory.create(:userfile, :parent_id => userfile.id)}
+    let(:userfile2) {Factory.create(:userfile, :parent_id => userfile1.id)}
+    let(:userfile3) {Factory.create(:userfile, :parent_id => userfile2.id)}
+    let(:userfile4) {Factory.create(:userfile, :parent_id => userfile2.id)}
+    
+    it "should return descendants if it have descendants" do
+      userfile; userfile1; userfile2; userfile3
+      userfile1.descendants().should be =~ [userfile2, userfile3, userfile4]
+    end
+
+    it "should return empty array if it have not descendants" do
+      userfile; userfile1; userfile2; userfile3
+      userfile3.descendants().should be_empty
+    end
+    
   end
 
   describe "#next_available_file" do
+    let(:user) {Factory.create(:user)}
+    let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 1).to_i)}
+    let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 2).to_i)}
+
+    it "should return next available file" do
+      userfile.user_id = user.id
+      userfile1; userfile2
+      userfile.next_available_file(user).should be == userfile1
+    end
+
+    it "should return nil if no next available file" do
+      userfile.user_id = user.id
+      userfile1; userfile2
+      userfile2.next_available_file(user).should be_nil
+    end
+    
   end
 
   describe "#previous_available_file" do
+    let(:user) {Factory.create(:user)}
+    let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 1).to_i)}
+    let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 2).to_i)}
+
+    it "should return next available file" do
+      userfile.user_id = user.id
+      userfile1; userfile2
+      userfile.previous_available_file(user).should be == userfile1
+    end
+
+    it "should return nil if no previous available file" do
+      userfile.user_id = user.id
+      userfile1; userfile2
+      userfile2.previous_available_file(user).should be_nil
+    end
+    
   end
 
   describe "#provider_is_newer" do
@@ -520,16 +776,6 @@ describe Userfile do
      userfile.provider_is_newer
     end
     
-    it "return true if SyncStatus.ready_to_modify_dp return a non empty array" do
-      SyncStatus.stub!(:ready_to_modify_dp).and_return([1])
-      userfile.provider_is_newer.should be_true
-    end
-
-    it "should be verified"
-    it "return nil if SyncStatus.ready_to_modify_dp return nil" do
-      SyncStatus.stub!(:ready_to_modify_dp).and_return(nil)
-      userfile.provider_is_newer.should be == nil
-    end
   end
 
   describe "#cache_is_newer" do
@@ -539,23 +785,13 @@ describe Userfile do
      userfile.cache_is_newer
     end
     
-    it "return true if SyncStatus.ready_to_modify_cache return a non empty array" do
-      SyncStatus.stub!(:ready_to_modify_cache).and_return([1])
-      userfile.cache_is_newer.should be_true
-    end
-
-    it "should be verified"
-    it "return nil if SyncStatus.ready_to_modify_cache return nil" do
-      SyncStatus.stub!(:ready_to_modify_cache).and_return(nil)
-      userfile.cache_is_newer.should be == nil
-    end
   end
 
   describe "#local_sync_status" do
     
-    it "should call Synctatus.find" do
-     SyncStatus.should_receive(:find)
-     userfile.local_sync_status
+    it "should call Synctatus.where" do
+      SyncStatus.should_receive(:where).and_return([1])
+      userfile.local_sync_status
    end
   end
 
@@ -645,8 +881,13 @@ describe Userfile do
     end
   
     describe "#cache_prepare" do
-      
-      it "should call save if self.id.blank?"
+      let(:userfile1) {Factory.build(:userfile)}
+
+      it "should call save if self.id.blank?" do
+        userfile1.should_receive(:save!)
+        userfile1.stub_chain(:data_provider,:cache_prepare)
+        userfile1.cache_prepare
+      end
       
       it "should call data_provider.cache_prepare" do
         userfile.should_receive(:data_provider).and_return(data_provider)
@@ -734,7 +975,13 @@ describe Userfile do
   
     describe "#cache_writehandle" do
       
-      it "should call save!"
+      it "should call save!" do
+        userfile.should_receive(:data_provider).and_return(data_provider)
+        data_provider.should_receive(:cache_writehandle)
+        userfile.stub!(:set_size!)
+        userfile.should_receive(:save!)
+        userfile.cache_writehandle
+      end
       
       it "should call data_provider.cache_writehandle" do
         userfile.should_receive(:data_provider).and_return(data_provider)
@@ -743,11 +990,23 @@ describe Userfile do
         userfile.cache_writehandle
       end
       
-      it "should call set_size!"
+      it "should call set_size!" do
+        userfile.should_receive(:data_provider).and_return(data_provider)
+        data_provider.stub!(:cache_writehandle)
+        userfile.should_receive(:set_size!)
+        userfile.cache_writehandle("filename")
+      end
     end
   
     describe "#cache_copy_from_local_file" do
-      it "should call save!"
+      
+      it "should call save!" do
+        userfile.should_receive(:data_provider).and_return(data_provider)
+        data_provider.should_receive(:cache_copy_from_local_file)
+        userfile.should_receive(:save!)
+        userfile.stub!(:set_size!)
+        userfile.cache_copy_from_local_file("filename")
+      end
       
       it "should call data_provider.cache_copy_from_local_file" do
         userfile.should_receive(:data_provider).and_return(data_provider)
@@ -756,12 +1015,24 @@ describe Userfile do
         userfile.cache_copy_from_local_file("file_name")
       end
       
-      it "should call set_size!"
+      it "should call set_size!" do
+        userfile.should_receive(:data_provider).and_return(data_provider)
+        data_provider.should_receive(:cache_copy_from_local_file)
+        userfile.should_receive(:set_size!)
+        userfile.cache_copy_from_local_file("filename")
+      end
+    
     end
-  
+
     describe "#cache_copy_to_local_file" do
         
-      it "should call save!" 
+      it "should call save!" do
+        userfile.should_receive(:data_provider).and_return(data_provider)
+        data_provider.should_receive(:cache_copy_to_local_file)
+        userfile.stub!(:set_size!)
+        userfile.should_receive(:save!)
+        userfile.cache_copy_to_local_file("filename")
+      end
   
       it "should call data_provider.cache_copy_to_local_file" do
         userfile.should_receive(:data_provider).and_return(data_provider)

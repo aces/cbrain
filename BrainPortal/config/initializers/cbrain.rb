@@ -11,9 +11,11 @@
 
 require 'cbrain_exception'
 
-#require 'yaml'
-#require 'psych'
-#YAML::ENGINE.yamler = 'psych'
+# I don't know why I have to force it to psych here...
+# On brainstorm, it defaults to syck...
+require 'yaml'
+require 'psych'
+YAML::ENGINE.yamler = 'psych'
 
 # CBRAIN constants and some global utility methods.
 class CBRAIN

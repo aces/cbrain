@@ -58,7 +58,6 @@ class UserfilesController < ApplicationController
       filtered_scope = custom_filter.filter_scope(filtered_scope)
     end
     
-    #filtered_scope = Userfile.add_filters_to_scope(name_filters, filtered_scope)
     unless tag_filters.blank?
       filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end

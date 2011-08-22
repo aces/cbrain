@@ -285,7 +285,7 @@ class Userfile < ActiveRecord::Base
     by_id     = userfiles.index_by { |u| u.tree_children = nil; u.id } # WE NEED TO USE THIS INSTEAD OF .parent !!!
     seen      = {}
 
-    # Contruct tree
+    # Construct tree
     userfiles.each do |file|
       current  = file # probably not necessary
       track_id = file.id # to detect loops
@@ -345,68 +345,6 @@ class Userfile < ActiveRecord::Base
       pager.total_entries = files.size
       pager
     end
-  end
-
-  #Filters the +files+ array of userfiles, based on the
-  #tag filters in the +tag_filters+ array and +user+, the current user.
-  def self.apply_tag_filters_for_user(files, tag_filters, user)
-    current_files = files
-
-    unless tag_filters.blank?
-      tags = user.tags.find(tag_filters)
-      current_files = current_files.select{ |f| (tags & f.get_tags_for_user(user)) == tags}
-    end
-
-    current_files
-  end
-
-  #Converts a filter request sent as a POST parameter from the
-  #Userfile index page into the format used by the CbrainSession model
-  #to store currently active filters.
-  def self.get_filter_name(type, term)
-    case type
-    when 'name_search'
-      term.blank? ? nil : 'name:' + term
-    when 'tag_search'
-      term.blank? ? nil : 'tag:' + term
-    when 'format'
-      term.blank? ? nil : 'format:' + term
-    when 'cw5'
-      'file:cw5'
-    when 'flt'
-      'file:flt'
-    when 'mls'
-      'file:mls'
-    end
-  end
-  
-  #Convert the array of +filters+ and add them to +scope+
-  #to be used in pulling userfiles from the database.
-  #Note that tag filters will not be converted, as they are
-  #handled by the apply_tag_filters method.
-  def self.add_filters_to_scope(filters,scope)
-
-    filters.each do |filter|
-      type, term = filter.split(':')
-      case type
-      when 'name'
-        scope = scope.where( ["(userfiles.name LIKE ?)", "%#{term}%"] )
-      when 'custom'
-        custom_filter = UserfileCustomFilter.find_by_name(term)
-        scope = custom_filter.filter_scope(scope)
-      when 'file'
-        case term
-        when 'cw5'
-          scope = scope.where( ["(userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ? OR userfiles.name LIKE ?)", "%.flt", "%.mls", "%.bin", "%.cw5"])
-        when 'flt'
-          scope = scope.where( ["(userfiles.name LIKE ?)", "%.flt"])
-        when 'mls'
-          scope = scope.where( ["(userfiles.name LIKE ?)", "%.mls"])
-        end
-      end
-    end
-    
-    scope
   end
 
   #Returns whether or not +user+ has access to this
@@ -481,7 +419,7 @@ class Userfile < ActiveRecord::Base
   end
 
   #This method takes in an array to be used as the :+conditions+
-  #parameter for Userfile.find and modifies it to restrict based
+  #parameter for Userfile.where and modifies it to restrict based
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin
@@ -506,20 +444,6 @@ class Userfile < ActiveRecord::Base
     scope = scope.where( [query_string] + query_array)
     
     scope
-  end
-
-  #Set the attribute by which to sort the file list
-  #in the Userfile index view.
-  def self.set_order(new_order, current_order)
-    if new_order == 'size'
-      new_order = 'type, ' + new_order
-    end
-
-    if new_order == current_order && new_order != 'userfiles.lft'
-      new_order += ' DESC'
-    end
-
-    new_order
   end
 
   # This method returns true if the string +basename+ is an

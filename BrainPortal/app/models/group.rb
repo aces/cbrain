@@ -78,7 +78,7 @@ class Group < ActiveRecord::Base
   # Returns true of +name+ is a legal group name. Also called
   # by active record validations.
   def self.is_legal_groupname?(name)
-    return true if name && name.match(/^[a-zA-Z0-9][\w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/)
+    return true if name && name.match(/^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/)
     false
   end
 

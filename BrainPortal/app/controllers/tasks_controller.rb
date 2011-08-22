@@ -316,7 +316,7 @@ class TasksController < ApplicationController
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
-    @task.status      = "New"
+    @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig
     tool_config = @task.tool_config
