@@ -296,6 +296,11 @@ class UserfilesController < ApplicationController
     @default_viewer = @userfile.viewers.first
 
     @log  = @userfile.getlog rescue nil
+
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml => @userfile }
+    end
   end
   
   # GET /userfiles/1/edit
