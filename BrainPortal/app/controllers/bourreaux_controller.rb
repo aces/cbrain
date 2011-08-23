@@ -18,7 +18,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :show, :row_data]
+  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info]
    
   def index #:nodoc:
     @bourreaux = base_filtered_scope RemoteResource.find_all_accessible_by_user(current_user).order("remote_resources.type DESC, remote_resources.id")
