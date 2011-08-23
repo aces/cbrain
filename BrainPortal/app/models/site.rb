@@ -149,22 +149,17 @@ class Site < ActiveRecord::Base
     self.manager_ids ||= []
     self.user_ids ||= []
     current_manager_ids = self.manager_ids.collect(&:to_s) || []
-    current_user_ids = self.user_ids.collect(&:to_s)
-    
+    current_user_ids = self.user_ids.collect(&:to_s)   
     User.find(current_user_ids | current_manager_ids).each do |user|
-      if current_manager_ids.include? user.id.to_s
+      user.site_id = self.id
+      if current_manager_ids.include?(user.id.to_s)
         if user.has_role? :user
-          user.update_attributes(:site_id  => self.id, :role  => "site_manager")
-        else
-          user.update_attributes(:site_id  => self.id)
+          user.role = "site_manager"
         end
-      else
-        if user.has_role? :site_manager
-          user.update_attributes(:site_id  => self.id, :role  => "user")
-        else
-          user.update_attributes(:site_id  => self.id)
-        end
+      elsif user.has_role? :site_manager
+        user.role = "user"
       end
+      user.save
     end
   end
   

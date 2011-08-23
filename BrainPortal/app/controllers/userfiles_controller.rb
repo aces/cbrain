@@ -591,7 +591,7 @@ class UserfilesController < ApplicationController
   def update_multiple #:nodoc:
     filelist    = params[:file_ids] || []
     operation = case params[:commit].to_s
-                   # Critical! Case values much mach label of submit button!
+                   # Critical! Case values must match labels of submit buttons!
                    when "Update Tags"
                      ['set_tags_for_user', current_user, params[:tags]]
                    when "Update Projects"
@@ -1099,7 +1099,7 @@ class UserfilesController < ApplicationController
       return
     end
     if action_name == "update_multiple"
-      action_name = params[:commit] + " on"
+      action_name = params[:commit].to_s + " on"
     end
     
     yield
