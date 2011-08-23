@@ -443,7 +443,7 @@ jQuery(
    
    //html_tool_tip_code based on xstooltip provided by
    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-   jQuery(".html_tool_tip_trigger").bind("mouseover", function(event){
+   jQuery(".html_tool_tip_trigger").live("mouseenter", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
@@ -462,7 +462,7 @@ jQuery(
       }
       
       tool_tip.show();
-   }).bind("mouseout", function(event){
+   }).live("mouseleave", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
