@@ -1048,7 +1048,46 @@ class DataProvider < ActiveRecord::Base
   def self.rsync_ignore_patterns #:nodoc:
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
   end
-  
+
+  # This method removes from the cache all files
+  # and directories that are spurious (that is, do not
+  # correspond to actual userfiles in the DB). Unless
+  # +do_id+ is true, no files are actually erased.
+  # Always returns an array of strings for the subpaths that
+  # are/were superfluous, each like "01/23/45".
+  # This whole process can take some time.
+  def self.cleanup_leftover_cache_files(do_it=false)
+    rr_id = RemoteResource.current_resource.id
+    Dir.chdir(self.cache_rootdir) do
+      dirlist = []
+      # The find command below has been tested on Linux and Mac OS X
+      # It MUST generate exactly three levels deep so it can properly
+      # infer the original file ID !
+      IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
+      ids2path = {}
+      dirlist.each do |path|  # path should be  "./01/23/45\n"
+        next unless path =~ /^\.\/(\d+)\/(\d+)\/(\d+)\s*$/ # make sure
+        idstring = Regexp.last_match[1..3].join("")
+        ids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
+      end
+      return [] if ids2path.empty?
+      Userfile.select("id as id").all.each { |u| ids2path.delete(u.id) }
+      return [] if ids2path.empty?
+      if do_it
+        maybe_spurious_parents={}
+        ids2path.each do |id,path| # 12345, "01/23/45"
+          FileUtils.remove_entry(path, true) rescue true
+          SyncStatus.where(:userfile_id => id, :remote_resource_id => rr_id).destroy_all rescue true
+          maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
+          maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"
+        end
+        maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
+      end
+      return ids2path.values
+    end
+  end
+
+
   
   #################################################################
   # ActiveRecord callbacks
