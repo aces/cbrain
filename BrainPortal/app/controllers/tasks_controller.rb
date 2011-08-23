@@ -553,9 +553,9 @@ class TasksController < ApplicationController
     tasklist    = params[:tasklist]  || []
     batch_ids   = params[:batch_ids] || []
     if batch_ids.delete "nil"
-      tasklist += CbrainTask.where( :launch_time => nil ).map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).map(&:id)
     end
-    tasklist += CbrainTask.where( :launch_time => batch_ids ).map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
