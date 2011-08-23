@@ -34,46 +34,55 @@ module TasksHelper
   end
 
   StatesToColor = {
-          'Duplicated'                       => "blue",
-          'Standby'                          => "orange",
-          'Configured'                       => "orange",
-          'New'                              => "blue",
-          'Setting Up'                       => "blue",
-          'Queued'                           => "blue",
-          'On Hold'                          => "orange",
-          'On CPU'                           => "blue",
-          'Suspended'                        => "orange",
-          'Data Ready'                       => "blue",
-          'Post Processing'                  => "blue",
-          'Completed'                        => "green",
-          'Terminated'                       => "red",
-          'Failed To Setup'                  => "red",
-          'Failed To PostProcess'            => "red",
-          'Failed On Cluster'                => "red",
-          'Failed Setup Prerequisites'       => "red",
-          'Failed PostProcess Prerequisites' => "red",
-          'Recover Setup'                    => "purple",
-          'Recover Cluster'                  => "purple",
-          'Recover PostProcess'              => "purple",
-          'Recovering Setup'                 => "purple",
-          'Recovering Cluster'               => "purple",
-          'Recovering PostProcess'           => "purple",
-          'Restart Setup'                    => "blue",
-          'Restart Cluster'                  => "blue",
-          'Restart PostProcess'              => "blue",
-          'Restarting Setup'                 => "blue",
-          'Restarting Cluster'               => "blue",
-          'Restarting PostProcess'           => "blue",
-          'Preset'                           => "black",  # never seen in interface
-          'SitePreset'                       => "black",  # never seen in interface
-          'Failed'                           => "red"     # not an official task status, but used in reports
+          'Duplicated'                       => [ "blue",   998 ],
+          'Standby'                          => [ "orange", 999 ],
+          'Configured'                       => [ "orange",  25 ],
+          'New'                              => [ "blue",    20 ],
+          'Setting Up'                       => [ "blue",    30 ],
+          'Queued'                           => [ "blue",    40 ],
+          'On CPU'                           => [ "blue",    50 ],
+          'On Hold'                          => [ "orange",  45 ],
+          'Suspended'                        => [ "orange",  55 ],
+          'Data Ready'                       => [ "blue",    60 ],
+          'Post Processing'                  => [ "blue",    70 ],
+          'Completed'                        => [ "green",   80 ],
+          'Terminated'                       => [ "red",     90 ],
+          'Failed To Setup'                  => [ "red",    135 ],
+          'Failed On Cluster'                => [ "red",    165 ],
+          'Failed To PostProcess'            => [ "red",    175 ],
+          'Failed Setup Prerequisites'       => [ "red",    125 ],
+          'Failed PostProcess Prerequisites' => [ "red",    165 ],
+          'Recover Setup'                    => [ "purple", 220 ],
+          'Recover Cluster'                  => [ "purple", 240 ],
+          'Recover PostProcess'              => [ "purple", 260 ],
+          'Recovering Setup'                 => [ "purple", 320 ],
+          'Recovering Cluster'               => [ "purple", 340 ],
+          'Recovering PostProcess'           => [ "purple", 360 ],
+          'Restart Setup'                    => [ "blue",   420 ],
+          'Restart Cluster'                  => [ "blue",   440 ],
+          'Restart PostProcess'              => [ "blue",   460 ],
+          'Restarting Setup'                 => [ "blue",   520 ],
+          'Restarting Cluster'               => [ "blue",   540 ],
+          'Restarting PostProcess'           => [ "blue",   560 ],
+          'Preset'                           => [ "black",    0 ], # never seen in interface
+          'SitePreset'                       => [ "black",    0 ], # never seen in interface
+          'Failed'                           => [ "red",    100 ]  # not an official task status, but used in reports
   }
 
 
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_status(status)
     return status unless StatesToColor.has_key?(status)
-    html_colorize(status,StatesToColor[status])
+    html_colorize(status,StatesToColor[status][0])
+  end
+
+  def cmp_status_order(status1,status2) #:nodoc:
+    info1 = StatesToColor[status1] # can be nil
+    info2 = StatesToColor[status2] # can be nil
+    return status1 <=> status2 unless info1 && info2 # compare by name
+    cmp = (info1[1] <=> info2[1]) # compare their ranks
+    return cmp if cmp != 0
+    status1 <=> status2 # in case of equality, compare by name again
   end
 
 end
