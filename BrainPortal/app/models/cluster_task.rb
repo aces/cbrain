@@ -814,7 +814,8 @@ class ClusterTask < CbrainTask
   # This is not a full path, just a filename relative to the work directory.
   # The file itself is not garanteed to exist.
   def qsub_script_basename(run_number=nil)
-    if File.exists?("#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh") # for compat
+    workdir = self.full_cluster_workdir || "/does_not_exist_never_mind"
+    if File.exists?("#{workdir}/#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh") # for compat
       "#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh"
     else
       "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh" # New official convention
