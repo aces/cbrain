@@ -59,9 +59,9 @@ class ClusterTask < CbrainTask
   Revision_info=CbrainFileRevision[__FILE__]
 
   # These basenames might get modified with suffixes appended to them.
-  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{id}.sh"
-  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{id}"
-  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{id}"
+  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{id}.sh"
+  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{id}"
+  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{name}.{id}"
 
   before_destroy :before_destroy_terminate_and_rm_workdir
 
@@ -811,10 +811,15 @@ class ClusterTask < CbrainTask
   ##################################################################
 
   # Returns a basename for the QSUB script for the task.
-  # This is not a full path, just filename relative to the work directory.
-  # The file itself is not garanteed to exist, either.
+  # This is not a full path, just a filename relative to the work directory.
+  # The file itself is not garanteed to exist.
   def qsub_script_basename(run_number=nil)
-    QSUB_SCRIPT_BASENAME + ".#{self.run_id(run_number)}.sh"
+    workdir = self.full_cluster_workdir || "/does_not_exist_never_mind"
+    if File.exists?("#{workdir}/#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh") # for compat
+      "#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh"
+    else
+      "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh" # New official convention
+    end
   end
 
   # Returns the filename for the job's captured STDOUT
@@ -825,9 +830,11 @@ class ClusterTask < CbrainTask
     workdir = self.full_cluster_workdir
     return nil if workdir.blank?
     if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.out"                # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.out"
+    elsif File.exists?("#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}") # for compat
+      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}"
     else
-      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}" # New official convention
+      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}" # New official convention
     end
   end
 
@@ -839,9 +846,11 @@ class ClusterTask < CbrainTask
     workdir = self.full_cluster_workdir
     return nil if workdir.blank?
     if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.err"                # for compatibility will old tasks
+      "#{workdir}/.qsub.sh.err"
+    elsif File.exists?("#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}") # for compat
+      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}"
     else
-      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}" # New official convention
+      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}" # New official convention
     end
   end
 

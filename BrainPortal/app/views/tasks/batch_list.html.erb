@@ -29,7 +29,7 @@
     <td colspan="<%= current_project ? "3" : "4" %>" class="left_align">
       <% if launch_time %>
         <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
-        <% report   = stat_cnt.keys.sort.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
+        <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
         <%= report.html_safe %>
       <% end %>
     </td>

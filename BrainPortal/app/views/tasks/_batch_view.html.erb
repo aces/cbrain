@@ -42,7 +42,7 @@
       </td>
       <td colspan="<%= current_project ? "3" : "4" %>" class="left_align">
         <% if launch_time %>
-          <% report   = statuses.keys.sort.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
+          <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
           <%= report.html_safe %>
         <% end %>
       </td>

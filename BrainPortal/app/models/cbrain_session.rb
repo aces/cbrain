@@ -146,7 +146,7 @@ class CbrainSession
               @session[controller.to_sym]["sort_hash"] ||= {}
             elsif @session[controller.to_sym][item].respond_to? :clear
               @session[controller.to_sym][item].clear
-            elsif
+            else
               @session[controller.to_sym].delete item
             end
           end
@@ -241,7 +241,7 @@ class CbrainSession
     persistent_ids = self[:persistent_userfile_ids] ||= {}
     persistent_ids
   end
-  
+
   private
   
   def sanitize_params(k, param) #:nodoc:
