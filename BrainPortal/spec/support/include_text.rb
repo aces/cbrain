@@ -3,10 +3,11 @@ module RSpec::Rails
     RSpec::Matchers.define :include_text do |expected_text|
       match do |response_or_text|
         @actual_text = response_or_text.respond_to?(:body) ? response_or_text.body : response_or_text
+        @actual_text = @actual_text.to_s
         if expected_text.is_a?(Regexp)
           @actual_text =~ expected_text
         else
-          @actual_text.include?(expected_text)
+          @actual_text.include?(expected_text.to_s)
         end
       end
 
