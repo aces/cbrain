@@ -163,7 +163,7 @@ class ApplicationController < ActionController::Base
       parameters.delete "update_filter"
       if update_filter =~ /_hash$/
         params[current_controller][update_filter] = parameters
-      elsif
+      else
         params[current_controller] = parameters
       end
       params.delete "update_filter"
