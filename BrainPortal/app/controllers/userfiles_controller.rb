@@ -760,7 +760,7 @@ class UserfilesController < ApplicationController
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
-          next if orig_provider.id == data_provider_id # not support for copy to same provider in tehr interface, yet.
+          next if orig_provider.id == data_provider_id # not support for copy to same provider in the interface, yet.
           res = nil
           if task == 'move'
             raise "Not owner." unless u.has_owner_access?(current_user)
@@ -900,23 +900,12 @@ class UserfilesController < ApplicationController
       timestamp = Time.now.to_i.to_s[-4..-1]  # four digits long
       specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
     end
-    
+
     tot_size = 0
 
     # Find list of files accessible to the user
-    userfiles_list = filelist.collect do |id|
-      u = Userfile.find_accessible_by_user(id, current_user, :access_requested => :read)
-      next unless u
-      tot_size += (u.size || 0)
-      u
-    end
-
-    # Do we have at least ONE file to send?
-    if userfiles_list.size == 0
-      flash[:notice] = "No files selected for download."
-      redirect_to :action => :index, :format =>  request.format.to_sym
-      return
-    end
+    userfiles_list = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read)
+    tot_size = userfiles_list.inject(0) { |total, u| total + (u.size || 0) }
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
@@ -951,7 +940,7 @@ class UserfilesController < ApplicationController
   def extract_from_collection #:nodoc:
     success = failure = 0
 
-    unless params[:file_ids] && params[:file_ids].size > 0
+    unless params[:file_names] && params[:file_names].size > 0
       flash[:notice] = "No files selected for extraction"
       redirect_to :action  => :edit
       return
@@ -960,7 +949,7 @@ class UserfilesController < ApplicationController
     collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
-    params[:file_ids].each do |file|
+    params[:file_names].each do |file|
       userfile = SingleFile.new(
           :name             => File.basename(file),
           :user_id          => current_user.id,
