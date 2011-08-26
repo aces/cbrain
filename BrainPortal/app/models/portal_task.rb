@@ -143,7 +143,7 @@ class PortalTask < CbrainTask
   # Special boolean properties of your task, returned as a
   # hash table. Used by CBRAIN rendering code to control
   # default elements. Advanced feature. The defaults
-  # for all properties are'false' so that subclass
+  # for all properties are 'false' so that subclass
   # only have to explicitely set the special properties
   # that they want 'true' (since nil is also false).
   def self.properties
