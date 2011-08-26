@@ -138,16 +138,20 @@ class UsersController < ApplicationController
       params[:user][:time_zone] = nil # change "" to nil
     end
     
-    role      = params[:user].delete :role
-    group_ids = params[:user].delete :group_ids
-    site_id   = params[:user].delete :site_id
+    role           = params[:user].delete :role
+    group_ids      = params[:user].delete :group_ids
+    site_id        = params[:user].delete :site_id
+    account_locked = params[:user].delete :account_locked
     
     @user.attributes = params[:user]
     
     if current_user.has_role? :admin
-      @user.role      = role      if role
-      @user.group_ids = group_ids if group_ids
-      @user.site_id   = site_id   if site_id
+      @user.role           = role             if role
+      @user.group_ids      = group_ids        if group_ids
+      @user.site_id        = site_id          if site_id
+      @user.account_locked = (account_locked == "1")
+      @user.destroy_user_sessions if @user.account_locked 
+      
     end
     
     if current_user.has_role? :site_manager

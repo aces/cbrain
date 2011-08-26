@@ -244,6 +244,21 @@ class User < ActiveRecord::Base
      @group_ids_hash[group_id] ? true : false
   end
 
+  # Destroy all sessions for user 
+  def destroy_user_sessions
+    myid = self.id
+    return true unless myid # defensive
+    sessions = CbrainSession.all.select do |s|
+      data = s.data rescue {} # old sessions can have problems being reconstructed
+      (s.user_id && s.user_id == myid) ||
+      (data && data[:user_id] && data[:user_id] == myid)
+    end
+    sessions.each do |s|
+      s.destroy rescue true
+    end
+    true
+  end
+
   protected
 
   # before filter 
@@ -256,7 +271,7 @@ class User < ActiveRecord::Base
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
-  
+
   private
   
   #Create a random string (currently for passwords).
@@ -342,20 +357,6 @@ class User < ActiveRecord::Base
       group_ids << site_group.id
     end
     self.group_ids = group_ids
-  end
-
-  def destroy_user_sessions #:nodoc:
-    myid = self.id
-    return true unless myid # defensive
-    sessions = CbrainSession.all.select do |s|
-      data = s.data rescue {} # old sessions can have problems being reconstructed
-      (s.user_id && s.user_id == myid) ||
-      (data && data[:user_id] && data[:user_id] == myid)
-    end
-    sessions.each do |s|
-      s.destroy rescue true
-    end
-    true
   end
 
 end

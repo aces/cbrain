@@ -105,6 +105,12 @@ module ApplicationHelper
     "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;".html_safe
   end
 
+  # Produces a pretty red times symbol (used for show unavailable
+  # ressource
+  def red_times_icon
+    "&nbsp;<span style=\"color:red;text-decoration:none;\">&times;</span>".html_safe
+  end
+
 
   # Splits a description into a header and a body; both are returned as strings
   # in a two-element array.
