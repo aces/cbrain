@@ -105,8 +105,8 @@ module ApplicationHelper
     "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;".html_safe
   end
 
-  # Produces a pretty red times symbol (used for show unavailable
-  # ressource
+  # Produces a pretty red times symbol (used to show unavailable
+  # ressources)
   def red_times_icon
     "&nbsp;<span style=\"color:red;text-decoration:none;\">&times;</span>".html_safe
   end
