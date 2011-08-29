@@ -25,17 +25,9 @@ class FileCollection < Userfile
   def content(options) #:nodoc
     
     begin
-      if options[:collection_file]
+      if options[:collection_file] && self.list_files.find { |f| f.name == options[:collection_file] }
         
-        path_string = options[:collection_file]
-        
-        #so ../ doesn't work 
-        #(this will prevent files 
-        #like abc..efg but that's bad 
-        #naming anyway
-        if path_string.include?("..") 
-          path_string = ""
-        end  
+        path_string = options[:collection_file] 
         
         path = self.cache_full_path.parent + path_string
         if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )

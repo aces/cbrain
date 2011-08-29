@@ -1,7 +1,7 @@
 
 <% if @userfile.is_locally_synced? %>
   <td>
-    <%= string_if(file.symbolic_type == :regular, check_box_tag("file_ids[]", file.name, false, :class  => "collection_checkbox")) %>  
+    <%= string_if(file.symbolic_type == :regular, check_box_tag("file_names[]", file.name, false, :class  => "collection_checkbox")) %>  
   </td>
 <% end %>
 
