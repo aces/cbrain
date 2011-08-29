@@ -37,6 +37,8 @@
       <% if check_role(:admin) %>
         <p><%= f.label :site_id, "Site" %><br/>
         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true}, :disabled  => current_user.has_role?(:site_manager)  %></p>
+        <p><%= f.label :account_locked, "Account locked:" %>
+        <%= f.check_box(:account_locked) %></p>
       <% end %>
     <% end %>
 

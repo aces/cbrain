@@ -28,7 +28,13 @@ class SessionsController < ApplicationController
 
   def create #:nodoc:
     self.current_user = User.authenticate(params[:login], params[:password])
-        
+
+    if self.current_user.account_locked
+      flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+        render :action  => :new
+        return
+    end
+
     portal = BrainPortal.current_resource
     if logged_in?
       if portal.portal_locked? && !current_user.has_role?(:admin)

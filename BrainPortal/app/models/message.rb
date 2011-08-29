@@ -163,9 +163,15 @@ class Message < ActiveRecord::Base
   def self.send_internal_error_message(destination, header, exception, request_params = {})
 
     # Params cleanup
-    request_params = request_params.clone
-    request_params[:password]  = "********" if request_params.has_key?(:password)
-    request_params["password"] = "********" if request_params.has_key?("password")
+    userstruct = request_params['user'] || request_params[:user]
+    [ :password, :password_confirmation ].each do |key|
+      request_params[key]      = "********" if request_params.has_key?(key)
+      request_params[key.to_s] = "********" if request_params.has_key?(key.to_s)
+      if userstruct && userstruct.is_a?(Hash)
+        userstruct[key]      = "********" if userstruct.has_key?(key)
+        userstruct[key.to_s] = "********" if userstruct.has_key?(key.to_s)
+      end
+    end
 
     # Message for normal users
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin))

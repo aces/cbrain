@@ -60,7 +60,10 @@ class CBRAIN
   # This method won't work if used inside the RAILS initialization
   # code in 'config/initializers'.
   def self.spawn_with_active_records(destination = nil, taskname = 'Internal Background Task')
+
+    # Save the original DB connection and disconnect
     dbconfig = ActiveRecord::Base.remove_connection
+
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
 
@@ -77,7 +80,32 @@ class CBRAIN
         begin
           $0 = "#{taskname}" # Clever!
           Process.setpgrp rescue true
+
+          # Try to find the RAILS acceptor socket(s) and close them.
+          # We assume they'll be file descriptors that are
+          # open read-write and non-blocking. If that's not
+          # specific enough in the future, we'll need new logic here.
+          # Debug code below left comment-out on purpose.
+          expect_flags = Fcntl::O_RDWR | Fcntl::O_NONBLOCK
+          (3..20).each do |fd|
+            io = IO.for_fd(fd) rescue nil
+            unless io
+              #puts_red "FD #{fd} : not opened"
+              next
+            end
+            flags = io.fcntl(Fcntl::F_GETFL) rescue 0x1000000 # chosen not to match the test below
+            #puts_green "FD #{fd} : #{flags} AC=#{io.autoclose?}"
+            io.autoclose=false # IMPORTANT!
+            if (flags & expect_flags) == expect_flags
+              io.close rescue true
+              #puts_cyan "-> Closed"
+            end
+          end
+
+          # Reconnect to DB
           ActiveRecord::Base.establish_connection(dbconfig)
+
+          # Execute the user code
           yield
 
         # Background untrapped exception handling
