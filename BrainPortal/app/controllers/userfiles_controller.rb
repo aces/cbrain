@@ -386,6 +386,10 @@ class UserfilesController < ApplicationController
       return
     end
 
+    # Temp file where the data is saved by rack
+    rack_tempfile_path = upload_stream.tempfile.path
+    rack_tempfile_size = upload_stream.tempfile.size
+
     # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
 
@@ -398,7 +402,8 @@ class UserfilesController < ApplicationController
       return
     end
 
-    tmpcontentfile         = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}"
+    # Where we'll keep a copy in the spawn() below
+    tmpcontentfile     = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}" # basename's extension is used later on
 
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
@@ -423,38 +428,29 @@ class UserfilesController < ApplicationController
 
       flash[:notice] += "File '#{basename}' being added in background."
 
+      system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
       CBRAIN.spawn_with_active_records(current_user,"Upload of SingleFile") do
-        localpath = upload_stream.local_path rescue "" # optimize for large files
-        if localpath.blank?
-          begin
-            File.open(tmpcontentfile, "w:BINARY") do |io|
-              file_content = upload_stream.read
-              io.write(file_content)
-            end
-            userfile.cache_copy_from_local_file(tmpcontentfile)
-            userfile.size = File.size(tmpcontentfile) rescue 0
-          ensure
-            File.delete(tmpcontentfile) rescue true
-          end
-        else
-          userfile.cache_copy_from_local_file(localpath)
-          userfile.size = File.size(userfile.cache_full_path) rescue 0
+        begin
+          userfile.cache_copy_from_local_file(tmpcontentfile)
+          userfile.size = rack_tempfile_size
+          userfile.save
+          userfile.addlog_context(self,"Uploaded by #{current_user.login}")
+          current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
+          Message.send_message(current_user,
+                               :message_type  => 'notice', 
+                               :header  => "SingleFile Uploaded", 
+                               :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}]]"
+                               )
+        ensure
+          File.delete(tmpcontentfile) rescue true
         end
-
-        userfile.save
-        userfile.addlog_context(self,"Uploaded by #{current_user.login}")
-        current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
-        Message.send_message(current_user,
-                             :message_type  => 'notice', 
-                             :header  => "SingleFile Uploaded", 
-                             :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}]]"
-                             )
-
       end # spawn
       
       redirect_to redirect_path
       return
     end # save
+
+
 
     # We will be processing some archive file.
     # First, check for supported extensions
@@ -474,7 +470,7 @@ class UserfilesController < ApplicationController
         return
       end
 
-      collectionType = params[:archive] =~/civet/i ? CivetCollection : FileCollection
+      collectionType = FileCollection # TODO let user choose from teh interface?
 
       collection = collectionType.new(
         params[:userfile].merge(
@@ -487,9 +483,9 @@ class UserfilesController < ApplicationController
       
       if collection.save
 
+        system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
         CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
-            File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
             collection.extract_collection_from_archive_file(tmpcontentfile)
             Message.send_message(current_user,
                                   :message_type  => 'notice', 
@@ -514,6 +510,8 @@ class UserfilesController < ApplicationController
       return
     end
 
+
+
     # At this point, create a bunch of userfiles from the archive
     cb_error "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
 
@@ -525,10 +523,10 @@ class UserfilesController < ApplicationController
     })
 
     # Do it in background.
+    system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        File.open(tmpcontentfile, "w:BINARY") { |io| io.write(upload_stream.read) }
-        extract_from_archive(tmpcontentfile,attributes) # generates its own Messages
+        extract_from_archive(tmpcontentfile, attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
       end
@@ -1101,12 +1099,12 @@ class UserfilesController < ApplicationController
   end
   
   #Extract files from an archive and register them in the database.
-  #The first argument is a path to an archive file (tar or zip).
-  #The second argument is a hash of attributes for all the files,
+  #+archive_file_name+ is a path to an archive file (tar or zip).
+  #+attributes+ is a hash of attributes for all the files,
   #they must contain at least user_id and data_provider_id
-  def extract_from_archive(archive_file_name,attributes = {}) #:nodoc:
+  def extract_from_archive(archive_file_name, attributes = {}) #:nodoc:
 
-    escaped_archivefile = archive_file_name.gsub("'", "'\\\\''")
+    escaped_archivefile = archive_file_name.gsub("'", "'\\\\''") # bash escaping
 
     # Check for required attributes
     data_provider_id    = attributes["data_provider_id"] ||
@@ -1120,11 +1118,11 @@ class UserfilesController < ApplicationController
     # Create content list
     all_files        = []
     if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-      all_files = IO.popen("tar -tzf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
+      all_files = IO.popen("tar -tzf '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.tar$/i
-      all_files = IO.popen("tar -tf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
+      all_files = IO.popen("tar -tf '{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.zip/i
-      all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
+      all_files = IO.popen("unzip -l '{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
       cb_error "Cannot process file with unknown extension: #{archive_file_name}"
     end
