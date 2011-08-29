@@ -54,10 +54,11 @@ class User < ActiveRecord::Base
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   
-  before_create              :add_system_groups
+  before_create             :add_system_groups
   before_save               :encrypt_password
   after_update              :system_group_site_update
-  before_destroy            :validate_destroy
+  before_destroy            :admin_check
+  after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
     
   # prevents a user from submitting a crafted form that bypasses activation
@@ -65,10 +66,12 @@ class User < ActiveRecord::Base
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
-  has_many                :userfiles
-  has_many                :data_providers
-  has_many                :remote_resources
-  has_many                :cbrain_tasks
+  has_many                :userfiles,         :dependent => :restrict
+  has_many                :data_providers,    :dependent => :restrict
+  has_many                :remote_resources,  :dependent => :restrict
+  has_many                :cbrain_tasks,      :dependent => :restrict
+  
+  
   has_and_belongs_to_many :groups   
   belongs_to              :site
 
@@ -299,23 +302,10 @@ class User < ActiveRecord::Base
   end
   
   #Ensure that the system will be in a valid state if this user is destroyed.
-  def validate_destroy
+  def admin_check
     if self.login == 'admin'
-      cb_error "Default admin user cannot be destroyed.", :redirect  => {:action  => :index}
+      cb_error "Default admin user cannot be destroyed.", :redirect => {:action => :index}
     end
-    unless self.userfiles.empty?
-      cb_error "User #{self.login} cannot be destroyed while there are still files on the account.", :redirect  => {:action  => :index}
-    end
-    unless self.data_providers.empty?
-      cb_error "User #{self.login} cannot be destroyed while there are still data providers on the account.", :redirect  => {:action  => :index}
-    end
-    unless self.remote_resources.empty?
-      cb_error "User #{self.login} cannot be destroyed while there are still remote resources on the account.", :redirect  => {:action  => :index}
-    end
-    unless self.cbrain_tasks.empty?
-      cb_error "User #{self.login} cannot be destroyed while there are still tasks on the account.", :redirect  => {:action  => :index}
-    end
-    destroy_system_group
   end
   
   def system_group_site_update  #:nodoc:
@@ -340,7 +330,7 @@ class User < ActiveRecord::Base
   end
   
   def destroy_system_group #:nodoc:
-    system_group = SystemGroup.where( :name => self.login ).first
+    system_group = UserGroup.where( :name => self.login ).first
     system_group.destroy if system_group
   end
   
