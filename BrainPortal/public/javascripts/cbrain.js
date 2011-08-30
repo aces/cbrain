@@ -257,6 +257,8 @@ function load_behaviour(event){
          }
        });
      }
+      $(".datepicker").datepicker();
+
    
 }
 
@@ -801,6 +803,8 @@ jQuery(
      brainbrowser.setup(jQuery(this).attr('data-content-url'));
      return false;
    };
+   console.log("datepicker")
+   jQuery(".datepicker").datepicker();
 });
 
 
