@@ -90,14 +90,15 @@ class CBRAIN
           (3..20).each do |fd|
             io = IO.for_fd(fd) rescue nil
             unless io
-            #  puts_red "FD #{fd} : not opened"
+              #puts_red "FD #{fd} : not opened"
               next
             end
             flags = io.fcntl(Fcntl::F_GETFL) rescue 0x1000000 # chosen not to match the test below
-            #puts_green "FD #{fd} : #{flags}"
+            #puts_green "FD #{fd} : #{flags} AC=#{io.autoclose?}"
+            io.autoclose=false # IMPORTANT!
             if (flags & expect_flags) == expect_flags
               io.close rescue true
-            #  puts_cyan "-> Closed"
+              #puts_cyan "-> Closed"
             end
           end
 

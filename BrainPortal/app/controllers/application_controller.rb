@@ -192,16 +192,19 @@ class ApplicationController < ActionController::Base
     begin
       yield
 
+    # Record not accessible
     rescue ActiveRecord::RecordNotFound => e
       raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       redirect_to default_redirect
 
+    # Action not accessible
     rescue ActionController::UnknownAction => e
       raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The page you requested does not exist."
       redirect_to default_redirect
 
+    # Internal CBRAIN errors
     rescue CbrainException => cbm
       if cbm.is_a? CbrainNotice
          flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
@@ -214,10 +217,13 @@ class ApplicationController < ActionController::Base
         format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
       end
 
+    # Anything else is serious
     rescue => e
       raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
+
+      # Note that send_internal_error_message will also censure :password from the params hash
+      Message.send_internal_error_message(current_user, "Exception Caught", e, params) rescue true
       log_exception(e) # explicit logging in exception logger, since we won't re-raise it now.
-      Message.send_internal_error_message(current_user, "Exception Caught", e, params)
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
       redirect_to default_redirect
 
