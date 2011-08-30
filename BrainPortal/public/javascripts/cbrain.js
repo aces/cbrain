@@ -143,7 +143,7 @@ function load_behaviour(event){
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").hide();
 
-    loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e){ 
+   loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e){ 
 											                 loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();		
 												     });
 

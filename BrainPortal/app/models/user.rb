@@ -304,7 +304,7 @@ class User < ActiveRecord::Base
   #Ensure that the system will be in a valid state if this user is destroyed.
   def admin_check
     if self.login == 'admin'
-      cb_error "Default admin user cannot be destroyed.", :redirect => {:action => :index}
+      raise CbrainDeleteRestrictionError.new("Default admin user cannot be destroyed.")
     end
   end
   
