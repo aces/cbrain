@@ -198,7 +198,7 @@ class UsersController < ApplicationController
     flash[:notice] = "User '#{@user.login}' destroyed" 
 
     respond_to do |format|
-      format.js  { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'user' }}
+      format.js  { redirect_to :action => :index}
       format.xml { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e

@@ -188,8 +188,6 @@ class DataProvider < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
-
-  before_destroy          :validate_destroy
   
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
@@ -213,7 +211,7 @@ class DataProvider < ActiveRecord::Base
 
   belongs_to  :user
   belongs_to  :group
-  has_many    :userfiles
+  has_many    :userfiles, :dependent => :restrict
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
@@ -1084,19 +1082,6 @@ class DataProvider < ActiveRecord::Base
         maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
       end
       return ids2path.values
-    end
-  end
-
-
-  
-  #################################################################
-  # ActiveRecord callbacks
-  #################################################################
-
-  # Ensure that the system will be in a valid state if this data provider is destroyed.
-  def validate_destroy
-    unless self.userfiles.empty?
-      cb_error "You cannot remove a provider that has still files registered on it."
     end
   end
   
