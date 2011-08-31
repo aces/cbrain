@@ -22,7 +22,7 @@
             <td>
                 <P>
                 <select name= "bourreau[tool_ids][]", multiple="multiple", "overflow:scroll", style="height:125px; width:120">
-                    <%= options_from_collection_for_select (@tools, 'id', 'name', bourreau.tools.collect{|u| u.id}) %>
+                    <%= options_from_collection_for_select(@tools, 'id', 'name', bourreau.tools.collect{|u| u.id}) %>
                 </select>
                 <P>
             </td>
