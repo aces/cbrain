@@ -42,12 +42,13 @@ class CbrainMailer < ActionMailer::Base
   # Meant to be used by Message.send_message.
   def cbrain_message(users, content = {})
     @users   = users
-    return true if @users.blank? || @users.empty?
 
     @subject = content[:subject] || "No subject"
     @cb_body = content[:body]    || ""  # NOTE: @body is used by Rails!
     @cb_body.gsub!(/\s+\(\[\[.*?\]\]\)/, "")
     @cb_body.html_safe
+    
+    return true if @users.blank? || @users.empty?
     
     mail(
       :to      => users.map(&:email),
