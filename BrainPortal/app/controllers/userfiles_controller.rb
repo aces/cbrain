@@ -317,29 +317,27 @@ class UserfilesController < ApplicationController
 
     @log  = @userfile.getlog rescue nil
   end
-  
-  # Triggers a background synchronization of a file to the
-  # Portal's local cache
-  def sync_to_cache #:nodoc:
-     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-     state = @userfile.local_sync_status
-     @sync_status = 'ProvNewer'
-     @sync_status = state.status if state
-     
-     if @sync_status !~ /^To|InSync|Corrupted/
-       CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfile.name}") do
-         @userfile.sync_to_cache
-         @userfile.set_size
-       end # spawn
-     end
-     
-     redirect_to :action  => :show
-  end
-  
+
   # Triggers the mass synchronization of several userfiles
+  # or mass 'desynchronization' (ProvNewer) of several userfiles.
   def sync_multiple #:nodoc:
+
+    operation = params[:operation] || "sync_local"  # that, or "all_newer"
+
     @userfiles = Userfile.find_accessible_by_user(params[:file_ids], current_user, :access_requested => :read)
+
+    # Mark files as newer on provider side
+    if operation == "all_newer" # simpler case
+      updated = 0
+      SyncStatus.where(:userfile_id => @userfiles.map(&:id), :status => [ "InSync" ]).all.each do |ss|
+        updated += 1 if ss.status_transition(ss.status,"ProvNewer")
+      end
+      flash[:notice] = "Marked #{updated} files as newer on their Data Provider."
+      redirect_to :action  => :index
+      return
+    end
     
+    # Sync files to the portal's cache
     CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
       @userfiles.each do |userfile|
         state = userfile.local_sync_status
@@ -352,8 +350,12 @@ class UserfilesController < ApplicationController
         end
       end
     end # spawn
-    
-    redirect_to :action  => :index
+
+    if @userfiles.size == 1 && params[:back_to_show_page]
+      redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id
+    else
+      redirect_to :action  => :index
+    end
   end
 
   # POST /userfiles

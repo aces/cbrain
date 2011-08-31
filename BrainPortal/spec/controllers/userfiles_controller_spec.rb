@@ -198,7 +198,7 @@ describe UserfilesController do
         Userfile.stub!(:find_accessible_by_user).and_return([mock_userfile])
         CBRAIN.stub!(:spawn_with_active_records).and_yield
       end
-      it "should call sync the file to the cache if it is in a valid state" do
+      it "should sync the file to the cache if it is in a valid state" do
         mock_userfile.should_receive(:sync_to_cache)
         get :sync_multiple, :file_ids => [1]
       end
@@ -847,38 +847,6 @@ describe UserfilesController do
         mock_viewer.stub!(:partial).and_return(nil)
         get :display, :id => 1
         response.should include_text(/Could not find viewer/)
-      end
-    end
-    describe "sync_to_cache" do
-      let(:mock_status) {double("status", :status => "ProvNewer")}
-      before(:each) do
-        session[:user_id] = admin.id
-        mock_userfile.stub!(:local_sync_status).and_return(mock_status)
-        Userfile.stub!(:find_accessible_by_user).and_return(mock_userfile)
-        CBRAIN.stub!(:spawn_with_active_records)
-      end
-      it "should set syncstatus to userfile's syncstatus if it's set" do
-        get :sync_to_cache, :id => 1
-        assigns[:sync_status].should == mock_userfile.local_sync_status.status
-      end
-      it "should set sync_status to 'ProvNewer' it the userfile's sync_status is not set" do
-        mock_userfile.stub!(:local_sync_status).and_return(nil)
-        get :sync_to_cache, :id => 1
-        assigns[:sync_status].should == "ProvNewer"
-      end
-      context "when syncing" do
-        before(:each) do
-          CBRAIN.stub!(:spawn_with_active_records).and_yield
-        end
-        it "should call sync the file to the cache if it is in a valid state" do
-          mock_userfile.should_receive(:sync_to_cache)
-          get :sync_to_cache, :id => 1
-        end
-        it "should not sync the file to the cache if it is not in a valid state" do
-          mock_status.stub_chain(:status).and_return("InSync")
-          mock_userfile.should_not_receive(:sync_to_cache)
-          get :sync_to_cache, :id => 1
-        end
       end
     end
     describe "show" do

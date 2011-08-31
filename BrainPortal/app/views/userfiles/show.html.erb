@@ -144,7 +144,7 @@
         </p>
       <% elsif ! (@userfile.data_provider.not_syncable?) %>
         <p>This data is not currently synchronized.<BR>
-        Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
+        Click <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
         to start the synchronization process.<br>
         This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
         </p>
