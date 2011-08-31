@@ -386,13 +386,6 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # Temp file where the data is saved by rack
-    rack_tempfile_path = upload_stream.tempfile.path
-    rack_tempfile_size = upload_stream.tempfile.size
-
-    # Get the data provider for the destination files.
-    data_provider_id = params[:data_provider_id]
-
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
@@ -401,6 +394,13 @@ class UserfilesController < ApplicationController
       redirect_to redirect_path
       return
     end
+
+    # Temp file where the data is saved by rack
+    rack_tempfile_path = upload_stream.tempfile.path
+    rack_tempfile_size = upload_stream.tempfile.size
+
+    # Get the data provider for the destination files.
+    data_provider_id = params[:data_provider_id]
 
     # Where we'll keep a copy in the spawn() below
     tmpcontentfile     = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}" # basename's extension is used later on
@@ -470,7 +470,7 @@ class UserfilesController < ApplicationController
         return
       end
 
-      collectionType = FileCollection # TODO let user choose from teh interface?
+      collectionType = FileCollection # TODO let user choose from the interface?
 
       collection = collectionType.new(
         params[:userfile].merge(

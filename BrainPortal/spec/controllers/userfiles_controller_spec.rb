@@ -214,13 +214,15 @@ describe UserfilesController do
         session[:user_id] = admin.id
         Message.stub!(:send_message)
         File.stub!(:delete)
+        controller.stub!(:system)
       end
       it "should redirect to index if the upload file is blank" do
         post :create
         response.should redirect_to(:action => :index)
       end
       it "should redirect to index if the upload file has an invalid name" do
-        post :create, :upload_file => double("upload_file", :original_filename => "/x/y/z")
+        Userfile.stub!(:is_legal_filename?).and_return(false)
+        post :create, :upload_file => double("upload_file", :original_filename => "/x/y/.Bad*")
         response.should redirect_to(:action => :index)
       end
       context "saving a single file" do
@@ -250,24 +252,7 @@ describe UserfilesController do
             post :create, :upload_file => mock_upload_stream, :archive => "save"
             flash[:notice].should include_text(/File .+ being added in background./)
           end
-          context "when the when the localpath is unavailable (large files)" do
-            before(:each) do
-              mock_upload_stream.stub!(:local_path).and_return(nil)
-            end
-            it "should access the tempfile" do
-              File.should_receive(:open).with(/\/tmp\/.+/, anything)
-              post :create, :upload_file => mock_upload_stream, :archive => "save"
-            end
-            it "should copy the file to the local cache" do
-              mock_userfile.should_receive(:cache_copy_from_local_file)
-              post :create, :upload_file => mock_upload_stream, :archive => "save"
-            end
-            it "should determine the size of the file" do
-              File.should_receive(:size)
-              post :create, :upload_file => mock_upload_stream, :archive => "save"
-            end  
-          end
-          context "when the when the localpath is unavailable (large files)" do
+          context "when the uploaded file is available" do
             before(:each) do
               mock_upload_stream.stub!(:local_path).and_return("local_path")
             end
@@ -275,10 +260,6 @@ describe UserfilesController do
               mock_userfile.should_receive(:cache_copy_from_local_file)
               post :create, :upload_file => mock_upload_stream, :archive => "save"
             end
-            it "should determine the size of the file" do
-              File.should_receive(:size)
-              post :create, :upload_file => mock_upload_stream, :archive => "save"
-            end  
           end
           it "should save the userfile" do
             mock_userfile.should_receive(:save)
@@ -329,11 +310,7 @@ describe UserfilesController do
               flash[:error].should include_text(/Collection '.+' already exists/)
             end
           end
-          it "should create a CivetCollection if the archive is a Civet Collection" do
-            CivetCollection.should_receive(:new).and_return(mock_userfile)
-            post :create, :upload_file => mock_upload_stream, :archive => "civet_collection"
-          end
-          it "should create a FileCollection if the archive is not a Civet Collection" do
+          it "should create a FileCollection" do
             FileCollection.should_receive(:new).and_return(mock_userfile)
             post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
           end
