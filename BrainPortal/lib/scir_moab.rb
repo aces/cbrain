@@ -112,7 +112,8 @@ class ScirMoab < Scir
 
     def qsubout_to_jid(txt)
       if txt && txt =~ /^(\S+)/
-        return Regexp.last_match[1]
+        val = Regexp.last_match[1]
+        return val unless val =~ /error/i
       end
       raise "Cannot find job ID from qsub output.\nOutput: #{txt}"
     end

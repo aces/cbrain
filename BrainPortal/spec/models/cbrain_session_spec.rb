@@ -210,12 +210,8 @@ describe CbrainSession do
 
     it "should clear specific value" do
       cb_session[:userfiles]["val"] = 1
-      puts cb_session[:userfiles]["val"].respond_to? :clear
       params = {:controller => :userfiles, :userfiles => {"clear_val" => 1}}
-      puts_blue cb_session.inspect
       cb_session.update(params)
-      puts_blue cb_session.inspect
-      # cb_session[:userfiles].delete "val"
       cb_session[:userfiles]["val"].should be_nil
     end
 

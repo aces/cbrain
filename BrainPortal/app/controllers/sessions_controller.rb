@@ -44,7 +44,7 @@ class SessionsController < ApplicationController
     end
 
     # Account locked?
-    if self.current_user.account_locked
+    if self.current_user.account_locked?
       self.current_user = nil
       flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
       respond_to do |format|
