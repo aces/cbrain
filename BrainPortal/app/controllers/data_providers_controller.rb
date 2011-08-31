@@ -145,15 +145,17 @@ class DataProvidersController < ApplicationController
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
 
-    
-    respond_to do |format|
-      if @provider.errors.empty?
-        flash[:notice] = "Provider successfully created."
+    if @provider.errors.empty?
+      flash[:notice] = "Provider successfully created."
+      respond_to do |format|
+        format.js  { redirect_to :action => :index }
         format.xml { render :xml  => @provider }
-      else
+      end
+    else
+      respond_to do |format|
+        format.js  { render :partial  => "failed_create"}
         format.xml { render :xml  => @provider.errors, :status  => :unprocessable_entity }
       end
-      format.js   
     end
   end
 
@@ -195,32 +197,26 @@ class DataProvidersController < ApplicationController
   end
 
   def destroy #:nodoc:
-    id         = params[:id]
-    @user      = current_user
-    @data_provider  = DataProvider.find(id)
+    @data_provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @data_provider.userfiles.empty?
-      flash[:error] = "You cannot remove a provider that still has files registered on it."
-      @data_provider.errors.add(:base, "You cannot remove a provider that still has files registered on it.")
-      respond_to do |format|
-        format.html { redirect_to :action => :show, :id => id }
-        format.xml  { render :xml  => @data_provider.errors, :status  => :unprocessable_entity }
-        format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' } }
-      end
-      return
+    unless @data_provider.has_owner_access?(current_user)
+      raise CbrainDeleteRestrictionError.new("You cannot remove a provider that you do not own.")
     end
-
-    if @data_provider.has_owner_access?(current_user)
-      @data_provider.destroy
-      flash[:notice] = "Provider successfully deleted."
-    else
-      flash[:error] = "You cannot remove a provider that you do not own."
-    end
-
+    
+    @data_provider.destroy
+    
+    flash[:notice] = "Provider successfully deleted."
+    
     respond_to do |format|
-      format.html {redirect_to :action  => :index}
-      format.xml { head :ok }
-      format.js {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'data_provider' }}
+      format.js { redirect_to :action => :index}
+      format.xml { head :ok }  
+    end
+  rescue ActiveRecord::DeleteRestrictionError => e
+    flash[:error]  = "Provider not destroyed: #{e.message}"
+    
+    respond_to do |format|
+      format.js  { redirect_to :action => :index}
+      format.xml { head :conflict }
     end
   end
   
