@@ -13,7 +13,7 @@ class Bourreau < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  has_many :cbrain_tasks
+  has_many :cbrain_tasks, :dependent => :restrict
   has_many :tool_configs, :dependent => :destroy
   has_many :tools, :through => :tool_configs, :uniq => true
 

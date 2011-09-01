@@ -1,5 +1,3 @@
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#errorExplanation").remove();
-jQuery(".fieldWithErrors").removeClass("fieldWithErrors");
-jQuery("#new_user:visible").siblings("#new_user_button").click();
+<%= render :partial => "shared/clear_new_panel" %>
 jQuery("#user_table").html(<%= html_for_js(render(:partial => 'users_table')) %>)

@@ -1,7 +1,7 @@
 <div class="menu_bar menu_bar_left">
 
   <% if check_role(:admin) || check_role(:site_manager) %>
-    <%= button_with_dropdown_menu('Create New Data Provider', :content_id => 'new_data_provider', :partial => 'new', :button_id => "new_data_provider_button") %>
+    <%= button_with_dropdown_menu('Create New Data Provider', :content_id => 'new_model_panel', :partial => 'new', :button_id => "new_model_button") %>
   <% end %> 
   
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
