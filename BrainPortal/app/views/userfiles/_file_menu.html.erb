@@ -51,7 +51,10 @@
                                                       :method  => :post) 
                   %>
         <hr>
-        Synchronize Files Locally: <%= hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple'), :ajax_submit  => false, :method  => :post) %>
+        Cache Operations:<br/>
+        <%= hijacker_submit_button("Synchronize Files Locally", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'sync_local'), :ajax_submit  => false, :method  => :post) %>
+        &nbsp;or&nbsp;
+        <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post) %>
     <% end %>
 
     <%= button_with_dropdown_menu("Move/Copy", :class => 'centered') do %>
