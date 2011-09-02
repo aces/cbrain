@@ -1,0 +1,16 @@
+<tr>
+    <th>Tool Name</th>
+    <th>Description</th>
+    <th>Category</th>
+    <th>User</th>
+    <th>Project</th>
+    <th>Execution Server &amp; Versions</th>
+    <% if current_user.has_role?(:admin) %>
+      <th colspan="3">Operations</th>
+    <% end %>
+    <th colspan ="2">Help/Info</th>
+  </tr>
+   
+  <% for tool in @tools %>
+    <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
+  <% end %>

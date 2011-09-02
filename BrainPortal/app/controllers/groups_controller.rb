@@ -33,6 +33,7 @@ class GroupsController < ApplicationController
     common_form_elements()
 
     respond_to do |format|
+      format.js
       format.html # index.html.erb
       format.xml  { render :xml => @groups }
     end
@@ -76,11 +77,11 @@ class GroupsController < ApplicationController
       if @group.save
         flash[:notice] = 'Project was successfully created.'
         common_form_elements()
-        format.js
+        format.js   { redirect_to :action => :index, :format => :js}
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
-        format.js
+        format.js   { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'group' } }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
     end
@@ -135,7 +136,7 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'group' }}
+      format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :ok }
     end
   end

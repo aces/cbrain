@@ -22,6 +22,7 @@ class SitesController < ApplicationController
     @sites = base_filtered_scope Site.where({}).includes( [:users, :groups] ).order("sites.name")
 
     respond_to do |format|
+      format.js
       format.html # index.html.erb
       format.xml  { render :xml => @sites }
     end
@@ -51,11 +52,11 @@ class SitesController < ApplicationController
     respond_to do |format|
       if @site.save
         flash[:notice] = 'Site was successfully created.'
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'site' }}
-        format.xml  { render :xml => @site, :status => :created, :location => @site }
+        format.js  { redirect_to :action => :index, :format => :js }
+        format.xml { render :xml => @site, :status => :created, :location => @site }
       else
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'site' }}
-        format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
+        format.js  {render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'site' }}
+        format.xml { render :xml => @site.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -88,7 +89,7 @@ class SitesController < ApplicationController
     @site.destroy
 
     respond_to do |format|
-      format.js   {render :partial  => 'shared/destroy', :locals  => {:model_name  => 'site' }}
+      format.js   { redirect_to :action => :index, :format => :js }
       format.xml  { head :ok }
     end
   end

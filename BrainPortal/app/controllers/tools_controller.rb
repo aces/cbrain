@@ -20,6 +20,7 @@ class ToolsController < ApplicationController
     @tools     = base_filtered_scope(current_user.available_tools).includes( [:user, :group] ).order("tools.name")
     
     respond_to do |format|
+      format.js
       format.html # index.html.erb
       format.xml  { render :xml => @tools }
     end
@@ -76,11 +77,11 @@ class ToolsController < ApplicationController
     respond_to do |format|
       if @tool.errors.empty? && @tool.save
         flash[:notice] = 'Tool was successfully created.'
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tool' }}
-        format.xml  { render :xml => @tool, :status => :created, :location => @tool }
+        format.js  { redirect_to :action => :index, :format => :js }
+        format.xml { render :xml => @tool, :status => :created, :location => @tool }
       else
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'tool' }}
-        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
+        format.js  { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'tool' } }
+        format.xml { render :xml => @tool.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -109,7 +110,7 @@ class ToolsController < ApplicationController
       @tool.destroy                                           
                                                               
       respond_to do |format|                                  
-        format.js { render :text  => "jQuery('#tool_#{@tool.id}').remove();" }                                          
+        format.js  { redirect_to :action => :index, :format => :js }                                          
         format.xml  { head :ok }                              
       end                                                     
   end

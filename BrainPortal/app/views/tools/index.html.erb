@@ -4,7 +4,7 @@
 <div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) %>
             
-    <%= button_with_dropdown_menu('Create New Tool', :partial => 'new', :content_id => 'new_tool', :button_id => "new_tool_button") %>
+    <%= button_with_dropdown_menu('Create New Tool', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
        
     <span title="Registers all subclasses of PortalTask as Tools">
       <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
@@ -24,23 +24,6 @@
 <P>
         
 <table class="resource_list" id="tool_table">
-
-  <tr>
-    <th>Tool Name</th>
-    <th>Description</th>
-    <th>Category</th>
-    <th>User</th>
-    <th>Project</th>
-    <th>Execution Server &amp; Versions</th>
-    <% if current_user.has_role?(:admin) %>
-      <th colspan="3">Operations</th>
-    <% end %>
-    <th colspan ="2">Help/Info</th>
-  </tr>
-   
-  <% for tool in @tools %>
-    <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
-  <% end %>
-
+  <%= render :partial => 'tools_table' %>
 </table>
 

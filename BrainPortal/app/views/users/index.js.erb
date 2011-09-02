@@ -1,3 +1,3 @@
 <%= render :partial  => "shared/flash_update" %>
 <%= render :partial => "shared/clear_new_panel" %>
-jQuery("#user_table").html(<%= html_for_js(render(:partial => 'users_table')) %>)
+jQuery("#user_table").html(<%= html_for_js(render(:partial => 'users_table')) %>).trigger("new_content")

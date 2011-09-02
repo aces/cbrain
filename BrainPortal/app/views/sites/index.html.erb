@@ -2,7 +2,7 @@
 <% title 'Sites' %>
   
 <div class="menu_bar menu_bar_left">
-  <%= button_with_dropdown_menu('Create New Site', :partial => 'new', :content_id => 'new_site', :button_id => "new_site_button") %>
+  <%= button_with_dropdown_menu('Create New Site', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
   <% unless @filter_params["filter_hash"].blank? %>
     <%= render :partial => "shared/manage_filter_button", :locals => {:model => :site}  %>
   <% end %>
@@ -12,22 +12,6 @@
 <P>
    
 <table class="resource_list" id="site_table">
-  <tr>
-    <th>Name</th>
-    <th>Description</th>
-    <th>Managers</th>
-    <th>Number of Users</th>
-    <th>Number of Projects</th>
-    <th colspan="2">Operations</th>
-  </tr>
-
-  <% for site in @sites %>
-    <%= render :partial => 'site_table_row', :locals  => {:site  => site} %>
-  <% end %>
-
-  <% if @sites.empty? %>
-    <tr><td colspan="7">There are not sites defined yet.</td></tr>
-  <% end %>
-
+  <%= render :partial => 'sites_table' %>
 </table>
   

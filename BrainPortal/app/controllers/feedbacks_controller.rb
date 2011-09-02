@@ -22,6 +22,7 @@ class FeedbacksController < ApplicationController
     @feedback  = Feedback.new
 
     respond_to do |format|
+      format.js
       format.html # index.html.erb
       format.xml  { render :xml => @feedbacks }
     end
@@ -59,11 +60,11 @@ class FeedbacksController < ApplicationController
                               :variable_text  => "#{current_user.full_name} : [[View][/feedbacks/#{@feedback.id}]]"
                               }
                             )
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'feedback' }}
-        format.xml  { render :xml => @feedback, :status => :created, :location => @feedback }
+        format.js  { redirect_to :action => :index, :format => :js }
+        format.xml { render :xml => @feedback, :status => :created, :location => @feedback }
       else
-        format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'feedback' }}
-        format.xml  { render :xml => @feedback.errors, :status => :unprocessable_entity }
+        format.js  { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'feedback' } }
+        format.xml { render :xml => @feedback.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -93,7 +94,7 @@ class FeedbacksController < ApplicationController
     
     respond_to do |format|
       format.html { redirect_to(feedbacks_url) }
-      format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'feedback' } }
+      format.js   { redirect_to :action => :index, :format => :js }
       format.xml  { head :ok }
     end
   end
