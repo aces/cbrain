@@ -328,7 +328,7 @@ describe UsersController do
         end
         it "should redirect to the index" do
           delete :destroy, :id => user.id, :format => "js"
-          response.should redirect_to(:action => :index)
+          response.should redirect_to(:action => :index, :format => :js)
         end
       end
       context "with site manager" do
