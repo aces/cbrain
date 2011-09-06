@@ -81,6 +81,7 @@ class TaskCustomFilter < CustomFilter
     scope.scoped(:conditions  => ["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
   end
 
+  #Return +scope+ modified to filter the CbrainTask entry's dates.
   def scope_date(scope)
 
     date_at = self.data["date_attribute"] # assignation ... 
@@ -113,8 +114,8 @@ class TaskCustomFilter < CustomFilter
     user_start,user_end = user_end,user_start if need_switching
     user_end            = user_end + 1.day    if ( !need_switching && mode_is_abs_to ) || (need_switching && mode_is_abs_from)
 
-    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} > ?", user_start - offset])
-    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} < ?", user_end   - offset])
+    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} >= ?", user_start - offset])
+    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} <= ?", user_end   - offset])
     
     scope
     

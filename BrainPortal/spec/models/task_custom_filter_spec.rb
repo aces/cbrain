@@ -17,9 +17,11 @@ describe TaskCustomFilter do
   describe "#filter_scope" do
     before(:each) do 
       @cbrain_task1 = Factory.create(:cbrain_task, :description => "desc1", :user_id => 1, :bourreau_id => 1,
-                                                   :created_at => "2011-04-04", :status => "New")
+                                                   :created_at => "2011-04-04", :status => "New",
+                                                   :updated_at => "2011-05-04")
       @cbrain_task2 = Factory.create(:cbrain_task, :description => "desc2", :user_id => 2, :bourreau_id => 2,
-                                                   :created_at => "2011-04-29", :status => "Completed")
+                                                   :created_at => "2011-04-29", :status => "Completed",
+                                                   :updated_at => "2011-05-29")
     end
     
     it "should remove all non 'data['type']' task" do
@@ -45,20 +47,34 @@ describe TaskCustomFilter do
     end
 
     context "with date" do
-      it "should remove all task created before 'data['created_date_term']'" do
-        filter.data = { "created_date_type" => 1, "created_date_term" => @cbrain_task2.created_at }
+      
+      it "should only keep task created between 'data['abs_from'] and 'data['abs_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/04/2011", "abs_to" => "04/04/2011" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
       end
-    
-      it "should remove all task created on 'data['created_date_term']'" do
-        filter.data = { "created_date_type" => 0, "created_date_term" => @cbrain_task2.created_at }
+      
+      it "should only keep task updates between 'data['abs_from'] and 'data['abs_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/05/2011", "abs_to" => "04/05/2011" }
+        filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
+      end
+
+      it "should only keep task created between 'data['abs_from'] and 'data['rel_date_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/04/2011", "rel_date_to" => "0" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task2]
+      end
+
+      it "should only keep task updated between 'data['abs_from'] and 'data['rel_date_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/05/2011", "rel_date_to" => "0" }
+        filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task2]
+      end
+
+      it "should only keep task updated last week" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"rel", "absolute_or_relative_to"=>"rel", "rel_date_from" => "#{1.week}", "rel_date_to" => "0" }
+        @cbrain_task1.updated_at = Date.today - 1.day
+        @cbrain_task1.save!
+        filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
       end
       
-      it "should remove all task created after 'data['created_date_term']'" do
-        filter.data = { "created_date_type" => 2, "created_date_term" => @cbrain_task1.created_at }
-        filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task2]
-      end
     end
 
     context "with description scope" do
