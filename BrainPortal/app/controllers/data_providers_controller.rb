@@ -148,12 +148,12 @@ class DataProvidersController < ApplicationController
     if @provider.errors.empty?
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
-        format.js  { redirect_to :action => :index }
+        format.js  { redirect_to :action => :index, :format => :js  }
         format.xml { render :xml  => @provider }
       end
     else
       respond_to do |format|
-        format.js  { render :partial  => "failed_create"}
+        format.js  { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
         format.xml { render :xml  => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -208,7 +208,7 @@ class DataProvidersController < ApplicationController
     flash[:notice] = "Provider successfully deleted."
     
     respond_to do |format|
-      format.js { redirect_to :action => :index}
+      format.js { redirect_to :action => :index, :format => :js }
       format.xml { head :ok }  
     end
   rescue ActiveRecord::DeleteRestrictionError => e

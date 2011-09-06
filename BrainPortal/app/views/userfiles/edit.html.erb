@@ -128,23 +128,6 @@
 
 <% end %> <!-- form -->
 
-
-<% unless @userfile.is_locally_synced? %>
-    <BR/>
-    
-    <% if @sync_status =~ /^To/ %>
-      <p>The content of this data file is currently being synchronized.</p>
-    <% elsif ! (@userfile.data_provider.not_syncable?) %>
-      <p>The content of this data file is not currently synchronized.<BR>
-      Click <%= link_to "here", sync_to_cache_userfile_path(@userfile), :method  => :post %>
-      to start the synchronization process.<br>
-      This will allow you to view displayable content (if any)<% if @userfile.is_a?(FileCollection) %>
-      and extract files from this collection<% end %>.
-      </p>
-    <% end %>
-
-<% end %>
-
 <BR/>
 
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>

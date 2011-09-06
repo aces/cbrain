@@ -291,7 +291,7 @@ ActiveRecord::Schema.define(:version => 20110825190526) do
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"
-    t.decimal  "size",             :precision => 24, :scale => 0
+    t.integer  "size"
     t.integer  "user_id"
     t.integer  "parent_id"
     t.datetime "created_at"
@@ -300,7 +300,7 @@ ActiveRecord::Schema.define(:version => 20110825190526) do
     t.string   "task"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                  :default => false
+    t.boolean  "group_writable",   :default => false
     t.integer  "num_files"
     t.integer  "format_source_id"
   end

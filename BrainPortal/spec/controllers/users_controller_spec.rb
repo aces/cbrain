@@ -326,9 +326,9 @@ describe UsersController do
           delete :destroy, :id => user.id
           User.all.should_not include(user)
         end
-        it "should render shared destroy js partial" do
+        it "should redirect to the index" do
           delete :destroy, :id => user.id, :format => "js"
-          response.should render_template("shared/_destroy")
+          response.should redirect_to(:action => :index)
         end
       end
       context "with site manager" do

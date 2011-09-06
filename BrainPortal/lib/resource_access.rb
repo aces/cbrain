@@ -21,6 +21,8 @@ module ResourceAccess
   
   #Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
+    return unless includer.table_exists?
+    
     unless includer < ActiveRecord::Base
       raise "#{includer} is not an ActiveRecord model. The ResourceAccess module cannot be used with it."
     end

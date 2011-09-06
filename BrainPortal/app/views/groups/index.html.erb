@@ -2,7 +2,7 @@
 <% title 'Projects' %>
   
 <div class="menu_bar menu_bar_left">
-   <%= button_with_dropdown_menu('Create Project', :partial => 'new', :content_id => 'new_group', :button_id => "new_group_button") %>
+   <%= button_with_dropdown_menu('Create Project', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
    <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :button %>
    <% unless @filter_params["filter_hash"].blank? %>
      <%= render :partial => "shared/manage_filter_button", :locals => {:model => :group}  %>
@@ -12,66 +12,6 @@
 
 <p>
 
-<table id="work_project_table" class="resource_list">
-
-  <tr>
-  <% if current_user.has_role?(:admin) %>
-    <th colspan="14">Work Projects</th>       
-  <% else %>
-    <th colspan="9">Work Projects</th>
-  <% end %>
-  </tr>
-  <tr>
-    <th class="subtitle">Name</th>
-    <th class="subtitle">Type</th>
-    <th class="subtitle">Site</th>
-    <th class="subtitle">Users</th>
-    <th class="subtitle">Files</th>
-    <th class="subtitle">Tasks</th>
-    <% if current_user.has_role?(:admin) %>
-      <th class="subtitle">Tools</th>
-      <th class="subtitle">Data providers</th>
-      <th class="subtitle">Portal</th>
-      <th class="subtitle">Execution</th>
-    <% end %>
-    <th class="subtitle" colspan="3"/>
-  </tr>
-
-  <% for group in @work_groups %>
-    <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
-  <% end %>
-
-</table>
-
-<p>
-
-<table id="system_project_table" class="resource_list">
-  <tr>
-  <% if current_user.has_role?(:admin) %>
-    <th colspan="14">System Projects</th>       
-  <% else %>
-    <th colspan="9">System Projects</th>
-  <% end %>
-  </tr>
-  <tr>
-    <th class="subtitle">Name</th>
-    <th class="subtitle">Type</th>
-    <th class="subtitle">Site</th>
-    <th class="subtitle">Users</th>
-    <th class="subtitle">Files</th>
-    <th class="subtitle">Tasks</th>
-    <% if current_user.has_role?(:admin) %>
-      <th class="subtitle">Tools</th>
-      <th class="subtitle">Data providers</th>
-      <th class="subtitle">Portal</th>
-      <th class="subtitle">Execution</th>
-    <% end %>
-    <th class="subtitle" colspan="3"/>
-  </tr>
-
-  <% for group in @system_groups %>
-    <%= render :partial => 'group_table_row', :locals  => {:group  => group} %>
-  <% end %>
-
-</table>
-
+<div id="project_tables">
+  <%= render :partial => 'project_tables' %>
+</div>

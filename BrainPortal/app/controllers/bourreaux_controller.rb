@@ -115,16 +115,15 @@ class BourreauxController < ApplicationController
 
     if @bourreau.errors.empty?
       flash[:notice] = "Execution Server successfully created."
-    end
-   
-    respond_to do |format|
-      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'bourreau' }}
-      format.xml  do
-        if @bourreau.errors.empty?
-          render :xml => @bourreau 
-        else
-          render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
-        end
+      
+      respond_to do |format|
+        format.js  { redirect_to :action => :index, :format => :js }
+        format.xml { render :xml => @bourreau }
+      end
+    else
+      respond_to do |format|
+        format.js  { render :partial => "shared/failed_create", :locals => {:model_name => "bourreau"} }
+        format.xml { render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity   }
       end
     end
   end
@@ -199,29 +198,23 @@ class BourreauxController < ApplicationController
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
     
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
-
-    tasks_left = CbrainTask.where( :bourreau_id => id ).count
-    cb_notice "This Execution Server cannot be deleted as there are still #{tasks_left} tasks associated with it." if tasks_left > 0
-
-    if @bourreau.destroy
-      flash[:notice] = "Execution Server successfully deleted."
-    else
-      flash[:error] = "Execution Server destruction failed."
-    end
-
+    raise CbrainDeleteRestrictionError.new("Execution Server not accessible by current user.") unless @bourreau.has_owner_access?(current_user)
+    
+    @bourreau.destroy
+    
+    flash[:notice] = "Execution Server successfully deleted."
+      
     respond_to do |format|
-      format.html { redirect_to :action  => :index }
-      format.xml do
-        if @bourreau.errors.empty?
-          head :ok
-        else
-          render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity  
-        end
-      end
-      format.js   { render :partial  => 'shared/destroy', :locals  => {:model_name  => 'bourreau' } }
+      format.js  { redirect_to :action => :index, :format => :js}
+      format.xml { head :ok }
     end
-
+  rescue ActiveRecord::DeleteRestrictionError => e
+    flash[:error] = "Execution Server destruction failed: #{e.message.humanize}."
+    
+    respond_to do |format|
+      format.js  { redirect_to :action => :index, :format => :js}
+      format.xml { head :conflict }
+    end
   end
   
   def row_data #:nodoc:

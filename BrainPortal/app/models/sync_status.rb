@@ -451,6 +451,24 @@ class SyncStatus < ActiveRecord::Base
      self.id.to_s + "=" + self.remote_resource.name + "/" + self.status.to_s
   end
 
+  # This method changes the status attribute
+  # in the current task object to +to_state+ but
+  # also makes sure the current value is +from_state+ .
+  # The change is performed in a transaction where
+  # the record is locked, to ensure the transition is
+  # not trashed by another process. The method returns
+  # true if the transition was successful, and false
+  # if anything went wrong.
+  def status_transition(from_state, to_state)
+    SyncStatus.transaction do
+      self.lock!
+      return false if self.status != from_state 
+      return true  if from_state == to_state # NOOP
+      self.status = to_state
+      return self.save
+    end
+  end
+
 
 
   protected
@@ -489,6 +507,8 @@ class SyncStatus < ActiveRecord::Base
     states
   end
 
+
+
   private
 
   # Repeats a block of code every +numseconds+, for up to +maxseconds+,
@@ -504,25 +524,6 @@ class SyncStatus < ActiveRecord::Base
       sleep numseconds.to_i
     end
     stopnow
-  end
-
-  # This method changes the status attribute
-  # in the current task object to +to_state+ but
-  # also makes sure the current value is +from_state+ .
-  # The change is performed in a transaction where
-  # the record is locked, to ensure the transition is
-  # not trashed by another process. The method returns
-  # true if the transition was successful, and false
-  # if anything went wrong.
-  def status_transition(from_state, to_state)
-    SyncStatus.transaction do
-      self.lock!
-      return false if self.status != from_state 
-      return true  if from_state == to_state # NOOP
-      self.status = to_state
-      self.save!
-    end
-    true
   end
 
   # This method acts like status_transition(),

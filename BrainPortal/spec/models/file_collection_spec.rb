@@ -17,7 +17,9 @@ describe FileCollection do
   let(:file_collection) {Factory.create(:file_collection, :data_provider_id => provider.id) }
   
   describe "#content" do
-
+    before(:each) do
+      file_collection.stub_chain(:list_files, :find).and_return(true)
+    end
     context "with options[:collection_file]" do
       before(:each) do
         File.stub!(:exist?).and_return(true)
@@ -26,11 +28,9 @@ describe FileCollection do
         File.stub!(:symlink?).and_return(false)
       end
       
-      it "should set status to 404 if path_string contain '..'" do
-        a = double("cache_path")
-        file_collection.stub_chain(:cache_full_path, :parent).and_return(a)
-        a.should_receive(:+).with("").and_return("")
-        file_collection.content(:collection_file => '../path')
+      it "should return nil if collection file not in the collection's list of files" do
+        file_collection.stub_chain(:list_files, :find).and_return(nil)
+        file_collection.content(:collection_file => 'path').should be_nil
       end
 
       it "should set sendfile to given path if we have a readable file" do
@@ -155,7 +155,6 @@ describe FileCollection do
     let(:file_info1) { double("file_info1", :name => "name1")}
     let(:file_info2) { double("file_info2", :name => "name2")}
     let(:file_info3) { double("file_info3", :name => "name3")}
-    let(:merge_collection) { Factory.create(:file_collection, :data_provider_id => provider.id) }
     let(:file_collection1) { mock_model(FileCollection, :size => 1024, :num_files => 2).as_null_object}
     let(:file_collection2) { mock_model(FileCollection, :size => 1024, :num_files => 1).as_null_object}
     
@@ -164,33 +163,33 @@ describe FileCollection do
       file_collection2.stub!(:list_files).and_return([file_info3])
       File.stub!(:directory?).and_return(true)
       FileUtils.stub!(:cp_r)      
-      merge_collection.stub!(:cache_prepare)
-      merge_collection.stub!(:sync_to_cache)
-      merge_collection.stub!(:sync_to_provider)
-      merge_collection.stub!(:save)
+      file_collection.stub!(:cache_prepare)
+      file_collection.stub!(:sync_to_cache)
+      file_collection.stub!(:sync_to_provider)
+      file_collection.stub!(:save)
     end
     
     it "should return :collision if the collection share common file names" do
       file_collection2.stub!(:list_files).and_return([file_info2])
-      merge_collection.merge_collections([file_collection1,file_collection2]).should be == :collision
+      file_collection.merge_collections([file_collection1,file_collection2]).should be == :collision
     end
-
+  
     it "should return :succes if all works correctly" do
-      merge_collection.merge_collections([file_collection1,file_collection2]).should be == :success
+      file_collection.merge_collections([file_collection1,file_collection2]).should be == :success
     end
-
+  
     it "should update num_files when merge is done" do
       final_numfiles = file_collection1.num_files + file_collection2.num_files                   
-      merge_collection.merge_collections([file_collection1,file_collection2])
-      merge_collection.reload
-      merge_collection.num_files.should be == final_numfiles
+      file_collection.merge_collections([file_collection1,file_collection2])
+      file_collection.reload
+      file_collection.num_files.should be == final_numfiles
     end
- 
+   
     it "should update size when merge is done" do
       final_size = file_collection1.size + file_collection2.size                   
-      merge_collection.merge_collections([file_collection1,file_collection2])
-      merge_collection.reload
-      merge_collection.size.should be == final_size
+      file_collection.merge_collections([file_collection1,file_collection2])
+      file_collection.reload
+      file_collection.size.should be == final_size
     end
   end
   

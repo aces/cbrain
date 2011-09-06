@@ -113,11 +113,10 @@ class UsersController < ApplicationController
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
       redirect_to :action => :index
-      return
-    end
-    
-    respond_to do |format|                                                                  
-      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'user' }}
+    else
+      respond_to do |format|                                                                  
+        format.js {render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'user' }}
+      end
     end
   end
 

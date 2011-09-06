@@ -80,6 +80,8 @@ class ActiveRecord::Base
   #
   #   force_attribute_encoding encoding_name, :att [, :att, ...]
   def self.force_text_attribute_encoding(encoding_name, *attlist)
+    return unless self.table_exists?
+    
     to_adjust = self.cbrain_forced_attribute_encodings ||= {}
     enc = Encoding.find(encoding_name) rescue nil
     raise "No such encoding '#{encoding_name}'." unless enc
