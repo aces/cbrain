@@ -433,7 +433,8 @@ class RemoteResource < ActiveRecord::Base
   # This is a class method, as it only makes sense
   # in the context of the current Rails application.
   # For remote Rails applications, the instance method
-  # with the same name can be called.
+  # with the same name can be called, which will fetch
+  # the info via the Controls channel.
   def self.remote_resource_info
     myself            = self.current_resource
     home              = CBRAIN::Rails_UserHome
@@ -453,11 +454,11 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    @git_tag    ||= ""
-    @git_commit ||= ""
-    @git_author ||= ""
-    @git_date   ||= ""
-    if @git_tag.blank?
+    # Extract GIT information from the file system
+    @git_commit ||= "" # fetched only once.
+    @git_author ||= "" # fetched only once.
+    @git_date   ||= "" # fetched only once.
+    if @git_commit.blank?
       Dir.chdir(Rails.root.to_s) do
         IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
           #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
@@ -469,12 +470,14 @@ class RemoteResource < ActiveRecord::Base
           @git_author = fh.readline.strip rescue "ExcepAuthor"
           @git_date   = fh.readline.strip rescue "ExcepDate"
         end
-        #IO.popen("git describe --all --always HEAD","r") do |fh|
-        #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
-        IO.popen("git tag --contains HEAD","r") do |fh|
-          @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
-        end
       end
+    end
+
+    @git_tag = "" # live, to highlight when the files are not the same as when the Rails app started
+    #IO.popen("git describe --all --always HEAD","r") do |fh|
+    #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
+    IO.popen("git tag --contains HEAD","r") do |fh|
+      @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
     end
 
     info = RemoteResourceInfo.new(
