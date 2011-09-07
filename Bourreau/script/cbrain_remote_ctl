@@ -98,7 +98,7 @@ fullprog = basename =~ /^\// ? basename : cwd + "/" + basename
 
 # Rails-specific paths
 rails_home = fullprog.sub(/\/script\/.+$/,"")
-pidfile    = "#{rails_home}/tmp/pids/mongrel.pid"
+pidfile    = "#{rails_home}/tmp/pids/server.pid"
 
 # Automatic redirection to a secondary host
 if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
@@ -181,29 +181,17 @@ else # db text is provided to us
   File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
 end
 
-# This environment variable holds the path to a status
-# file created by the server 'cbrain_mongrel_rails' at startup;
-# it will contain the word 'STARTED' or 'STOPPED'. This will happen
-# even if the server crashes early on.
-status_file = rails_home + "/tmp/pids/mongrel.status"
-ENV["CBRAIN_SERVER_STATUS_FILE"] = status_file
-File.unlink(status_file) rescue true # Make sure it's not there at all
-
 # Start the server
+start_success=false
 Dir.chdir(rails_home) do
-  # Note that the options for 'cbrain_mongrel_rails' are the same as
-  # for 'mongrel_rails', but they are different from 'script/server'
-  # (in particular, -b becomes -a).
-  cmd = "script/cbrain_rails_server server thin -d -p #{port} -e #{environment} -b 127.0.0.1 -P #{pidfile}"
-  system(cmd) # the -d will start it in background
-end
-
-# Wait for the status file to appear; it will appear whether or not the
-# server was able to properly start.
-start_check = Time.now
-while start_check > (Time.now - 120)  # check for two minutes, at most
-  sleep 1
-  break if File.exists?(status_file)
+  cmd = [ "script/rails", "server", "thin",
+          "-d",
+          "-p", "#{port}",
+          "-e", "#{environment}",
+          "-b", "127.0.0.1",
+          "-P", "#{pidfile}"
+        ]
+  start_success=system(*cmd) # the -d will start it in background
 end
 
 # If we were provided with a database.yml, we need
@@ -215,15 +203,17 @@ end
 
 # Return a message to indicate to our calling context
 # whether or not the server started.
-status_message = File.read(status_file) rescue "FAILED\n"
-if status_message =~ /STARTED/i # see Bourreau's validation.rb
+if start_success
   puts "Bourreau Started."
 else
   puts "Bourreau Failed."
-  puts "Here are the last 100 lines of the server's log:"
-  Dir.chdir(rails_home) do
-    system("tail -100 log/server.log")
+  if File.exists?("#{rails_home}/log/server.log")
+    puts "Here are the last 100 lines of the server's log:"
+    system("tail -100 '#{rails_home}/log/server.log'")
+  else
+    puts "No server log file found to help you out of this one :-("
   end
 end
-Kernel.exit(0)
+
+Kernel.exit(start_success ? 0 : 10)
 
