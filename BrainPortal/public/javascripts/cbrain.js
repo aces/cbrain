@@ -807,7 +807,6 @@ jQuery(
    // http://jqueryui.com/demos/datepicker/#date-range
    $('.daterangepicker').live('click', function (event) {
      var datepicker = event.target;
-     console.log(event.target);
      $(".daterangepicker").not(".hasDatepicker").datepicker({
        defaultDate: "+1w",
        changeMonth: true,
@@ -827,13 +826,22 @@ jQuery(
            selectedDate, instance.settings );
            
          var dates = $(datepicker).parent().children(".daterangepicker");
-         console.log("Dates: " + dates.length)
          $(dates).each(function(n) {
            if($(this).attr("data-datefieldtype") != type) {
              $(this).datepicker("option",option,date)
            }
          });
        }
+     });
+   $(datepicker).focus();
+   });
+   
+   $('.datepicker').live('click', function (event) {
+     var datepicker = event.target;
+     $(".datepicker").not(".hasDatepicker").datepicker({
+       defaultDate: "+1w",
+       changeMonth: true,
+       dateFormat: "dd/mm/yy",
      });
    $(datepicker).focus();
    });

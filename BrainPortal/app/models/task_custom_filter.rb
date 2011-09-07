@@ -87,8 +87,7 @@ class TaskCustomFilter < CustomFilter
     date_at = self.data["date_attribute"] # assignation ... 
     return scope if date_at !~ /^(updated_at|created_at)$/
 
-    offset = Time.zone.utc_offset.seconds
-
+    offset = Time.now.in_time_zone.utc_offset.seconds
 
     abs_from         = self.data["abs_from"]
     abs_to           = self.data["abs_to"]

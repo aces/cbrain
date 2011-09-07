@@ -72,7 +72,17 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create #:nodoc:
     @message = Message.new(params[:message])
-
+    
+    date = params[:expiry_date] || ""
+    hour = params[:expiry_hour] || "00"
+    min  = params[:expiry_min]  || "00"
+    date = Date.today if date.blank? && (hour != "00" || min != "00") 
+    unless date.blank?
+      string_time = "#{date} #{hour}:#{min} #{Time.now.in_time_zone.formatted_offset}"
+      full_date = DateTime.parse(string_time)
+      @message.expiry = full_date
+    end
+      
     if @message.header.blank?
       @message.errors.add(:header, "cannot be left blank.")
     end
