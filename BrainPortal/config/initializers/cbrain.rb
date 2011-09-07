@@ -36,7 +36,7 @@ class CBRAIN
   TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
   UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
 
-  $CBRAIN_StartTime_Revision = "???"  # numeric; will be filled in by validation script
+  $CBRAIN_StartTime_Revision = "???"  # Will be filled in by validation script
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control

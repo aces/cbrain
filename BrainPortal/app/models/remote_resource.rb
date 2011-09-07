@@ -473,11 +473,24 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    @git_tag = "" # live, to highlight when the files are not the same as when the Rails app started
-    #IO.popen("git describe --all --always HEAD","r") do |fh|
-    #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
-    IO.popen("git tag --contains HEAD","r") do |fh|
-      @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
+    # @git_tag will be the most recent tag in GIT, appended with 
+    # "-num" for the number of commits that follows until HEAD.
+    # The value is live, to highlight when the files are not the
+    # same as when the Rails app started.
+
+    @git_tag = "C-#{@git_commit}" # default
+
+    Dir.chdir(Rails.root.to_s) do
+      git_tags = `git tag -l`.split
+      @git_tag = git_tags.shift unless git_tags.empty? # extract first as a starting point
+      while git_tags.size > 0
+        git_tags = `git tag --contains '#{@git_tag}'`.split.reject { |v| v == @git_tag }
+        @git_tag = git_tags.shift unless git_tags.empty? # new first
+      end
+      if @git_tag != "C-#{@git_commit}"
+        num_new_commits = `git rev-list '#{@git_tag}..HEAD'`.split.size
+        @git_tag += "-#{num_new_commits}" if num_new_commits > 0
+      end
     end
 
     info = RemoteResourceInfo.new(
