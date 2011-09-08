@@ -34,6 +34,10 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_type(scope)  unless self.data["type"].blank?
     scope
   end
+
+  def target_filtered_table
+    "userfiles"
+  end
   
   #Virtual attribute for assigning tags to the data hash.
   def tag_ids=(ids)
@@ -76,11 +80,6 @@ class UserfileCustomFilter < CustomFilter
     end
     
     scope.where( ["#{query}", term] )
-  end
-  
-  #Return +scope+ modified to filter the Userfile entry's creation date.
-  def scope_date(scope)
-    scope.where( ["DATE(userfiles.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["date_term"]])
   end
   
   #Return +scope+ modified to filter the Userfile entry's size.
