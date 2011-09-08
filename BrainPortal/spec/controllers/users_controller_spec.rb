@@ -251,8 +251,12 @@ describe UsersController do
           user.reload
           user.group_ids.should_not include(new_group.id)
         end
-        it "should add meta data" do
+        it "should add meta data if any was sent" do
           controller.should_receive(:add_meta_data_from_form)
+          put :update, :id => user.id, :meta => {:key => :value}
+        end
+        it "should not try to add meta data if none was sent" do
+          controller.should_not_receive(:add_meta_data_from_form)
           put :update, :id => user.id
         end
       end

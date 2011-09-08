@@ -56,9 +56,9 @@ describe FeedbacksController do
             Message.should_receive(:send_message)
             post :create
           end
-          it "should render shared create js script" do
+          it "should redirect to the index" do
             post :create, :format => "js"
-            response.should render_template("shared/_create")
+            response.should redirect_to(:action => :index, :format => :js)
           end
         end
         context "when save is unsuccesful" do
@@ -69,9 +69,9 @@ describe FeedbacksController do
             Message.should_not_receive(:send_message)
             post :create
           end
-          it "should render shared create js script" do
+          it "should render the failed create partial" do
             post :create, :format => "js"
-            response.should render_template("shared/_create")
+            response.should render_template("shared/_failed_create")
           end
         end
       end
@@ -143,9 +143,9 @@ describe FeedbacksController do
           delete :destroy, :id => feedback.id, :format => "html"
           response.should redirect_to(:action => :index)
         end
-        it "should render the shared destroy js script for a script request" do
+        it "should redirect to the index" do
           delete :destroy, :id => feedback.id, :format => "js"
-          response.should render_template("shared/_destroy")
+          response.should redirect_to(:action => :index, :format => :js)
         end
       end
     end
