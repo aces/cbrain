@@ -1,4 +1,5 @@
 <% custom_filter ||= @custom_filter %>
+
 <p>
    Task:<br>
    <%= select :data, :type, current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
@@ -23,11 +24,6 @@
    <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
 </p>
 <p>
-   Creation Date:<br>
-   <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => custom_filter.data["created_date_type"]  %>
-   <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse((custom_filter.data["created_date_term"] || Time.now).to_s) %>
-</p>
-<p>
    Owner:<br>
    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
 </p> 
@@ -35,4 +31,10 @@
    Execution Server:<br>
    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user), :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
+<p>
+   Filtering by date: <br/> 
+   <%= render :partial => 'custom_filter_date_selection', :locals  => {:custom_filter  => custom_filter} %>
+   <br/>
+</p>
+
 

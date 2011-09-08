@@ -1,0 +1,36 @@
+<% 
+
+# List of cache update offsets we support
+big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
+
+offset_times = [
+  [ "Now",               0.seconds.to_s ],
+  [ "One hour ago",      1.hour.to_s    ],
+  [ "Six hours ago",     6.hour.to_s    ],
+  [ "One day ago",       1.day.to_s     ],
+  [ "One week ago",      1.week.to_s    ],
+  [ "One month ago",     1.month.to_s   ],
+  [ "One year ago",      1.year.to_s   ],  
+  [ "The Big Bang",      big_bang       ]
+]
+%>                                           
+
+<%= radio_button_tag "data[date_attribute]", "", !custom_filter[:data]["date_attribute"] || custom_filter[:data]["date_attribute"] == "" %> Do not filter
+<%= radio_button_tag "data[date_attribute]", "created_at", custom_filter[:data]["date_attribute"] == "created_at" %> By creation date
+<%= radio_button_tag "data[date_attribute]", "updated_at", custom_filter[:data]["date_attribute"] == "updated_at" %> By update date
+<br/>
+
+<%= ("&nbsp;" * 20).html_safe %>from<%= ("&nbsp;" * 50).html_safe %>to <br/>
+<%= radio_button_tag "data[absolute_or_relative_from]", "rel", !custom_filter[:data]['absolute_or_relative_from'] || custom_filter[:data]['absolute_or_relative_from'] == "rel" %> 
+<%= select_tag 'data[rel_date_from]', options_for_select(offset_times, (custom_filter[:data]['rel_date_from'] || 1.week).to_i ), :style => "width:156px" %>
+<%= radio_button_tag "data[absolute_or_relative_to]",   "rel", !custom_filter[:data]['absolute_or_relative_to'] || custom_filter[:data]['absolute_or_relative_to']   == "rel" %> 
+<%= select_tag 'data[rel_date_to]',   options_for_select(offset_times, (custom_filter[:data]['rel_date_to'] || 0).to_i), :style => "width:156px" %>
+
+<br/>
+
+<span id="daterange">
+  <%= radio_button_tag "data[absolute_or_relative_from]", "abs", custom_filter[:data]['absolute_or_relative_from'] == "abs" %> 
+  <%= text_field_tag "data[abs_from]",  custom_filter.data["abs_from"], :class => "daterangepicker", "data-datefieldtype" => "from", :style => "width:150px" %>
+  <%= radio_button_tag "data[absolute_or_relative_to]",   "abs", custom_filter[:data]['absolute_or_relative_to']   == "abs"%> 
+  <%= text_field_tag "data[abs_to]",    custom_filter.data["abs_to"],   :class => "daterangepicker", "data-datefieldtype" => "to", :style => "width:150px" %>
+</span>  

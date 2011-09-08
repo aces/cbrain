@@ -257,7 +257,6 @@ function load_behaviour(event){
          }
        });
      }
-   
 }
 
 jQuery(
@@ -699,6 +698,52 @@ jQuery(
      brainbrowser.setup(jQuery(this).attr('data-content-url'));
      return false;
    };
+   
+   
+   // Allows to submit an interval of two dates, uses 
+   // datepicker of jquery-ui, see:  
+   // http://jqueryui.com/demos/datepicker/#date-range
+   $('.daterangepicker').live('click', function (event) {
+     var datepicker = event.target;
+     $(".daterangepicker").not(".hasDatepicker").datepicker({
+       defaultDate: "+1w",
+       changeMonth: true,
+       dateFormat: "dd/mm/yy",
+       onSelect: function( selectedDate ) {
+         var type  = $(datepicker).attr("data-datefieldtype")
+         console.log(type);
+         if(type == "from")
+           var option = "minDate";
+         else
+           var option = "maxDate";
+           
+         instance = $( datepicker).data( "datepicker" ),
+         date = $.datepicker.parseDate(
+           instance.settings.dateFormat ||
+           $.datepicker._defaults.dateFormat,
+           selectedDate, instance.settings );
+           
+         var dates = $(datepicker).parent().children(".daterangepicker");
+         $(dates).each(function(n) {
+           if($(this).attr("data-datefieldtype") != type) {
+             $(this).datepicker("option",option,date)
+           }
+         });
+       }
+     });
+   $(datepicker).focus();
+   });
+   
+   $('.datepicker').live('click', function (event) {
+     var datepicker = event.target;
+     $(".datepicker").not(".hasDatepicker").datepicker({
+       defaultDate: "+1w",
+       changeMonth: true,
+       dateFormat: "dd/mm/yy",
+     });
+   $(datepicker).focus();
+   });
+   
 });
 
 

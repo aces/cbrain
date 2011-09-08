@@ -190,7 +190,7 @@ class ApplicationController < ActionController::Base
   #Catch and display cbrain messages
   def catch_cbrain_message
     begin
-      yield
+      yield # try to execute the controller/action stuff
 
     # Record not accessible
     rescue ActiveRecord::RecordNotFound => e
@@ -211,6 +211,7 @@ class ApplicationController < ActionController::Base
       else
          flash[:error]  = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
       end
+      logger.error "CbrainException for controller #{params[:controller]}, action #{params[:action]}: #{cbm.class} #{cbm.message}"
       respond_to do |format|
         format.html { redirect_to cbm.redirect || default_redirect }
         format.js   { render :partial  => "shared/flash_update", :status  => cbm.status } 
@@ -218,13 +219,14 @@ class ApplicationController < ActionController::Base
       end
 
     # Anything else is serious
-    rescue => e
+    rescue => ex
       raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
 
       # Note that send_internal_error_message will also censure :password from the params hash
-      Message.send_internal_error_message(current_user, "Exception Caught", e, params) rescue true
-      log_exception(e) # explicit logging in exception logger, since we won't re-raise it now.
+      Message.send_internal_error_message(current_user, "Exception Caught", ex, params) rescue true
+      log_exception(ex) # explicit logging in exception logger, since we won't re-raise it now.
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
+      logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{ex.class} #{ex.message}"
       redirect_to default_redirect
 
     end
@@ -234,10 +236,13 @@ class ApplicationController < ActionController::Base
   # Redirect to the index page if available and wasn't the source of
   # the exception, otherwise to welcome page.
   def default_redirect
+    final_resting_place = { :controller => "portal", :action => "welcome" }
     if self.respond_to?(:index) && params[:action] != "index"
-      {:action => :index}
+      { :action => :index }
+    elsif final_resting_place.keys.all? { |k| params[k] == final_resting_place[k] }
+      "/500.html" # in case there's an error in the welcome page itself
     else
-      home_path
+      url_for(final_resting_place)
     end
   end
   

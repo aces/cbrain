@@ -40,22 +40,3 @@ class CbrainException < StandardError
 
 end
 
-# Use this exception class for notification
-# of problems within CBRAIN code.
-class CbrainNotice < CbrainException
-end
-
-# Use this exception class for notification
-# of serious errors within CBRAIN code.
-class CbrainError < CbrainException
-end
-
-# ActiveRecord-specific CBRAIN exceptions
-class CbrainDeleteRestrictionError < ActiveRecord::DeleteRestrictionError
-  attr_reader :message
-  
-  def initialize(message)
-    @message=message
-  end
-end
-

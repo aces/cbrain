@@ -28,9 +28,13 @@ class TaskCustomFilter < CustomFilter
     scope = scope_description(scope)  unless self.data["description_type"].blank? || self.data["description_term"].blank?
     scope = scope_user(scope)         unless self.data["user_id"].blank?
     scope = scope_bourreau(scope)     unless self.data["bourreau_id"].blank?
-    scope = scope_created_date(scope) unless self.data["created_date_type"].blank? || self.data["created_date_term"].blank?
+    scope = scope_date(scope)         unless self.data["date_attribute"].blank?
     scope = scope_status(scope)       unless self.data["status"].blank?
     scope
+  end
+
+  def target_filtered_table
+    "cbrain_tasks"
   end
   
   #Convenience method returning only the created_date_term in the data hash.
@@ -42,9 +46,9 @@ class TaskCustomFilter < CustomFilter
   def created_date_term=(date)
     self.data["created_date_term"] = "#{date["created_date_term(1i)"]}-#{date["created_date_term(2i)"]}-#{date["created_date_term(3i)"]}"
   end
-  
+
   private
-  
+
   #Return +scope+ modified to filter the CbrainTask entry's type.
   def scope_type(scope)
     scope.scoped(:conditions  => {:type  =>  self.data["type"]})
@@ -80,12 +84,7 @@ class TaskCustomFilter < CustomFilter
   def scope_bourreau(scope)
     scope.scoped(:conditions  => ["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
   end
-  
-  #Return +scope+ modified to filter the CbrainTask entry's created_at date.
-  def scope_created_date(scope)
-    scope.scoped(:conditions  => ["DATE(cbrain_tasks.created_at) #{inequality_type(self.data["created_date_type"])} ?", self.data["created_date_term"]])
-  end
-  
+
   def scope_status(scope)
     return scope if self.data["status"].is_a?(Array) && self.data["status"].all? { |v| v.blank? }
     scope.scoped(:conditions => {:status => self.data["status"]})

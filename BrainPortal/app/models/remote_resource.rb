@@ -433,7 +433,8 @@ class RemoteResource < ActiveRecord::Base
   # This is a class method, as it only makes sense
   # in the context of the current Rails application.
   # For remote Rails applications, the instance method
-  # with the same name can be called.
+  # with the same name can be called, which will fetch
+  # the info via the Controls channel.
   def self.remote_resource_info
     myself            = self.current_resource
     home              = CBRAIN::Rails_UserHome
@@ -453,11 +454,11 @@ class RemoteResource < ActiveRecord::Base
       end
     end
 
-    @git_tag    ||= ""
-    @git_commit ||= ""
-    @git_author ||= ""
-    @git_date   ||= ""
-    if @git_tag.blank?
+    # Extract GIT information from the file system
+    @git_commit ||= "" # fetched only once.
+    @git_author ||= "" # fetched only once.
+    @git_date   ||= "" # fetched only once.
+    if @git_commit.blank?
       Dir.chdir(Rails.root.to_s) do
         IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
           #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
@@ -469,13 +470,30 @@ class RemoteResource < ActiveRecord::Base
           @git_author = fh.readline.strip rescue "ExcepAuthor"
           @git_date   = fh.readline.strip rescue "ExcepDate"
         end
-        #IO.popen("git describe --all --always HEAD","r") do |fh|
-        #IO.popen("git describe --all --always --contains HEAD","r") do |fh|
-        IO.popen("git tag --contains HEAD","r") do |fh|
-          @git_tag = fh.readline.strip rescue "C-#{@git_commit}"
-        end
       end
     end
+
+    # @git_tag will be the most recent tag in GIT, appended with 
+    # "-num" for the number of commits that follows until HEAD.
+    # The value is live, to highlight when the files are not the
+    # same as when the Rails app started.
+
+    @git_tag = nil
+
+    Dir.chdir(Rails.root.to_s) do
+      git_tags = `git tag -l`.split # initial list: all tags we can find
+      @git_tag = git_tags.shift unless git_tags.empty? # extract first as a starting point
+      while git_tags.size > 0
+        git_tags = `git tag --contains '#{@git_tag}'`.split.reject { |v| v == @git_tag }
+        @git_tag = git_tags.shift unless git_tags.empty? # new first
+      end
+      if @git_tag
+        num_new_commits = `git rev-list '#{@git_tag}..HEAD'`.split.size
+        @git_tag += "-#{num_new_commits}" if num_new_commits > 0
+      end
+    end
+
+    @git_tag ||= "C-#{@git_commit}" # default
 
     info = RemoteResourceInfo.new(
 
