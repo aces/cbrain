@@ -96,7 +96,7 @@ function load_behaviour(event){
    
    loaded_element.find(".inline_edit_field").each(function() {
      var inline_edit_field = jQuery(this);
-     var data_type = inline_edit_field.attr("data-datatype");
+     var data_type = inline_edit_field.attr("data-type");
      var target = inline_edit_field.attr("data-target");
      var method = inline_edit_field.attr("data-method");
      if(!method) method = "POST";
@@ -114,7 +114,7 @@ function load_behaviour(event){
      var text = inline_edit_field.find(".current_text");
      var trigger = inline_edit_field.find(inline_edit_field.attr("data-trigger"));
      
-     var data_type = inline_edit_field.attr("data-datatype");
+     var data_type = inline_edit_field.attr("data-type");
      var target = inline_edit_field.attr("data-target");
      var method = inline_edit_field.attr("data-method");
      if(!method) method = "POST";
@@ -253,10 +253,25 @@ function load_behaviour(event){
            current_element.html(error_message);
          },
          complete: function(e) {
-           staggered_loading(index+1, element_array)
+           staggered_loading(index+1, element_array);
          }
        });
      }
+
+
+  /**
+   * When this sees a div with
+   * class auto_window_launch it should open 
+   * a window with the url in data-url 
+   */
+
+   jQuery(".auto_window_launch").each(function(){
+					var url = jQuery(this).attr("data-url");
+					console.log(url);
+					var name =jQuery(this).attr("data-window-name");
+					console.log(name);
+					window.open(url,name,false);
+				      });
 }
 
 jQuery(
@@ -317,28 +332,14 @@ jQuery(
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
 
-   jQuery(".ajax_link").live("click", function(element){
+   jQuery(".ajax_link").live("ajax:success", function(event, data, status, xhr){
      var link = jQuery(this);
-     var data_type = link.attr("data-datatype");
-     var url = link.attr("href");
-     var method = link.attr("data-method");
      var target = link.attr("data-target");
      var other_options = {};
      if(link.attr("data-width")) other_options["width"] = link.attr("data-width");
      if(link.attr("data-height")) other_options["height"] = link.attr("data-height");
-     if(!data_type) data_type = "html";
-     if(!method) method = "GET";
-
-     jQuery.ajax({
-        type: method,
-        url: url,
-        dataType: data_type,
-        success: function(data){
-           modify_target(data, target, other_options);
-         }
-      });
-
-      return false;
+     
+     modify_target(data, target, other_options);
    });
    
    jQuery(".confirm_link").live("click", function(){
@@ -355,22 +356,10 @@ jQuery(
    //Allows for the creation of form submit buttons that can highjack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
-   jQuery(".delete_button").live("click", function(){
+   jQuery(".delete_button").live("ajax:beforeSend", function(event, data, status, xhr){
      var button = jQuery(this);
-     var data_type = button.attr("data-datatype");
-     var url = button.attr("href");
      var target = button.attr("data-target");
      var target_text = button.attr("data-target-text");
-     //var confirm_message = button.attr('data-confirm');
-     var data_method = button.attr("data-method");
-     if(!data_type) data_type = "script";
-     if(!data_method) data_method = "DELETE";
-     
-     //if(confirm_message){
-     //   if(!confirm(confirm_message)){
-     //     return false;
-     //   };
-     //}
     
      if(target){
        if(!target_text){
@@ -378,15 +367,6 @@ jQuery(
        }
        jQuery(target).html(target_text);
      }
-      
-     //jQuery.ajax({
-     //  url: url,
-     //  type: data_method,
-     //  dataType: data_type,
-     //  resetForm: false
-     //  }
-     //);
-     return true;
    }); 
    
 
@@ -418,7 +398,7 @@ jQuery(
      var url = input_element.attr("data-url");
      var method = input_element.attr("data-method");
      var target = input_element.attr("data-target");
-     var data_type = input_element.attr("data-datatype");
+     var data_type = input_element.attr("data-type");
      var update_text = input_element.attr("data-target-text");
      if(!method) method = "GET";
      if(!data_type) data_type = "html";
@@ -477,34 +457,16 @@ jQuery(
 
    //Forms with the class "ajax_form" will be submitted as ajax requests.
    //Datatype and target can be set with appropriate "data" attributes.
-   jQuery(".ajax_form").find("input[type=submit]").live("click", function(){
-     var submit_button = jQuery(this);
-     var current_form = submit_button.closest("form");
-     var commit = submit_button.attr("value");
-     var data_type = current_form.attr("data-datatype");
-     var target = current_form.attr("data-target");
-     var method = current_form.attr("data-method");
-     var reset_form = current_form.attr("data-reset-form");
-     if(!method) method = "POST";
-     if(!data_type) data_type = "html";
-     if(reset_form == "false"){
-       reset_form = false;
-     } else {
-       reset_form = true;
-     }
-     
-     current_form.ajaxSubmit({
-       type: method,
-       dataType: data_type,
-       data: {commit : commit},
-       success: function(data){
-         modify_target(data, target);     
-       },
-       resetForm: reset_form
-     });
-     return false;
-   });
-   
+   jQuery(".ajax_form").live("ajax:success", function(event, data, status, xhr){
+      var current_form =  jQuery(this);
+      var target = current_form.attr("data-target");
+      var reset_form = current_form.attr("data-reset-form");
+      if(reset_form != "false"){
+        current_form.resetForm();
+      }
+      
+      modify_target(data, target);  
+    });
 
    //Allows a textfield to submit an ajax request independently of
    //the surrounding form. Submission is triggered when the ENTER
@@ -512,7 +474,7 @@ jQuery(
    jQuery(".search_box").live("keypress", function(event){
      if(event.keyCode == 13){
        var text_field = jQuery(this);
-       var data_type = text_field.attr("data-datatype");
+       var data_type = text_field.attr("data-type");
        if(!data_type) data_type = "script";
        var url = text_field.attr("data-url");
        var method = text_field.attr("data-method");
@@ -541,7 +503,7 @@ jQuery(
    jQuery(".hijacker_submit_button").live("click", function(){
      var button = jQuery(this);
      var commit = button.attr("value");
-     var data_type = button.attr("data-datatype");
+     var data_type = button.attr("data-type");
      var url = button.attr("data-url");
      var method = button.attr("data-method");
      var target = button.attr("data-target");
@@ -551,7 +513,7 @@ jQuery(
      if(button.attr("data-height")) other_options["height"] = button.attr("data-height");
      var confirm_message = button.attr('data-confirm');
      var enclosing_form = button.closest("form");
-     if(!data_type) data_type = enclosing_form.attr("data-datatype");
+     if(!data_type) data_type = enclosing_form.attr("data-type");
      if(!data_type) data_type = "html";
 
      if(!url) url = enclosing_form.attr("action");
@@ -559,11 +521,6 @@ jQuery(
      if(!method) method = enclosing_form.attr("data-method");
      if(!method) method = "POST";
      
-     //if(confirm_message){
-     //    if(!confirm(confirm_message)){
-     //      return false;
-     //    };
-     //}
      if(ajax_submit != "false"){
        enclosing_form.ajaxSubmit({
          url: url,
@@ -587,59 +544,15 @@ jQuery(
    jQuery('.external_submit_button').live('click', function(e) {
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
-     //if(confirm_message) {
-     //  if(confirm(confirm_message)) {
-     //    form.submit();
-     //  }
-     //}
-     //else {
-       form.submit();
-     //}
+
+     form.submit();
+     
      return false;
-   });
-    
-   //UNFINISHED: DO NOT USE
-   //Attempting to create a form for the userfiles page that
-   //can pull in inputs from elsewhere on the page (outside the
-   //form).
-   //Currently the problem is that the Prototype library is
-   //interfering with some functionality that this function needs.
-   //If we migrate away from Prototype, it should work.
-   jQuery(".userfiles_partial_form").live("submit", function(){
-     var current_form = jQuery(this);
-     try{
-       var data_type = current_form.attr("data-datatype");
-       var target = current_form.attr("data-target");
-       var method = current_form.attr("data-method");
-       if(!data_type) data_type = "html";
-       if(!method) method = "POST";
-
-       var commit = this.commit.value;
-
-          var post_data = { commit : commit, iamjs: "YES" };
-           var file_ids = new Array();
-           jQuery('.userfiles_checkbox:checked').each(function(index, element){
-             file_ids.push(element.value);
-           });
-         }catch(e){
-           alert(e.toString());
-           return false;
-         }
-       post_data["filelist[]"] = file_ids;
-       current_form.ajaxSubmit({
-         type: method,
-         data: post_data,
-         dataType: data_type,
-         target: target,
-         resetForm: true
-       });
-
-       return false;
    });
 
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
    jQuery("#jiv_submit").live("click", function(){
-     var data_type = jQuery(this).attr("data-datatype");
+     var data_type = jQuery(this).attr("data-type");
      jQuery(this).closest("form").ajaxSubmit({
        url: "/jiv",
        type: "GET",
@@ -740,66 +653,6 @@ jQuery(
    // Macacc stuff
    //
    /////////////////////////////////////////////////////////////////////
-
-   jQuery(".o3d_link").live('click',o3DOverlay);
-
-   jQuery(".macacc_link").live('click',macaccOverlay);
-
-   function macaccOverlay(event) {
-     var macacc=jQuery("<div id=\"macacc_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
-       show: "puff",
-     	modal: true,
-       position: 'center',
-     	width: 1024,
-     	height:  768,
-       async: false,
-       close: function(){
-     	  brainbrowser.uninit();
-     	  jQuery("#macacc_viewer").remove();
-     	}
-     });
-     jQuery(".macacc_button").button();
-     brainbrowser = new BrainBrowser();
-     brainbrowser.afterInit = function(bb) {
-       macacc = new MacaccObject(bb,jQuery("#launch_macacc").attr("data-content-url"));
-       jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
-       jQuery('#range_change').click(macacc.range_change);
-       jQuery('.data_controls').change(macacc.data_control_change);
-       macacc.pickInfoElem=jQuery("#vertex_info");
-       jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
-     };
-     brainbrowser.setup(jQuery("#launch_macacc").attr("data-content-url")+"?model=normal");
-
-     jQuery("#viewinfo > .button").button();
-   }
-
-
-
-   function o3DOverlay(event) {
-     var macacc=jQuery("<div id=\"civet_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
-    	show: "puff",
-     	modal: true,
-       position: 'center',
-     	width: 1024,
-     	height: 768,
-     	close: function(){
-     	  brainbrowser.uninit();
-     	  jQuery("#civet_viewer").remove();
-     	}
-     });
-     brainbrowser = new BrainBrowser();
-     var civet;
-     var obj_link = this;
-     brainbrowser.afterInit = function(bb) {
-       civet = new CivetObject(bb,jQuery(obj_link).attr("data-content"));
-       jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
-       jQuery('#range_change').click(civet.range_change);
-       civet.pickInfoElem=jQuery("#vertex_info");
-       jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
-     };
-     brainbrowser.setup(jQuery(this).attr('data-content-url'));
-     return false;
-   };
    
    
    // Allows to submit an interval of two dates, uses 
@@ -812,7 +665,7 @@ jQuery(
        changeMonth: true,
        dateFormat: "dd/mm/yy",
        onSelect: function( selectedDate ) {
-         var type  = $(datepicker).attr("data-datefieldtype")
+         var type  = $(datepicker).attr("data-datefieldtype");
          console.log(type);
          if(type == "from")
            var option = "minDate";
@@ -828,7 +681,7 @@ jQuery(
          var dates = $(datepicker).parent().children(".daterangepicker");
          $(dates).each(function(n) {
            if($(this).attr("data-datefieldtype") != type) {
-             $(this).datepicker("option",option,date)
+             $(this).datepicker("option",option,date);
            }
          });
        }

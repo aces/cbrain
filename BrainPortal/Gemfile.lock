@@ -1,6 +1,6 @@
 GIT
-  remote: https://github.com/djberg96/sys-proctable.git
-  revision: 2c2c0695b12f68070ff0424aed515b10a283aa0a
+  remote: git://github.com/djberg96/sys-proctable.git
+  revision: a0d5b1207b5247e90f8023670555637719e6fb69
   specs:
     sys-proctable (0.9.1)
 

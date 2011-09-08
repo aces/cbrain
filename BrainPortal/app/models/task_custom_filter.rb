@@ -32,6 +32,10 @@ class TaskCustomFilter < CustomFilter
     scope = scope_status(scope)       unless self.data["status"].blank?
     scope
   end
+
+  def target_filtered_table
+    "cbrain_tasks"
+  end
   
   #Convenience method returning only the created_date_term in the data hash.
   def created_date_term
@@ -79,45 +83,6 @@ class TaskCustomFilter < CustomFilter
   #Return +scope+ modified to filter the CbrainTask entry's bourreau.
   def scope_bourreau(scope)
     scope.scoped(:conditions  => ["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
-  end
-
-  #Return +scope+ modified to filter the CbrainTask entry's dates.
-  def scope_date(scope)
-
-    date_at = self.data["date_attribute"] # assignation ... 
-    return scope if date_at !~ /^(updated_at|created_at)$/
-
-    offset = Time.now.in_time_zone.utc_offset.seconds
-
-    abs_from         = self.data["abs_from"]
-    abs_to           = self.data["abs_to"]
-    rel_from         = self.data["rel_date_from"]
-    rel_to           = self.data["rel_date_to"]
-    mode_is_abs_from = self.data['absolute_or_relative_from'] == "abs"
-    mode_is_abs_to   = self.data['absolute_or_relative_to']   == "abs"
-
-    if mode_is_abs_from
-      user_start = DateTime.parse(abs_from)
-    else
-      puts_cyan rel_from
-      user_start = Time.now - rel_from.to_i
-    end
-
-    if mode_is_abs_to
-      user_end = DateTime.parse(abs_to)
-    else
-      user_end = Time.now - rel_to.to_i
-    end
-
-    need_switching = user_start > user_end
-    user_start,user_end = user_end,user_start if need_switching
-    user_end            = user_end + 1.day    if ( !need_switching && mode_is_abs_to ) || (need_switching && mode_is_abs_from)
-
-    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} >= ?", user_start - offset])
-    scope = scope.scoped(:conditions  => ["cbrain_tasks.#{date_at} <= ?", user_end   - offset])
-    
-    scope
-    
   end
 
   def scope_status(scope)

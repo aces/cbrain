@@ -13,11 +13,9 @@
    
 </p>
 <p>
-   Creation Date:<br>
+   Filtering by date: <br/> 
    
-       <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => custom_filter.data["created_date_type"]  %>
-       <%= date_select "custom_filter[date_term]", :date_term, :default  => Date.parse((custom_filter.data["date_term"] || Time.now).to_s) %>
-   
+   <%= render :partial => 'custom_filter_date_selection', :locals  => {:custom_filter  => custom_filter} %> <br/>
 </p>
 <p>
    Size:<br>

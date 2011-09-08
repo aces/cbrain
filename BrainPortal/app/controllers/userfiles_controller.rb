@@ -259,13 +259,13 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     viewer_name = params[:viewer]
     viewer      = @userfile.find_viewer(viewer_name)
-
+    puts_red viewer.inspect
     if viewer
       @partial = viewer.partial
     elsif viewer_name =~ /[\w\/]+/
       viewer_path = viewer_name.split("/")
       viewer_name = viewer_path.pop
-      if File.exists?(Rails.root.to_s + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
+      if File.exists?(Rails.root.to_s + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")      
         @partial = viewer_path.push(viewer_name).join("/")
       end
     end
@@ -281,6 +281,7 @@ class UserfilesController < ApplicationController
         render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
       end
     rescue
+      raise
       render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "404"
     end
   end
