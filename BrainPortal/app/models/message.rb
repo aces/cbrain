@@ -114,10 +114,14 @@ class Message < ActiveRecord::Base
     end
     
     if send_email
-      CbrainMailer.cbrain_message(allusers,
-        :subject  => header.strip,
-        :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
-      ).deliver
+      begin
+        CbrainMailer.cbrain_message(allusers,
+          :subject  => header.strip,
+          :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
+        ).deliver
+      rescue => ex
+        logger.error "Cannot send email. Exception: #{ex.class} #{ex.message}"
+      end
     end
 
     messages_sent

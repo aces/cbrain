@@ -478,20 +478,22 @@ class RemoteResource < ActiveRecord::Base
     # The value is live, to highlight when the files are not the
     # same as when the Rails app started.
 
-    @git_tag = "C-#{@git_commit}" # default
+    @git_tag = nil
 
     Dir.chdir(Rails.root.to_s) do
-      git_tags = `git tag -l`.split
+      git_tags = `git tag -l`.split # initial list: all tags we can find
       @git_tag = git_tags.shift unless git_tags.empty? # extract first as a starting point
       while git_tags.size > 0
         git_tags = `git tag --contains '#{@git_tag}'`.split.reject { |v| v == @git_tag }
         @git_tag = git_tags.shift unless git_tags.empty? # new first
       end
-      if @git_tag != "C-#{@git_commit}"
+      if @git_tag
         num_new_commits = `git rev-list '#{@git_tag}..HEAD'`.split.size
         @git_tag += "-#{num_new_commits}" if num_new_commits > 0
       end
     end
+
+    @git_tag ||= "C-#{@git_commit}" # default
 
     info = RemoteResourceInfo.new(
 

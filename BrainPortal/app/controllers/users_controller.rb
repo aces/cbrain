@@ -53,8 +53,8 @@ class UsersController < ApplicationController
     
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
-    @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
-    @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"]) 
+    @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
+    @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"]) 
     @log                    = @user.getlog()
 
     respond_to do |format|
@@ -135,7 +135,7 @@ class UsersController < ApplicationController
       @user.password_reset = current_user.id == @user.id ? false : true
     end
 
-    if params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]]
+    if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
       params[:user][:time_zone] = nil # change "" to nil
     end
     
@@ -152,7 +152,6 @@ class UsersController < ApplicationController
       @user.site_id        = site_id          if site_id
       @user.account_locked = (account_locked == "1")
       @user.destroy_user_sessions if @user.account_locked 
-      
     end
     
     if current_user.has_role? :site_manager
@@ -167,8 +166,10 @@ class UsersController < ApplicationController
       @user.site = current_user.site
     end
     
-    add_meta_data_from_form(@user, [:pref_userfiles_per_page, :pref_bourreau_id, :pref_data_provider_id])
-      
+    if params[:meta]
+      add_meta_data_from_form(@user, [:pref_userfiles_per_page, :pref_bourreau_id, :pref_data_provider_id])
+    end
+    
     respond_to do |format|
       if @user.save
         flash[:notice] = "User #{@user.login} was successfully updated."

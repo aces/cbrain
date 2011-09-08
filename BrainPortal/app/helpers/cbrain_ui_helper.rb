@@ -530,6 +530,7 @@ module CbrainUiHelper
    #All other options treated as HTML attributes.
   def ajax_link(name, url, options = {})
     options_setup("ajax_link", options)
+    options[:remote] = true
     
     link_to name.to_s.html_safe, url, options 
   end
@@ -546,7 +547,9 @@ module CbrainUiHelper
   #[:confirm] Confirm message to display before sending the request.
   def delete_button(name, url, options = {})
     options[:method] ||= 'DELETE'
+    options[:datatype] ||= 'script'
     options_setup("delete_button", options)
+    options[:remote] = true
     
     link_to name.to_s.html_safe, url, options
   end
@@ -683,10 +686,11 @@ module CbrainUiHelper
   def ajax_form_tag(url_for_options = {}, options = {}, *parameters_for_url, &block)
     options[:class] ||= ""
     options[:class] +=  " ajax_form"
+    options[:remote] = true
     
-    data_type = options.delete(:datatype)
+    data_type = options.delete(:datatype) || "html"
     if data_type
-      options["data-datatype"] = data_type.to_s.downcase
+      options["data-type"] = data_type.to_s.downcase
     end
     
     method = options[:method] #NOTE: not deleted, so it can still be used by rails
@@ -734,10 +738,11 @@ module CbrainUiHelper
     
     options[:html][:class] ||= ""
     options[:html][:class] +=  " ajax_form"
+    options[:remote] = true
     
-    data_type = options.delete(:datatype)
+    data_type = options.delete(:datatype) || "html"
     if data_type
-      options[:html]["data-datatype"] = data_type.to_s.downcase
+      options[:html]["data-type"] = data_type.to_s.downcase
     end
     
     method = options.delete(:method)  #NOTE: not deleted, so it can still be used by rails
@@ -785,7 +790,7 @@ module CbrainUiHelper
     
     data_type = options.delete(:datatype)
     if data_type
-      options["data-datatype"] = data_type.to_s.downcase
+      options["data-type"] = data_type.to_s.downcase
     end
     
     method = options[:method] #NOTE: not deleted, so it can still be used by rails
@@ -846,13 +851,12 @@ module CbrainUiHelper
     
     data_type = options.delete(:datatype)
     if data_type
-      options["data-datatype"] = data_type.to_s.downcase
+      options["data-type"] = data_type.to_s.downcase
     end
     
     method = options.delete(:method)
     if method
       options["data-method"] = method.to_s.upcase
-      options["data-remote"] = true if options["data-method"] =~ /DELETE|PUT/
     end
     
     target = options.delete(:target)

@@ -73,9 +73,9 @@ describe ToolsController do
             post :create, :tool => {}
             flash[:notice].should  be_true
           end
-          it "should render 'shared_create' if no errors appears and @tools.save is OK" do
+          it "should redirect to the index" do
             post(:create, :tool => {:name => "name"}, :format => "js")
-            response.should render_template("shared/_create")
+            response.should redirect_to(:action => :index, :format => :js)
           end          
         end
 
@@ -87,9 +87,9 @@ describe ToolsController do
             mock_tool.stub_chain(:errors, :empty?).and_return(false)
           end
           
-          it "should render 'shared_create' if errors appears and/or @tools.save failed" do
+          it "should render 'failed create' partial" do
             post(:create, :tool => {:name => "name"},:format => "js")
-            response.should render_template("shared/_create")
+            response.should render_template("shared/_failed_create")
           end
         end
       
@@ -131,9 +131,9 @@ describe ToolsController do
           delete :destroy, :id => real_tool.id
           Tool.all.should_not include(real_tool)
         end
-        it "should display a jQuery" do
+        it "should redirect to the index" do
           delete :destroy, :id => real_tool.id, :format => "js"
-          response.body.should =~ /jQuery/
+          response.should redirect_to(:action => :index, :format => :js)
         end
       end
   
