@@ -38,8 +38,18 @@
     <%= f.select :message_type, ["system", "notice", "error"] %>
   </p>
   <p>
-    <%= f.label :expiry, "Expiration date" %> (current time: <%= to_localtime(Time.now, :datetime) %>)<br>
-    <%= f.datetime_select :expiry, :start_year  => Time.now.year, :include_blank  => true %>
+  <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
+  <%= 
+    text_field_tag :expiry_date, 
+                   (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
+                   :class => "datepicker"
+  %>
+  <%= 
+    select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : "")
+  %>
+  <%= 
+    select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : "")
+  %>
   </p>
   <br>
   <p>

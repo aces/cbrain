@@ -47,7 +47,26 @@ class CustomFilter < ActiveRecord::Base
   validates_uniqueness_of :name, :scope  => [:user_id, :type]
   validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
+
+  validate :check_filter_date
+  
+  def check_filter_date
+    return true if self.data["date_attribute"].blank?
     
+    if self.data["absolute_or_relative_from"] == "abs" && self.data["abs_from"].blank?
+      errors.add(:base, "You should enter an absolute 'from' date or de-select radio button")
+    end
+	  
+    if self.data["absolute_or_relative_to"] == "abs" && self.data["abs_to"].blank?
+      errors.add(:base, "You should enter an absolute 'to' date or de-select radio button")
+    end
+
+    if self.data["absolute_or_relative_to"] == "rel" && self.data["rel_date_from"] == self.data["rel_date_to"]
+      errors.add(:base, "You should choose 2 differents relatives dates")
+    end
+    
+  end
+
   #Main method used for custom filtering. Should be redefined in subclasses to 
   #modify +scope+ according to the filter parameters and return it.
   def filter_scope(scope)

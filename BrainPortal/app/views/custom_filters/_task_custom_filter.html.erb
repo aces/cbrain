@@ -1,4 +1,22 @@
 <% custom_filter ||= @custom_filter %>
+
+<% 
+
+# List of cache update offsets we support
+big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
+
+offset_times = [
+  [ "Now",               0.seconds.to_s ],
+  [ "One hour ago",      1.hour.to_s    ],
+  [ "Six hours ago",     6.hour.to_s    ],
+  [ "One day ago",       1.day.to_s     ],
+  [ "One week ago",      1.week.to_s    ],
+  [ "One month ago",     1.month.to_s   ],
+  [ "One year ago",      1.year.to_s   ],  
+  [ "The Big Bang",      big_bang       ]
+]
+%>
+
 <p>
    Task:<br>
    <%= select :data, :type, current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
@@ -23,11 +41,6 @@
    <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
 </p>
 <p>
-   Creation Date:<br>
-   <%= select :data, :created_date_type, [["Don't filter date", ''], ['Before', "1"], ['On', "0"], ['After', "2"]], :selected => custom_filter.data["created_date_type"]  %>
-   <%= date_select "custom_filter[created_date_term]", :created_date_term, :default  => Date.parse((custom_filter.data["created_date_term"] || Time.now).to_s) %>
-</p>
-<p>
    Owner:<br>
    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
 </p> 
@@ -35,4 +48,30 @@
    Execution Server:<br>
    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user), :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
+<p>
+   Filtering by date:    
+   <%= radio_button_tag "data[date_attribute]", "", !custom_filter[:data]["date_attribute"] || custom_filter[:data]["date_attribute"] == "" %> Do not filter
+   <%= radio_button_tag "data[date_attribute]", "created_at", custom_filter[:data]["date_attribute"] == 1.to_s %> By creation date
+   <%= radio_button_tag "data[date_attribute]", "updated_at", custom_filter[:data]["date_attribute"] == 2.to_s %> By update date
+   <br/>
+
+    <%= ("&nbsp;" * 20).html_safe %>from<%= ("&nbsp;" * 50).html_safe %>to <br/>
+    <%= radio_button_tag "data[absolute_or_relative_from]", "rel", !custom_filter[:data]['absolute_or_relative_from'] || custom_filter[:data]['absolute_or_relative_from'] == "rel" %> 
+    <%= select_tag 'data[rel_date_from]', options_for_select(offset_times, (custom_filter[:data]['rel_date_from'] || 1.week).to_i ), :style => "width:156px" %>
+    <%= radio_button_tag "data[absolute_or_relative_to]",   "rel", !custom_filter[:data]['absolute_or_relative_to'] || custom_filter[:data]['absolute_or_relative_to']   == "rel" %> 
+    <%= select_tag 'data[rel_date_to]',   options_for_select(offset_times, (custom_filter[:data]['rel_date_to'] || 0).to_i), :style => "width:156px" %>
+    
+    <br/>
+    
+    <span id="daterange">
+      <%= radio_button_tag "data[absolute_or_relative_from]", "abs", custom_filter[:data]['absolute_or_relative_from'] == "abs" %> 
+      <%= text_field_tag "data[abs_from]",  custom_filter.data["abs_from"], :class => "daterangepicker", "data-datefieldtype" => "from", :style => "width:150px" %>
+      <%= radio_button_tag "data[absolute_or_relative_to]",   "abs", custom_filter[:data]['absolute_or_relative_to']   == "abs"%> 
+      <%= text_field_tag "data[abs_to]",    custom_filter.data["abs_to"],   :class => "daterangepicker", "data-datefieldtype" => "to", :style => "width:150px" %>
+    </span>  
+    
+    <br/>
+
+</p>
+
 

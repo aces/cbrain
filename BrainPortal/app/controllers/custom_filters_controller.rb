@@ -17,7 +17,7 @@ class CustomFiltersController < ApplicationController
   api_available
   
   Revision_info=CbrainFileRevision[__FILE__]
-
+  
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
@@ -45,15 +45,16 @@ class CustomFiltersController < ApplicationController
     @custom_filter.data.merge! params[:data]
     
     @custom_filter.user_id = current_user.id
-    
-    respond_to do |format|
-      if @custom_filter.save
-        flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully created."
-        format.xml  { render :xml => @custom_filter }
-      else
-        format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
-      end
-      format.js  
+
+    @custom_filter.save
+
+    if @custom_filter.errors.empty?
+      flash[:notice] = "Filter successfully created."
+      return
+    end
+
+    respond_to do |format|                                                                  
+      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'custom_filter' }}
     end
   end
 
@@ -67,14 +68,17 @@ class CustomFiltersController < ApplicationController
     
     params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
     @custom_filter.data.merge! params[:data]
+
+    @custom_filter.save
+
+    if @custom_filter.errors.empty?
+      flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
+      return
+    end
+    
     
     respond_to do |format|
-      if @custom_filter.save
-        flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-        format.xml  { head :ok }
-      else        
-        format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
-      end
+      format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       format.js
     end
   end

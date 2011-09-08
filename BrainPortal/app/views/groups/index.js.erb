@@ -1,0 +1,3 @@
+<%= render :partial  => "shared/flash_update" %>
+<%= render :partial => "shared/clear_new_panel" %>
+jQuery("#project_tables").html(<%= html_for_js(render(:partial => 'project_tables')) %>).trigger("new_content")

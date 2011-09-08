@@ -112,12 +112,11 @@ class UsersController < ApplicationController
         flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
-      redirect_to :action => :index
-      return
-    end
-    
-    respond_to do |format|                                                                  
-      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'user' }}
+      redirect_to :action => :index, :format => :js
+    else
+      respond_to do |format|                                                                  
+        format.js {render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'user' }}
+      end
     end
   end
 
@@ -198,14 +197,14 @@ class UsersController < ApplicationController
     flash[:notice] = "User '#{@user.login}' destroyed" 
 
     respond_to do |format|
-      format.js  { redirect_to :action => :index}
+      format.js  { redirect_to :action => :index, :format => :js}
       format.xml { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "User not destroyed: #{e.message}"
     
     respond_to do |format|
-      format.js  { redirect_to :action => :index}
+      format.js  { redirect_to :action => :index, :format => :js}
       format.xml { head :conflict }
     end
   end
