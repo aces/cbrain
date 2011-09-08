@@ -253,10 +253,25 @@ function load_behaviour(event){
            current_element.html(error_message);
          },
          complete: function(e) {
-           staggered_loading(index+1, element_array)
+           staggered_loading(index+1, element_array);
          }
        });
      }
+
+
+  /**
+   * When this sees a div with
+   * class auto_window_launch it should open 
+   * a window with the url in data-url 
+   */
+
+   jQuery(".auto_window_launch").each(function(){
+					var url = jQuery(this).attr("data-url");
+					console.log(url);
+					var name =jQuery(this).attr("data-window-name");
+					console.log(name);
+					window.open(url,name,false);
+				      });
 }
 
 jQuery(
@@ -740,11 +755,6 @@ jQuery(
    // Macacc stuff
    //
    /////////////////////////////////////////////////////////////////////
-
-   jQuery(".o3d_link").live('click',o3DOverlay);
-   function o3DOverlay(event) {
-     window.open(jQuery(this).attr('data-viewer'), "_blank");
-   };
    
    
    // Allows to submit an interval of two dates, uses 
@@ -757,7 +767,7 @@ jQuery(
        changeMonth: true,
        dateFormat: "dd/mm/yy",
        onSelect: function( selectedDate ) {
-         var type  = $(datepicker).attr("data-datefieldtype")
+         var type  = $(datepicker).attr("data-datefieldtype");
          console.log(type);
          if(type == "from")
            var option = "minDate";
@@ -773,7 +783,7 @@ jQuery(
          var dates = $(datepicker).parent().children(".daterangepicker");
          $(dates).each(function(n) {
            if($(this).attr("data-datefieldtype") != type) {
-             $(this).datepicker("option",option,date)
+             $(this).datepicker("option",option,date);
            }
          });
        }
