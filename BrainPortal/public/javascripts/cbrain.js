@@ -743,63 +743,8 @@ jQuery(
    /////////////////////////////////////////////////////////////////////
 
    jQuery(".o3d_link").live('click',o3DOverlay);
-
-   jQuery(".macacc_link").live('click',macaccOverlay);
-
-   function macaccOverlay(event) {
-     var macacc=jQuery("<div id=\"macacc_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
-       show: "puff",
-     	modal: true,
-       position: 'center',
-     	width: 1024,
-     	height:  768,
-       async: false,
-       close: function(){
-     	  brainbrowser.uninit();
-     	  jQuery("#macacc_viewer").remove();
-     	}
-     });
-     jQuery(".macacc_button").button();
-     brainbrowser = new BrainBrowser();
-     brainbrowser.afterInit = function(bb) {
-       macacc = new MacaccObject(bb,jQuery("#launch_macacc").attr("data-content-url"));
-       jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
-       jQuery('#range_change').click(macacc.range_change);
-       jQuery('.data_controls').change(macacc.data_control_change);
-       macacc.pickInfoElem=jQuery("#vertex_info");
-       jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
-     };
-     brainbrowser.setup(jQuery("#launch_macacc").attr("data-content-url")+"?model=normal");
-
-     jQuery("#viewinfo > .button").button();
-   }
-
-
-
    function o3DOverlay(event) {
-     var macacc=jQuery("<div id=\"civet_viewer\"></div>").load(jQuery(this).attr('data-viewer')).appendTo(jQuery("body")).dialog({
-    	show: "puff",
-     	modal: true,
-       position: 'center',
-     	width: 1024,
-     	height: 768,
-     	close: function(){
-     	  brainbrowser.uninit();
-     	  jQuery("#civet_viewer").remove();
-     	}
-     });
-     brainbrowser = new BrainBrowser();
-     var civet;
-     var obj_link = this;
-     brainbrowser.afterInit = function(bb) {
-       civet = new CivetObject(bb,jQuery(obj_link).attr("data-content"));
-       jQuery('#fillmode').toggle(bb.set_fill_mode_wireframe,bb.set_fill_mode_solid);
-       jQuery('#range_change').click(civet.range_change);
-       civet.pickInfoElem=jQuery("#vertex_info");
-       jQuery('#screenshot').click(function(event) {jQuery(this).attr("href",bb.client.toDataURL());});
-     };
-     brainbrowser.setup(jQuery(this).attr('data-content-url'));
-     return false;
+     window.open(jQuery(this).attr('data-viewer'), "_blank");
    };
 });
 
