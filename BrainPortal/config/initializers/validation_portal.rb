@@ -17,6 +17,8 @@
 
 #-----------------------------------------------------------------------------
 puts "C> CBRAIN BrainPortal validation starting, " + Time.now.to_s
+puts "C> Rails environment is set to '#{Rails.env}'"
+puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
 #-----------------------------------------------------------------------------
 
 # Checking to see if this command requires validation or not
@@ -53,7 +55,7 @@ elsif program_name == "rake"
     #------------------------------------------------------------------------------
     puts "C> \t- No more validations needed for sanity checks. Skipping."
     #------------------------------------------------------------------------------
-  elsif first_arg =~ /db:migrate|db:rollback|migration|db:schema/
+  elsif first_arg =~ /^db:/
     #------------------------------------------------------------------------------
     puts "C> \t- No validations needed for DB schema operations. Skipping."
     #------------------------------------------------------------------------------
