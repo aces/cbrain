@@ -25,11 +25,13 @@ class FileCollection < Userfile
   def content(options) #:nodoc
     
     begin
+      puts_red options[:collection_file]
       if options[:collection_file] && self.list_files.find { |f| f.name == options[:collection_file] }
         
         path_string = options[:collection_file] 
         
         path = self.cache_full_path.parent + path_string
+        puts_red path
         if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )
           {:sendfile => path}
         else

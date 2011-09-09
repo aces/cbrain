@@ -36,7 +36,7 @@ gem "will_paginate"
 gem "log4r"
 gem "nokogiri"
 gem "mysql"
-gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
+gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 #gem "sys-proctable", "~> 0.7.6"
 gem "thin"
 gem "exception_logger", "~> 0.1.10"

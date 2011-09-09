@@ -1,14 +1,32 @@
 uniform mat4 worldViewProjection;
 uniform mat4 world;
 uniform mat4 worldInverseTranspose;
+uniform float min;
+uniform float max;
+uniform int numberColors;
+
 
 attribute vec4 position;
 attribute vec4 normal;
 attribute vec4 color;
+attribute float texCoord0;
 
 varying vec3 v_normal;
 varying vec3 v_worldPosition;
+varying vec2 v_coord;
 varying vec4 v_color;
+
+float getTextureCoord(float min,float max,int numberColors,float value) {
+     float step = min+max/numberColors;
+     if(value <min) {
+       return 0;
+     }else if(value > max) {
+       return 1;
+     }else {
+       return vec2(value/step/numberColors,0.0);
+     }	   
+}    
+
 
 void main() {
   gl_Position = worldViewProjection * position;
@@ -16,7 +34,13 @@ void main() {
   vec3 worldPosition = (world * position).xyz;
   v_normal = (worldInverseTranspose * normal).xyz;
   v_worldPosition = worldPosition;
-  v_color = color;
+  if(texCoord >= 0.0) {
+ 	v_coord = getTextureCoord(min,max,numberColors,texCoord);
+	v_color = color;
+  }else {
+ 	v_coord = -1;
+	v_color = color;
+  }
 }
 
 // #o3d SplitMarker
@@ -32,9 +56,12 @@ uniform vec4 specular;
 uniform float shininess;
 uniform bool wires;
 uniform float transAlpha;
+
+uniform sampler2D texSampler;
+
 varying vec3 v_normal;
 varying vec3 v_worldPosition;
-varying vec4 v_color;
+varying float v_coord;
 
 
 vec4 lit(float l ,float h, float m) {
@@ -45,9 +72,13 @@ vec4 lit(float l ,float h, float m) {
 }
 
 void main() {
-  
+  if(v_coord >= 0.0) {
+   vec4 color = texture2D(texSampler,v_coord)
+  }else {
+   vec4 color = v_color;
+  } 	
   if(wires) {
-    gl_FragColor = v_color;
+    gl_FragColor = color;
   }else {
     vec3 surfaceToLight = normalize(lightWorldPos - v_worldPosition);
     vec3 worldNormal = normalize(v_normal);
@@ -57,9 +88,9 @@ void main() {
                          dot(worldNormal, halfVector), shininess);
 
     vec4 outColor = ambientIntensity * ambient * colorMult;
-    outColor += lightIntensity * (v_color * colorMult * litResult.y +
+    outColor += lightIntensity * (color * colorMult * litResult.y +
        specular * litResult.z);
     outColor += emissive;
-    gl_FragColor = vec4(outColor.rgb, v_color.a * transAlpha); 
+    gl_FragColor = vec4(outColor.rgb, color.a * transAlpha); 
   }
 }
