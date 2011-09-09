@@ -33,6 +33,7 @@ class TaskCustomFilter < CustomFilter
     scope
   end
 
+  #Return table name for SQL filtration 
   def target_filtered_table
     "cbrain_tasks"
   end

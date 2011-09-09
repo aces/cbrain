@@ -40,38 +40,61 @@
     <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Files</th>
         <td>
-          <%= array_to_table(@group.userfiles.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |uf,r,c| link_to_userfile_if_accessible(uf) } %>
+          <% userfiles_count = @group.userfiles.count %>
+          <% if (userfiles_count > 0) %>
+            <%= filter_reset_link userfiles_count, :controller => :userfiles, :filters  => {:group_id => @group.id}, :ajax => false %>
+          <% else %>
+            0
+          <% end %>
         </td>
     </tr>
     <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Tasks</th>
         <td>
-          <%= array_to_table(@group.cbrain_tasks.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |t,r,c| link_to_task_if_accessible(t) } %>
+        <% tasks_count = @group.cbrain_tasks.count %>
+        <% if (tasks_count > 0) %>
+          <%= filter_reset_link tasks_count, :controller => :tasks, :filters  => {:group_id => @group.id}, :ajax => false %>
+          <% else %>
+            0
+          <% end %>
         </td>
     </tr>
     <% if current_user.has_role?(:admin) %>
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Tools</th>
           <td>
-            <%= array_to_table(@group.tools.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |t,r,c| t.name } %>
+            <% tools_count = @group.tools.count %>
+            <% if (tools_count > 0) %>
+              <%= filter_reset_link tools_count, :controller => :tools, :filters  => {:group_id => @group.id}, :ajax => false %>
+            <% end %>
+          
           </td>
       </tr>
       <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Data providers</th>
+      <th>Data providers</th>
           <td>
-            <%= array_to_table(@group.data_providers.sort{ |a,b| a.name.casecmp(b.name)}, :table_class => 'simple bordered') { |dp,r,c| link_to_data_provider_if_accessible(dp) } %>
+            <% data_providers_count = @group.data_providers.count %>
+            <% if (data_providers_count > 0) %>
+              <%= filter_reset_link data_providers_count, :controller => :data_providers, :filters  => {:group_id => @group.id}, :ajax => false %>
+            <% end %>
           </td>
       </tr>
       <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Portal</th>
+      <th>Portal</th>
           <td>
-            <%= array_to_table(BrainPortal.where( :group_id => @group.id).all.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |b,r,c| link_to_bourreau_if_accessible(b) } %>
+            <% bp_count = BrainPortal.where( :group_id => @group.id).count %>
+            <% if (bp_count > 0) %>
+              <%= filter_reset_link bp_count, :controller => :bourreaux, :filters  => {:group_id => @group.id, :type => "BrainPortal"}, :ajax => false %>
+            <% end %>
           </td>
       </tr>
           <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Execution</th>
           <td>
-            <%= array_to_table(Bourreau.where( :group_id => @group.id).all.sort{ |a,b| a.name.casecmp(b.name)},:table_class => 'simple bordered') { |b,r,c| link_to_bourreau_if_accessible(b) } %>
+            <% bourreaux_count = Bourreau.where( :group_id => @group.id).count%>
+            <% if (bourreaux_count > 0) %>
+              <%= filter_reset_link bourreaux_count, :controller => :bourreaux, :filters  => {:group_id => @group.id, :type => "Bourreau"}, :ajax => false %>
+            <% end %>
           </td>
       </tr>
     <% end %>

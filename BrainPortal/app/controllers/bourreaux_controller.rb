@@ -279,42 +279,49 @@ class BourreauxController < ApplicationController
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?
-      #cb_notice "This Execution Server is not marked as online."
       @bourreau.online=true
       @bourreau.save
     end
 
     @bourreau.start_tunnels
     cb_error "Could not start master SSH connection and tunnels for '#{@bourreau.name}'." unless @bourreau.ssh_master.is_alive?
-    @bourreau.start
 
-    if @bourreau.is_alive?
-      flash[:notice] = "Execution Server '#{@bourreau.name}' started."
+    started_ok = @bourreau.start
+    alive_ok   = started_ok && (sleep 3) && @bourreau.is_alive?
+    workers_ok = false
+
+    if alive_ok
       @bourreau.addlog("Rails application started by user #{current_user.login}.")
-      begin
-        @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
-        res = @bourreau.send_command_start_workers
-        raise "Failed command to start workers" unless res && res[:command_execution_status] == "OK" # to trigger rescue
-        flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
-      rescue
-        flash[:notice] += "\nHowever, we couldn't start the workers."
-      end
+      @bourreau.reload if @bourreau.auth_token.blank? # New bourreaux? Token will have just been created.
+      res = @bourreau.send_command_start_workers rescue nil
+      workers_ok = true if res && res[:command_execution_status] == "OK"
+    end
+
+    # Messages
+
+    flash[:notice] = ""
+    flash[:error]  = ""
+
+    if alive_ok
+      flash[:notice] = "Execution Server '#{@bourreau.name}' started."
+    elsif started_ok
+      flash[:error] = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry.\n"
     else
       flash[:error] = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
                       @bourreau.operation_messages
     end
+
+    if workers_ok
+      flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
+    elsif alive_ok
+      flash[:error] += "However, we couldn't start the workers."
+    end
     
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.xml { head :ok  }
+      format.xml  { head workers_ok ? :ok : :internal_server_error  }  # TODO change internal_server_error ?
     end  
 
-  rescue => e
-    flash[:error] = e.message
-    respond_to do |format|
-      format.html { redirect_to :action => :index }
-      format.xml { render :xml  => { :message  => e.message }, :status  => 500 }
-    end
   end
 
   def stop #:nodoc:
