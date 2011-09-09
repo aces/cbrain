@@ -259,7 +259,6 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     viewer_name = params[:viewer]
     viewer      = @userfile.find_viewer(viewer_name)
-    puts_red viewer.inspect
     if viewer
       @partial = viewer.partial
     elsif viewer_name =~ /[\w\/]+/
