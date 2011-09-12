@@ -16,8 +16,8 @@ describe UserfileCustomFilter do
 
   describe "#filter_scope" do
     before(:each) do
-      @userfile1 = Factory.create(:userfile, :name => "file_1", :created_at => "2011-04-04", :size => 1779)
-      @userfile2 = Factory.create(:userfile, :name => "file_2", :created_at => "2011-04-29", :size => 2558)
+      @userfile1 = Factory.create(:userfile, :name => "file_1", :created_at => "2011-04-04", :updated_at => "2011-05-04", :size => 1779)
+      @userfile2 = Factory.create(:userfile, :name => "file_2", :created_at => "2011-04-29", :updated_at => "2011-05-29", :size => 2558)
     end
 
     it "should remove all task without 'data['user_id']'" do
@@ -43,20 +43,34 @@ describe UserfileCustomFilter do
     end
 
     context "with date" do
-      it "should remove all userfile created before 'data['date_term']'" do
-        filter.data = { "created_date_type" => 1, "date_term" => @userfile2.created_at }
+      
+      it "should only keep userfile created between 'data['abs_from'] and 'data['abs_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/04/2011", "abs_to" => "04/04/2011" }
         filter.filter_scope(Userfile.scoped({})).should =~ [@userfile1]
       end
       
-      it "should remove all userfile created on 'data['date_term']'" do
-        filter.data = { "created_date_type" => 0, "date_term" => @userfile2.created_at }
+      it "should only keep task updates between 'data['abs_from'] and 'data['abs_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/05/2011", "abs_to" => "04/05/2011" }
+        filter.filter_scope(Userfile.scoped({})).should =~ [@userfile1]
+      end
+
+      it "should only keep task created between 'data['abs_from'] and 'data['rel_date_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/04/2011", "rel_date_to" => "0" }
         filter.filter_scope(Userfile.scoped({})).should =~ [@userfile2]
+      end
+
+      it "should only keep task updated between 'data['abs_from'] and 'data['rel_date_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/05/2011", "rel_date_to" => "0" }
+        filter.filter_scope(Userfile.scoped({})).should =~ [@userfile2]
+      end
+
+      it "should only keep task updated last week" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"rel", "absolute_or_relative_to"=>"rel", "rel_date_from" => "#{1.week}", "rel_date_to" => "0" }
+        @userfile1.updated_at = Date.today - 1.day
+        @userfile1.save!
+        filter.filter_scope(Userfile.scoped({})).should =~ [@userfile1]
       end
       
-      it "should remove all userfile created after 'data['date_term']'" do
-        filter.data = { "created_date_type" => 2, "date_term" => @userfile1.created_at }
-        filter.filter_scope(Userfile.scoped({})).should =~ [@userfile2]
-      end
     end
 
     context "with size" do

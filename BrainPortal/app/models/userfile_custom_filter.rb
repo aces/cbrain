@@ -26,7 +26,7 @@ class UserfileCustomFilter < CustomFilter
   #See CustomFilter
   def filter_scope(scope)
     scope = scope_name(scope)  unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
-    scope = scope_date(scope)  unless self.data["created_date_type"].blank? || self.data["date_term"].blank?
+    scope = scope_date(scope)  unless self.data["date_attribute"].blank?
     scope = scope_size(scope)  unless self.data["size_type"].blank? || self.data["size_term"].blank?
     scope = scope_user(scope)  unless self.data["user_id"].blank?
     scope = scope_group(scope) unless self.data["group_id"].blank?
