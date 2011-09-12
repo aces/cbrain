@@ -49,19 +49,4 @@ class PortalSystemChecks < CbrainChecker
     end
   end
 
-
-
-  def self.a022_ensure_more_configuration_variables_are_unset
-    
-    old_Constants = {
-                       'DataProviderCache_dir'           => :dp_cache_dir,
-                       'DataProviderCache_RevNeeded'     => nil,
-                       'DataProvider_IgnorePatterns'     => :dp_ignore_patterns,
-                       'Site_URL'                        => :site_url_prefix
-                     }
-
-    CbrainSystemChecks.move_old_config_vars("portal", old_Constants)
-
-  end
-
 end 

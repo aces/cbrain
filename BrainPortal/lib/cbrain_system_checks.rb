@@ -25,16 +25,11 @@ class CbrainSystemChecks < CbrainChecker
     myshorttype  = Rails.root.to_s =~ /BrainPortal$/ ? "portal"      : "bourreau"
     if myname.blank?
       puts "C> \t- No name given to this #{mytype} Rails application."
-      puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
-      puts "C> \t  give it a name by setting the value of 'CBRAIN_RAILS_APP_NAME'."
-      if mytype == "Bourreau" && CBRAIN.const_defined?('BOURREAU_CLUSTER_NAME')
-        puts "C> \t- It seems you already have a value set in the old constant"
-        puts "C> \t  'BOURREAU_CLUSTER_NAME' with value '#{CBRAIN::BOURREAU_CLUSTER_NAME}';"
-        puts "C> \t  you can start by renaming that variable's name (not value!) to"
-        puts "C> \t  'CBRAIN_RAILS_APP_NAME', as it probably has the name we're"
-        puts "C> \t  looking for, then restarting this application and following"
-        puts "C> \t  the instructions that will appear. This will upgrade your"
-        puts "C> \t  configuration."
+      if mytype == "BrainPortal"
+        puts "C> \t  Please run this command: 'rake db:seed RAILS_ENV=#{Rails.env}'."
+      else
+        puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
+        puts "C> \t  give it a name by setting the value of 'CBRAIN_RAILS_APP_NAME'."
       end
       show_portals_list(mytype)
       Kernel.exit(1)
@@ -51,15 +46,16 @@ class CbrainSystemChecks < CbrainChecker
     end
 
     if mytype == "BrainPortal"
-      puts "C> \t- BrainPortal named '#{myname} is not registered in database, please run"
-      puts "C> \t  this command: 'rake db:sanity:check RAILS_ENV=#{Rails.env}'."
+      puts "C> \t- BrainPortal named '#{myname}' is not registered in database, please run"
+      puts "C> \t  this command: 'rake db:seed RAILS_ENV=#{Rails.env}'."
     else
       puts "C> \t- Bourreau named '#{myname} is not registered in database, please add"
       puts "C> \t  it using the interface, or check the value of 'CBRAIN_RAILS_APP_NAME' in"
       puts "C> \t  'config/initializers/config_#{myshorttype}.rb'"
     end
-      show_portals_list(mytype)
-      Kernel.exit(1)
+
+    show_portals_list(mytype)
+    Kernel.exit(1)
   end
 
 
@@ -92,7 +88,21 @@ class CbrainSystemChecks < CbrainChecker
 
   end
   
+  def self.a040_ensure_file_revision_system_is_active
 
+    #-----------------------------------------------------------------------------
+    puts "C> Making sure we can track file revision numbers."
+    #-----------------------------------------------------------------------------
+    
+    rev = DataProvider.revision_info.self_update
+    if rev.date == '0000-00-00' # this is the value returned if CbrainFileRevision can't fetch the rev.
+      puts "C> \t- Error: We don't have a working mechanism for tracking revision numbers."
+      puts "C> \t  Either GIT isn't installed and in your path, or the static revision"
+      puts "C> \t  revision number file for CbrainFileRevision is missing."
+      Kernel.exit(0)
+    end
+    
+  end
 
   def self.a050_check_data_provider_cache_wipe
 
@@ -190,60 +200,6 @@ class CbrainSystemChecks < CbrainChecker
     end
     puts "C> \t- It's possible you need to set the value of CBRAIN_RAILS_APP_NAME to"
     puts "C> \t  #{portals.size > 1 ? "one of these names." : "this name."}"
-  end
-
-  def self.move_old_config_vars(bourreau_or_portal_keyword,varname_to_method) #:nodoc:
-
-    find_some_old = varname_to_method.keys.select { |c| CBRAIN.const_defined?(c) }
-    return unless find_some_old.size > 0
-
-    puts "C> Configuration error: found some old configuration constants in"
-    puts "C> 'config/initializers/config_#{bourreau_or_portal_keyword}.rb':"
-    find_some_old.each do |c|
-      puts "C> \t- No longer needed: '#{c}'"
-    end
-    puts "C> We will now try to propagate the values of these variables to"
-    puts "C> the database."
-
-    myself = RemoteResource.current_resource
-    
-    conflicts = []
-
-    find_some_old.each do |c|
-      method = varname_to_method[c]
-      next unless method
-      puts "C> \t- Checking value for constant '#{c}'..."
-      old = myself.send(method)
-      new = CBRAIN.const_get(c)
-      if old && old != new
-        puts "C> \t\t- Value of '#{c}' already set in DB, not overridding."
-        puts "C> \t\t  WARNING: Values differ! DB=#{old.inspect}, FILE=#{new.inspect}"
-        conflicts << c
-      else
-        puts "C> \t\t- Value of '#{c}' recorded for DB."
-        myself.attributes = { method => new }
-      end
-    end
-
-    puts "C> Preparing to save new DB record..."
-    myself.save!
-    puts "C> Success!"
-
-    puts "C> Please remove the old constants from the config file now."
-
-    if conflicts.size > 0
-      puts "C> IMPORTANT NOTE: The values for some variables, as seen in the"
-      puts "C> file 'config/initializers/config_#{bourreau_or_portal_keyword}.rb',"
-      puts "C> were not transfered to the DB as they conflict with values"
-      puts "C> already present there. Here are the variable names:"
-      conflicts.each do |c|
-        puts "C> \t- #{c}"
-      end
-      puts "C> Please double check those values with the CBRAIN interface"
-      puts "C> before removing the constants from the config file."
-    end
-
-    raise "Configuration error: old constants still active. Exiting."
   end
 
 end 

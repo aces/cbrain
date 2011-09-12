@@ -98,32 +98,15 @@ class PortalSanityChecks < CbrainChecker
 
     everyone_group = Group.everyone
     if ! everyone_group
-      puts "C> \t- SystemGroup 'everyone' does not exist. Creating it."
-      everyone_group = SystemGroup.create!(:name  => "everyone")
-    elsif ! everyone_group.is_a?(SystemGroup)
-      puts "C> \t- Group 'everyone' migrated to SystemGroup."
-      everyone_group.type = 'SystemGroup'
-      everyone_group.save!
+      puts "C> \t- SystemGroup 'everyone' does not exist."
+      puts "C> \t  Please run 'rake db:seed RAILS_ENV=#{Rails.env}' to create it."
+      Kernel.exit(10)
     end
 
     unless User.where( :login  => 'admin' ).first
-      puts "C> \t- Admin user does not exist yet. Creating one."
-      
-      pwdduh = 'cbrainDuh' # use 9 chars for pretty warning message below.
-      admin = User.new
-      admin.full_name             = "Administrator"
-      admin.login                 = "admin"
-      admin.password              = pwdduh
-      admin.password_confirmation = pwdduh
-      admin.email                 = 'admin@here'
-      admin.role                  = 'admin'
-      admin.password_reset        = 'true'
-      admin.save!
-      admin.own_group.update_attributes!(:creator_id => admin.id)
-      puts("C> ******************************************************")
-      puts("C> *  USER 'admin' CREATED WITH PASSWORD '#{pwdduh}'    *")
-      puts("C> * CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN *")
-      puts("C> ******************************************************")
+      puts "C> \t- Admin user does not exist."
+      puts "C> \t  Please run 'rake db:seed RAILS_ENV=#{Rails.env}' to create it."
+      Kernel.exit(10)
     end
   end
   
@@ -268,21 +251,16 @@ class PortalSanityChecks < CbrainChecker
     myname       = ENV["CBRAIN_RAILS_APP_NAME"]
     myname     ||= CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
 
-    brainportal  = BrainPortal.find_by_name(myname)
+    brainportal  = myname ? BrainPortal.find_by_name(myname) : nil
  
-    unless brainportal
-      puts "C> \t- Creating a new BrainPortal record for this RAILS app."
-      admin  = User.find_by_login('admin')
-      gadmin = admin.own_group
-      brainportal = BrainPortal.create!(
-                                        :name        => myname,
-                                        :user_id     => admin.id,
-                                        :group_id    => gadmin.id,
-                                        :online      => true,
-                                        :read_only   => false,
-                                        :description => 'CBRAIN BrainPortal on host ' + Socket.gethostname,
-                                        :dp_cache_dir => ""
-                                       )
+    if ! brainportal
+      puts "C> \t- There is no BrainPortal record for this RAILS app."
+      puts "C> \t  Please run 'rake db:seed RAILS_ENV=#{Rails.env}' to create one."
+      Kernel.exit(10)
+    end
+
+    cache_ok = DataProvider.this_is_a_proper_cache_dir!(brainportal.dp_cache_dir) rescue nil
+    unless cache_ok
       puts "C> \t- NOTE: You need to use the interface to configure properly the Data Provider cache directory."
     end
 

@@ -109,6 +109,7 @@ class CbrainFileRevision
   def self_update(force=nil)
     @git_last_commit_info=nil if force
     get_git_rev_info()
+    self
   end
 
   private
