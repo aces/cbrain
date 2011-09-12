@@ -16,9 +16,9 @@ describe UsersController do
         before(:each) do
           session[:user_id] = admin.id
         end
-        it "should sort by login by default" do
+        it "should sort by full name by default" do
           get :index
-          assigns[:users].should == User.all(:order => "users.login")
+          assigns[:users].should == User.all(:order => "users.full_name")
         end
         it "should sort by full name" do
           get :index, "users" => { "sort_hash"  => { "order" => "users.full_name" } }
