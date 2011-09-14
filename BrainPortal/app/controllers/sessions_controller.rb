@@ -23,6 +23,7 @@ class SessionsController < ApplicationController
     respond_to do |format|
       format.html
       format.xml
+      format.txt
     end
   end
 

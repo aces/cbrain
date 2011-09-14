@@ -511,6 +511,7 @@ module CbrainUiHelper
   #+options+ same as for link_to
   #
   def overlay_ajax_link(name, url, options = {})
+    options[:datatype] ||= "html"
     options[:overlay] = true
     
     ajax_link name.to_s.html_safe, url, options
