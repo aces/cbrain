@@ -551,7 +551,9 @@ class TasksController < ApplicationController
   def operation #:nodoc:
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
+    tasklist    = [ tasklist ] unless tasklist.is_a?(Array)
     batch_ids   = params[:batch_ids] || []
+    batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
       tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).map(&:id)
     end
