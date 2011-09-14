@@ -29,6 +29,7 @@ class BourreauxController < ApplicationController
     @groups   = current_user.available_groups
     @bourreau = Bourreau.new( :user_id   => current_user.id,
                               :group_id  => bourreau_group_id,
+                              :cache_trust_expire => 1.month.to_i.to_s,
                               :online    => true
                             )
     sensible_defaults(@bourreau)
@@ -336,7 +337,7 @@ class BourreauxController < ApplicationController
       @bourreau.addlog("Workers stopped by user #{current_user.login}.")
       flash[:notice] = "Workers on Execution Server '#{@bourreau.name}' stopped."
     rescue
-      flash[:notice] = "It seems we couldn't stop the workers on Executon Server '#{@bourreau.name}'. They'll likely die by themselves."
+      flash[:notice] = "It seems we couldn't stop the workers on Execution Server '#{@bourreau.name}'. They'll likely die by themselves."
     end
 
     @bourreau.online = true # to trick layers below into doing the 'stop' operation
