@@ -61,7 +61,7 @@ class String
   # it will return the filename. If the
   # string is unparsable, it returns "(file?)".
   def svn_id_file
-    if revm = self.match(/^\$Id:\s+(.*?)\s+\d+/)
+    if revm = self.match(/^\$Id:\s+(\S+)/)
       revm[1]
     else
       "(file?)"
