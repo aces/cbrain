@@ -58,6 +58,8 @@ class ClusterTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include NumericalSubdirTree
+
   # These basenames might get modified with suffixes appended to them.
   QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{id}.sh"
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{id}"
@@ -1121,14 +1123,15 @@ class ClusterTask < CbrainTask
     end
 
     # Create our own work directory
-    name = self.name
-    user = self.user.login
-    basedir = "#{user}-#{name}-T#{self.id}"
-    self.cluster_workdir = basedir # new convention is just the basename.
-    fulldir = self.full_cluster_workdir # builds using the basename and the bourreau's cms_shared_dir
+    name        = self.name
+    user        = self.user.login
+    basedir     = "#{user}-#{name}-T#{self.id}"
+    rel_path    = self.class.numerical_subdir_tree_components(self.id).join("/")
+    self.cluster_workdir = "#{rel_path}/#{basedir}" # newest convention is "00/12/34/basedir".
+    fulldir = self.full_cluster_workdir # builds using the cluster_workdir and the bourreau's cms_shared_dir
     self.addlog("Trying to create workdir '#{fulldir}'.")
+    self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
     Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
-
     true
   end
 
@@ -1141,6 +1144,7 @@ class ClusterTask < CbrainTask
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
     FileUtils.remove_dir(full, true) rescue true
+    self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir = nil
     true
   end
