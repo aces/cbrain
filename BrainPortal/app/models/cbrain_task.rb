@@ -132,6 +132,19 @@ class CbrainTask < ActiveRecord::Base
     self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
   end
 
+  # Same as the standard ActiveRecord's to_xml, except that
+  # the params hash is serialized as YAML
+  def to_xml(options = {})
+    yaml_params = (self.params || {}).to_yaml
+    options[:methods] ||= []
+    options[:methods] << :type
+    options[:except]  ||= []
+    options[:except]  << :params
+    options[:procs]   ||= []
+    options[:procs]   << Proc.new { |options| options[:builder].tag!('params', yaml_params) }
+    super(options)
+  end
+
   ##################################################################
   # Utility Methods
   ##################################################################
@@ -192,11 +205,6 @@ class CbrainTask < ActiveRecord::Base
     ["batch"]
   end
   
-  #Adding defaults to standard ActiveRecord to_xml.
-  def to_xml(options={})
-       super(options.reverse_merge(:methods => :type ))
-  end
-
   # This method returns the full path of the task's work directory;
   # the old convention was to store the full path in the
   # :cluster_workdir, while the new one is to store just the basename

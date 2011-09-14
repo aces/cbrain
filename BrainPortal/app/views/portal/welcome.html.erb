@@ -46,7 +46,7 @@
         There are currently <%= CbrainSession.count %> entries in the sessions table.<br>
       <%= form_tag home_path do %>
         Clear sessions older than
-        <%= select_tag :clear_sessions, options_for_select( [
+        <%= select_tag :session_clear, options_for_select( [
              [ "One month ago",     1.month.to_i   ],
              [ "One week ago",      1.week.to_i    ],
              [ "One day ago",       1.day.to_i     ],

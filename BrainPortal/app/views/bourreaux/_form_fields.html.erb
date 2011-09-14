@@ -108,14 +108,24 @@
 
     <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
     <%= f.select :cache_trust_expire, [
-            [ "Never",      "0"                ],
-            [ "Six hours",  6.hours.to_i.to_s  ],
-            [ "One day",    1.day.to_i.to_s    ],
-            [ "One week",   1.week.to_i.to_s   ],
-            [ "One month",  1.month.to_i.to_s  ],
-            [ "Six months", 6.month.to_i.to_s  ]
+            [ "Never",        "0"                  ],
+            [ "Six hours",     6.hours.to_i.to_s   ],
+            [ "Twelve hours", 12.hours.to_i.to_s   ],
+            [ "One day",       1.day.to_i.to_s     ],
+            [ "Three days",    3.days.to_i.to_s    ],
+            [ "One week",      1.week.to_i.to_s    ],
+            [ "Two weeks",     2.weeks.to_i.to_s   ],
+            [ "One month",     1.month.to_i.to_s   ],
+            [ "Two months",    2.months.to_i.to_s  ],
+            [ "Three months",  3.months.to_i.to_s  ],
+            [ "Six months",    6.months.to_i.to_s  ]
         ]
-    %></p>
+    %></br>
+    <small>This means that in the execution server's cache, files that have been recorded<br/>
+    as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy</br/>
+    and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em></br/>
+    if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</small>
+    </p>
   </fieldset>
 
 

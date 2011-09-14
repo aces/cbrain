@@ -125,15 +125,15 @@ class CbrainTask::Diagnostics < ClusterTask
     # Note: 'commands' is an ARRAY of strings.
     commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
 
-      echo "============================================================="
+      echo "===================================================================="
       echo "STDOUT Diagnostics Bash Script Starting `date`"
-      echo "============================================================="
+      echo "===================================================================="
       echo ""
 
-      echo "=============================================================" 1>&2
-      echo "STDERR Diagnostics Bash Script Starting `date`"                1>&2
-      echo "=============================================================" 1>&2
-      echo ""                                                              1>&2
+      echo "====================================================================" 1>&2
+      echo "STDERR Diagnostics Bash Script Starting `date`"                       1>&2
+      echo "====================================================================" 1>&2
+      echo ""                                                                     1>&2
 
       echo "---- Host Info ----"
       uname -a

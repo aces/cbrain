@@ -155,7 +155,7 @@ class CbrainSystemChecks < CbrainChecker
           renamed_ok = File.rename(entry,newname) rescue false
           if renamed_ok
             puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
-            system("/bin/rm -rf '#{newname}' </dev/null &")
+            system("{ /bin/rm -rf '#{newname}' </dev/null >/dev/null 2>/dev/null & } &")
           end
         end
       end
