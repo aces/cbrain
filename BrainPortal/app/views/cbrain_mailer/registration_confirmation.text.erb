@@ -9,7 +9,7 @@ Access CBRAIN here:
 
 Your username for logging in is: <%= @user.login %>
 <% unless @no_password_reset_needed %>
-Your temporary password is: <%= @plain_password %>
+Your temporary password is: <%= @plain_password.html_safe %>
 
 You will be asked to change your password upon first log in.
 <% end %>
