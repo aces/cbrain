@@ -24,11 +24,18 @@ describe TaskCustomFilter do
                                                    :updated_at => "2011-05-29")
     end
     
-    it "should remove all non 'data['type']' task" do
+    it "should remove all non 'data['type']' task with one type" do
       task1 = Factory.create("cbrain_task/diagnostics")
       task2 = Factory.create("cbrain_task/civet")
       filter.data = { "type" => "CbrainTask::Diagnostics" }
       filter.filter_scope(CbrainTask.scoped({})).should =~ [task1]
+    end
+
+    it "should remove all non 'data['type']' task with 2 types" do
+      task1 = Factory.create("cbrain_task/diagnostics")
+      task2 = Factory.create("cbrain_task/civet")
+      filter.data = { "type" => ["CbrainTask::Diagnostics,CbrainTask::Civet"] }
+      filter.filter_scope(CbrainTask.scoped({})).should =~ []
     end
     
     it "should remove all task without 'data['user_id']'" do

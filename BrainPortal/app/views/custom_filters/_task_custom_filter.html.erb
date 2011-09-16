@@ -2,8 +2,12 @@
 
 <p>
    Task:<br>
-   <%= select :data, :type, current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
+   <%= select_tag 'data[type]',
+       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, custom_filter.data["type"]),
+      :multiple => true, :size => 10
+   %>
 </p>
+
 <p>
   Status:<br>
   <%= select_tag 'data[status]',
