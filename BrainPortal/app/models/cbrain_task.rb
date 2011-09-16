@@ -32,6 +32,7 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :user
   belongs_to            :group
   belongs_to            :tool_config
+  belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id
 
   # Pseudo Attributes (not saved in DB)
   attr_accessor :cluster_stdout, :cluster_stderr, :script_text

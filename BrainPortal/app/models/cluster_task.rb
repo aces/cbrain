@@ -287,17 +287,18 @@ class ClusterTask < CbrainTask
   # containing at the minimum :name and :data_provider_id.
   # The :user_id and :group_id default to the task's.
   def safe_userfile_find_or_new(klass,attlist)
+    attlist[:data_provider_id] ||= self.results_data_provider_id
     cb_error "Class for file must be a subclass of Userfile." unless
       klass < Userfile
     cb_error "Attribute list missing a required attribute." unless
-      [ :name, :data_provider_id ].all? { |i| attlist.has_key?(i) }
+      [ :name, :data_provider_id ].all? { |i| ! attlist[i].blank? } # minimal set!
     unless attlist.has_key?(:user_id)
       cb_error "Cannot assign user to file." unless self.user_id
       attlist[:user_id] = self.user_id
     end
-    group_id_for_file = attlist.delete(:group_id) || self.group_id
+    group_id_for_file = attlist.delete(:group_id) || self.group_id # is re-assigned later
     cb_error "Cannot assign group to file." unless group_id_for_file
-    results = klass.where( attlist )
+    results = klass.where( attlist ).all
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always
