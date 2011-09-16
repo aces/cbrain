@@ -1113,12 +1113,13 @@ class ClusterTask < CbrainTask
     # Use the work directory of another task
     otask_id = self.share_wd_tid
     if ! otask_id.blank?
-      otask = CbrainTask.find(otask_id)
+      otask = CbrainTask.find_by_id(otask_id)
+      cb_error "Task '#{self.bname_tid}' is supposed to use the workdir of task '#{otask_id}' which doesn't exist." if ! otask
       cb_error "Cannot use the work directory of a task that belong to another Bourreau." if otask.bourreau_id != self.bourreau_id
       owd   = otask.full_cluster_workdir
       cb_error "Cannot find the work directory of other task '#{otask_id}'."      if owd.blank?
       cb_error "The work directory '#{owd} of task '#{otask_id}' does not exist." unless File.directory?(owd)
-      self.cluster_workdir = File.basename(owd)
+      #self.cluster_workdir = File.basename(owd) # no longer assigned
       self.addlog("Using workdir '#{owd}' of task '#{otask.bname_tid}'.")
       return
     end

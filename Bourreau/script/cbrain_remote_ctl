@@ -185,15 +185,17 @@ end
 
 # Start the server
 start_success=false
+start_log_file="#{rails_home}/log/server_start.log"
 Dir.chdir(rails_home) do
-  cmd = [ "script/rails", "server", "thin",
-          "-d",
+  cmd_ar = [ "script/rails", "server", "thin",
+          "-d", # the -d will start it in background
           "-p", "#{port}",
           "-e", "#{environment}",
           "-b", "127.0.0.1",
           "-P", "#{pidfile}"
         ]
-  start_success=system(*cmd) # the -d will start it in background
+  cmd = cmd_ar.join(" ") + " | tee -a '#{start_log_file}'"
+  start_success=system("bash","-c",cmd)
 end
 
 # If we were provided with a database.yml, we need
@@ -209,9 +211,9 @@ if start_success
   puts "Bourreau Started."
 else
   puts "Bourreau Failed."
-  if File.exists?("#{rails_home}/log/server.log")
+  if File.exists?(start_log_file)
     puts "Here are the last 100 lines of the server's log:"
-    system("tail -100 '#{rails_home}/log/server.log'")
+    system("tail -100 '#{start_log_file}'")
   else
     puts "No server log file found to help you out of this one :-("
   end
