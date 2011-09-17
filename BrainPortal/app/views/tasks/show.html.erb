@@ -98,6 +98,17 @@
       </tr>
    
       <tr class="<%= cycle('list-odd', 'list-even') %>">
+          <th>Size Of Work Directory</th>
+          <td>
+              <% if @task.share_wd_tid %>
+                ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
+              <% else %>
+                <%= pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+              <% end %>
+          </td>
+      </tr>
+   
+      <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th>Time Submitted</th>
           <td><%= to_localtime(@task.created_at,:datetime) -%></td>
       </tr>

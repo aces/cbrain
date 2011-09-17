@@ -488,6 +488,7 @@ class ClusterTask < CbrainTask
     begin
       self.addlog("Starting asynchronous postprocessing.")
       self.record_cbraintask_revs
+      self.update_size_of_cluster_workdir
       self.apply_tool_config_environment
       saveok = false
       Dir.chdir(self.full_cluster_workdir) do
@@ -1149,6 +1150,31 @@ class ClusterTask < CbrainTask
     self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir = nil
     true
+  end
+
+  # Compute size in bytes of the work directory; save it in the task's
+  # attribute :cluster_workdir_size . Leaves nil if the directory doesn't
+  # exist or any error occured. Sets to '0' if the task uses another task's
+  # work directory.
+  def update_size_of_cluster_workdir
+    if self.share_wd_tid
+      self.cluster_workdir_size = 0
+      self.save
+      return
+    end
+    full=self.full_cluster_workdir
+    self.cluster_workdir_size = nil
+    if ( ! full.blank? ) && Dir.exists?(full)
+      sizeline = IO.popen("du -s -k '#{full}'","r") { |fh| fh.readline rescue "" }
+      if mat = sizeline.match(/^\s*(\d+)/) # in Ks
+        self.cluster_workdir_size = mat[1].to_i.kilobytes
+        self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
+      end
+    end
+    self.save
+    return self.cluster_workdir_size
+  rescue
+    return nil
   end
 
 end

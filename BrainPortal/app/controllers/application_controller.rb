@@ -437,20 +437,28 @@ class ApplicationController < ActionController::Base
   end
   
   # Format a byte size for display in the view.
-  # Returns the size as one of
-  #   12.3 GB
-  #   12.3 MB
-  #   12.3 KB
-  #   123 bytes
-  def pretty_size(size)
+  # Returns the size as one format of
+  #
+  #   "12.3 Gb"
+  #   "12.3 Mb"
+  #   "12.3 Kb"
+  #   "123 bytes"
+  #   "unknown"     # if size is blank
+  #
+  # Note that these are the DECIMAL SI prefixes.
+  #
+  # The option :blank can be given a
+  # string value to return if size is blank,
+  # instead of "unknown".
+  def pretty_size(size, options = {})
     if size.blank?
-      "unknown"
+      options[:blank] || "unknown"
     elsif size >= 1_000_000_000
-      sprintf "%6.1f GB", size/(1_000_000_000 + 0.0)
+      sprintf "%6.1f Gb", size/(1_000_000_000.0)
     elsif size >=     1_000_000
-      sprintf "%6.1f MB", size/(    1_000_000 + 0.0)
+      sprintf "%6.1f Mb", size/(    1_000_000.0)
     elsif size >=         1_000
-      sprintf "%6.1f KB", size/(        1_000 + 0.0)
+      sprintf "%6.1f Kb", size/(        1_000.0)
     else
       sprintf "%d bytes", size
     end 

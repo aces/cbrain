@@ -56,7 +56,7 @@ class BourreauSystemChecks < CbrainChecker
   def self.a060_ensure_bourreau_worker_processes_are_reported
 
     #-----------------------------------------------------------------------------
-    puts "C> Reporting Bourreau Worker Processes (if any)..."
+    puts "C> Reporting Bourreau Worker processes (if any)..."
     #-----------------------------------------------------------------------------
 
     # This will reconnect with any and all workers already
@@ -82,7 +82,7 @@ class BourreauSystemChecks < CbrainChecker
     return unless Dir.exists?(gridshare_dir)
 
     #-----------------------------------------------------------------------------
-    puts "C> Moving Old Task Work Directories..."
+    puts "C> Moving and validating old task work directories..."
     #-----------------------------------------------------------------------------
 
     local_old_tasks = CbrainTask.where(
@@ -90,14 +90,12 @@ class BourreauSystemChecks < CbrainChecker
       :status      => ( CbrainTask::COMPLETED_STATUS + CbrainTask::FAILED_STATUS ) - CbrainTask::ACTIVE_STATUS,
       :share_wd_tid => nil
     ).where(
-      [ "updated_at < ?", 1.week.ago ]  # to be safe...
-    ).all.select { |task|
-      workdir = task.cluster_workdir
-      (! ( workdir.blank?     ) ) &&
-      (! ( workdir[0] == "/"  ) ) &&  # very old convention with absolute pathnames... we leave them alone
-      (! ( workdir    =~ /\// ) ) &&  # must be a simple basename (old convention)
-      Dir.exists?("#{gridshare_dir}/#{workdir}")
-    }
+      [ "updated_at < ?", 1.week.ago ], # just to be safe...
+    ).where(
+      "cluster_workdir IS NOT NULL"
+    ).where(
+      "( cluster_workdir LIKE \"/%\" or cluster_workdir NOT LIKE \"%%/%\" )"
+    ).all
 
     if local_old_tasks.empty?
       puts "C> \t- No task needs updating."
@@ -107,18 +105,38 @@ class BourreauSystemChecks < CbrainChecker
     end
 
     # Adjust the tasks
-    adj_success = 0 ; adj_fail = 0 ; adj_same = 0
+    adj_success = 0 ; adj_fail = 0 ; adj_same = 0 ; adj_zap = 0
     local_old_tasks.each do |task|
       tid         = task.id
       old_workdir = task.cluster_workdir
+      #puts_red "OLD=#{old_workdir}"
+
+      next if old_workdir.blank? # should not even happen
+
+      # Bad entry? Just zap.
+      if ! Dir.exists?(task.full_cluster_workdir)
+        adj_zap += 1
+        task.update_attribute( :cluster_workdir, nil ) # just this attribute need to change.
+        next
+      end
+
+      # If it was full path in form "gridshare_dir/taskworkdir"
+      if old_workdir.index(gridshare_dir) == 0
+        old_workdir[0,gridshare_dir.size + 1] = "" # pretend it was just "taskworkdir"
+      end
+
+      next if old_workdir.blank? || old_workdir =~ /\// # Strange. Should never happen unless attribute contained WEIRD path
+
+      # Adjust the pure basename cases
       begin
         task.cluster_workdir = nil # to trigger creation of new one
         task.send(:make_cluster_workdir) # create new hashed one; it's protected, thus the send
         new_workdir = task.cluster_workdir
-        if old_workdir == new_workdir # security check... if same, just ignore
+        if old_workdir == new_workdir # security check... if same, just ignore; should never happen!
           adj_same += 1
           next
         end
+        #puts_green "Adj #{old_workdir} -> #{new_workdir}"
         Dir.rmdir("#{gridshare_dir}/#{new_workdir}") # this should be a brand new empty dir which we replace...
         File.rename("#{gridshare_dir}/#{old_workdir}", "#{gridshare_dir}/#{new_workdir}")  # ... by this
         adj_success += 1
@@ -127,10 +145,10 @@ class BourreauSystemChecks < CbrainChecker
         adj_fail += 1
         puts_red "Adjustment exception for #{task.bname_tid} : #{ex.class} #{ex.message}"
       end
-      task.update_attributes( :cluster_workdir => task.cluster_workdir ) # just this attribute need to change.
+      task.update_attribute( :cluster_workdir, task.cluster_workdir ) # just this attribute need to change.
     end
 
-    puts "C> \t- Adjustment of task workdirs: #{adj_success} adjusted, #{adj_fail} failed, #{adj_same} stayed the same."
+    puts "C> \t- Adjustment of task workdirs: #{adj_success} adjusted, #{adj_fail} failed, #{adj_zap} zapped, #{adj_same} stayed the same."
 
   end
 

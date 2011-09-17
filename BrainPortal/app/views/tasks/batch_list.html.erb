@@ -4,7 +4,7 @@
 <% launch_time_id = launch_time  ? launch_time.to_i         : 0 %>
 
 <% if @tasks.empty? %>
-  <tr><td colspan="<%= current_project ? "9" : "10" %>">This batch of tasks has disappeared.</td></tr>
+  <tr><td colspan="<%= current_project ? "10" : "11" %>">This batch of tasks has disappeared.</td></tr>
 <% else %>
   <tr class="batch_job_header row_highlight">
     <td>
@@ -26,7 +26,7 @@
         <%= pluralize(@tasks.size, "old job") %>
       <% end %>
     </td>
-    <td colspan="<%= current_project ? "3" : "4" %>" class="left_align">
+    <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
       <% if launch_time %>
         <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
         <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>

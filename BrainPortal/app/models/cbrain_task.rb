@@ -240,12 +240,12 @@ class CbrainTask < ActiveRecord::Base
     end
 
     # Prepare for recursion, we need to find the workdir of another task
-    seen_ids[self.id] = true
-    cb_error "Infinite loop in share_wd_tid sequence?!?" if seen_ids[shared_wd_tid]
+    seen_tids[self.id] = true
+    cb_error "Infinite loop in share_wd_tid sequence?!?" if seen_tids[shared_wd_tid]
     other_task = CbrainTask.find_by_id(shared_wd_tid)
     cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got ID of missing task #{shared_wd_tid}" unless other_task
     cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got sent to a task on a different Bourreau: #{other_task.bname_tid}" if other_task.bourreau_id != self.bourreau_id
-    return other_task.full_cluster_workdir(seen_ids) # recurse
+    return other_task.full_cluster_workdir(seen_tids) # recurse
   end
 
   # Returns the task's bourreau's cms_shared_dir (which might not be

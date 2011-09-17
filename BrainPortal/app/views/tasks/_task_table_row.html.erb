@@ -23,6 +23,7 @@
     <td><%= link_to_bourreau_if_accessible(task.bourreau) %></td>
     <td><%= colored_status(task.status) %></td>
     <td><%= task.run_number %></td>
+    <td><%= task.share_wd_tid ? "(Shared)" : pretty_size(task.cluster_workdir_size, :blank => "") %></td>
     <td><%= to_localtime(task.created_at,:datetime) -%></td>
     <td><%= to_localtime(task.updated_at,:datetime) -%></td>
   </tr>

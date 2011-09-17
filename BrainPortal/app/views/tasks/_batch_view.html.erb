@@ -23,7 +23,7 @@
         <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
       </td>
       <td class="left">
-        <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='10' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
+        <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
           <% if launch_time %>
             <%= "#{first_task.pretty_name} (Batch)" %>
           <% else %>
@@ -40,7 +40,7 @@
           <%= pluralize(num_tasks, "old job") %>
         <% end %>
       </td>
-      <td colspan="<%= current_project ? "3" : "4" %>" class="left_align">
+      <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
         <% if launch_time %>
           <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
           <%= report.html_safe %>
