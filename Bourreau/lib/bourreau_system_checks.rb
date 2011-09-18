@@ -106,11 +106,12 @@ class BourreauSystemChecks < CbrainChecker
 
     # Adjust the tasks
     adj_success = 0 ; adj_fail = 0 ; adj_same = 0 ; adj_zap = 0
-    local_old_tasks.each do |task|
+    local_old_tasks.each_with_index do |task,idx|
       tid          = task.id
       old_workdir  = task.cluster_workdir
       last_updated = task.updated_at || Time.now
       #puts_red "OLD=#{old_workdir}"
+      puts "C> \t- Updating task ##{idx+1} ..." if (idx+1) % 50 == 0
 
       next if old_workdir.blank? # should not even happen
 
