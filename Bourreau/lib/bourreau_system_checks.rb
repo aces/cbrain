@@ -107,8 +107,9 @@ class BourreauSystemChecks < CbrainChecker
     # Adjust the tasks
     adj_success = 0 ; adj_fail = 0 ; adj_same = 0 ; adj_zap = 0
     local_old_tasks.each do |task|
-      tid         = task.id
-      old_workdir = task.cluster_workdir
+      tid          = task.id
+      old_workdir  = task.cluster_workdir
+      last_updated = task.updated_at || Time.now
       #puts_red "OLD=#{old_workdir}"
 
       next if old_workdir.blank? # should not even happen
@@ -116,7 +117,8 @@ class BourreauSystemChecks < CbrainChecker
       # Bad entry? Just zap.
       if ! Dir.exists?(task.full_cluster_workdir)
         adj_zap += 1
-        task.update_attribute( :cluster_workdir, nil ) # just this attribute need to change.
+        task.update_attribute( :cluster_workdir, nil                  ) # just this attribute need to change.
+        task.update_attribute( :updated_at,      last_updated         ) # to restore the original update date
         next
       end
 
@@ -146,6 +148,7 @@ class BourreauSystemChecks < CbrainChecker
         puts_red "Adjustment exception for #{task.bname_tid} : #{ex.class} #{ex.message}"
       end
       task.update_attribute( :cluster_workdir, task.cluster_workdir ) # just this attribute need to change.
+      task.update_attribute( :updated_at,      last_updated         ) # to restore the original update date
     end
 
     puts "C> \t- Adjustment of task workdirs: #{adj_success} adjusted, #{adj_fail} failed, #{adj_zap} zapped, #{adj_same} stayed the same."
