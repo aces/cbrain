@@ -362,7 +362,10 @@ class TasksController < ApplicationController
     unless @task.errors.empty? && @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
-      render :action => 'new'
+      respond_to do |format|
+        format.html { render :action => 'new' }
+        format.xml  ( render :xml => @task.errors)
+      end    
       return
     end
 
@@ -459,7 +462,7 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
       format.xml  { render :xml => tasklist }
-    end  
+    end
   end
 
   def update #:nodoc:
