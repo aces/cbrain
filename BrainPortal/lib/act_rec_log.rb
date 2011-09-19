@@ -231,8 +231,6 @@ module ActRecLog
   def addlog_context(context, message=nil, caller_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     prev_level     = caller[caller_level]
-    calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
-    calling_method.sub!(/block.*? in /, "")
 
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
@@ -240,7 +238,7 @@ module ActRecLog
     #pretty_info    = rev_info.svn_id_pretty_rev_author_date
     pretty_info    = rev_info.svn_id_rev
  
-    full_message   = "#{class_name} rev. #{pretty_info} #{calling_method}"
+    full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
     self.addlog(full_message, :caller_level => caller_level + 1)
   end

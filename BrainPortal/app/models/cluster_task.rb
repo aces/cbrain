@@ -1049,7 +1049,7 @@ class ClusterTask < CbrainTask
     job.stderr   = ":" + self.stderr_cluster_filename
     job.join     = false
     job.wd       = workdir
-    job.name     = name
+    job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
 
     # Log version of Scir lib

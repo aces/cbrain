@@ -309,6 +309,13 @@ class CbrainTask < ActiveRecord::Base
     @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
+  # Returns an ID string containing both the task +tname+
+  # and the task ID +tid+ in format "tname/tid". Example:
+  #     "Civet-1234"   # Task 'Civet' #1234
+  def tname_tid
+    @tname_tid ||= "#{self.name || '?'}-#{self.id || '?'}"
+  end
+
 
 
   ##################################################################
