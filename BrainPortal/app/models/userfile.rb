@@ -213,11 +213,11 @@ class Userfile < ActiveRecord::Base
     if size.blank?
       "unknown"
     elsif size >= 1_000_000_000
-      sprintf "%6.1f GB", size/(1_000_000_000 + 0.0)
+      sprintf "%6.1f Gb", size/(1_000_000_000.0)
     elsif size >=     1_000_000
-      sprintf "%6.1f MB", size/(    1_000_000 + 0.0)
+      sprintf "%6.1f Mb", size/(    1_000_000.0)
     elsif size >=         1_000
-      sprintf "%6.1f KB", size/(        1_000 + 0.0)
+      sprintf "%6.1f Kb", size/(        1_000.0)
     else
       sprintf "%d bytes", size
     end

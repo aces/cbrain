@@ -48,7 +48,7 @@ class BourreauSystemChecks < CbrainChecker
     end
     session = myself.scir_session
     rev = session.revision_info.svn_id_pretty_file_rev_author_date # loads it?
-    puts "C> \t - Layer for '#{cluster_class}' #{rev} loaded."
+    puts "C> \t- Layer for '#{cluster_class}' #{rev} loaded."
   end
 
 
@@ -64,12 +64,12 @@ class BourreauSystemChecks < CbrainChecker
     # were still alive.
     allworkers = WorkerPool.find_pool(BourreauWorker)
     allworkers.each do |worker|
-      puts "C> \t - Found worker already running: #{worker.pretty_name} ..."
+      puts "C> \t- Found worker already running: #{worker.pretty_name} ..."
     end
     if allworkers.size == 0
-      puts "C> \t - No worker processes found. It's OK, they'll be started as needed."
+      puts "C> \t- No worker processes found. It's OK, they'll be started as needed."
     else
-      puts "C> \t - Scheduling restart for all of them ..."
+      puts "C> \t- Scheduling restart for all of them ..."
       allworkers.stop_workers
     end
   end

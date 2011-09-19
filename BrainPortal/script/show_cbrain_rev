@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+# Pure ruby, no rails or active support
+
+top = `git rev-parse --show-toplevel`.chomp
+if top.nil? || top =~ /^\s*$/
+  STDERR.puts "Cannot find GIT top level directory? Please CD to somewhere within the CBRAIN code base."
+  Kernel.exit(10)
+end
+
+# Code lifted almost as-is from remote_resource.rb
+
+    Dir.chdir(top) do
+      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
+      git_tag = tags_set.shift unless tags_set.empty? # extract first as a starting point
+      while tags_set.size > 0
+        tags_set = `git tag --contains '#{git_tag}'`.split.shuffle.reject { |v| v == git_tag }
+        git_tag = tags_set.shift unless tags_set.empty? # new first
+      end
+      if git_tag
+        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+        git_tag += "-#{num_new_commits}" if num_new_commits > 0
+        puts git_tag
+        Kernel.exit(0)
+      end
+    end
+
+STDERR.puts "Cannot find GIT tags?!?"
+Kernel.exit(10)
+
