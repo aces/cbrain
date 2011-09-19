@@ -368,7 +368,7 @@ class TasksController < ApplicationController
       initialize_common_form_values
       respond_to do |format|
         format.html { render :action => 'new' }
-        format.xml  ( render :xml => @task.errors)
+        format.xml  { render :xml => @task.errors }
       end    
       return
     end
