@@ -278,6 +278,10 @@ class TasksController < ApplicationController
     params = @task.params
     params[:interface_userfile_ids] ||= []
 
+    # Old API stored the data_provider_id in params, so move it
+    @task.results_data_provider_id ||= params[:data_provider_id]
+    params.delete(:data_provider_id) # keep it clean
+
     # Other common instance variables, such as @data_providers and @bourreaux
     initialize_common_form_values
     @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
@@ -554,7 +558,9 @@ class TasksController < ApplicationController
   def operation #:nodoc:
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
+    tasklist    = [ tasklist ] unless tasklist.is_a?(Array)
     batch_ids   = params[:batch_ids] || []
+    batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
       tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).map(&:id)
     end

@@ -32,6 +32,7 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :user
   belongs_to            :group
   belongs_to            :tool_config
+  belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id
 
   # Pseudo Attributes (not saved in DB)
   attr_accessor :cluster_stdout, :cluster_stderr, :script_text
@@ -205,16 +206,46 @@ class CbrainTask < ActiveRecord::Base
     ["batch"]
   end
   
-  # This method returns the full path of the task's work directory;
-  # the old convention was to store the full path in the
-  # :cluster_workdir, while the new one is to store just the basename
+  # This method returns the full path of the task's work directory.
+  # The old convention was to store the full path in the
+  # :cluster_workdir.
+  #
+  #   CbrainTask#cluster_workdir => "/path/to/gridshare/taskdir" # not used anymore
+  #
+  # A newer convention was to store just the basename
   # and use the task's Bourreau's :cms_shared_dir attribute for the
-  # rest.
-  def full_cluster_workdir
-    attval = self.cluster_workdir
-    return attval if attval.blank? || attval =~ /^\// # already full path?
-    shared_dir = self.cluster_shared_dir # from its bourreau's cms_shared_dir
-    return shared_dir + "/" + attval
+  # prefix.
+  #
+  #   Bourreau#cms_share_dir     => "/path/to/gridshare"
+  #   CbrainTask#cluster_workdir => "taskdir"
+  #
+  # The current convention is to store a prefix such
+  # as "00/00/00/basename" in the task's attribute
+  # and use the task's Bourreau's :cms_shared_dir attribute for the
+  # prefix.
+  #
+  #   Bourreau#cms_share_dir     => "/path/to/gridshare"
+  #   CbrainTask#cluster_workdir => "00/00/00/taskdir"
+  #
+  # This code handle all conventions, for historical tasks.
+  def full_cluster_workdir(seen_tids = {}) # seen_tids is an internal args for breaking recursion
+    shared_wd_tid = self.share_wd_tid
+
+    # The most common situation: a task with its own work directory
+    if share_wd_tid.blank?
+      attval = self.cluster_workdir
+      return attval if attval.blank? || attval =~ /^\// # already full path?
+      shared_dir = self.cluster_shared_dir # from its bourreau's cms_shared_dir
+      return "#{shared_dir}/#{attval}"
+    end
+
+    # Prepare for recursion, we need to find the workdir of another task
+    seen_tids[self.id] = true
+    cb_error "Infinite loop in share_wd_tid sequence?!?" if seen_tids[shared_wd_tid]
+    other_task = CbrainTask.find_by_id(shared_wd_tid)
+    cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got ID of missing task #{shared_wd_tid}" unless other_task
+    cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got sent to a task on a different Bourreau: #{other_task.bname_tid}" if other_task.bourreau_id != self.bourreau_id
+    return other_task.full_cluster_workdir(seen_tids) # recurse
   end
 
   # Returns the task's bourreau's cms_shared_dir (which might not be

@@ -102,7 +102,7 @@ class Message < ActiveRecord::Base
         
       # Prepare new variable text
       unless var_text.blank?
-        mess.append_variable_text(var_text)
+        mess.prepend_variable_text(var_text)
       end
 
       mess.read      = false
@@ -221,29 +221,29 @@ class Message < ActiveRecord::Base
     return true
   end
 
-  # Will append the text document in argument to the
+  # Will prepend the text document in argument to the
   # variable_text attribute, prefixing it with a
   # timestamp.
-  def append_variable_text(var_text = nil)
+  def prepend_variable_text(var_text = nil)
     return if var_text.blank?
 
     varlines = var_text.split(/\s*\n/)
-    varlines.pop   while varlines.size > 0 && varlines[-1] == ""
-    varlines.shift while varlines.size > 0 && varlines[0]  == ""
+    varlines.pop   while varlines.size > 0 && varlines[-1].blank?
+    varlines.shift while varlines.size > 0 && varlines[0].blank?
 
-    # Append to existing variable text
+    # Prepend to existing variable text
     current_text = self.variable_text
     current_text = "" if current_text.blank?
     if varlines.size > 0
       timestamp    = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z]")
-      current_text += timestamp + " " + varlines[0] + "\n"
-      varlines.shift
-      current_text += varlines.join("\n") + "\n" if varlines.size > 0
-    end
+      new_entry    = timestamp + " " + varlines.shift + "\n"
+      new_entry   += varlines.join("\n") + "\n" if varlines.size > 0
+      current_text = new_entry + current_text # prepend
 
-    # Reduce size if necessary
-    while current_text.size > 65500 && current_text =~ /\n/   # TODO: archive ?
-      current_text.sub!(/^[^\n]*\n/,"")
+      # Reduce size if necessary
+      while current_text.size > 65000 && current_text =~ /\n/   # TODO: archive ?
+        current_text.sub!(/[^\n]*\n?\z/m,"") # 'pop' last line in text
+      end
     end
 
     # Update and create message

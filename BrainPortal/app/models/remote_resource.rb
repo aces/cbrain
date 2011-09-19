@@ -481,11 +481,11 @@ class RemoteResource < ActiveRecord::Base
     @git_tag = nil
 
     Dir.chdir(Rails.root.to_s) do
-      git_tags = `git tag -l`.split # initial list: all tags we can find
-      @git_tag = git_tags.shift unless git_tags.empty? # extract first as a starting point
-      while git_tags.size > 0
-        git_tags = `git tag --contains '#{@git_tag}'`.split.reject { |v| v == @git_tag }
-        @git_tag = git_tags.shift unless git_tags.empty? # new first
+      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
+      @git_tag = tags_set.shift unless tags_set.empty? # extract first as a starting point
+      while tags_set.size > 0
+        tags_set = `git tag --contains '#{@git_tag}'`.split.shuffle.reject { |v| v == @git_tag }
+        @git_tag = tags_set.shift unless tags_set.empty? # new first
       end
       if @git_tag
         num_new_commits = `git rev-list '#{@git_tag}..HEAD'`.split.size

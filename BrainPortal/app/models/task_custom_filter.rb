@@ -52,6 +52,7 @@ class TaskCustomFilter < CustomFilter
 
   #Return +scope+ modified to filter the CbrainTask entry's type.
   def scope_type(scope)
+    return scope if self.data["type"].is_a?(Array) && self.data["type"].all? { |v| v.blank? }
     scope.scoped(:conditions  => {:type  =>  self.data["type"]})
   end
   

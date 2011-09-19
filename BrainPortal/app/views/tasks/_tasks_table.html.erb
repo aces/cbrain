@@ -79,6 +79,9 @@
     </th>
     <th>Run Number</th>
     <th>
+      <%= ajax_sort_link "Workdir Size", 'CbrainTask', 'cluster_workdir_size' %>
+    </th>
+    <th>
       <%= ajax_sort_link "Time Submitted", 'CbrainTask', 'created_at' %>
     </th>
     <th>
@@ -95,6 +98,6 @@
 <% end %>
         
 <% if @tasks.blank? %>
-  <tr class="list-odd"><td colspan="<%= 9 + (current_project ? 0 : 1) %>">There are no tasks in this list.</td></tr>
+  <tr class="list-odd"><td colspan="<%= current_project ? "10" : "11" %>">There are no tasks in this list.</td></tr>
 <% end %>
 

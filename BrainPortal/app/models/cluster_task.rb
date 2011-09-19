@@ -58,6 +58,8 @@ class ClusterTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include NumericalSubdirTree
+
   # These basenames might get modified with suffixes appended to them.
   QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{id}.sh"
   QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{id}"
@@ -285,17 +287,18 @@ class ClusterTask < CbrainTask
   # containing at the minimum :name and :data_provider_id.
   # The :user_id and :group_id default to the task's.
   def safe_userfile_find_or_new(klass,attlist)
+    attlist[:data_provider_id] ||= self.results_data_provider_id
     cb_error "Class for file must be a subclass of Userfile." unless
       klass < Userfile
     cb_error "Attribute list missing a required attribute." unless
-      [ :name, :data_provider_id ].all? { |i| attlist.has_key?(i) }
+      [ :name, :data_provider_id ].all? { |i| ! attlist[i].blank? } # minimal set!
     unless attlist.has_key?(:user_id)
       cb_error "Cannot assign user to file." unless self.user_id
       attlist[:user_id] = self.user_id
     end
-    group_id_for_file = attlist.delete(:group_id) || self.group_id
+    group_id_for_file = attlist.delete(:group_id) || self.group_id # is re-assigned later
     cb_error "Cannot assign group to file." unless group_id_for_file
-    results = klass.where( attlist )
+    results = klass.where( attlist ).all
     if results.size == 1
       existing_userfile = results[0]
       existing_userfile.cache_is_newer # we assume we want to update the content, always
@@ -485,6 +488,7 @@ class ClusterTask < CbrainTask
     begin
       self.addlog("Starting asynchronous postprocessing.")
       self.record_cbraintask_revs
+      self.update_size_of_cluster_workdir
       self.apply_tool_config_environment
       saveok = false
       Dir.chdir(self.full_cluster_workdir) do
@@ -1110,25 +1114,27 @@ class ClusterTask < CbrainTask
     # Use the work directory of another task
     otask_id = self.share_wd_tid
     if ! otask_id.blank?
-      otask = CbrainTask.find(otask_id)
+      otask = CbrainTask.find_by_id(otask_id)
+      cb_error "Task '#{self.bname_tid}' is supposed to use the workdir of task '#{otask_id}' which doesn't exist." if ! otask
       cb_error "Cannot use the work directory of a task that belong to another Bourreau." if otask.bourreau_id != self.bourreau_id
       owd   = otask.full_cluster_workdir
       cb_error "Cannot find the work directory of other task '#{otask_id}'."      if owd.blank?
       cb_error "The work directory '#{owd} of task '#{otask_id}' does not exist." unless File.directory?(owd)
-      self.cluster_workdir = File.basename(owd)
+      #self.cluster_workdir = File.basename(owd) # no longer assigned
       self.addlog("Using workdir '#{owd}' of task '#{otask.bname_tid}'.")
       return
     end
 
     # Create our own work directory
-    name = self.name
-    user = self.user.login
-    basedir = "#{user}-#{name}-T#{self.id}"
-    self.cluster_workdir = basedir # new convention is just the basename.
-    fulldir = self.full_cluster_workdir # builds using the basename and the bourreau's cms_shared_dir
+    name        = self.name
+    user        = self.user.login
+    basedir     = "#{user}-#{name}-T#{self.id}"
+    rel_path    = self.class.numerical_subdir_tree_components(self.id).join("/")
+    self.cluster_workdir = "#{rel_path}/#{basedir}" # newest convention is "00/12/34/basedir".
+    fulldir = self.full_cluster_workdir # builds using the cluster_workdir and the bourreau's cms_shared_dir
     self.addlog("Trying to create workdir '#{fulldir}'.")
+    self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
     Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
-
     true
   end
 
@@ -1141,8 +1147,34 @@ class ClusterTask < CbrainTask
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
     FileUtils.remove_dir(full, true) rescue true
+    self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir = nil
     true
+  end
+
+  # Compute size in bytes of the work directory; save it in the task's
+  # attribute :cluster_workdir_size . Leaves nil if the directory doesn't
+  # exist or any error occured. Sets to '0' if the task uses another task's
+  # work directory.
+  def update_size_of_cluster_workdir
+    if self.share_wd_tid
+      self.cluster_workdir_size = 0
+      self.save
+      return
+    end
+    full=self.full_cluster_workdir
+    self.cluster_workdir_size = nil
+    if ( ! full.blank? ) && Dir.exists?(full)
+      sizeline = IO.popen("du -s -k '#{full}'","r") { |fh| fh.readline rescue "" }
+      if mat = sizeline.match(/^\s*(\d+)/) # in Ks
+        self.cluster_workdir_size = mat[1].to_i.kilobytes
+        self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
+      end
+    end
+    self.save
+    return self.cluster_workdir_size
+  rescue
+    return nil
   end
 
 end

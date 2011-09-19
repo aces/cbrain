@@ -225,7 +225,7 @@ class CbrainTask::Diagnostics < ClusterTask
     end
 
     # Stuff needed for report
-    dp_id   = params[:data_provider_id]
+    dp_id   = self.results_data_provider_id
     report  = nil
 
     if dp_id  # creating the report is optional

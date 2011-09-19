@@ -306,7 +306,8 @@ class BourreauxController < ApplicationController
     if alive_ok
       flash[:notice] = "Execution Server '#{@bourreau.name}' started."
     elsif started_ok
-      flash[:error] = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry.\n"
+      flash[:error] = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry:\n" +
+                      @bourreau.operation_messages
     else
       flash[:error] = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
                       @bourreau.operation_messages

@@ -117,11 +117,13 @@ class Bourreau < RemoteResource
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
     if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
-      self.operation_messages = "Execution Server #{self.name} started."
+      self.operation_messages = "Execution Server #{self.name} started.\n" +
+                                "Command: #{start_command}\n" +
+                                "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
       self.save
       return true
     end
-    self.operation_messages = "Remote control command failed\n" +
+    self.operation_messages = "Remote control command for #{self.name} failed.\n" +
                               "Command: #{start_command}\n" +
                               "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
     return false

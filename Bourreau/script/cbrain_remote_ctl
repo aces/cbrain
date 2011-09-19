@@ -185,15 +185,19 @@ end
 
 # Start the server
 start_success=false
+start_log_file="#{rails_home}/log/server_start.log"
+raw_system_cmd = ""
 Dir.chdir(rails_home) do
-  cmd = [ "script/rails", "server", "thin",
-          "-d",
+  rails_cmd_ar = [
+          "script/rails", "server", "thin",
+          "-d", # the -d will start it in background
           "-p", "#{port}",
           "-e", "#{environment}",
           "-b", "127.0.0.1",
           "-P", "#{pidfile}"
         ]
-  start_success=system(*cmd) # the -d will start it in background
+  raw_system_cmd = "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'"
+  start_success=system("bash","-c",raw_system_cmd)
 end
 
 # If we were provided with a database.yml, we need
@@ -206,15 +210,16 @@ end
 # Return a message to indicate to our calling context
 # whether or not the server started.
 if start_success
-  puts "Bourreau Started."
+  puts "Bourreau Started." # This string is used by the Portal controller!
 else
   puts "Bourreau Failed."
-  if File.exists?("#{rails_home}/log/server.log")
-    puts "Here are the last 100 lines of the server's log:"
-    system("tail -100 '#{rails_home}/log/server.log'")
-  else
-    puts "No server log file found to help you out of this one :-("
-  end
+  puts "Raw BASH command: #{raw_system_cmd}"
+  #if File.exists?(start_log_file)
+  #  puts "Here are the last 100 lines of the server's log:"
+  #  system("tail -100 '#{start_log_file}'")
+  #else
+  #  puts "No server log file found to help you out of this one :-("
+  #end
 end
 
 Kernel.exit(start_success ? 0 : 10)

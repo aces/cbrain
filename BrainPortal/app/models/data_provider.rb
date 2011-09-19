@@ -188,6 +188,7 @@ class DataProvider < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__]
   
   include ResourceAccess
+  include NumericalSubdirTree
   
   validates_uniqueness_of :name
   validates_presence_of   :name, :user_id, :group_id
@@ -515,9 +516,11 @@ class DataProvider < ActiveRecord::Base
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
+    uid = userfile.id
+    cache_root = self.class.cache_rootdir
     SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
       # The cache contains three more levels, try to clean them:
-      #   "/CbrainCacheDir/ProviderName/username/34/45/basename"
+      #   "/CbrainCacheDir/01/23/45/basename"
       begin
         # Get the path for the cached file. It's important
         # to call cache_full_pathname() and NOT cache_full_path(), as
@@ -528,10 +531,10 @@ class DataProvider < ActiveRecord::Base
         # 2- Remove the last level of the cache, "45", if possible
         level2 = fullpath.parent
         FileUtils.remove_entry(level2,true) rescue true
-        # 3- Remove the medium level of the cache, "34", if possible
+        # 3- Remove the medium level of the cache, "23", if possible
         level1 = level2.parent
         Dir.rmdir(level1)
-        # 4- Remove the top level of the cache, "username", if possible
+        # 4- Remove the top level of the cache, "01", if possible
         level0 = level1.parent
         Dir.rmdir(level0)
       rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
@@ -1170,15 +1173,7 @@ class DataProvider < ActiveRecord::Base
   #
   #    [ "146", "22","92" ]
   def cache_subdirs_from_id(number)
-    cb_error "Did not get a proper numeric ID? Got: '#{number.inspect}'." unless number.is_a?(Integer)
-    sid = "000000" + number.to_s
-    unless sid =~ /^0*(\d*\d\d)(\d\d)(\d\d)$/
-      cb_error "Data Provider caching system error: can't create subpath for '#{number}'."
-    end
-    lower  = Regexp.last_match[1] # 123456 -> 12
-    middle = Regexp.last_match[2] # 123456 -> 34
-    upper  = Regexp.last_match[3] # 123456 -> 56
-    [ lower, middle, upper ]
+    self.class.numerical_subdir_tree_components(number) # from NumericalSubdirTree module
   end
 
   # Make, if needed, the three subdirectory levels for a cached file:
@@ -1188,15 +1183,8 @@ class DataProvider < ActiveRecord::Base
   def mkdir_cache_subdirs(userfile) #:nodoc:
     cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     uid = userfile.id
-    twolevels = cache_subdirs_from_id(uid)
-    level0 = self.class.cache_rootdir
-    level1 = level0                          + twolevels[0]
-    level2 = level1                          + twolevels[1]
-    level3 = level2                          + twolevels[2]
-    Dir.mkdir(level1) unless File.directory?(level1)
-    Dir.mkdir(level2) unless File.directory?(level2)
-    Dir.mkdir(level3) unless File.directory?(level3)
-    true
+    cache_root = self.class.cache_rootdir
+    self.class.mkdir_numerical_subdir_tree_components(cache_root, uid) # from NumericalSubdirTree module
   end
 
   # Returns the relative path of the three subdirectory levels

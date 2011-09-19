@@ -641,7 +641,7 @@ pre {
 /* % ActiveRecord Validation Messages */
 /* % ######################################################### */
 
-.fieldWithErrors {
+.field_with_errors {
     padding: 2px;
     background-color: red;
     display: inline-table;
