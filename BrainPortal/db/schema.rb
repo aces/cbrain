@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110917201957) do
+ActiveRecord::Schema.define(:version => 20110919172601) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -299,7 +299,6 @@ ActiveRecord::Schema.define(:version => 20110917201957) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "type"
-    t.string   "task"
     t.integer  "group_id"
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                  :default => false

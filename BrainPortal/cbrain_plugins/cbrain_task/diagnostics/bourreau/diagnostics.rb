@@ -231,8 +231,7 @@ class CbrainTask::Diagnostics < ClusterTask
     if dp_id  # creating the report is optional
       report = safe_userfile_find_or_new(TextFile,
             :name             => "Diagnostics-#{self.bname_tid_dashed}-#{self.run_number}.txt",
-            :data_provider_id => dp_id,
-            :task             => 'Bourreau Diagnostics'
+            :data_provider_id => dp_id
       )
     end
 
