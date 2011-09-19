@@ -161,17 +161,19 @@ class TasksController < ApplicationController
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
-    begin
-      bourreau           = @task.bourreau
-      control            = bourreau.send_command_get_task_outputs(task_id,@run_number)
-      @task.cluster_stdout = control.cluster_stdout
-      @task.cluster_stderr = control.cluster_stderr
-      @task.script_text    = control.script_text
-    rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
-      flash.now[:notice] = "Warning: the Execution Server '#{bourreau.name}' for this task is not available right now."
-      @task.cluster_stdout = "Execution Server is DOWN!"
-      @task.cluster_stderr = "Execution Server is DOWN!"
-      @task.script_text    = nil
+    if (request.format.to_sym != :xml) || params[:get_task_outputs]
+      begin
+        bourreau           = @task.bourreau
+        control            = bourreau.send_command_get_task_outputs(task_id,@run_number)
+        @task.cluster_stdout = control.cluster_stdout
+        @task.cluster_stderr = control.cluster_stderr
+        @task.script_text    = control.script_text
+      rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
+        flash.now[:notice] = "Warning: the Execution Server '#{bourreau.name}' for this task is not available right now."
+        @task.cluster_stdout = "Execution Server is DOWN!"
+        @task.cluster_stderr = "Execution Server is DOWN!"
+        @task.script_text    = nil
+      end
     end
 
     respond_to do |format|
