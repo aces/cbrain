@@ -269,6 +269,7 @@ class ClusterTask < CbrainTask
   # string, whether it matches an existing path or not.
   def safe_symlink(original_entry,relpath)
     original_entry = original_entry.to_s
+    relpath        = relpath.to_s
     cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
