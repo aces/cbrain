@@ -255,28 +255,6 @@ module CbrainUiHelper
     return "<input type=\"submit\" value=\"#{value}\" #{atts} />".html_safe
   end
   
-  #Create a standard link that requires a confirmation.
-  def confirm_link(name, url, confirmation, options = {})
-    options[:confirm] = confirmation
-    options_setup("confirm_link", options)
-    
-    link_to name.to_s.html_safe, url, options
-  end
-  
-  def confirm_button(name, url, confirmation, options = {})
-    options[:confirm] = confirmation
-    options_setup("confirm_link", options)
-    
-    button_to name.to_s.html_safe, url, options
-  end
-  
-  def confirm_submit(name, confirmation, options = {})
-    options[:confirm] = confirmation
-    options_setup("confirm_link", options)
-    
-    submit_tag name.to_s.html_safe, options
-  end
-  
   #Create an element that will toggle between hiding and showing another element.
   #The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})
