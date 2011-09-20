@@ -367,8 +367,8 @@ class ClusterTask < CbrainTask
       createdlist.each do |created|
         next unless created.is_a?(Userfile) && created.id
         createdmarkup = "[[#{created.name}][/userfiles/#{created.id}/edit]]" # can't use edit_userfile_path() on Bourreau side
-        creator.addlog_context(self,"Used by task #{mymarkup} to create #{createdmarkup} #{comment}",5)
-        created.addlog_context(self,"Created by task #{mymarkup} from #{creatormarkup} #{comment}",5)
+        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdmarkup} #{comment}", 5)
+        created.addlog_context(self, "Created by task #{mymarkup} from #{creatormarkup} #{comment}",   5)
       end
     end
   end
@@ -1049,7 +1049,7 @@ class ClusterTask < CbrainTask
     job.stderr   = ":" + self.stderr_cluster_filename
     job.join     = false
     job.wd       = workdir
-    job.name     = name
+    job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
 
     # Log version of Scir lib

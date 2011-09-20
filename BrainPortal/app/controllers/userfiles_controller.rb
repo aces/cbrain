@@ -1122,9 +1122,9 @@ class UserfilesController < ApplicationController
     if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
       all_files = IO.popen("tar -tzf '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.tar$/i
-      all_files = IO.popen("tar -tf '{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
+      all_files = IO.popen("tar -tf '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.zip/i
-      all_files = IO.popen("unzip -l '{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
+      all_files = IO.popen("unzip -l '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
       cb_error "Cannot process file with unknown extension: #{archive_file_name}"
     end

@@ -249,17 +249,17 @@ describe Userfile do
   
     it "should return GB for format_size when the size is over 1GB" do
       userfile.size = 1000000000
-      userfile.format_size.should match("1.0 GB")
+      userfile.format_size.should match("1.0 Gb")
     end
   
     it "should return MB for format_size when the size is less than 1GB and more than 1MB" do
       userfile.size = 100000000
-      userfile.format_size.should match("100.0 MB")
+      userfile.format_size.should match("100.0 Mb")
     end
   
     it "should return KB for the format_size when the size is less than 1MB and more than 1KB" do
       userfile.size = 10000
-      userfile.format_size.should match("10.0 KB")
+      userfile.format_size.should match("10.0 Kb")
     end
   
     it "should return bytes for the format_size when the size is less than 1KB and more than 0" do

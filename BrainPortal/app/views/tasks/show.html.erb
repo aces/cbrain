@@ -79,7 +79,13 @@
 
       <tr class="<%= cycle('list-odd', 'list-even') %>">
           <th>Tool Version </th>
-          <td class="left_align"><%= @task.tool_config ? overlay_description(@task.tool_config.description) : "Default" %></td>
+          <td class="left_align">
+            <% if current_user.has_role?(:admin) && @task.tool_config %>
+              <%= link_to @task.tool_config.short_description, tool_config_path(@task.tool_config) %>
+            <% else %>
+              <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
+            <% end %>
+          </td>
       </tr>
 
       <tr class="<%= cycle('list-odd', 'list-even') %>">

@@ -186,6 +186,7 @@ module ActRecLog
       calling_info   = caller[callerlevel]
       calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
       calling_method = "" if options[:no_caller]
+      calling_method.sub!(/block.*? in /, "")
 
       log = use_internal ? @tmp_internal_log : arl.log
       log = "" if log.blank?
@@ -223,14 +224,13 @@ module ActRecLog
   #
   #     "Abcd xyz() revision 123 prioux 2009-05-23 hello"
   #
-  # A third optional argument +caller_back_level+ indicates
+  # A third optional argument +caller_level+ indicates
   # how many levels of calling context to go back to find the method
   # name to display (the default is 0, which means the method
   # where you call addlog_context() itself).
-  def addlog_context(context,message=nil,caller_back_level=0)
+  def addlog_context(context, message=nil, caller_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    prev_level     = caller[caller_back_level]
-    calling_method = prev_level.match(/in `(.*)'/) ? ($1 + "()") : "unknown()"
+    prev_level     = caller[caller_level]
 
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
@@ -238,9 +238,9 @@ module ActRecLog
     #pretty_info    = rev_info.svn_id_pretty_rev_author_date
     pretty_info    = rev_info.svn_id_rev
  
-    full_message   = "#{class_name} rev. #{pretty_info} #{calling_method}"
+    full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :caller_level => 1)
+    self.addlog(full_message, :caller_level => caller_level + 1)
   end
 
   # Creates a custom log entry with the revision info
@@ -258,7 +258,7 @@ module ActRecLog
   # results is a log entry like this one:
   #
   #     "Abcd revision 123 prioux 2009-05-23 hello"
-  def addlog_revinfo(anobject,message=nil)
+  def addlog_revinfo(anobject, message=nil, caller_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
@@ -268,7 +268,7 @@ module ActRecLog
  
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :caller_level => 1)
+    self.addlog(full_message, :caller_level => caller_level + 1)
   end
 
   # Gets the log for the current ActiveRecord;
