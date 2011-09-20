@@ -28,10 +28,10 @@
 
     <!-- TERMINATE & REMOVE -->
     <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
-      <td><%= confirm_button 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, "Are you sure you want to terminate this task?", :class  => "button" %></td>
+      <td><%= button_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "button" %></td>
     <% end %>
     <% if @task.status =~ /New|Queued|On Hold|On CPU|Suspended|Failed.*|Completed/ %>
-      <td><%= confirm_button 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, "Are you sure you want to remove this task?", :class  => "button" %></td>
+      <td><%= button_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to remove this task?", :class  => "button" %></td>
     <% end %>
 
     <!-- FAILURE RECOVERY -->
