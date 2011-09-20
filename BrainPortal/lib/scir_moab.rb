@@ -17,11 +17,13 @@ class ScirMoab < Scir
   class Session < Scir::Session
 
     def update_job_info_cache
-      @job_info_cache = {}
       xmltext = ""
-      IO.popen("showq --xml 2>/dev/null","r") do |fh|
+      IO.popen("showq --xml 2>&1","r") do |fh|
         xmltext = fh.read
       end
+      raise "Cannot get XML from showq; got:\n---Start\n#{xmltext}\n---End\n" unless
+        xmltext =~ /^\s*<Data>/i && xmltext =~ /<\/Data>\s*$/i
+      @job_info_cache = {}
       if xmltext =~ /(<cluster.*?<\/cluster>)/
         @job_info_cache["!moab_cluster_info!"] = Regexp.last_match[1]
       end
