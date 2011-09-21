@@ -66,7 +66,6 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
   
-  scope :custom_filter, lambda { |c| TaskCustomFilter.find(c).filter_scope(scoped({})) }
 
   # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current
