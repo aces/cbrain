@@ -366,10 +366,10 @@ class ClusterTask < CbrainTask
     mymarkup = "[[#{myname}][#{mylink}]]"
     creatorlist.each do |creator|
       next unless creator.is_a?(Userfile) && creator.id
-      creatormarkup = "[[#{creator.name}][/userfiles/#{creator.id}/edit]]" # can't use edit_userfile_path() on Bourreau side
+      creatormarkup = "[[#{creator.name}][/userfiles/#{creator.id}]]" # can't use userfile_path() on Bourreau side
       createdlist.each do |created|
         next unless created.is_a?(Userfile) && created.id
-        createdmarkup = "[[#{created.name}][/userfiles/#{created.id}/edit]]" # can't use edit_userfile_path() on Bourreau side
+        createdmarkup = "[[#{created.name}][/userfiles/#{created.id}]]" # can't use userfile_path() on Bourreau side
         creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdmarkup} #{comment}", 5)
         created.addlog_context(self, "Created by task #{mymarkup} from #{creatormarkup} #{comment}",   5)
       end
@@ -635,7 +635,7 @@ class ClusterTask < CbrainTask
         when "Post Processing"
           self.status = "Failed To PostProcess"
         when /(Recovering|Restarting) (\S+)/
-          fromwhat = Regexp.last_match[1]
+          fromwhat = Regexp.last_match[2]
           self.status = "Failed To Setup"       if fromwhat == 'Setup'
           self.status = "Failed On Cluster"     if fromwhat == 'Cluster'
           self.status = "Failed To PostProcess" if fromwhat == 'PostProcess'
