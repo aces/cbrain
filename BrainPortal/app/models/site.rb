@@ -184,7 +184,7 @@ class Site < ActiveRecord::Base
   def unset_managers #:nodoc:
     self.managers.each do |user|
       if user.has_role? :site_manager
-        user.update_attributes!(:role  => "user")
+        user.update_attribute(:role, "user")
       end
     end
   end

@@ -251,6 +251,7 @@ class ClusterTask < CbrainTask
   # The +relpath+ MUST be relative and the current directory MUST
   # be the task's work directory.
   def safe_mkdir(relpath,mode=0700)
+    relpath = relpath.to_s
     cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
@@ -267,6 +268,8 @@ class ClusterTask < CbrainTask
   # be the task's work directory. The +original_entry+ can be any
   # string, whether it matches an existing path or not.
   def safe_symlink(original_entry,relpath)
+    original_entry = original_entry.to_s
+    relpath        = relpath.to_s
     cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /^\//
@@ -547,6 +550,7 @@ class ClusterTask < CbrainTask
 
     # This is the expensive call, the one that queries the cluster.
     clusterstatus = self.cluster_status
+    return self.status if clusterstatus.blank?  # this means the cluster can't tell us, for some reason.
     #self.addlog("ar_status is #{ar_status} ; cluster stat is #{clusterstatus}")
 
     # Steady states for cluster jobs
@@ -963,6 +967,10 @@ class ClusterTask < CbrainTask
     state = self.scir_session.job_ps(self.cluster_jobid,self.updated_at)
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
+  rescue => ex
+    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
+    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+    nil
   end
 
 
