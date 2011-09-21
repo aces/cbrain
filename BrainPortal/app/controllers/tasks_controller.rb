@@ -75,6 +75,14 @@ class TasksController < ApplicationController
       sort_dir   = 'DESC'
     end
 
+    # Handle custom filters
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
+    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter = TaskCustomFilter.find(custom_filter_id)
+      scope = custom_filter.filter_scope(scope)
+    end
+
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
     @total_tasks = scope.count    # number of TASKS

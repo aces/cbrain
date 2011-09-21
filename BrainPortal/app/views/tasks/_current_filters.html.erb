@@ -2,14 +2,19 @@
 <ul class="filter_menu">
     <% @filter_params["filter_hash"].each do |key, value| %>
         <li>
-          <% if key == "custom_filter" %>
-            <%= crop_text_to(30, TaskCustomFilter.find(value).name) %><%= filter_remove_link delete_icon, key %>
-          <% elsif key == "type" %>
+          <% if key == "type" %>
             <%= crop_text_to(30, value.sub(/^CbrainTask::/, "")) %><%= filter_remove_link delete_icon, key %>
           <% else %>
             <%= crop_text_to(30, display_filter(:cbrain_task, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key %>
           <% end %>
         </li>
+    <% end %>
+    <% unless @filter_params["filter_custom_filters_array"].blank? %>
+      <% current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).each do |filter| %>
+        <li>
+          <%= crop_text_to(30, "Custom:#{filter.name}") %><%= filter_remove_link delete_icon, filter.id, :parameter  => :filter_custom_filters_array %>
+        </li>
+      <% end %>
     <% end %>
 </ul>
 
