@@ -1,13 +1,18 @@
+<%  
+  sf_list = SingleFile.accessible_for_user(current_user).select(:type).order(:type).group(:type).map(&:class)
+  fc_list = FileCollection.accessible_for_user(current_user).select(:type).order(:type).group(:type).map(&:class)
+%>
+
 
 <h4>By Type</h4>
      
 <ul class="filter_menu">
-  
-  <% SingleFile.descendants.each do |sf| %>
+  <% sf_list.each do |sf| %>
     <li><%= filter_add_link sf.pretty_type.pluralize, :filters => {:file_format  => sf.name} %></li>
   <% end %>
-  
-  <% FileCollection.descendants.each do |fc| %>
+</ul>
+<ul class="filter_menu">
+  <% fc_list.each do |fc| %>
     <li><%= filter_add_link fc.pretty_type.pluralize, :filters => {:file_format  => fc.name} %></li>
   <% end %>
 </ul>

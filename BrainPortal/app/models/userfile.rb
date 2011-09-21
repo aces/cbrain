@@ -384,7 +384,7 @@ class Userfile < ActiveRecord::Base
 
   #Returns a scope representing the set of files accessible to the
   #given user.
-  def self.accessible_for_user(user, options)
+  def self.accessible_for_user(user, options = {})
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
     
