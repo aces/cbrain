@@ -1,7 +1,10 @@
 <% 
-  if params[:collection_file] && @userfile.list_files.find { |f| f.name == params[:collection_file] }
-    extension  = Userfile.file_extension(params[:collection_file])
-    parameters = "?collection_file=#{params[:collection_file]}"
+  if params[:content_loader] == "collection_file" && params[:arguments]
+    collection_file = params[:arguments]
+    collection_file = collection_file.first if collection_file.is_a?(Array)
+    collection_file = @userfile.list_files.find { |f| f.name == collection_file }.name
+    extension  = Userfile.file_extension(collection_file)
+    parameters = "?content_loader=collection_file&arguments=#{collection_file}"
   else
     extension = @userfile.file_extension
   end

@@ -1,6 +1,6 @@
 <%  
-  sf_list = SingleFile.accessible_for_user(current_user).select(:type).order(:type).group(:type).map(&:class)
-  fc_list = FileCollection.accessible_for_user(current_user).select(:type).order(:type).group(:type).map(&:class)
+  sf_list = SingleFile.accessible_for_user(current_user, :access_requested => :read).select(:type).order(:type).group(:type).map(&:class)
+  fc_list = FileCollection.accessible_for_user(current_user, :access_requested => :read).select(:type).order(:type).group(:type).map(&:class)
 %>
 
 

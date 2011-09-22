@@ -219,40 +219,41 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
-  ####################################################
-  # Provides a way of accessing file contents in a way that is intelligent and customizable 
-  # for each type of file supported in the platform
-  # Each userfile subclass is in charge of defining its own content method 
-  # which returns a hash that will either
-  # 1) be used by render 
-  # 2) or contain the :sendfile symbol which will instruct the system to stream the file 
-  # 3) or contain the :gzip symbol which will adjust the content-encoding allowing 
-  #    the browser to decode it. 
-  # 
-  # Other possibilities are also possible. Except for the impossible ones.
-  ####################################################
+  #####################################################
+  # Tranfer contents of a file.
+  # If no relevant parameters are given, the controller
+  # will simply attempt to send the entire file.
+  # Otherwise, it will modify it's response according
+  # to the following parameters:
+  # [:content_loader] a content loader defined for the
+  #                   userfile.
+  # [:arguments]      arguments to pass to the content
+  #                   loader method.
+  #####################################################
   #GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     
-    content = @userfile.content(params)
-
-    
-    if content
-      if content[:sendfile]
-        send_file content[:sendfile]
-        return
-      elsif content[:gzip]
+    content_loader = @userfile.find_content_loader(params[:content_loader])
+    argument_list = params[:arguments] || []
+    argument_list = [argument_list] unless argument_list.is_a?(Array)
+ 
+    if content_loader
+      response_content = @userfile.send(content_loader.method, *argument_list)
+      if content_loader.type == :send_file
+        send_file response_content
+      elsif content_loader.type == :gzip
         response.headers["Content-Encoding"] = "gzip" 
-        render :text => content[:gzip]
+        render :text => response_content
       else
-        render content
-        return
+        render content_loader.type => response_content
       end
     else
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path
     end
+  rescue
+    render { :file => "public/404.html", :status => 404 }
   end
   
   def display

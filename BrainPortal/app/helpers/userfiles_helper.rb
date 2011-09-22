@@ -89,9 +89,9 @@ module UserfilesHelper
     matched_class = SingleFile.descendants.unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
     if matched_class 
       if matched_class <= TextFile
-        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :collection_file  => file_name, :viewer => "text_file", :content_viewer => "off")
+        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :content_loader => :collection_file, :arguments => file_name, :viewer => "text_file", :content_viewer => "off")
       elsif matched_class <= ImageFile
-        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :collection_file  => file_name, :viewer => "image_file", :content_viewer => "off")
+        overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :content_loader => :collection_file, :arguments => file_name, :viewer => "image_file", :content_viewer => "off")
       else
          h(display_name)
       end
