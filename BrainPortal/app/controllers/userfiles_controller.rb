@@ -253,7 +253,7 @@ class UserfilesController < ApplicationController
       send_file @userfile.cache_full_path
     end
   rescue
-    render { :file => "public/404.html", :status => 404 }
+    render :file => "public/404.html", :status => 404
   end
   
   def display
