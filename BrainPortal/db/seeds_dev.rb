@@ -531,7 +531,7 @@ diag_tool = Tool.seed_record!(
     :user_id => User.admin.id, :group_id => Group.everyone.id,
     :category => 'scientific tool', 
     :select_menu_text => 'Launch Cluster Diagnostics',
-    :description => "Cluster Diagnostics.\n\nAvailable to everyone."
+    :description => "Cluster Diagnostics\n\nAvailable to everyone."
   }
 )
 
@@ -583,7 +583,7 @@ snoozer_tool = Tool.seed_record!(
     :user_id => User.admin.id, :group_id => gentlemen.id,
     :category => 'conversion tool', 
     :select_menu_text => 'Launch Snoozer',
-    :description => "Only for gentlemen."
+    :description => "Only for gentlemen"
   }
 )
 
@@ -646,7 +646,7 @@ para_diag = ToolConfig.seed_record!(
 
 seri_diag = ToolConfig.seed_record!(
   {
-    :tool_id     => diag_tool.id,
+    :tool_id     => seri_tool.id,
     :description => 'Latest CBRAIN Serializer',
     :bourreau_id => bourreau.id
   },
@@ -827,7 +827,7 @@ User.all.each do |user|
           },
           {
             :launch_time => Time.now,
-            :description => (tool == diag_tool ? "Some Diagnostics" : "For #{howlong} seconds."),
+            :description => (tool == diag_tool ? "Some Diagnostics" : "For #{howlong} seconds"),
             :params => { :howlong                => howlong,
                          :interface_userfile_ids => [ Userfile.find_by_user_id(user.id).id ]
                        }
