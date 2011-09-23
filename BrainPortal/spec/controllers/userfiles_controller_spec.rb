@@ -787,32 +787,39 @@ describe UserfilesController do
       session[:user_id] = admin.id
     end
     describe "content" do
+      let(:content_loader) {double("content_loader", :method => :content_loader_method).as_null_object}
       before(:each) do
         Userfile.stub!(:find_accessible_by_user).and_return(mock_userfile)
+        mock_userfile.stub!(:find_content_loader).and_return(content_loader)
+        mock_userfile.stub!(:content_loader_method)
         controller.stub!(:send_file)
         controller.stub!(:render)
       end
-      it "should determine if the userfile has special content" do
-        mock_userfile.should_receive(:content).and_return(nil)
+      it "should determine if the userfile has a content loader" do
+        mock_userfile.should_receive(:find_content_loader).and_return(nil)
         get :content, :id => 1
       end
-      it "should send file given by the content method" do
-        mock_userfile.stub!(:content).and_return(:sendfile => "file")
-        controller.should_receive(:send_file).with("file")
+      it "should send file given by the content loader for a send_file loader" do
+        content_loader.stub!(:type).and_return(:send_file)
+        mock_userfile.stub!(:content_loader_method).and_return("path")
+        controller.should_receive(:send_file).with("path")
         get :content, :id => 1
       end
       it "should send zipped data given by the content method" do
-        mock_userfile.stub!(:content).and_return(:gzip => "gzip")
+        content_loader.stub!(:type).and_return(:gzip)      
         get :content, :id => 1 
-       response.headers["Content-Encoding"].should == "gzip" 
+        response.headers["Content-Encoding"].should == "gzip" 
       end
-      it "should render any other content defined by the content method" do
-        mock_userfile.stub!(:content).and_return(:partial => "partial")
-        controller.should_receive(:render).with(:partial => "partial")
+      it "should render any other content defined by the content loader" do
+        type    = :text
+        content = "content"
+        content_loader.stub!(:type).and_return(type)
+        mock_userfile.stub!(:content_loader_method).and_return(content)
+        controller.should_receive(:render).with(type => content)
         get :content, :id => 1
       end
       it "should send the userfile itself if no content given" do
-        mock_userfile.stub!(:content).and_return(nil)
+        mock_userfile.stub!(:find_content_loader).and_return(nil)
         mock_userfile.stub!(:cache_full_path).and_return("path")
         controller.should_receive(:send_file).with("path")
         get :content, :id => 1

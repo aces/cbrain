@@ -1064,13 +1064,6 @@ describe Userfile do
         userfile.available?.should be false
       end
     end
-  
-    describe "#content" do
-      
-      it "should always return false" do
-        userfile.content([]).should be_false
-      end
-    end
   end
     
 end
