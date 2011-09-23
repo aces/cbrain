@@ -29,7 +29,7 @@ class PortalSystemChecks < CbrainChecker
         end
         puts "C> \t- Please run \"rake db:migrate RAILS_ENV=#{Rails.env}\" to update"
         puts "C> \t  your database then try again."
-        Kernel.exit(1)
+        Kernel.exit(10)
       end
     end
   end
@@ -45,7 +45,7 @@ class PortalSystemChecks < CbrainChecker
     unless PortalSanityChecks.done? 
       puts "C> \t- Error: You must check the sanity of the models. Please run this\n"
       puts "C> \t         command: 'rake db:sanity:check RAILS_ENV=#{Rails.env}'." 
-      Kernel.exit(1)
+      Kernel.exit(10)
     end
   end
 

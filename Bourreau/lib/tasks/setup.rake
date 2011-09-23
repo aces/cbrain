@@ -1,1 +1,0 @@
-../../../BrainPortal/lib/tasks/setup.rake

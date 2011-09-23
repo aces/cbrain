@@ -62,7 +62,7 @@
    <% else %>
      <td><font color="red">unknown</font></td>
    <% end %>
-   <td><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>") -%></td>
+   <td><%= userfile.get_tags_for_user(current_user).collect(&:name).join("<br>").html_safe -%></td>
    <% if userfile.group != nil %>
      <% unless current_project %>
         <td><%= link_to_group_if_accessible(userfile.group) -%></td>

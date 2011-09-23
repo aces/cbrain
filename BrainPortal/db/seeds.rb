@@ -72,12 +72,12 @@ in CBRAIN to get a working system.
 
 You can run it multiple times without fear.
 ===========================================================
-
 INTRO
 
 
 
 puts <<STEP
+
 ----------------------------
 Step 1: Portal Instance Name
 ----------------------------
@@ -103,7 +103,6 @@ end
 if ! portal_name.blank?
   raise "Invalid name for the portal." if portal_name !~ /^[a-z]\w+$/i
   puts "Portal name: #{portal_name}"
-  puts ""
 end
 
 # Interactive question
@@ -113,12 +112,12 @@ if portal_name.blank?
   print "Portal name: "
   portal_name = Readline.readline
   raise "Invalid name for the portal." if portal_name.blank? || portal_name !~ /^[a-z]\w+$/i
-  puts ""
 end
 
 
 
 puts <<-STEP
+
 ----------------------------
 Step 2: Admin User Password
 ----------------------------
@@ -128,6 +127,7 @@ already exists, this will reset it. Leave blank to leave
 the existing password unchanged.
 
 STEP
+
 print "Admin's password: "
 system("stty","-echo")
 passwd = STDIN.readline.chomp # Readline.readline
@@ -145,11 +145,10 @@ if passwd != passwd2
   Kernel.exit(20)
 end
 
-puts ""
-
 
 
 puts <<-STEP
+
 ----------------------------
 Step 3: Seeding The Database
 ----------------------------
@@ -203,16 +202,16 @@ portal = BrainPortal.seed_record!(
   { :info_name_method => :name }
 )
 
-puts ""
-
 
 
 puts <<-STEP
+
 ----------------------------
 Step 4: Portal config file
 ----------------------------
 
 STEP
+
 if ENV['CBRAIN_RAILS_APP_NAME']
   puts "Not touching the config file, since we got our portal name from CBRAIN_RAILS_APP_NAME."
 else
@@ -225,16 +224,16 @@ else
   end
 end
 
-puts ""
-
 
 
 puts <<-STEP
+
 ----------------------------
 Step 5: ALL DONE !
 ----------------------------
 
 Exiting.
+
 STEP
 
 
