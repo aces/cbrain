@@ -1,6 +1,6 @@
 
 namespace :db do
-  namespace :seeds do
+  namespace :seed do
     desc "Seed CBRAIN with developer records"
     task :dev => :environment do
       CbrainSystemChecks.check(:all)
