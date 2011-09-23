@@ -65,10 +65,14 @@ class SitesController < ApplicationController
   # PUT /sites/1.xml
   def update #:nodoc:
     @site = Site.find(params[:id])
-    params[:site][:user_ids] ||= []
+    params[:site][:user_ids]    ||= []
     params[:site][:manager_ids] ||= []
-    params[:site][:group_ids] ||= [@site.own_group.id]
+    params[:site][:group_ids]   ||= [ @site.own_group.id ]
+    params[:site][:user_ids].map!    &:to_i
+    params[:site][:manager_ids].map! &:to_i
+    params[:site][:group_ids].map!   &:to_i
     
+    @site.unset_managers
 
     respond_to do |format|
       if @site.update_attributes(params[:site])
