@@ -211,6 +211,14 @@ Factory.define "cbrain_task/civet" do |cbrain_task|
   cbrain_task.association :tool_config
 end
 
+Factory.define :cluster_task do |cluster_task|
+  cluster_task.status      "New"
+  cluster_task.association :bourreau
+  cluster_task.association :user
+  cluster_task.association :group
+  cluster_task.association :tool_config
+end
+
 Factory.define :message do |message|
   message.association :user  
 end
