@@ -129,16 +129,83 @@ class Userfile < ActiveRecord::Base
     end
   end
 
+  # Class representing the way in which the content
+  # of a userfile can be transferred to a client. 
+  # Created by using the #has_content directive 
+  # in a Userfile subclass.
+  # ContentLoaders are defined by two parameters:
+  # [method] an instance method defined for the
+  #          class that will prepare the data for
+  #          transfer.
+  # [type]   the type of data being transfered.
+  #          Generally, this is the the key to be
+  #          used in the hash given to a render
+  #          call in the controller. One special
+  #          is :send_file, which the controller
+  #          will take as indicating that the
+  #          ContentLoader method will return 
+  #          the path of a file to be sent directly.
+  # For example, if one wished to send the content
+  # as xml, one would first define the content loader
+  # method:
+  #  def generate_xml
+  #     ... # make the xml
+  #  end
+  # And then register the loader using #has_content:
+  #  has_content :method => generate_xml, :type => :xml
+  # The #has_content directive can also take a single 
+  # symbol or string, which it will assume is the
+  # name of the content loader method, and setting
+  # the type to :send_file.
+  class ContentLoader
+    attr_reader :method, :type
+    
+    def initialize(content_loader)
+      atts = content_loader
+      unless atts.is_a? Hash
+        atts = {:method => atts}
+      end
+      initialize_from_hash(atts)
+    end
+    
+    def initialize_from_hash(options = {})
+      cb_error "Content loader must have method defined." if options[:method].blank?
+      @method = options[:method].to_sym
+      @type   = (options[:type]  || :send_file).to_sym
+    end
+    
+    def ==(other)
+      return false unless other.is_a? ContentLoader
+      self.method == other.method
+    end
+  end
+
+  #List of viewers for this model
   def viewers
     class_viewers = self.class.class_viewers
     
     @viewers = class_viewers.select { |v| v.valid_for?(self) }
   end
   
+  #Find a viewer for this model
   def find_viewer(name)
     self.viewers.find{ |v| v.name == name}
   end
-
+  
+  #List of content loaders for this model
+  def content_loaders
+    self.class.content_loaders
+  end
+  
+  #Find a content loader for this model. Priority is given
+  #to finding a matching method name. If none is found, then
+  #an attempt is made to match on the type. There may be several
+  #type matches so the first is returned.
+  def find_content_loader(meth)
+    self.class.find_content_loader(meth)
+  end
+  
+  #The site with which this userfile is associated.
   def site
     @site ||= self.user.site
   end
@@ -153,6 +220,8 @@ class Userfile < ActiveRecord::Base
     self.class.file_extension(self.name)
   end
 
+  # Return the file extension (the last '.' in the name and
+  # the characters following it).
   def self.file_extension(name)
     name.scan(/\.[^\.]+$/).last
   end
@@ -223,20 +292,24 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  # Add a format to this userfile.
   def add_format(userfile)
     source_file = self.format_source || self
     source_file.formats << userfile
   end
   
+  # The format name (for display) of this userfile.
   def format_name
     nil
   end
   
+  # List of the names of the formats available for the userfile.
   def format_names
     source_file = self.format_source || self
     @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact 
   end
   
+  # Return true if the given format exists for the calling userfile
   def has_format?(f)
     if self.get_format(f)
       true
@@ -245,6 +318,8 @@ class Userfile < ActiveRecord::Base
     end
   end
   
+  # Find the userfile representing the given format for the calling 
+  # userfile, if it exists.
   def get_format(f)
     return self if self.format_name.to_s.downcase == f.to_s.downcase || self.class.name == f
     
@@ -324,6 +399,8 @@ class Userfile < ActiveRecord::Base
     result
   end
 
+  # Return the level of the calling userfile in 
+  # the parentage tree.
   def level
     @level ||= 0
   end
@@ -384,7 +461,7 @@ class Userfile < ActiveRecord::Base
 
   #Returns a scope representing the set of files accessible to the
   #given user.
-  def self.accessible_for_user(user, options = {})
+  def self.accessible_for_user(user, options)
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
     
@@ -501,6 +578,7 @@ class Userfile < ActiveRecord::Base
   # Tree Traversal Methods
   ##############################################
 
+  # Make the calling userfile a child of the argument.
   def move_to_child_of(userfile)
     if self.id == userfile.id || self.descendants.include?(userfile)
       raise ActiveRecord::ActiveRecordError, "A userfile cannot become the child of one of its own descendants." 
@@ -512,6 +590,7 @@ class Userfile < ActiveRecord::Base
     true
   end
 
+  # List all descendants of the calling userfile.
   def descendants(seen = {})
     result     = []
     seen[self] = true
@@ -530,10 +609,12 @@ class Userfile < ActiveRecord::Base
   # Sequential traversal methods.
   ##############################################
   
+  # Find the next file (by id) available to the given user.
   def next_available_file(user, options = {})
     Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id > ?", self.id] ).first
   end
 
+  # Find the previous file (by id) available to the given user.
   def previous_available_file(user, options = {})
     Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id < ?", self.id] ).last
   end
@@ -705,36 +786,41 @@ class Userfile < ActiveRecord::Base
   def available?
     self.data_provider.online?
   end
-  
-  def content(options)
-    false
-  end
-
 
   private
   
+  # Add a viewer to the calling class.
+  # Arguments can be one or several hashes,
+  # strings or symbols used as arguments to
+  # create Viewer objects.
   def self.has_viewer(*new_viewers)
     new_viewers.map!{ |v| Viewer.new(v) }
     new_viewers.each{ |v| add_viewer(v) }
   end
   
+  # Synonym for #has_viewers.
   def self.has_viewers(*new_viewers)
     self.has_viewer(*new_viewers)
   end
   
+  # Remove all previously defined viewers
+  # for the calling class.
   def self.reset_viewers
     @ancestor_viewers = []
     @class_viewers    = []
   end
   
+  # Add a viewer to the calling class. Unlike #has_viewer
+  # the argument is a single Viewer object.
   def self.add_viewer(viewer)
-    if self.class_viewers.find{ |v| v == viewer  }
+    if self.class_viewers.include?(viewer)
       cb_error "Redefinition of viewer in class #{self.name}."
     end
     
     @class_viewers << viewer
   end
   
+  # List viewers for the calling class.
   def self.class_viewers
     unless @ancestor_viewers
       if self.superclass.respond_to? :class_viewers
@@ -747,6 +833,30 @@ class Userfile < ActiveRecord::Base
     ancestor_v = (@ancestor_viewers).clone
     
     class_v + ancestor_v
+  end
+  
+  # Add a content loader to the calling class.
+  def self.has_content(options = {})
+    new_content = ContentLoader.new(options)
+    @@content_loaders ||= []
+    if @@content_loaders.include?(new_content) 
+      cb_error "Redefinition of content loader in class #{self.name}."
+    end 
+    @@content_loaders << new_content
+  end
+  # List content loaders for the calling class.
+  def self.content_loaders
+    @@content_loaders ||= []
+  end
+  
+  #Find a content loader for this model. Priority is given
+  #to finding a matching method name. If none is found, then
+  #an attempt is made to match on the type. There may be several
+  #type matches so the first is returned.
+  def self.find_content_loader(meth)
+    method = meth.to_sym
+    self.content_loaders.find { |cl| cl.method == method } || 
+    self.content_loaders.find { |cl| cl.type == method }
   end
   
   def validate_associations

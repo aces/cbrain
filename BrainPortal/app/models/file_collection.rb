@@ -20,32 +20,8 @@ class FileCollection < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  has_viewer :file_collection
-  
-  def content(options) #:nodoc
-    
-    begin
-
-      if options[:collection_file] && self.list_files.find { |f| f.name == options[:collection_file] }
-        
-        path_string = options[:collection_file] 
-        path = self.cache_full_path.parent + path_string
-
-        if File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )
-          {:sendfile => path}
-        else
-          { :file => "public/404.html", :status => "404" }
-        end
-      end
-    rescue  => e
-      if e.is_a?(Net::SFTP::Exception) || e.message =~ /Net::SFTP/
-        return {:text => "<span class='loading_message'>Error loading file list. Please sync your collection and try again.</span>"}
-      else
-        raise
-      end
-    end
-  end
-
+  has_viewer  :file_collection
+  has_content :collection_file
 
   # Extract a collection from an archive.
   # The user_id, provider_id and name attributes must already be
@@ -176,6 +152,16 @@ class FileCollection < Userfile
     end
   end
 
+  # Content loader
+  def collection_file(path_string)
+    return nil unless self.list_files.find { |f| f.name == path_string }
+      
+    path = self.cache_full_path.parent + path_string
+
+    return nil unless File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )
+    
+    path
+  end
 end
 
 

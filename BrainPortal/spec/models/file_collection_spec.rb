@@ -16,64 +16,45 @@ describe FileCollection do
   let(:provider) {Factory.create(:data_provider, :online => true, :read_only => false)}
   let(:file_collection) {Factory.create(:file_collection, :data_provider_id => provider.id) }
   
-  describe "#content" do
+  describe "#collection_file" do
     before(:each) do
-      file_collection.stub_chain(:list_files, :find).and_return(true)
+      file_collection.stub_chain(:list_files, :find).and_return(true)        
+      File.stub!(:exist?).and_return(true)
+      File.stub!(:readable?).and_return(true)
+      File.stub!(:directory?).and_return(false)
+      File.stub!(:symlink?).and_return(false)
     end
-    context "with options[:collection_file]" do
-      before(:each) do
-        File.stub!(:exist?).and_return(true)
-        File.stub!(:readable?).and_return(true)
-        File.stub!(:directory?).and_return(false)
-        File.stub!(:symlink?).and_return(false)
-      end
-      
-      it "should return nil if collection file not in the collection's list of files" do
-        file_collection.stub_chain(:list_files, :find).and_return(nil)
-        file_collection.content(:collection_file => 'path').should be_nil
-      end
-
-      it "should set sendfile to given path if we have a readable file" do
-        file_collection.stub_chain(:cache_full_path, :parent).and_return("")
-        file_collection.content(:collection_file => 'path')[:sendfile].should == 'path'
-      end
-
-      it "should set status to 404 if we have a file does not exist" do
-        File.stub!(:exist?).and_return(false)
-        file_collection.content(:collection_file => 'path')[:status].should == '404'
-      end
-
-      it "should set status to 404 if we have a file does not readable" do
-        File.stub!(:readable?).and_return(false)
-        file_collection.content(:collection_file => 'path')[:status].should == '404'
-      end
-
-      it "should set status to 404 if we have a directory" do
-        File.stub!(:directory?).and_return(true)
-        file_collection.content(:collection_file => 'path')[:status].should == '404'
-      end
-
-      it "should set status to 404 if we have a symlink" do
-        File.stub!(:symlink?).and_return(true)
-        file_collection.content(:collection_file => 'path')[:status].should == '404'
-      end
+    
+    it "should return nil if collection file not in the collection's list of files" do
+      file_collection.stub_chain(:list_files, :find).and_return(nil)
+      file_collection.collection_file('path').should be_nil
     end
-
-    context "without options[:collection_file]" do
-      it "should set text with an error message if exception is a Net::SFTP::Exception" do
-        File.stub!(:exist?).and_raise(Net::SFTP::Exception)
-        file_collection.content(:collection_file => 'path')[:text].should =~ /Error loading/ 
-      end
-        
-      it "should set text with an error message if exception.message contain Net::SFTP" do
-        File.stub!(:exist?).and_raise(ZeroDivisionError.new("Net::SFTP"))
-        file_collection.content(:collection_file => 'path')[:text].should =~ /Error loading/
-      end
-      
-      it "should raise an error if exception is not a Net::SFTP::Exception or exception.error don't contain Net::SFTP" do 
-        File.stub!(:exist?).and_raise(ZeroDivisionError)
-        lambda{ file_collection.content(:collection_file => 'path')}.should raise_error()
-      end
+    
+    it "should return the full path of the collection file if it exists" do
+      base_path = 'base_path/'
+      rel_path  = 'path'
+      file_collection.stub_chain(:cache_full_path, :parent).and_return(base_path)
+      file_collection.collection_file(rel_path).should == base_path + rel_path
+    end
+    
+    it "should return nil if we have a file does not exist" do
+      File.stub!(:exist?).and_return(false)
+      file_collection.collection_file('path').should be_nil
+    end
+    
+    it "should return nil if we have a file does not readable" do
+      File.stub!(:readable?).and_return(false)
+      file_collection.collection_file('path').should be_nil
+    end
+    
+    it "should return nil if we have a directory" do
+      File.stub!(:directory?).and_return(true)
+      file_collection.collection_file('path').should be_nil
+    end
+    
+    it "should return nil if we have a symlink" do
+      File.stub!(:symlink?).and_return(true)
+      file_collection.collection_file('path').should be_nil
     end
   end
 
