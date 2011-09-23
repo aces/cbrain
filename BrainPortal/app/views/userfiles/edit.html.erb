@@ -33,7 +33,13 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
-      <td><%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %></td>
+      <td>
+        <% if current_user.available_users.include?(@userfile.user) %>
+          <%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %>
+        <% else %>
+          <%= link_to_user_if_accessible(@userfile.user) %>
+        <% end %>
+      </td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
