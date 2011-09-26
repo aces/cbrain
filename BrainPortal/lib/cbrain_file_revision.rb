@@ -46,6 +46,9 @@
 #   Abcd::Revision_info.self_update
 #   puts Abcd::Revision_info.author  # faster than svn_id_author()
 #
+
+require 'csv'
+
 class CbrainFileRevision
 
   # Attributes for linking the object to the disk file
@@ -118,18 +121,15 @@ class CbrainFileRevision
     cbrain_root   = Pathname.new(Rails.root).parent
     path        ||= cbrain_root + "cbrain_file_revisions.csv"
     @_static_revision_hash = {}
-    File.open(path.to_s,"r") do |fh|
-      fh.readlines.each do |line|
-        line.chomp!
-        # 7f6bb2f24f6afb3d3b355d6c0ad630cdf353e1fe -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/README
-        fields   = line.split(" -#- ")
-        commit   = fields[0]
-        datetime = fields[1]
-        author   = fields[2]
-        relpath  = fields[3]
-        @_static_revision_hash[relpath] = [ commit, datetime, author ] unless relpath.blank?
-        #puts_blue "-> #{@_static_revision_hash[relpath].inspect}"
-      end
+
+    CSV.foreach(path.to_s, :col_sep => ' -#- ') do |row|
+      # 7f6bb2f24f6afb3d3b355d6c0ad630cdf353e1fe -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/README
+      commit   = row[0]
+      datetime = row[1]
+      author   = row[2]
+      relpath  = row[3]
+      @_static_revision_hash[relpath] = [ commit, datetime, author ] unless relpath.blank?
+      #puts_blue "-> #{@_static_revision_hash[relpath].inspect}"
     end
     true
   end
