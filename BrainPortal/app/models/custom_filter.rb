@@ -61,7 +61,7 @@ class CustomFilter < ActiveRecord::Base
       errors.add(:base, "You should enter an absolute 'to' date or de-select radio button")
     end
 
-    if self.data["absolute_or_relative_to"] == "rel" && self.data["rel_date_from"] == self.data["rel_date_to"]
+    if self.data["absolute_or_relative_to"] == "rel" && self.data["absolute_or_relative_from"] == "rel" && self.data["rel_date_from"] == self.data["rel_date_to"]
       errors.add(:base, "You should choose 2 differents relatives dates")
     end
     
