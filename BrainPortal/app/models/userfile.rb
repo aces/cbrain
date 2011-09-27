@@ -51,6 +51,10 @@ class Userfile < ActiveRecord::Base
   validate                :validate_associations
   validate                :validate_filename
   validate                :validate_group_update
+
+  # prevents a user from submitting a crafted form that bypasses activation
+  # anything else you want your user to change should be added here.
+  attr_accessible         :name, :type, :group_id, :group_writable
   
   belongs_to              :user
   belongs_to              :data_provider

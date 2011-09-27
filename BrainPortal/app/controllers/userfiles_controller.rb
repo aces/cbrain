@@ -392,11 +392,6 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
-    unless Userfile.is_legal_filename?(basename)
-      flash[:error] = "This filename, '#{basename}', is not acceptable. It contains invalid characters."
-      redirect_to redirect_path
-      return
-    end
 
     # Temp file where the data is saved by rack
     rack_tempfile_path = upload_stream.tempfile.path
@@ -411,15 +406,12 @@ class UserfilesController < ApplicationController
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
 
-      userfile = SingleFile.new(
-                   params[:userfile].merge(
-                     :name             => basename,
-                     :user_id          => current_user.id,
-                     :data_provider_id => data_provider_id,
-                     :tag_ids          => params[:tags]
-                   )
-                 )
-
+      userfile                  = SingleFile.new( params[:userfile])
+      userfile.name             = basename
+      userfile.data_provider_id = data_provider_id
+      userfile.user_id          = current_user.id
+      userfile.tag_ids          = params[:tags]
+    
       if ! userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
@@ -475,14 +467,13 @@ class UserfilesController < ApplicationController
 
       collectionType = FileCollection # TODO let user choose from the interface?
 
-      collection = collectionType.new(
-        params[:userfile].merge(
-          :name              => collection_name,
-          :user_id           => current_user.id,
-          :data_provider_id  => data_provider_id,
-          :tag_ids           => params[:tags]
-        )
-      )
+      collection                  = collectionType.new(params[:userfile])
+      collection.name             = collection_name
+      collection.data_provider_id = data_provider_id
+      collection.user_id          = current_user.id
+      collection.tag_ids          = params[:tags]
+
+
       
       if collection.save
 
@@ -542,15 +533,18 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
     flash[:notice] ||= ""
     flash[:error]  ||= ""
 
     attributes = params[:userfile] || {}
+    new_user_id         = attributes.delete :user_id
+    new_group_id        = attributes.delete :group_id
 
     old_name = @userfile.name
     new_name = attributes[:name] || old_name
+
 
     if ! Userfile.is_legal_filename?(new_name)
       flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
@@ -565,7 +559,11 @@ class UserfilesController < ApplicationController
       end
     end
 
+    @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+    @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
+
     respond_to do |format|
       if @userfile.update_attributes(attributes)
         if new_name != old_name
@@ -576,7 +574,8 @@ class UserfilesController < ApplicationController
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'edit') }
         format.xml  { head :ok }
-      else
+        else
+             
         flash[:error] += "#{@userfile.name} has NOT been updated."
         @userfile.name = old_name
         @tags = current_user.available_tags
@@ -585,6 +584,7 @@ class UserfilesController < ApplicationController
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
     end
+    
   end
   
   # Updated tags, groups or group-writability flags for several
@@ -690,13 +690,12 @@ class UserfilesController < ApplicationController
     else
       file_group = current_user.own_group.id
     end
-    
-    collection = FileCollection.new(
-        :user_id          => current_user.id,
-        :group_id         => file_group,
-        :data_provider    => DataProvider.find(params[:data_provider_id])
-        )
 
+    collection               = FileCollection.new()
+    collection.user_id       = current_user.id
+    collection.group_id      = file_group
+    collection.data_provider = DataProvider.find(params[:data_provider_id])
+        
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
       result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
       if result == :success
@@ -951,12 +950,12 @@ class UserfilesController < ApplicationController
     collection_path = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:file_names].each do |file|
-      userfile = SingleFile.new(
-          :name             => File.basename(file),
-          :user_id          => current_user.id,
-          :group_id         => collection.group_id,
-          :data_provider_id => data_provider_id
-      )
+      userfile                  = SingleFile.new()
+      userfile.name             = File.basename(file)
+      userfile.user_id          = current_user.id
+      userfile.group_id         = collection.group_id
+      userfile.data_provider_id = data_provider_id
+      
       Dir.chdir(collection_path.parent) do
         if userfile.save
           userfile.addlog("Extracted from collection '#{collection.name}'.")
@@ -1172,7 +1171,11 @@ class UserfilesController < ApplicationController
 
     Dir.chdir(workdir) do
       successful_files.each do |file|
-        u = SingleFile.new(attributes)
+        u = SingleFile.new
+        attributes.each do |key,val|
+          u.send("#{key}=", val) if u.columns_hash[key] 
+        end
+        
         u.name = file
         if u.save
           u.cache_copy_from_local_file(file)
