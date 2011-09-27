@@ -324,6 +324,8 @@
 
   <P>
 
+  <% sorted_stats = @statuses_list.sort { |s1,s2| cmp_status_order(s1,s2) } %>
+
   <table>
     <tr>
       <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
@@ -331,7 +333,7 @@
     
     <tr>
       <th>User</th>
-      <% @statuses_list.each do |stat| %>
+      <% sorted_stats.each do |stat| %>
         <th><%= stat %></th>
       <% end %>
     </tr>
@@ -342,7 +344,7 @@
       <% next if statcnt['TOTAL'].blank? || statcnt['TOTAL'] == 0 %>
       <tr>
         <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
-        <% @statuses_list.each do |stat| %>
+        <% sorted_stats.each do |stat| %>
           <% if stat == "TOTAL" %>
             <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :user_id => user.id}, :ajax => false %></td>
           <% else %>
@@ -353,7 +355,7 @@
     <% end %>
     <tr>
       <td class="left_align">TOTAL</td>
-      <% @statuses_list.each do |stat| %>
+      <% sorted_stats.each do |stat| %>
         <% if stat == "TOTAL" %>
           <td><%= link_to h(@statuses[stat]), :controller => :tasks, :action => :index %></td>
         <% else %>
