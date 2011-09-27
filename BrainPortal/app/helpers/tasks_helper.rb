@@ -34,8 +34,6 @@ module TasksHelper
   end
 
   StatesToColor = {
-          'Duplicated'                       => [ "blue",   998 ],
-          'Standby'                          => [ "orange", 999 ],
           'Configured'                       => [ "orange",  25 ],
           'New'                              => [ "blue",    20 ],
           'Setting Up'                       => [ "blue",    30 ],
@@ -47,6 +45,7 @@ module TasksHelper
           'Post Processing'                  => [ "blue",    70 ],
           'Completed'                        => [ "green",   80 ],
           'Terminated'                       => [ "red",     90 ],
+          'Failed'                           => [ "red",    100 ], # not an official task status, but used in reports
           'Failed To Setup'                  => [ "red",    135 ],
           'Failed On Cluster'                => [ "red",    165 ],
           'Failed To PostProcess'            => [ "red",    175 ],
@@ -66,7 +65,10 @@ module TasksHelper
           'Restarting PostProcess'           => [ "blue",   560 ],
           'Preset'                           => [ "black",    0 ], # never seen in interface
           'SitePreset'                       => [ "black",    0 ], # never seen in interface
-          'Failed'                           => [ "red",    100 ]  # not an official task status, but used in reports
+          'Duplicated'                       => [ "blue",   997 ],
+          'Standby'                          => [ "orange", 998 ],
+          'TOTAL'                            => [ "black",  999 ], # not an official task status, but used in reports
+          'Total'                            => [ "black",  999 ]  # not an official task status, but used in reports
   }
 
 

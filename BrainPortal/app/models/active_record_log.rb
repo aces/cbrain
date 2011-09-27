@@ -16,5 +16,12 @@ class ActiveRecordLog < ActiveRecord::Base
 
   force_text_attribute_encoding 'UTF-8', :log
 
+  def active_record_object #:nodoc:
+    ar_id = self.ar_id
+    klass = self.ar_class.constantize rescue nil
+    return nil unless klass && ar_id && klass < ActiveRecord::Base
+    klass.find_by_id(ar_id)
+  end
+
 end
 
