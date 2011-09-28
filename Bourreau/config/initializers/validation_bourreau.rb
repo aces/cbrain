@@ -39,18 +39,7 @@ else
   end
 end
 
-# The CBRAIN_SERVER_STATUS_FILE environment variable is set up in the
-# CBRAIN wrapper script 'cbrain_remote_ctl'. If it's not set we do not do
-# anything. It's used by the wrapper to figure out if we launched properly.
-server_status_file = ENV["CBRAIN_SERVER_STATUS_FILE"]
-if ! server_status_file.blank?
-
-  #-----------------------------------------------------------------------------
-  puts "C> Informing outside world that validations have passed..."
-  #-----------------------------------------------------------------------------
-
-  File.open(server_status_file,"w") do |fh|
-    fh.write "STARTED\n"
-  end
-end
+#-----------------------------------------------------------------------------
+puts "C> CBRAIN Bourreau validation completed, " + Time.now.to_s
+#-----------------------------------------------------------------------------
 

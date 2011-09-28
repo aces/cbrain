@@ -306,7 +306,8 @@ class SshMaster
           begin
             Process.setpgrp rescue true
             self.write_pidfile(Process.pid,:force)  # Overwrite
-            $stdin.close rescue nil
+            #$stdin.close rescue nil
+            $stdin.reopen("/dev/null")
             $stdout.reopen(self.diag_path, "a")
             $stdout.sync = true
             $stderr.reopen($stdout)
