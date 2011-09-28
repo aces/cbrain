@@ -31,8 +31,7 @@ class CbrainException < StandardError
      # (added to Kernel in the initializers) we get a cleaner
      # trace.
      backtrace = caller
-     backtrace.shift
-     backtrace.shift
+     backtrace.shift(options[:shift_caller]) if options[:shift_caller]
      self.set_backtrace(backtrace)
 
      self

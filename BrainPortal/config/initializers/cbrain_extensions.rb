@@ -180,7 +180,8 @@ module Kernel
   # Raises a CbrainNotice exception, with a default redirect to
   # the current controller's index action.
   def cb_notify(message = "Something may have gone awry.", options = {} )
-    options[:status] ||= :ok
+    options[:status]       ||= :ok
+    options[:shift_caller]   = 2
     raise CbrainNotice.new(message, options)
   end
   alias cb_notice cb_notify
@@ -188,7 +189,8 @@ module Kernel
   # Raises a CbrainError exception, with a default redirect to
   # the current controller's index action.
   def cb_error(message = "Some error occured.",  options = {} )
-    options[:status] ||= :bad_request
+    options[:status]       ||= :bad_request
+    options[:shift_caller]   = 2
     raise CbrainError.new(message, options)
   end
 
