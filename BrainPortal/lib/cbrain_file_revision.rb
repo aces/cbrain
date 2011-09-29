@@ -51,8 +51,8 @@ require 'csv'
 
 class CbrainFileRevision
 
-  # Attributes for linking the object to the disk file
-  attr_accessor :fullpath
+  # Attributes for linking the object to a disk file
+  attr_accessor :fullpath # this one is filled when the object is initialized
   attr_accessor :basename
 
   # Official attributes
@@ -60,9 +60,6 @@ class CbrainFileRevision
 
   # Fake SVN ID
   attr_accessor :fake_svn_id_string
-
-  # GIT info cache
-  attr_accessor :git_last_commit_info
 
   def initialize(fullpath) #:nodoc:
     self.fullpath = fullpath
@@ -109,15 +106,26 @@ class CbrainFileRevision
   # Makes the class access the GIT repository and
   # updates its attributes to represent the current
   # file's GIT state.
-  def self_update(force=nil)
-    @git_last_commit_info=nil if force
-    self.get_git_rev_info()
-    self
+  #
+  # +mode+ can be one of :auto, :git, or :static,
+  # which indicates which source of revision info
+  # will be used: :git means to run some 'git' commands
+  # on the file that represents the revision object,
+  # whereas :static means to load the info from
+  # a static file installed in the CBRAIN root
+  # directory.
+  #
+  # When +force+ is true, the revision info will
+  # be refreshed even if it had been cached before.
+  def self_update(mode=:auto, force=nil)
+    @commit=nil if force
+    self.get_git_rev_info(mode)
   end
 
-  # Class method. Slurps a static file of revision info.
+  # Class method. Slurps a static file of revision info
+  # and caches it.
   def self.load_static_revision_file(path=nil) #:nodoc:
-    return unless @_static_revision_hash.blank?
+    return true unless @_static_revision_hash.blank?
     cbrain_root   = Pathname.new(Rails.root).parent
     path        ||= cbrain_root + "cbrain_file_revisions.csv"
     @_static_revision_hash = {}
@@ -131,6 +139,7 @@ class CbrainFileRevision
       @_static_revision_hash[relpath] = [ commit, datetime, author ] unless relpath.blank?
       #puts_blue "-> #{@_static_revision_hash[relpath].inspect}"
     end
+
     true
   end
 
@@ -143,49 +152,128 @@ class CbrainFileRevision
     test = `bash -c "which git 2>/dev/null"`
     @_git_available = (test.blank? ? :no : :yes)
     if @_git_available == :yes
-      test2 = `git log -n 1 -- #{Rails.root} 2>/dev/null`
+      test2 = `cd '#{Rails.root}'; git rev-parse --show-toplevel 2>/dev/null`
       @_git_available = :no if test2.blank?
     end
     @_git_available == :yes
   end
 
-  protected
+  def self.for_relpath(relpath, mode = :auto) #:nodoc:
+    cbrain_root = Pathname.new(Rails.root).parent
+    rev = self.new("#{cbrain_root}/#{relpath}") # TODO: find the object originally registered IN its file?
+    rev.get_git_rev_info(mode)
+    rev
+  end
 
-  def get_git_rev_info #:nodoc:
-    return @commit unless @git_last_commit_info.nil?
+  # mode is :git, :static, or :auto
+  def get_git_rev_info(mode = :auto) #:nodoc:
+    return self unless @commit.nil? # don't do anything if we already cached the info
 
-    # 9f4c0900fa3e6c87131d830194d0276acb1ce595 2011-06-28 17:50:26 -0400 Pierre Rioux
-    @git_last_commit_info = "" # now that it's no longer nil, will not try to fetch again
-
+    # Alright, here's a set of default values in case anything goes wrong.
     @basename = File.basename(@fullpath)
-    @commit   = "UnknownId" ; @short_commit = @commit
+    @commit   = "UnknownId"
     @date     = "0000-00-00"
-    @time     = "00:00"
+    @time     = "00:00:00"
     @author   = "UnknownAuthor"
 
-    if self.class.git_available?
+    if mode == :auto
+      mode = self.class.git_available? ? :git : :static
+    end
+
+    if mode == :git
       self.get_git_rev_info_from_git
     else
       self.get_git_rev_info_from_static_file
     end
+    self.adjust_short_commit
+
+    self
   end
+
+  def adjust_short_commit #:nodoc:
+    return unless @commit
+    @short_commit = @commit
+    @short_commit = @commit[0..7] if @commit =~ /^[0-9a-f]{40}$/i # if it a SHA-1 hash
+  end
+
+  def self.cbrain_head_revinfo #:nodoc:
+
+    # Static value
+    return @_head_info if @_head_info
+    if ! self.git_available?
+      @_head_info = self.for_relpath('__CBRAIN_HEAD__', :static)
+      return @_head_info
+    end
+
+    # Live value
+    cbrain_root = Pathname.new(Rails.root).parent
+    Dir.chdir(cbrain_root) do
+      head_info = `git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
+      head_rev = self.new("#{cbrain_root}/__CBRAIN_HEAD__")
+      head_rev.basename = '__CBRAIN_HEAD__'
+      head_rev.commit   = head_info[0]
+      head_rev.author   = head_info[2]
+      if head_info[1] =~ /(\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)?/
+        head_rev.date = Regexp.last_match[1]
+        head_rev.time = Regexp.last_match[2]
+        head_rev.time = "#{head_rev.time}#{Regexp.last_match[3]}" if ! Regexp.last_match[3].blank?
+      end
+      head_rev.adjust_short_commit
+      return head_rev
+    end
+  end
+
+  def self.cbrain_head_tag #:nodoc:
+
+    # Static value
+    return @_cbrain_tag if @_cbrain_tag
+    if ! self.git_available?
+      tag_info = self.for_relpath('__CBRAIN_TAG__', :static)
+      @_cbrain_tag = tag_info.commit
+      return @_cbrain_tag
+    end
+
+    # Live value
+    git_tag = nil
+    Dir.chdir(Rails.root.to_s) do
+      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
+      git_tag = tags_set.shift unless tags_set.empty? # extract first as a starting point
+      while tags_set.size > 0
+        tags_set = `git tag --contains '#{git_tag}'`.split.shuffle.reject { |v| v == @git_tag }
+        git_tag = tags_set.shift unless tags_set.empty? # new first
+      end
+      if git_tag
+        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+        git_tag += "-#{num_new_commits}" if num_new_commits > 0
+      end
+    end
+
+    git_tag
+
+  end
+
+  protected
 
   def get_git_rev_info_from_static_file #:nodoc:
     self.class.load_static_revision_file
+
     cbrain_root = Pathname.new(Rails.root).parent
     relpath     = @fullpath ; relpath["#{cbrain_root}/"] = ""  # transforms /path/to/root/a/b/c -> /a/b/c"
     revinfo     = self.class.static_revision_for_relpath(relpath)
+
     if !revinfo # if the root of the app has been renamed... try BrainPortal
       relpath.sub!(/^[^\/]+\//,"BrainPortal/")
       revinfo  = self.class.static_revision_for_relpath(relpath)
     end
+
     if !revinfo # if the root of the app has been renamed... try Bourreau
       relpath.sub!(/^[^\/]+\//,"Bourreau/")
       revinfo  = self.class.static_revision_for_relpath(relpath)
     end
-    return false unless revinfo
+
+    return self unless revinfo # not much else to do
    
-    @commit   = revinfo[0] ; @short_commit = @commit[0..5]
+    @commit   = revinfo[0]
     datetime  = revinfo[1]
     if datetime =~ /(\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)?/
       @date   = Regexp.last_match[1]
@@ -193,12 +281,15 @@ class CbrainFileRevision
     end
     @author   = revinfo[2]
 
-    @commit
+    self
   end
 
   def get_git_rev_info_from_git #:nodoc:
 
     dirname   = File.dirname(@fullpath)
+
+    # 9f4c0900fa3e6c87131d830194d0276acb1ce595 2011-06-28 17:50:26 -0400 Pierre Rioux
+    git_last_commit_info = ""
 
     Dir.chdir(dirname) do
       # If symlink, try to deref
@@ -206,22 +297,22 @@ class CbrainFileRevision
       File.popen("git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./'#{target}' 2>/dev/null","r") do |fh|
         line = fh.readline.strip rescue ""
         if line =~ /\d\d\d\d-\d\d-\d\d/
-          @git_last_commit_info = line
+          git_last_commit_info = line
         else
           line = fh.readline.strip rescue ""
-          @git_last_commit_info = line if line =~ /\d\d\d\d-\d\d-\d\d/
+          git_last_commit_info = line if line =~ /\d\d\d\d-\d\d-\d\d/
         end
       end
     end
 
-    if @git_last_commit_info =~ /^(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*$/
-      @commit = Regexp.last_match[1] ; @short_commit = @commit[0..5]
+    if git_last_commit_info =~ /^(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*$/
+      @commit = Regexp.last_match[1]
       @date   = Regexp.last_match[2]
       @time   = Regexp.last_match[3] + (Regexp.last_match[4] || "")
       @author = Regexp.last_match[5]
     end
 
-    @commit
+    self
   end
 
 end

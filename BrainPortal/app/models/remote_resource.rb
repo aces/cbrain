@@ -459,18 +459,10 @@ class RemoteResource < ActiveRecord::Base
     @git_author ||= "" # fetched only once.
     @git_date   ||= "" # fetched only once.
     if @git_commit.blank?
-      Dir.chdir(Rails.root.to_s) do
-        IO.popen("git rev-list --max-count=1 '--pretty=format:%h%n%an%n%ad' HEAD","r") do |fh|
-          #commit 9f4c0900fa3e6c87131d830194d0276acb1ce595
-          #9f4c090
-          #Pierre Rioux
-          #Tue Jun 28 17:50:26 2011 -0400
-          fh.readline rescue true # skip first line
-          @git_commit = fh.readline.strip rescue "ExcepCommit"
-          @git_author = fh.readline.strip rescue "ExcepAuthor"
-          @git_date   = fh.readline.strip rescue "ExcepDate"
-        end
-      end
+      head_rev = CbrainFileRevision.cbrain_head_revinfo
+      @git_commit = head_rev.commit
+      @git_author = head_rev.author
+      @git_date   = "#{head_rev.date} #{head_rev.time}"
     end
 
     # @git_tag will be the most recent tag in GIT, appended with 
@@ -478,21 +470,7 @@ class RemoteResource < ActiveRecord::Base
     # The value is live, to highlight when the files are not the
     # same as when the Rails app started.
 
-    @git_tag = nil
-
-    Dir.chdir(Rails.root.to_s) do
-      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
-      @git_tag = tags_set.shift unless tags_set.empty? # extract first as a starting point
-      while tags_set.size > 0
-        tags_set = `git tag --contains '#{@git_tag}'`.split.shuffle.reject { |v| v == @git_tag }
-        @git_tag = tags_set.shift unless tags_set.empty? # new first
-      end
-      if @git_tag
-        num_new_commits = `git rev-list '#{@git_tag}..HEAD'`.split.size
-        @git_tag += "-#{num_new_commits}" if num_new_commits > 0
-      end
-    end
-
+    @git_tag   = CbrainFileRevision.cbrain_head_tag
     @git_tag ||= "C-#{@git_commit}" # default
 
     info = RemoteResourceInfo.new(
