@@ -1,5 +1,5 @@
-3.0.3-1 -#- 2011-09-29 12:33:30 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
-b6f39d537c6203d497c9d168be92ccf6a7406911 -#- 2011-09-28 17:39:13 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
+3.0.3-2 -#- 2011-09-29 16:01:36 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
+1c911512ca03dfb71f54f3866e21fb5d69159d04 -#- 2011-09-29 12:39:33 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
 0fa5ead8dfb50d4081043b2865f7211d2f1be84e -#- 2010-12-15 12:21:34 +0000 -#- tsherif -#- APIs/java/compile_api
 a1ab81e548223c73d9bc9fa71107b2057599a21e -#- 2011-09-20 14:45:04 -0400 -#- Tarek Sherif -#- APIs/java/lib/CBRAIN-API.jar
 a1ab81e548223c73d9bc9fa71107b2057599a21e -#- 2011-09-20 14:45:04 -0400 -#- Tarek Sherif -#- APIs/java/lib/cbrainapi/CBRAINSession.class
@@ -190,7 +190,7 @@ b8340860f0b28a432f43ee3bc7bfa1cec59a6c76 -#- 2011-09-15 13:39:25 -0400 -#- Pierr
 45d557881a0924fc0da7f534cb9d975fc11527c5 -#- 2011-07-10 16:39:13 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/meta_data_store.rb
 b51dc1e98e3e611b02dd03f6a76b567c6444336e -#- 2011-08-26 16:39:14 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/portal_task.rb
 a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/remote_command.rb
-a79df4ab7e9a6198cebabe08db2296692dc65b1e -#- 2011-09-18 21:09:54 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/remote_resource.rb
+1c911512ca03dfb71f54f3866e21fb5d69159d04 -#- 2011-09-29 12:39:33 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/remote_resource.rb
 a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/remote_resource_info.rb
 a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/restricted_hash.rb
 a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/sanity_check.rb
@@ -761,7 +761,7 @@ a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierr
 ebb38e4e063e89eb8ebda4d9f6389a37189eb783 -#- 2011-09-07 11:25:47 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_delete_restriction_error.rb
 ebb38e4e063e89eb8ebda4d9f6389a37189eb783 -#- 2011-09-07 11:25:47 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_error.rb
 8f56f090c4813e7ed2859a3f9783ba467d1aead0 -#- 2011-09-28 13:01:51 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_exception.rb
-77eb5dfed558a82862bdb2a144f17e37897079a4 -#- 2011-09-26 15:11:39 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_file_revision.rb
+1c911512ca03dfb71f54f3866e21fb5d69159d04 -#- 2011-09-29 12:39:33 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_file_revision.rb
 ebb38e4e063e89eb8ebda4d9f6389a37189eb783 -#- 2011-09-07 11:25:47 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_notice.rb
 d91716ac51bf18f580bd3de39d6c52314a429914 -#- 2011-09-23 17:07:06 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_system_checks.rb
 a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_form_builder.rb
@@ -1210,7 +1210,7 @@ d5a8e6ef67cc7ac3a79ad21edad41aa5551a3d4c -#- 2011-04-04 20:39:22 +0000 -#- priou
 38906334ffa6554e776cff1859255723afbf645f -#- 2011-03-08 20:06:27 +0000 -#- prioux -#- CBRAIN_licenses.txt
 38906334ffa6554e776cff1859255723afbf645f -#- 2011-03-08 20:06:27 +0000 -#- prioux -#- GPL_v3.txt
 5adeb3f7ec1610766f9e0d39355d5b42c22bb019 -#- 2010-09-03 19:42:55 +0000 -#- prioux -#- alldoc.sh
-7cb243e00acaa5d79e9fd2d540bf5ecc5cb3db6d -#- 2011-09-23 17:14:49 -0400 -#- Pierre Rioux -#- cbrain_file_revisions.csv
+1c911512ca03dfb71f54f3866e21fb5d69159d04 -#- 2011-09-29 12:39:33 -0400 -#- Pierre Rioux -#- cbrain_file_revisions.csv
 41f9ffc6f0dc9f480ba765511998b75b0bac2460 -#- 2009-06-11 22:07:11 +0000 -#- prioux -#- doc/Anouncement-2009-06-11.txt
 b020893450341e1d33b975ef3a12ad4dc793ff71 -#- 2011-05-04 20:44:46 +0000 -#- prioux -#- doc/CbrainTask.txt
 fcfb1b19e9c66db613055c1c43de2355752cfe57 -#- 2010-06-06 16:46:10 +0000 -#- prioux -#- doc/CbrainTask_Prerequisites.txt
@@ -1252,4 +1252,4 @@ b39a3698296114cf21a5dbe34d0a926729b12aa3 -#- 2010-05-27 17:53:56 +0000 -#- priou
 74cb1066ea26e0282dd42a722f45446e3041e986 -#- 2009-12-07 16:58:38 +0000 -#- prioux -#- doc/Style.txt
 616377f4a56054940380ab5b362ffd7fe3d05342 -#- 2010-07-28 19:27:07 +0000 -#- prioux -#- doc/Svn.txt
 957dfbd67416a12c3c5fc1519730b4b3c5b1f8c5 -#- 2011-06-02 12:15:17 -0400 -#- Tarek Sherif -#- doc/Testing.txt
-7cb243e00acaa5d79e9fd2d540bf5ecc5cb3db6d -#- 2011-09-23 17:14:49 -0400 -#- Pierre Rioux -#- generate_rev_list.sh
+1c911512ca03dfb71f54f3866e21fb5d69159d04 -#- 2011-09-29 12:39:33 -0400 -#- Pierre Rioux -#- generate_rev_list.sh

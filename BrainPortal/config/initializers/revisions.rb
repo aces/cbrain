@@ -26,7 +26,7 @@ class Object
     end
   end
 
-  # This method returns the vlaue of the object's class constant
+  # This method returns the value of the object's class constant
   # named 'Revision_info', just like the class method of the
   # same name.
   def revision_info

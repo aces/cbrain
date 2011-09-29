@@ -48,6 +48,7 @@
 #
 
 require 'csv'
+require 'pathname'
 
 class CbrainFileRevision
 
@@ -62,7 +63,7 @@ class CbrainFileRevision
   attr_accessor :fake_svn_id_string
 
   def initialize(fullpath) #:nodoc:
-    self.fullpath = fullpath
+    @fullpath = fullpath.to_s
   end
 
   # Same as new() method. This allows you to
@@ -96,7 +97,7 @@ class CbrainFileRevision
   # Make the object act as a string
   def method_missing(name,*args) #:nodoc:
     # 'name' will be provided by Ruby as :myattr or :myattr=
-    self.to_s.send(name,*args)
+    String.method_defined?(name) ? self.to_s.send(name,*args) : super
   end
 
   def =~(*args) #:nodoc:
@@ -170,11 +171,15 @@ class CbrainFileRevision
     return self unless @commit.nil? # don't do anything if we already cached the info
 
     # Alright, here's a set of default values in case anything goes wrong.
-    @basename = File.basename(@fullpath)
     @commit   = "UnknownId"
     @date     = "0000-00-00"
     @time     = "00:00:00"
     @author   = "UnknownAuthor"
+
+    # We need to fetch the info of the REAL file if the original
+    # target was a symlink, because symlink don't change much in GIT!
+    @fullpath = File.exists?(@fullpath) ? Pathname.new(@fullpath).realpath.to_s : @fullpath.to_s
+    @basename = File.basename(@fullpath)
 
     if mode == :auto
       mode = self.class.git_available? ? :git : :static
@@ -185,15 +190,20 @@ class CbrainFileRevision
     else
       self.get_git_rev_info_from_static_file
     end
-    self.adjust_short_commit
 
     self
+  rescue => oops # this method should be as resilient as possible
+    puts "Exception in get_git_rev_info: #{oops.class} #{oops.message}"
+    self
+  ensure
+    self.adjust_short_commit
   end
 
   def adjust_short_commit #:nodoc:
     return unless @commit
     @short_commit = @commit
     @short_commit = @commit[0..7] if @commit =~ /^[0-9a-f]{40}$/i # if it a SHA-1 hash
+    self
   end
 
   def self.cbrain_head_revinfo #:nodoc:
@@ -229,7 +239,7 @@ class CbrainFileRevision
     return @_cbrain_tag if @_cbrain_tag
     if ! self.git_available?
       tag_info = self.for_relpath('__CBRAIN_TAG__', :static)
-      @_cbrain_tag = tag_info.commit
+      @_cbrain_tag = "(#{tag_info.commit})" # parentheses mean it's not live!
       return @_cbrain_tag
     end
 
