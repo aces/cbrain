@@ -545,7 +545,6 @@ class UserfilesController < ApplicationController
     attributes    = params[:userfile] || {}
     new_user_id   = attributes.delete :user_id
     new_group_id  = attributes.delete :group_id
-    new_file_type = attributes.delete :file_type
     old_name      = new_name = @userfile.name 
 
     if ! @userfile.has_owner_access?(current_user)
@@ -561,8 +560,8 @@ class UserfilesController < ApplicationController
 
       attributes[:name] = old_name # we must NOT rename the file yet
 
-      if new_file_type
-        unless @userfile.update_file_type(new_file_type)
+      if params[:file_type]
+        unless @userfile.update_file_type(params[:file_type])
           flash[:error] += "\nCould not update file format."
         end
       end
