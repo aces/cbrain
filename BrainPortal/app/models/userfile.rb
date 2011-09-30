@@ -854,6 +854,7 @@ class Userfile < ActiveRecord::Base
   #an attempt is made to match on the type. There may be several
   #type matches so the first is returned.
   def self.find_content_loader(meth)
+    return nil if meth.blank?
     method = meth.to_sym
     self.content_loaders.find { |cl| cl.method == method } || 
     self.content_loaders.find { |cl| cl.type == method }
