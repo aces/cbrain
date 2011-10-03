@@ -1,0 +1,65 @@
+<%
+   # This partial requires these hashes:
+   #    counts           -> count for each type or status
+   #    list             -> list of type or status
+   #    user_info        -> list of type or status by user
+   #    additionnal_filt -> just more criteria for filtration
+   #    by               -> filtration by type or by status
+%>
+
+<% if ! list.reject { |x| x == 'TOTAL' }.empty? %>
+
+  <%
+    sorted_stats = []
+    if by.to_s == "status"
+      sorted_stats = list.sort { |s1,s2| cmp_status_order(s1,s2) } 
+    elsif by.to_s == "type"
+      sorted_stats = list.reject { |x| x == 'TOTAL' }.sort { |a,b| a.downcase <=> b.downcase}
+      sorted_stats << 'TOTAL'  
+    end
+  %>
+  
+  <table>
+    <tr>
+      <th colspan="<%= list.size + 2 %>">Task Statistics By <%= by.capitalize %></th>
+    </tr>
+    
+    <tr>
+      <th>User</th>
+      <% sorted_stats.each do |stat| %>
+        <th><%= stat.sub(/^CbrainTask::/,"") %></th>
+      <% end %>
+    </tr>
+    
+    <% sorted_users = user_info.keys.sort { |a,b| a.login <=> b.login } %>
+    <% sorted_users.each do |user| %>
+      <% statcnt = user_info[user] %>
+      <% next if statcnt['TOTAL'].blank? || statcnt['TOTAL'] == 0 %>
+      <tr>
+        <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
+        <% sorted_stats.each do |stat| %>
+          <% if stat == "TOTAL" %>
+            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id}.merge(additionnal_filt), :ajax => false %></td>
+          <% else %>
+            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id, by => stat}.merge(additionnal_filt), :ajax => false %></td>
+          <% end %>
+        <% end %>
+      </tr>
+    <% end %>
+    
+    <% if sorted_users.size > 1 %>
+      <tr>
+        <td class="left_align">TOTAL</td>
+        <% sorted_stats.each do |stat| %>
+          <% if stat == "TOTAL" %>
+            <td><%= filter_reset_link h(counts[stat]), :controller => :tasks, :filters  => additionnal_filt %></td>
+          <% else %>
+            <td><%= filter_reset_link h(counts[stat]), :controller => :tasks, :filters  => { by => stat}.merge(additionnal_filt), :ajax => false %></td>
+          <% end %>
+        <% end %>
+      <tr>
+    <% end %>
+    
+  </table>
+
+<% end %>

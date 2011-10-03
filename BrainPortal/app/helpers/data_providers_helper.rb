@@ -170,59 +170,6 @@ module DataProvidersHelper
     stats
   end
 
-  # Gather statistics about the userfile subclasses (types)
-  # of files registered in the system.
-  # The +options+ arguments can restrict the domain of the statistics
-  # gathered:
-  #
-  #   * :users            => [ user, user...]
-  #   * :providers        => [ dp, dp...]
-  def gather_filetype_statistics(options)
-    users            = options[:users]
-    providers        = options[:providers]
-
-    # Which users to gather stats for
-    userlist = if users
-                 users.is_a?(Array) ? users : [ users ]
-               else
-                 User.all
-               end
-
-    # Which data providers to gather stats for
-    dplist   = if providers
-                 providers.is_a?(Array) ? providers : [ providers ]
-               else
-                 DataProvider.all
-               end
-
-    dp_ids = dplist.map &:id
-
-    # Gather statistics
-    user_fileclass_count = {}
-    fileclasses_totcount = {}
-    user_totcount        = {}
-    userlist.each do |user|
-      userfiles = Userfile.where( :data_provider_id => dp_ids, :user_id => user.id )
-      user_fileclass_count[user] ||= {}
-      user_totcount[user]        ||= 0
-      userfiles.each do |u|
-        klass = u.class.to_s
-        fileclasses_totcount[klass]              ||= 0
-        fileclasses_totcount[klass]               += 1
-        user_fileclass_count[user][u.class.to_s] ||= 0
-        user_fileclass_count[user][u.class.to_s]  += 1
-        user_totcount[user]                       += 1
-      end
-    end
-
-    stats = {
-              :user_fileclass_count => user_fileclass_count,
-              :fileclasses_totcount => fileclasses_totcount,
-              :user_totcount        => user_totcount
-            }
-    stats
-  end
-
   # Returns a RGB color code '#000000' to '#ffffff'
   # for size; the values are all fully saturated
   # and move about the colorwheel from pure blue
