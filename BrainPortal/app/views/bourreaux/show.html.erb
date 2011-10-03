@@ -324,46 +324,28 @@
 
   <P>
 
-  <% sorted_stats = @statuses_list.sort { |s1,s2| cmp_status_order(s1,s2) } %>
-
-  <table>
-    <tr>
-      <th colspan="<%= @statuses_list.size + 2 %>">Task Statistics</th>
-    </tr>
-    
-    <tr>
-      <th>User</th>
-      <% sorted_stats.each do |stat| %>
-        <th><%= stat %></th>
-      <% end %>
-    </tr>
-    
-    <% sorted_users = @user_tasks_info.keys.sort { |a,b| a.login <=> b.login } %>
-    <% sorted_users.each do |user| %>
-      <% statcnt = @user_tasks_info[user] %>
-      <% next if statcnt['TOTAL'].blank? || statcnt['TOTAL'] == 0 %>
-      <tr>
-        <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
-        <% sorted_stats.each do |stat| %>
-          <% if stat == "TOTAL" %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :user_id => user.id}, :ajax => false %></td>
-          <% else %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :user_id => user.id, :status => stat}, :ajax => false %></td>
-          <% end %>
-        <% end %>
-      </tr>
-    <% end %>
-    <tr>
-      <td class="left_align">TOTAL</td>
-      <% sorted_stats.each do |stat| %>
-        <% if stat == "TOTAL" %>
-          <td><%= link_to h(@statuses[stat]), :controller => :tasks, :action => :index %></td>
-        <% else %>
-          <td><%= filter_reset_link h(@statuses[stat]), :controller => :tasks, :filters  => {:bourreau_id => @bourreau.id, :status => stat}, :ajax => false %></td>
-        <% end %>
-      <% end %>
-    <tr>
-  </table>
+  <%= render :partial => 'tasks/task_counts',
+             :locals => { :counts           => @statuses,
+                          :list             => @statuses_list,
+                          :user_info        => @user_tasks_info,
+                          :additionnal_filt => {:bourreau_id => @bourreau.id},
+                          :by               => :status
+                        }
+  %>
+  
+  <P>
+  
+  <%= render :partial => 'tasks/task_counts',
+             :locals => { :counts           => @types,
+                          :list             => @types_list,
+                          :user_info        => @user_types_info,
+                          :additionnal_filt => {:bourreau_id => @bourreau.id},
+                          :by               => :type
+                        }
+  %>
+  
+  
+  <P>
 
   <% end %>
 

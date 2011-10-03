@@ -153,10 +153,12 @@
 
 <div class="generalbox">
 
-   <%= render :partial => 'layouts/file_counts',
+  <%= render :partial => 'userfiles/file_counts',
               :locals => { :fileclasses_totcount => @fileclasses_totcount,
                            :user_fileclass_count => @user_fileclass_count,
-                           :user_totcount        => @user_totcount
+                           :user_totcount        => @user_totcount,
+                           :all_totcount         => @all_totcount, 
+                           :additionnal_filt     => {:data_provider_id => @provider.id}
                          }
    %>
 
