@@ -30,7 +30,7 @@
       <% usertot      = user_totcount[user] || 0 %>
       <% next if usertot == 0 %>
       <tr>
-        <td><%= login %></td>
+        <td><%= link_to_user_with_tooltip(user) %></td>
         <% sorted_classes.each do |klass| %>
           <% count = klass_counts[klass] || "" %>
           <td><%= filter_reset_link h(count), :controller => :userfiles, :filters => {:user_id => user.id, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
@@ -39,7 +39,7 @@
       </tr>
     <% end %>
     
-    <% if sorted_users.count != 1%>
+    <% if fileclasses_totcount.count > 1%>
       <td><%= "Total" %></td>
       <% sorted_classes.each do |klass| %>
         <td><%= filter_reset_link fileclasses_totcount[klass], :controller => :userfiles, :filters => {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>

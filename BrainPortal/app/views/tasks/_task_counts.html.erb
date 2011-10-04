@@ -47,7 +47,7 @@
       </tr>
     <% end %>
     
-    <% if sorted_users.size > 1 %>
+    <% if list.reject { |x| x == 'TOTAL' }.count > 1 %>
       <tr>
         <td class="left_align">TOTAL</td>
         <% sorted_stats.each do |stat| %>
