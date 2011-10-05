@@ -51,7 +51,7 @@ class Userfile < ActiveRecord::Base
   validate                :validate_associations
   validate                :validate_filename
   validate                :validate_group_update
-  
+
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
@@ -854,6 +854,7 @@ class Userfile < ActiveRecord::Base
   #an attempt is made to match on the type. There may be several
   #type matches so the first is returned.
   def self.find_content_loader(meth)
+    return nil if meth.blank?
     method = meth.to_sym
     self.content_loaders.find { |cl| cl.method == method } || 
     self.content_loaders.find { |cl| cl.type == method }

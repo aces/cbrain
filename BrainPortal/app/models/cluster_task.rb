@@ -734,9 +734,9 @@ class ClusterTask < CbrainTask
   # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
     begin
-      return false unless self.status =~ /Completed|Terminated/
+      return false unless self.status =~ /Completed|Terminated|Duplicated/
       return false unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
-      atwhat = "Setup" if self.status == "Terminated" # forced
+      atwhat = "Setup" if self.status =~ /Terminated|Duplicated/ # forced
       self.addlog("Scheduling restart at '#{atwhat}'.")
       return self.status_transition(self.status, "Restart #{atwhat}") # will be handled by worker
     rescue

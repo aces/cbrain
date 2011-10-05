@@ -57,13 +57,14 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    stats = ApplicationController.helpers.gather_filetype_statistics(
+    stats = ModelsReport.gather_filetype_statistics(
               :users     => current_user.available_users.all,
               :providers => @provider
             )
     @user_fileclass_count = stats[:user_fileclass_count]
     @fileclasses_totcount = stats[:fileclasses_totcount]
     @user_totcount        = stats[:user_totcount]
+    @all_totcount         = stats[:all_totcount]
 
     # List of acceptable users
     userlist         = if check_role(:admin)

@@ -72,3 +72,7 @@ else # all other cases
   PortalSystemChecks.check(:all)
 end
 
+#-----------------------------------------------------------------------------
+puts "C> CBRAIN BrainPortal validation completed, " + Time.now.to_s
+#-----------------------------------------------------------------------------
+

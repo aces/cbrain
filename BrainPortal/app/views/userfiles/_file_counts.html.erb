@@ -1,0 +1,54 @@
+<%
+   # This partial requires these hashes:
+   #    fileclasses_totcount[fileclass]        -> number of files of class 'fileclass'
+   #    user_fileclass_count[user][fileclass]  -> number of files belonging to 'user' in class 'fileclass'
+   #    user_totcount[user]                    -> number of files belonging to 'user'
+   #    additionnal_filt                       -> just more criteria for filtration
+%>
+
+<% sorted_classes = fileclasses_totcount.keys.sort { |a,b| a <=> b } %>
+<% sorted_users   = user_fileclass_count.keys.sort { |a,b| a.login <=> b.login } %>
+ 
+<% if ! fileclasses_totcount.empty? %>
+
+  <table>
+    <tr>
+      <th colspan="<%= 2 + sorted_classes.size %>">File Registration Statistics</th>
+    </tr>
+    <tr>
+      <th>User</th>
+      <% sorted_classes.each do |klass| %>
+        <th><%= klass %></th>
+      <% end %>
+      <th>Total</th>
+    </tr>
+    
+    
+    <% sorted_users.each do |user| %>
+      <% login        = user.login %>
+      <% klass_counts = user_fileclass_count[user] || {} %>
+      <% usertot      = user_totcount[user] || 0 %>
+      <% next if usertot == 0 %>
+      <tr>
+        <td><%= link_to_user_with_tooltip(user) %></td>
+        <% sorted_classes.each do |klass| %>
+          <% count = klass_counts[klass] || "" %>
+          <td><%= filter_reset_link h(count), :controller => :userfiles, :filters => {:user_id => user.id, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+        <% end %>
+        <td><%= filter_reset_link h(usertot), :controller => :userfiles, :filters => {:user_id => user.id}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+      </tr>
+    <% end %>
+    
+    <% if fileclasses_totcount.count > 1%>
+      <td><%= "Total" %></td>
+      <% sorted_classes.each do |klass| %>
+        <td><%= filter_reset_link fileclasses_totcount[klass], :controller => :userfiles, :filters => {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+      <% end %>
+      <td><%= filter_reset_link all_totcount, :controller => :userfiles, :filters => {:user_id => sorted_users}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+    <% end %>
+    
+  </table>
+  
+<% end %>
+
+

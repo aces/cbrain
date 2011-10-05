@@ -32,7 +32,7 @@ class CbrainSystemChecks < CbrainChecker
         puts "C> \t  give it a name by setting the value of 'CBRAIN_RAILS_APP_NAME'."
       end
       show_portals_list(mytype)
-      Kernel.exit(1)
+      Kernel.exit(10)
     end
 
     # Find myself.
@@ -55,7 +55,7 @@ class CbrainSystemChecks < CbrainChecker
     end
 
     show_portals_list(mytype)
-    Kernel.exit(1)
+    Kernel.exit(10)
   end
 
 
@@ -97,9 +97,9 @@ class CbrainSystemChecks < CbrainChecker
     rev = DataProvider.revision_info.self_update
     if rev.date == '0000-00-00' # this is the value returned if CbrainFileRevision can't fetch the rev.
       puts "C> \t- Error: We don't have a working mechanism for tracking revision numbers."
-      puts "C> \t  Either GIT isn't installed and in your path, or the static revision"
-      puts "C> \t  revision number file for CbrainFileRevision is missing."
-      Kernel.exit(0)
+      puts "C> \t  Either GIT isn't installed and in your path, or the static file with"
+      puts "C> \t  the list of revision numbers for CbrainFileRevision is missing."
+      Kernel.exit(10)
     end
     
   end

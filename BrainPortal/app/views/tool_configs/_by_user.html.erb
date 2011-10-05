@@ -173,9 +173,9 @@ tot_tcs += tcs.size > 0 ? tcs.size : 1
               <%= html_colorize("Yes", 'green') %>
             <% else %>
               <%= html_tool_tip(html_colorize("NO!")) do %>
-                <%= "* Execution Server's project<br/>"      unless bourreau.can_be_accessed_by?(user) %>
-                <%= "* Tool's project<br/>"                  unless tool.can_be_accessed_by?(user) %>
-                <%= "* Version configuration's project<br/>" unless tc.can_be_accessed_by?(user) %>
+                <%= "* Execution Server's project<br/>".html_safe      unless bourreau.can_be_accessed_by?(user) %>
+                <%= "* Tool's project<br/>".html_safe                  unless tool.can_be_accessed_by?(user) %>
+                <%= "* Version configuration's project<br/>".html_safe unless tc.can_be_accessed_by?(user) %>
               <% end %>
             <% end %>
           </td>

@@ -15,22 +15,49 @@ offset_times = [
 ]
 %>                                           
 
+<div class="display_raw" >
 <%= radio_button_tag "data[date_attribute]", "", !custom_filter[:data]["date_attribute"] || custom_filter[:data]["date_attribute"] == "" %> Do not filter
 <%= radio_button_tag "data[date_attribute]", "created_at", custom_filter[:data]["date_attribute"] == "created_at" %> By creation date
 <%= radio_button_tag "data[date_attribute]", "updated_at", custom_filter[:data]["date_attribute"] == "updated_at" %> By update date
+</div>
+
+<div class="display_raw" >
+  
+  <div class="display_cell centered">
+    From<br/>
+    <div class="display_cell">
+      <%= radio_button_tag "data[absolute_or_relative_from]", "rel", !custom_filter[:data]['absolute_or_relative_from'] || custom_filter[:data]['absolute_or_relative_from'] == "rel" %> 
+    </div>
+    <div class="display_cell">
+      <%= select_tag 'data[rel_date_from]', options_for_select(offset_times, (custom_filter[:data]['rel_date_from'] || 1.week).to_i ), :style => "width:156px" %>
+    </div>
+  </div>
+  
+  <div class="display_cell centered">
+    To<br/>
+    <div class="display_cell">
+      <%= radio_button_tag "data[absolute_or_relative_to]",   "rel", !custom_filter[:data]['absolute_or_relative_to'] || custom_filter[:data]['absolute_or_relative_to']   == "rel" %>
+    </div>
+    <div class="display_cell">
+      <%= select_tag 'data[rel_date_to]',   options_for_select(offset_times, (custom_filter[:data]['rel_date_to'] || 0).to_i), :style => "width:156px" %>
+    </div>
+  </div>
+  
+</div>
+
+<div class="display_raw" >
+  <div class="display_cell">
+    <%= radio_button_tag "data[absolute_or_relative_from]", "abs", custom_filter[:data]['absolute_or_relative_from'] == "abs" %> 
+  </div>
+  <div class="display_cell">
+    <%= text_field_tag "data[abs_from]",  custom_filter.data["abs_from"], :class => "daterangepicker", "data-datefieldtype" => "from", :style => "width:150px" %>
+  </div>
+  <div class="display_cell">
+    <%= radio_button_tag "data[absolute_or_relative_to]",   "abs", custom_filter[:data]['absolute_or_relative_to']   == "abs"%> 
+  </div>
+  <div class="display_cell">
+    <%= text_field_tag "data[abs_to]",    custom_filter.data["abs_to"],   :class => "daterangepicker", "data-datefieldtype" => "to", :style => "width:150px" %>
+  </div>
+</div>
 <br/>
 
-<%= ("&nbsp;" * 20).html_safe %>from<%= ("&nbsp;" * 50).html_safe %>to <br/>
-<%= radio_button_tag "data[absolute_or_relative_from]", "rel", !custom_filter[:data]['absolute_or_relative_from'] || custom_filter[:data]['absolute_or_relative_from'] == "rel" %> 
-<%= select_tag 'data[rel_date_from]', options_for_select(offset_times, (custom_filter[:data]['rel_date_from'] || 1.week).to_i ), :style => "width:156px" %>
-<%= radio_button_tag "data[absolute_or_relative_to]",   "rel", !custom_filter[:data]['absolute_or_relative_to'] || custom_filter[:data]['absolute_or_relative_to']   == "rel" %> 
-<%= select_tag 'data[rel_date_to]',   options_for_select(offset_times, (custom_filter[:data]['rel_date_to'] || 0).to_i), :style => "width:156px" %>
-
-<br/>
-
-<span id="daterange">
-  <%= radio_button_tag "data[absolute_or_relative_from]", "abs", custom_filter[:data]['absolute_or_relative_from'] == "abs" %> 
-  <%= text_field_tag "data[abs_from]",  custom_filter.data["abs_from"], :class => "daterangepicker", "data-datefieldtype" => "from", :style => "width:150px" %>
-  <%= radio_button_tag "data[absolute_or_relative_to]",   "abs", custom_filter[:data]['absolute_or_relative_to']   == "abs"%> 
-  <%= text_field_tag "data[abs_to]",    custom_filter.data["abs_to"],   :class => "daterangepicker", "data-datefieldtype" => "to", :style => "width:150px" %>
-</span>  

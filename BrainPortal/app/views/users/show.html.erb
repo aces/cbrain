@@ -2,13 +2,31 @@
 <% title "Account Info" %>
 
 <% 
- stats = ApplicationController.helpers.gather_filetype_statistics(
+file_stats = ModelsReport.gather_filetype_statistics(
            :users     => @user.available_users.all,
            :providers => DataProvider.all
          )
- user_fileclass_count = stats[:user_fileclass_count]
- fileclasses_totcount = stats[:fileclasses_totcount]
- user_totcount        = stats[:user_totcount]
+user_fileclass_count = file_stats[:user_fileclass_count]
+fileclasses_totcount = file_stats[:fileclasses_totcount]
+user_totcount        = file_stats[:user_totcount]
+all_totcount         = file_stats[:all_totcount]
+%>
+
+<%
+stats = ModelsReport.gather_task_statistics(
+           :users     => @user.available_users.all,
+           :bourreaux => Bourreau.all
+         )
+
+status_stats    = stats[0]
+statuses        = status_stats[:statuses]
+statuses_list   = status_stats[:statuses_list]
+user_tasks_info = status_stats[:user_task_info]
+
+type_stats       = stats[1]
+types           = type_stats[:types]
+types_list      = type_stats[:types_list]
+user_types_info = type_stats[:user_types_info]
 %>
 
 <%= javascript_tag "var current_options = null;" %>
@@ -116,13 +134,39 @@
 
   <P>
 
-   <%= render :partial => 'layouts/file_counts',
-              :locals => { :fileclasses_totcount => fileclasses_totcount,
-                           :user_fileclass_count => user_fileclass_count,
-                           :user_totcount        => user_totcount
-                         }
-   %>
-
+  <%= render :partial => 'userfiles/file_counts',
+             :locals => { :fileclasses_totcount => fileclasses_totcount,
+                          :user_fileclass_count => user_fileclass_count,
+                          :user_totcount        => user_totcount,
+                          :all_totcount         => all_totcount,
+                          :additionnal_filt     => {}
+                        }
+  %>
+  
+  <P>
+  
+  <%= render :partial => 'tasks/task_counts',
+             :locals => { :counts           => statuses,
+                          :list             => statuses_list,
+                          :user_info        => user_tasks_info,
+                          :additionnal_filt => {},
+                          :by               => :status
+             }
+  %>
+  
+  <P>
+  
+  <%= render :partial => 'tasks/task_counts',
+             :locals => { :counts           => types,
+                          :list             => types_list,
+                          :user_info        => user_types_info,
+                          :additionnal_filt => {},
+                          :by               => :type
+                        }
+  %>
+  
+  
+   
   <P>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>

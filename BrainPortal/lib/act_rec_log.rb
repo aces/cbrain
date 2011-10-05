@@ -186,7 +186,7 @@ module ActRecLog
       calling_info   = caller[callerlevel]
       calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
       calling_method = "" if options[:no_caller]
-      calling_method.sub!(/block.*? in /, "")
+      calling_method.sub!(/(block|rescue).*? in /, "")
 
       log = use_internal ? @tmp_internal_log : arl.log
       log = "" if log.blank?

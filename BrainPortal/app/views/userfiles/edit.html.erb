@@ -18,12 +18,12 @@
   <table class="property_list edit_file_table">
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Name:</th>
-      <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.can_be_accessed_by?(current_user) %></td>
+      <td colspan="2"><%= f.text_field :name, :disabled => !@userfile.has_owner_access?(current_user) %></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Type:</th>
       <td>
-        <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name) %>
+        <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name), :disabled => !@userfile.has_owner_access?(current_user) %>
       </td>
       <td>
         <% if @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
@@ -33,7 +33,13 @@
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">
       <th class="right_align">Owner:</th>
-      <td><%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %></td>
+      <td>
+        <% if current_user.available_users.include?(@userfile.user) %>
+          <%= user_select("userfile[user_id]", { :selector => @userfile }, :disabled => ! @userfile.data_provider.allow_file_owner_change?) %>
+        <% else %>
+          <%= link_to_user_if_accessible(@userfile.user) %>
+        <% end %>
+      </td>
       <td></td>
     </tr>
     <tr class="<%= cycle('list-odd', 'list-even') %>">

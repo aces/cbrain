@@ -8,7 +8,7 @@
 
 <div class="generalbox">
 
-   <%= form_for @bourreau.class.to_s.underscore.to_sym, @bourreau, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
+   <%= form_for @bourreau, :as => @bourreau.class.to_s.underscore.to_sym, :url => { :action => "update" }, :html => { :method => :put } do |f| -%>
 
       <%= f.error_messages %>
 

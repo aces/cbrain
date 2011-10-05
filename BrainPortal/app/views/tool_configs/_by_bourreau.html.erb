@@ -87,9 +87,9 @@
                 <%= user.login %>
               <% else %>
                 <%= html_tool_tip(html_colorize(user.login)) do %>
-                  <%= "* Execution Server's project<br/>"      unless user_can_access_bourreau[user] %>
-                  <%= "* Tool's project<br/>"                  unless user_can_access_tool[user] %>
-                  <%= "* Version configuration's project<br/>" unless user_can_access_tc %>
+                  <%= "* Execution Server's project<br/>".html_safe      unless user_can_access_bourreau[user] %>
+                  <%= "* Tool's project<br/>".html_safe                  unless user_can_access_tool[user] %>
+                  <%= "* Version configuration's project<br/>".html_safe unless user_can_access_tc %>
                 <% end %>
               <% end %>
             <% end %>

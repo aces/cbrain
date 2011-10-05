@@ -362,7 +362,7 @@ class Bourreau < RemoteResource
           new_task.bourreau_id     = new_bourreau_id
           new_task.cluster_jobid   = nil
           new_task.cluster_workdir = nil
-          new_task.run_number      = 1
+          new_task.run_number      = 0
           new_task.status          = "Duplicated"
           new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
           task=new_task

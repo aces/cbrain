@@ -21,9 +21,12 @@ class Site < ActiveRecord::Base
   
   before_save            :save_old_manager_ids,
                          :save_old_user_ids   
+
   after_save             :set_managers,
                          :set_system_groups
+
   after_update           :system_group_rename
+
   before_destroy         :unset_managers,
                          :destroy_system_group
   
@@ -120,6 +123,14 @@ class Site < ActiveRecord::Base
   # An alias for system_group()
   alias own_group system_group
 
+  def unset_managers #:nodoc:
+    self.managers.each do |user|
+      if user.has_role? :site_manager # could be :admin too, which we leave alone
+        user.update_attribute(:role, "user")
+      end
+    end
+  end
+  
   private
   
   def create_system_group #:nodoc:
@@ -138,21 +149,21 @@ class Site < ActiveRecord::Base
   end
   
   def save_old_manager_ids #:nodoc:
-    @old_manager_ids = self.managers.collect{ |m| m.id.to_s }
+    @old_manager_ids = self.managers.map &:id
   end
   
   def save_old_user_ids #:nodoc:
-    @old_user_ids = self.users.collect{ |m| m.id.to_s }
+    @old_user_ids = self.users.map &:id
   end
   
   def set_managers #:nodoc:
     self.manager_ids ||= []
-    self.user_ids ||= []
-    current_manager_ids = self.manager_ids.collect(&:to_s) || []
-    current_user_ids = self.user_ids.collect(&:to_s)   
+    self.user_ids    ||= []
+    current_manager_ids = self.manager_ids || []
+    current_user_ids    = self.user_ids
     User.find(current_user_ids | current_manager_ids).each do |user|
       user.site_id = self.id
-      if current_manager_ids.include?(user.id.to_s)
+      if current_manager_ids.include?(user.id)
         if user.has_role? :user
           user.role = "site_manager"
         end
@@ -174,17 +185,9 @@ class Site < ActiveRecord::Base
     end
     
     User.find(@new_user_ids).each do |user|
-      user.own_group.update_attributes!(:site  => self)
+      user.own_group.update_attributes!(:site => self)
       unless user.groups.exists? site_group
         user.groups << site_group
-      end
-    end
-  end
-  
-  def unset_managers #:nodoc:
-    self.managers.each do |user|
-      if user.has_role? :site_manager
-        user.update_attribute(:role, "user")
       end
     end
   end

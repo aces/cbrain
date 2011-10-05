@@ -392,11 +392,6 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
-    unless Userfile.is_legal_filename?(basename)
-      flash[:error] = "This filename, '#{basename}', is not acceptable. It contains invalid characters."
-      redirect_to redirect_path
-      return
-    end
 
     # Temp file where the data is saved by rack
     rack_tempfile_path = upload_stream.tempfile.path
@@ -542,30 +537,42 @@ class UserfilesController < ApplicationController
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
   def update  #:nodoc:
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
     flash[:notice] ||= ""
     flash[:error]  ||= ""
 
-    attributes = params[:userfile] || {}
+    attributes    = params[:userfile] || {}
+    new_user_id   = attributes.delete :user_id
+    new_group_id  = attributes.delete :group_id
+    old_name      = new_name = @userfile.name 
 
-    old_name = @userfile.name
-    new_name = attributes[:name] || old_name
+    if ! @userfile.has_owner_access?(current_user)
+      attributes = {}
+    else
+      old_name = @userfile.name
+      new_name = attributes[:name] || old_name
 
-    if ! Userfile.is_legal_filename?(new_name)
-      flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
-      new_name = old_name
-    end
-
-    attributes[:name] = old_name # we must NOT rename the file yet
-
-    if params[:file_type]
-      unless @userfile.update_file_type(params[:file_type])
-        flash[:error] += "\nCould not update file format."
+      if ! Userfile.is_legal_filename?(new_name)
+        flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
+        new_name = old_name
       end
+
+      attributes[:name] = old_name # we must NOT rename the file yet
+
+      if params[:file_type]
+        unless @userfile.update_file_type(params[:file_type])
+          flash[:error] += "\nCould not update file format."
+        end
+      end
+
+      @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+
     end
 
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
+
     respond_to do |format|
       if @userfile.update_attributes(attributes)
         if new_name != old_name
@@ -591,6 +598,7 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     filelist    = params[:file_ids] || []
+
     operation = case params[:commit].to_s
                    # Critical! Case values must match labels of submit buttons!
                    when "Update Tags"
@@ -616,6 +624,7 @@ class UserfilesController < ApplicationController
     failure_count = 0
     
     Userfile.find_accessible_by_user(filelist, current_user, :access_requested => access_requested).each do |userfile|
+
      if userfile.send(*operation)
         success_count += 1
       else
