@@ -325,18 +325,15 @@ class DataProvidersController < ApplicationController
   #This action is only available for data providers that are browsable.
   #Both registered and unregistered files will appear in the list. 
   def browse
-    @user     = current_user
-    id        = params[:id]
-    @provider = DataProvider.find(id)
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.can_be_accessed_by?(@user) && @provider.is_browsable?
-      flash[:error] = "You cannot browse this provider."
-      respond_to do |format|
-        format.html { redirect_to :action => :index }
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }
-      end
-      redirect_to :action => :index
-      return
+    unless @provider.is_browsable?                                                                            
+      flash[:error] = "You cannot browse this provider."                                                                             
+      respond_to do |format|                                                                                                         
+        format.html { redirect_to :action => :index }                                                                                
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
+      end                                                                                                                                                                                        
+      return                                                                                                                                                                                     
     end
 
     begin
@@ -427,19 +424,21 @@ class DataProvidersController < ApplicationController
   #Register a list of files into the system.
   #The files' meta data will be saved as Userfile resources.
   def register
-    @user        = current_user
-    user_id      = @user.id
-    provider_id  = params[:id]
-    @provider    = DataProvider.find(provider_id)
+    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.can_be_accessed_by?(@user) && @provider.is_browsable?
-      flash[:error] = "You cannot register files from this provider."
-      redirect_to :action => :index
-      return
+    unless @provider.is_browsable?                                                                            
+      flash[:error] = "You cannot register files from this provider."                                                                             
+      respond_to do |format|                                                                                                         
+        format.html { redirect_to :action => :index }                                                                                
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
+      end                                                                                                                                                                                        
+      return                                                                                                                                                                                     
     end
 
     basenames = params[:basenames] || []
     filetypes = params[:filetypes] || []
+    basenames = [basenames] unless basenames.is_a? Array
+    filetypes = [filetypes] unless filetypes.is_a? Array
     do_unreg  = params[:commit] =~ /unregister/i
 
     # Automatic MOVE or COPY operation?
@@ -466,7 +465,8 @@ class DataProvidersController < ApplicationController
       base2type[base] = type
     end
     
-    newly_registered_userfiles = []
+    newly_registered_userfiles      = []
+    previously_registered_userfiles = []
     num_unregistered = 0
     num_skipped      = 0
 
@@ -475,12 +475,14 @@ class DataProvidersController < ApplicationController
 
     legal_subtypes = Userfile.descendants.map(&:name).index_by { |x| x }
 
+    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
+
     basenames.each do |basename|
 
       # Unregister old files
 
       if do_unreg
-        userfile = Userfile.where(:name => basename, :data_provider_id => provider_id).first
+        userfile = Userfile.where(:name => basename, :data_provider_id => @provider.id).first
         unless userfile
           num_skipped += 1
           next
@@ -520,10 +522,14 @@ class DataProvidersController < ApplicationController
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
                                :size             => size,
-                               :user_id          => user_id,
+                               :user_id          => current_user.id,
                                :group_id         => file_group_id,
-                               :data_provider_id => provider_id )
-      if userfile.save
+                               :data_provider_id => @provider.id )
+      
+      registered_file = registered_files[basename]
+      if registered_file
+        previously_registered_userfiles << registered_file
+      elsif userfile.save
         newly_registered_userfiles << userfile
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
@@ -558,7 +564,8 @@ class DataProvidersController < ApplicationController
         format.xml { render :xml =>
                       { :notice => flash[:notice],
                         :error  => flash[:error],
-                        :userfiles => newly_registered_userfiles,
+                        :newly_registered_userfiles => newly_registered_userfiles,
+                        :previously_registered_userfiles => previously_registered_userfiles,
                         :userfiles_in_transit => []
                       }
                    }
@@ -625,7 +632,8 @@ class DataProvidersController < ApplicationController
       format.xml { render :xml =>
                     { :notice => flash[:notice],
                       :error  => flash[:error],
-                      :userfiles => newly_registered_userfiles,
+                      :newly_registered_userfiles => newly_registered_userfiles,
+                      :previously_registered_userfiles => previously_registered_userfiles,
                       :userfiles_in_transit => to_operate
                     }
                  }
