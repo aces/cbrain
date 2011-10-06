@@ -29,7 +29,9 @@ class CbrainTask::CbSerializer
       end
     end
     task_ids.compact!
-    CbrainTask.where(:id => task_ids)
+    #CbrainTask.where(:id => task_ids)  # wrong! order must be preserved!
+    ordered_tasks = task_ids.map { |id| CbrainTask.find(id) }
+    ordered_tasks
   end
 
   # Creates and launch a set of Serializers for a set of other
