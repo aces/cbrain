@@ -89,7 +89,7 @@ class CbrainTask::Parallelizer < ClusterTask
     self.addlog("Marking all tasks as ready.")
     self.enabled_subtasks.each do |otask|
       otask.addlog("#{self.fullname} marking me as \"Data Ready\".")
-      otask.status = "Data Ready"
+      otask.status_transition!(otask.status, "Data Ready")
       otask.remove_prerequisites_for_post_processing(self)
       otask.save!
       otask.meta[:configure_only] = nil # task becomes normal so it can be manipulated by user
@@ -125,7 +125,7 @@ class CbrainTask::Parallelizer < ClusterTask
       if orig_status =~ /Completed|Terminated/
         otask.restart('Setup')
       else
-        otask.status = "Failed To Setup" if otask.status =~ /Failed (On Cluster|To PostProcess)/ # resets
+        otask.status_transition(otask.status, "Failed To Setup") if otask.status =~ /Failed (On Cluster|To PostProcess)/ # resets
         otask.recover
       end
       if orig_status !~ /Prerequisites/ && otask.status !~ /^Recover|Restart/
