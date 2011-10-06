@@ -69,7 +69,7 @@
     <% if (check_role(:admin) || @bourreau.user_id == current_user.id)%>
     
       <tr>
-        <th colspan="2" class="subtitle">ActiveResource Configuration</th>
+        <th colspan="2" class="subtitle">ActiveResource Configuration (Obsolete!)</th>
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -87,7 +87,7 @@
       </tr>
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Host</th>
+        <th>Hostname</th>
         <td class="left_align"><%= @bourreau.ssh_control_host %></td>
       </tr>
 
@@ -104,6 +104,11 @@
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Rails Server Directory</th>
         <td class="left_align"><%= @bourreau.ssh_control_rails_dir %></td>
+      </tr>
+
+      <tr class="<%= cycle("list-odd", "list-even") %>">
+        <th>Second-level Hostname</th>
+        <td class="left_align"><%= @bourreau.proxied_host %></td>
       </tr>
 
       <tr>

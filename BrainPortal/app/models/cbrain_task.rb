@@ -35,8 +35,7 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id
 
   # Pseudo Attributes (not saved in DB)
-  attr_accessor   :cluster_stdout, :cluster_stderr, :script_text
-  cattr_accessor  :after_status_transition_callbacks
+  attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
 
   # The attribute 'params' is a serialized hash table
   # containing job-specific parameters; it's up to each
@@ -343,6 +342,33 @@ class CbrainTask < ActiveRecord::Base
   # State Transition Support Methods
   ##################################################################
 
+  def self.after_status_transition_callbacks #:nodoc:
+    @_after_status_transition_callbacks ||= {}
+  end
+
+  def self.find_after_status_transition_callbacks(from_state, to_state) #:nodoc:
+    if self.superclass.respond_to?(:find_after_status_transition_callbacks)
+      merged = self.superclass.find_after_status_transition_callbacks(from_state, to_state)
+    else
+      merged = []
+    end
+    current = self.after_status_transition_callbacks
+    [ '*', from_state ].each do |from|
+      from_hash = current[from]
+      next if from_hash.blank?
+      [ '*', to_state ].each do |to|
+        next if from == to
+        cb_list = from_hash[to]
+        next if cb_list.blank?
+        cb_list.each do |toadd|
+          merged.reject! { |x| x == toadd }
+        end
+        merged += cb_list
+      end # TO state is '*' or some specific state
+    end # FROM state is '*' or some specific state
+    merged
+  end
+
   # This method changes the status attribute
   # in the current task object to +to_state+ but
   # also makes sure the current value is +from_state+ .
@@ -400,37 +426,33 @@ class CbrainTask < ActiveRecord::Base
   # the method is registered with a '*' in +from_state+, as
   # shown above, but not much use in other cases).
   def self.after_status_transition(from_state, to_state, method_or_proc)
-    callbacks_hash = self.after_status_transition_callbacks ||= {}
+    return true if from_state == to_state
+    callbacks_hash = self.after_status_transition_callbacks
     from_states    = from_state == '*' ? [ '*' ] : ALL_STATUS.select { |s| from_state === s }
     to_states      = to_state   == '*' ? [ '*' ] : ALL_STATUS.select { |s| to_state   === s }
     from_states.each do |from|
       to_states.each do |to|
         callbacks_hash[from]     ||= {}
         callbacks_hash[from][to] ||= []
-        callbacks_hash[from][to]  << method_or_proc
+        callbacks_hash[from][to].reject! { |x| x == method_or_proc }
+        callbacks_hash[from][to] << method_or_proc
       end
     end
+    true
   end
 
   # Internal, used by status_transition() and status_transition!() after 
   # a successful transition.
   def invoke_after_status_transition_callbacks(from_state, to_state) #:nodoc:
-    after_status_transition_callbacks = self.class.after_status_transition_callbacks || {}
-    [ '*', from_state ].each do |from|
-      from_hash = after_status_transition_callbacks[from]
-      next if from_hash.blank?
-      [ '*', to_state ].each do |to|
-        next if to == '*' && from == '*'
-        cb_list = from_hash[to]
-        next if cb_list.blank?
-        cb_list.each do |method|
-          method.to_proc.call(self,from_state)
-        end # each method or proc
-      end # TO state is '*' or some specific state
-    end # FROM state is '*' or some specific state
+    return true if from_state == to_state
+    callbacks_list = self.class.find_after_status_transition_callbacks(from_state, to_state)
+    return true if callbacks_list.blank? || callbacks_list.empty?
+    callbacks_list.all? do |method|
+      method.to_proc.call(self,from_state)
+    end # each method or proc
   rescue => ex
-    raise ex
-    # callback exceptions not yet handled ?
+    self.addlog_exception(ex, "After status transition callback exception:")
+    false
   end
 
 

@@ -586,7 +586,7 @@ class ClusterTask < CbrainTask
     end
 
     # New tasks are simply marked as Terminated
-    if cur_status == "New"
+    if cur_status =~ /^(New|Configured)$/
       return self.status_transition(cur_status,"Terminated")
     end
 
@@ -1106,7 +1106,7 @@ class ClusterTask < CbrainTask
     self.addlog("Trying to create workdir '#{fulldir}'.")
     self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
     Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
-    true
+    self.save
   end
 
   # Remove the directory created to run the job.
