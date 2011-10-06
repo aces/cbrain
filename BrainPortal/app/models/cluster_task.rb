@@ -927,7 +927,7 @@ class ClusterTask < CbrainTask
   # a killed job or a job that's exited properly, and we can't determine
   # which of the three from the job_ps()
   def cluster_status
-    state = self.scir_session.job_ps(self.cluster_jobid,self.updated_at)
+    state = self.scir_session.job_ps(self.cluster_jobid, self.updated_at)
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   rescue => ex

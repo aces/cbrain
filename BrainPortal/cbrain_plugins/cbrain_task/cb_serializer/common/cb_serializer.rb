@@ -20,7 +20,7 @@ class CbrainTask::CbSerializer
     ordered_subtask_ids = params[:ordered_subtask_ids] || []
     task_ids_enabled    = params[:task_ids_enabled]    || {}
     task_ids            = ordered_subtask_ids.collect do |tid|
-      if task_ids_enabled[tid].to_s == "1"
+      if task_ids_enabled[tid.to_s].to_s == "1"
         self.add_prerequisites_for_setup(tid)
         tid.to_i
       else
@@ -133,7 +133,7 @@ class CbrainTask::CbSerializer
       if subtasklist.size < tasklist.size
         description += "\nThis task runs a subset of #{subtasklist.size} out of a larger batch of #{tasklist.size} tasks."
       end
-      ordered_subtask_ids = subtasklist.map(&:id)
+      ordered_subtask_ids = subtasklist.map { |t| t.id.to_s }
       tasks_ids_enabled   = {}
       ordered_subtask_ids.each { |id| tasks_ids_enabled[id.to_s] = "1" }
       serializer = self.new(
