@@ -378,6 +378,7 @@ class CbrainTask < ActiveRecord::Base
   # true if the transition was successful, and false
   # if anything went wrong.
   def status_transition(from_state, to_state)
+    self.save
     CbrainTask.transaction do
       self.lock!
       return false if self.status != from_state
