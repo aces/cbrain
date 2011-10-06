@@ -54,7 +54,7 @@ class TasksController < ApplicationController
       @task_status[t.status] = t.count
     end
     
-    scope = base_filtered_scope(scope)
+    scope = base_filtered_scope(scope).where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
     
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.where( :bourreau_id => bourreau_ids )

@@ -16,10 +16,10 @@ class CbrainTask::CbSerializer
   # 'enabled' (disabling can be triggered using the
   # interface).
   def enabled_subtasks
-    params           = self.params || {}
-    task_ids_enabled = params[:task_ids_enabled] || {}
-    all_task_ids     = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
-    task_ids         = all_task_ids.collect do |tid|
+    params              = self.params                  || {}
+    ordered_subtask_ids = params[:ordered_subtask_ids] || []
+    task_ids_enabled    = params[:task_ids_enabled]    || {}
+    task_ids            = ordered_subtask_ids.collect do |tid|
       if task_ids_enabled[tid].to_s == "1"
         self.add_prerequisites_for_setup(tid)
         tid.to_i
@@ -133,15 +133,16 @@ class CbrainTask::CbSerializer
       if subtasklist.size < tasklist.size
         description += "\nThis task runs a subset of #{subtasklist.size} out of a larger batch of #{tasklist.size} tasks."
       end
-      tasks_ids_enabled = {}
-      subtasklist.map(&:id).each { |id| tasks_ids_enabled[id.to_s] = "1" }
+      ordered_subtask_ids = subtasklist.map(&:id)
+      tasks_ids_enabled   = {}
+      ordered_subtask_ids.each { |id| tasks_ids_enabled[id.to_s] = "1" }
       serializer = self.new(
         :description    => description,
         :user_id        => first.user_id,
         :group_id       => first.group_id,
         :bourreau_id    => first.bourreau_id,
         :status         => serial_start_state,
-        :params         => { :task_ids_enabled => tasks_ids_enabled },
+        :params         => { :task_ids_enabled => tasks_ids_enabled, :ordered_subtask_ids => ordered_subtask_ids },
         :launch_time    => first.launch_time,
         :rank           => rank,
         :level          => level_serial,
