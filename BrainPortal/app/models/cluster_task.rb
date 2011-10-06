@@ -459,10 +459,10 @@ class ClusterTask < CbrainTask
       Dir.chdir(self.full_cluster_workdir) do
         if ! self.setup  # as defined by subclass
           self.addlog("Failed to setup: 'false' returned by setup().")
-          self.status = "Failed To Setup"
+          self.status_transition(self.status, "Failed To Setup")
         elsif ! self.submit_cluster_job
           self.addlog("Failed to start: 'false' returned by submit_cluster_job().")
-          self.status = "Failed To Setup"
+          self.status_transition(self.status, "Failed To Setup")
         else
           self.addlog("Setup and submit process successful.")
           # the status is moving forward at its own pace now
@@ -470,7 +470,7 @@ class ClusterTask < CbrainTask
       end
     rescue Exception => e
       self.addlog_exception(e,"Exception raised while setting up:")
-      self.status = "Failed To Setup"
+      self.status_transition(self.status, "Failed To Setup")
     end
 
     self.save
@@ -499,15 +499,15 @@ class ClusterTask < CbrainTask
         saveok = self.save_results
       end
       if ! saveok
-        self.status = "Failed On Cluster"
+        self.status_transition(self.status, "Failed On Cluster")
         self.addlog("Data processing failed on the cluster.")
       else
         self.addlog("Asynchronous postprocessing completed.")
-        self.status = "Completed"
+        self.status_transition(self.status, "Completed")
       end
     rescue Exception => e
       self.addlog_exception(e,"Exception raised while post processing results:")
-      self.status = "Failed To PostProcess"
+      self.status_transition(self.status, "Failed To PostProcess")
     end
 
     self.save
@@ -568,43 +568,6 @@ class ClusterTask < CbrainTask
     cb_error "Cluster job finished with unknown Active Record status #{ar_status} and Cluster status #{clusterstatus}"
   end
 
-  # This method changes the status attribute
-  # in the current task object to +to_state+ but
-  # also makes sure the current value is +from_state+ .
-  # The change is performed in a transaction where
-  # the record is locked, to ensure the transition is
-  # not trashed by another process. The method returns
-  # true if the transition was successful, and false
-  # if anything went wrong.
-  def status_transition(from_state, to_state)
-    CbrainTask.transaction do
-      self.lock!
-      return false if self.status != from_state
-      return true  if from_state == to_state # NOOP
-      self.status = to_state
-      self.save!
-    end
-    true
-  end
-
-  # This method acts like status_transition(),
-  # but it raises a CbrainTransitionException
-  # on failures.
-  def status_transition!(from_state, to_state)
-    unless status_transition(from_state,to_state)
-      ohno = CbrainTransitionException.new(
-        "Task status was changed before lock was acquired for task '#{self.id}'.\n" +
-        "Expected: '#{from_state}' found: '#{self.status}'."
-      )
-      ohno.original_object  = self
-      ohno.from_state       = from_state
-      ohno.to_state         = to_state
-      ohno.found_state      = self.status
-      raise ohno
-    end
-    true
-  end
-
 
 
   ##################################################################
@@ -623,7 +586,7 @@ class ClusterTask < CbrainTask
     end
 
     # New tasks are simply marked as Terminated
-    if cur_status == "New"
+    if cur_status =~ /^(New|Configured)$/
       return self.status_transition(cur_status,"Terminated")
     end
 
@@ -631,16 +594,16 @@ class ClusterTask < CbrainTask
     if self.updated_at < 8.hours.ago && cur_status.match(/^(Setting Up|Post Processing|Recovering|Restarting)/)
       case cur_status
         when "Setting Up"
-          self.status = "Failed To Setup"
+          self.status_transition(self.status, "Failed To Setup")
         when "Post Processing"
-          self.status = "Failed To PostProcess"
+          self.status_transition(self.status, "Failed To PostProcess")
         when /(Recovering|Restarting) (\S+)/
           fromwhat = Regexp.last_match[2]
-          self.status = "Failed To Setup"       if fromwhat == 'Setup'
-          self.status = "Failed On Cluster"     if fromwhat == 'Cluster'
-          self.status = "Failed To PostProcess" if fromwhat == 'PostProcess'
+          self.status_transition(self.status, "Failed To Setup")       if fromwhat == 'Setup'
+          self.status_transition(self.status, "Failed On Cluster")     if fromwhat == 'Cluster'
+          self.status_transition(self.status, "Failed To PostProcess") if fromwhat == 'PostProcess'
         else
-          self.status = "Terminated"
+          self.status_transition(self.status, "Terminated")
       end
       self.addlog("Terminating a task that is too old and stuck at '#{cur_status}'; now at '#{self.status}'")
       return self.save
@@ -711,17 +674,17 @@ class ClusterTask < CbrainTask
     if curstat =~ /^Failed (Setup|PostProcess) Prerequisites$/
       failed_where = Regexp.last_match[1]
       self.addlog("Resetting prerequisites checking for '#{failed_where}'.")
-      self.status = "New"        if failed_where == "Setup"
-      self.status = "Data Ready" if failed_where == "PostProcess"
+      self.status_transition(self.status, "New")        if failed_where == "Setup"
+      self.status_transition(self.status, "Data Ready") if failed_where == "PostProcess"
       return self.save
     end
     begin
       return false unless curstat =~ /^Failed (To Setup|On Cluster|To PostProcess)$/
       failedwhen = Regexp.last_match[1]
       self.addlog("Scheduling recovery from '#{curstat}'.")
-      self.status = "Recover Setup"       if failedwhen == "To Setup"
-      self.status = "Recover Cluster"     if failedwhen == "On Cluster"
-      self.status = "Recover PostProcess" if failedwhen == "To PostProcess"
+      self.status_transition(self.status, "Recover Setup")       if failedwhen == "To Setup"
+      self.status_transition(self.status, "Recover Cluster")     if failedwhen == "On Cluster"
+      self.status_transition(self.status, "Recover PostProcess") if failedwhen == "To PostProcess"
       return self.save
     rescue
       false
@@ -1007,7 +970,7 @@ class ClusterTask < CbrainTask
     # are actually performed.
     if commands.blank? || commands.all? { |l| l.blank? }
       self.addlog("No BASH commands associated with this task. Jumping to state 'Data Ready'.")
-      self.status = "Data Ready"  # Will trigger Post Processing later on.
+      self.status_transition(self.status, "Data Ready")  # Will trigger Post Processing later on.
       self.save
       return true
     end
@@ -1084,14 +1047,14 @@ class ClusterTask < CbrainTask
     # Some jobs are meant only to be fully configured by never actually submitted.
     if self.meta[:configure_only]
       self.addlog("This task is meant to be configured but not actually submitted.")
-      self.status="Configured"
+      self.status_transition(self.status, "Configured")
     else
       # Queue the job on the cluster and return true, at this point
       # it's not our 'job' to figure out if it worked or not.
       self.addlog("Cluster command: #{job.qsub_command}") if self.user.login == 'admin'
       jobid              = scir_session.run(job)
       self.cluster_jobid = jobid
-      self.status        = "Queued"
+      self.status_transition(self.status, "Queued")
       self.addlog("Queued as job ID '#{jobid}'.")
     end
     self.save
@@ -1143,7 +1106,7 @@ class ClusterTask < CbrainTask
     self.addlog("Trying to create workdir '#{fulldir}'.")
     self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
     Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
-    true
+    self.save
   end
 
   # Remove the directory created to run the job.

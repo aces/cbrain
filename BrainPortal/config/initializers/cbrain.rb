@@ -44,7 +44,7 @@ class CBRAIN
   ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP needs this
 
   # File creation umask
-  File.umask(0027)  # octal literal
+  File.umask(0077)  # octal literal
 
   # Run the associated block as a background process to avoid
   # blocking.

@@ -13,6 +13,8 @@ class CbrainTask::Parallelizer < ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  after_status_transition 'New', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
+
   def setup #:nodoc:
     true
   end
@@ -156,6 +158,16 @@ class CbrainTask::Parallelizer < ClusterTask
     self.addlog("This parallelizer doesn't need to restart its own post processing.")
     self.addlog("Its subtasks, however, were properly notified to do so.")
     false
+  end
+
+  # If a serializer fails its setup prerequisites, then we need
+  # to mark its subtasks that are New or Configured the same way.
+  def trigger_cascade_prepreq_failures(from_state) #:nodoc
+    self.enabled_subtasks.where(:status => [ 'New', 'Configured' ] ).each do |otask|
+      otask.addlog("#{self.fullname} indicates setup prereq failure.")
+      otask.status_transition(otask.status, 'Failed Setup Prerequisites') rescue true
+    end
+    true
   end
 
 end

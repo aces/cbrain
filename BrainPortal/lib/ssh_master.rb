@@ -311,6 +311,7 @@ class SshMaster
             $stdout.reopen(self.diag_path, "a")
             $stdout.sync = true
             $stderr.reopen($stdout)
+            File.chmod(0600, self.diag_path) rescue true
             puts "Starting Master #{@key} at #{Time.now.localtime.to_s} as PID #{$$}"
             Kernel.exec(sshcmd)
           ensure
@@ -569,6 +570,7 @@ class SshMaster
     pidfile = self.pidfile_path
     if action == :force
       File.open(pidfile,"w") { |fh| fh.write(pid.to_s) }
+      File.chmod(0600, pidfile) rescue true
       return true
     end
     # Action is :check, it means we must fail if the file exists
@@ -578,6 +580,7 @@ class SshMaster
       f = IO.open(fd)
       f.syswrite(pid.to_s)
       f.close
+      File.chmod(0600, pidfile) rescue true
       return true
     rescue Errno::EEXIST
       return false

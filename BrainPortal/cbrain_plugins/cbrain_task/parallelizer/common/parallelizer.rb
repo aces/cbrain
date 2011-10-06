@@ -18,17 +18,18 @@ class CbrainTask::Parallelizer
   def enabled_subtasks
     params           = self.params || {}
     task_ids_enabled = params[:task_ids_enabled] || {}
-    task_ids = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
-    tasklist = task_ids.collect do |tid|
+    all_task_ids     = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
+    task_ids         = all_task_ids.collect do |tid|
       if task_ids_enabled[tid].to_s == "1"
-        CbrainTask.find_by_id(tid)
+        self.add_prerequisites_for_setup(tid)
+        tid.to_i
       else
         self.remove_prerequisites_for_setup(tid)
         nil
       end
     end
-    tasklist.reject! { |t| t.nil? }
-    tasklist
+    task_ids.compact!
+    CbrainTask.where(:id => task_ids)
   end
 
   # Creates and launch a set of Parallelizers for a set of other
@@ -56,7 +57,7 @@ class CbrainTask::Parallelizer
   # an array of its subtasks.
   def self.create_from_task_list(tasklist = [], options = {}) #:nodoc:
  
-    return [ "",[], [] ] if tasklist.empty?
+    return [ "", [], [] ] if tasklist.empty?
 
     options = { :group_size => options } if options.is_a?(Fixnum) # old API
 

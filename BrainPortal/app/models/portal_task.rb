@@ -87,8 +87,12 @@ class PortalTask < CbrainTask
     "Recovering Cluster"               => [ "Duplicated", "Terminated" ],
     "Recovering PostProcess"           => [ "Duplicated", "Terminated" ],
 
+    #===============================================================================
+    # Special states used by serializers and parallelizers
+    #===============================================================================
+
     "Standby"                          => [],
-    "Configured"                       => [],
+    "Configured"                       => [ "Terminated" ],
     "Preset"                           => []   # kind of dummy last entry
 
     # Other transitions are not used by the interface,

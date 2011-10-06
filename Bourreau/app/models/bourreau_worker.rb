@@ -219,7 +219,7 @@ class BourreauWorker < Worker
           worker_log.debug "     -> #{task.bname_tid} unfulfilled Setup prerequisites."
         else # action == :fail
           worker_log.debug "     -> #{task.bname_tid} failed Setup prerequisites."
-          task.status = "Failed Setup Prerequisites"
+          task.status_transition(task.status, "Failed Setup Prerequisites")
           task.addlog_context(self,"#{self.pretty_name} detected failed Setup prerequisites")
           task.save
         end
@@ -241,7 +241,7 @@ class BourreauWorker < Worker
           worker_log.debug "     -> #{task.bname_tid} unfulfilled PostProcessing prerequisites."
         else # action == :fail
           worker_log.debug "     -> #{task.bname_tid} failed PostProcessing prerequisites."
-          task.status = "Failed PostProcess Prerequisites"
+          task.status_transition(task.status, "Failed PostProcess Prerequisites")
           task.addlog_context(self,"#{self.pretty_name} detected failed PostProcessing prerequisites")
           task.save
         end
@@ -250,7 +250,7 @@ class BourreauWorker < Worker
       when /^Recover (Setup|Cluster|PostProcess)/
         notification_needed = false
         fromwhat = Regexp.last_match[1]
-        task.status_transition!(task.status,"Recovering #{fromwhat}")  # 'Recover X' to 'Recovering X'
+        task.status_transition!(task.status, "Recovering #{fromwhat}")  # 'Recover X' to 'Recovering X'
 
         # Check special case where we can reconnect to a running task!
         if fromwhat =~ /Cluster|PostProcess/
@@ -290,9 +290,9 @@ class BourreauWorker < Worker
         # Trigger recovery if all OK
         if !canrecover
           task.addlog("Cannot recover from '#{fromwhat}' failure. Returning task to Failed state.")
-          task.status = "Failed To Setup"       if     fromwhat    == 'Setup'
-          task.status = "Failed On Cluster"     if     fromwhat    == 'Cluster'
-          task.status = "Failed To PostProcess" if     fromwhat    == 'PostProcess'
+          task.status_transition(task.status, "Failed To Setup")       if     fromwhat    == 'Setup'
+          task.status_transition(task.status, "Failed On Cluster")     if     fromwhat    == 'Cluster'
+          task.status_transition(task.status, "Failed To PostProcess") if     fromwhat    == 'PostProcess'
         else # OK, we have the go ahead to retry the task
           task.addlog("Successful recovery from '#{fromwhat}' failure, now we retry it.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
@@ -303,11 +303,11 @@ class BourreauWorker < Worker
               end
             rescue => ex
               task.addlog_exception(ex,"Job submit method raised an exception:")
-              task.status = "Failed On Cluster"
+              task.status_transition(task.status, "Failed On Cluster")
             end
           else # simpler cases, we just reset the status and let the task return to main flow.
-            task.status = "New"                    if fromwhat    == 'Setup'
-            task.status = "Data Ready"             if fromwhat    == 'PostProcess'
+            task.status_transition(task.status, "New")                    if fromwhat    == 'Setup'
+            task.status_transition(task.status, "Data Ready")             if fromwhat    == 'PostProcess'
           end
         end
         task.save
@@ -345,7 +345,7 @@ class BourreauWorker < Worker
         # Trigger restart if all OK
         if !canrestart
           task.addlog("Cannot restart at '#{fromwhat}'. Returning task status to Completed.")
-          task.status = "Completed"
+          task.status_transition(task.status, "Completed")
         else # OK, we have the go ahead to restart the task
           task.run_number = task.run_number + 1
           task.addlog("Preparation for restarting at '#{fromwhat}' succeeded, now we restart it.")
@@ -358,11 +358,11 @@ class BourreauWorker < Worker
               end
             rescue => ex
               task.addlog_exception(ex,"Job submit method raised an exception:")
-              task.status = "Failed On Cluster"
+              task.status_transition(task.status, "Failed On Cluster")
             end
           else # simpler cases, we just reset the status and let the task return to main flow.
-            task.status = "New"                    if fromwhat    == 'Setup'
-            task.status = "Data Ready"             if fromwhat    == 'PostProcess'
+            task.status_transition(task.status, "New")                    if fromwhat    == 'Setup'
+            task.status_transition(task.status, "Data Ready")             if fromwhat    == 'PostProcess'
           end
         end
         task.save
