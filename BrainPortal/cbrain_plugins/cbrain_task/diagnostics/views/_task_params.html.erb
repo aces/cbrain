@@ -101,7 +101,7 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
   <%= show_hide_toggle "(Show)", "#inp_test", :class  => 'action_link' %>
 </legend>
 
-<div id="inp_test"<%= ' style="display:none;"' if @task.errors.empty? %>>
+<div id="inp_test" <%= 'style="display:none;"'.html_safe if @task.errors.empty? %>>
 
 <%= form.params_hidden_field :do_validations %>
 

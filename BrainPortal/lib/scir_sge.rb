@@ -17,19 +17,20 @@ class ScirSge < Scir
   class Session < Scir::Session
 
     def update_job_info_cache
+      out, err = bash_this_and_capture_out_err("qstat -xml")
+      raise "Cannot get output of 'qstat -xml' ?!?" if out.blank? && ! err.blank?
       @job_info_cache = {}
-      IO.popen("qstat -xml 2>/dev/null","r") do |input|
-        paragraphs = input.read.split(/(<\/?job_list)/)
-        paragraphs.each_index do |i|
-          next unless paragraphs[i] == "<job_list"
-          next unless paragraphs[i+1] =~ /<JB_job_number>([^<]+)/
-          jid = Regexp.last_match[1]
-          next unless paragraphs[i+1] =~ /<state>(\w+)/
-          statechar = Regexp.last_match[1]
-          state     = statestring_to_stateconst(statechar)
-          @job_info_cache[jid.to_s] = { :drmaa_state => state }
-        end
+      paragraphs = out.split(/(<\/?job_list)/)
+      paragraphs.each_index do |i|
+        next unless paragraphs[i] == "<job_list"
+        next unless paragraphs[i+1] =~ /<JB_job_number>([^<]+)/
+        jid = Regexp.last_match[1]
+        next unless paragraphs[i+1] =~ /<state>(\w+)/
+        statechar = Regexp.last_match[1]
+        state     = statestring_to_stateconst(statechar)
+        @job_info_cache[jid.to_s] = { :drmaa_state => state }
       end
+      true
     end
 
     def statestring_to_stateconst(state)

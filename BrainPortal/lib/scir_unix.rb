@@ -27,16 +27,17 @@ class ScirUnix < Scir
         else
           "ps x -o pid,uid,state"  # not tested
       end
-      IO.popen(ps_command, "r") do |fh|
-        fh.readlines.each do |line|
-          next unless line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)/
-          pid       = Regexp.last_match[1]
-          uid       = Regexp.last_match[2]  # not used
-          statechar = Regexp.last_match[3]
-          state     = statestring_to_stateconst(statechar)
-          @job_info_cache[pid.to_s] = { :drmaa_state => state }
-        end
+      psout, pserr = bash_this_and_capture_out_err(ps_command)
+      raise "Cannot get output of '#{ps_command}' ?!?" if psout.blank? && ! pserr.blank?
+      psout.split(/\s*\n\s*/).each do |line|
+        next unless line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)/
+        pid       = Regexp.last_match[1]
+        uid       = Regexp.last_match[2]  # not used
+        statechar = Regexp.last_match[3]
+        state     = statestring_to_stateconst(statechar)
+        @job_info_cache[pid.to_s] = { :drmaa_state => state }
       end
+      true
     end
 
     def statestring_to_stateconst(state)

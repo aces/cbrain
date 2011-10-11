@@ -17,10 +17,8 @@ class ScirMoab < Scir
   class Session < Scir::Session
 
     def update_job_info_cache
-      xmltext = ""
-      IO.popen("showq --xml 2>&1","r") do |fh|
-        xmltext = fh.read
-      end
+      xmltext, showqerr = bash_this_and_capture_out_err("showq --xml")
+      raise "Cannot get output of 'showq --xml' ?!?" if xmltext.blank? && ! showqerr.blank?
       raise "Cannot get XML from showq; got:\n---Start\n#{xmltext}\n---End\n" unless
         xmltext =~ /^\s*<Data>/i && xmltext =~ /<\/Data>\s*$/i
       @job_info_cache = {}

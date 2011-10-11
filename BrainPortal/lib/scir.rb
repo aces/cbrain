@@ -163,12 +163,22 @@ class Scir
 
     protected
 
-    def qsubout_to_jid(i)
+    def qsubout_to_jid(i) #:nodoc:
       raise "Method qsubout_to_jid() must be provided in a subclass"
     end
 
-    def shell_escape(s)
+    def shell_escape(s) #:nodoc:
       "'" + s.gsub(/'/,"'\\\\''") + "'"
+    end
+
+    def bash_this_and_capture_out_err(command) #:nodoc:
+      tmpfile = "/tmp/capt.#{Process.pid}.#{Time.now.to_i}.#{rand(1000000)}"
+      outfile = "#{tmpfile}.out"
+      errfile = "#{tmpfile}.err"
+      system("bash","-c","#{command} 0</dev/null 1>#{outfile} 2>#{errfile}")
+      out = File.read(outfile) rescue nil
+      err = File.read(errfile) rescue nil
+      [ out, err ]
     end
 
   end

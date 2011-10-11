@@ -17,24 +17,24 @@ class ScirPbs < Scir
   class Session < Scir::Session
 
     def update_job_info_cache
-      @job_info_cache = {}
+      out, err = bash_this_and_capture_out_err("qstat -f")
+      raise "Cannot get output of 'qstat -f' ?!?" if out.blank? && ! err.blank?
       jid = 'Dummy'
-      #IO.popen("qstat -f #{Scir.cbrain_config[:default_queue] || ""} 2>/dev/null","r") do |fh|
-      IO.popen("qstat -f 2>/dev/null","r") do |fh|
-        fh.readlines.each do |line|
-          line.force_encoding('ASCII-8BIT')  # some pbs 'qstat' commands output junk binary data!
-          if line =~ /^Job\s+id\s*:\s*(\S+)/i
+      @job_info_cache = {}
+      out.split(/\s*\n\s*/).each do |line|
+        line.force_encoding('ASCII-8BIT')  # some pbs 'qstat' commands output junk binary data!
+        if line =~ /^Job\s+id\s*:\s*(\S+)/i
+          jid = Regexp.last_match[1]
+          if jid =~ /^(\d+)/
             jid = Regexp.last_match[1]
-            if jid =~ /^(\d+)/
-              jid = Regexp.last_match[1]
-            end
-            next
           end
-          next unless line =~ /^\s*job_state\s*=\s*(\S+)/i
-          state = statestring_to_stateconst(Regexp.last_match[1])
-          @job_info_cache[jid.to_s] = { :drmaa_state => state }
+          next
         end
+        next unless line =~ /^\s*job_state\s*=\s*(\S+)/i
+        state = statestring_to_stateconst(Regexp.last_match[1])
+        @job_info_cache[jid.to_s] = { :drmaa_state => state }
       end
+      true
     end
 
     def statestring_to_stateconst(state)
