@@ -506,8 +506,8 @@ class TasksController < ApplicationController
     end
 
     # Security checks
-    @task.user_id     = current_user.id           unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group_id    = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
     commit_button = params[:commit] || "Start" # default
@@ -776,12 +776,25 @@ class TasksController < ApplicationController
         end
         preset.params = @task.params.clone
       end
-      preset.bourreau_id = 0 # convention: presets have bourreau id set to 0
-      preset.status = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
+
+      # Cleanup stuff that don't need to go into a preset
+      preset.status               = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
+      preset.bourreau             = nil # convention: presets have bourreau id set to 0
+      preset.bourreau_id          = 0 # convention: presets have bourreau id set to 0
+      preset.cluster_jobid        = nil
+      preset.cluster_workdir      = nil
+      preset.cluster_workdir_size = nil
+      preset.launch_time          = nil
+      preset.prerequisites        = {}
+      preset.rank                 = 0
+      preset.level                = 0
+      preset.run_number           = nil
+      preset.share_wd_tid         = nil
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?
       end
       preset.save!
+
       flash[:notice] += "Saved preset '#{preset.short_description}'.\n"
     end
   end
