@@ -50,12 +50,8 @@ class CustomFiltersController < ApplicationController
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Filter successfully created."
-      return
     end
 
-    respond_to do |format|                                                                  
-      format.js {render :partial  => 'shared/create', :locals  => {:model_name  => 'custom_filter' }}
-    end
   end
 
   # PUT /custom_filters/1
