@@ -437,10 +437,9 @@ class RemoteResource < ActiveRecord::Base
   # the info via the Controls channel.
   def self.remote_resource_info
     myself            = self.current_resource
-    home              = CBRAIN::Rails_UserHome
     host_uptime       = `uptime 2>/dev/null`.strip   # TODO make more robust
     elapsed           = Time.now.localtime - CBRAIN::Startup_LocalTime
-    @ssh_public_key ||= `cat #{home}/.ssh/id_rsa.pub 2>/dev/null`   # TODO make more robust
+    @ssh_public_key ||= myself.get_ssh_public_key
     @host_name      ||= Socket.gethostname
     @host_ip        ||= ""
     @host_uname     ||= `uname -a`.strip
@@ -489,15 +488,29 @@ class RemoteResource < ActiveRecord::Base
       :ssh_public_key     => @ssh_public_key,
 
       # Svn info
-      :revision           => @git_tag,
-      :lc_author          => @git_author,
-      :lc_rev             => @git_commit,
-      :lc_date            => @git_date,
-      :starttime_revision => $CBRAIN_StartTime_Revision
+      :revision           => @git_tag,                  # 'live' value
+      :lc_author          => @git_author,               # at process start
+      :lc_rev             => @git_commit,               # at process start
+      :lc_date            => @git_date,                 # at process start
+      :starttime_revision => $CBRAIN_StartTime_Revision # at process start
 
     )
 
     return info
+  end
+
+  def get_ssh_public_key #:nodoc:
+    cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
+    return @ssh_public_key if @ssh_public_key
+    home              = CBRAIN::Rails_UserHome
+    if File.exists?("#{home}/.ssh/id_rsa.pub")
+      @ssh_public_key = File.read("#{home}/.ssh/id_rsa.pub") rescue ""
+    elsif File.exists?("#{home}/.ssh/id_dsa.pub")
+      @ssh_public_key = File.read("#{home}/.ssh/id_dsa.pub") rescue ""
+    else
+      @ssh_public_key = ""
+    end
+    @ssh_public_key
   end
 
   # Connects to the remote resource's information channel

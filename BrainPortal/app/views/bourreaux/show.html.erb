@@ -250,11 +250,11 @@
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Revision Info (Server Side)</th>
         <td class="left_align">
-          <strong>Process Start Revision: </strong><%= @info.starttime_revision %><br>
-          <strong>Code Revision: </strong><%= @info.revision %><br>
-          <strong>Code Last Change Author: </strong><%= @info.lc_author %><br>
-          <strong>Code Last Change Revision: </strong><%= @info.lc_rev %><br>
-          <strong>Code Last Change Date: </strong><%= @info.lc_date %>
+          <strong>Process Start Revision: </strong><%= @info.starttime_revision %><br/>
+          <strong>Process Start Last Change Author: </strong><%= @info.lc_author %><br/>
+          <strong>Process Start Last Change Revision: </strong><%= @info.lc_rev %><br/>
+          <strong>Process Start Last Change Date: </strong><%= @info.lc_date %><br/>
+          <strong>Disk Code Revision: </strong><%= red_if(@info.revision != @info.starttime_revision, @info.revision) %>
         </td>
       </tr>
 

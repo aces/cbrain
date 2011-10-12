@@ -168,10 +168,10 @@ class Bourreau < RemoteResource
     workers      = worker_pool.workers
     workers_pids = workers.map(&:pid).join(",")
 
-    worker_revinfo    = BourreauWorker.revision_info
-    worker_lc_rev     = worker_revinfo.svn_id_rev
-    worker_lc_author  = worker_revinfo.svn_id_author
-    worker_lc_date    = worker_revinfo.svn_id_datetime
+    worker_revinfo    = BourreauWorker.revision_info.self_update
+    worker_lc_rev     = worker_revinfo.commit
+    worker_lc_author  = worker_revinfo.author
+    worker_lc_date    = worker_revinfo.datetime
 
     info.merge!(
       # Bourreau info

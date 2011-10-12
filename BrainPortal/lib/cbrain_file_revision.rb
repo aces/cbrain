@@ -88,6 +88,14 @@ class CbrainFileRevision
     @fake_svn_id_string
   end
 
+  # Returns the date and time of the revision info, separated by a space.
+  #
+  #   "2010-03-25 17:26:05 -0400"
+  def datetime
+    self_update()
+    "#{@date} #{@time}"
+  end
+
   # Inspect the revision object but will not trigger a self_update(),
   # so the returned string might contain all blank fields.
   def inspect

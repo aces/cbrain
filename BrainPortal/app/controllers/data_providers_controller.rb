@@ -740,11 +740,7 @@ class DataProvidersController < ApplicationController
 
   def get_ssh_public_keys #:nodoc:
     # Get SSH key for this BrainPortal
-    home = CBRAIN::Rails_UserHome
-    portal_ssh_key = (File.read("#{home}/.ssh/id_rsa.pub") rescue "").strip
-    if portal_ssh_key.blank?
-      portal_ssh_key = (File.read("#{home}/.ssh/id_dsa.pub") rescue "").strip
-    end
+    portal_ssh_key = RemoteResource.current_resource.get_ssh_public_key
     portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
     keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
     # Get those of all other Bourreaux
