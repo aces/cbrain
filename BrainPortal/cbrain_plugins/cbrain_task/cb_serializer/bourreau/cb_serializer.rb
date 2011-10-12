@@ -13,7 +13,7 @@ class CbrainTask::CbSerializer < ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  after_status_transition 'New', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
+  after_status_transition '*', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
 
   def setup #:nodoc:
     true
