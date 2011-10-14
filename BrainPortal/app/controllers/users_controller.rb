@@ -24,7 +24,9 @@ class UsersController < ApplicationController
     
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
-    @users = base_filtered_scope current_user.available_users.includes( [:groups, :site] ).order( sort_order )
+    @header_scope = current_user.available_users
+    
+    @users = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
 
     # Precompute file and task counts.
     @users_file_counts = {}

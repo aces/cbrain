@@ -5,9 +5,7 @@
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
     <%= button_with_dropdown_menu('Leave Message', :partial => 'new', :content_id => 'new_message', :button_id => "new_message_button") %>
   <% end %>
-  <% unless @filter_params["filter_hash"].blank? %>
-    <%= render :partial => "shared/manage_filter_button", :locals => {:model => :message}  %>
-  <% end %>
+  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :message}  %>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>

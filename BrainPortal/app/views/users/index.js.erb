@@ -1,3 +1,5 @@
 <%= render :partial  => "shared/flash_update" %>
 <%= render :partial => "shared/clear_new_panel" %>
-jQuery("#user_table").html(<%= html_for_js(render(:partial => 'users_table')) %>).trigger("new_content")
+jQuery("#manage_filter_button").replaceWith(<%= html_for_js(render(:partial => "shared/manage_filter_button", :locals => {:model => :user})) %>).trigger("new_content")
+jQuery("#manage_filter_button").trigger("new_content")
+jQuery("#user_table").replaceWith(<%= html_for_js(render(:partial => 'users_table')) %>).trigger("new_content")

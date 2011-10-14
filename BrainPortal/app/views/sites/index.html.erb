@@ -3,9 +3,7 @@
   
 <div class="menu_bar menu_bar_left">
   <%= button_with_dropdown_menu('Create New Site', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
-  <% unless @filter_params["filter_hash"].blank? %>
-    <%= render :partial => "shared/manage_filter_button", :locals => {:model => :site}  %>
-  <% end %>
+  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :site}  %>
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
 </div>
 

@@ -19,6 +19,8 @@ class FeedbacksController < ApplicationController
   # GET /feedbacks.xml
   def index #:nodoc:
     @feedbacks = base_filtered_scope
+    @feedbacks = @feedbacks.includes(:user)
+    
     @feedback  = Feedback.new
 
     respond_to do |format|
