@@ -42,9 +42,10 @@ class UserfilesController < ApplicationController
     @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
     @filter_params["filter_tags_array"]           ||= [] 
     @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
    
     # Prepare custom filters
-    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tags }.flatten.uniq
+    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
         
     # Prepare tag filters
     tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
@@ -83,8 +84,7 @@ class UserfilesController < ApplicationController
 
     sorted_scope = filtered_scope.scoped({})
     joins = []
-      
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
+    
     sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
     if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
@@ -96,8 +96,7 @@ class UserfilesController < ApplicationController
       joins << :data_provider
     end
     sorted_scope = sorted_scope.scoped(
-      :joins => joins,
-      :order => "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
+      :joins => joins
     )
     
     #------------------------------

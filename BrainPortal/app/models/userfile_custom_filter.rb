@@ -42,12 +42,12 @@ class UserfileCustomFilter < CustomFilter
   
   #Virtual attribute for assigning tags to the data hash.
   def tag_ids=(ids)
-    self.data["tags"] = Tag.find(ids).collect{ |tag| "#{tag.name}"}
+    self.data["tag_ids"] = Tag.find(ids).collect{ |tag| "#{tag.id}"}
   end
   
   #Convenience method returning only the tags in the data hash.
-  def tags
-    self.data["tags"] || []
+  def tag_ids
+    self.data["tag_ids"] || []
   end
   
   #Convenience method returning only the date_term in the data hash.

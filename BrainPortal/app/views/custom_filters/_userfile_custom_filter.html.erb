@@ -52,7 +52,7 @@
             <table>
               <% for tag in current_user.available_tags %>
                   <tr class="<%= cycle('list-odd', 'list-even') %>">
-                    <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, custom_filter.tags.include?(tag.name)) %></td>
+                    <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, custom_filter.tag_ids.include?(tag.id.to_s)) %></td>
                     <td><%= tag.name -%></td>
                   </tr>
               <% end %>
