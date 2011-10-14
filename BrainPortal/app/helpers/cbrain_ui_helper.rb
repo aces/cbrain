@@ -443,6 +443,7 @@ module CbrainUiHelper
     html_opts[:class] ||= ""
     html_opts[:class] +=  " ajax_onclick_show_element"
     html_opts[:id] ||= "#{Time.now.to_f}"
+    html_opts[:onclick] ||= '""'  # for iOS devices like iPads...
     if replace
       html_opts["data-replace"] = replace
     end
