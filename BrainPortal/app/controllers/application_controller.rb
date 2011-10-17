@@ -91,8 +91,11 @@ class ApplicationController < ActionController::Base
     table  = tab.to_s.underscore.pluralize
     column = col.to_s
     scope.select( "#{table}.#{column}, COUNT(#{table}.#{column}) as count" ).
+          where( "#{table}.#{column} IS NOT NULL" ).
           group("#{table}.#{column}").
           order("#{table}.#{column}").
+          all.
+          reject { |obj| obj.send(column).blank? }.
           map { |obj|  ["#{obj.send(column)} (#{obj.count})", column => obj.send(column)]}
   end
   
@@ -109,6 +112,7 @@ class ApplicationController < ActionController::Base
           joins(association.to_sym).
           order("#{assoc_table}.#{name_method}").
           group("#{table}.#{foreign_key}").
+          all.
           map { |obj| ["#{obj.send("#{association}_#{name_method}")} (#{obj.count})", foreign_key => obj.send(foreign_key)] }
   end
   
