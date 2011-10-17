@@ -95,7 +95,7 @@ class TasksController < ApplicationController
     page = (params[:page] || 1).to_i
     page = 1 if page < 1
     offset = (page - 1) * @tasks_per_page
-    
+
     if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
       launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)

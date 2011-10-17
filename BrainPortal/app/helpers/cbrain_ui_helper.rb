@@ -158,15 +158,16 @@ module CbrainUiHelper
     
     content = capture(&block) # here, new calls to html_tool_tip can be made.
     
-    safe_concat("<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">")
-    safe_concat(text)
-    safe_concat("</span>")
+    result = "<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">"
+    result += text
+    result += "</span>"
     
     content_class = options.delete(:tooltip_div_class) || "html_tool_tip"
-    safe_concat("<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">")
-    safe_concat(content)
-    safe_concat("</div>")
-    ""
+    result += "<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">"
+    result += content
+    result += "</div>"
+    
+    result.html_safe
   end
   
   #Create an overlay dialog box with a link as the button.

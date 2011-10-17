@@ -1,19 +1,40 @@
-<tr>
-  <th><%= ajax_sort_link "Login",           "User", "login" %></th>
-  <th><%= ajax_sort_link "Name",            "User", "full_name" %></th>
-  <th><%= ajax_sort_link "Email",           "User", "email" %></th>
-  <th><%= ajax_sort_link "Last Connection", "User", "last_connected_at" %></th>
-  <th>Projects</th>
-  <th><%= ajax_sort_link "Role",            "User", "role" %></th>
-  <th><%= ajax_sort_link "Site",            "Site", "name" %></th>
-  <th><%= ajax_sort_link "City",            "User", "city" %></th>
-  <th><%= ajax_sort_link "Country",         "User", "country" %></th>
-  <th><%= ajax_sort_link "Time Zone",       "User", "time_zone" %></th>
-  <th>Number of Files</th>
-  <th>Number of Tasks</th>
-  <th colspan="3">Operations</th>
-</tr>
-
-<% for user in @users %>
-  <%= render :partial => 'user_table_row', :locals  => {:user  => user} %>
-<% end %>
+<%= 
+  index_table(@users, :id => "user_table", :class => "resource_list") do |t|
+    t.sort_column("Login", "User", "login") { |u|  link_to_user_if_accessible(u)  + string_if(u.account_locked, red_times_icon) }
+    t.describe_sort_column("Full name", "User", "full_name") { |col| col.cell :class => :left, &:full_name }
+    t.sort_column("Email", "User", "email") { |u|  auto_link_email_addresses u.email.html_safe }
+    t.sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}
+    t.column("Projects") do |u|  
+      groups = u.available_groups.sort{|a, b| a.name.casecmp(b.name)}
+      result = ""
+      if groups.size > 0
+        result += html_tool_tip(pluralize(groups.size,"project"), :offset_x => 60 ) do
+                    array_to_table(groups, :table_class => 'simple', :ratio => "3:1") { |g,r,c| g.name }
+                  end
+      end
+      result
+    end
+    t.sort_column("Role", "User", "role", :filters => basic_filters_for(@header_scope, 'users', 'role')) { |u| u.role.humanize } 
+    t.sort_column("Site", "Site", "name", :filters => association_filters_for(User.scoped, "user", "site")) { |u| link_to_site_if_accessible(u.site)  }
+    t.sort_column("City", "User", "city", :filters => basic_filters_for(@header_scope, 'users', 'city'), &:city)
+    t.sort_column("Country", "User", "country", :filters => basic_filters_for(@header_scope, 'users', 'country'), &:country)
+    t.sort_column("Time Zone", "User", "time_zone") { |u| u.time_zone || "(Unset)" }
+    t.column("Number of Files") do |u|
+      filter_reset_link (@users_file_counts[u.id] || 0).to_s,
+                        :controller => :userfiles, 
+                        :filters => {:user_id => u.id}, 
+                        :ajax  => false
+    end
+    t.column("Number of Tasks") do |u|
+      filter_reset_link (@users_task_counts[u.id] || 0).to_s,
+                        :controller => :tasks, 
+                        :filters => {:user_id => u.id}, 
+                        :ajax  => false
+    end
+    t.describe_column("Operations") do |col|
+      col.delete_link(11, :condition => Proc.new { |u| u != User.admin })
+      col.cell(:condition => Proc.new { |u| u != User.admin }) { |u| link_to 'Switch',  switch_user_path(u), :class => 'action_link', :method  => :post  }
+      col.cell { |u| link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => u.id }, :class => 'action_link' }
+    end
+  end 
+%>
