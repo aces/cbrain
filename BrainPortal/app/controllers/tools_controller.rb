@@ -17,7 +17,10 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @tools     = base_filtered_scope(current_user.available_tools).includes( [:user, :group] ).order("tools.name")
+    @filter_params["sort_hash"]["order"] ||= 'tools.name'
+    
+    @header_scope = current_user.available_tools
+    @tools     = base_filtered_scope(@header_scope.includes(:user, :group))
     
     respond_to do |format|
       format.js

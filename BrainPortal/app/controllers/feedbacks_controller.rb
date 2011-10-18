@@ -18,6 +18,9 @@ class FeedbacksController < ApplicationController
   # GET /feedbacks
   # GET /feedbacks.xml
   def index #:nodoc:
+    @filter_params["sort_hash"]["order"] ||= 'feedbacks.created_at'
+    @filter_params["sort_hash"]["dir"] ||= 'DESC'
+    
     @feedbacks = base_filtered_scope
     @feedbacks = @feedbacks.includes(:user)
     

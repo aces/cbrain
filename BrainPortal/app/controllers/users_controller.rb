@@ -20,7 +20,6 @@ class UsersController < ApplicationController
   
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'users.full_name'
-    @filter_params["sort_hash"]["dir"]   ||= ''
     
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
