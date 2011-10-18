@@ -557,7 +557,7 @@ module CbrainUiHelper
   #Controller and action for the request can be defined in the options hash, or
   #they default to the current page.
   def ajax_sort_link(name, sort_table, sort_column, options = {})
-    sort_order = sort_table.strip.tableize + "." + sort_column.strip
+    sort_order = sort_table.to_s.strip.tableize + "." + sort_column.strip
     controller = options.delete(:controller) || params[:controller]
     action = options.delete(:action) || params[:actions]
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }

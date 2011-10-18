@@ -129,9 +129,9 @@ module IndexTableHelper
       
       attr_reader :cells
       
-      def initialize(table) #:nodoc:
+      def initialize(table, template) #:nodoc:
         @table = table
-        @binding = @table.instance_eval { @binding }
+        @template = template
         @condition = true
         @cells = []
       end
@@ -148,7 +148,7 @@ module IndexTableHelper
       # done manually. See TableBuilder#sort_column or 
       # TableBuilder#describe_sort_column)
       def sort_header(text, klass, attribute, options = {})
-        @header_text = @binding.eval("ajax_sort_link '#{text}', '#{klass}', '#{attribute}'")
+        @header_text = @template.instance_eval { ajax_sort_link text, klass, attribute }
         @header_options = options
       end
 
@@ -174,18 +174,18 @@ module IndexTableHelper
       
       # Shortcut for creating a cell with a link to the object's edit page.
       def edit_link(options = {})
-        self.cell(options) { |object|  @binding.eval("link_to 'Edit', {:action => :edit, :id => #{object.id}}, :class  => 'action_link'") }
+        self.cell(options) { |object|  @template.instance_eval { link_to 'Edit', { :action => :edit, :id => object.id }, :class  => 'action_link' } }
       end
       
       # Shortcut for creating a cell with  a ajax delete link for the object.
       def delete_link(options = {})
         self.cell(options) do |object| 
-          @binding.eval("delete_button 'Delete', {:action => :destroy, :id => #{object.id}}, :class  => \"action_link\"," +
-                                                                                   ":confirm  => 'Are you sure?'," + 
-                                                                                   ":target  => \"##{object.class.name.underscore}_#{object.id}\"," +
-                                                                                   ":target_text  => \"<td colspan='#{@table.num_cells}' style='color:red; text-align:center'>Deleting...</td>\""
-                
-               )
+          num_cells = @table.num_cells
+          @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id}, :class  => "action_link",
+                                                                                   :confirm  => 'Are you sure?',
+                                                                                   :target  => "#{object.class.name.underscore}_#{object.id}",
+                                                                                   :target_text  => "<td colspan='#{num_cells}' style='color:red; text-align:center'>Deleting...</td>"
+          }
         end
       end
             
@@ -205,7 +205,7 @@ module IndexTableHelper
           html += "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
             html += "<li>\n"
-            html += @binding.eval("filter_add_link \"#{f[0]}\", :filters => #{f[1]}\n")
+            html += @template.instance_eval { filter_add_link f[0], :filters => f[1] }
             html += "</li>\n"
           end
           html += "</ul>\n"
@@ -236,8 +236,8 @@ module IndexTableHelper
     #TableBuilder methods
     ####################################
     
-    def initialize(view_binding) #:nodoc:
-      @binding = view_binding
+    def initialize(template) #:nodoc:
+      @template = template
       @columns = []
     end
     
@@ -291,7 +291,7 @@ module IndexTableHelper
     
     #Produce 'empty' row for an empty table.
     def empty_table_html
-      empty_text = @empty_text || @binding.eval('"There are no #{params[:controller]} defined yet."')
+      empty_text = @empty_text || @template.instance_eval { "There are no #{params[:controller]} defined yet." }
       "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
     end
     
@@ -303,7 +303,7 @@ module IndexTableHelper
     private
     
     def build_column
-      col = Column.new(self)
+      col = Column.new(self, @template)
       yield(col)
       if col.display?
         @columns << col
@@ -313,11 +313,11 @@ module IndexTableHelper
   end #End class TableBuilder
   
   # Build an index table.
-  def index_table(collection, options = {}, &block)
-    table_builder = TableBuilder.new(block.binding)
+  def index_table(collection, options = {})
+    table_builder = TableBuilder.new(self)
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
     
-    block.call(table_builder)
+    yield(table_builder)
     
     html = "<table #{atts}>\n<tr>\n"
     html += table_builder.header_html
