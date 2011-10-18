@@ -1,16 +1,47 @@
-<tr>
-    <th>Tool Name</th>
-    <th>Description</th>
-    <th>Category</th>
-    <th>User</th>
-    <th>Project</th>
-    <th>Execution Server &amp; Versions</th>
-    <% if current_user.has_role?(:admin) %>
-      <th colspan="3">Operations</th>
-    <% end %>
-    <th colspan ="2">Help/Info</th>
-  </tr>
-   
-  <% for tool in @tools %>
-    <%= render :partial => 'tools/tool_table_row', :locals  => {:tool  => tool} %>
-  <% end %>
+<%= 
+  index_table(@tools, :class => "resource_list", :id => "tool_table") do |t|
+    t.sort_column("Tool Name", Tool, :name, &:name)
+    t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) } 
+    t.sort_column("Category", Tool, :category, :filters => basic_filters_for(@header_scope, Tool, :category), &:category)
+    t.sort_column("Owner", User, :login, :filters => association_filters_for(@header_scope, Tool, :user, :name_method => :login)) { |tool| link_to_user_with_tooltip(tool.user) }
+    t.sort_column("Project", Group, :name, :filters => association_filters_for(@header_scope, Tool, :group)) { |tool| link_to_group_if_accessible(tool.group) }
+    t.describe_column("Execution & Versions") do |col|
+      col.cell(:class => "left") do |tool|
+        result = ""
+        tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b|
+          tcs = ToolConfig.where( :bourreau_id => b.id, :tool_id => tool.id )
+          tcs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
+          result += link_to_bourreau_if_accessible(b)
+          if tcs.size >= 1
+            result += " (#{pluralize tcs.size, "version"})"
+          end
+          result += "<br/>"
+        end
+        result
+      end
+    end
+    t.describe_column("Operations") do |col|
+      col.edit_link
+      col.delete_link
+      col.cell { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
+      col.condition current_user.has_role?(:admin)
+    end
+    t.describe_column("Help/Info") do |col|
+      col.cell do |tool|
+        tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore
+        help_path = "/doc/tasks/#{tool_plain_name}_options.html"
+        if File.exist?( Rails.root.to_s + "/public" + help_path )
+          overlay_ajax_link "Help", help_path
+        end
+      end
+      col.cell do |tool|
+        tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore
+        info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html"
+        if File.exist?( Rails.root.to_s + "/public" + info_path )
+          overlay_ajax_link "Info", info_path
+        end
+      end
+    end
+  end
+ %>
+
