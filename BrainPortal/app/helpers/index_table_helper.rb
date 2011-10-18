@@ -55,17 +55,15 @@
 # or if the diplay of cells is conditional.
 #
 # For example, the 'Operations' column in feecbacks has many cells and their display depends
-# on the current user's permissions:
-#
-# To make the column sortable:
+# on the current user's permissions. The condition is set by the :if option to the #cell
+# method:
 #
 #   <%= 
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
-#         col.cell { |fb|  link_to 'Edit', {:action => :edit, :id => #{fb.id}}, :class  => 'action_link' }
-#         col.cell { |fb| delete_button 'Delete', {:action => :destroy, :id => #{fb.id}} ... }
-#         col.condition { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id}
+#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id }) { |fb|  link_to 'Edit', {:action => :edit, :id => #{fb.id}}, :class  => 'action_link' }
+#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id }) { |fb| delete_button 'Delete', {:action => :destroy, :id => #{fb.id}} ... }
 #       end
 #     end
 #   %>
@@ -77,21 +75,29 @@
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
-#         col.edit_link    
-#         col.delete_link(5)
-#         col.condition { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id}
+#         col.edit_link(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id })    
+#         col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id })
 #       end
 #     end
 #   %>
 #
-# If different conditions need to be set on cells in the same column, this can be done by 
-# passing the :condition option to #cell, as is done in the users 'Operations' column:
+# Note also that if the :if condition fails, empty table cells will still be displayed,
+# so the table will remain balanced. To set a condition on the entire column, 
+# the #condition method on the column object can be used:
 #
-#   t.describe_column("Operations") do |col|
-#     col.delete_link(11, :condition => Proc.new { |u| u != User.admin })
-#     col.cell(:condition => Proc.new { |u| u != User.admin }) { |u| link_to 'Switch',  switch_user_path(u), :class => 'action_link', :method  => :post  }
-#     col.cell { |u| link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => u.id }, :class => 'action_link' }
-#   end
+#   <%= 
+#     index_table(@groups, :id => "group_table", :class => "resource_list") do |t|
+#       ...
+#       t.describe_column("Data Providers") do |col|
+#         col.cell { |g| ... }
+#         col.condition current_user.has_role?(:admin)
+#       end
+#       ...
+#   %>
+#
+# Here, the condition is set on the entire column (including the header), so
+# the column simply won't exist in the table if the current user isn't an admin.
+#  
 #
 # Finally, to add filter links to a column, simply set the :filters option on any one of the 
 # four column methods. The list of filters will be an array of array pairs. Each pair will
@@ -110,15 +116,23 @@ module IndexTableHelper
     
     attr_reader :columns
     
+    
+    ##############################
+    # Inner class Column
+    ##############################
+    
     #Class representing a single column in the table.
     #A column is essentialy one header with one or 
     #several cells per row (the header will automatically
     #be expanded to fit over all cells).
     class Column
       
-      def initialize(view_binding) #:nodoc:
-        @binding = view_binding
-        @condition = Proc.new { |object|  true }
+      attr_reader :cells
+      
+      def initialize(table) #:nodoc:
+        @table = table
+        @binding = @table.instance_eval { @binding }
+        @condition = true
         @cells = []
       end
       
@@ -140,29 +154,39 @@ module IndexTableHelper
 
       # Describe a cell
       def cell(options = {}, &block)
-        @cells << [block, options]
+        condition = options.delete(:if) || Proc.new { |o| true  }
+        @cells << [block, options, condition]
       end
       
       # Define the condition for displaying all cells of this column.
-      def condition(&cond)
-        @condition = cond.to_proc
+      def condition(cond)
+        @condition = cond
+      end
+      
+      # Should the column be display or not?
+      def display?
+        if @condition
+          true
+        else
+          false
+        end
       end
       
       # Shortcut for creating a cell with a link to the object's edit page.
       def edit_link(options = {})
-        @cells << [Proc.new { |object|  @binding.eval("link_to 'Edit', {:action => :edit, :id => #{object.id}}, :class  => 'action_link'") }, options]
+        self.cell(options) { |object|  @binding.eval("link_to 'Edit', {:action => :edit, :id => #{object.id}}, :class  => 'action_link'") }
       end
       
       # Shortcut for creating a cell with  a ajax delete link for the object.
-      def delete_link(table_columns = 5, options = {})
-        @cells << [Proc.new do |object| 
+      def delete_link(options = {})
+        self.cell(options) do |object| 
           @binding.eval("delete_button 'Delete', {:action => :destroy, :id => #{object.id}}, :class  => \"action_link\"," +
                                                                                    ":confirm  => 'Are you sure?'," + 
                                                                                    ":target  => \"##{object.class.name.underscore}_#{object.id}\"," +
-                                                                                   ":target_text  => \"<td colspan='#{table_columns}' style='color:red; text-align:center'>Deleting...</td>\""
+                                                                                   ":target_text  => \"<td colspan='#{@table.num_cells}' style='color:red; text-align:center'>Deleting...</td>\""
                 
                )
-        end, options]
+        end
       end
             
       def header_html #:nodoc:
@@ -191,26 +215,27 @@ module IndexTableHelper
         html
       end
       
-      def cell_html(object) #:nodoc:
-        return "<td colspan=\"#{@cells.size}\">" unless @condition.to_proc.call(object)
-        
+      def cell_html(object) #:nodoc:        
         html = ""
         @cells.each do |cell|
-          cell = [cell] unless cell.is_a? Array 
-          proc    = cell[0]
-          options = cell[1] || {}
-          condition = options.delete(:condition) || Proc.new { |o| true  }
-          content = proc.call(object) if condition.call(object)
+          cell      = [cell] unless cell.is_a? Array 
+          proc      = cell[0]
+          options   = cell[1] || {}
+          condition = cell[2]
+          content   = proc.call(object) if condition.call(object)
           
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-          html += "<td #{atts}>#{content}</td>"
+          html += "<td #{atts}>#{content}</td>\n"
         end
         html
       end      
 
     end #End class column
     
+    ####################################
     #TableBuilder methods
+    ####################################
+    
     def initialize(view_binding) #:nodoc:
       @binding = view_binding
       @columns = []
@@ -218,34 +243,71 @@ module IndexTableHelper
     
     # Describe a simple non-sorting column
     def column(header_text = "", options = {}, &block)
-      col = Column.new(@binding)
-      col.header header_text, options
-      col.cell   &block
-      @columns << col
+      build_column do |col|
+        col.header header_text, options
+        col.cell   &block
+      end
     end
     
     # Describe a simple sorting column
     def sort_column(header_text, klass, attribute, options = {}, &block)
-      col = Column.new(@binding)
-      col.sort_header header_text, klass, attribute, options
-      col.cell   &block
-      @columns << col
+      build_column do |col|
+        col.sort_header header_text, klass, attribute, options
+        col.cell        &block
+      end
     end
     
     # Describe a more complex non-sorting column
     def describe_column(header_text = "", options = {})
-      col = Column.new(@binding)
-      col.header header_text, options
-      yield(col)
-      @columns << col
+      build_column do |col|
+        col.header header_text, options
+        yield(col)
+      end
     end
     
     # Describe a more complex sorting column
     def describe_sort_column(header_text, klass, attribute, options = {})
-      col = Column.new(@binding)
-      col.sort_header header_text, klass, attribute, options
+      build_column do |col|
+        col.sort_header header_text, klass, attribute, options
+        yield(col)
+      end
+    end
+    
+    # Set text for a table header (across all columns).
+    def header(text)
+      @table_header = text
+    end
+    
+    # 
+    def header_html
+      return "" unless @table_header
+      "<tr><th colspan=\"#{self.num_cells}\">#{@table_header}</th></tr>\n"
+    end
+    
+    # Manually set text to be displayed in an empty row.
+    def empty(text)
+      @empty_text = text
+    end
+    
+    #Produce 'empty' row for an empty table.
+    def empty_table_html
+      empty_text = @empty_text || @binding.eval('"There are no #{params[:controller]} defined yet."')
+      "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
+    end
+    
+    # Number of cells per row.
+    def num_cells
+      @columns.inject(0) { |total, c| total + c.cells.size }
+    end
+    
+    private
+    
+    def build_column
+      col = Column.new(self)
       yield(col)
-      @columns << col
+      if col.display?
+        @columns << col
+      end
     end
     
   end #End class TableBuilder
@@ -258,16 +320,21 @@ module IndexTableHelper
     block.call(table_builder)
     
     html = "<table #{atts}>\n<tr>\n"
+    html += table_builder.header_html
     table_builder.columns.each do |col|
       html += col.header_html + "\n"
     end
     html += "</tr>\n"
-    collection.each do |object|
-      html += "<tr class=\"#{cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\">"
-      table_builder.columns.each do |col|
-        html += col.cell_html(object)
+    if collection.empty?
+      html += table_builder.empty_table_html
+    else
+      collection.each do |object|
+        html += "<tr class=\"#{cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\">\n"
+        table_builder.columns.each do |col|
+          html += col.cell_html(object)
+        end
+        html += "</tr>\n"
       end
-      html += "</tr>\n"
     end
     html += "</table>\n"
     

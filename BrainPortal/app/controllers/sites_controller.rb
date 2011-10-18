@@ -19,7 +19,10 @@ class SitesController < ApplicationController
   # GET /sites
   # GET /sites.xml
   def index #:nodoc:
-    @sites = base_filtered_scope Site.where({}).includes( [:users, :groups] ).order("sites.name")
+    @filter_params["sort_hash"]["order"] ||= 'sites.name'
+    @filter_params["sort_hash"]["dir"]   ||= ''
+    
+    @sites = base_filtered_scope Site.includes( [:users, :groups] )
 
     respond_to do |format|
       format.js

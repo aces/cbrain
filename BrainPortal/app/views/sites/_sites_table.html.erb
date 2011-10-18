@@ -1,16 +1,16 @@
-<tr>
-  <th>Name</th>
-  <th>Description</th>
-  <th>Managers</th>
-  <th>Number of Users</th>
-  <th>Number of Projects</th>
-  <th colspan="2">Operations</th>
-</tr>
-
-<% for site in @sites %>
-  <%= render :partial => 'site_table_row', :locals  => {:site  => site} %>
-<% end %>
-
-<% if @sites.empty? %>
-  <tr><td colspan="7">There are not sites defined yet.</td></tr>
-<% end %>
+<%= 
+  index_table(@sites, :class => "resource_list", :id => "site_table") do |t|
+    t.sort_column("Name", Site, :name) { |s| link_to_site_if_accessible(s)  }
+    t.sort_column("Description", Site, :description) { |s| overlay_description(s.description) }
+    t.column("Managers") do |s| 
+      array_to_table(s.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') { |m,r,c| link_to_user_with_tooltip(m)}
+    end
+    t.column("Number of Users") { |s| filter_add_link s.users.count.to_s, :controller => :users, :filters => {:site_id => s.id}, :ajax => false }
+    t.column("Number of Projects") { |s| filter_add_link s.groups.count.to_s, :controller => :groups, :filters => {:site_id => s.id}, :ajax => false }
+    t.describe_column("Operations") do |col|
+      col.edit_link
+      col.delete_link
+    end
+  end
+ %>
+ 

@@ -53,8 +53,9 @@ module TableMakerHelper
   #
   def array_to_table(array,options = {})
     numelems  = array.size
-
     return "" if numelems == 0
+
+    result = ""
 
     if options[:min_data] && numelems < options[:min_data]
       joiner = options[:min_data_join] || ", "
@@ -64,8 +65,8 @@ module TableMakerHelper
       else
         formatted = array
       end
-      safe_concat formatted.join(joiner)
-      return ""
+      result += formatted.join(joiner)
+      return result.html_safe
     end
 
     rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols],options[:ratio])
@@ -85,25 +86,26 @@ module TableMakerHelper
     tr_callback ||= Proc.new { |rownum|       "<tr#{trclass}>" }
     td_callback ||= Proc.new { |elem,row,col| "<td#{tdclass}>#{elem}</td>" }
 
-    safe_concat "<table#{tableclass}#{tableid}>\n"
+    result += "<table#{tableclass}#{tableid}>\n"
     array.each_with_index do |elem,i|
       col = i % cols
       row = i / cols
       if col == 0
-        safe_concat "  " + tr_callback.call(row) + "\n"
+        result += "  " + tr_callback.call(row) + "\n"
       end
       formatted_elem = block_given? ? capture { yield(elem,row,col) } : elem
-      safe_concat "    " + td_callback.call(formatted_elem,row,col) + "\n"
+      result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
       if col + 1 == cols
-        safe_concat "  </tr>\n"
+        result += "  </tr>\n"
       end
     end
     num_missing_tds = (cols - 1) - ((numelems-1) % cols)
     if num_missing_tds > 0
-      safe_concat "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
+      result += "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
     end
-    safe_concat "</table>\n"
-    ""
+    result += "</table>\n"
+
+    result.html_safe
   end
 
   private

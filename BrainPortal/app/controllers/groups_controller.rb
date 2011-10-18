@@ -18,13 +18,10 @@ class GroupsController < ApplicationController
 
   # GET /groups
   # GET /groups.xml
-  def index  #:nodoc:    
-    @system_groups = base_filtered_scope current_user.available_groups(
-      :type => (["SystemGroup"] | SystemGroup.descendants.map(&:name))
-    ).includes(:site).order("groups.type, groups.name")
-    @work_groups = base_filtered_scope current_user.available_groups(
-      :type => (["WorkGroup"] | WorkGroup.descendants.map(&:name))
-    ).includes(:site).order("groups.type, groups.name")
+  def index  #:nodoc:
+    @filter_params["sort_hash"]["order"] ||= "groups.name"
+    @header_scope = current_user.available_groups
+    @groups = base_filtered_scope @header_scope.includes(:site)
     
     #For new panel
     @group = WorkGroup.new

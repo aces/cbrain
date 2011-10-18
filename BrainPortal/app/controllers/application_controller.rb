@@ -17,11 +17,13 @@ class ApplicationController < ActionController::Base
 
   include AuthenticatedSystem
   include ExceptionLogger::ExceptionLoggable
+  include BasicFilterHelpers
+  
   rescue_from Exception, :with => :log_exception_handler
 
   helper_method :check_role, :not_admin_user, :current_session, :current_project
   helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
-  helper_method :view_pluralize, :basic_filters_for, :association_filters_for
+  helper_method :view_pluralize
   helper        :all # include all helpers, all the time
 
   before_filter :always_activate_session
@@ -83,37 +85,6 @@ class ApplicationController < ActionController::Base
       filtered_scope = filtered_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
     end
     filtered_scope
-  end
-
-  #Create filtered array to be used by TableBuilder for
-  #basic attribute filters.
-  def basic_filters_for(scope, tab, col)
-    table  = tab.to_s.underscore.pluralize
-    column = col.to_s
-    scope.select( "#{table}.#{column}, COUNT(#{table}.#{column}) as count" ).
-          where( "#{table}.#{column} IS NOT NULL" ).
-          group("#{table}.#{column}").
-          order("#{table}.#{column}").
-          all.
-          reject { |obj| obj.send(column).blank? }.
-          map { |obj|  ["#{obj.send(column)} (#{obj.count})", column => obj.send(column)]}
-  end
-  
-  #Create filtered array to be used by TableBuilder for
-  #basic association filters.
-  def association_filters_for(scope, tab, assoc, options = {})
-    table       = tab.to_s.underscore.pluralize
-    association = assoc.to_s.underscore.singularize
-    assoc_table = association.pluralize
-    name_method = options[:name_method] || "name"
-    foreign_key = options[:foreign_key] || "#{association}_id"
-    
-    scope.select( "#{table}.#{foreign_key}, #{assoc_table}.#{name_method} as #{association}_#{name_method}, COUNT(#{table}.#{foreign_key}) as count" ).
-          joins(association.to_sym).
-          order("#{assoc_table}.#{name_method}").
-          group("#{table}.#{foreign_key}").
-          all.
-          map { |obj| ["#{obj.send("#{association}_#{name_method}")} (#{obj.count})", foreign_key => obj.send(foreign_key)] }
   end
   
   def always_activate_session
