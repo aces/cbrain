@@ -1,11 +1,8 @@
 
 <% [ :notice, :error ].each do |type| %>
-
-  <% next if flash[type].nil? || flash[type].blank? %>
-
   jQuery('.flash_<%= type %>').remove();
+  <% next if flash[type].nil? || flash[type].blank? %>
   jQuery('#main').prepend(jQuery(<%= html_for_js(render :partial  => "messages/flash_display", :locals => { :type => type, :msg => flash[type] }) %>));
   <% flash.discard(type) %>
-
 <% end %>
 

@@ -20,11 +20,11 @@ class DataProvidersController < ApplicationController
   before_filter :manager_role_required, :only  => [:new, :create]
    
   def index #:nodoc:
-    @all_providers = base_filtered_scope DataProvider.find_all_accessible_by_user(current_user)
+    @filter_params["sort_hash"]["order"] ||= "data_providers.name"
     
-    @providers = @all_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
-    @providers["CBRAIN Official Storage"] ||= []
-    @providers["User Storage"] ||= []
+    @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
+    @data_providers = base_filtered_scope @header_scope.includes(:user, :group)
+    
     @typelist = get_type_list
     @ssh_keys = get_ssh_public_keys
     
@@ -42,7 +42,7 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml { render :xml  => @all_providers }
+      format.xml { render :xml  => @data_providers }
       format.js
     end
   end
