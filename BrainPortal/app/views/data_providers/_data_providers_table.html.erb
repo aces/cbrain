@@ -1,0 +1,44 @@
+<%= 
+  index_table @data_providers, :class => "resource_list whole_width", :id => "data_provider_table" do |t|
+    t.sort_column("Provider Name", DataProvider, :name) { |dp| link_to_data_provider_if_accessible(dp) }
+    t.sort_column("Type", DataProvider, :type, :filters => basic_filters_for(@header_scope, :data_provider, :type, &:titleize) ) { |dp| dp.class.to_s.titleize} 
+    if @filter_params["details"] == 'on'
+      t.sort_column("Owner", User, :login, :filters => association_filters_for(@header_scope, :data_provider, :user, :name_method => :login)) { |dp| link_to_user_with_tooltip(dp.user) }
+    end 
+    t.sort_column("Project", Group, :name, :filters => association_filters_for(@header_scope, :data_provider, :group)) { |dp| link_to_group_if_accessible(dp.group) }
+    if @filter_params["details"] == 'on'
+      t.column("Site") { |dp| link_to_site_if_accessible(dp.site) }
+      t.sort_column("Time Zone", DataProvider, :time_zone) { |dp| dp.time_zone || "(Unset)" }
+    end
+    t.sort_column("Online?", DataProvider, :online) { |dp| red_if(!dp.online?, "Yes", "No") }
+    t.column("Alive?") do |dp|
+      if dp.online?
+        staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do
+          "<span class=\"loading_message\">Checking...</span>".html_safe
+        end
+      else
+        html_colorize("No","red")
+      end
+    end
+    t.column("Files") do |dp|
+      file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
+      if file_count > 0
+        filter_reset_link file_count.to_s, :controller => :userfiles, :filters => { :data_provider_id => dp.id }, :ajax => false
+      else
+        "0"
+      end
+    end
+    t.sort_column("Mode", DataProvider, :read_only) { |dp| dp.read_only ? "Read Only" : "Read/Write" }
+    if @filter_params["details"] == 'on'
+      t.sort_column("Syncability", DataProvider, "not_syncable") { |dp| dp.not_syncable ? "NOT syncable" : "Fully syncable" }
+      t.sort_column("Description", DataProvider, "description") { |dp|  overlay_description(dp.description) }
+    end
+    t.describe_column("Operations") do |col|
+      col.edit_link
+      col.delete_link
+      col.cell(:if  => Proc.new { |dp| dp.is_browsable? && dp.can_be_accessed_by?(current_user) && dp.online? }) do |dp|
+        link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
+      end
+    end
+  end
+ %>
