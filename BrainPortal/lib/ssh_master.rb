@@ -306,11 +306,10 @@ class SshMaster
           begin
             Process.setpgrp rescue true
             self.write_pidfile(Process.pid,:force)  # Overwrite
-            #$stdin.close rescue nil
-            $stdin.reopen("/dev/null")
-            $stdout.reopen(self.diag_path, "a")
+            $stdin.reopen( "/dev/null",    "r") # fd 0
+            $stdout.reopen(self.diag_path, "a") # fd 1
             $stdout.sync = true
-            $stderr.reopen($stdout)
+            $stderr.reopen($stdout)             # fd 2
             File.chmod(0600, self.diag_path) rescue true
             puts "Starting Master #{@key} at #{Time.now.localtime.to_s} as PID #{$$}"
             Kernel.exec(sshcmd)

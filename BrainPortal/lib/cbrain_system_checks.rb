@@ -107,7 +107,7 @@ class CbrainSystemChecks < CbrainChecker
   def self.a050_check_data_provider_cache_wipe
 
     #-----------------------------------------------------------------------------
-    puts "C> Checking to see if Data Provider caches need wiping..."
+    puts "C> Checking to see if Data Provider cache needs cleaning up..."
     #-----------------------------------------------------------------------------
 
     myself = RemoteResource.current_resource
@@ -141,8 +141,10 @@ class CbrainSystemChecks < CbrainChecker
       File.chmod(0700,cache_root)
     end
 
+    # TOTAL wipe needed ?
     if ( ! dp_disk_rev.is_a?(DateTime) ) || dp_disk_rev < dp_need_rev # Before Pierre's upgrade
-      puts "C> \t- Data Provider Caches need to be wiped..."
+
+      puts "C> \t- Data Provider Cache needs to be fully wiped..."
       puts "C> \t  Disk Rev: '#{dp_disk_rev.inspect}'"
       puts "C> \t  Need Rev: '#{dp_need_rev.inspect}'"
       puts "C> \t  Code Rev: '#{dp_code_rev.inspect}'"
@@ -166,6 +168,28 @@ class CbrainSystemChecks < CbrainChecker
       end
       puts "C> \t- Re-recording DataProvider 'code' DateTime in cache."
       DataProvider.cache_revision_of_last_init(:force)
+
+    # Just crud removal needed.
+    else 
+
+      puts "C> \t- Wiping old files in Data Provider cache (in background)..."
+
+      CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
+        wiped = DataProvider.cleanup_leftover_cache_files(true) rescue []
+        unless wiped.empty?
+          Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
+          Message.send_message(User.admin,
+            :type          => :system,
+            :header        => "Report of cache crud removal on '#{myself.name}'",
+            :description   => "These relative paths in the local Data Provider cache were\n" +
+                              "removed as there is no longer any userfiles matching them.\n",
+            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.join("\n"),
+            :critical      => true,
+            :send_email    => false
+          ) rescue true
+        end
+      end
+
     end
 
     md5 = DataProvider.cache_md5 rescue nil
