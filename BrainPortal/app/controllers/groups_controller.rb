@@ -142,6 +142,9 @@ class GroupsController < ApplicationController
     redirect_controller = params[:redirect_controller] || :groups
     redirect_action = params[:redirect_action] || :index
     redirect_id = params[:redirect_id]
+
+    redirect_path = { :controller => redirect_controller, :action => redirect_action }
+    redirect_path[:id] = redirect_id unless redirect_id.blank?
     
     if params[:id].blank?
       current_session[:active_group_id] = nil
@@ -150,7 +153,7 @@ class GroupsController < ApplicationController
       current_session[:active_group_id] = @group.id
     end
     
-    redirect_to :controller  => redirect_controller, :action  => redirect_action, :id  => redirect_id
+    redirect_to redirect_path
   end
 
   private
