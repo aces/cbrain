@@ -20,20 +20,43 @@ module SmartDataProviderInterface
   # system's hostname: if it is the case, we use the +localclass+,
   # otherwise we use the +networkclass+.
   def select_local_or_network_provider(localclass,networkclass)
-    @local_provider   = localclass.new(   self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id } )
-    @network_provider = networkclass.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id } )
-    if Socket.gethostname == remote_host && File.directory?(remote_dir)
+
+    # Check for crucial attributes needed for proper initializaton
+    dp_hostname   = self.remote_host rescue nil
+    dp_remote_dir = self.remote_dir  rescue nil
+    if dp_hostname.blank? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
+      @provider = @local_provider = @network_provider = nil
+      return @provider
+    end
+
+    # Create two internal provider objects, only one of which will be used to provide the
+    # behavior we want (the other one could be useful too, in provider_full_path() below, for instance)
+    @local_provider   = localclass.new(   self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! localclass.columns_hash[k] } )
+    @network_provider = networkclass.new( self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! networkclass.columns_hash[k] } )
+    @local_provider.id   = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+    @network_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+
+    # These four 'defs' are used to intercept and prevent calls to 'save' on the two internal providers objects
+    def @local_provider.save
+      cb_error "Internal error: attempt to save() local provider object for SmartDataProvider '#{self.name}'."
+    end
+    def @local_provider.save!
+      cb_error "Internal error: attempt to save!() local provider object for SmartDataProvider '#{self.name}'."
+    end
+    def @network_provider.save
+      cb_error "Internal error: attempt to save() network provider object for SmartDataProvider '#{self.name}'."
+    end
+    def @network_provider.save!
+      cb_error "Internal error: attempt to save!() network provider object for SmartDataProvider '#{self.name}'."
+    end
+
+    # Now select the real provider for all intercepts defined below.
+    if Socket.gethostname == dp_hostname && File.directory?(dp_remote_dir)
       @provider = @local_provider
     else
       @provider = @network_provider
     end
-    @provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
-    def @provider.save # for safety, intercept and prevent all saves
-      cb_error "Internal error: attempt to save() real provider object for SmartDataProvider '#{self.name}'."
-    end
-    def @provider.save! # for safety, intercept and prevent all saves
-      cb_error "Internal error: attempt to save!() real provider object for SmartDataProvider '#{self.name}'."
-    end
+
     @provider
   end
 
@@ -42,8 +65,9 @@ module SmartDataProviderInterface
   # in the provider API. It is useful for debugging.
   # Attempts to save() the real provider will be prevented
   # by special intercept code when setting up the current
-  # provider; this is for security reasons, as it's never
-  # needed.
+  # provider; this is for security reasons, as saving
+  # the real provider object should never be needed
+  # in any way.
   def real_provider
     @provider
   end

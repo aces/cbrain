@@ -81,6 +81,10 @@ class CBRAIN
           $0 = "#{taskname}" # Clever!
           Process.setpgrp rescue true
 
+          $stdin.reopen( "/dev/null", "r") rescue true # fd 0
+          $stdout.reopen("/dev/null", "w") rescue true # fd 1
+          $stderr.reopen("/dev/null", "w") rescue true # fd 2
+
           # Try to find the RAILS acceptor socket(s) and close them.
           # We assume they'll be file descriptors that are
           # open read-write and non-blocking. If that's not
@@ -171,8 +175,13 @@ class CBRAIN
       # Create subchild
       subchildpid = Kernel.fork do
 
-        # Try to close all file descriptors from 3 to 50.
         writer.close # Not needed in the subchild!
+
+        $stdin.reopen( "/dev/null", "r") rescue true # fd 0
+        $stdout.reopen("/dev/null", "w") rescue true # fd 1
+        $stderr.reopen("/dev/null", "w") rescue true # fd 2
+
+        # Try to close all file descriptors from 3 to 50.
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
 
         # Background code execution

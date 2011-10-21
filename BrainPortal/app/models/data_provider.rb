@@ -1078,7 +1078,7 @@ class DataProvider < ActiveRecord::Base
         maybe_spurious_parents={}
         ids2path.each do |id,path| # 12345, "01/23/45"
           FileUtils.remove_entry(path, true) rescue true
-          SyncStatus.where(:userfile_id => id, :remote_resource_id => rr_id).destroy_all rescue true
+          SyncStatus.where(:userfile_id => id).destroy_all rescue true
           maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
           maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"
         end

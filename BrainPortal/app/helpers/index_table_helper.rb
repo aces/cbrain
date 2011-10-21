@@ -262,7 +262,7 @@ module IndexTableHelper
     
     #Produce 'empty' row for an empty table.
     def empty_table_html
-      empty_text = @empty_text || @template.instance_eval { "There are no #{params[:controller]} defined yet." }
+      empty_text = @empty_text || @template.instance_eval { "There are no entries in this table." }
       "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
     end
     
