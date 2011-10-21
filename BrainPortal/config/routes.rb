@@ -40,7 +40,7 @@ CbrainRailsPortal::Application.routes.draw do
   end
 
   resources :groups do
-    member do
+    collection do
       post 'switch'
     end
   end

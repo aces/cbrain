@@ -143,7 +143,7 @@ class GroupsController < ApplicationController
     redirect_action = params[:redirect_action] || :index
     redirect_id = params[:redirect_id]
     
-    if params[:id] == "off"
+    if params[:id].blank?
       current_session[:active_group_id] = nil
     else
       @group = current_user.available_groups.find(params[:id])
