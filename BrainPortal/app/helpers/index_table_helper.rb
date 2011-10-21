@@ -82,22 +82,7 @@
 #   %>
 #
 # Note also that if the :if condition fails, empty table cells will still be displayed,
-# so the table will remain balanced. To set a condition on the entire column, 
-# the #condition method on the column object can be used:
-#
-#   <%= 
-#     index_table(@groups, :id => "group_table", :class => "resource_list") do |t|
-#       ...
-#       t.describe_column("Data Providers") do |col|
-#         col.cell { |g| ... }
-#         col.condition current_user.has_role?(:admin)
-#       end
-#       ...
-#   %>
-#
-# Here, the condition is set on the entire column (including the header), so
-# the column simply won't exist in the table if the current user isn't an admin.
-#  
+# so the table will remain balanced. 
 #
 # Finally, to add filter links to a column, simply set the :filters option on any one of the 
 # four column methods. The list of filters will be an array of array pairs. Each pair will
@@ -106,8 +91,9 @@
 # users table might look like the following:
 #  [["Canada", :country => "Canada"]["USA", :country => "USA"]["Egypt", :country => "Egypt"]["Bolivia", :country => "Bolivia"]]
 #
-# Note that some helper methods, #basic_filters_for and #association_filters_for have been defined in ApplicationController
-# to construct these types of lists for basic attribute or association filtering.
+# Note that some helper methods, #basic_filters_for and #association_filters_for have been defined 
+# (see lib/basic_filter_helpers.rb for details) to construct these types of lists for basic 
+# attribute or association filtering.
 
 module IndexTableHelper
   
@@ -132,7 +118,6 @@ module IndexTableHelper
       def initialize(table, template) #:nodoc:
         @table = table
         @template = template
-        @condition = true
         @cells = []
       end
       
@@ -156,20 +141,6 @@ module IndexTableHelper
       def cell(options = {}, &block)
         condition = options.delete(:if) || Proc.new { |o| true  }
         @cells << [block, options, condition]
-      end
-      
-      # Define the condition for displaying all cells of this column.
-      def condition(cond)
-        @condition = cond
-      end
-      
-      # Should the column be display or not?
-      def display?
-        if @condition
-          true
-        else
-          false
-        end
       end
       
       # Shortcut for creating a cell with a link to the object's edit page.
@@ -305,9 +276,7 @@ module IndexTableHelper
     def build_column
       col = Column.new(self, @template)
       yield(col)
-      if col.display?
-        @columns << col
-      end
+      @columns << col
     end
     
   end #End class TableBuilder

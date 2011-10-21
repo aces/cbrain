@@ -20,11 +20,12 @@
         result
       end
     end
-    t.describe_column("Operations") do |col|
-      col.edit_link
-      col.delete_link
-      col.cell { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
-      col.condition current_user.has_role?(:admin)
+    if current_user.has_role?(:admin)
+      t.describe_column("Operations") do |col|
+        col.edit_link
+        col.delete_link
+        col.cell { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
+      end
     end
     t.describe_column("Help/Info") do |col|
       col.cell do |tool|
