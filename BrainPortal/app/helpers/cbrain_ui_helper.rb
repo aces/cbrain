@@ -403,7 +403,7 @@ module CbrainUiHelper
     html += initial_content
     html += "</#{element}>"
     
-    html
+    html.html_safe
   end
   
   
