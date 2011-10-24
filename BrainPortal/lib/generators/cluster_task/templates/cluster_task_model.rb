@@ -98,7 +98,7 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
     params       = self.params
     [
       "# This is a bash script for my scientific job",
-      "echo Run the <%= name %> command here",
+      "echo Run the <%= file_name %> command here",
       "/bin/true"
     ]
   end
