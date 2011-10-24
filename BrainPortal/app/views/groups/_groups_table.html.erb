@@ -1,5 +1,39 @@
+<div class="menu_bar menu_bar_left">
+   <%= button_with_dropdown_menu('Create Project', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
+   <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :button %>
+   <span id="manage_filter_button">
+     <% unless @filter_params["filter_hash"].blank? %>
+       <%= button_with_dropdown_menu('Manage Filters') do %>
+         <fieldset class="filter_sidebar">
+           <legend>Active Filters</legend>
+             <div id="current_filters">
+               <ul class="filter_menu">
+                   <% @filter_params["filter_hash"].each do |key, value| %>
+                       <li>
+                         <% if key == "type" %>
+                            <%= crop_text_to(30, "Type:#{value.sub(/Group$/, "Project").titleize}") %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                         <% else %>
+                            <%= crop_text_to(30, display_filter(:group, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                         <% end %>
+                       </li>
+                   <% end %>
+               </ul>
+             </div>
+             <small>
+               <%= filter_clear_link 'clear', :ajax => false %>
+             </small>
+         </fieldset>
+       <% end %>
+     <% end %>
+   </span>
+   <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>       
+</div>
+
+<p>
+
+
 <%=
-  index_table(@groups, :id => "group_table", :class => "resource_list") do |t|
+  index_table(@groups, :class => "resource_list") do |t|
     t.describe_sort_column("Name", Group, "name") do |col|
       col.cell(:class => "left") { |g|  link_to_group_if_accessible g}
     end
