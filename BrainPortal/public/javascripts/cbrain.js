@@ -412,6 +412,13 @@ jQuery(
      
      return false;
    });
+
+   jQuery(".submit_onchange").live("change", function() {
+       var select = jQuery(this);
+       var form   = select.closest("form");
+       form.submit()
+   });
+
    
    //html_tool_tip_code based on xstooltip provided by
    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it

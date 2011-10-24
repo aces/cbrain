@@ -556,13 +556,42 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Returns and cache a record of run-time information about the resource.
-  # This method automatically calls update_info if the information has
-  # not been cached yet.
+  # This is the main entry point for querying a RemoteResource, along
+  # with is_alive?
   def info
     return self.class.remote_resource_info if self.id == CBRAIN::SelfRemoteResourceId # no caching for local
+    return @info if @info # caching within Rails action
+    last_meta_cached = self.meta[:info_cache_last_update] || 1.year.ago
+    @info = self.info_cached? # caching between Rails actions, in meta data store
     return @info if @info
-    @info = RemoteResourceInfo.dummy_record unless is_alive? # is_alive?() fills @info as a side effect
+    running = self.is_alive? # this updates @info as a side-effect
+    if running
+      self.meta[:info_cache]             = @info
+      self.meta[:info_cache_last_update] = Time.now
+      return @info
+    end
+    self.zap_info_cache
+    @info = RemoteResourceInfo.dummy_record
     @info
+  end
+
+  # Returns the info record for the resource if it is cached and
+  # recent enough (less than a minute old), returns nil otherwise.
+  def info_cached?
+    last_meta_cached = self.meta[:info_cache_last_update] || 1.year.ago
+    if last_meta_cached > 1.minute.ago
+      info = self.meta[:info_cache] # caching between Rails actions
+      if info
+        @info = RemoteResourceInfo.new(info) # caching within a single Rails action
+        return @info
+      end
+    end
+    nil
+  end
+
+  def zap_info_cache #:nodoc:
+    @info = nil
+    self.meta[:info_cache_last_update] = nil # zaps cache in DB
   end
 
 
