@@ -21,7 +21,10 @@ class BourreauxController < ApplicationController
   before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info]
    
   def index #:nodoc:
-    @bourreaux = base_filtered_scope RemoteResource.find_all_accessible_by_user(current_user).order("remote_resources.type DESC, remote_resources.id")
+    @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
+    @filter_params["sort_hash"]["dir"] ||= "DESC"
+    @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
+    @bourreaux    = base_filtered_scope @header_scope.includes(:user, :group)
     
     #For the new form
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
@@ -210,7 +213,7 @@ class BourreauxController < ApplicationController
   
   def row_data #:nodoc:
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    render :partial => 'bourreau_row_elements', :locals  => { :bour  => @remote_resource }
+    render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource }
   end
 
   def load_info #:nodoc:

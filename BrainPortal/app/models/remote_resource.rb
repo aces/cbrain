@@ -567,7 +567,7 @@ class RemoteResource < ActiveRecord::Base
     running = self.is_alive? # this updates @info as a side-effect
     if running
       self.meta[:info_cache]             = @info
-      self.meta[:info_cache_last_update] = Time.now
+      self.meta[:info_cache_last_update] = Time.now.utc
       return @info
     end
     self.zap_info_cache

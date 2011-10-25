@@ -140,7 +140,8 @@ module IndexTableHelper
       # Describe a cell
       def cell(options = {}, &block)
         condition = options.delete(:if) || Proc.new { |o| true  }
-        @cells << [block, options, condition]
+        proc = block || Proc.new { |o| "" }
+        @cells << [proc, options, condition]
       end
       
       # Shortcut for creating a cell with a link to the object's edit page.
@@ -249,10 +250,37 @@ module IndexTableHelper
       @table_header = text
     end
     
-    # 
-    def header_html
+    def header_html #:nodoc:
       return "" unless @table_header
       "<tr><th colspan=\"#{self.num_cells}\">#{@table_header}</th></tr>\n"
+    end
+    
+    #
+    def row_attributes(options = {}, &block)
+      @header_attributes = block || Proc.new { |obj| options }
+    end
+    
+    def row_attribute_html(object)
+      return "class=\"#{@template.cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\"" unless @header_attributes
+      
+      options = @header_attributes.call(object)
+      
+      atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+      atts
+    end
+    
+    def row_override(&block)
+      @row_override = block
+    end
+    
+    def row_override?(object)
+      @row_override ? true : false
+    end
+    
+    def row_override_html(object)
+      return "" unless @row_override
+      
+      @row_override.call(object)
     end
     
     # Manually set text to be displayed in an empty row.
@@ -262,7 +290,7 @@ module IndexTableHelper
     
     #Produce 'empty' row for an empty table.
     def empty_table_html
-      empty_text = @empty_text || @template.instance_eval { "There are no entries in this table." }
+      empty_text = @empty_text || "There are no entries in this table."
       "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
     end
     
@@ -298,11 +326,15 @@ module IndexTableHelper
       html += table_builder.empty_table_html
     else
       collection.each do |object|
-        html += "<tr class=\"#{cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\">\n"
-        table_builder.columns.each do |col|
-          html += col.cell_html(object)
+        if table_builder.row_override?(object)
+          html += table_builder.row_override_html(object)
+        else
+          html += "<tr #{table_builder.row_attribute_html(object)}>\n"
+          table_builder.columns.each do |col|
+            html += col.cell_html(object)
+          end
+          html += "</tr>\n"
         end
-        html += "</tr>\n"
       end
     end
     html += "</table>\n"
