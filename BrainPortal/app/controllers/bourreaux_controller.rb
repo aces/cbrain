@@ -25,17 +25,6 @@ class BourreauxController < ApplicationController
     @filter_params["sort_hash"]["dir"] ||= "DESC"
     @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
     @bourreaux    = base_filtered_scope @header_scope.includes(:user, :group)
-    
-    #For the new form
-    bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
-    @users    = current_user.available_users
-    @groups   = current_user.available_groups
-    @bourreau = Bourreau.new( :user_id   => current_user.id,
-                              :group_id  => bourreau_group_id,
-                              :cache_trust_expire => 1.month.to_i.to_s,
-                              :online    => true
-                            )
-    sensible_defaults(@bourreau)
 
     if current_user.has_role? :admin
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
@@ -82,6 +71,19 @@ class BourreauxController < ApplicationController
       format.xml  { render :xml => @bourreau }
     end
 
+  end
+  
+  def new #:nodoc:
+    bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    @users    = current_user.available_users
+    @groups   = current_user.available_groups
+    @bourreau = Bourreau.new( :user_id   => current_user.id,
+                              :group_id  => bourreau_group_id,
+                              :cache_trust_expire => 1.month.to_i.to_s,
+                              :online    => true
+                            )
+    sensible_defaults(@bourreau)
+    render :partial => "new"
   end
   
   def edit #:nodoc:

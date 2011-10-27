@@ -24,17 +24,6 @@ class DataProvidersController < ApplicationController
     
     @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
     @data_providers = base_filtered_scope @header_scope.includes(:user, :group)
-    
-    @typelist = get_type_list
-    @ssh_keys = get_ssh_public_keys
-    
-    #For new form
-    provider_group_id = ( current_project && current_project.id ) || current_user.own_group.id
-    @provider = DataProvider.new( :user_id   => current_user.id,
-                                  :group_id  => provider_group_id,
-                                  :online    => true,
-                                  :read_only => false
-                                )
 
     if current_user.has_role? :admin
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
@@ -113,6 +102,20 @@ class DataProvidersController < ApplicationController
       format.xml  { render :xml => @provider }
     end
 
+  end
+
+  def new
+    provider_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    @provider = DataProvider.new( :user_id   => current_user.id,
+                                  :group_id  => provider_group_id,
+                                  :online    => true,
+                                  :read_only => false
+                                )
+    
+    @typelist = get_type_list
+    @ssh_keys = get_ssh_public_keys
+    
+    render :partial => "new"
   end
 
   def create #:nodoc:

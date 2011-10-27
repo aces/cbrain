@@ -37,9 +37,6 @@ class UsersController < ApplicationController
       @users_task_counts[t.user_id] = t.u_cnt
     end
     
-    #For the 'new' panel
-    @user = User.new
-    
     respond_to do |format|
       format.html # index.html.erb
       format.js
@@ -62,6 +59,11 @@ class UsersController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }
     end
+  end
+
+  def new #:nodoc:
+    @user = User.new
+    render :partial => "new"
   end
 
   def create #:nodoc:

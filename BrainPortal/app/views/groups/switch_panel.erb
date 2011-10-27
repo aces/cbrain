@@ -1,0 +1,17 @@
+<div id="switch_panel">
+  <small>
+    Choosing an Active Project affects the visibility of<br/>
+    <em>everything</em> in the interface (files, tasks etc).<br/>
+    Use this as a way to concentrate on a particular project.<br/>
+  </small>
+  <p/>
+                    
+  <div class="group_selector">
+    <%= form_tag :controller => :groups, :action => :switch do %>
+      <%= group_select('id', {:groups => @all_projects, :selector => current_project }, {:include_blank => "None", :class => "submit_onchange"}) %>
+      <%= hidden_field_tag :redirect_controller, params[:redirect_controller] %>
+      <%= hidden_field_tag :redirect_action    , params[:redirect_action]     %>
+      <%= hidden_field_tag :redirect_id        , params[:redirect_id]         %>
+    <% end %>
+  </div>
+</div>

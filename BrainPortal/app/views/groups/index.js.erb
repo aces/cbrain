@@ -1,4 +1,4 @@
 <%= render :partial  => "shared/flash_update" %>
-<%= render :partial => "shared/clear_new_panel" %>
-jQuery("#group_table").html(<%= html_for_js(render(:partial => 'groups_table')) %>)
-jQuery("#group_table").trigger("new_content")
+<%= render :partial => "shared/remove_new_panel" %>
+jQuery("#group_table").html(<%= html_for_js(render(:partial => 'groups_table')) %>);
+jQuery("#group_table").trigger("new_content");

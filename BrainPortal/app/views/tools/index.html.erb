@@ -1,25 +1,7 @@
 
 <% title 'Tools' %>
 
-<div class="menu_bar menu_bar_left">
-  <% if current_user.has_role?(:admin) %>
-            
-    <%= button_with_dropdown_menu('Create New Tool', :partial => 'new', :content_id => 'new_model_panel', :button_id => "new_model_button") %>
-       
-    <span title="Registers all subclasses of PortalTask as Tools">
-      <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
-    </span>
-            
-    <%= link_to 'Manage Tools', { :controller => :tools, :action => :tool_management }, :class => " button" %>
-
-    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => " button" %>
-    <%= render :partial => "shared/manage_filter_button", :locals => {:model => :tool}  %>
-  <% end %>
-
-  <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button" %>
-</div> 
-
-<P>
-
-<%= render :partial => 'tools_table' %>
+<div id="tool_table">
+  <%= render :partial => 'tools_table' %>
+</div>
 

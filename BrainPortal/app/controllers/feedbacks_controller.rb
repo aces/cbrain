@@ -23,8 +23,6 @@ class FeedbacksController < ApplicationController
     
     @feedbacks = base_filtered_scope
     @feedbacks = @feedbacks.includes(:user)
-    
-    @feedback  = Feedback.new
 
     respond_to do |format|
       format.js
@@ -44,6 +42,11 @@ class FeedbacksController < ApplicationController
     end
   end
 
+  def new #:nodoc:
+    @feedback = Feedback.new
+    render :partial => "new"
+  end
+   
   # GET /feedbacks/1/edit
   def edit #:nodoc:
     @feedback = Feedback.find(params[:id])

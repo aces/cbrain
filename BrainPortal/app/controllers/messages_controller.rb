@@ -20,8 +20,6 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @message  = Message.new # blank object for new() form.
-    @group_id = nil         # for new() form
     @show_users = false
     @max_show   = "50"
 
@@ -66,6 +64,12 @@ class MessagesController < ApplicationController
       format.html # index.html.erb
       format.xml  { render :xml => @messages }
     end
+  end
+
+  def new #:nodoc:
+    @message  = Message.new # blank object for new() form.
+    @group_id = nil         # for new() form
+    render :partial => "new"
   end
 
   # POST /messages
