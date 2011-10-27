@@ -39,7 +39,7 @@
                         :ajax  => false
     end
     t.describe_column("Operations") do |col|
-      col.delete_link(:if => Proc.new { |u| u != User.admin })
+      col.delete_link(:if => Proc.new { |u| u != User.admin }, :confirm => Proc.new { |u| "Are you sure you want to delete user '#{u.login}'?" })
       col.cell(:if => Proc.new { |u| u != User.admin }) { |u| link_to 'Switch',  switch_user_path(u), :class => 'action_link', :method  => :post  }
       col.cell { |u| link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => u.id }, :class => 'action_link' }
     end
