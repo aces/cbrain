@@ -409,8 +409,6 @@ class Userfile < ActiveRecord::Base
   #view.
   def self.paginate(files, page, preferred_per_page)
     per_page = (preferred_per_page || Default_num_pages).to_i
-    per_page = 10  if per_page < 10
-    per_page = 200 if per_page > 200
     page     = page.to_i
     max_page = (files.size + per_page - 1 ) / per_page
     page     = max_page if page > max_page
