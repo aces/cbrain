@@ -1,14 +1,16 @@
+<div id="new_model_panel">
+  
+  <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
+     <%= f.error_messages %>
 
-<%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+     <%= render :partial => 'form_fields', :locals => { :f => f }  %>
 
-   <%= f.error_messages %>
+     <p><%= submit_tag 'Create' %></p>
 
-   <%= render :partial => 'form_fields', :locals => { :f => f }  %>
+  <% end -%>
 
-   <p><%= submit_tag 'Create' %></p>
+  <%= render :partial => "notes" %>
+</div>
 
-<% end -%>
-
-<%= render :partial => "notes" %>
 

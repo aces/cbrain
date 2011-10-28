@@ -199,9 +199,13 @@ function load_behaviour(event){
         },
         error: function(e) {
           if(!error_message){
-            error_message = "Error loading element";
+            error_message = "<span class='loading_message'>Error loading element</span>"; 
           }
-          current_element.html("<span class='loading_message'>"+ error_message +"</span>");
+          if(replace == "true"){
+            current_element.replaceWith(error_message);
+          }else{
+            current_element.html(error_message);
+          }
         },
         timeout: 50000
   	   });

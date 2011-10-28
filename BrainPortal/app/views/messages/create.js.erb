@@ -2,8 +2,7 @@
 <% if @message.errors.empty? %>
 
 try{
-  jQuery("#new_message_button").click();
-  jQuery("#new_message").find("form").resetForm();
+  <%= render :partial => "shared/remove_new_panel" %>
   var new_display = jQuery(<%= html_for_js(render :partial  => 'messages/message_display') %>);
   var new_table = jQuery(<%= html_for_js(render :partial  => 'message_table') %>);
   jQuery("#message_display").html(new_display);
@@ -15,6 +14,6 @@ try{
 }
 
 <% else %>
-  jQuery('#new_message').html(<%= html_for_js(render :partial  => "new") %>);
+  <%= render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'message' }  %>
 <% end %>
 

@@ -23,9 +23,7 @@ class GroupsController < ApplicationController
     @header_scope = current_user.available_groups
     @groups = base_filtered_scope @header_scope.includes(:site)
     
-    #For new panel
-    @group = WorkGroup.new
-    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
+
 
     common_form_elements()
 
@@ -38,6 +36,12 @@ class GroupsController < ApplicationController
   
   def show #:nodoc:
     @group = current_user.available_groups.find(params[:id])
+  end
+
+  def new  #:nodoc:
+    @group = WorkGroup.new
+    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
+    render :partial => "new"
   end
 
   # GET /groups/1/edit
@@ -136,6 +140,11 @@ class GroupsController < ApplicationController
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :ok }
     end
+  end
+  
+  def switch_panel 
+    @all_projects = current_user.available_groups.partition {|p| p.class.to_s == "WorkGroup" }.map{ |set| set.sort_by(&:name)  }.flatten
+    render :layout => false
   end
   
   def switch #:nodoc:

@@ -1,55 +1,84 @@
 <div class="menu_bar menu_bar_left">
   <% if check_role(:admin) || check_role(:site_manager) %>
-    <%= button_with_dropdown_menu('Create New Server', :partial => 'new', :content_id => "new_model_panel", :button_id => "new_model_button") %>
+    <%= overlay_ajax_link 'Create New Server', new_bourreau_path, :class => "button" %>
     <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
   <% end %>
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
               {:controller  => :bourreaux, :action  => :index, :bourreaux  => {:details  => set_toggle(@filter_params["details"])}},
               :datatype  => 'script', :class  => "button"
   %>
-  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :bourreau} %>
+  <span id="manage_filter_button">
+     <% unless @filter_params["filter_hash"].blank? %>
+       <%= button_with_dropdown_menu('Manage Filters') do %>
+         <fieldset class="filter_sidebar">
+           <legend>Active Filters</legend>
+             <div id="current_filters">
+               <ul class="filter_menu">
+                   <% @filter_params["filter_hash"].each do |key, value| %>
+                       <li>
+                         <% if key == "type" %>
+                            <%= crop_text_to(30, "Type:#{value == "Bourreau" ? "Excecution" : "Portal"}") %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                         <% else %>
+                            <%= crop_text_to(30, display_filter(:remote_resource, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
+                         <% end %>
+                       </li>
+                   <% end %>
+               </ul>
+             </div>
+             <small>
+               <%= filter_clear_link 'clear', :ajax => false %>
+             </small>
+         </fieldset>
+       <% end %>
+     <% end %>
+   </span>
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
 <P>
-  
-<table id="bourreau_table" class="resource_list">
-  <tr>
-      <th>Server Class</th>
-      <th>Server Name</th>
-      <% if @filter_params["details"] == 'on'  %>
-        <th>Revision Numbers</th>
-        <th>Owner</th>
-      <% end %>
-      <th>Project</th>
-      <% if @filter_params["details"] == 'on'  %>
-        <th>Site</th>
-        <th>Time Zone</th>
-      <% end %>
-      <th>Online?</th>
-      <th>Uptime</th>
-      <th>Workers?</th>
-      <th>Load</th>
-      <th>Tasks</th>
-      <% if @filter_params["details"] == 'on'  %>
-        <th>Description</th>
-      <% end %>
-      <th colspan="5">Operations</th>
-  </tr>
 
-  <% numcol = @filter_params["details"] == 'on' ? 18 : 13 %>
+<%= 
+  index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t|
+    t.sort_column("Server Class", RemoteResource, :type, :filters => basic_filters_for(@header_scope, RemoteResource, :type){ |t| t == "Bourreau" ? "Excecution" : "Portal" })
+    t.sort_column("Server Name", RemoteResource, :name)
+    if @filter_params["details"] == 'on'
+      t.column("Revision Numbers")
+      t.sort_column("Owner", User, :login, :filters => association_filters_for(@header_scope, RemoteResource, User, :name_method => :login))
+    end
+    t.sort_column("Project", Group, :name, :filters => association_filters_for(@header_scope, RemoteResource, Group))
+    if @filter_params["details"] == 'on'
+      t.column("Site")
+      t.sort_column("Time Zone", RemoteResource, :time_zone, :filters => basic_filters_for(@header_scope, RemoteResource, :time_zone))
+    end
+    t.sort_column("Online?", RemoteResource, :online)
+    t.column("Uptime")
+    t.describe_column("Workers") do |col|
+      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
+    end
+    t.describe_column("Load") do |col|
+      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
+    end
+    t.describe_column("Tasks") do |col|
+      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
+    end
+    if @filter_params["details"] == 'on'
+      t.sort_column("Description", RemoteResource, :description)
+    end
+    t.column("Operations", :colspan => 5)
+    t.row_override do |rr|
+      if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached? 
+        staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id), 
+                           :id             => "bourreau_#{rr.id}",
+                           :class          => "row_highlight #{cycle("list-odd", "list-even")}",
+                           :replace        => true,
+                           :error_message  => "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Information for '#{rr.name}' unavailable</td>" do
+          "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Loading...</td>".html_safe
+        end
+      else
+        render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr }
+      end
+    end
+  end
+ %>
 
-  <% for bour in @bourreaux %>
-    <% if bour.is_a?(Bourreau) && bour.online? %>
-      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => bour.id), 
-                           :id             => "bourreau_#{bour.id}",
-                           :class          => "row_highlight #{cycle("list-odd", "list-even")}", 
-                           :error_message  => "<td colspan=\"#{numcol}\" class=\"loading_message\">Information for '#{bour.name}' unavailable</td>" do %>
-         <td colspan="<%= numcol %>" class="loading_message">Fetching information for '<%= bour.name %>' ...</td>
-      <% end %>
-    <% else %>
-      <%= render :partial => 'bourreau_table_row', :locals => { :bourreau => bour } %>
-    <% end %>
-  <% end %>
-</table>
 

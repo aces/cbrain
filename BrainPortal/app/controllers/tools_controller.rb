@@ -53,6 +53,11 @@ class ToolsController < ApplicationController
     render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
   end
 
+  def new #:nodoc:
+    @tool = Tool.new
+    render :partial => "new"
+  end
+
   # GET /tools/1/edit
   def edit #:nodoc:
     @tool      = current_user.available_tools.find(params[:id])

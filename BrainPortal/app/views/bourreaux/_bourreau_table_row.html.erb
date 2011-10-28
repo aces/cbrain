@@ -1,3 +1,102 @@
-<tr class="<%= cycle('list-odd', 'list-even') %> row_highlight" id="bourreau_<%= bourreau.id %>">
-  <%= render :partial => 'bourreau_row_elements', :locals  => {:bour  => bourreau} %>
+<%
+   info        = bourreau.info
+   diskrev     = info.revision
+   runrev      = info.starttime_revision
+   worker_pids = info.worker_pids
+   worker_pids = nil if worker_pids == "???"
+   tasks_tot   = info.tasks_tot
+   tasks_max   = info.tasks_max
+   tasks_max   = 'unlimited' if tasks_max.to_s == '0'
+   isbourreau  = bourreau.is_a?(Bourreau)
+   num_running = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
+%>
+
+<tr class="row_highlight <%= cycle("list-odd", "list-even") %>" id="bourreau_<%= bourreau.id %>">
+  <td><%= isbourreau ? "Execution" : "Portal" %></td>
+  <td><%= link_to_bourreau_if_accessible(bourreau) %></td>
+  <% if @filter_params["details"] == 'on' %>
+    <td>
+        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}" %>
+        <% if diskrev.to_s != runrev.to_s %>
+          <%= red_if(true, report) %>
+        <% else %>
+          <%= red_if(diskrev.first == "(", report, nil, :color2 => 'purple') %>
+        <% end %>
+    </td>
+    <td><%= link_to_user_with_tooltip(bourreau.user) %></td>
+  <% end %>
+  <td><%= link_to_group_if_accessible(bourreau.group) %></td>
+  <% if @filter_params["details"] == 'on' %>
+    <td><%= link_to_site_if_accessible(bourreau.site_affiliation) %></td>
+    <td><%= bourreau.time_zone || "(Unset)" %></td>
+  <% end %>
+  <td><%= red_if( ! bourreau.online,      "Yes", "Offline" ) %></td>
+  <td>
+      <% if info.name == "???" %>
+        <%= html_colorize("Down!") %>
+      <% else %>
+        <%= html_tool_tip("#{pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)}", :offset_x => 50) do %>
+          Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
+          (for <%= pretty_elapsed(info.uptime.to_i) %>)
+        <% end %>
+      <% end %>
+  </td>
+
+  <% if isbourreau %>
+    <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>
+    <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
+    <td>
+        <%= html_tool_tip(num_running == 0 ?  "0" :
+           filter_reset_link(num_running, :controller => :tasks, :filters  => { :bourreau_id => bourreau.id, :status => :active }, :ajax => false),
+           :tooltip_div_class => 'white_bg html_tool_tip'
+           ) do %>
+             <%= render :partial => 'load_info', :locals => { :bourreau => bourreau } %>
+        <% end %>
+    </td>
+  <% else %>
+    <td>-</td>
+    <td>-</td>
+    <td>-</td>
+  <% end %>
+
+  <% if @filter_params["details"] == 'on' %>
+    <td><%= overlay_description(bourreau.description) %></td>
+  <% end %>
+
+  <% if bourreau.has_owner_access?(current_user) %>
+
+    <td><%= link_to 'Edit', edit_bourreau_path(bourreau), :class => 'action_link' %></td>
+    <td>
+      <% if RemoteResource.current_resource.id != bourreau.id %>
+        <%= 
+            delete_button 'Delete', bourreau_path(bourreau), :class  => "action_link", 
+                                                         :confirm  => "Are you sure you want to delete '#{bourreau.name}' ?", 
+                                                         :target  => "#bourreau_#{bourreau.id}",
+                                                         :target_text  => "<td colspan='17' style='color:red; text-align:center'>Deleting...</td>"
+        %>
+       <% end %>
+    </td>
+
+    <% if ! isbourreau %>
+      <td colspan="2" />
+    <% elsif ! bourreau.has_remote_control_info? %>
+      <td><%= html_colorize("(Missing SSH control info)") %></td><td></td>
+    <% elsif ! bourreau.has_actres_tunnelling_info? %>
+      <td><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td><td></td>
+    <% elsif ! bourreau.has_db_tunnelling_info? %>
+      <td><%= html_colorize("(Missing database SSH tunnel info)") %></td><td></td>
+    <% else %>
+      <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
+      <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
+    <% end %>
+
+    <% if isbourreau %>
+      <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bourreau.id }, :class => 'action_link' %></td>
+    <% else %>
+      <td></td>
+    <% end %>
+
+  <% else %>
+    <td colspan="5"></td>
+  <% end %>
 </tr>

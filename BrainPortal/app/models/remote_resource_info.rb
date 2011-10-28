@@ -62,16 +62,21 @@ class RemoteResourceInfo < RestrictedHash
    # Returns a dummy record filled with
    # mostly '???' for each field.
    def self.dummy_record
-
-     dummy = self.new()
+     mock_record("???")
+   end
+   
+   def self.mock_record(field_value)
+     mock = self.new()
+     
+     mock = self.new()
      self.allowed_keys.each do |field|
-       dummy[field] = "???"
+       mock[field] = field_value
      end
+     
+     mock.id               = 0
+     mock.bourreau_cms_rev = Object.revision_info # means 'unknown'
 
-     dummy.id               = 0
-     dummy.bourreau_cms_rev = Object.revision_info # means 'unknown'
-
-     dummy
+     mock
    end
    
    # Returns a default value of '???' for any attributes

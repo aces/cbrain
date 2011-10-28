@@ -1,5 +1,13 @@
+<div class="menu_bar menu_bar_left">
+  <%= overlay_ajax_link 'Create New Site', new_site_path, :class => "button" %>
+  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :site}  %>
+  <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
+</div>
+
+<P>
+
 <%= 
-  index_table(@sites, :class => "resource_list", :id => "site_table") do |t|
+  index_table(@sites, :class => "resource_list") do |t|
     t.sort_column("Name", Site, :name) { |s| link_to_site_if_accessible(s)  }
     t.sort_column("Description", Site, :description) { |s| overlay_description(s.description) }
     t.column("Managers") do |s| 

@@ -41,6 +41,11 @@ class SitesController < ApplicationController
     end
   end
  
+  def new #:nodoc:
+    @site = Site.new
+    render :partial => "new"
+  end
+ 
   # GET /sites/1/edit
   def edit #:nodoc:
     @site = Site.find(params[:id])

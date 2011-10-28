@@ -3,7 +3,7 @@
 
 <div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-    <%= button_with_dropdown_menu('Leave Message', :partial => 'new', :content_id => 'new_message', :button_id => "new_message_button") %>
+    <%= overlay_ajax_link 'Leave Message', new_message_path, :class => "button" %>
   <% end %>
   <%= render :partial => "shared/manage_filter_button", :locals => {:model => :message}  %>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>

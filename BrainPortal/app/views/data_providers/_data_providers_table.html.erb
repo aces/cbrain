@@ -7,7 +7,7 @@
 <div class="menu_bar menu_bar_left">
 
   <% if check_role(:admin) || check_role(:site_manager) %>
-    <%= button_with_dropdown_menu('Create New Data Provider', :content_id => 'new_model_panel', :partial => 'new', :button_id => "new_model_button") %>
+    <%= overlay_ajax_link 'Create New Data Provider', new_data_provider_path, :class => "button" %>
   <% end %> 
 
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
@@ -18,15 +18,14 @@
   <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>
 
-<p/>
-
+<P>
 
 <fieldset>
 <legend>Official Data Storage</legend>
   <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
 </fieldset>
 
-<p/>
+<P>                 
 
 <fieldset>
 <legend>User or Site Storage</legend>
