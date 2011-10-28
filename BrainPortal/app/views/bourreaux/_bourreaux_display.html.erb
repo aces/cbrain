@@ -51,7 +51,7 @@
       t.sort_column("Time Zone", RemoteResource, :time_zone, :filters => basic_filters_for(@header_scope, RemoteResource, :time_zone))
     end
     t.sort_column("Online?", RemoteResource, :online)
-    t.column("Alive?")
+    t.column("Uptime")
     t.describe_column("Workers") do |col|
       col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
     end
