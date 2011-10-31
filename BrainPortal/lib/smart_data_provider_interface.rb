@@ -91,23 +91,23 @@ module SmartDataProviderInterface
   ###################################
 
   def is_alive? #:nodoc:
-    @provider.is_alive?
+    @provider && @provider.is_alive?
   end
 
   def is_alive! #:nodoc:
-    @provider.is_alive!
+    @provider && @provider.is_alive!
   end
 
   def is_browsable? #:nodoc:
-    @provider.is_browsable?
+    @provider && @provider.is_browsable?
   end
 
   def is_fast_syncing? #:nodoc:
-    @provider.is_fast_syncing?
+    @provider && @provider.is_fast_syncing?
   end
 
   def allow_file_owner_change? #:nodoc:
-    @provider.allow_file_owner_change?
+    @provider && @provider.allow_file_owner_change?
   end
 
   def sync_to_cache(userfile) #:nodoc:

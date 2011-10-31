@@ -375,8 +375,10 @@ class ApplicationController < ActionController::Base
   # 1:: "1 second"
   # 7272:: "2 hours, 1 minute and 12 seconds"
   def pretty_elapsed(numseconds,options = {})
-    remain = numseconds.to_i
-
+    remain    = numseconds.to_i
+    is_short  = options[:short]
+    
+    
     return "0 seconds" if remain <= 0
 
     numweeks = remain / 1.week
@@ -394,15 +396,18 @@ class ApplicationController < ActionController::Base
     numsecs  = remain
 
     components = [
-      [numweeks, "week"],
-      [numdays,  "day"],
-      [numhours, "hour"],
-      [nummins,  "minute"],
-      [numsecs,  "second"]
+      [numweeks, is_short ? "w" : "week"],
+      [numdays,  is_short ? "d" : "day"],
+      [numhours, is_short ? "h" : "hour"],
+      [nummins,  is_short ? "m" : "minute"],
+      [numsecs,  is_short ? "s" : "second"]
     ]
 
-    components = components.select { |c| c[0] > 0 }
-
+    
+   components = components.select { |c| c[0] > 0 }
+   components.pop   while components.size > 0 && components[-1] == 0 
+   components.shift while components.size > 0 && components[0]  == 0 
+   
     if options[:num_components]
       while components.size > options[:num_components]
         components.pop
@@ -415,15 +420,17 @@ class ApplicationController < ActionController::Base
       comp = components.shift
       num  = comp[0]
       unit = comp[1]
-      unit += "s" if num > 1
-      unless final.blank?
-        if components.size > 0
-          final += ", "
-        else
-          final += " and "
+      if !is_short
+        unit += "s" if num > 1
+        unless final.blank?
+          if components.size > 0
+            final += ", "
+          else
+            final += " and "
+          end
         end
       end
-      final += "#{num} #{unit}"
+      final += !is_short ? "#{num} #{unit}" : "#{num}#{unit}"
     end
 
     final

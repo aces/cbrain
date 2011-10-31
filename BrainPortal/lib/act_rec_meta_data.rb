@@ -184,7 +184,7 @@ module ActRecMetaData
     # Reloads the cached set of MetaDataStore objects
     # associated with the current ActiveRecord object.
     def reload_cache #:nodoc:
-      meta_data_records = MetaDataStore.where( :ar_id => self.ar_id, :ar_class => self.ar_class )
+      meta_data_records = MetaDataStore.where( :ar_id => self.ar_id, :ar_class => self.ar_class ).all
       self.md_cache     = meta_data_records.index_by { |ar| ar.meta_key }
     end
 
