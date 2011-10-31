@@ -5,16 +5,21 @@
 <% end %>
 
 <div id="active_project_div">
-  <h1>Active Project:</h1> 
+  <h1>Active Project:</h1>
+  <div id="change_active_project">
     <%= 
-        overlay_ajax_link (current_project ? current_project.name : "None"), 
+        ajax_link (current_project ? current_project.name : "None"), 
                           switch_panel_groups_path(:redirect_controller => params[:controller],
                                                    :redirect_action     => params[:action],
                                                    :redirect_id         => params[:id]
                                                   ),
-                          :id => "header_project_menu", :class => "button"                           
-    %>
+                          :id => "header_project_menu", :class => "button",
+                          :target => "#active_project_div",
+                          :replace => true,
+                          :loading_message => "<span class=\"switch_panel\" style=\"color: red\">Loading...</span>",
+                          :loading_message_target => "#header_project_menu"
+    %><br>
+  </div>
 </div>
-
 
 

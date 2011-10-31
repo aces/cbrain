@@ -5,7 +5,7 @@ uniq_id = rand(100000).to_s
 %>
 <% select_attributes = {
      "class"            => 'request_on_change',
-     "data-target-text" => "&nbsp;",
+     "data-loading-message" => "&nbsp;",
      "data-target"      => "#load_info_#{uniq_id}",
      "data-url"         => '/bourreaux/load_info'
    }

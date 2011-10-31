@@ -9,7 +9,7 @@
      url_for(:controller  => :tools, :action  => :bourreau_select), 
      current_user.available_scientific_tools.inject('<option value="">Select a Scientific Operation</option>') { |options, tool| options += "<option value='#{tool.id}'>#{tool.select_menu_text}</option>"},
         :target  => "#bourreau_select_science", 
-        :target_text  => "<span class='warning'>Loading...</span>"
+        :loading_message  => "<span class='warning'>Loading...</span>"
     ) 
   %>
   </div>

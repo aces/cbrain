@@ -19,7 +19,11 @@ function modify_target(data, target, options){
        	}
        });
     }else{
-      jQuery(target).html(new_content);
+      if(options["replace"]){
+        jQuery(target).replaceWith(new_content);
+      } else {
+        jQuery(target).html(new_content);
+      }     
     }
     new_content.trigger("new_content");
   }
@@ -141,7 +145,14 @@ function load_behaviour(event){
    loaded_element.find(".button_set").buttonset();
 
 
-   loaded_element.find(".button_with_drop_down > div.drop_down_menu").hide();
+   loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e){
+     var menu    = jQuery(this);
+     var button  = menu.closest(".button_with_drop_down");
+     var keep_open = button.attr("data-open");
+     if(keep_open != "true"){
+      menu.hide(); 
+     }
+   });
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e){ 
 											                 loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();		
@@ -152,14 +163,15 @@ function load_behaviour(event){
      icons: {
        secondary: 'ui-icon-triangle-1-s'
      }
-   }).toggle(function(event){
-               var menu = jQuery(this).siblings(".drop_down_menu");
+   }).click(function(event){
+             var menu = jQuery(this).siblings(".drop_down_menu");
+             if(menu.is(":visible")){
+      	       menu.hide();
+             } else {
                loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
-     	        menu.show();
-             },
-             function(event){
-     	        var menu = jQuery(this).siblings(".drop_down_menu");
-     	        menu.hide();
+     	         menu.show();
+             }
+     	         
    });
    
    /////////////////////////////////////////////////////////////////////
@@ -337,31 +349,26 @@ jQuery(
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
 
    jQuery(".ajax_link").live("ajax:success", function(event, data, status, xhr){
-     var link = jQuery(this);
-     var target = link.attr("data-target");
+     var link     = jQuery(this);
+     var target   = link.attr("data-target");
+     var datatype = link.attr("data-type"); 
      var other_options = {};
      if(link.attr("data-width")) other_options["width"] = link.attr("data-width");
      if(link.attr("data-height")) other_options["height"] = link.attr("data-height");
-     
-     modify_target(data, target, other_options);
-   });
-   
-   //Allows for the creation of form submit buttons that can highjack
-   //the form and send its contents elsewhere, changing the datatype,
-   //target, http method as needed.
-   jQuery(".delete_button").live("ajax:beforeSend", function(event, data, status, xhr){
-     var button = jQuery(this);
-     var target = button.attr("data-target");
-     var target_text = button.attr("data-target-text");
-    
-     if(target){
-       if(!target_text){
-         target_text = "";
-       }
-       jQuery(target).html(target_text);
+     if(link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
+     if(datatype != "script"){
+       modify_target(data, target, other_options);
      }
-   }); 
-   
+   }).live("ajax:beforeSend", function(event, data, status, xhr){
+     var link = jQuery(this);
+     var loading_message = link.attr("data-loading-message");
+     var target = link.attr("data-target");
+     if(loading_message){
+       var loading_message_target = link.attr("data-loading-message-target");
+       if(!loading_message_target) loading_message_target = target;
+       jQuery(loading_message_target).html(loading_message);
+     }
+   });
 
    jQuery(".select_all").live("click", function(){
      var header_box = jQuery(this);
@@ -392,7 +399,7 @@ jQuery(
      var method = input_element.attr("data-method");
      var target = input_element.attr("data-target");
      var data_type = input_element.attr("data-type");
-     var update_text = input_element.attr("data-target-text");
+     var update_text = input_element.attr("data-loading-message");
      if(!method) method = "GET";
      if(!data_type) data_type = "html";
      
