@@ -218,6 +218,12 @@ module CbrainUiHelper
     button_id = "id=\"#{button_id}\"" if button_id
     options[:class] ||= ""
     options[:class] +=  " button_with_drop_down"
+    if options.delete :open
+      options["data-open"] = true
+      display_style = "style=\"display: block\" "
+    else
+      display_style = "style=\"display: none\" "
+    end
     
     content=""
     if block_given?
@@ -230,7 +236,7 @@ module CbrainUiHelper
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     safe_concat("<span #{atts}>")
     safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    safe_concat("<div #{content_id} ABCD=1 style=\"display: none\" class=\"drop_down_menu\">")
+    safe_concat("<div #{content_id} ABCD=1 #{display_style}class=\"drop_down_menu\">")
     safe_concat(content)
     safe_concat("</div>")
     safe_concat("</span>")
@@ -342,31 +348,28 @@ module CbrainUiHelper
   # and the body will be replaced with the content of the html at /data_providers
   ###############################################################
   def ajax_element(url, options ={}, &block) 
-    options["data-url"] = url
     element = options.delete(:element) || "div"
-    
-    options[:class] ||= ""
-    options[:class] +=  " ajax_element"
-    
-    method = options.delete(:method)
-    if method
-      options["data-method"] = method.to_s.upcase
-    end
     
     data = options.delete(:data)
     if data
       options["data-data"] = h data.to_json
     end
     
+    options_setup("ajax_element", options)
+    
+    options["data-url"] = url
+    
     #This builds an html attribute string from the html_opts hash
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
-    initial_content = capture(&block)
+    initial_content = capture(&block) if block_given?
+    initial_content ||= html_colorize("Loading...")
     
-    safe_concat("<#{element} #{atts}>") 
-    safe_concat(initial_content)
-    safe_concat("</#{element}>")
-    ""
+    html = "<#{element} #{atts}>"
+    html += initial_content
+    html += "</#{element}>"
+    
+    html.html_safe
   end
   
   #Request some js through ajax to be run on the current page.
@@ -524,16 +527,14 @@ module CbrainUiHelper
   #the request.
   #
   #Aside from the options for ajax_link there are:
-  #[:target_text] text with which to update the target elements
+  #[:loading_message] text with which to update the target elements
   #               prior to sending the request.
   #[:confirm] Confirm message to display before sending the request.
   def delete_button(name, url, options = {})
     options[:method] ||= 'DELETE'
     options[:datatype] ||= 'script'
-    options_setup("delete_button", options)
-    options[:remote] = true
     
-    link_to name.to_s.html_safe, url, options
+    ajax_link name.to_s.html_safe, url, options
   end
   
   #A select box that will update the page onChange.
@@ -543,7 +544,7 @@ module CbrainUiHelper
   #[:method] HTTP method to use for the request.
   #[:target] selector for elements to update prior to or after the
   #         the request is sent.
-  #[:target_text] text with which to update the target elements
+  #[:loading_message] text with which to update the target elements
   #               prior to sending the request.
   #All other options treated as HTML attributes.
   def ajax_onchange_select(name, url, option_tags, options = {})
@@ -846,9 +847,14 @@ module CbrainUiHelper
       options["data-target"] = target
     end
     
-    update_text = options.delete(:target_text)
+    update_text = options.delete(:loading_message)
     if update_text
-      options["data-target-text"] = update_text
+      options["data-loading-message"] = update_text
+    end
+    
+    update_text_target = options.delete(:loading_message_target)
+    if update_text_target
+      options["data-loading-message-target"] = update_text_target
     end
     
     overlay = options.delete(:overlay)

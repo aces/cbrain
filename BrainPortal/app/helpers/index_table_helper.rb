@@ -157,7 +157,7 @@ module IndexTableHelper
           @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id}, :class  => "action_link",
                                                                                    :confirm  => confirm_proc.call(object),
                                                                                    :target  => "##{object.class.name.underscore}_#{object.id}",
-                                                                                   :target_text  => "<td colspan='#{num_cells}' style='color:red; text-align:center'>Deleting...</td>"
+                                                                                   :loading_message  => "<td colspan='#{num_cells}' style='color:red; text-align:center'>Deleting...</td>"
           }
         end
       end

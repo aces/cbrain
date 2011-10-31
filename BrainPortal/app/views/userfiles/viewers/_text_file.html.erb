@@ -8,10 +8,14 @@
   end
 %>
 
-<% if params[:content_viewer] == "off" %>
-  <PRE><%= File.read(path) %></PRE>
-<% else %>
-  <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
+<% if path %>
+  <% if params[:content_viewer] == "off" %>
     <PRE><%= File.read(path) %></PRE>
+  <% else %>
+    <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
+      <PRE><%= File.read(path) %></PRE>
+    <% end %>
   <% end %>
+<% else %>
+  <%= html_colorize("Could not load file contents.") %>
 <% end %>

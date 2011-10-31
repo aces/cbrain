@@ -87,7 +87,7 @@ module UserfilesHelper
   def data_link(file_name, userfile)
     display_name = Pathname.new(file_name).basename.to_s
     matched_class = SingleFile.descendants.unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
-    if matched_class 
+    if matched_class && userfile.is_locally_synced?
       if matched_class <= TextFile
         overlay_ajax_link h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :content_loader => :collection_file, :arguments => file_name, :viewer => "text_file", :content_viewer => "off")
       elsif matched_class <= ImageFile
