@@ -18,6 +18,7 @@
 
     <%= csrf_meta_tag %>
     <%= stylesheet_link_tag  "cbrain", "jquery-ui", "macacc", :media => "all" %>
+    <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form" %>
   </head>
 
   <body id="cbrain">     
@@ -32,8 +33,6 @@
     <!-- Scripts -->
 
     <%= javascript_include_tag "tableH" %>
-
-    <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "processing" %>
     <%= javascript_include_tag "cbrain" %>
     <%= javascript_include_tag "rails" %>
 

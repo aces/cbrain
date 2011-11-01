@@ -249,7 +249,7 @@ class UserfilesController < ApplicationController
       end
     else
       @userfile.sync_to_cache
-      send_file @userfile.cache_full_path
+      send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name
     end
   rescue
     render :file => "public/404.html", :status => 404
