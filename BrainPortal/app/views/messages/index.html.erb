@@ -1,25 +1,10 @@
 
 <% title 'Messaging Center' %>
 
-<div class="menu_bar menu_bar_left">
-  <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
-    <%= overlay_ajax_link 'Leave Message', new_message_path, :class => "button" %>
-  <% end %>
-  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :message}  %>
-  <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
-
-  <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
+<div id="message_index_display">
+  <%= render :partial => 'message_index_display' %>
 </div>
 
-<P>
-
-<%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
-
-  <table class="resource_list" id="message_table">
-     <%= render :partial => 'message_table' %>
-  </table>
-
-<% end %>
 
 <% if current_user.has_role? :admin %>
 

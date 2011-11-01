@@ -1,5 +1,5 @@
 <div class="menu_bar menu_bar_left">
-  <%= overlay_ajax_link 'Create User', new_user_path, :class => "button" %>
+  <%= new_model_button 'Create User', new_user_path %>
   <%= render :partial => "shared/manage_filter_button", :locals => {:model => :user}  %>
 </div>
 

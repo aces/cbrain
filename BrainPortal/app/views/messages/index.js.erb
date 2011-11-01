@@ -1,0 +1,3 @@
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#message_index_display").html(<%= html_for_js(render(:partial => 'message_index_display')) %>);
+jQuery("#message_index_display").trigger("new_content");

@@ -1,6 +1,6 @@
 <div class="menu_bar menu_bar_left">
   <% if current_user.has_role?(:admin) %>
-    <%= overlay_ajax_link 'Create New Tool', new_tool_path, :class => "button" %>
+    <%= new_model_button 'Create New Tool', new_tool_path %>
        
     <span title="Registers all subclasses of PortalTask as Tools">
       <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>

@@ -1,3 +1,2 @@
 <%= render :partial => "shared/flash_update" %>
-<%= render :partial => "shared/remove_new_panel" %>
 jQuery("#bourreaux_display").html( <%= html_for_js(render :partial => "bourreaux_display" ) %> ).trigger("new_content");
