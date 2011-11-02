@@ -105,8 +105,6 @@ class MessagesController < ApplicationController
     end
     prepare_messages
     
-puts_red @message.errors.inspect
-
     respond_to do |format|
       if @message.errors.empty?
         flash.now[:notice] = 'Message was successfully sent.'
