@@ -1,5 +1,5 @@
 <div class="menu_bar menu_bar_left">
-  <%= overlay_ajax_link 'Create New Site', new_site_path, :class => "button" %>
+  <%= new_model_button 'Create New Site', new_site_path %>
   <%= render :partial => "shared/manage_filter_button", :locals => {:model => :site}  %>
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
 </div>

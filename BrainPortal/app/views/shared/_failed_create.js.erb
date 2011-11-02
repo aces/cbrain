@@ -1,1 +1,2 @@
-jQuery('#new_model_panel').replaceWith(<%= html_for_js(render :partial  => "#{model_name.pluralize}/new") %>)
+jQuery('#new_model').replaceWith(<%= html_for_js(render :partial  => "#{model_name.pluralize}/new") %>)
+jQuery('#new_model').trigger("new_content")

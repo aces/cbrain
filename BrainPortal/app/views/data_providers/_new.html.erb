@@ -1,23 +1,27 @@
-<div id="new_model_panel">
-  <%= error_messages_for :provider %>
+<span id="new_model">
+  <%= button_with_dropdown_menu("Create New Data Provider", :open => true) do %>
+    <%= error_messages_for :provider %>
 
-  <div class="display_cell">
-    <%= ajax_form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+    <div class="display_cell">
+      <%= ajax_form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-    <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
 
-    <p><%= submit_tag 'Create' %></p>
+      <p><%= submit_tag 'Create' %></p>
 
-    <% end %>
-  </div>
-
-  <div class="display_cell" style="padding-left: 1em;">
-    <table>
-      <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
-      <% @ssh_keys.each do |pair| %>
-        <tr><th class="subtitle"><%= pair[0] %></th></tr>
-        <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(pair[1] || "This Execution Server is DOWN!") %></PRE></td></tr>
       <% end %>
-    </table>
-  </div>
-</div>
+    </div>
+
+    <div class="display_cell" style="padding-left: 1em;">
+      <table>
+        <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
+        <% @ssh_keys.each do |pair| %>
+          <tr><th class="subtitle"><%= pair[0] %></th></tr>
+          <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(pair[1] || "This Execution Server is DOWN!") %></PRE></td></tr>
+        <% end %>
+      </table>
+    </div>
+  <% end %>
+</span>
+
+

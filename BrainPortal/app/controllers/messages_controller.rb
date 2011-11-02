@@ -62,6 +62,7 @@ class MessagesController < ApplicationController
     
     respond_to do |format|
       format.html # index.html.erb
+      format.js
       format.xml  { render :xml => @messages }
     end
   end
@@ -103,15 +104,15 @@ class MessagesController < ApplicationController
       end
     end
     prepare_messages
-
+    
     respond_to do |format|
-      flash.now[:notice] = 'Message was successfully sent.'
-      format.xml  { render :xml => @message, :status => :created, :location => @message }
-      
-      format.js do
-        @messages = current_user.messages.order( "last_sent DESC" )
-        
-        render :action  => :create
+      if @message.errors.empty?
+        flash.now[:notice] = 'Message was successfully sent.'
+        format.xml { render :xml => @message, :status => :created, :location => @message }
+        format.js  { redirect_to :action => :index }
+      else
+        format.xml { render :xml => @message.errors, :status => :unprocessable_entity }
+        format.js  {  render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'message' } }
       end
     end
   end

@@ -1,16 +1,18 @@
-<div id="new_model_panel">
-  
-  <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<span id="new_model">
+  <%= button_with_dropdown_menu("Create New Server", :open => true) do %>
+    <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-     <%= f.error_messages %>
+       <%= f.error_messages %>
 
-     <%= render :partial => 'form_fields', :locals => { :f => f }  %>
+       <%= render :partial => 'form_fields', :locals => { :f => f }  %>
 
-     <p><%= submit_tag 'Create' %></p>
+       <p><%= submit_tag 'Create' %></p>
 
-  <% end -%>
+    <% end -%>
 
-  <%= render :partial => "notes" %>
-</div>
+    <%= render :partial => "notes" %>
+  <% end %>
+</span>
+
 
 

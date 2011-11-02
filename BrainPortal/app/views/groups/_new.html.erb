@@ -1,26 +1,27 @@
-<div id="new_model_panel">
-  <%= ajax_form_for @group, :as => :group, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<span id="new_model">
+  <%= button_with_dropdown_menu("Create Project", :open => true) do %>
+    <%= ajax_form_for @group, :as => :group, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-    <%= f.error_messages %>
+      <%= f.error_messages %>
 
-    <p>
-      <%= f.label :name, "Name" %><br />
-      <%= f.text_field :name %>
-    </p>
-    <% if current_user.has_role?(:admin) %>
-      <p><%= f.label :site_id, "Site" %><br/>
-       <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+      <p>
+        <%= f.label :name, "Name" %><br />
+        <%= f.text_field :name %>
+      </p>
+      <% if current_user.has_role?(:admin) %>
+        <p><%= f.label :site_id, "Site" %><br/>
+         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+      <% end %>
+
+      <% if current_user.has_role?(:user) %>
+        <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
+      <% else %>
+        <%= render :partial => 'users_form' %>
+      <% end %>
+      <p>
+        <%= f.submit "Create" %>
+      </p>
     <% end %>
-
-    <% if current_user.has_role?(:user) %>
-      <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
-    <% else %>
-      <%= render :partial => 'users_form' %>
-    <% end %>
-    <p>
-      <%= f.submit "Create" %>
-    </p>
   <% end %>
-  
-</div>
+</span>
 

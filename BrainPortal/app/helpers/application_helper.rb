@@ -41,6 +41,23 @@ module ApplicationHelper
       "#{key.to_s.humanize}:#{value}"
     end
   end
+  
+  #Create a button for displaying an
+  #ajax-loaded new panel
+  def new_model_button(text, path)
+    html =  "<span id=\"new_model\">\n"
+    html +=  ajax_link text, path, :class => "button", 
+                                   :target => "#new_model",
+                                   :id => "new_model_button",
+                                   :replace => true, 
+                                   :datatype => "html",
+                                   :loading_message => "<span class=\"ui-button-text\" style=\"color: red\">Loading...</span>",
+                                   :loading_message_target => "#new_model_button"
+    
+    html +="\n</span>\n"
+    
+    html.html_safe
+  end
 
   # Add a tooltip to a block of html
   def add_tool_tip(message, element='span', &block)

@@ -1567,6 +1567,13 @@ td.middle {
     width: 30em;
 }
 
+#new_model .ui-button-icon-secondary {
+  display: none;
+}
+
+#new_model .ui-button-text {
+  padding: .4em 1em;
+}
 
 /* % ######################################################### */
 /* % QC styling */
