@@ -789,7 +789,7 @@ class DataProvider < ActiveRecord::Base
     # Copy log
     old_log = target_exists ? "" : userfile.getlog
     action  = target_exists ? 'crushed' : 'copied'
-    userfile.addlog("Content #{action} to '#{newfile.name}' (ID #{newfile.id}) of DataProvider '#{otherprovider.name}'.")
+    userfile.addlog("Content #{action} to '#{newfile.name}' (ID #{newfile.id}) on DataProvider '#{otherprovider.name}'.")
     newfile.addlog("Content #{action} from '#{userfile.name}' (ID #{userfile.id}) of DataProvider '#{self.name}'.")
     unless old_log.blank?
       newfile.addlog("---- Original log follows: ----")

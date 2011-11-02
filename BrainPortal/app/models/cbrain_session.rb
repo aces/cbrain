@@ -105,7 +105,7 @@ class CbrainSession
   # :guessed_remote_host and the :raw_user_agent
   def clear_data!
     @session.each do |k,v|
-      next if [ :guessed_remote_host, :raw_user_agent ].include?(k)
+      next if k.to_s =~ /guessed_remote_ip|guessed_remote_host|raw_user_agent/
       @session.delete(k)
     end
   end
