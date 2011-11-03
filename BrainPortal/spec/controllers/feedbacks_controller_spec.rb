@@ -12,7 +12,7 @@ describe FeedbacksController do
     context "collection action" do
       describe "index" do
         before(:each) do
-          controller.stub!(:base_filtered_scope).and_return([feedback])
+          controller.stub!(:base_filtered_scope).and_return(double("feedback_scope", :includes => [feedback]))
         end
         it "should use the basic filtered scope" do
           controller.should_receive(:base_filtered_scope)

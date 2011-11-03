@@ -425,22 +425,6 @@ describe Userfile do
   end
 
   describe "#self.paginate" do
-
-    it "should set per_page to 10 if per_page < 10" do
-      pager = double('pager')
-      WillPaginate::Collection.should_receive(:create).with(1,10).and_yield(pager)
-      pager.should_receive(:replace)
-      pager.stub!(:total_entries=)
-      Userfile.paginate([1],1,1)
-    end
-
-    it "should set per_page to 200 if per_page > 200" do
-      pager = double('pager')
-      WillPaginate::Collection.should_receive(:create).with(1,200).and_yield(pager)
-      pager.should_receive(:replace)
-      pager.stub!(:total_entries=)
-      Userfile.paginate([1],1,300)
-    end
     
     it "should call replace only once if we have no files" do
       pager = double('pager')

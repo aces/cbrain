@@ -12,7 +12,7 @@ describe ToolsController do
   
       describe "index", :current => true do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return([tool])
         end
         
         it "should assign @tools" do
@@ -163,7 +163,7 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return([tool])
         end
   
         it "should assign @tools" do
@@ -245,7 +245,7 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub_chain(:base_filtered_scope ,:includes, :order).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return([tool])
         end
   
         it "should assign @tools" do

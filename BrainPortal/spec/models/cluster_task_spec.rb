@@ -453,7 +453,7 @@ describe ClusterTask do
       end
 
       it "should called save on self" do
-        cluster_task.should_receive(:save)
+        cluster_task.should_receive(:save).at_least(:once)
         cluster_task.setup_and_submit_job
       end 
 

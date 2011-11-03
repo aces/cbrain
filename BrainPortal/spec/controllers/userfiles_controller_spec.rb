@@ -222,7 +222,7 @@ describe UserfilesController do
       end
       it "should redirect to index if the upload file has an invalid name" do
         Userfile.stub!(:is_legal_filename?).and_return(false)
-        post :create, :upload_file => double("upload_file", :original_filename => "/x/y/.Bad*")
+        post :create, :upload_file => double("upload_file", :original_filename => "/x/y/.Bad*").as_null_object
         response.should redirect_to(:action => :index)
       end
       context "saving a single file" do
@@ -821,7 +821,7 @@ describe UserfilesController do
       it "should send the userfile itself if no content given" do
         mock_userfile.stub!(:find_content_loader).and_return(nil)
         mock_userfile.stub!(:cache_full_path).and_return("path")
-        controller.should_receive(:send_file).with("path")
+        controller.should_receive(:send_file).with("path", anything)
         get :content, :id => 1
       end
     end

@@ -120,7 +120,7 @@ describe UserfileCustomFilter do
     describe "#tag_ids=" do
       it "should assign tags to the data hash" do
         filter.tag_ids=( [tag1.id.to_i] )
-        filter.tags.should =~ [tag1.name.to_s]
+        filter.tag_ids.should =~ [tag1.id.to_s]
       end
     end
   
@@ -128,11 +128,11 @@ describe UserfileCustomFilter do
       
       it "should return empty array if no tags is used" do
         filter.data = nil
-        filter.tags.should be_empty
+        filter.tag_ids.should be_empty
       end
       it "should return only the tags in the data hash" do
-        filter.data = { "tags" => [tag1.name.to_s,tag2.name.to_s]}
-        filter.tags.should =~ [tag1.name.to_s,tag2.name.to_s]
+        filter.data = { "tag_ids" => [tag1.id,tag2.id]}
+        filter.tag_ids.should =~ [tag1.id,tag2.id]
       end
     end
   end
