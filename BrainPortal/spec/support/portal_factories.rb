@@ -193,6 +193,14 @@ Factory.define :cbrain_task do |cbrain_task|
   cbrain_task.association :tool_config
 end
 
+Factory.define :portal_task do |portal_task|
+  portal_task.status      "New"
+  portal_task.association :bourreau
+  portal_task.association :user
+  portal_task.association :group
+  portal_task.association :tool_config
+end
+
 Factory.define "cbrain_task/diagnostics" do |cbrain_task|
   cbrain_task.status      "New"
   cbrain_task.add_attribute( :type, "CbrainTask::Diagnostics")
@@ -222,5 +230,6 @@ end
 Factory.define :message do |message|
   message.association :user  
 end
+
 
 
