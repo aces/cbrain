@@ -508,7 +508,7 @@ class PortalTask < CbrainTask
     end
 
     def generate_message(paramspath,*args) #:nodoc:
-      @real_errors.generate_message(paramspaths.to_la_id,*args)
+      @real_errors.generate_message(paramspath.to_la_id,*args)
     end
 
     def invalid?(paramspath) #:nodoc:
@@ -571,7 +571,7 @@ class PortalTask < CbrainTask
     if prettyhash.size > 0
        extended = prettyhash.dup
        prettyhash.each do |att,name| # extend it with to_la_id automatically...
-         next unless att.is_a?(String) && (att.index('[') || -1 ) >= 0
+         next unless att.is_a?(String) && att.include?('[')
          id_att = att.to_la_id
          next if extended.has_key?(id_att)
          extended[id_att] = name
