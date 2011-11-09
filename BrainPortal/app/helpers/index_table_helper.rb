@@ -139,9 +139,8 @@ module IndexTableHelper
 
       # Describe a cell
       def cell(options = {}, &block)
-        condition = options.delete(:if) || Proc.new { |o| true  }
-        proc = block || Proc.new { |o| "" }
-        @cells << [proc, options, condition]
+        condition = options.delete(:if)
+        @cells << [block, options, condition]
       end
       
       # Shortcut for creating a cell with a link to the object's edit page.
@@ -189,18 +188,18 @@ module IndexTableHelper
       end
       
       def cell_html(object) #:nodoc:        
-        html = ""
+        html = []
         @cells.each do |cell|
           cell      = [cell] unless cell.is_a? Array 
           proc      = cell[0]
           options   = cell[1] || {}
           condition = cell[2]
-          content   = proc.call(object) if condition.call(object)
+          content   = proc ? proc.call(object) : "" if condition.blank? || condition.call(object)
           
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-          html += "<td #{atts}>#{content}</td>\n"
+          html << "<td #{atts}>#{content}</td>\n"
         end
-        html
+        html.join("")
       end      
 
     end #End class column
@@ -320,29 +319,32 @@ module IndexTableHelper
     
     yield(table_builder)
     
-    html = "<table #{atts}>\n<tr>\n"
-    html += table_builder.header_html
+    html = []
+
+    html << "<table #{atts}>\n<tr>\n"
+    html << table_builder.header_html
     table_builder.columns.each do |col|
-      html += col.header_html + "\n"
+      html << col.header_html + "\n"
     end
-    html += "</tr>\n"
+    html << "</tr>\n"
+
     if collection.empty?
-      html += table_builder.empty_table_html
+      html << table_builder.empty_table_html
     else
       collection.each do |object|
         if table_builder.row_override?(object)
-          html += table_builder.row_override_html(object)
+          html << table_builder.row_override_html(object)
         else
-          html += "<tr #{table_builder.row_attribute_html(object)}>\n"
+          html << "<tr #{table_builder.row_attribute_html(object)}>\n"
           table_builder.columns.each do |col|
-            html += col.cell_html(object)
+            html << col.cell_html(object)
           end
-          html += "</tr>\n"
+          html << "</tr>\n"
         end
       end
     end
-    html += "</table>\n"
+    html << "</table>\n"
     
-    html.html_safe
+    html.join("").html_safe
   end
 end

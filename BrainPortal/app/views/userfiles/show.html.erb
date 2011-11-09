@@ -85,15 +85,17 @@
     </tr>
 
     <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Data Provider:</th>
-      <td><%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-      ( <%= @userfile.data_provider.class.to_s %> )
-      </td>
-      <td>
+        <th class="right_align">Data Provider:</th>
+        <td>
+          <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+          ( <%= @userfile.data_provider.class.to_s %> )
+        </td>
+        <td>
+          <%= "Cached: " unless @userfile.sync_status.blank? %>
           <% @userfile.sync_status.each do |syncstat| %>
             <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
           <% end %>
-      </td>
+        </td>
     </tr>
 
     <% if current_user.has_role? :admin %>

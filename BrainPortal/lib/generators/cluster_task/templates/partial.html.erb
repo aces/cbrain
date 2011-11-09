@@ -56,7 +56,7 @@ List of Userfiles selected:<BR>
 
 <P>
 
-Final report name: <%%= text_field_tag :report.to_la, params[:report] %>
+Final report name: <%%= form.params_text_field :report %>
 <BR>
-Send report to Stephen Harper: <%%= check_box_tag :to_ottawa.to_la, 1, params[:to_ottawa] %>
+Send report to Prime Minister Stephen Harper: <%%= form.params_check_box :to_ottawa %>
 <P>

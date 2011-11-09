@@ -72,7 +72,7 @@
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}",
                            :replace        => true,
                            :error_message  => "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Information for '#{rr.name}' unavailable</td>" do
-          "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Loading...</td>".html_safe
+          "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Checking '#{rr.name}'...</td>".html_safe
         end
       else
         render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr }
