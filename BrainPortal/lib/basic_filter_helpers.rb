@@ -20,7 +20,7 @@ module BasicFilterHelpers
           group("#{table}.#{column}").
           order("#{table}.#{column}").
           reject { |obj| obj.send(column).blank? }.
-          map { |obj|  ["#{formatter.call(obj.send(column))} (#{obj.count})", column => obj.send(column)]}
+          map { |obj|  ["#{formatter.call(obj.send(column))} (#{obj.count})", :filters => {column => obj.send(column)}]}
   end
   
   #Create filtered array to be used by TableBuilder for
@@ -38,7 +38,7 @@ module BasicFilterHelpers
           order("#{assoc_table}.#{name_method}").
           group("#{table}.#{foreign_key}").
           all.
-          map { |obj| ["#{formatter.call(obj.send("#{association}_#{name_method}"))} (#{obj.count})", foreign_key => obj.send(foreign_key)] }
+          map { |obj| ["#{formatter.call(obj.send("#{association}_#{name_method}"))} (#{obj.count})", :filters => {foreign_key => obj.send(foreign_key)}] }
   end
   
 end

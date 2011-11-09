@@ -16,6 +16,37 @@ module UserfilesHelper
     end
   end
   
+  def filename_listing(userfile)
+    html = []
+    html << tree_view_icon(@filter_params["tree_sort"], userfile.level) if (userfile.level || 0) > 0
+    if userfile.is_a? FileCollection
+      file_icon = image_tag "/images/folder_icon_solid.png"
+    else
+      file_icon = image_tag "/images/file_icon.png"
+    end
+    html << ajax_link(file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :datatype => "script", :title => "Show in Unfiltered File List")
+    html << " "
+    html << link_to_userfile_if_accessible(userfile)
+    userfile.sync_status.each do |syncstat| 
+      html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
+    end 
+    if userfile.formats.size > 0 
+      html << "<br>"
+      html << ("&nbsp;" * ((userfile.level || 0) * 5))
+      html << show_hide_toggle("Formats", ".format_#{userfile.id}", :class  => "action_link")
+      html << userfile.formats.map do |u| 
+                if u.available?
+                  cb = check_box_tag("file_ids[]", u.id.to_s, false)
+                else
+                  cb = "<input type='checkbox' DISABLED />"
+                end
+                cb = "<span class=\"format_#{userfile.id}\" style=\"display:none\">#{cb}</span>"
+                link_to_userfile_if_accessible(u,current_user,:name => u.format_name) + " #{cb}"
+              end.join(", ")
+    end 
+    html.join.html_safe
+  end
+  
   def shift_file_link(userfile, dir, same_type, options = {})
     if dir.to_s.downcase == "previous"
       direction = "previous"

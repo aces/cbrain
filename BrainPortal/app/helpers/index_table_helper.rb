@@ -171,20 +171,20 @@ module IndexTableHelper
         end
         
         atts = @header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-        html = "<th #{atts}>#{@header_text}"
+        html = ["<th #{atts}>#{@header_text}"]
         unless filters.blank?
-          html += "<br>\n"
-          html += "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
+          html << "<br>\n"
+          html << "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
-            html += "<li>\n"
-            html += @template.instance_eval { filter_add_link f[0], f[1] }
-            html += "</li>\n"
+            html << "<li>\n"
+            html << @template.instance_eval { filter_add_link f[0], f[1] }
+            html << "</li>\n"
           end
-          html += "</ul>\n"
+          html << "</ul>\n"
         end
-        html += "</th>\n"
+        html << "</th>\n"
         
-        html
+        html.join
       end
       
       def cell_html(object) #:nodoc:        
@@ -199,7 +199,7 @@ module IndexTableHelper
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
           html << "<td #{atts}>#{content}</td>\n"
         end
-        html.join("")
+        html.join
       end      
 
     end #End class column
@@ -344,7 +344,7 @@ module IndexTableHelper
       end
     end
     html << "</table>\n"
-    
-    html.join("").html_safe
+        
+    html.join.html_safe
   end
 end

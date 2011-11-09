@@ -1,41 +1,56 @@
-<tr>    
-  <th><%= select_all_checkbox "userfiles_checkbox" %></th> 
-  <th>
-    <%= ajax_sort_link "Filename", 'Userfile', 'name' %>
-  </th>
-  <th>
-    <%= ajax_sort_link "Type", 'Userfile', 'type' %>
-  </th>
-  <% unless @filter_params["details"] == 'off' %>
-    <th class="userfiles_details" >
-      <%= ajax_sort_link "Owner", 'User', 'login' %>
-    </th>
-    <th class="userfiles_details">
-      <%= ajax_sort_link "Creation Date", 'Userfile', 'created_at' %>
-    </th>
-  <% end %>
-  <th>  
-    <%= ajax_sort_link "Size", 'Userfile', 'size' %>
-  </th>
-  <th>Tags</th>
-  <% unless current_project %>
-    <th>
-      <%= ajax_sort_link "Project", 'Group', 'name' %>
-    </th>
-  <% end %>
-  <th>
-    <%= ajax_sort_link "Project Access", 'Userfile', 'group_writable' %>
-  </th>
-   <% unless @filter_params["details"] == 'off' %>
-    <th class="userfiles_details">
-      <%= ajax_sort_link "Provider", 'DataProvider', 'name' %>
-    </th>  
-   <% end %>
-</tr>
+<%= render :partial => "userfiles/file_menu" %>
 
-<% @userfiles.each do |userfile| %>
-   <%= render :partial => 'userfiles/userfile_table_row', :locals => { :userfile => userfile } %>
-<% end %>
+<div id="pagination" class="pagination">
+  <%= render :partial => 'userfiles/pagination' %>
+</div>
 
-<%= hidden_field_tag :page, @current_page %>
+<%= 
+  index_table @userfiles, :class => "resource_list", :id => "userfiles_table" do |t|
+    t.row_attributes do |u|
+      if params[:find_file_id].to_s == u.id.to_s
+        { :class => "selected_row row_highlight" }
+      elsif u.available?
+        { :class =>"#{cycle("list-odd", "list-even")} row_highlight" }
+      else
+        { :class => "list-unavailable row_highlight", :title => "This file is unavailable due to its provider being offline" }
+      end
+    end
+    t.column(select_all_checkbox("userfiles_checkbox")) do |u|
+      check_box_tag("file_ids[]", u.id.to_s, current_session.persistent_userfile_ids[u.id.to_s], :class  => 'userfiles_checkbox', :disabled => !u.available?)
+    end
+    t.describe_sort_column("Filename", 'Userfile', 'name') do |col|
+      col.cell(:class => "left") { |u| filename_listing(u) }
+    end
+    t.sort_column("Type", 'Userfile', 'type', :filters => basic_filters_for(@header_scope, Userfile, :type)) { |u| u.pretty_type }
+    unless @filter_params["details"] == 'off'
+      t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@header_scope, Userfile, :user, :name_method => "login")) { |u| link_to_user_if_accessible(u.user) }
+      t.sort_column("Creation Date", 'Userfile', 'created_at') do |u|
+        html_tool_tip(to_localtime(u.created_at,:date), :offset_x => 0, :offset_y => 20) do
+          "Created: #{u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}<br/>".html_safe +
+          "Updated: #{u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}".html_safe
+        end
+      end
+    end
+    t.sort_column("Size", 'Userfile', 'size') do |u|
+      if u.size != nil
+        "<span title=\"#{u.size} bytes\">#{u.format_size}</span>"
+      else
+        "<font color=\"red\">unknown</font>"
+      end
+    end
+    t.column("Tags", :filters => @tag_filters) { |u| u.get_tags_for_user(current_user).collect(&:name).join("<br>").html_safe }
+    unless current_project
+      t.describe_sort_column("Project", 'Group', 'name', :filters => association_filters_for(@header_scope, Userfile, :group)) do |col|
+        col.cell(:if => Proc.new { |u| u.group } ) { |u| link_to_group_if_accessible(u.group) }
+      end
+    end
+    t.describe_sort_column("Project Access", 'Userfile', 'group_writable') do |col|
+      col.cell(:if => Proc.new { |u| u.group } ) { |u| u.group_writable ? 'Read/Write' : 'Read Only' }
+    end
+    unless @filter_params["details"] == 'off'
+      t.sort_column("Provider", 'DataProvider', 'name', :filters => association_filters_for(@header_scope, Userfile, :data_provider)) { |u| link_to_data_provider_if_accessible(u.data_provider) }
+    end
+  end
+ %>
+
 

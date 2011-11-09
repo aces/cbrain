@@ -34,8 +34,6 @@ class UserfilesController < ApplicationController
     # Filtered scope
     #------------------------------
 
-    filtered_scope = Userfile.scoped( {} )
-
     # Prepare filters
     @filter_params["filter_hash"]                 ||= {}
     @filter_params["filter_custom_filters_array"] ||= []
@@ -50,8 +48,21 @@ class UserfilesController < ApplicationController
     # Prepare tag filters
     tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
     
+    @header_scope = Userfile.scoped
+    # Restrict by 'view all' or not
+    if current_user.has_role?(:user)
+      @filter_params["view_all"] ||= 'off'
+    end
+    if @filter_params["view_all"] == 'on'
+      @header_scope = Userfile.restrict_access_on_query(current_user, @header_scope, :access_requested => :read)
+    else
+      @header_scope = @header_scope.where( :user_id => current_user.id )
+    end
+    tags_and_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
+    @tag_filters = tags_and_counts.map { |tc| ["#{tc.tag_name} (#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
+    
     #Apply filters
-    filtered_scope = base_filtered_scope
+    filtered_scope = base_filtered_scope(@header_scope)
     filtered_scope = filtered_scope.where( :format_source_id => nil )
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
@@ -66,16 +77,6 @@ class UserfilesController < ApplicationController
     # Filter by current project
     if current_project
       filtered_scope = filtered_scope.where( :group_id  => current_project.id )
-    end
-
-    # Restrict by 'view all' or not
-    if current_user.has_role?(:user)
-      @filter_params["view_all"] ||= 'off'
-    end
-    if @filter_params["view_all"] == 'on'
-      filtered_scope = Userfile.restrict_access_on_query(current_user, filtered_scope, :access_requested => :read)
-    else
-      filtered_scope = filtered_scope.where( :user_id => current_user.id )
     end
     
     #------------------------------

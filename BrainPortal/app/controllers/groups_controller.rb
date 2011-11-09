@@ -23,8 +23,6 @@ class GroupsController < ApplicationController
     @header_scope = current_user.available_groups
     @groups = base_filtered_scope @header_scope.includes(:site)
     
-
-
     common_form_elements()
 
     respond_to do |format|

@@ -8,25 +8,21 @@
 <div class="display_cell" id="userfiles_menus_and_filelist">
 
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
+    <%= hidden_field_tag :page, @current_page %>
 
-  <%= render :partial => "userfiles/file_menu" %>
+    <div>
+      <div id="userfiles_display">
+        <%= render :partial => 'userfiles_display' %>
+      </div>
+      
 
-  <div id="pagination" class="pagination">
-    <%= render :partial => 'userfiles/pagination' %>
-  </div>
-
-  <div>
-    <table class="resource_list" id="userfiles_table">
-      <%= render :partial => 'userfiles/userfiles_table' %>
-    </table>
-
-    <center>
-       Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-       <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-         <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-       <% end %>
-    </center>
-  </div>
+      <center>
+        Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
+        <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
+          <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
+        <% end %>
+      </center>
+    </div>
 
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->

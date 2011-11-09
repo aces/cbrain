@@ -199,15 +199,23 @@ class ApplicationController < ActionController::Base
 
     # Record not accessible
     rescue ActiveRecord::RecordNotFound => e
-      raise if Rails.env == 'development' #Want to see stack trace in dev.
+      #raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
-      redirect_to default_redirect
+      respond_to do |format|
+        format.html { redirect_to default_redirect }
+        format.js   { render :partial  => "shared/flash_update", :status  => 404 } 
+        format.xml  { render :xml => {:error  => e.message}, :status => 404 }
+      end
 
     # Action not accessible
     rescue ActionController::UnknownAction => e
       raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The page you requested does not exist."
-      redirect_to default_redirect
+      respond_to do |format|
+        format.html { redirect_to default_redirect }
+        format.js   { render :partial  => "shared/flash_update", :status  => 400 } 
+        format.xml  { render :xml => {:error  => e.message}, :status => 400 }
+      end
 
     # Internal CBRAIN errors
     rescue CbrainException => cbm
@@ -232,7 +240,11 @@ class ApplicationController < ActionController::Base
       log_exception(ex) # explicit logging in exception logger, since we won't re-raise it now.
       flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
       logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{ex.class} #{ex.message}"
-      redirect_to default_redirect
+      respond_to do |format|
+        format.html { redirect_to default_redirect }
+        format.js   { render :partial  => "shared/flash_update", :status  => 500 } 
+        format.xml  { render :xml => {:error  => e.message}, :status => 500 }
+      end
 
     end
 
