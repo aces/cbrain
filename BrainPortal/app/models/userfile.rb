@@ -71,8 +71,10 @@ class Userfile < ActiveRecord::Base
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
                                                     
+  # For tree sorting algorithm
   attr_accessor           :level
   attr_accessor           :tree_children
+  attr_accessor           :rank_order
   
   scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   scope                   :file_format, lambda { |f|
@@ -355,12 +357,18 @@ class Userfile < ActiveRecord::Base
   # at each level. The method will set the :level
   # pseudo attribute too, with 0 for the top level.
   def self.tree_sort(userfiles = [])
-    top       = Userfile.new( :parent_id => -999_999_999 ) # Dummy, to collect top level
-    userfiles = userfiles.to_a + [ top ] # Note: so that by_id[nil] returns 'top'
-    by_id     = userfiles.index_by { |u| u.tree_children = nil; u.id } # WE NEED TO USE THIS INSTEAD OF .parent !!!
-    seen      = {}
+    top         = Userfile.new( :name => "DUMMY_TOP", :parent_id => -999_999_999 ) # Dummy, to collect top level; ID is NIL!
+    userfiles   = userfiles.to_a + [ top ] # Note: so that by_id[nil] returns 'top'
+
+    by_id       = {}        # id => userfile
+    userfiles.each_with_index do |u,idx|
+      u.tree_children = nil
+      by_id[u.id]     = u   # WE NEED TO USE THIS INSTEAD OF .parent !!!
+      u.rank_order    = idx # original order in array
+    end
 
     # Construct tree
+    seen      = {}
     userfiles.each do |file|
       current  = file # probably not necessary
       track_id = file.id # to detect loops
@@ -389,7 +397,7 @@ class Userfile < ActiveRecord::Base
   def all_tree_children(level = nil) #:nodoc:
     return [] if self.tree_children.blank?
     result = []
-    self.tree_children.each do |child|
+    self.tree_children.sort { |a,b| a.rank_order <=> b.rank_order }.each do |child|
       child.level = level if level
       result << child
       if child.tree_children # the 'if' optimizes one recursion out

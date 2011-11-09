@@ -401,7 +401,7 @@ describe Userfile do
 
     it "should return sorted tree" do
       Userfile.tree_sort([userfile5, userfile, userfile2, userfile3, userfile1,userfile4]).should be ==
-        [userfile4, userfile5, userfile, userfile1, userfile2, userfile3]
+        [userfile, userfile1, userfile2, userfile3, userfile4, userfile5]
     end
 
     it "should assign level for each userfiles" do
@@ -465,14 +465,14 @@ describe Userfile do
      end
    
      it "should return true if user is in a specific group and have good permission" do
-       user.stub_chain(:group_ids, :include?).and_return(true)
+       user.stub!(:is_member_of_group).and_return(true)
        userfile.stub!(:group_writable).and_return(true)
        userfile.can_be_accessed_by?(user).should be_true
      end
 
      it "should return true if user is in a specific group and request_access is read" do
-       user.stub_chain(:group_ids, :include?).and_return(true)
-       userfile.can_be_accessed_by?(user,:read).should be_true
+       user.stub!(:is_member_of_group).and_return(true)
+       userfile.can_be_accessed_by?(user, :read).should be_true
      end
      
     it "should return false if all previous condition failed" do

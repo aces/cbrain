@@ -123,7 +123,7 @@ class CbrainTask::Diagnostics < ClusterTask
     file_ids      = params[:interface_userfile_ids] || []
 
     # Note: 'commands' is an ARRAY of strings.
-    commands = <<-"_DIAGNOSTIC COMMANDS_".split(/\n/).map &:strip
+    commands = <<-"_DIAGNOSTIC_COMMANDS_".split(/\n/).map &:strip
 
       echo "===================================================================="
       echo "STDOUT Diagnostics Bash Script Starting `date`"
@@ -135,32 +135,32 @@ class CbrainTask::Diagnostics < ClusterTask
       echo "====================================================================" 1>&2
       echo ""                                                                     1>&2
 
-      echo "---- Host Info ----"
+      echo "==== Host Info ===="
       uname -a
       uptime
       echo ""
 
       if test -f /etc/issue ; then
-        echo "---- Issue ----"
+        echo "==== Issue ===="
         cat /etc/issue
         echo ""
       fi
 
       if test -e /proc/cpuinfo ; then
-        echo "---- CPU Info ----"
+        echo "==== CPU Info ===="
         cat /proc/cpuinfo | sort | uniq
         echo ""
       fi
 
-      echo "---- Limits ----"
+      echo "==== Limits ===="
       ulimit -a
       echo ""
 
-      echo "---- Environment ----"
+      echo "==== Environment ===="
       env | sort
       echo ""
 
-    _DIAGNOSTIC COMMANDS_
+    _DIAGNOSTIC_COMMANDS_
 
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
@@ -168,15 +168,16 @@ class CbrainTask::Diagnostics < ClusterTask
       full   = u.cache_full_path
       mysize = u.size || 0.0
       mytype = u.class.to_s
+      commands << "\n"
       commands << "echo \"============================================================\""
       commands << "echo \"File=#{full}\""
       commands << "echo \"Size=#{mysize}\""
       commands << "echo \"Type=#{mytype}\""
       commands << "echo \"Start=`date`\""
-      if mytype == 'SingleFile'
-        commands << "wc -c #{full} 2>&1"
+      if u.is_a?(SingleFile)
+        commands << "wc -c '#{full}' 2>&1"
       else
-        commands << "du -s #{full} 2>&1"
+        commands << "du -s '#{full}' 2>&1"
       end
       commands << "echo \"End=`date`\""
     end
@@ -187,11 +188,12 @@ class CbrainTask::Diagnostics < ClusterTask
       commands << "echo \"============================================================\""
       commands << "echo \"Sleeping #{cluster_delay} seconds.\""
       commands << "sleep #{cluster_delay}"
-      commands << "\n"
     end
 
     commands << "\n"
+    commands << "echo \"============================================================\""
     commands << "echo Diagnostics Script Ending\n" # we check for this sentence in save_results()
+    commands << "\n"
 
     commands
   end

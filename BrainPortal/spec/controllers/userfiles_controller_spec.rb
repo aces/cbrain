@@ -119,7 +119,7 @@ describe UserfilesController do
           end
           it "should sort by project access" do
             get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.group_writable"} }
-            assigns[:userfiles].should == Userfile.all(:order => "userfiles.group_writable")
+            assigns[:userfiles].map(&:group_writable).should == Userfile.all(:order => "userfiles.group_writable").map(&:group_writable)
           end
           it "should sort by provider" do
             get :index, "userfiles" => { "sort_hash" => {"order" => "data_providers.name"} }
