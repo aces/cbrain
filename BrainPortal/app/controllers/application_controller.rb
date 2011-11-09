@@ -199,7 +199,7 @@ class ApplicationController < ActionController::Base
 
     # Record not accessible
     rescue ActiveRecord::RecordNotFound => e
-      #raise if Rails.env == 'development' #Want to see stack trace in dev.
+      raise if Rails.env == 'development' #Want to see stack trace in dev.
       flash[:error] = "The object you requested does not exist or is not accessible to you."
       respond_to do |format|
         format.html { redirect_to default_redirect }

@@ -272,15 +272,17 @@ module IndexTableHelper
       atts
     end
     
+    # Explicitly set the row code to be used to render the table.
+    # If used, column definition will only be used for the headers.
     def row_override(&block)
       @row_override = block
     end
     
-    def row_override?(object)
+    def row_override?(object) #:nodoc:
       @row_override ? true : false
     end
     
-    def row_override_html(object)
+    def row_override_html(object) #:nodoc:
       return "" unless @row_override
       
       @row_override.call(object)

@@ -33,7 +33,7 @@ module UserfilesHelper
     if userfile.formats.size > 0 
       html << "<br>"
       html << ("&nbsp;" * ((userfile.level || 0) * 5))
-      html << show_hide_toggle("Formats", ".format_#{userfile.id}", :class  => "action_link")
+      html << show_hide_toggle("Formats ", ".format_#{userfile.id}", :class  => "action_link")
       html << userfile.formats.map do |u| 
                 if u.available?
                   cb = check_box_tag("file_ids[]", u.id.to_s, false)
@@ -41,9 +41,9 @@ module UserfilesHelper
                   cb = "<input type='checkbox' DISABLED />"
                 end
                 cb = "<span class=\"format_#{userfile.id}\" style=\"display:none\">#{cb}</span>"
-                link_to_userfile_if_accessible(u,current_user,:name => u.format_name) + " #{cb}"
+                link_to_userfile_if_accessible(u,current_user,:name => u.format_name) + " #{cb}".html_safe
               end.join(", ")
-    end 
+    end
     html.join.html_safe
   end
   
