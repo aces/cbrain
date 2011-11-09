@@ -84,8 +84,9 @@ class UserfilesController < ApplicationController
     #------------------------------
 
     sorted_scope = filtered_scope.scoped({})
-    joins = []
     
+    # Identify and add necessary table joins
+    joins = []
     sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
     if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
@@ -96,9 +97,11 @@ class UserfilesController < ApplicationController
     when "data_providers"
       joins << :data_provider
     end
-    sorted_scope = sorted_scope.scoped(
-      :joins => joins
-    )
+    sorted_scope = sorted_scope.joins(joins) unless joins.empty?
+
+    # Add a secondary sorting column (name)
+    sorted_scope = sorted_scope.order(:name) unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
+
     
     #------------------------------
     # Pagination variables
@@ -130,7 +133,7 @@ class UserfilesController < ApplicationController
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       filtered_scope   = filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       @userfiles_total = filtered_scope.size
-      ordered_real     = sorted_scope.all(:include => (includes - joins), :offset => offset, :limit  => @userfiles_per_page)
+      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@userfiles_per_page).all
     # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects

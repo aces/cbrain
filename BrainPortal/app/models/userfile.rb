@@ -71,8 +71,10 @@ class Userfile < ActiveRecord::Base
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
                                                     
+  # For tree sorting algorithm
   attr_accessor           :level
   attr_accessor           :tree_children
+  attr_accessor           :rank_order
   
   scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   scope                   :file_format, lambda { |f|
@@ -355,15 +357,14 @@ class Userfile < ActiveRecord::Base
   # at each level. The method will set the :level
   # pseudo attribute too, with 0 for the top level.
   def self.tree_sort(userfiles = [])
-    top         = Userfile.new( :id => nil, :name => "DUMMY_TOP", :parent_id => -999_999_999 ) # Dummy, to collect top level
+    top         = Userfile.new( :name => "DUMMY_TOP", :parent_id => -999_999_999 ) # Dummy, to collect top level; ID is NIL!
     userfiles   = userfiles.to_a + [ top ] # Note: so that by_id[nil] returns 'top'
 
-    by_id       = {}
-    u_order_idx = {}
+    by_id       = {}        # id => userfile
     userfiles.each_with_index do |u,idx|
       u.tree_children = nil
-      by_id[u.id]     = u  # WE NEED TO USE THIS INSTEAD OF .parent !!!
-      u_order_idx[u]  = idx # original order in array
+      by_id[u.id]     = u   # WE NEED TO USE THIS INSTEAD OF .parent !!!
+      u.rank_order    = idx # original order in array
     end
 
     # Construct tree
@@ -385,7 +386,7 @@ class Userfile < ActiveRecord::Base
     end
 
     # Flatten tree
-    top.all_tree_children(0, u_order_idx) # sets top children's levels to '0'
+    top.all_tree_children(0) # sets top children's levels to '0'
   end
 
   # Returns an array will all children or subchildren
@@ -393,14 +394,14 @@ class Userfile < ActiveRecord::Base
   # Optionally, sets the :level pseudo attribute
   # to all current children, increasing it down
   # the tree.
-  def all_tree_children(level = nil, u_order_idx = {}) #:nodoc:
+  def all_tree_children(level = nil) #:nodoc:
     return [] if self.tree_children.blank?
     result = []
-    self.tree_children.sort { |a,b| u_order_idx[a] <=> u_order_idx[b] }.each do |child|
+    self.tree_children.sort { |a,b| a.rank_order <=> b.rank_order }.each do |child|
       child.level = level if level
       result << child
       if child.tree_children # the 'if' optimizes one recursion out
-        child.all_tree_children(level ? level+1 : nil, u_order_idx).each { |c| result << c } # amazing! faster than += for arrays!
+        child.all_tree_children(level ? level+1 : nil).each { |c| result << c } # amazing! faster than += for arrays!
       end
     end
     result
