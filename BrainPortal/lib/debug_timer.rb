@@ -44,7 +44,7 @@ class DebugTimer
     current_time = Time.now
     cumul_time = current_time - @base_time
     dif_time = current_time - @last_timepoint
-    message += ": diff=#{dif_time}s / cumul=#{cumul_time}s"
+    message += sprintf(": diff=%10.6fs / cumul=%10.6fs", dif_time, cumul_time)
     
     @last_timepoint = current_time
     message
