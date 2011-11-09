@@ -178,7 +178,7 @@ module IndexTableHelper
           html += "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
             html += "<li>\n"
-            html += @template.instance_eval { filter_add_link f[0], :filters => f[1] }
+            html += @template.instance_eval { filter_add_link f[0], f[1] }
             html += "</li>\n"
           end
           html += "</ul>\n"
@@ -256,12 +256,15 @@ module IndexTableHelper
       "<tr><th colspan=\"#{self.num_cells}\">#{@table_header}</th></tr>\n"
     end
     
-    #
+    # Define the attributes for each row in the table. 
+    # Can be given as an options hash (if all rows are the same)
+    # or as a block which will be passed the row's object and return
+    # a hash.
     def row_attributes(options = {}, &block)
       @header_attributes = block || Proc.new { |obj| options }
     end
     
-    def row_attribute_html(object)
+    def row_attribute_html(object)  #:nodoc:
       return "class=\"#{@template.cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\"" unless @header_attributes
       
       options = @header_attributes.call(object)
