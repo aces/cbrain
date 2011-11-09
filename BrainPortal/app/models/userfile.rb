@@ -330,7 +330,7 @@ class Userfile < ActiveRecord::Base
   #by +user+.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.all(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", user.id, user.group_ids])
+    self.tags.all(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
   end
 
   #Set the tags associated with this file to those
@@ -434,7 +434,7 @@ class Userfile < ActiveRecord::Base
     if user.id == self.user_id
       return true
     end
-    if user.group_ids.include?(self.group_id) && (self.group_writable || requested_access == :read)
+    if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
       return true
     end
 
