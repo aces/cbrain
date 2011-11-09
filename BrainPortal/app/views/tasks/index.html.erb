@@ -107,13 +107,9 @@
       </span>
       </div>
       
-      <div id="pagination" class="pagination">
-        <%= render :partial => "pagination" %>
+      <div id="tasks_display">
+        <%= render :partial => "tasks/tasks_display" %>
       </div>
-
-      <table class="resource_list" id="tasks_table">
-        <%= render :partial => "tasks/tasks_table" %>
-      </table>
 
   <% end %>  <!-- End form -->
 </div>
