@@ -1,0 +1,74 @@
+<% title 'Map' %>
+
+<% 
+all_loc = 
+{ #Quebec
+  "Colosse"     => "top:200px; left:600px; width:200px; height:25px",
+  #Montreal
+  # "HuiaExec"    => "top:255px; left:600px; width:200px; height:25px",
+  # "PhoenixExec" => "top:270px; left:600px; width:200px; height:25px",
+  "BrainStorm"  => "top:285px; left:600px; width:200px; height:25px",
+  "Guillimin"   => "top:300px; left:600px; width:200px; height:25px",
+  "InstantUnix" => "top:315px; left:600px; width:200px; height:25px",
+  #"Krylov"      => "top:315px; left:600px; width:200px; height:25px",
+  "MindStorm"   => "top:330px; left:600px; width:200px; height:25px",
+  #Sherbrooke
+  "Mammouth-S"  => "top:555px; left:600px; width:200px; height:25px",
+  #Toronto
+  "GPC"         => "top:555px; left:470px; width:200px; height:25px",
+  # "Kraken"      => "top:570px; left:470px; width:200px; height:25px",
+  #Vancouver
+  "Orcinus"     => "top:555px; left:90px; width:200px; height:25px"
+  # "Juropa"      => "top:385px; left:525px; width:200px; height:25px" }
+}
+%>
+
+<%
+all_bourreau_info = Hash.new
+all_bourreau = Bourreau.all
+all_bourreau.each do |bourreau|
+  info        = bourreau.info
+  tasks_tot   = info.tasks_tot
+  tasks_max   = info.tasks_max
+  tasks_max   = 'unlimited' if tasks_max.to_s == '0'
+  v_load      = "#{tasks_tot}/#{tasks_max}"
+  percent     = 100 #unlimited case
+  if tasks_max !~ /unlimited/
+    percent     = tasks_tot !~ /\?\?\?/ ? (tasks_tot.to_f/tasks_max.to_f) * 100 : -1
+  end
+  all_bourreau_info[bourreau.name] = { :id => bourreau.id, :load => v_load, :percent => percent }
+end
+
+%>
+ 
+<body>
+  <% if current_user.has_role?(:admin) %>
+    <img title="hpc_integration_20110316.png" style="width: 720px; height: 467px" src="/images/map.png">
+  
+    <% all_bourreau_info.each do |name, info| %>
+      <% loc         = all_loc["#{name}"]  %>
+      <% next if !loc%>
+      <% percent     = info[:percent] %>
+      <div style="position:absolute; <%= "#{loc}" %>">
+        <% if percent == -1 %>
+          <% color="color:black" %>
+        <% elsif percent < 60 %>
+          <% color="color:green" %>
+        <% elsif percent >= 60 && percent < 90 %>
+          <% color="color:orange" %>
+        <% else %>
+          <% color="color:red" %>   
+        <% end %>
+        
+        <% if link_to_bourreau_if_accessible(info[:id], current_user, :html_options => { :style => color}).to_s !~ /\(None\)/ %>
+          <%= html_tool_tip(link_to_bourreau_if_accessible(info[:id], current_user, :html_options => { :style => color}) ) do %>
+            <%= "#{info[:load]}" %>
+          <% end %>
+        <% end %>
+        
+        </font>
+      </div>
+    <% end %>
+  <% end %>
+    
+</body>
