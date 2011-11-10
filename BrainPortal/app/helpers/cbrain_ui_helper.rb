@@ -564,7 +564,9 @@ module CbrainUiHelper
     action = options.delete(:action) || params[:actions]
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
     link_options = options.reverse_merge(:datatype  => 'script')
-    ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    #ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    header = name + "&nbsp;" +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    ajax_link( header, url, link_options )
   end
   
   ################################################################

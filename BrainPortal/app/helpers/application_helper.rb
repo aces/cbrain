@@ -217,7 +217,7 @@ module ApplicationHelper
     if location == 'userfiles.tree_sort' || location == 'cbrain_tasks.batch'
       icon = '&bull;'
     else
-      icon = (current_dir == 'DESC') ? '&darr;' : '&uarr;'
+      icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
     end
     
     "<span class=\"order_icon\">#{icon}</span>".html_safe
