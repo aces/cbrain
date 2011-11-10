@@ -1,5 +1,3 @@
-
-<% @paginated_list.each do |launch_time| %>
   <% task_info         = @tasks[launch_time] %>
 
   <% if task_info[:num_tasks] == 1 %>
@@ -49,6 +47,4 @@
     </tr>
 
   <% end %>
-
-<% end %>
 

@@ -28,7 +28,7 @@ module BasicFilterHelpers
   def association_filters_for(scope, tab, assoc, options = {}, &block)
     table       = tab.to_s.underscore.pluralize
     association = assoc.to_s.underscore.singularize
-    assoc_table = association.pluralize
+    assoc_table = options[:association_table] || association.pluralize
     name_method = options[:name_method] || "name"
     foreign_key = options[:foreign_key] || "#{association}_id"
     formatter   = block || Proc.new { |text| text }

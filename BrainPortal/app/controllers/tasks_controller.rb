@@ -24,9 +24,9 @@ class TasksController < ApplicationController
     
     # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
     if current_project
-      scope = CbrainTask.where( :group_id => current_project.id )
+      @header_scope = CbrainTask.where( :group_id => current_project.id )
     else
-      scope = current_user.available_tasks
+      @header_scope = current_user.available_tasks
     end
     
     #Used to create filters
@@ -35,26 +35,10 @@ class TasksController < ApplicationController
     @task_projects = {}
     @task_status   = {}
     
-    header_scope = scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
-    header_scope = header_scope.where( :bourreau_id => bourreau_ids )
-
-    header_scope.select( "cbrain_tasks.type, COUNT(cbrain_tasks.type) as count" ).group("cbrain_tasks.type").each do |t|
-      @task_types[t.class.name] = t.count
-    end
-
-    header_scope.select( "cbrain_tasks.user_id, COUNT(cbrain_tasks.user_id) as count" ).group("cbrain_tasks.user_id").each do |t|
-      @task_owners[t.user] = t.count if t.user
-    end
-
-    header_scope.select( "cbrain_tasks.group_id, COUNT(cbrain_tasks.group_id) as count" ).group("cbrain_tasks.group_id").each do |t|
-      @task_projects[t.group] = t.count if t.group
-    end
-
-    header_scope.select( "cbrain_tasks.status, COUNT(cbrain_tasks.status) as count" ).group("cbrain_tasks.status").each do |t|
-      @task_status[t.status] = t.count
-    end
+    @header_scope = @header_scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+    scope = base_filtered_scope(@header_scope)
     
-    scope = base_filtered_scope(scope).where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+    @header_scope = @header_scope.where( :bourreau_id => bourreau_ids )
     
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.where( :bourreau_id => bourreau_ids )
@@ -116,8 +100,12 @@ class TasksController < ApplicationController
       end
       pagination_list = launch_times
     else
-      @tasks = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
-      pagination_list = @tasks.all
+      task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
+      @tasks = {}
+      task_list.each do |t|
+        @tasks[t.launch_time] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
+      end
+      pagination_list = task_list.map(&:launch_time)
     end
     
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|

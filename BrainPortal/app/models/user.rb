@@ -83,7 +83,7 @@ class User < ActiveRecord::Base
   has_many                :custom_filters,  :dependent => :destroy
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
-  
+    
   #Return the admin user
   def self.admin
     @admin ||= self.find_by_login("admin")
@@ -101,6 +101,11 @@ class User < ActiveRecord::Base
     u.last_connected_at = Time.now
     u.save
     u
+  end
+  
+  # Alias for login.
+  def name
+    self.login
   end
   
   #Create a random password (to be sent for resets).
