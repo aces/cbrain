@@ -207,6 +207,16 @@ tr.selected_row {
     background-color: yellow;
 }
 
+.order_icon {
+    padding: 0px 2px 0px 2px;
+    background-color: white;
+    color: #ff3333;
+    font-weight: bold;
+    font-size: 13px;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
+}
+
 /* % ######################################################### */
 /* % Property List Table Styles */
 /* % Table for the property listing (manily show pages) */

@@ -79,6 +79,7 @@ class CbrainTask::Parallelizer
       tc = ToolConfig.create!(
         :tool_id         => tool_id,
         :bourreau_id     => bourreau_id,
+        :group_id        => Group.everyone.id,
         :ncpus           => 512,
         :env_array       => [],
         :script_prologue => "",

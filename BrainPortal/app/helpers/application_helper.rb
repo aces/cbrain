@@ -215,15 +215,12 @@ module ApplicationHelper
     return "" unless location == current_order
     
     if location == 'userfiles.tree_sort' || location == 'cbrain_tasks.batch'
-      icon = '<font color="Red">&nbsp;&bull;</font>'
+      icon = '&bull;'
     else
-      icon = '<font color="Red">&nbsp;&dArr;</font>'
-      if current_dir == 'DESC'
-        icon = '<font color="Red">&nbsp;&uArr;</font>'
-      end
+      icon = (current_dir == 'DESC') ? '&darr;' : '&uarr;'
     end
     
-    icon.html_safe
+    "<span class=\"order_icon\">#{icon}</span>".html_safe
   end
 
 
