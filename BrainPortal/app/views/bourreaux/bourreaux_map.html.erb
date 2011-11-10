@@ -2,16 +2,17 @@
 
 <% 
 all_loc = 
-{ #Quebec
-  "Colosse"     => "top:200px; left:600px",
+{
   #Montreal
-  "HuiaExec"    => "top:255px; left:600px",
-  "PhoenixExec" => "top:270px; left:600px",
-  "BrainStorm"  => "top:285px; left:600px",
-  "Guillimin"   => "top:300px; left:600px",
-  "InstantUnix" => "top:315px; left:600px",
+  # "HuiaExec"    => "top:125px; left:600px",
+  # "PhoenixExec" => "top:200px; left:600px",
+  "BrainStorm"  => "top:155px; left:600px",
+  "Guillimin"   => "top:170px; left:600px",
+  "InstantUnix" => "top:185px; left:600px",
   #"Krylov"      => "top:315px; left:600px",
-  "MindStorm"   => "top:330px; left:600px",
+  "MindStorm"   => "top:200px; left:600px",
+  #Quebec
+  "Colosse"     => "top:330px; left:600px",
   #Sherbrooke
   "Mammouth-S"  => "top:555px; left:600px",
   #Toronto
@@ -31,7 +32,8 @@ all_loc =
     <% Bourreau.all.each do |bourreau| %>
     
       <%
-      loc  = all_loc["#{bourreau.name}"]
+      name = bourreau.name
+      loc  = all_loc["#{name}"]
       next if !loc
       info = bourreau.info
       
@@ -57,10 +59,13 @@ all_loc =
       else
         color="color:red"
       end
+      
+      # Define offset_x
+      offset_x = 4 + (name.length * 8)
       %>
       
       <div style="position:absolute; <%= "#{loc}" %>">
-        <%= html_tool_tip(link_to_bourreau_if_accessible(bourreau.id, current_user, :html_options => { :style => color}), :offset_x => 80, :offset_y => -3 ) do %>
+        <%= html_tool_tip(link_to_bourreau_if_accessible(bourreau.id, current_user, :html_options => { :style => color}), :offset_x => offset_x, :offset_y => -3 ) do %>
           <%= "#{v_load}" %>
         <% end %>
       </div>
