@@ -1,36 +1,26 @@
 <div class="menu_bar menu_bar_left">
    <%= new_model_button "Create Project", new_group_path %>
    <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :button %>
-   <span id="manage_filter_button">
-     <% unless @filter_params["filter_hash"].blank? %>
-       <%= button_with_dropdown_menu('Manage Filters') do %>
-         <fieldset class="filter_sidebar">
-           <legend>Active Filters</legend>
-             <div id="current_filters">
-               <ul class="filter_menu">
-                   <% @filter_params["filter_hash"].each do |key, value| %>
-                       <li>
-                         <% if key == "type" %>
-                            <%= crop_text_to(30, "Type:#{value.sub(/Group$/, "Project").titleize}") %><%= filter_remove_link delete_icon, key, :ajax => false %>
-                         <% else %>
-                            <%= crop_text_to(30, display_filter(:group, key, value, {:user  => :login})) %><%= filter_remove_link delete_icon, key, :ajax => false %>
-                         <% end %>
-                       </li>
-                   <% end %>
-               </ul>
-             </div>
-             <small>
-               <%= filter_clear_link 'clear', :ajax => false %>
-             </small>
-         </fieldset>
-       <% end %>
-     <% end %>
-   </span>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>       
 </div>
 
-<p>
-
+<div class="active_filters">
+  <% unless @filter_params["filter_hash"].blank? %>  
+     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
+      <span id="current_filters">
+        <% 
+          filters = @filter_params["filter_hash"].map do |att, val|
+            if att == "type"
+              "<span class=\"current_filters_item\">#{crop_text_to(30, "Type: #{val.sub(/Group$/, "Project").titleize}")}</span>" + filter_remove_link(delete_icon, att)
+            else 
+              "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:group, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
+            end
+          end 
+        %>
+        <%= filters.join(", ").html_safe %>
+      </span>
+  <% end %>
+</div>
 
 <%=
   index_table(@groups, :class => "resource_list") do |t|

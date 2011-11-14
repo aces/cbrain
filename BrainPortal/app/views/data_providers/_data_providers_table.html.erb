@@ -14,11 +14,12 @@
               {:controller  => :data_providers, :action  => :index, :data_providers  => {:details  => set_toggle(@filter_params["details"])}},
               :datatype  => 'script', :class  => "button"
   %>   
-  <%= render :partial => "shared/manage_filter_button", :locals => {:model => :data_provider}  %>
   <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>
 
-<P>
+<div class="active_filters">
+  <%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
+</div>
 
 <fieldset>
 <legend>Official Data Storage</legend>
