@@ -1,0 +1,11 @@
+<% unless @filter_params["filter_hash"].blank? %>  
+   Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
+    <span id="current_filters">
+      <% 
+        filters = @filter_params["filter_hash"].map do |att, val| 
+          "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(model, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
+        end 
+      %>
+      <%= filters.join(", ").html_safe %>
+    </span>
+<% end %>
