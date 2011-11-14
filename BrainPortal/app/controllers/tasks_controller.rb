@@ -29,12 +29,6 @@ class TasksController < ApplicationController
       @header_scope = current_user.available_tasks
     end
     
-    #Used to create filters
-    @task_types    = {}
-    @task_owners   = {}
-    @task_projects = {}
-    @task_status   = {}
-    
     @header_scope = @header_scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
     scope = base_filtered_scope(@header_scope)
     
@@ -179,18 +173,7 @@ class TasksController < ApplicationController
   end
   
   def new #:nodoc:
-    
-    unless params[:tool_id] 
-      if params[:scientific_operation].blank?
-        tool_id = params[:conversion_operation]
-      else
-        tool_id = params[:scientific_operation]
-      end
-      params[:tool_id]  = tool_id
-    end
-    
-    # Brand new task object for the form
-  
+      
     if params[:tool_id].blank?
       flash[:error] = "Please select a task to perform."
       redirect_to :controller  => :userfiles, :action  => :index

@@ -1,0 +1,16 @@
+<% if @filter_params["sort_hash"]["order"] != 'cbrain_tasks.batch' || @total_entries > @standard_tasks_per_page %>
+ <%= button_with_dropdown_menu("View Options") do %>
+   <div class="view_options">
+     <% unless @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
+        <%= ajax_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
+        <br>
+      <% end %>
+      <% if @total_entries > @standard_tasks_per_page %>
+        <%= filter_add_link @filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate",
+                          :parameter => :pagination,
+                          :value => set_toggle(@filter_params["pagination"])
+        %>
+      <% end %>
+   </div>
+ <% end %>
+<% end %>

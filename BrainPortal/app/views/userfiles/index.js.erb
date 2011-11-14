@@ -1,5 +1,4 @@
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#current_filters").html(<%= html_for_js(render(:partial => 'current_filters')) %>);
 jQuery("#userfiles_display").html(<%= html_for_js(render(:partial => 'userfiles_display')) %>);
 jQuery("#userfiles_display").trigger("new_content");
-jQuery("#page_display").html(<%= html_for_js(render(:partial => 'page_display')) %>);
+jQuery("#view_option_button").html(<%= html_for_js(render(:partial => 'view_option_button')) %>).trigger("new_content");

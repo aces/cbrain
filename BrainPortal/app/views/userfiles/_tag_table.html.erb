@@ -2,4 +2,4 @@
 <select name="tags[]" multiple="multiple" style="width:150px" >
 <%= options_from_collection_for_select current_user.available_tags, 'id', 'name' %>
 </select>
-<%= hijacker_submit_button("Update Tags", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
+<%= hijacker_submit_button("Update Tags", :url  => url_for(:action  => :update_multiple), :class => "button", :method  => :put) %>

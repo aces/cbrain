@@ -1,2 +1,13 @@
-<%= will_paginate @paginated_list, :container => false %>
-(<%= pluralize @total_tasks, "task" %>)
+<span class="selected_info">
+  <% if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
+    <strong>Currently in Batch View</strong>
+  <% end %>  
+</span>
+<span class="page_links">
+  <%= will_paginate @paginated_list, :container => false %>
+  (<%= pluralize @total_tasks, "task" %>)
+</span>
+
+
+
+

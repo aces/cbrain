@@ -1,9 +1,13 @@
 <span class="selected_info">
   <% if current_session.persistent_userfile_ids.size > 0 %>
     <%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %>
-  <% end %>
+  <% end %>  
 </span>
 <span class="page_links">
 <%= will_paginate @userfiles, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
 (<%= @userfiles_total %> files)
+</span>
+<span id="name_search_filter">
+  Search by name:
+  <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
 </span>

@@ -33,12 +33,12 @@ module ApplicationHelper
         association_name = exceptions[association_name]
       end
       if object
-        "#{association_name.humanize}:#{object.send(name_method)}"
+        "#{association_name.humanize}: #{object.send(name_method)}"
       else
-        "#{key.to_s.humanize}:#{value}"
+        "#{key.to_s.humanize}: #{value}"
       end
     else
-      "#{key.to_s.humanize}:#{value}"
+      "#{key.to_s.humanize}: #{value}"
     end
   end
   

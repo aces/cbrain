@@ -1,50 +1,50 @@
-  <% task_info         = @tasks[launch_time] %>
+<% task_info         = @tasks[launch_time] %>
 
-  <% if task_info[:num_tasks] == 1 %>
+<% if task_info[:num_tasks] == 1 %>
 
-    <%= render :partial => 'task_table_row',
-               :locals  => { :task             => task_info[:first_task],
-                             :task_available   => @bourreau_status[task_info[:first_task].bourreau.id] ? true : false,
-                             :is_child         => false,
-                           }
-    %>
+  <%= render :partial => 'task_table_row',
+             :locals  => { :task             => task_info[:first_task],
+                           :task_available   => @bourreau_status[task_info[:first_task].bourreau.id] ? true : false,
+                           :is_child         => false,
+                         }
+  %>
 
-  <% else %>
+<% else %>
 
-    <% launch_time_id    = launch_time ? launch_time.to_i : 0 %>
-    <% launch_time_param = launch_time.to_s(:db) if launch_time %>
-    <% first_task = task_info[:first_task] %>
-    <% statuses   = task_info[:statuses] %>
-    <% num_tasks  = task_info[:num_tasks] %>
-    <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
-      <td>
-        <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
-      </td>
-      <td class="left">
-        <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
-          <% if launch_time %>
-            <%= "#{first_task.pretty_name} (Batch)" %>
-          <% else %>
-            <%= "(Various)" %>
-          <% end %>
-        <% end %>
-      </td>
-      <td><%= overlay_description(first_task.description, :header_width => 35) %></td>
-      <td><%= link_to_user_if_accessible(first_task.user) %></td>
-      <td colspan="2" class="left_align">
+  <% launch_time_id    = launch_time ? launch_time.to_i : 0 %>
+  <% launch_time_param = launch_time.to_s(:db) if launch_time %>
+  <% first_task = task_info[:first_task] %>
+  <% statuses   = task_info[:statuses] %>
+  <% num_tasks  = task_info[:num_tasks] %>
+  <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
+    <td>
+      <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
+    </td>
+    <td class="left">
+      <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
         <% if launch_time %>
-          <%= pluralize(num_tasks, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
+          <%= "#{first_task.pretty_name} (Batch)" %>
         <% else %>
-          <%= pluralize(num_tasks, "old job") %>
+          <%= "(Various)" %>
         <% end %>
-      </td>
-      <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
-        <% if launch_time %>
-          <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
-          <%= report.html_safe %>
-        <% end %>
-      </td>
-    </tr>
+      <% end %>
+    </td>
+    <td><%= overlay_description(first_task.description, :header_width => 35) %></td>
+    <td><%= link_to_user_if_accessible(first_task.user) %></td>
+    <td colspan="2" class="left_align">
+      <% if launch_time %>
+        <%= pluralize(num_tasks, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
+      <% else %>
+        <%= pluralize(num_tasks, "old job") %>
+      <% end %>
+    </td>
+    <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
+      <% if launch_time %>
+        <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
+        <%= report.html_safe %>
+      <% end %>
+    </td>
+  </tr>
 
-  <% end %>
+<% end %>
 

@@ -17,7 +17,7 @@ body {
     font-family: Verdana, sans-serif;
     font-size: 12px;
     margin: 0;
-    min-width: 900px;
+    min-width: 90em;
     padding: 0;
     max-height: 100%;
     line-height: 18px;
@@ -303,6 +303,7 @@ table.property_list td.white_background_text {
 .resource_list {
     border: 0px;
     border-collapse: collapse;
+    margin-top: 0.8em;
 }
 
 .resource_list th {
@@ -1015,6 +1016,10 @@ pre {
     padding-right: 1em;
 }
 
+.active_filters {
+  padding-top: 1em;
+}
+
 .pagination {
     text-align: center;
     padding: 0;
@@ -1025,6 +1030,7 @@ pre {
 
 .selected_info {
     float: left;
+    text-align:left;
 }
 
 .page_links {
@@ -1037,14 +1043,19 @@ pre {
 
 .userfiles_tool_selector {
     padding: 0 1em;
-    display: table-cell;
+    display: table-row;
 }
 
 .userfiles_bourreau_selector {
     padding: 0 1em;
-    display: table-cell;
+    display: table-row;
 }
 
+#name_search_filter {
+  float:right; 
+  text-align:right;
+  font-weight:bold;
+}
 
 
 /* % ######################################################### */
@@ -1109,10 +1120,9 @@ pre {
 /* % Userfiles Sidebar Content */
 /* % ########################################################  */
 
-#page_display {
-    background-color: #f6f6f6;
-    border: 1px solid #dddddd;
-    text-align: left;
+.view_options {
+    font-weight: bold;
+    line-height: 1.7em;
     padding: 0 1em 0 1em;
 }
 
@@ -1155,6 +1165,10 @@ pre {
 #current_filters ul {
     padding-left: 0;
     color: #0471B4;
+}
+
+.current_filters_item {
+  color: #0471B4;
 }
 
 /* current_filters is an ID because the element is modified with AJAX */
@@ -1545,13 +1559,16 @@ td.middle {
 /* % ######################################################### */
 
 .button {
-    float: left;   /* all buttons just stack from left to right; TO FIX */
     z-index: 500;
 }
 
 .button_with_drop_down {
-    float: left;   /* all buttons just stack from left to right; TO FIX */
     z-index: 501;
+    float: left;
+}
+
+.menu_button {
+  float:left;
 }
 
 .button_with_drop_down > .drop_down_menu {

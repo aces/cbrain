@@ -1,8 +1,26 @@
-<%= render :partial => "userfiles/file_menu" %>
-
+<div class="active_filters">
+  <% unless @filter_params["filter_hash"].blank? && @filter_params["filter_tags_array"].blank? && @filter_params["filter_custom_filters_array"].blank? %>  
+     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
+      <span id="current_filters">
+        <% 
+          filters = @filter_params["filter_hash"].map do |att, val| 
+            "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:userfiles, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
+          end 
+          filters += current_user.available_tags.find(@filter_params["filter_tags_array"]).map do |tag|
+            "<span class=\"current_filters_item\">#{crop_text_to(30, "Tag: #{tag.name}")}</span>" + filter_remove_link(delete_icon, tag.id, :parameter  => :filter_tags_array)
+          end
+          filters += current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).map do |filter|
+            "<span class=\"current_filters_item\">#{crop_text_to(30, "Custom: #{filter.name}")}</span>" + filter_remove_link(delete_icon, filter.id, :parameter  => :filter_custom_filters_array)
+          end
+        %>
+        <%= filters.join(", ").html_safe %>
+      </span>
+  <% end %>
+</div>
 <div id="pagination" class="pagination">
   <%= render :partial => 'userfiles/pagination' %>
 </div>
+
 
 <%= 
   index_table @userfiles, :class => "resource_list", :id => "userfiles_table" do |t|

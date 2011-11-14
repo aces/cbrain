@@ -1,3 +1,23 @@
+<div class="active_filters">
+  <% unless @filter_params["filter_hash"].blank? && @filter_params["filter_custom_filters_array"].blank? %>  
+     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
+      <span id="current_filters">
+        <% 
+          filters = @filter_params["filter_hash"].map do |att, val| 
+            if att == "type"
+             "<span class=\"current_filters_item\">#{crop_text_to(30, val.demodulize)}</span>" + filter_remove_link(delete_icon, att)
+            else
+              "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:cbrain_task, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
+            end
+          end 
+          filters += current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).map do |filter|
+            "<span class=\"current_filters_item\">#{crop_text_to(30, "Custom: #{filter.name}")}</span>" + filter_remove_link(delete_icon, filter.id, :parameter  => :filter_custom_filters_array)
+          end
+        %>
+        <%= filters.join(", ").html_safe %>
+      </span>
+  <% end %>
+</div>
 <div id="pagination" class="pagination">
   <%= render :partial => "pagination" %>
 </div>

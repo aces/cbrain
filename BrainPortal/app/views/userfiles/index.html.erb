@@ -5,12 +5,14 @@
 <!-- CELL #1 : The two menu button lines, the pagination, and the userfiles table -->
 <!-- **************************************************************************** -->
 
-<div class="display_cell" id="userfiles_menus_and_filelist">
+<div id="userfiles_menus_and_filelist">
 
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
     <%= hidden_field_tag :page, @current_page %>
 
     <div>
+      
+      <%= render :partial => "userfiles/file_menu" %>
       <div id="userfiles_display">
         <%= render :partial => 'userfiles_display' %>
       </div>
@@ -27,11 +29,5 @@
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 
-<!-- ********************* -->
-<!-- CELL #2 : The SIDEBAR -->
-<!-- ********************* -->
 
-<div class="display_cell sidebar">   
-  <%= render :partial => "userfiles/sidebar" %>
-</div>
 

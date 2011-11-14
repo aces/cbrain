@@ -1,20 +1,46 @@
-<div class="menu_bar">
-  <span class="button_set">  
-
-    <%= button_with_dropdown_menu("Scientific Tools")  do %>
-      <%= render :partial => 'userfiles/tool_management_scientific' %>
+<span class="menu_bar menu_bar_left">
+    <%= overlay_ajax_link 'Upload File', {:action => :new}, :class => "button menu_button" %>
+    <%= button_with_dropdown_menu("Launch Task")  do %>
+      <%= render :partial => 'userfiles/tool_selection' %>
     <% end %>
-
-    <%= button_with_dropdown_menu("Conversion Tools")  do %>
-      <%= render :partial => 'userfiles/tool_management_conversion' %>
+    <%= button_with_dropdown_menu("Viewers") do %>
+      <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
     <% end %>
-
-    <%= button_with_dropdown_menu("Download") do %>
+    <%= button_with_dropdown_menu("File Management") do %>
+      <h4>Download</h4>
       Specify Download File Name (optional):
       <%= text_field_tag :specified_filename %>
-      <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :method  => :get) %>
+      <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :class => "button", :method  => :get) %>
+      <hr>
+      <h4>Move/Copy</h4>
+      To Data Provider:
+      <%= data_provider_select("data_provider_id") %>
+      <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
+      Overwrite destination, if it exists:
+      <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
+      <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <hr>
+      <h4>Other</h4>
+      <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
+                                                  :confirm => "Are you sure you want to compress or uncompress the selected files?",
+                                                  :class => "button", 
+                                                  :method  => :post) 
+      %>
+      
+      <%= hijacker_submit_button("Create Collection", :url  => url_for(:action  => :create_collection),
+                                                      :class => "button", 
+                                                      :method  => :post)
+      %>
+      
+      <%= hijacker_submit_button("Delete", :url  => url_for(:action  => :delete_files),
+                                           :confirm => "Are you sure you want to delete the selected files?",
+                                           :class => "button", 
+                                           :method  => :delete) 
+      %>
+      
     <% end %>
-
+    
     <%= button_with_dropdown_menu("Update Attributes") do %>
         <h4>Tags</h4>
         <%= render :partial => 'userfiles/tag_table' %>
@@ -22,16 +48,17 @@
         <h4>Projects</h4>
         Change Project: 
         <%= group_select('userfile[group_id]', { :groups => @user_groups, :selector => @default_group } ) %>
-        <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put) %>
+        <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <P>
         Project Permission Update: 
         <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-        <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+        <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
                                                      :datatype => 'html',
                                                      :overlay => true,
+                                                     :class => "button", 
                                                      :method  => :get) 
         %>
         <hr>
@@ -42,35 +69,20 @@
               ["Collections", FileCollection.valid_file_classes.map{|c| [c.pretty_type, c.name]}]
              ])
          %>
-        <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put) %> 
+        <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Start QC: <%= 
                       hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), 
                                                       :confirm  => "Please note that files must be synchronized locally for QC. \n\nContinue?",
-                                                      :ajax_submit  => false, 
+                                                      :ajax_submit  => false,
+                                                      :class => "button",  
                                                       :method  => :post) 
                   %>
         <hr>
         Cache Operations:<br/>
-        <%= hijacker_submit_button("Synchronize Files Locally", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'sync_local'), :ajax_submit  => false, :method  => :post) %>
+        <%= hijacker_submit_button("Synchronize Files Locally", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'sync_local'), :ajax_submit  => false, :method  => :post, :class => "button") %>
         &nbsp;or&nbsp;
-        <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post) %>
-    <% end %>
-
-    <%= button_with_dropdown_menu("Move/Copy", :class => 'centered') do %>
-        <p>
-          To Data Provider:
-          <%= data_provider_select("data_provider_id") %>
-        </p>
-        <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
-        <p>
-          Overwrite destination, if it exists:
-          <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
-        <p/>
-        <p>
-          <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
-          <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :method  => :post) %>
-        <p/>
+        <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post, :class => "button") %>
     <% end %>
 
     <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
@@ -93,37 +105,27 @@
         <%= hijacker_submit_button(label,
               :url => url_for(:action  => :manage_persistent, :operation => label),
               :method => :post,
+              :class => "button", 
               :ajax_submit => false
             ) 
         %>
       <% end %>
       </p>
-   <% end %>
+    <% end %>
+    <%= button_with_dropdown_menu("Filters") do %>
+      <%= render :partial => 'userfiles/filters' %>
+      <div id="tag_table_sidebar">
+        <%= render :partial => 'userfiles/tag_table_sidebar' %>
+      </div>
 
-   </span>
-</div>
+      <h4>Other Filters</h4>
+      <ul class="filter_menu">
+        <li><b><%= filter_add_link "Has No Parent", :filters => {:has_no_parent  => true} %></b></li>
+        <li><b><%= filter_add_link "Has No Children", :filters => {:has_no_child  => true} %></b></li>
+      </ul>
+    <% end %>
+    <span id="view_option_button"> 
+      <%= render :partial => "userfiles/view_option_button" %>
+    </span>
+</span>
 
-<div class="menu_bar">
-  <span class="button_set">
-
-    <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
-
-    <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
-                                                :confirm => "Are you sure you want to compress or uncompress the selected files?", 
-                                                :class  => "button", 
-                                                :method  => :post) 
-    %>
-
-    <%= hijacker_submit_button("Create Collection", :url  => url_for(:action  => :create_collection),
-                                                    :class  => "button", 
-                                                    :method  => :post)
-    %>
-
-    <%= hijacker_submit_button("Delete", :url  => url_for(:action  => :delete_files),
-                                         :class  => "button",
-                                         :confirm => "Are you sure you want to delete the selected files?",
-                                         :method  => :delete) 
-    %>
-
-  </span>
-</div>

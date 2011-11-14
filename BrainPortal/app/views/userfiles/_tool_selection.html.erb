@@ -1,0 +1,34 @@
+
+<% unless current_user.available_conversion_tools.blank? %>
+  
+  <% grouped_tools = current_user.available_tools(:conditions => "tools.category <> 'background'").group_by(&:category) %>
+  <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.map { |t| [t.name, t.id] }] }.sort_by(&:first) %>
+  
+   <div class="userfiles_tool_selector">
+    <%= ajax_onchange_select(
+          "tool_id", 
+          url_for(:controller  => :tools, :action => :bourreau_select), 
+          "<option value=\"\">Select an Operation</option>" + grouped_options_for_select(grouped_tools),
+          :target  => "#bourreau_select_convert", 
+          :loading_message  => "<span class='warning'>Loading...</span>"
+      ) 
+    %>
+    <%= hijacker_submit_button("Launch Tool",     :url         => url_for(:controller  => :tasks, :action  => :new),
+                                                  :method      => :post,
+                                                  :class  => "button", 
+                                                  :ajax_submit => false) %>
+   </div> 
+   <div class="userfiles_bourreau_selector" id="bourreau_select_convert">
+   </div>
+   <br>
+    
+<% else %>
+    <br>
+   <% if current_user.has_role? :admin %>
+       <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
+   <% else %>
+       <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>
+   <% end %>
+   <br>
+<% end %>
+

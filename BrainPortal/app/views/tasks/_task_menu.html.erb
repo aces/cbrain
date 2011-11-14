@@ -1,0 +1,107 @@
+<div class="menu_bar menu_bar_left">
+        <%= button_with_dropdown_menu("For Queued Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that are still in the Execution Server's Queue and not
+            yet on CPU. Not all Execution Servers support these operations.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Hold Queued Tasks",  :url => url_for(:action  => :operation, :operation => 'hold'), :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("Release Held Tasks", :url => url_for(:action  => :operation, :operation => 'release'), :method  => :post, :datatype => :script, :class => "button") %>
+          <p/>
+        <% end %>
+
+        <%= button_with_dropdown_menu("For Running Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that are running on their Execution Servers.
+            Not all Execution Servers support these operations.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Suspend Running Tasks",  :url => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("Resume Suspended Tasks", :url => url_for(:action  => :operation, :operation => 'resume'), :method  => :post, :datatype => :script, :class => "button") %>
+          <p/>
+        <% end %>
+
+        <%= button_with_dropdown_menu("For Failed Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that have failed, one way or another.
+            Trying to recover from errors will trigger cleanup code and a restart at
+            the closest successful processing stage before it failed. It doesn't always
+            work but it's often useful to try at least once!
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
+          <p/>
+        <% end %>
+
+        <%= button_with_dropdown_menu("For Completed Tasks") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that have completed successfully.
+            You can try to restart them at three different stages in their lifecycle:
+          </p>
+          <p class="dropmenu_info">
+            <ul>
+               <li>At <strong>Setup</strong>, when input data files<br/>
+                   are synchronized on the Execution server and the<br/>
+                   processing scripts are created.</li>
+               <li>At <strong>Cluster</strong>, when the scientific scripts<br/>
+                   are actually run on the Execution Server's nodes.</li>
+               <li>At <strong>Post Processing</strong>, when the resulting output<br/>
+                   files are sent back to the CBRAIN Data Providers.</li>
+            </ul>
+          </p>
+          <p class="centered">
+            <strong>Restart at:</strong><br/>
+            <%= hijacker_submit_button("\"Setup\" stage", :url => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("\"Cluster\" stage",             :url => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("\"Post Processing\" stage",     :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post, :datatype => :script, :class => "button") %>
+          <p/>
+          <p class="dropmenu_info">
+            You can also duplicate tasks and recreate them on a different
+            Execution Server. Before restarting them, make sure to adjust
+            their tool version, though.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Duplicate Tasks", :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post, :datatype => :script, :class => "button") %>
+            on Execution Server: <%= bourreau_select :dup_bourreau_id %>
+          <p/>
+        <% end %>
+
+        <%= button_with_dropdown_menu("Terminating And Cleaning Up") do %>
+          <p class="dropmenu_info">
+            This panel allows you to affect tasks that you no longer need.
+            You can terminate tasks that are at any point in their lifecycle, even
+            failed tasks. Tasks marked <strong>Terminated</strong> can be restarted
+            later on.
+          </p>
+          <p class="dropmenu_info">
+            You can also remove tasks completely. This will erase the task's work area
+            on the Execution Server, including temporary data files, but will not erase
+            a successful task's output files. This is useful if you have
+            confidential data, for instance. 
+          </p>
+          <p class="centered">
+            <%= 
+              hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'), 
+                                                        :method  => :post, 
+                                                        :datatype => :script, 
+                                                        :class => "button",
+                                                        :confirm => "Are you sure you want to terminate the selected tasks?"
+                                                        ) 
+            %>
+            <%= 
+              hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),    
+                                                        :method  => :post, 
+                                                        :datatype => :script, 
+                                                        :class => "button", 
+                                                        :confirm => "Are you sure you want to remove the selected tasks?"
+                                                        ) 
+            %>
+          <p/>
+        <% end %>
+        <%= button_with_dropdown_menu("Filters") do %>
+          <%= render :partial => 'tasks/filters' %>
+        <% end %>
+        <span id="view_option_button">
+          <%= render :partial => 'view_option_button' %>
+        </span>
+      </div>

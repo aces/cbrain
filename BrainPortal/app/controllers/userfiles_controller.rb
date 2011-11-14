@@ -306,6 +306,13 @@ class UserfilesController < ApplicationController
     end
   end
   
+  def new #:nodoc:
+     @user_tags      = current_user.available_tags
+     @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
+     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
+     render :partial => "new"
+  end
+  
   # GET /userfiles/1/edit
   def edit  #:nodoc:
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
