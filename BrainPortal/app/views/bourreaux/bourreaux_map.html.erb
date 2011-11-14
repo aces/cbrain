@@ -1,0 +1,77 @@
+<% title 'Map' %>
+
+<% 
+all_loc = 
+{
+  #Montreal
+  # "HuiaExec"    => "top:125px; left:600px",
+  # "PhoenixExec" => "top:200px; left:600px",
+  "BrainStorm"  => "top:155px; left:600px",
+  "Guillimin"   => "top:170px; left:600px",
+  "InstantUnix" => "top:185px; left:600px",
+  #"Krylov"      => "top:315px; left:600px",
+  "MindStorm"   => "top:200px; left:600px",
+  #Quebec
+  "Colosse"     => "top:330px; left:600px",
+  #Sherbrooke
+  "Mammouth-S"  => "top:555px; left:600px",
+  #Toronto
+  "GPC"         => "top:555px; left:470px",
+  # "Kraken"      => "top:570px; left:470px",
+  #Vancouver
+  "Orcinus"     => "top:555px; left:90px"
+  # "Juropa"      => "top:385px; left:525px" }
+}
+%>
+ 
+<body>
+  
+  <% if current_user.has_role?(:admin) %>
+    <img title="hpc_integration_20110316.png" style="width: 720px; height: 467px" src="/images/map.png">
+  
+    <% Bourreau.all.each do |bourreau| %>
+    
+      <%
+      name = bourreau.name
+      loc  = all_loc["#{name}"]
+      next if !loc
+      info = bourreau.info
+      
+      # Define v_load
+      tasks_tot   = info.tasks_tot
+      tasks_max   = info.tasks_max
+      tasks_max   = 'unlimited' if tasks_max.to_s == '0'
+      v_load      = "#{tasks_tot}/#{tasks_max}"
+      
+      # Define percent
+      percent     = 0 #unlimited case
+      if tasks_max != "unlimited"
+        percent     = tasks_tot !~ /\?\?\?/ ? (tasks_tot.to_f/tasks_max.to_f) * 100 : -1
+      end
+      
+      # Define color
+      if percent == -1
+        color="color:black"
+      elsif percent < 60
+        color="color:green"
+      elsif percent >= 60 && percent < 90
+        color="color:orange"
+      else
+        color="color:red"
+      end
+      
+      # Define offset_x
+      offset_x = 4 + (name.length * 8)
+      %>
+      
+      <div style="position:absolute; <%= "#{loc}" %>">
+        <%= html_tool_tip(link_to_bourreau_if_accessible(bourreau.id, current_user, :html_options => { :style => color}), :offset_x => offset_x, :offset_y => -3 ) do %>
+          <%= "#{v_load}" %>
+        <% end %>
+      </div>
+      
+    <% end %>
+    
+  <% end %>
+    
+</body>

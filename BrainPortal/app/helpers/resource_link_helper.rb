@@ -191,7 +191,8 @@ module ResourceLinkHelper
       # (!model_obj.respond_to?(:available?)          || model_obj.available?) &&
         (!model_obj.respond_to?(:can_be_accessed_by?) || model_obj.can_be_accessed_by?(user, :read))
        )
-      link_to(name, path)
+       html_options = options[:html_options] || {}
+       link_to(name, path, html_options)
     else
       name
     end
