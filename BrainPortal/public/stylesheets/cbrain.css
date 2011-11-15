@@ -1369,17 +1369,16 @@ img {
     color: black;
 }
 
-.dp_disk_stats_text {
-    color: white;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    font-weight: bold;
+.dp_disk_usage_color_span {
+    vertical-align: middle;
+    padding: 0 1em 0 0;
 }
 
-.dp_disk_stats_text a{
-    color: white;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    font-weight: bold;
-    text-decoration: none;
+.dp_disk_usage_color_block {
+    width: 2em;
+    height: 2em;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
 }
 
 
