@@ -81,7 +81,25 @@ class RemoteCommand < RestrictedHash
     # ... but younger than this are erased.
     :after_date,   # Time object
 
+    # -------- CHECK DATA PROVIDERS PARAMETERS --------
+
+    :data_provider_ids,    # in input for the command, an array of DP ids
+    :data_provider_status, # in output, "dp1_id=offline,dp2_id=down,dp3_id=>alive" etc.
+
   ]
+
+  # Returns a better representation (as a hash) of the data_provider_status attribute.
+  def data_provider_status_as_hash
+    dps = self.data_provider_status || ""
+    as_hash = HashWithIndifferentAccess.new
+    dps.split(/\s*,\s*/).each do |id_eq_stat|
+      id_stat = id_eq_stat.split(/\s*=\s*/)
+      if id_stat.size == 2
+        as_hash[id_stat[0]] = id_stat[1]
+      end
+    end
+    as_hash
+  end
 
   # Transforms the object into a pretty report
   def inspect #:nodoc:
@@ -106,6 +124,9 @@ class RemoteCommand < RestrictedHash
       report += "    Group-IDs: #{self.group_ids}\n"
       report += "    Before-Date: #{self.before_date}\n"
       report += "    After-Date: #{self.after_date}\n"
+    elsif self.command.to_s == 'check_data_providers'
+      report += "    Data-Provider-IDs: #{(self.data_provider_ids || []).join(", ")}\n"
+      report += "    Data-Provider-Status: #{(self.data_provider_status || "")}\n"
     end
     report += "\n"
     report += "  Transport:\n"

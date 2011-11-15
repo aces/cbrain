@@ -629,6 +629,20 @@ class RemoteResource < ActiveRecord::Base
     send_command(command)
   end
 
+  # Utility method to send a +check_data_providers+ command to a
+  # RemoteResource, whether local or not. dp_ids should be
+  # an array of Data Provdier IDs. The returned statuses
+  # will be in the command object's :data_provider_status,
+  # a long string in this format:
+  #  "id1=offline,id2=alive,id3=>down" etc
+  def send_command_check_data_providers(dp_ids=[])
+    command = RemoteCommand.new(
+      :command           => 'check_data_providers',
+      :data_provider_ids => dp_ids
+    )
+    send_command(command)
+  end
+
   # Utility method to send a +start_workers+ command to a
   # RemoteResource, whether local or not.
   # Maybe this should be more specific to Bourreaux.
@@ -746,6 +760,38 @@ class RemoteResource < ActiveRecord::Base
   ############################################################################
 
   protected
+
+  # Verifies a list of data providers and returns for
+  # each one of three states:
+  #
+  #  - "notexist"    (when the DP id is invalid)
+  #  - "offline"     (when the DP's attribute 'online' is false)
+  #  - "alive"       ('online' is true and is_alive? is true)
+  #  - "down"        ('online' is true but is_alive? is false)
+  #
+  # The returned states are stored in a single long string
+  # in format:
+  #
+  #   "id1=stat1,id2=stat2,id3=stat3"
+  def self.process_command_check_data_providers(command)
+    dp_ids = command.data_provider_ids || []
+    statuses = ""
+    dp_ids.each do |dp_id|
+      dp  = DataProvider.find_by_id(dp_id)
+      if ! dp
+        stat = "notexist"
+      elsif ! dp.online?
+        stat = "offline"
+      else 
+        alive = dp.is_alive? rescue false
+        stat = (alive ? "alive" : "down")
+      end
+      statuses += "," unless statuses.blank?
+      statuses += "#{dp_id}=#{stat}"
+    end
+    command[:data_provider_status] = statuses
+    true
+  end
 
   # Clean the cached files of a list of users, for files
   # last accessed before the +before_date+ ; the task
