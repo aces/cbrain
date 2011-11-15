@@ -3,7 +3,7 @@
 <% unless tool_list.blank? %>
   
   <% grouped_tools = tool_list.group_by(&:category) %>
-  <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.map { |t| [t.name, t.id] }] }.sort_by(&:first) %>
+  <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.sort { |t1,t2| t1.name <=> t2.name }.map { |t| [t.select_menu_text, t.id] }] }.sort_by(&:first) %>
   
    <div class="userfiles_tool_selector">
     <%= ajax_onchange_select(

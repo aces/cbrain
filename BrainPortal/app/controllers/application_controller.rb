@@ -478,13 +478,13 @@ class ApplicationController < ActionController::Base
     if size.blank?
       options[:blank] || "unknown"
     elsif size >= 1_000_000_000
-      sprintf "%6.1f Gb", size/(1_000_000_000.0)
+      sprintf("%6.1f Gb", size/(1_000_000_000.0)).strip
     elsif size >=     1_000_000
-      sprintf "%6.1f Mb", size/(    1_000_000.0)
+      sprintf("%6.1f Mb", size/(    1_000_000.0)).strip
     elsif size >=         1_000
-      sprintf "%6.1f Kb", size/(        1_000.0)
+      sprintf("%6.1f Kb", size/(        1_000.0)).strip
     else
-      sprintf "%d bytes", size
+      sprintf("%d bytes", size).strip
     end 
   end
 
