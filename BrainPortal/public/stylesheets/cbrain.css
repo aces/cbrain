@@ -1166,6 +1166,7 @@ pre {
 .filter_menu li {
     list-style-type: none;
     margin-left: 0px;
+    font-weight: bold;
 }
 
 .custom_filter li {
