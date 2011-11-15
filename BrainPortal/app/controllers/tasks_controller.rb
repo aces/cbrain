@@ -97,9 +97,9 @@ class TasksController < ApplicationController
       task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
       @tasks = {}
       task_list.each do |t|
-        @tasks[t.launch_time] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
+        @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
       end
-      pagination_list = task_list.map(&:launch_time)
+      pagination_list = task_list.map(&:id)
     end
     
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|

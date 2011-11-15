@@ -1,7 +1,8 @@
+<% tool_list = current_user.available_tools(:conditions => "tools.category <> 'background'") %>
 
-<% unless current_user.available_conversion_tools.blank? %>
+<% unless tool_list.blank? %>
   
-  <% grouped_tools = current_user.available_tools(:conditions => "tools.category <> 'background'").group_by(&:category) %>
+  <% grouped_tools = tool_list.group_by(&:category) %>
   <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.map { |t| [t.name, t.id] }] }.sort_by(&:first) %>
   
    <div class="userfiles_tool_selector">
