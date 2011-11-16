@@ -228,6 +228,16 @@ module ApplicationHelper
     "<span class=\"order_icon\">#{icon}</span>".html_safe
   end
 
+  def index_count_filter(count, controller, filters, options={})
+     count = count.to_i
+     return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
+     return "0" if count == 0 && ! options[:link_zeros]
+     filter_reset_link count,
+                       :controller   => controller,
+                       :filters      => filters,
+                       :ajax         => false,
+                       :clear_params => options[:clear_params]
+  end
 
 
   #################################################################################

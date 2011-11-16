@@ -33,39 +33,23 @@
     t.sort_column("Site", Site, "name", :filters => association_filters_for(@header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
     t.column("Users") { |g| @group_id_2_user_counts[g.id] || 0 }
     t.column("Files") do |g|
-      if (@group_id_2_userfile_counts[g.id] || 0).to_i > 0
-        filter_reset_link @group_id_2_userfile_counts[g.id], :controller => :userfiles, :filters  => {:group_id => g.id}, :ajax => false
-      else
-        0
-      end
+      index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, {:group_id => g.id}, :show_zeros => true
     end
     t.column("Tasks") do |g|
-      if (@group_id_2_task_counts[g.id] || 0).to_i > 0
-        filter_reset_link @group_id_2_task_counts[g.id], :controller => :tasks, :filters  => {:group_id => g.id}, :ajax => false
-      else
-        0
-      end
+      index_count_filter @group_id_2_task_counts[g.id], :tasks, {:group_id => g.id}, :show_zeros => true
     end
     if current_user.has_role?(:admin)
       t.column("Tools") do |g|
-        if (@group_id_2_tool_counts[g.id] || 0).to_i > 0
-          filter_reset_link @group_id_2_tool_counts[g.id], :controller => :tools, :filters  => {:group_id => g.id}, :ajax => false
-        end
+        index_count_filter @group_id_2_tool_counts[g.id], :tools, {:group_id => g.id}
       end
       t.column("Data Providers") do |g|
-        if (@group_id_2_data_provider_counts[g.id] || 0).to_i > 0
-          filter_reset_link @group_id_2_data_provider_counts[g.id], :controller => :data_providers, :filters  => {:group_id => g.id}, :ajax => false
-        end
+        index_count_filter @group_id_2_data_provider_counts[g.id], :data_providers, {:group_id => g.id}
       end
       t.column("Portal") do |g|
-        if (@group_id_2_brain_portal_counts[g.id] || 0).to_i > 0
-          filter_reset_link @group_id_2_brain_portal_counts[g.id], :controller => :bourreaux, :filters  => {:group_id => g.id, :type => "BrainPortal"}, :ajax => false
-        end
+        index_count_filter @group_id_2_brain_portal_counts[g.id], :bourreaux, {:group_id => g.id, :type => "BrainPortal"}
       end
       t.column("Execution") do |g|
-        if (@group_id_2_bourreau_counts[g.id] || 0).to_i > 0
-          filter_reset_link @group_id_2_bourreau_counts[g.id], :controller => :bourreaux, :filters  => {:group_id => g.id, :type => "Bourreau"}, :ajax => false
-        end
+        index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, {:group_id => g.id, :type => "Bourreau"}
       end
     end
     t.describe_column("Operations") do |col|
