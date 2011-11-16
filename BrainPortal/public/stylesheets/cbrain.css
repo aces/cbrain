@@ -484,6 +484,24 @@ h1.warning {
   width: 60em;
 }
 
+.delete_icon {
+  color: red;
+  font-weight: bold;
+  text-decoration: none; 
+}
+
+.red_times_icon {
+  color: red;
+  font-weight: bold;
+  text-decoration: none; 
+} 
+
+.green_o_icon {
+  color: green;
+  font-weight: bold;
+  text-decoration: none; 
+}
+
 
 /* % ######################################################### */
 /* % General Links formatting */
