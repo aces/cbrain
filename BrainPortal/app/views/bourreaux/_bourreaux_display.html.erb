@@ -53,6 +53,11 @@
       col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
     end
     if @filter_params["details"] == 'on'
+      t.describe_column("Tasks Space") do |col|
+        col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
+      end
+    end
+    if @filter_params["details"] == 'on'
       t.sort_column("Description", RemoteResource, :description)
     end
     t.column("Operations", :colspan => 5)

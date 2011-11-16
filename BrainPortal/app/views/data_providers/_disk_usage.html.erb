@@ -43,7 +43,7 @@
             
             <td>
               <span class="display_cell dp_disk_usage_color_span">
-                <div class="dp_disk_usage_color_block" style="background: <%= cellcolor %>"/>
+                <div class="dp_disk_usage_color_block" style="background: <%= cellcolor %>"></div>
               </span>
               <span class="display_cell">
                 <%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe %>

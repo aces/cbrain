@@ -32,7 +32,7 @@
     t.column("Files") do |dp|
       file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
       if file_count > 0
-        filter_reset_link file_count.to_s, :controller => :userfiles, :filters => { :data_provider_id => dp.id }, :ajax => false
+        index_count_filter file_count, :userfiles, { :data_provider_id => dp.id }
       else
         "0"
       end

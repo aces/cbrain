@@ -32,19 +32,18 @@
       <tr>
         <td><%= link_to_user_with_tooltip(user) %></td>
         <% sorted_classes.each do |klass| %>
-          <% count = klass_counts[klass] || "" %>
-          <td><%= filter_reset_link h(count), :controller => :userfiles, :filters => {:user_id => user.id, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+          <td><%= index_count_filter klass_counts[klass], :userfiles, {:user_id => user.id, :file_format => klass}.merge(additionnal_filt) %></td>
         <% end %>
-        <td><%= filter_reset_link h(usertot), :controller => :userfiles, :filters => {:user_id => user.id}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+        <td><%= index_count_filter usertot, :userfiles, {:user_id => user.id}.merge(additionnal_filt) %></td>
       </tr>
     <% end %>
     
     <% if fileclasses_totcount.count > 1%>
       <td><%= "Total" %></td>
       <% sorted_classes.each do |klass| %>
-        <td><%= filter_reset_link fileclasses_totcount[klass], :controller => :userfiles, :filters => {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+        <td><%= index_count_filter fileclasses_totcount[klass], :userfiles, {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt) %></td>
       <% end %>
-      <td><%= filter_reset_link all_totcount, :controller => :userfiles, :filters => {:user_id => sorted_users}.merge(additionnal_filt), :clear_params => :clear_filter, :ajax => false %></td>
+      <td><%= index_count_filter all_totcount, :userfiles, {:user_id => sorted_users}.merge(additionnal_filt) %></td>
     <% end %>
     
   </table>
