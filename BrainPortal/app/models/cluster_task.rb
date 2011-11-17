@@ -468,6 +468,7 @@ class ClusterTask < CbrainTask
           # the status is moving forward at its own pace now
         end
       end
+      self.update_size_of_cluster_workdir
     rescue Exception => e
       self.addlog_exception(e,"Exception raised while setting up:")
       self.status_transition(self.status, "Failed To Setup")
@@ -1119,7 +1120,8 @@ class ClusterTask < CbrainTask
     self.addlog("Removing workdir '#{full}'.")
     FileUtils.remove_dir(full, true) rescue true
     self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
-    self.cluster_workdir = nil
+    self.cluster_workdir      = nil
+    self.cluster_workdir_size = nil
     true
   end
 
@@ -1129,20 +1131,18 @@ class ClusterTask < CbrainTask
   # work directory.
   def update_size_of_cluster_workdir
     if self.share_wd_tid
-      self.cluster_workdir_size = 0
-      self.save
-      return
+      self.update_attribute(:cluster_workdir_size,0)
+      return 0
     end
     full=self.full_cluster_workdir
     self.cluster_workdir_size = nil
     if ( ! full.blank? ) && Dir.exists?(full)
       sizeline = IO.popen("du -s -k '#{full}'","r") { |fh| fh.readline rescue "" }
       if mat = sizeline.match(/^\s*(\d+)/) # in Ks
-        self.cluster_workdir_size = mat[1].to_i.kilobytes
+        self.update_attribute(:cluster_workdir_size, mat[1].to_i.kilobytes)
         self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
       end
     end
-    self.save
     return self.cluster_workdir_size
   rescue
     return nil

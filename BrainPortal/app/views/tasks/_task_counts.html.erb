@@ -39,9 +39,9 @@
         <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
         <% sorted_stats.each do |stat| %>
           <% if stat == "TOTAL" %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id}.merge(additionnal_filt), :ajax => false %></td>
+            <td><%= index_count_filter statcnt[stat], :tasks, {:user_id => user.id}.merge(additionnal_filt), :show_zeros => true %></td>
           <% else %>
-            <td><%= filter_reset_link h(statcnt[stat]), :controller => :tasks, :filters  => {:user_id => user.id, by => stat}.merge(additionnal_filt), :ajax => false %></td>
+            <td><%= index_count_filter statcnt[stat], :tasks, {:user_id => user.id, by => stat}.merge(additionnal_filt), :show_zeros => true %></td>
           <% end %>
         <% end %>
       </tr>
@@ -52,9 +52,9 @@
         <td class="left_align">TOTAL</td>
         <% sorted_stats.each do |stat| %>
           <% if stat == "TOTAL" %>
-            <td><%= filter_reset_link h(counts[stat]), :controller => :tasks, :filters  => additionnal_filt %></td>
+            <td><%= index_count_filter counts[stat], :tasks, additionnal_filt, :show_zeros => true %></td>
           <% else %>
-            <td><%= filter_reset_link h(counts[stat]), :controller => :tasks, :filters  => { by => stat}.merge(additionnal_filt), :ajax => false %></td>
+            <td><%= index_count_filter counts[stat], :tasks, { by => stat }.merge(additionnal_filt), :show_zeros => true %></td>
           <% end %>
         <% end %>
       <tr>

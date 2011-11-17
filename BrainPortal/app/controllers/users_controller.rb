@@ -55,6 +55,21 @@ class UsersController < ApplicationController
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"]) 
     @log                    = @user.getlog()
 
+    # Create disk usage statistics table
+    stats_options = { :users            => [@user],
+                      :providers        => DataProvider.find_all_accessible_by_user(@user).all,
+                      :remote_resources => [],
+                    }
+    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
+
+    # Keys and arrays into statistics tables, for HTML output
+    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
+    @report_rrs         = @report_stats['!rrs!']
+    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
+    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
+    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
+    
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @userfile }

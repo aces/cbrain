@@ -40,61 +40,38 @@
     <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Files</th>
         <td>
-          <% userfiles_count = @group.userfiles.count %>
-          <% if (userfiles_count > 0) %>
-            <%= filter_reset_link userfiles_count, :controller => :userfiles, :filters  => {:group_id => @group.id}, :ajax => false %>
-          <% else %>
-            0
-          <% end %>
+          <%= index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true %>
         </td>
     </tr>
     <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Tasks</th>
         <td>
-        <% tasks_count = @group.cbrain_tasks.count %>
-        <% if (tasks_count > 0) %>
-          <%= filter_reset_link tasks_count, :controller => :tasks, :filters  => {:group_id => @group.id}, :ajax => false %>
-          <% else %>
-            0
-          <% end %>
+          <%= index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true %>
         </td>
     </tr>
     <% if current_user.has_role?(:admin) %>
       <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Tools</th>
           <td>
-            <% tools_count = @group.tools.count %>
-            <% if (tools_count > 0) %>
-              <%= filter_reset_link tools_count, :controller => :tools, :filters  => {:group_id => @group.id}, :ajax => false %>
-            <% end %>
-          
+            <%= index_count_filter @group.tools.count, :tools, {:group_id => @group.id} %>
           </td>
       </tr>
       <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Data providers</th>
           <td>
-            <% data_providers_count = @group.data_providers.count %>
-            <% if (data_providers_count > 0) %>
-              <%= filter_reset_link data_providers_count, :controller => :data_providers, :filters  => {:group_id => @group.id}, :ajax => false %>
-            <% end %>
+            <%= index_count_filter @group.data_providers.count, :data_providers, {:group_id => @group.id} %>
           </td>
       </tr>
       <tr class="<%= cycle("list-odd", "list-even") %>">
       <th>Portal</th>
           <td>
-            <% bp_count = BrainPortal.where( :group_id => @group.id).count %>
-            <% if (bp_count > 0) %>
-              <%= filter_reset_link bp_count, :controller => :bourreaux, :filters  => {:group_id => @group.id, :type => "BrainPortal"}, :ajax => false %>
-            <% end %>
+            <%= index_count_filter BrainPortal.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "BrainPortal"} %>
           </td>
       </tr>
           <tr class="<%= cycle("list-odd", "list-even") %>">
           <th>Execution</th>
           <td>
-            <% bourreaux_count = Bourreau.where( :group_id => @group.id).count%>
-            <% if (bourreaux_count > 0) %>
-              <%= filter_reset_link bourreaux_count, :controller => :bourreaux, :filters  => {:group_id => @group.id, :type => "Bourreau"}, :ajax => false %>
-            <% end %>
+            <%= index_count_filter Bourreau.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "Bourreau"} %>
           </td>
       </tr>
     <% end %>

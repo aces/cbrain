@@ -484,6 +484,24 @@ h1.warning {
   width: 60em;
 }
 
+.delete_icon {
+  color: red;
+  font-weight: bold;
+  text-decoration: none; 
+}
+
+.red_times_icon {
+  color: red;
+  font-weight: bold;
+  text-decoration: none; 
+} 
+
+.green_o_icon {
+  color: green;
+  font-weight: bold;
+  text-decoration: none; 
+}
+
 
 /* % ######################################################### */
 /* % General Links formatting */
@@ -504,6 +522,10 @@ a {
     text-decoration: none;
     font-size: 0.7em;
     vertical-align: +1px;
+}
+
+.error_link {
+    color: red !important;
 }
 
 
@@ -1031,17 +1053,24 @@ pre {
   padding-top: 1em;
 }
 
-.pagination {
-    text-align: center;
-    padding: 0;
-    margin-right: 0;
-    margin-left: 0;
-    min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
+.pagination_left_side {
+  float: left;
+  text-align:left;
+  font-weight:bold;
 }
 
-.selected_info {
-    float: left;
-    text-align:left;
+.pagination {
+  text-align: center;
+  padding: 0;
+  margin-right: 0;
+  margin-left: 0;
+  min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
+}
+
+.pagination_right_side {
+  float:right; 
+  text-align:right;
+  font-weight:bold;
 }
 
 .page_links {
@@ -1060,12 +1089,6 @@ pre {
 .userfiles_bourreau_selector {
     padding: 0 1em;
     display: table-row;
-}
-
-#name_search_filter {
-  float:right; 
-  text-align:right;
-  font-weight:bold;
 }
 
 

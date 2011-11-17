@@ -119,13 +119,18 @@ module ApplicationHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<span style=\"color:red;text-decoration:none;\">&otimes;</span>&nbsp;".html_safe
+    "&nbsp;<span class=\"delete_icon\">&otimes;</span>&nbsp;".html_safe
   end
 
   # Produces a pretty red times symbol (used to show unavailable
   # ressources)
   def red_times_icon
-    "&nbsp;<span style=\"color:red;text-decoration:none;\">&times;</span>".html_safe
+    "&nbsp;<span class=\"red_times_icon\">&times;</span>".html_safe
+  end
+
+  # Produces a pretty green o (used to show available ressources)
+  def green_o_icon
+    "<span class=\"green_o_icon\">&#927;</span>".html_safe
   end
 
 
@@ -223,6 +228,16 @@ module ApplicationHelper
     "<span class=\"order_icon\">#{icon}</span>".html_safe
   end
 
+  def index_count_filter(count, controller, filters, options={})
+     count = count.to_i
+     return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
+     return "0" if count == 0 && ! options[:link_zeros]
+     filter_reset_link count,
+                       :controller   => controller,
+                       :filters      => filters,
+                       :ajax         => false,
+                       :clear_params => options[:clear_params]
+  end
 
 
   #################################################################################
