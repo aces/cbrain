@@ -65,7 +65,7 @@ class TasksController < ApplicationController
 
     @total_tasks = scope.count    # number of TASKS
     @total_space_known = scope.sum(:cluster_workdir_size)
-    @total_space_unkn  = scope.where(:cluster_workdir_size => nil).count
+    @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
     @total_entries = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
     @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?

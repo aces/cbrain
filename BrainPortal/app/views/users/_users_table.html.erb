@@ -32,8 +32,8 @@
     end
     t.column("Tasks") do |u|
       size = CbrainTask.where(:user_id => u.id).sum(:cluster_workdir_size)
-      unk  = CbrainTask.where(:user_id => u.id, :cluster_workdir_size => nil).count
-      unktext = " w/ #{unk} unknown" if unk > 0 
+      unk  = CbrainTask.where(:user_id => u.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
+      unktext = ", #{unk} unkn" if unk > 0 
       index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1 ) +
       (size > 0 ? " (#{pretty_size(size)} used#{unktext})" : "")
     end
