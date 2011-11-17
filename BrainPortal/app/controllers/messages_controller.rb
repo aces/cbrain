@@ -21,41 +21,10 @@ class MessagesController < ApplicationController
   # GET /messages.xml
   def index #:nodoc:
     @show_users = false
-    @max_show   = "50"
+    @max_show    =  @filter_params["max_show"] ||= 50.to_s
 
     scope = base_filtered_scope
-    if current_user.has_role?(:admin)
-      user_id      = params[:user_id]      ||= current_user.id.to_s
-      upd_before   = params[:upd_before]   ||= "0"
-      upd_after    = params[:upd_after]    ||= 50.years.to_s
-      message_type = params[:message_type] ||= ""
-      critical     = params[:critical]     ||= ""
-      read         = params[:read]         ||= ""
-      @max_show    = params[:max_show]     ||= 50.to_s
-      if (params[:commit] || "") =~ /Apply/i
-        @show_users = user_id.blank? || user_id != current_user.id.to_s
-        if user_id =~ /^\d+$/
-          scope = scope.scoped( :conditions => { :user_id => user_id.to_i } )
-        end
-        bef = upd_before.to_i
-        aft = upd_after.to_i
-        bef,aft = aft,bef if aft < bef
-        bef = bef < 1 ? 1.day.from_now : bef.ago
-        aft = aft.ago
-        scope = scope.scoped( :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] )
-        if message_type =~ /^[a-z]+$/
-          scope = scope.scoped( :conditions => { :message_type => message_type } )
-        end
-        unless critical.blank?
-          scope = scope.scoped( :conditions => { :critical => (critical == '1') } )
-        end
-        unless read.blank?
-          scope = scope.scoped( :conditions => { :read => (read == '1') } )
-        end
-      else
-        scope = scope.scoped( :conditions => { :user_id => current_user.id } )
-      end
-    else
+    unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"
       scope = scope.scoped(:conditions => {:user_id => current_user.id})
     end
     @messages = scope.order( "last_sent DESC" )

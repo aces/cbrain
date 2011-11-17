@@ -152,6 +152,7 @@ class CbrainSession
           end
         else
           if @session[controller.to_sym][k].is_a? Hash
+            params[controller][k].delete_if { |pk, pv| pv.blank?   }
             @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
           elsif @session[controller.to_sym][k].is_a? Array
             sanitized_param = sanitize_params(k, params[controller][k])

@@ -1,9 +1,11 @@
 <tr class=" message_display_<%= mess.id %>">
-
+  
   <td class="<%= "#{mess.message_type}_display "%>left_side wrap<%= mess.read? ? " message_read" : " message_unread" %>">
     <% if render_for == :index %>
       <%= check_box_tag("message_ids[]", mess.id.to_s, false, :class => 'messlist') %>
-      <% unless @show_users.blank? %>
+      </td>
+      <td class="<%= "#{mess.message_type}_display " %>middle bold left<%= mess.read? ? " message_read" : " message_unread" %>">
+      <% if current_user.has_role?(:admin) && @filter_params["view_all"] == "on" %>
         ( <%= mess.user.login %> )
       <% end %>
     <% end %>

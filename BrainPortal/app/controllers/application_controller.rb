@@ -393,6 +393,12 @@ class ApplicationController < ActionController::Base
     
     return "0 seconds" if remain <= 0
 
+    numyears = remain / 1.year.to_i
+    remain   = remain - ( numyears * 1.year.to_i   )
+    
+    nummos   = remain / 1.month
+    remain   = remain - ( nummos * 1.month   )
+
     numweeks = remain / 1.week
     remain   = remain - ( numweeks * 1.week   )
 
@@ -408,6 +414,8 @@ class ApplicationController < ActionController::Base
     numsecs  = remain
 
     components = [
+      [numyears, is_short ? "y" : "year"],
+      [nummos,   is_short ? "mo" : "month"],
       [numweeks, is_short ? "w" : "week"],
       [numdays,  is_short ? "d" : "day"],
       [numhours, is_short ? "h" : "hour"],

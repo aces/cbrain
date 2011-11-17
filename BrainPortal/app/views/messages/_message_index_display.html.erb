@@ -2,13 +2,49 @@
   <% if current_user.has_role?(:admin) || current_user.has_role?(:site_manager) %>
     <%= new_model_button "Leave Message", new_message_path %>
   <% end %>
+  <%= button_with_dropdown_menu("Filters") do %>
+    <%= render :partial => 'messages/filters' %>
+  <% end %>
+  <span id="view_option_button"> 
+    <%= render :partial => "messages/view_option_button" %>
+  </span>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
 </div>
 
 <div class="active_filters">
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :message} %>
+  <% unless @filter_params["filter_hash"].blank? %>  
+     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
+      <span id="current_filters">
+        <% 
+          filters = @filter_params["filter_hash"].map do |att, val|
+            if att == "time_interval" 
+              s = val[0].to_i
+              e = val[1].to_i
+              s,e = e,s if e > s
+              s_text = pretty_elapsed(s, :num_components  => 1) + " ago"
+              s_text = "now" if s == 0
+              s_text = "the big bang" if s > 10.years
+              e_text = pretty_elapsed(e, :num_components  => 1) + " ago"
+              e_text = "now" if e == 0
+              e_text = "the big bang" if e > 10.years
+              text = "Time interval: between #{s_text} and #{e_text}"
+             "<span class=\"current_filters_item\">#{text.capitalize}</span>" + filter_remove_link(delete_icon, att)
+            elsif att == "critical"
+              text = val == '1' ? "Critical" : "Not critical"
+              "<span class=\"current_filters_item\">#{text}</span>" + filter_remove_link(delete_icon, att)
+            elsif att == "read"
+              text = val == '1' ? "Read" : "Unread"
+              "<span class=\"current_filters_item\">#{text}</span>" + filter_remove_link(delete_icon, att)
+            else
+              "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:message, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
+            end
+          end 
+        %>
+        <%= filters.compact.join(", ").html_safe %>
+      </span>
+  <% end %>
 </div>
 
 <%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>

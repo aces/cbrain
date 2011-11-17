@@ -46,7 +46,7 @@ module ApplicationHelper
   #ajax-loaded new panel
   def new_model_button(text, path)
     html =  "<span id=\"new_model\">\n"
-    html +=  ajax_link text, path, :class => "button", 
+    html +=  ajax_link text, path, :class => "button menu_button", 
                                    :target => "#new_model",
                                    :id => "new_model_button",
                                    :replace => true, 
