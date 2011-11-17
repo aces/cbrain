@@ -6,37 +6,51 @@
 
 <% if @report_dps_all.size > 0 && @report_users_all.size > 0 %>
 
-  <h3>Disk Usage Statistics<%= " for Data Providers" if @report_dps_all.size > 1 %></h3>
- 
-  <table class="resource_list">
+  <table>
 
     <tr>
-      <th></th>
+      <th colspan="<%= @report_dps_all.size + 2 %>"> Disk Usage Statistics<%= " for Data Providers" if @report_dps_all.size > 1 %> </th>
+    </tr>
+    
+    <tr>
+      <th>User</th>
       <% @report_dps_all.each do |col| %>
         <th><%= col.is_a?(String) ? col : col.name %></th>
       <% end %>
     </tr>
       
     <% @report_users_all.each do |row| %>
-      <tr bgcolor="<%= cycle("#eeeeee", "#cccccc") %>">
-          <th><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %></th>
+          <td><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %></td>
           
+          <% 
+          is_an_user =  row.is_a?(User)
+          if is_an_user
+            accessible_dp = DataProvider.find_all_accessible_by_user(row).map &:name 
+          end
+          %>
+         
           <% @report_dps_all.each do |col| %>
 
-            <% cell = @report_stats[row] ? @report_stats[row][col] : nil %>
-
+            <% 
+            cell = @report_stats[row] ? @report_stats[row][col] : nil
+            is_a_dp = col.is_a? DataProvider
+            if is_a_dp
+              dp_is_accessible = accessible_dp && accessible_dp.index(col.name) ? true : false 
+            end
+            %>
+            
             <% if ! cell %>
-              <td></td>
+              <td> <%= dp_is_accessible ? green_o_icon : red_times_icon %> </td>
               <% next %>
             <% end %>
 
             <% 
               cellcolor = size_to_color((cell[:size]/1_000_000) || 0, 500_000) 
               filters = {}
-              if row.is_a? User
+              if is_an_user
                 filters[:user_id] = row.id
               end
-              if col.is_a? DataProvider
+              if is_a_dp
                 filters[:data_provider_id] = col.id
               end
             %>
@@ -47,6 +61,9 @@
               </span>
               <span class="display_cell">
                 <%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe %>
+                <% if is_a_dp && is_an_user && !dp_is_accessible %>
+                  <%= red_times_icon %>
+                <% end%>
                 <BR>
                 <%= 
                   filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ /,"&nbsp;").html_safe,
@@ -70,23 +87,24 @@
 <% end %>
 
 
-
-
-  <!-- *********************************** -->
-  <!-- Disk usage summary -->
-  <!-- For Data Provider Caches -->
-  <!-- *********************************** -->
+<!-- *********************************** -->
+<!-- Disk usage summary       -->
+<!-- For Data Provider Caches -->
+<!-- *********************************** -->
 
 <% if @report_rrs.size > 0 && @report_users_all.size > 0 %>
 
   <%= ajax_form_tag(url_for(:action  => :cleanup),  :target  => "#disk_usage") do %>
-
-  <h3>Disk Usage Statistics for Server's DP Caches</h3>
-   
-  <table class="resource_list">
+    <P>
+      
+    <table>
 
     <tr>
-      <th></th>
+      <th colspan="<%= @report_rrs.size + 2 %>"> Disk Usage Statistics for Server's DP Caches </th>
+    </tr>
+    
+    <tr>
+      <th>User</th>
       <% @report_rrs.each do |col| %>
         <th><% if col.is_a?(String) %>
               <%= col %>
@@ -99,13 +117,12 @@
     </tr>
       
     <% @report_users_all.each do |row| %>
-      <tr bgcolor="<%= cycle("#eeeeee", "#cccccc") %>">
-        <th><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %>
+        <td><%= row.is_a?(String) ? h(row) : link_to_user_with_tooltip(row) %>
           <% # All servers checkbox -%>
           <% if row.is_a?(User) %>
             <BR><%= select_all_checkbox("clean_cache_users_#{row.id}") %>
           <% end %>
-        </th>
+        </td>
          
           <% @report_rrs.each do |col| %>
           
@@ -120,7 +137,7 @@
 
             <td>
               <span class="display_cell dp_disk_usage_color_span">
-                <div class="dp_disk_usage_color_block" style="background: <%= cellcolor %>"/>
+              <div class="dp_disk_usage_color_block" style="background: <%= cellcolor %>"></div>
               </span>
               <span class="display_cell">
                 <%= pretty_size(cell[:size]).gsub(/ /,"&nbsp;").html_safe %>
