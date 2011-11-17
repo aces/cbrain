@@ -15,7 +15,7 @@
 
 <tr class="row_highlight <%= cycle("list-odd", "list-even") %>" id="bourreau_<%= bourreau.id %>">
   <td><%= isbourreau ? "Execution" : "Portal" %></td>
-  <td><%= link_to_bourreau_if_accessible(bourreau) %></td>
+  <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => bourreau.online? ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
         <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}" %>
