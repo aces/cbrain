@@ -21,13 +21,27 @@ class MessagesController < ApplicationController
   # GET /messages.xml
   def index #:nodoc:
     @show_users = false
-    @max_show    =  @filter_params["max_show"] ||= 50.to_s
-
+    @filter_params["max_show"] ||= 50.to_s
+    @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
+    @filter_params["sort_hash"]["dir"] ||= "DESC"
+    @max_show = @filter_params["max_show"].to_i
+    
     scope = base_filtered_scope
     unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"
       scope = scope.scoped(:conditions => {:user_id => current_user.id})
     end
-    @messages = scope.order( "last_sent DESC" )
+    @total_entries = scope.count
+    
+    page = (params[:page] || 1).to_i
+    page = 1 if page < 1
+    offset = (page - 1) * @max_show
+    
+    scope = scope.limit(@max_show).offset(offset)
+    @messages = WillPaginate::Collection.create(page, @max_show) do |pager|
+      pager.replace(scope)
+      pager.total_entries = @total_entries
+      pager
+    end
     
     respond_to do |format|
       format.html # index.html.erb
@@ -103,22 +117,24 @@ class MessagesController < ApplicationController
         format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
       end
       format.js do
-        prepare_messages
-        @messages = current_user.messages.order( "last_sent DESC" )
-         render :action  => "update_tables"
+        redirect_to :action => :index
       end
     end
   end
 
   # Delete multiple messages.
   def delete_messages #:nodoc:
-    message_list = params[:message_ids] || []
+    id_list = params[:message_ids] || []
+    if current_user.has_role?(:admin)
+      message_list = Message.find(id_list)
+    else
+      message_list = current_user.messages.find(id_list)
+    end
     deleted_count = 0
     
     message_list.each do |message_item|
-      message_obj = Message.find(message_item)
       deleted_count += 1
-      message_obj.destroy
+      message_item.destroy
     end
     
     flash[:notice] = "#{view_pluralize(deleted_count, "items")} deleted.\n" 
@@ -128,15 +144,17 @@ class MessagesController < ApplicationController
   # DELETE /messages/1
   # DELETE /messages/1.xml
   def destroy #:nodoc:
-    @message = current_user.messages.find(params[:id])
+    if current_user.has_role?(:admin)
+      @message = Message.find(params[:id])
+    else
+      @message = current_user.messages.find(params[:id])
+    end
     unless @message.destroy
       flash.now[:error] = "Could not delete message."
     end
-    prepare_messages
-    @messages = current_user.messages.order( "last_sent DESC" )
     
     respond_to do |format|
-      format.js { render :action  => "update_tables" }
+      format.js { redirect_to :action => :index }
       format.xml  { head :ok }
     end
   end

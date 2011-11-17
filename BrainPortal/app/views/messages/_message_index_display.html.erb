@@ -46,11 +46,29 @@
       </span>
   <% end %>
 </div>
+<span style="display: inline-block">
+  <div id="pagination" class="pagination">
+    <span class="page_links">
+      <%= will_paginate @messages, :container => false %>
+      (<%= pluralize @total_entries, "message" %>)
+    </span>
+  </div>
+  <%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
+  
 
-<%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
+      <%= 
+        index_table @messages, :class => "resource_list", :id => "message_table" do |t|
+          t.column(select_all_checkbox 'messlist')
+          t.sort_column("Message", Message, :header)
+          if current_user.has_role?(:admin) && @filter_params["view_all"] == "on" 
+            t.sort_column("Recipient", User, :login)
+          end
+          t.sort_column("Last Updated", Message, :last_sent)
+          t.column("Operations", :colspan => "3")
+          t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
+        end
+      %>
+  
+  <% end %>
+</span>
 
-  <table class="resource_list" id="message_table">
-     <%= render :partial => 'message_table' %>
-  </table>
-
-<% end %>
