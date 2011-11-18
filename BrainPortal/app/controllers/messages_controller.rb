@@ -20,11 +20,12 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @show_users = false
-    @filter_params["max_show"] ||= 50.to_s
+    @filter_params["max_show"] ||= 50
     @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
     @filter_params["sort_hash"]["dir"] ||= "DESC"
     @max_show = @filter_params["max_show"].to_i
+    @max_show = 500 if @max_show > 500
+    @max_show = 25  if @max_show < 25
     
     scope = base_filtered_scope
     unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"

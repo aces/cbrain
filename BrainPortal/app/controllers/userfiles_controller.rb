@@ -107,15 +107,13 @@ class UserfilesController < ApplicationController
     # Pagination variables
     #------------------------------
 
-    @user_pref_page_length = (current_user.meta["pref_userfiles_per_page"] || Userfile::Default_num_pages).to_i
 
-    @filter_params["pagination"] = "on" if @filter_params["pagination"].blank?
+    @filter_params["per_page"] ||= 50
+
     if [:html, :js].include?(request.format.to_sym)
-      if @filter_params["pagination"] == "on"
-        @userfiles_per_page = @user_pref_page_length
-      else
-        @userfiles_per_page = 400 # even when not paginating, there's a limit!
-      end
+      @userfiles_per_page = @filter_params["per_page"].to_i
+      @userfiles_per_page = 500 if @userfiles_per_page > 500
+      @userfiles_per_page = 25  if @userfiles_per_page < 25
     else
       @userfiles_per_page = 999_999_999
     end

@@ -38,8 +38,6 @@ class Userfile < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  Default_num_pages = "50"
-
   after_save              :update_format_group
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
