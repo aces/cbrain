@@ -74,8 +74,8 @@ module TasksHelper
 
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_status(status)
-    return status unless StatesToColor.has_key?(status)
-    html_colorize(status,StatesToColor[status][0])
+    return h(status) unless StatesToColor.has_key?(status)
+    html_colorize(h(status),StatesToColor[status][0])
   end
 
   def cmp_status_order(status1,status2) #:nodoc:

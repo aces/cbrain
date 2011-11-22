@@ -18,7 +18,7 @@
   <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => bourreau.online? ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
-        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}" %>
+        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}".html_safe %>
         <% if diskrev.to_s != runrev.to_s %>
           <%= red_if(true, report) %>
         <% else %>

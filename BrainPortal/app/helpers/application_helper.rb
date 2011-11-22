@@ -112,8 +112,8 @@ module ApplicationHelper
   #Reduces a string to the length specified by +length+.
   def crop_text_to(length, string)
     return ""     if string.blank?
-    return string if string.length <= length
-    return string[0,length-3] + "..."
+    return h(string) if string.length <= length
+    return h(string[0,length-3]) + "...".html_safe
   end
 
   # Produces a pretty 'delete' symbol (used mostly for removing
@@ -219,11 +219,7 @@ module ApplicationHelper
     
     return "" unless location == current_order
     
-    if location == 'userfiles.tree_sort' || location == 'cbrain_tasks.batch'
-      icon = '&bull;'
-    else
-      icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
-    end
+    icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
     
     "<span class=\"order_icon\">#{icon}</span>".html_safe
   end

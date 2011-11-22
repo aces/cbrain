@@ -9,7 +9,7 @@
     <%= ajax_onchange_select(
           "tool_id", 
           url_for(:controller  => :tools, :action => :bourreau_select), 
-          "<option value=\"\">Select an Operation</option>" + grouped_options_for_select(grouped_tools),
+          "<option value=\"\">Select an Operation</option>".html_safe + grouped_options_for_select(grouped_tools),
           :target  => "#bourreau_select_convert", 
           :loading_message  => "<span class='warning'>Loading...</span>"
       ) 

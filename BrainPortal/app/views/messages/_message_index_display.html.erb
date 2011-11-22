@@ -30,7 +30,7 @@
               e_text = "now" if e == 0
               e_text = "the big bang" if e > 10.years
               text = "Time interval: between #{s_text} and #{e_text}"
-             "<span class=\"current_filters_item\">#{text.capitalize}</span>" + filter_remove_link(delete_icon, att)
+             "<span class=\"current_filters_item\">#{h(text).capitalize}</span>" + filter_remove_link(delete_icon, att)
             elsif att == "critical"
               text = val == '1' ? "Critical" : "Not critical"
               "<span class=\"current_filters_item\">#{text}</span>" + filter_remove_link(delete_icon, att)

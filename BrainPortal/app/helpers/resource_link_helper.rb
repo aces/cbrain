@@ -208,10 +208,10 @@ module ResourceLinkHelper
       html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 60 ) do
         (
         "<div class=\"left_align\">\n" +
-        "#{user.full_name}<br>\n" +
-        (user.city.blank?  ? "" : "City: #{user.city}<br/>\n") +
-        (user.site.blank?  ? "" : "Site: #{user.site.name}<br/>\n") +
-        (user.email.blank? ? "" : "Email: #{user.email}<br/>\n") +
+        "#{h(user.full_name)}<br>\n" +
+        (user.city.blank?  ? "" : "City: #{h(user.city)}<br/>\n") +
+        (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br/>\n") +
+        (user.email.blank? ? "" : "Email: #{h(user.email)}<br/>\n") +
         "</div>"
         ).html_safe
       end

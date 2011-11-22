@@ -1,6 +1,6 @@
 <div class="menu_bar menu_bar_left">
    <%= new_model_button "Create Project", new_group_path %>
-   <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch", :id  => "off"}, :method  => :post, :class  => :button %>
+   <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch"}, :method  => :post, :class  => :button %>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>       
 </div>
 
@@ -11,7 +11,7 @@
         <% 
           filters = @filter_params["filter_hash"].map do |att, val|
             if att == "type"
-              "<span class=\"current_filters_item\">#{crop_text_to(30, "Type: #{val.sub(/Group$/, "Project").titleize}")}</span>" + filter_remove_link(delete_icon, att)
+              "<span class=\"current_filters_item\">#{crop_text_to(30, "Type: #{h(val).sub(/Group$/, "Project").titleize}")}</span>" + filter_remove_link(delete_icon, att)
             else 
               "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:group, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
             end
