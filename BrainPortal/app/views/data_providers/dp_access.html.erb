@@ -1,0 +1,43 @@
+
+<!-- *********************************** -->
+<!-- Disk access summary -->
+<!-- For Data Providers -->
+<!-- *********************************** -->
+
+<% title "DataProvider Access" %>
+
+<h2>Data Provider Access Report</h2>
+
+<% if @providers.size > 0 && @users.size > 0 %>
+
+<span class="display_cell">
+  <table>
+    
+    <tr>
+      <th></th>
+      <% @providers.each do |dp| %>
+        <th><%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
+      <% end %>
+    </tr>
+      
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= link_to_user_with_tooltip(user) %></td>
+            
+        <% 
+        accessible_dp = DataProvider.find_all_accessible_by_user(user).index_by &:id || {}
+        %>
+        
+        <% @providers.each do |dp| %>
+          <td><%= accessible_dp[dp.id] ? green_o_icon : red_times_icon %></td>
+        <% end %>
+      </tr>
+    <% end %>
+  
+  </table>
+  
+  <p/><%= access_legend %>
+  
+</span>
+
+<% end %>

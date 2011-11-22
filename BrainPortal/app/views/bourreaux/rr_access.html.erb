@@ -1,0 +1,44 @@
+
+<!-- *********************************** -->
+<!-- Bourreau acces by user -->
+<!-- *********************************** -->
+
+<% title "Execution Server Access" %>
+
+<h2>Execution Server Access Report</h2>
+
+<% if ! @remote_r.empty? && ! @users.empty? %>
+
+<span class="display_cell">
+  <table>
+
+    <tr>
+      <th></th>
+      <% @remote_r.each do |bourreau| %>
+        <th><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => {:class => "header_link"}) %>
+          <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+        </th>
+      <% end %>
+    </tr>
+    
+    <% sorted_users = @users.sort { |a,b| a.login <=> b.login } %>
+    <% sorted_users.each do |user| %>
+      <% 
+      accessible_rr = RemoteResource.find_all_accessible_by_user(user).index_by &:id || {}
+      %>
+      <tr>
+        <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
+        
+        <% @remote_r.each do |bourreau| %>
+          <td> <%= accessible_rr[bourreau.id]  ? green_o_icon : red_times_icon %></td>
+        <% end %>
+      </tr>
+    <% end %>
+    
+  </table>
+  
+  <p/><%= access_legend %>
+  
+</span>
+
+<% end %>

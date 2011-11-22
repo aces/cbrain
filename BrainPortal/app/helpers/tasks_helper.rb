@@ -87,5 +87,16 @@ module TasksHelper
     status1 <=> status2 # in case of equality, compare by name again
   end
 
+  # Returns a HTML for task Report with task, size and
+  # number of unknow
+  def format_task_size_unk(task,size,unk)
+    
+    t_s_u  = "Task: #{task}<br/>"
+    t_s_u += "Size: #{pretty_size(size)}<br/>"
+    t_s_u += "Unk:  #{unk.to_i}" if unk.to_i > 0
+    
+    return t_s_u.html_safe
+  end
+
 end
 

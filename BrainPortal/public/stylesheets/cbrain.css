@@ -503,6 +503,7 @@ h1.warning {
 }
 
 
+
 /* % ######################################################### */
 /* % General Links formatting */
 /* % ######################################################### */
@@ -524,10 +525,12 @@ a {
     vertical-align: +1px;
 }
 
-
+.header_link {
+    color: white
+}
 
 /* % ######################################################### */
-/* % General box layouts for the miscellaneous content */
+/* % General box layouts for miscellaneous content */
 /* % ######################################################### */
 
 .generalbox {
@@ -1391,7 +1394,7 @@ img {
 
 .dp_disk_usage_color_span {
     vertical-align: middle;
-    padding: 0 1em 0 0;
+    padding: 0 0.5em 0 0.5em;
 }
 
 .dp_disk_usage_color_block {

@@ -29,7 +29,7 @@ class TasksController < ApplicationController
       @header_scope = current_user.available_tasks
     end
     
-    @header_scope = @header_scope.where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+    @header_scope = @header_scope.real_tasks
     scope = base_filtered_scope(@header_scope)
     
     @header_scope = @header_scope.where( :bourreau_id => bourreau_ids )
@@ -119,7 +119,7 @@ class TasksController < ApplicationController
     end
   end
   
-  def batch_list
+  def batch_list #:nodoc:
     if current_project
       scope = CbrainTask.where( :group_id  => current_project.id )
     else
@@ -772,7 +772,7 @@ class TasksController < ApplicationController
     end
   end
 
-  def resource_class
+  def resource_class #:nodoc:
     CbrainTask
   end
 

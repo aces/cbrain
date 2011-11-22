@@ -7,6 +7,22 @@
               {:controller  => :bourreaux, :action  => :index, :bourreaux  => {:details  => set_toggle(@filter_params["details"])}},
               :datatype  => 'script', :class  => "button"
   %>
+  
+  <%= link_to ("Access Report"),
+             {:controller  => :bourreaux, :action  => :rr_access},
+              :datatype  => 'script', :class  => "button"
+  %>   
+  
+  <%= link_to ("Disk Cache Report"),
+              {:controller  => :bourreaux, :action  => :rr_disk_usage},
+              :datatype  => 'script', :class  => "button"
+  %>
+  
+  <%= link_to ("Task Workdir Size Report"),
+              {:controller  => :bourreaux, :action  => :task_workdir_size},
+              :datatype  => 'script', :class  => "button"
+  %>
+  
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
