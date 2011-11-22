@@ -50,7 +50,7 @@ user_types_info = type_stats[:user_types_info]
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Email:</th>
-       <td><%= auto_link_email_addresses @user.email.html_safe %></td>
+       <td><%= auto_link_email_addresses h(@user.email) %></td>
      </tr>
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Site:</th>
@@ -165,10 +165,6 @@ user_types_info = type_stats[:user_types_info]
                         }
   %>
 
-  <P>
-
-  <%= render :partial => 'data_providers/disk_usage'%>  
-  
   <P>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>

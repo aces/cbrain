@@ -65,6 +65,8 @@ class CbrainTask < ActiveRecord::Base
                          end
                          { :conditions => { :status => value } }    
                        }
+
+  scope :real_tasks, where("cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'")
   
 
   # The attribute 'prerequisites' is a serialized hash table

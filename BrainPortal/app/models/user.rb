@@ -42,13 +42,15 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name, :login, :email, :role
+  validates_presence_of     :full_name, :login, :role
   validates_presence_of     :password,                   :if => :password_required?
   validates_presence_of     :password_confirmation,      :if => :password_required?
   validates_length_of       :password, :within => 4..40, :if => :password_required?
   validates_confirmation_of :password,                   :if => :password_required?
   validates_length_of       :login,    :within => 3..40
-  validates_length_of       :email,    :within => 3..100
+  validates                 :email,    
+                            :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$/i },
+                            :allow_blank => true
   validates_uniqueness_of   :login, :case_sensitive => false
   validate                  :prevent_group_collision,    :on => :create
   validate                  :immutable_login,            :on => :update

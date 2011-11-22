@@ -74,8 +74,8 @@ module TasksHelper
 
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_status(status)
-    return status unless StatesToColor.has_key?(status)
-    html_colorize(status,StatesToColor[status][0])
+    return h(status) unless StatesToColor.has_key?(status)
+    html_colorize(h(status),StatesToColor[status][0])
   end
 
   def cmp_status_order(status1,status2) #:nodoc:
@@ -85,6 +85,17 @@ module TasksHelper
     cmp = (info1[1] <=> info2[1]) # compare their ranks
     return cmp if cmp != 0
     status1 <=> status2 # in case of equality, compare by name again
+  end
+
+  # Returns a HTML for task Report with task, size and
+  # number of unknow
+  def format_task_size_unk(task,size,unk)
+    
+    t_s_u  = "Task: #{task}<br/>"
+    t_s_u += "Size: #{pretty_size(size)}<br/>"
+    t_s_u += "Unk:  #{unk.to_i}" if unk.to_i > 0
+    
+    return t_s_u.html_safe
   end
 
 end

@@ -104,7 +104,7 @@ class DataProvidersController < ApplicationController
 
   end
 
-  def new
+  def new #:nodoc:
     provider_group_id = ( current_project && current_project.id ) || current_user.own_group.id
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
@@ -228,100 +228,31 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)        
     is_alive =  @provider.is_alive?
     respond_to do |format|
-      format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>", "No" ) }
+      format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
       format.xml { render :xml  => { :is_alive  => is_alive }  }
     end  
   end
-  
-  def disk_usage #:nodoc:
+
+  def dp_disk_usage #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).all
 
-    # List of cache update offsets we support
-    big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
-    @offset_times = [
-      [ "Now",               0.seconds.to_i ],
-      [ "One hour ago",      1.hour.to_i    ],
-      [ "Six hours ago",     6.hour.to_i    ],
-      [ "One day ago",       1.day.to_i     ],
-      [ "One week ago",      1.week.to_i    ],
-      [ "Two weeks ago",     2.week.to_i    ],
-      [ "One month ago",     1.month.to_i   ],
-      [ "Two months ago",    2.months.to_i  ],
-      [ "Three months ago",  3.months.to_i  ],
-      [ "Four months ago",   4.months.to_i  ],
-      [ "Six months ago",    6.months.to_i  ],
-      [ "Nine months ago",   9.months.to_i  ],
-      [ "One year ago",      1.year.to_i    ],
-      [ "The Big Bang",      big_bang       ]
-    ]
-
-    # Time:     Present ............................................................ Past
-    # In Words: now .......... older_limit ..... younger_limit ................. long ago
-    # Num Secs: 0 secs ago ................. < ........................ infinite secs ago
-    # Vars:     .............. @cache_older  <  @cache_younger ..........................
-    #
-    #                          |---- files to be deleted ----|
-
-    @cache_older   = params[:cache_older]   || 1.months.to_i
-    @cache_younger = params[:cache_younger] || big_bang
-    @cache_older   = @cache_older.to_s   =~ /^\d+/ ? @cache_older.to_i   : 1.months.to_i
-    @cache_younger = @cache_younger.to_s =~ /^\d+/ ? @cache_younger.to_i : big_bang
-    @cache_older   = big_bang if @cache_older   > big_bang
-    @cache_younger = big_bang if @cache_younger > big_bang
-    if (@cache_younger < @cache_older) # the interface allows the user to reverse them
-      @cache_younger, @cache_older = @cache_older, @cache_younger
-    end
-
-    # Normalize to one of the values in the table above
-    @offset_times.reverse_each do |pair|
-      if @cache_older >= pair[1]
-        @cache_older   = pair[1]
-        break
-      end
-    end
-
-    # Normalize to one of the values in the table above
-    @offset_times.each do |pair|
-      if @cache_younger <= pair[1]
-        @cache_younger   = pair[1]
-        break
-      end
-    end
-
-    # Restrict cache info stats to files within
-    # a certain range of oldness.
-    accessed_before = @cache_older.seconds.ago # this is a Time
-    accessed_after  = @cache_younger.seconds.ago # this is a Time
-
     # Users in statistics table
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
+    userlist         = current_user.available_users.all
 
     # Create disk usage statistics table
     stats_options = { :users            => userlist,
                       :providers        => @providers,
-                      :remote_resources => rrlist,
-                      :accessed_before  => accessed_before,
-                      :accessed_after   => accessed_after
                     }
-    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
+    @report_stats    = ModelsReport.dp_usage_statistics(stats_options)
 
     # Keys and arrays into statistics tables, for HTML output
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
     @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
     @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
-    
-    render :partial  => "disk_usage"
+  end
+
+  def dp_access #:nodoc:
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+    @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
 
   #Browse the files of a data provider.
@@ -642,88 +573,6 @@ class DataProvidersController < ApplicationController
                  }
     end
 
-  end
-
-
-  # Provides the interface to trigger cache cleanup operations
-  def cleanup
-    flash[:notice] ||= ""
-
-    # First param is cleanup_older, which is the number
-    # of second before NOW at which point files OLDER than
-    # that become eligible for elimination
-    cleanup_older = params[:cleanup_older] || 0
-    if cleanup_older.to_s =~ /^\d+/
-      cleanup_older = cleanup_older.to_i
-      cleanup_older = 1.year.to_i if cleanup_older > 1.year.to_i
-    else
-      cleanup_older = 1.year.to_i
-    end
-
-    # Second param is cleanup_younger, which is the number
-    # of second before NOW at which point files YOUNGER than
-    # that become eligible for elimination
-    cleanup_younger = params[:cleanup_younger] || 0
-    if cleanup_younger.to_s =~ /^\d+/
-      cleanup_younger = cleanup_younger.to_i
-      cleanup_younger = 1.year.to_i if cleanup_younger > 1.year.to_i
-    else
-      cleanup_younger = 0
-    end
-
-    # Third param is clean_cache, a set of pairs in
-    # the form "uuu,rrr" where uuu is a user_id and
-    # rrr is a remote_resource_id. Both must be accessible
-    # by the current user.
-    clean_cache    = params[:clean_cache]    || []
-    unless clean_cache.is_a?(Array)
-      clean_cache = [ clean_cache ]
-    end
-
-    # List of acceptable users
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # List of acceptable remote_resources
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
-
-    # Index of acceptable users and remote_resources
-    userlist_index   = userlist.index_by &:id
-    rrlist_index     = rrlist.index_by &:id
-
-    # Extract what caches are asked to be cleaned up
-    rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
-    clean_cache.each do |pair|
-      next unless pair.to_s.match(/^(\d+),(\d+)$/)
-      user_id            = Regexp.last_match[1].to_i
-      remote_resource_id = Regexp.last_match[2].to_i
-      # Make sure we're allowed
-      next unless userlist_index[user_id] && rrlist_index[remote_resource_id]
-      # Group and uniq them
-      rrid_to_userids[remote_resource_id] ||= {}
-      rrid_to_userids[remote_resource_id][user_id] = true
-    end
-
-    # Send the cleanup message
-    rrid_to_userids.each_key do |rrid|
-      remote_resource = RemoteResource.find(rrid)
-      userlist = rrid_to_userids[rrid]  # uid => true, uid => true ...
-      userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
-      flash[:notice] += "\n" unless flash[:notice].blank?
-      begin
-        remote_resource.send_command_clean_cache(userids,cleanup_older.ago,cleanup_younger.ago)
-        flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
-      rescue => e
-        flash[:notice] += "Could not contact #{remote_resource.name}."
-      end
-    end
-
-    redirect_to :action => :disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
   end
   
   private 

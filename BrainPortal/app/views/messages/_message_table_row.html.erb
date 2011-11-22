@@ -7,7 +7,7 @@
       <td class="<%= "#{mess.message_type}_display " %>middle bold left<%= mess.read? ? " message_read" : " message_unread" %>">
     <% end %>
     &nbsp;
-    <%= show_hide_toggle Message.parse_markup( h(mess.header) ), "#message_table_details_#{mess.id}" %>
+    <%= show_hide_toggle Message.parse_markup( mess.header ), "#message_table_details_#{mess.id}" %>
 
     <div id="message_table_details_<%= mess.id %>" class="no_wrap" style="display:none">
       <%= render :partial  => 'messages/message_details', :locals  => {:mess  => mess} %>
@@ -28,7 +28,7 @@
 
     <% if mess.read %>
       <%= 
-         delete_button 'Mark&nbsp;as&nbsp;Unread', message_path(mess, :read => "false"),
+         delete_button 'Mark&nbsp;as&nbsp;Unread'.html_safe, message_path(mess, :read => "false"),
                  :class => 'action_link', 
                  :method  => "PUT",
                  :target  => ".message_display_#{mess.id}", 
@@ -36,7 +36,7 @@
       %>
     <% else %>
       <%= 
-        delete_button  'Mark&nbsp;as&nbsp;Read',  message_path(mess, :read  => "true"),
+        delete_button  'Mark&nbsp;as&nbsp;Read'.html_safe,  message_path(mess, :read  => "true"),
                  :class => 'action_link', 
                  :method  => "PUT",
                  :target  => ".message_display_#{mess.id}", 

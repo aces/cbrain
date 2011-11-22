@@ -299,8 +299,7 @@ class Message < ActiveRecord::Base
   # will return
   #    "abcde <a href="/my/path" class="action_link">name</a>"
   def self.parse_markup(string)
-    cb_error "We MUST receive a string already known to be HTML_SAFE!" unless string.html_safe?
-    arr = string.split(/(\[\[.*?\]\])/)
+    arr = ERB::Util.html_escape(string).split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context
       next unless arr[i] =~ /\[\[(.+?)\]\[(.+?)\]\]/

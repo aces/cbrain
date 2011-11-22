@@ -517,7 +517,7 @@ class ApplicationController < ActionController::Base
       color = options[:color1]
       string = string1
     end
-    return color ? html_colorize(string,color) : string.html_safe
+    return color ? html_colorize(ERB::Util.html_escape(string),color) : ERB::Util.html_escape(string)
   end
 
   # Returns a string of text colorized in HTML.
@@ -525,7 +525,7 @@ class ApplicationController < ActionController::Base
   #   <SPAN STYLE="COLOR:color">text</SPAN>
   # The default color is 'red'.
   def html_colorize(text, color = "red", options = {})
-    "<span style=\"color: #{color}\">#{text}</span>".html_safe
+    "<span style=\"color: #{color}\">#{ERB::Util.html_escape(text)}</span>".html_safe
   end
 
   # Calls the view helper method 'pluralize'

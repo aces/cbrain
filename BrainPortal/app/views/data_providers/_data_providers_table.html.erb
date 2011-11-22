@@ -13,7 +13,18 @@
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
               {:controller  => :data_providers, :action  => :index, :data_providers  => {:details  => set_toggle(@filter_params["details"])}},
               :datatype  => 'script', :class  => "button"
+  %>
+
+  <%= link_to ("Access Report"),
+             {:controller  => :data_providers, :action  => :dp_access},
+              :datatype  => 'script', :class  => "button"
   %>   
+  
+  <%= link_to ("Disk Usage Report"),
+              {:controller  => :data_providers, :action  => :dp_disk_usage},
+              :datatype  => 'script', :class  => "button"
+  %>   
+  
   <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>
 
