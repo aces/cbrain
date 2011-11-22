@@ -21,7 +21,7 @@ class Message < ActiveRecord::Base
 
   attr_accessor :send_email
   
-  named_scope   :time_interval, lambda { |s, e|
+  scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
                                   aft = e.to_i
                                   bef,aft = aft,bef if aft < bef
