@@ -529,6 +529,13 @@ a {
     color: white
 }
 
+.error_link {
+    color: red !important;
+}
+
+
+>>>>>>> 4089ff140e9c278c86123b8e06331a12f6363163
+
 /* % ######################################################### */
 /* % General box layouts for miscellaneous content */
 /* % ######################################################### */
@@ -1485,13 +1492,13 @@ td.right_side {
 
 td.left_side {
     border-width: 0.2em 0em 0.2em 0.2em;
+    font-weight: bold;  
     text-align: left;
-    font-weight: bold;
 }
 
 td.middle {
     border-width: 0.2em 0em 0.2em;
-    text-align: center;
+    font-weight: bold;  
     padding: 0.25em;
 }
 

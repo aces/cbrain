@@ -30,12 +30,12 @@ class ToolsController < ApplicationController
   end
   
   def bourreau_select #:nodoc:
-    if params[:current_value].blank?
+    if params[:tool_id].blank?
       render :text  => ""
       return
     end
     
-    @tool        = current_user.available_tools.find(params[:current_value])
+    @tool        = current_user.available_tools.find(params[:tool_id])
     bourreau_ids = @tool.bourreaux.map &:id
     @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :online  => true, :id => bourreau_ids )
     @bourreaux.reject! do |b|

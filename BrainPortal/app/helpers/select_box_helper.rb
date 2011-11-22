@@ -3,24 +3,6 @@ module SelectBoxHelper
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  #################################################################################
-  # Selector Helpers
-  #################################################################################
-  
-  # Create options for a select box with optgroups.
-  def grouped_options_for_select(grouped_options, selected_key = nil, prompt = nil)
-    body = ''
-    body << content_tag(:option, prompt, :value => "") if prompt
-  
-    grouped_options = grouped_options.sort if grouped_options.is_a?(Hash)
-  
-    grouped_options.each do |group|
-      body << content_tag(:optgroup, options_for_select(group[1], selected_key), :label => group[0])
-    end
-  
-    body.html_safe
-  end
-  
   #Create a standard user select box for selecting a user id for a form.
   #The +parameter_name+ argument will be the name of the parameter 
   #when the form is submitted and the +select_tag_options+ hash will be sent
@@ -45,10 +27,10 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
     
-    select_tag parameter_name, grouped_options.html_safe, select_tag_options
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard groups select box for selecting a group id for a form.
@@ -110,10 +92,10 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
     
-    select_tag parameter_name, grouped_options.html_safe, select_tag_options
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard data provider select box for selecting a data provider id for a form.
@@ -147,10 +129,10 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>".html_safe + grouped_options
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
     
-    select_tag parameter_name, grouped_options.html_safe, select_tag_options
+    select_tag parameter_name, grouped_options, select_tag_options
   end
   
   #Create a standard bourreau select box for selecting a bourreau id for a form.
@@ -183,10 +165,10 @@ module SelectBoxHelper
       blank_label = select_tag_options.delete(:include_blank)
       if blank_label
         blank_label = "" if blank_label == true
-        options = "<option value=\"\">#{blank_label}</option>" + options
+        options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
       end
       
-      select_tag parameter_name, options.html_safe, select_tag_options
+      select_tag parameter_name, options, select_tag_options
     else
       "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe
     end
@@ -284,10 +266,10 @@ module SelectBoxHelper
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
-      grouped_options = "<option value=\"\">#{blank_label}</option>" + grouped_options
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
     
-    select_tag parameter_name, grouped_options.html_safe, select_tag_options
+    select_tag parameter_name, grouped_options, select_tag_options
   end
 
 end

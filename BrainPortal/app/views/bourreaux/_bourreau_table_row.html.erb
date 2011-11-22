@@ -9,16 +9,16 @@
    tasks_max   = 'unlimited' if tasks_max.to_s == '0'
    isbourreau  = bourreau.is_a?(Bourreau)
    num_running = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
-   task_space_known = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)          : ""
-   task_space_unkn  = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).count : ""
+   task_space_known = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)                                               : ""
+   task_space_unkn  = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count : ""
 %>
 
 <tr class="row_highlight <%= cycle("list-odd", "list-even") %>" id="bourreau_<%= bourreau.id %>">
   <td><%= isbourreau ? "Execution" : "Portal" %></td>
-  <td><%= link_to_bourreau_if_accessible(bourreau) %></td>
+  <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => bourreau.online? ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
-        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}" %>
+        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}".html_safe %>
         <% if diskrev.to_s != runrev.to_s %>
           <%= red_if(true, report) %>
         <% else %>

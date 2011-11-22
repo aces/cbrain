@@ -74,6 +74,8 @@ class BourreauSystemChecks < CbrainChecker
     end
   end
 
+
+
   def self.a070_ensure_task_workdirs_are_in_subtrees
 
     myself        = RemoteResource.current_resource
@@ -86,8 +88,8 @@ class BourreauSystemChecks < CbrainChecker
     #-----------------------------------------------------------------------------
 
     local_old_tasks = CbrainTask.where(
-      :bourreau_id => myself.id,
-      :status      => ( CbrainTask::COMPLETED_STATUS + CbrainTask::FAILED_STATUS ) - CbrainTask::ACTIVE_STATUS,
+      :bourreau_id  => myself.id,
+      :status       => ( CbrainTask::COMPLETED_STATUS + CbrainTask::FAILED_STATUS ) - CbrainTask::ACTIVE_STATUS,
       :share_wd_tid => nil
     ).where(
       [ "updated_at < ?", 1.week.ago ], # just to be safe...
@@ -153,6 +155,63 @@ class BourreauSystemChecks < CbrainChecker
     end
 
     puts "C> \t- Adjustment of task workdirs: #{adj_success} adjusted, #{adj_fail} failed, #{adj_zap} zapped, #{adj_same} stayed the same."
+
+  end
+
+
+
+  def self.a080_ensure_tasks_have_workdir_sizes
+
+    #-----------------------------------------------------------------------------
+    puts "C> Refreshing the disk sizes for workdirs of CbrainTasks..."
+    #-----------------------------------------------------------------------------
+
+    myself        = RemoteResource.current_resource
+    gridshare_dir = myself.cms_shared_dir
+ 
+    if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
+      puts "C> \t- SKIPPING! No task work directory yet configured!"
+      return
+    end
+
+    local_tasks_not_sized = CbrainTask.where(
+      :bourreau_id          => myself.id,
+      :status               => ( CbrainTask::COMPLETED_STATUS + CbrainTask::FAILED_STATUS ) - CbrainTask::ACTIVE_STATUS,
+      :cluster_workdir_size => nil,
+    ).where(
+      [ "updated_at < ?", 1.day.ago ], # just to be safe...
+    ).where(
+      "cluster_workdir IS NOT NULL"
+    ).all
+
+    if local_tasks_not_sized.empty?
+      puts "C> \t- No tasks need to be adjusted."
+      return
+    end
+
+    puts "C> \t- Refreshing sizes for #{local_tasks_not_sized.size} tasks (in background)..."
+
+    CBRAIN.spawn_with_active_records(User.admin, "TaskSizes") do
+      totsize = 0
+      totnils = 0
+      local_tasks_not_sized.each do |task|
+        size     = task.send(:update_size_of_cluster_workdir) # it's a protected method
+        totsize += size if size
+        totnils += 1    if size.nil?
+      end
+      Rails.logger.info "Adjusted #{local_tasks_not_sized.size} tasks, #{totsize} bytes, #{totnils} skipped."
+      Message.send_message(User.admin,
+        :type          => :system,
+        :header        => "Report of task sizes refresh on '#{myself.name}'",
+        :description   => "The disk space used by some tasks needed to be recomputed.",
+        :variable_text => "Report:\n" +
+                          "Number of tasks: #{local_tasks_not_sized.size}\n" +
+                          "Total size     : #{totsize} bytes\n" +
+                          "Tasks skipped  : #{totnils} tasks",
+        :critical      => true,
+        :send_email    => false
+      ) rescue true
+    end
 
   end
 

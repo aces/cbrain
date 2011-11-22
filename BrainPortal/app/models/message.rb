@@ -21,6 +21,15 @@ class Message < ActiveRecord::Base
 
   attr_accessor :send_email
   
+  scope :time_interval, lambda { |s, e|
+                                  bef = s.to_i
+                                  aft = e.to_i
+                                  bef,aft = aft,bef if aft < bef
+                                  bef = bef < 1 ? 1.day.from_now : bef.ago
+                                  aft = aft.ago
+                                  { :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] }
+                                }
+  
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, a Site,
@@ -290,8 +299,7 @@ class Message < ActiveRecord::Base
   # will return
   #    "abcde <a href="/my/path" class="action_link">name</a>"
   def self.parse_markup(string)
-    cb_error "We MUST receive a string already known to be HTML_SAFE!" unless string.html_safe?
-    arr = string.split(/(\[\[.*?\]\])/)
+    arr = ERB::Util.html_escape(string).split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context
       next unless arr[i] =~ /\[\[(.+?)\]\[(.+?)\]\]/

@@ -374,4 +374,13 @@ class Array
 end
 
 
+class Hash
 
+  def convert_keys!
+    self.keys.each do |key|
+      self[yield(key)] = delete(key)
+    end
+    self
+  end
+
+end

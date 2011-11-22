@@ -393,6 +393,12 @@ class ApplicationController < ActionController::Base
     
     return "0 seconds" if remain <= 0
 
+    numyears = remain / 1.year.to_i
+    remain   = remain - ( numyears * 1.year.to_i   )
+    
+    nummos   = remain / 1.month
+    remain   = remain - ( nummos * 1.month   )
+
     numweeks = remain / 1.week
     remain   = remain - ( numweeks * 1.week   )
 
@@ -408,6 +414,8 @@ class ApplicationController < ActionController::Base
     numsecs  = remain
 
     components = [
+      [numyears, is_short ? "y" : "year"],
+      [nummos,   is_short ? "mo" : "month"],
       [numweeks, is_short ? "w" : "week"],
       [numdays,  is_short ? "d" : "day"],
       [numhours, is_short ? "h" : "hour"],
@@ -509,7 +517,7 @@ class ApplicationController < ActionController::Base
       color = options[:color1]
       string = string1
     end
-    return color ? html_colorize(string,color) : string.html_safe
+    return color ? html_colorize(ERB::Util.html_escape(string),color) : ERB::Util.html_escape(string)
   end
 
   # Returns a string of text colorized in HTML.
@@ -517,7 +525,7 @@ class ApplicationController < ActionController::Base
   #   <SPAN STYLE="COLOR:color">text</SPAN>
   # The default color is 'red'.
   def html_colorize(text, color = "red", options = {})
-    "<span style=\"color: #{color}\">#{text}</span>".html_safe
+    "<span style=\"color: #{color}\">#{ERB::Util.html_escape(text)}</span>".html_safe
   end
 
   # Calls the view helper method 'pluralize'

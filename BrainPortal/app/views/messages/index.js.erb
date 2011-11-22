@@ -1,3 +1,12 @@
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#message_index_display").html(<%= html_for_js(render(:partial => 'message_index_display')) %>);
-jQuery("#message_index_display").trigger("new_content");
+jQuery("#message_menu_tab").attr("title", "<%= pluralize(@unread_message_count, "unread message") %>");
+var message_display = jQuery("#message_display");
+if(message_display){
+  message_display.html(<%= html_for_js(render :partial  => 'messages/message_display') %>);
+  message_display.trigger("new_content");
+}
+var message_table = jQuery('#message_index_display');
+if(message_table){
+  message_table.html(<%= html_for_js(render :partial  => 'message_index_display') %>)
+  message_table.trigger("new_content");
+}

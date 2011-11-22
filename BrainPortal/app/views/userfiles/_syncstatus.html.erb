@@ -1,7 +1,7 @@
 <% @_syncstatus_rr_cache ||= {} %>
 <% @_syncstatus_rr_cache[syncstat.remote_resource_id] ||= syncstat.remote_resource %>
 <%= html_tool_tip status_html_symbol(syncstat.status) do %>
-  <%= "#{@_syncstatus_rr_cache[syncstat.remote_resource_id].class.to_s} '#{@_syncstatus_rr_cache[syncstat.remote_resource_id].name}' : #{status_html_symbol(syncstat.status)} (#{syncstat.status})".html_safe %>
+  <%= "#{@_syncstatus_rr_cache[syncstat.remote_resource_id].class.to_s} '#{h(@_syncstatus_rr_cache[syncstat.remote_resource_id].name)}' : #{status_html_symbol(syncstat.status)} (#{h(syncstat.status)})".html_safe %>
   <% if syncstat.status == 'InSync' -%>
     <br>
     Last Synchronized Date: <%= pretty_past_date syncstat.synced_at %><br>

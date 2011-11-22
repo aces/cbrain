@@ -146,7 +146,7 @@ module CbrainUiHelper
   #Create a tooltip that displays html when mouseovered.
   #Text of the icon is provided as an argument.
   #Html to be displayed on mouseover is given as a block.
-  def html_tool_tip(text = "<span class=\"action_link\">?</span>", options = {}, &block)
+  def html_tool_tip(text = "<span class=\"action_link\">?</span>".html_safe, options = {}, &block)
     @@html_tool_tip_id ||= 0
     @@html_tool_tip_id += 1
 
@@ -159,12 +159,12 @@ module CbrainUiHelper
     content = capture(&block) # here, new calls to html_tool_tip can be made.
     
     result = "<span class=\"html_tool_tip_trigger\" id=\"xsp_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" data-offset-x=\"#{offset_x}\" data-offset-y=\"#{offset_y}\">"
-    result += text
+    result += h(text)
     result += "</span>"
     
     content_class = options.delete(:tooltip_div_class) || "html_tool_tip"
     result += "<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">"
-    result += content
+    result += h(content)
     result += "</div>"
     
     result.html_safe
@@ -195,8 +195,8 @@ module CbrainUiHelper
 
     html = <<-"HTML"
     <#{element} class="overlay_dialog">
-      <a #{atts}>#{name}</a>
-      <div class="overlay_content" style="display: none;">#{content}</div>
+      <a #{atts}>#{h(name)}</a>
+      <div class="overlay_content" style="display: none;">#{h(content)}</div>
     </#{element}>
     HTML
     html.html_safe
@@ -259,7 +259,7 @@ module CbrainUiHelper
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button"
     atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
-    return "<input type=\"submit\" value=\"#{value}\" #{atts} />".html_safe
+    return "<input type=\"submit\" value=\"#{h(value)}\" #{atts} />".html_safe
   end
   
   #Create an element that will toggle between hiding and showing another element.
@@ -287,7 +287,7 @@ module CbrainUiHelper
     options[:class] +=  " show_toggle"
     
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-    return " <#{element_type} #{atts}>#{text}</#{element_type}>".html_safe
+    return " <#{element_type} #{atts}>#{h(text)}</#{element_type}>".html_safe
   end
   
   #Create a checkbox that will select or deselect all checkboxes on the page 
@@ -315,7 +315,7 @@ module CbrainUiHelper
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
     
     result =  "<select #{atts}>\n"
-    result += select_options.map{|text| "<option>#{text}</option>"}.join("\n")
+    result += select_options.map{|text| "<option>#{h(text)}</option>"}.join("\n")
     result += "</select>"
     result.html_safe
   end
@@ -366,7 +366,7 @@ module CbrainUiHelper
     initial_content ||= html_colorize("Loading...")
     
     html = "<#{element} #{atts}>"
-    html += initial_content
+    html += h(initial_content)
     html += "</#{element}>"
     
     html.html_safe
@@ -403,7 +403,7 @@ module CbrainUiHelper
     end
     
     html = "<#{element} #{atts}>"
-    html += initial_content
+    html += h(initial_content)
     html += "</#{element}>"
     
     html.html_safe
@@ -498,7 +498,7 @@ module CbrainUiHelper
     options[:datatype] ||= "html"
     options[:overlay] = true
     
-    ajax_link name.to_s.html_safe, url, options
+    ajax_link h(name.to_s), url, options
   end
   
   #Create a link that will submin an ajax_request to +url+
@@ -517,7 +517,7 @@ module CbrainUiHelper
     options_setup("ajax_link", options)
     options[:remote] = true
     
-    link_to name.to_s.html_safe, url, options 
+    link_to h(name.to_s), url, options 
   end
   
   #Create a link that will submit an ajax request. The 
@@ -534,7 +534,7 @@ module CbrainUiHelper
     options[:method] ||= 'DELETE'
     options[:datatype] ||= 'script'
     
-    ajax_link name.to_s.html_safe, url, options
+    ajax_link h(name.to_s), url, options
   end
   
   #A select box that will update the page onChange.
@@ -552,7 +552,7 @@ module CbrainUiHelper
     
     options["data-url"] = url
     
-    select_tag(name, option_tags.html_safe, options)
+    select_tag(name, option_tags, options)
   end
   
   #Sort links meant specifically for sorting tables.
@@ -565,7 +565,7 @@ module CbrainUiHelper
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
     link_options = options.reverse_merge(:datatype  => 'script')
     #ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
-    header = name + "&nbsp;" +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    header = h(name) + "&nbsp;".html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
     ajax_link( header, url, link_options )
   end
   
@@ -653,7 +653,7 @@ module CbrainUiHelper
       options[:datatype] ||= :script
       ajax_link name, url, options
     else
-      link_to name.to_s.html_safe, url, options
+      link_to h(name.to_s), url, options
     end
   end
   

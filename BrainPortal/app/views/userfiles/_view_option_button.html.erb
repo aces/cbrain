@@ -6,13 +6,6 @@
                       :value     => set_toggle(@filter_params["details"])
     %>
     <br>
-    <% if @userfiles_total > @user_pref_page_length %>
-      <%= filter_add_link (@filter_params["pagination"] == 'on' ? "Disable Pagination" : "Paginate" ),
-                         :parameter => :pagination,
-                         :value     => set_toggle(@filter_params["pagination"])
-      %>
-      <br>
-    <% end %>
     <%= 
         filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"), 
                         :parameter => :tree_sort,  
@@ -23,6 +16,9 @@
                         :parameter => :view_all,
                         :value     => set_toggle(@filter_params["view_all"]) 
     %>
+    <br>
+    Number of files per page:
+    <%= ajax_onchange_select( :per_page, userfiles_path(:update_filter => true), options_for_select( [25, 50, 100, 200, 500 ], @userfiles_per_page ), :datatype => "script") %>
   </div>
 <% end %>
 

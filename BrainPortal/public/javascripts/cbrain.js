@@ -394,6 +394,7 @@ jQuery(
    
    jQuery(".request_on_change").live("change", function(){
      var input_element = jQuery(this);
+     var param_name = input_element.attr("name");
      var current_value = input_element.attr("value");
      var url = input_element.attr("data-url");
      var method = input_element.attr("data-method");
@@ -406,6 +407,9 @@ jQuery(
      if(target && update_text){
        jQuery(target).html(update_text);
      }
+     
+     var parameters = {};
+     parameters[param_name] = current_value;
       
      jQuery.ajax({
        url : url,
@@ -414,7 +418,7 @@ jQuery(
        success: function(data){
          modify_target(data, target);     
         },
-       data : {current_value : current_value}
+       data : parameters
      });
      
      return false;

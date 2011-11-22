@@ -28,14 +28,8 @@ class UsersController < ApplicationController
     @users = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
 
     # Precompute file and task counts.
-    @users_file_counts = {}
-    @users_task_counts = {}
-    Userfile.where(:user_id => @users.map(&:id)).select("user_id, count(user_id) as u_cnt").group(:user_id).all.each do |t|
-      @users_file_counts[t.user_id] = t.u_cnt
-    end
-    CbrainTask.where(:user_id => @users.map(&:id)).select("user_id, count(user_id) as u_cnt").group(:user_id).all.each do |t|
-      @users_task_counts[t.user_id] = t.u_cnt
-    end
+    @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
+    @users_task_counts=CbrainTask.where(:user_id => @users.map(&:id)).group(:user_id).count
     
     respond_to do |format|
       format.html # index.html.erb

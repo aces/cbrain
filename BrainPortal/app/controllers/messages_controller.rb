@@ -20,45 +20,29 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @show_users = false
-    @max_show   = "50"
-
+    @filter_params["max_show"] ||= 50
+    @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
+    @filter_params["sort_hash"]["dir"] ||= "DESC"
+    @max_show = @filter_params["max_show"].to_i
+    @max_show = 500 if @max_show > 500
+    @max_show = 25  if @max_show < 25
+    
     scope = base_filtered_scope
-    if current_user.has_role?(:admin)
-      user_id      = params[:user_id]      ||= current_user.id.to_s
-      upd_before   = params[:upd_before]   ||= "0"
-      upd_after    = params[:upd_after]    ||= 50.years.to_s
-      message_type = params[:message_type] ||= ""
-      critical     = params[:critical]     ||= ""
-      read         = params[:read]         ||= ""
-      @max_show    = params[:max_show]     ||= 50.to_s
-      if (params[:commit] || "") =~ /Apply/i
-        @show_users = user_id.blank? || user_id != current_user.id.to_s
-        if user_id =~ /^\d+$/
-          scope = scope.scoped( :conditions => { :user_id => user_id.to_i } )
-        end
-        bef = upd_before.to_i
-        aft = upd_after.to_i
-        bef,aft = aft,bef if aft < bef
-        bef = bef < 1 ? 1.day.from_now : bef.ago
-        aft = aft.ago
-        scope = scope.scoped( :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] )
-        if message_type =~ /^[a-z]+$/
-          scope = scope.scoped( :conditions => { :message_type => message_type } )
-        end
-        unless critical.blank?
-          scope = scope.scoped( :conditions => { :critical => (critical == '1') } )
-        end
-        unless read.blank?
-          scope = scope.scoped( :conditions => { :read => (read == '1') } )
-        end
-      else
-        scope = scope.scoped( :conditions => { :user_id => current_user.id } )
-      end
-    else
+    unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"
       scope = scope.scoped(:conditions => {:user_id => current_user.id})
     end
-    @messages = scope.order( "last_sent DESC" )
+    @total_entries = scope.count
+    
+    page = (params[:page] || 1).to_i
+    page = 1 if page < 1
+    offset = (page - 1) * @max_show
+    
+    scope = scope.limit(@max_show).offset(offset)
+    @messages = WillPaginate::Collection.create(page, @max_show) do |pager|
+      pager.replace(scope)
+      pager.total_entries = @total_entries
+      pager
+    end
     
     respond_to do |format|
       format.html # index.html.erb
@@ -134,22 +118,24 @@ class MessagesController < ApplicationController
         format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
       end
       format.js do
-        prepare_messages
-        @messages = current_user.messages.order( "last_sent DESC" )
-         render :action  => "update_tables"
+        redirect_to :action => :index
       end
     end
   end
 
   # Delete multiple messages.
   def delete_messages #:nodoc:
-    message_list = params[:message_ids] || []
+    id_list = params[:message_ids] || []
+    if current_user.has_role?(:admin)
+      message_list = Message.find(id_list)
+    else
+      message_list = current_user.messages.find(id_list)
+    end
     deleted_count = 0
     
     message_list.each do |message_item|
-      message_obj = Message.find(message_item)
       deleted_count += 1
-      message_obj.destroy
+      message_item.destroy
     end
     
     flash[:notice] = "#{view_pluralize(deleted_count, "items")} deleted.\n" 
@@ -159,15 +145,17 @@ class MessagesController < ApplicationController
   # DELETE /messages/1
   # DELETE /messages/1.xml
   def destroy #:nodoc:
-    @message = current_user.messages.find(params[:id])
+    if current_user.has_role?(:admin)
+      @message = Message.find(params[:id])
+    else
+      @message = current_user.messages.find(params[:id])
+    end
     unless @message.destroy
       flash.now[:error] = "Could not delete message."
     end
-    prepare_messages
-    @messages = current_user.messages.order( "last_sent DESC" )
     
     respond_to do |format|
-      format.js { render :action  => "update_tables" }
+      format.js { redirect_to :action => :index }
       format.xml  { head :ok }
     end
   end

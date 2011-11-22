@@ -61,9 +61,9 @@ module TableMakerHelper
       joiner = options[:min_data_join] || ", "
       formatted = []
       if block_given?
-        array.each_with_index { |elem,i| formatted << capture { yield(elem,0,i) } }
+        array.each_with_index { |elem,i| formatted << capture { h(yield(elem,0,i)) } }
       else
-        formatted = array
+        formatted = array.map{ |elem| h(elem) }
       end
       result += formatted.join(joiner)
       return result.html_safe
@@ -93,7 +93,7 @@ module TableMakerHelper
       if col == 0
         result += "  " + tr_callback.call(row) + "\n"
       end
-      formatted_elem = block_given? ? capture { yield(elem,row,col) } : elem
+      formatted_elem = block_given? ? capture { h(yield(elem,row,col)) } : h(elem)
       result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
       if col + 1 == cols
         result += "  </tr>\n"
