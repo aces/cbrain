@@ -45,7 +45,7 @@ class BourreauxController < ApplicationController
 
     @info = @bourreau.info
 
-    myusers = current_user.available_users
+    myusers = current_user.available_users.all
 
     stats = ModelsReport.gather_task_statistics(
                :users     => myusers,

@@ -20,6 +20,8 @@ class ModelsReport
                else
                  User.all
                end
+    u_ids      = userlist.collect &:id
+    user_by_id = userlist.index_by &:id
                
     # Which data providers to gather stats for
     dplist   = if providers
@@ -35,19 +37,19 @@ class ModelsReport
     fileclasses_totcount = {}
     user_totcount        = {}
     all_totcount         = 0
-    userlist.each do |user|
-      userfiles = Userfile.where( :data_provider_id => dp_ids, :user_id => user.id )
-      user_fileclass_count[user] ||= {}
-      user_totcount[user]        ||= 0
-      userfiles.each do |u|
-        klass = u.class.to_s
-        fileclasses_totcount[klass]              ||= 0
-        fileclasses_totcount[klass]               += 1
-        user_fileclass_count[user][u.class.to_s] ||= 0
-        user_fileclass_count[user][u.class.to_s]  += 1
-        user_totcount[user]                       += 1
-        all_totcount                              += 1
-      end
+
+    userfile_type_stats = Userfile.where( :data_provider_id => dp_ids, :user_id => u_ids ).group(:user_id, :type).count(:type)
+    userfile_type_stats.each do |uid_type,type_count|
+      user       = user_by_id[uid_type[0]]
+      klass      =            uid_type[1]
+      user_fileclass_count[user]               ||= {}
+      user_fileclass_count[user][klass]        ||= 0
+      user_fileclass_count[user][klass]         += type_count
+      fileclasses_totcount[klass]              ||= 0
+      fileclasses_totcount[klass]               += type_count
+      user_totcount[user]                      ||= 0
+      user_totcount[user]                       += type_count
+      all_totcount                              += type_count
     end
 
     stats = {
@@ -77,6 +79,8 @@ class ModelsReport
                else
                  User.all
                end
+    u_ids      = userlist.map &:id
+    user_by_id = userlist.index_by &:id
                 
     # Which data providers to gather stats for
     blist   = if bourreaux
@@ -92,45 +96,41 @@ class ModelsReport
     types    = { 'TOTAL' => 0 }
     user_types_info = {}
      
-    users.each do |user|
+    userlist.each do |user|
       user_tasks_info[user] ||= {}
       user_tasks_info[user]['TOTAL'] = 0
       user_types_info[user] ||= {}
       user_types_info[user]['TOTAL'] = 0
     end
     
-    users.each do |user|
-      tasks_stats = CbrainTask.where( :bourreau_id => b_ids, :user_id => user.id ).select("status, count(status) as stat_count").group(:status)
+    tasks_stats = CbrainTask.where( :bourreau_id => b_ids, :user_id => u_ids ).group(:user_id, :status).count(:status)
       
-      tasks_stats.each do |t|
-        status     = t.status
-        stat_count = t.stat_count.to_i
-        statuses[status]               ||= 0
-        statuses[status]                += stat_count
-        statuses['TOTAL']               += stat_count
-        user_tasks_info[user]          ||= {}
-        user_tasks_info[user][status]    = stat_count
-        user_tasks_info[user]['TOTAL'] ||= 0
-        user_tasks_info[user]['TOTAL']  += stat_count
-      end
-
-      types_stats = CbrainTask.where( :bourreau_id => b_ids, :user_id => user.id ).select("type, count(type) as type_count").group(:type)
-      
-      types_stats.each do |t|
-        type       = t.type
-        type_count = t.type_count.to_i
-        types[type]                    ||= 0
-        types[type]                     += type_count
-        types['TOTAL']                  += type_count
-        user_types_info[user]          ||= {}
-        user_types_info[user][type]      = type_count
-        user_types_info[user]['TOTAL'] ||= 0
-        user_types_info[user]['TOTAL']  += type_count
-      end
-
-      
+    tasks_stats.each do |uid_stat,stat_count|
+      user       = user_by_id[uid_stat[0]]
+      status     =            uid_stat[1]
+      statuses[status]               ||= 0
+      statuses[status]                += stat_count
+      statuses['TOTAL']               += stat_count
+      user_tasks_info[user]          ||= {}
+      user_tasks_info[user][status]    = stat_count
+      user_tasks_info[user]['TOTAL'] ||= 0
+      user_tasks_info[user]['TOTAL']  += stat_count
     end
+
+    types_stats = CbrainTask.where( :bourreau_id => b_ids, :user_id => u_ids ).group(:user_id, :type).count(:type)
       
+    types_stats.each do |uid_type,type_count|
+      user       = user_by_id[uid_type[0]]
+      type       =            uid_type[1]
+      types[type]                    ||= 0
+      types[type]                     += type_count
+      types['TOTAL']                  += type_count
+      user_types_info[user]          ||= {}
+      user_types_info[user][type]      = type_count
+      user_types_info[user]['TOTAL'] ||= 0
+      user_types_info[user]['TOTAL']  += type_count
+    end
+
     statuses_list = statuses.keys.sort.reject { |s| s == 'TOTAL' }
     statuses_list << 'TOTAL'
     types_list    = types.keys.sort.reject    { |s| s == 'TOTAL' }

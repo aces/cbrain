@@ -376,6 +376,16 @@ end
 
 class Hash
 
+  # This method allows you to perform a transformation
+  # on all the keys of the hash; the keys are going to be passed
+  # in turn to the block, and whatever the block returns
+  # will be the new key. Example:
+  #
+  #   { "1" => "a", "2" => "b" }.convert_keys!(&:to_i)
+  #
+  #   returns
+  #
+  #   { 1 => "a", 2 => "b" }
   def convert_keys!
     self.keys.each do |key|
       self[yield(key)] = delete(key)
