@@ -8,7 +8,7 @@
 
 <%= 
   index_table(@users, :class => "resource_list") do |t|
-    t.sort_column("Login", "User", "login") { |u|  link_to_user_if_accessible(u)  + string_if(u.account_locked, red_times_icon) }
+  t.sort_column("Login", "User", "login") { |u|  link_to_user_if_accessible(u)  + string_if(u.account_locked, "&nbsp;".html_safe + red_times_icon) }
     t.describe_sort_column("Full name", "User", "full_name") { |col| col.cell :class => :left, &:full_name }
     t.sort_column("Email", "User", "email") { |u|  auto_link_email_addresses h(u.email) }
     t.sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}

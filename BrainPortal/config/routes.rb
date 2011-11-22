@@ -55,6 +55,10 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       post 'refresh_ssh_keys'
       get  'load_info'
+      get  'rr_disk_usage'
+      get  'rr_access'
+      get  'task_workdir_size'
+      post 'cleanup_caches'
     end
   end
 
@@ -65,8 +69,8 @@ CbrainRailsPortal::Application.routes.draw do
       get  'is_alive'
     end
     collection do
-      post 'cleanup'
-      get  'disk_usage'
+      get  'dp_disk_usage'
+      get  'dp_access'
     end
   end
 

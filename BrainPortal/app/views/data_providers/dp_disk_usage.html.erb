@@ -1,0 +1,72 @@
+
+<!-- *********************************** -->
+<!-- Disk usage summary -->
+<!-- For Data Providers -->
+<!-- *********************************** -->
+
+<% title "Disk Usage" %>
+
+<h2>Data Provider Disk Usage Report</h2>
+
+<span class="display_cell">
+  <table>
+  
+    <tr>
+      <th></th>
+      <% @report_dps_all.each do |dp| %>
+        <th><%= dp.is_a?(String) ? dp : link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
+      <% end %>
+    </tr>
+    
+    
+    <% @report_users_all.each do |user| %>
+      <tr>  
+        <td><%= user.is_a?(String) ? h(user) : link_to_user_with_tooltip(user) %></td>
+        
+        <% @report_dps_all.each do |dp| %>
+        
+          <% cell = @report_stats[user] ? @report_stats[user][dp] : nil %>
+          
+          <% if ! cell %>
+            <td></td>
+            <% next %>
+          <% end %>
+        
+          <% 
+            filters = {}
+            if user.is_a?(User)
+              filters[:user_id] = user.id
+            end
+            if dp.is_a? DataProvider
+              filters[:data_provider_id] = dp.id
+            end
+          %>
+          
+          <td>
+          
+            <%= disk_space_info_display(cell[:size] || 0, nil, 1_000_000) do %>
+              <%= pretty_size(cell[:size]).gsub( / / ,"&nbsp;").html_safe %></br>
+              <%= 
+                filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe,
+                                  :controller => :userfiles,
+                                  :filters => filters,
+                                  :ajax => false
+              %>
+              <% if cell[:unknowns] > 0 %>
+                </br><%= pluralize(cell[:unknowns],"unknown").gsub(/ / ,"&nbsp;").html_safe %>
+              <% end %>
+            <% end %>
+        
+          </td>
+        <% end %>
+  
+      </tr>
+    <% end %>
+  
+  </table>
+  
+  <p/><%= disk_usage_legend %>
+  
+</span>
+
+
