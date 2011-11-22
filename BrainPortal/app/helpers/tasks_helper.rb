@@ -93,7 +93,7 @@ module TasksHelper
     
     t_s_u  = "Task: #{task}<br/>"
     t_s_u += "Size: #{pretty_size(size)}<br/>"
-    t_s_u += "Unk:  #{unk.to_i}" if unk.to_i > 0
+    t_s_u += unk.to_i > 0 ? "Unknown:  #{unk.to_i}" : "&nbsp;"
     
     return t_s_u.html_safe
   end

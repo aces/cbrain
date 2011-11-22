@@ -13,7 +13,7 @@
   user_ids     = @users.map &:id
   bourreau_ids = @bourreaux.map &:id
   tasklist = CbrainTask.real_tasks.where( :user_id => user_ids, :bourreau_id => bourreau_ids )
-  t_nosize = tasklist.where( :cluster_workdir_size => nil )
+  t_nosize = tasklist.where( :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL")
   
   # Tasks by user and bourreaux
   task_count_by_user_and_bourreau       = tasklist.group( [ :user_id, :bourreau_id ] ).count
@@ -85,7 +85,7 @@
               <%= disk_space_info_display((task_space_known_by_user[user.id] || 0), nil, 1_000_000) do %>
                 <%= format_task_size_unk(
                       index_count_filter(task_count_by_user[user.id], :tasks, { :user_id => user.id, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
-                      task_space_known_by_user[user.id],
+                      task_space_known_by_user[user.id] || 0,
                       task_space_unk_by_user[user.id]
                     )
                 %>
@@ -104,7 +104,7 @@
                 <%= disk_space_info_display((task_space_known_by_bourreau[b.id] || 0) , nil, 1_000_000) do %>
                   <%= format_task_size_unk(
                         index_count_filter(task_count_by_bourreau[b.id], :tasks, { :user_id => user_ids, :bourreau_id => b.id }, :show_zeros => 1 ),
-                        task_space_known_by_bourreau[b.id],
+                        task_space_known_by_bourreau[b.id] || 0,
                         task_space_unk_by_bourreau[b.id]
                       )
                   %>
@@ -118,7 +118,7 @@
               <%= disk_space_info_display((tasklist.sum( :cluster_workdir_size) || 0), nil, 1_000_000) do %>
                 <%= format_task_size_unk(
                       index_count_filter(tasklist.count, :tasks, { :user_id => user_ids, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
-                      tasklist.sum( :cluster_workdir_size),
+                      tasklist.sum(:cluster_workdir_size) || 0,
                       t_nosize.count
                     )
                 %>

@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
     # Precompute file and task counts.
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
-    @users_task_counts=CbrainTask.where(:user_id => @users.map(&:id)).group(:user_id).count
+    @users_task_counts=CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
     
     respond_to do |format|
       format.html # index.html.erb
