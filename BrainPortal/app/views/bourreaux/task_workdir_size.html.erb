@@ -45,7 +45,7 @@
       
       <tr>
         <th></th>
-        <% @bourreaux.each do |b| %>  <!-- col -->
+        <% @bourreaux.each do |b| %>
           <th>
             <%= link_to_bourreau_if_accessible(b, current_user, :html_options => {:class => "header_link"}) %>
           </th>
@@ -61,12 +61,12 @@
       <% sorted_users.each do |user| %>
         <% accessible_rr = RemoteResource.find_all_accessible_by_user(user).index_by &:id || {} %>
         <tr>
-          <td class="left_align"><%= link_to_user_with_tooltip(user) %></td> <!-- row -->
+          <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
           
           <% @bourreaux.each do |b| %>
           <% cell_key = [ user.id, b.id ] %>
             <td> 
-              <% if accessible_rr[b.id] %>         
+              <% if accessible_rr[b.id] && task_count_by_user_and_bourreau[cell_key].to_i > 0 %>         
                 <%= disk_space_info_display((task_space_known_by_user_and_bourreau[cell_key] || 0), nil, 1_000_000) do %>
                    <%= format_task_size_unk(
                          index_count_filter(task_count_by_user_and_bourreau[cell_key], :tasks, { :user_id => user.id, :bourreau_id => b.id }, :show_zeros => 1 ),
@@ -79,16 +79,18 @@
             </td>
           <% end %>
           
-          <!-- Total by User -->
+          <!-- Total for the user -->
           <% if @bourreaux.count > 1%>
             <td>
-              <%= disk_space_info_display((task_space_known_by_user[user.id] || 0), nil, 1_000_000) do %>
-                <%= format_task_size_unk(
-                      index_count_filter(task_count_by_user[user.id], :tasks, { :user_id => user.id, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
-                      task_space_known_by_user[user.id] || 0,
-                      task_space_unk_by_user[user.id]
-                    )
-                %>
+              <% if task_count_by_user[user.id].to_i > 0 %>
+                <%= disk_space_info_display((task_space_known_by_user[user.id] || 0), nil, 1_000_000) do %>
+                  <%= format_task_size_unk(
+                        index_count_filter(task_count_by_user[user.id], :tasks, { :user_id => user.id, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
+                        task_space_known_by_user[user.id] || 0,
+                        task_space_unk_by_user[user.id]
+                      )
+                  %>
+                <% end %>
               <% end %>
             </td>
           <% end %>
@@ -101,13 +103,15 @@
           <td class="left_align">Total</td>
             <% @bourreaux.each do |b| %>
               <td>
-                <%= disk_space_info_display((task_space_known_by_bourreau[b.id] || 0) , nil, 1_000_000) do %>
-                  <%= format_task_size_unk(
-                        index_count_filter(task_count_by_bourreau[b.id], :tasks, { :user_id => user_ids, :bourreau_id => b.id }, :show_zeros => 1 ),
-                        task_space_known_by_bourreau[b.id] || 0,
-                        task_space_unk_by_bourreau[b.id]
-                      )
-                  %>
+                <% if task_count_by_bourreau[b.id].to_i > 0 %>
+                  <%= disk_space_info_display((task_space_known_by_bourreau[b.id] || 0) , nil, 1_000_000) do %>
+                    <%= format_task_size_unk(
+                          index_count_filter(task_count_by_bourreau[b.id], :tasks, { :user_id => user_ids, :bourreau_id => b.id }, :show_zeros => 1 ),
+                          task_space_known_by_bourreau[b.id] || 0,
+                          task_space_unk_by_bourreau[b.id]
+                        )
+                    %>
+                  <% end %>
                 <% end %>
             </td>
           <% end %>
