@@ -124,10 +124,6 @@ CbrainRailsPortal::Application.routes.draw do
   match                 '/jiv'            => 'jiv#index'
   match                 '/jiv/show'       => 'jiv#show'
 
-
-  # TEMPORARY TO REMOVE AFTER MARC'S PRESENTATION
-  match                 '/hpc_map'  => 'bourreaux#bourreaux_map'
-  
   # Individual maps
   match "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
