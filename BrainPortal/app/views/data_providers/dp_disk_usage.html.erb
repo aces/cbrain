@@ -14,14 +14,14 @@
     <tr>
       <th></th>
       <% @report_dps_all.each do |dp| %>
-        <th><%= dp.is_a?(String) ? dp : link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
+        <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
       <% end %>
     </tr>
     
     
     <% @report_users_all.each do |user| %>
       <tr>  
-        <td><%= user.is_a?(String) ? h(user) : link_to_user_with_tooltip(user) %></td>
+        <td><%= user.is_a?(String) ? h(user).capitalize : link_to_user_with_tooltip(user) %></td>
         
         <% @report_dps_all.each do |dp| %>
         

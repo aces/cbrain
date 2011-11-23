@@ -1,26 +1,32 @@
 <%
-   # This partial requires these hashes:
-   #    fileclasses_totcount[fileclass]        -> number of files of class 'fileclass'
-   #    user_fileclass_count[user][fileclass]  -> number of files belonging to 'user' in class 'fileclass'
-   #    user_totcount[user]                    -> number of files belonging to 'user'
-   #    additionnal_filt                       -> just more criteria for filtration
+  # This partial requires these hashes:
+  #    fileclasses_totcount[fileclass]        -> number of files of class 'fileclass'
+  #    user_fileclass_count[user][fileclass]  -> number of files belonging to 'user' in class 'fileclass'
+  #    user_totcount[user]                    -> number of files belonging to 'user'
+  #    additionnal_filt                       -> just more criteria for filtration
 %>
 
-<% sorted_classes = fileclasses_totcount.keys.sort { |a,b| a <=> b } %>
-<% sorted_users   = user_fileclass_count.keys.sort { |a,b| a.login <=> b.login } %>
  
 <% if ! fileclasses_totcount.empty? %>
+  
+  <%
+  sorted_classes = fileclasses_totcount.keys.sort { |a,b| a <=> b }
+  have_tot_col   = sorted_classes.count > 1 ? true : false
+  sorted_users   = user_fileclass_count.keys.sort { |a,b| a.login <=> b.login }
+  %>
 
   <table>
     <tr>
       <th colspan="<%= 2 + sorted_classes.size %>">File Registration Statistics</th>
     </tr>
     <tr>
-      <th>User</th>
+      <th></th>
       <% sorted_classes.each do |klass| %>
         <th><%= klass %></th>
       <% end %>
-      <th>Total</th>
+      <% if have_tot_col %>
+        <th>Total</th>
+      <% end %>
     </tr>
     
     
@@ -34,12 +40,14 @@
         <% sorted_classes.each do |klass| %>
           <td><%= index_count_filter klass_counts[klass], :userfiles, {:user_id => user.id, :file_format => klass}.merge(additionnal_filt) %></td>
         <% end %>
-        <td><%= index_count_filter usertot, :userfiles, {:user_id => user.id}.merge(additionnal_filt) %></td>
+        <% if have_tot_col %>
+          <td><%= index_count_filter usertot, :userfiles, {:user_id => user.id}.merge(additionnal_filt) %></td>
+        <% end%>
       </tr>
     <% end %>
     
-    <% if fileclasses_totcount.count > 1%>
-      <td><%= "Total" %></td>
+    <% if sorted_users.count > 1%>
+      <td>Total</td>
       <% sorted_classes.each do |klass| %>
         <td><%= index_count_filter fileclasses_totcount[klass], :userfiles, {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt) %></td>
       <% end %>

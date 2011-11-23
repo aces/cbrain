@@ -166,7 +166,7 @@ class ModelsReport
     providers        = options[:providers]
 
     # Internal constants
-    all_users_label  = all_dps_label = 'Total'    
+    all_users_label  = all_dps_label = 'TOTAL'    
 
     # Which users to gather stats for
     userlist = if users
@@ -267,7 +267,7 @@ end
     accessed_after   = options[:accessed_after]
 
     # Internal constants
-    all_users_label  = all_dps_label = "Total" # used as a key in the table's hash
+    all_users_label  = all_dps_label = "TOTAL" # used as a key in the table's hash
 
     # Which users to gather stats for
     userlist = if users

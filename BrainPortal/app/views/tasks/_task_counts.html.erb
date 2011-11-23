@@ -11,12 +11,12 @@
 
   <%
     sorted_stats = []
-    if by.to_s == "status"
-      sorted_stats = list.sort { |s1,s2| cmp_status_order(s1,s2) } 
+    if    by.to_s == "status"
+      sorted_stats = list.reject { |x| x == 'TOTAL' }.sort { |s1,s2| cmp_status_order(s1,s2) } 
     elsif by.to_s == "type"
       sorted_stats = list.reject { |x| x == 'TOTAL' }.sort { |a,b| a.downcase <=> b.downcase}
-      sorted_stats << 'TOTAL'  
     end
+    sorted_stats << 'TOTAL'  if sorted_stats.count > 1
   %>
   
   <table>
@@ -25,7 +25,7 @@
     </tr>
     
     <tr>
-      <th>User</th>
+      <th></th>
       <% sorted_stats.each do |stat| %>
         <th><%= stat.sub(/^CbrainTask::/,"") %></th>
       <% end %>
@@ -47,9 +47,9 @@
       </tr>
     <% end %>
     
-    <% if list.reject { |x| x == 'TOTAL' }.count > 1 %>
+    <% if sorted_users.count > 1 %>
       <tr>
-        <td class="left_align">TOTAL</td>
+        <td class="left_align">Total</td>
         <% sorted_stats.each do |stat| %>
           <% if stat == "TOTAL" %>
             <td><%= index_count_filter counts[stat], :tasks, additionnal_filt, :show_zeros => true %></td>
