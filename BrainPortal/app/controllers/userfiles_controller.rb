@@ -50,9 +50,8 @@ class UserfilesController < ApplicationController
     
     @header_scope = Userfile.scoped
     # Restrict by 'view all' or not
-    if current_user.has_role?(:user)
-      @filter_params["view_all"] ||= 'off'
-    end
+    
+    @filter_params["view_all"] ||= 'on'
     if @filter_params["view_all"] == 'on'
       @header_scope = Userfile.restrict_access_on_query(current_user, @header_scope, :access_requested => :read)
     else
