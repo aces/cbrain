@@ -5,6 +5,9 @@
 <div class="active_filters">
   <%= render :partial => 'shared/active_filters', :locals => {:model => :user} %>
 </div>
+<div id="pagination" class="pagination">
+  <%= render :partial => 'pagination' %>
+</div>
 
 <%= 
   index_table(@users, :class => "resource_list") do |t|

@@ -45,7 +45,7 @@ class User < ActiveRecord::Base
   validates_presence_of     :full_name, :login, :role
   validates_presence_of     :password,                   :if => :password_required?
   validates_presence_of     :password_confirmation,      :if => :password_required?
-  validates_length_of       :password, :within => 4..40, :if => :password_required?
+  validates_length_of       :password, :minimum => 8,    :if => :password_required?
   validates_confirmation_of :password,                   :if => :password_required?
   validates_length_of       :login,    :within => 3..40
   validates                 :email,    
@@ -85,6 +85,8 @@ class User < ActiveRecord::Base
   has_many                :custom_filters,  :dependent => :destroy
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
+    
+  scope                   :name_like, lambda { |n| {:conditions => ["users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%"]} }
     
   #Return the admin user
   def self.admin

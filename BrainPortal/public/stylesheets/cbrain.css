@@ -373,6 +373,9 @@ table.resource_list tr.subtitle_bordered {
     border: 2px solid #0471B4;
 }
 
+.index_block {
+  display: inline-block;
+}
 
 
 /* % ############################################## */
