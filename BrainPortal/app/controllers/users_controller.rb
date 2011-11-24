@@ -30,6 +30,34 @@ class UsersController < ApplicationController
     # Precompute file and task counts.
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
     @users_task_counts=CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
+
+    #------------------------------
+    # Pagination variables
+    #------------------------------
+
+
+    @filter_params["per_page"] ||= 200
+
+    if [:html, :js].include?(request.format.to_sym)
+      @users_per_page = @filter_params["per_page"].to_i
+      @users_per_page = 500 if @users_per_page > 500
+      @users_per_page = 25  if @users_per_page < 25  
+    else
+      @users_per_page = 999_999_999
+    end
+
+    @filter_params["per_page"] = @users_per_page
+    
+    @current_page = (params[:page] || 1).to_i
+    offset        = (@current_page - 1) * @users_per_page
+    @total_users  = @users.count 
+
+    # Turn the array ordered_real into the final paginated collection
+    @users = WillPaginate::Collection.create(@current_page, @users_per_page) do |pager|
+      pager.replace(@users.all[offset, @users_per_page])
+      pager.total_entries = @total_users
+      pager
+    end
     
     respond_to do |format|
       format.html # index.html.erb
