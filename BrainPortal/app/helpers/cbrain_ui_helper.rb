@@ -555,20 +555,6 @@ module CbrainUiHelper
     select_tag(name, option_tags, options)
   end
   
-  #Sort links meant specifically for sorting tables.
-  #Controller and action for the request can be defined in the options hash, or
-  #they default to the current page.
-  def ajax_sort_link(name, sort_table, sort_column, options = {})
-    sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
-    controller = options.delete(:controller) || params[:controller]
-    action = options.delete(:action) || params[:actions]
-    url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
-    link_options = options.reverse_merge(:datatype  => 'script')
-    #ajax_link(name, url, link_options) + "\n" + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
-    header = h(name) + "&nbsp;".html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
-    ajax_link( header, url, link_options )
-  end
-  
   ################################################################
   #
   # Filter update link helpers

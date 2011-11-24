@@ -297,26 +297,6 @@ module ApplicationHelper
       sort_order.to_s.upcase == 'DESC' ? '' : 'DESC'
     end
   end
-  
-  #Set arrow icon for ordering of userfiles. I.e. display a red arrow
-  #next to the header of a given column in the Userfile index table *if*
-  #that column is the one currently determining the order of the file.
-  #
-  #Toggles the direction of the arrow depending on whether the order is 
-  #ascending or descending.
-  def set_order_icon(loc, current_order, current_dir = nil)
-    return "" if current_order == nil    
-    
-    table_name, table_col = loc.strip.split(".")
-    table_name = table_name.tableize
-    location = table_name + "." + table_col
-    
-    return "" unless location == current_order
-    
-    icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
-    
-    "<span class=\"order_icon\">#{icon}</span>".html_safe
-  end
 
   def index_count_filter(count, controller, filters, options={})
      count = count.to_i

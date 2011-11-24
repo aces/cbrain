@@ -1,6 +1,5 @@
-<%= 
-  index_table data_providers, :class => "resource_list whole_width", :id => "data_provider_table_#{id}" do |t|
-
+<%= index_table data_providers, :class => "resource_list whole_width", :id => "data_provider_table_#{id}" do |t| %>
+  <% 
     t.sort_column("Provider Name", DataProvider, :name) { |dp| link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) }
 
     if @filter_params["details"] == 'on'
@@ -18,17 +17,17 @@
     end
 
     t.sort_column("Online?", DataProvider, :online) { |dp| red_if(!dp.online?, "Yes", "No") }
-
-    t.column("Alive?") do |dp|
-      if dp.online?
-        staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do
-          "<span class=\"loading_message\">Checking...</span>".html_safe
-        end
-      else
-        html_colorize("No","red")
-      end
-    end
-
+  %>
+  <% t.column("Alive?") do |dp| %>
+    <% if dp.online? %>
+      <%= staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do %>
+        <span class="loading_message">Checking...</span>
+      <% end %>
+    <% else %>
+      <%= html_colorize("No","red") %>
+    <% end %>
+  <% end %>
+  <% 
     t.column("Files") do |dp|
       file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
       if file_count > 0
@@ -52,6 +51,5 @@
         link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
       end
     end
-
-  end
- %>
+  %>
+<% end %>

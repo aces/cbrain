@@ -44,8 +44,8 @@
   <% end %>
 </div>
 
-<%= 
-  index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t|
+<%= index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t| %>
+  <%
     t.sort_column("Server Class", RemoteResource, :type, :filters => basic_filters_for(@header_scope, RemoteResource, :type){ |t| t == "Bourreau" ? "Excecution" : "Portal" })
     t.sort_column("Server Name", RemoteResource, :name)
     if @filter_params["details"] == 'on'
@@ -76,21 +76,21 @@
     if @filter_params["details"] == 'on'
       t.sort_column("Description", RemoteResource, :description)
     end
-    t.column("Operations", :colspan => 5)
-    t.row_override do |rr|
-      if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached? 
-        staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id), 
+    t.column("Operations", :colspan => 5)  
+  %>
+  <% t.row_override do |rr| %>
+    <% if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached?  %>
+      <% staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id), 
                            :id             => "bourreau_#{rr.id}",
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}",
                            :replace        => true,
-                           :error_message  => "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do
-          "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Checking '#{h(rr.name)}'...</td>".html_safe
-        end
-      else
-        render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr }
-      end
-    end
-  end
- %>
+                           :error_message  => "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do %>
+          <td colspan="<%= t.num_cells %>" class="loading_message">Checking '<%= rr.name %>'...</td>
+      <% end %>
+    <% else %>
+      <%= render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr } %>
+    <% end %>
+  <% end %>
+<% end %>
 
 

@@ -125,7 +125,7 @@ module IndexTableHelper
       # done manually. See TableBuilder#column or 
       # TableBuilder#describe_column)
       def header(text, options = {})
-        @header_text    = text 
+        @header_text    = text
         @header_options = options
       end
       
@@ -173,6 +173,7 @@ module IndexTableHelper
         atts = @header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
         html = ["<th #{atts}>#{@header_text}"]
         unless filters.blank?
+          html << "&nbsp;<span style=\"color: white\">&bull;</span>"
           html << "<br>\n"
           html << "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
@@ -194,7 +195,7 @@ module IndexTableHelper
           proc      = cell[0]
           options   = cell[1] || {}
           condition = cell[2]
-          content   = proc ? proc.call(object) : "" if condition.blank? || condition.call(object)
+          content   = proc ? @template.capture(object, &proc) : "" if condition.blank? || condition.call(object)
           
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
           html << "<td #{atts}>#{content}</td>\n"
@@ -285,7 +286,7 @@ module IndexTableHelper
     def row_override_html(object) #:nodoc:
       return "" unless @row_override
       
-      @row_override.call(object)
+      @template.capture(object, &@row_override)
     end
     
     # Manually set text to be displayed in an empty row.
@@ -313,6 +314,40 @@ module IndexTableHelper
     end
     
   end #End class TableBuilder
+  
+  #Sort links meant specifically for sorting tables.
+  #Controller and action for the request can be defined in the options hash, or
+  #they default to the current page.
+  def ajax_sort_link(name, sort_table, sort_column, options = {})
+    sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
+    controller = options.delete(:controller) || params[:controller]
+    action = options.delete(:action) || params[:actions]
+    url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
+    link_options = options.reverse_merge(:datatype  => 'script')
+    text = "<span class=\"sort_header\">" + h(name) + "</span>"
+    header = text.html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    ajax_link( header, url, link_options )
+  end
+  
+  #Set arrow icon for ordering of userfiles. I.e. display a red arrow
+  #next to the header of a given column in the Userfile index table *if*
+  #that column is the one currently determining the order of the file.
+  #
+  #Toggles the direction of the arrow depending on whether the order is 
+  #ascending or descending.
+  def set_order_icon(loc, current_order, current_dir = nil)
+    return "" if current_order == nil    
+    
+    table_name, table_col = loc.strip.split(".")
+    table_name = table_name.tableize
+    location = table_name + "." + table_col
+    
+    return "" unless location == current_order
+    
+    icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
+    
+    "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
+  end
   
   # Build an index table.
   def index_table(collection, options = {})

@@ -377,6 +377,9 @@ table.resource_list tr.subtitle_bordered {
   display: inline-block;
 }
 
+.sort_header {
+  border-bottom: thin solid white; 
+}
 
 /* % ############################################## */
 /* % Simpler table than the default; used mostly */
