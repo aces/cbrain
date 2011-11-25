@@ -348,7 +348,7 @@ module IndexTableHelper
     
     return "" unless location == current_order
     
-    icon = (current_dir == 'DESC') ? '&blacktriangle;' : '&blacktriangledown;'
+    icon = (current_dir == 'DESC') ? '&#x25B2;' : '&#x25BC;'  # triangle, UP and DOWN
     
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end
