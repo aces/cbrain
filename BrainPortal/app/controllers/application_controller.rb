@@ -18,23 +18,20 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include ExceptionLogger::ExceptionLoggable
   include BasicFilterHelpers
+  include ViewHelpers
+  include ApiHelpers
+  include PermissionHelpers
   
   rescue_from Exception, :with => :log_exception_handler
 
-  helper_method :check_role, :not_admin_user, :current_session, :current_project
-  helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
-  helper_method :view_pluralize
   helper        :all # include all helpers, all the time
 
   before_filter :always_activate_session
   before_filter :set_cache_killer
-  before_filter :check_if_locked
   before_filter :prepare_messages
-  before_filter :set_session
   before_filter :password_reset
   before_filter :adjust_system_time_zone
-  before_filter :api_validity_check
-  around_filter :catch_cbrain_message, :activate_user_time_zone
+  around_filter :handle_cbrain_errors, :activate_user_time_zone
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
@@ -53,43 +50,6 @@ class ApplicationController < ActionController::Base
   # as needed.
   def resource_class
     @resource_class ||= Class.const_get self.class.to_s.sub(/Controller$/, "").singularize
-  end
-  
-  # Convenience method to determine wether a given model has the provided attribute.
-  # Note: mainly for security reasons; this allows easy sanitization of parameters related
-  # to attributes.
-  def table_column?(model, attribute)
-    column = attribute
-    klass = Class.const_get model.to_s.classify
-    
-    klass.columns_hash[column]
-  rescue
-    false   
-  end
-  
-  # Easy and safe filtering based on individual attributes or named scopes.
-  # Simply adding <att>=<val> to a URL on an index page that uses this method
-  # will automatically filter as long as <att> is a valid attribute or named
-  # scope.
-  def base_filtered_scope(filtered_scope = resource_class.scoped({}))
-    @filter_params["filter_hash"].each do |att, val|
-      if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
-        filtered_scope = filtered_scope.send(att, *val)
-      elsif table_column?(resource_class, att)
-        filtered_scope = filtered_scope.scoped(:conditions => {att => val})
-      else
-        @filter_params["filter_hash"].delete att
-      end
-    end
-    if @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
-      filtered_scope = filtered_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
-    end
-    filtered_scope
-  end
-  
-  def always_activate_session
-    session[:cbrain_toggle] = (1 - (session[:cbrain_toggle] || 0))
-    true
   end
 
   # This method adjust the Rails app's time zone in the rare
@@ -149,34 +109,6 @@ class ApplicationController < ActionController::Base
     # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
   end
-
-  # Set up the current_session variable. Mainly used to set up the filter hash to be
-  # used by index actions.
-  def set_session
-    current_controller = params[:controller]
-    params[current_controller] ||= {}
-    clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
-    clear_param_key    = clear_params.first
-    clear_param_value  = params[clear_param_key]
-    if clear_param_key
-      params[current_controller][clear_param_key.to_s] = clear_param_value
-    end
-    clear_params.each { |p| params.delete p.to_s }
-    if params[:update_filter]
-      update_filter      = params[:update_filter].to_s
-      parameters = request.query_parameters.clone
-      parameters.delete "update_filter"
-      if update_filter =~ /_hash$/
-        params[current_controller][update_filter] = parameters
-      else
-        params[current_controller] = parameters
-      end
-      params.delete "update_filter"
-      parameters.keys.each { |p|  params.delete p}
-    end
-    current_session.update(params)
-    @filter_params = current_session.params_for(params[:controller])
-  end
   
   # Force the user to change their password if they just did a reset.
   def password_reset
@@ -192,8 +124,8 @@ class ApplicationController < ActionController::Base
   # CBRAIN Exception Handling (Filters)
   ########################################################################
 
-  #Catch and display cbrain messages
-  def catch_cbrain_message
+  #Handle common exceptions
+  def handle_cbrain_errors
     begin
       yield # try to execute the controller/action stuff
 
@@ -266,23 +198,6 @@ class ApplicationController < ActionController::Base
   ########################################################################
   # CBRAIN Messaging System Filters
   ########################################################################
-
-  # Redirect normal users to the login page if the portal is locked.
-  def check_if_locked
-    if BrainPortal.current_resource.portal_locked?
-      flash.now[:error] ||= ""
-      flash.now[:error] += "\n" unless flash.now[:error].blank?
-      flash.now[:error] += "This portal is currently locked for maintenance."
-      message = BrainPortal.current_resource.meta[:portal_lock_message]
-      flash.now[:error] += "\n#{message}" unless message.blank?
-      unless current_user && current_user.has_role?(:admin)
-        respond_to do |format|
-          format.html {redirect_to logout_path unless params[:controller] == "sessions"}
-          format.xml  {render :xml => {:message => message}, :status => 503}
-        end
-      end
-    end
-  end
     
   # Find new messages to be displayed at the top of the page.
   def prepare_messages
@@ -305,286 +220,6 @@ class ApplicationController < ActionController::Base
         end
       else  
         mess.update_attributes(:read  => true)
-      end
-    end
-  end
-    
-  ########################################################################
-  # Helpers
-  ########################################################################
-
-  #Checks that the current user's role matches +role+.
-  def check_role(role)
-    current_user && current_user.role.to_sym == role.to_sym
-  end
-  
-  #Checks that the current user is not the default *admin* user.
-  def not_admin_user(user)
-    user && user.login != 'admin'
-  end
-  
-  #Checks that the current user is the same as +user+. Used to ensure permission
-  #for changing account information.
-  def edit_permission?(user)
-    result = current_user && user && (current_user == user || current_user.role == 'admin' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
-  end
-  
-  #Returns the current session as a CbrainSession object.
-  def current_session
-    @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
-  end
-  
-  #Returns currently active project.
-  def current_project
-    return nil unless current_session[:active_group_id]
-    
-    if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
-      @current_project = Group.find_by_id(current_session[:active_group_id])
-      current_session[:active_group_id] = nil if @current_project.nil?
-    end
-    
-    @current_project
-  end
-  
-  #Helper method to render and error page. Will render public/<+status+>.html
-  def access_error(status)
-    respond_to do |format|
-      format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s + '.html'), :status  => status, :layout => false ) }
-      format.xml  { head status }
-    end 
-  end
-  
-  #################################################################################
-  # Date/Time Helpers
-  #################################################################################
-  
-  #Converts any time string or object to the format 'yyyy-mm-dd hh:mm:ss'.
-  def to_localtime(stringtime, what = :date)
-     loctime = stringtime.is_a?(Time) ? stringtime : Time.parse(stringtime.to_s)
-     loctime = loctime.in_time_zone # uses the user's time zone, or the system if not set. See activate_user_time_zone()
-     if what == :date || what == :datetime
-       date = loctime.strftime("%Y-%m-%d")
-     end
-     if what == :time || what == :datetime
-       time = loctime.strftime("%H:%M:%S %Z")
-     end
-     case what
-       when :date
-         return date
-       when :time
-         return time
-       when :datetime
-         return "#{date} #{time}"
-       else
-         raise "Unknown option #{what.to_s}"
-     end
-  end
-
-  # Returns a string that represents the amount of elapsed time
-  # encoded in +numseconds+ seconds.
-  #
-  # 0:: "0 seconds"
-  # 1:: "1 second"
-  # 7272:: "2 hours, 1 minute and 12 seconds"
-  def pretty_elapsed(numseconds,options = {})
-    remain    = numseconds.to_i
-    is_short  = options[:short]
-    
-    
-    return "0 seconds" if remain <= 0
-
-    numyears = remain / 1.year.to_i
-    remain   = remain - ( numyears * 1.year.to_i   )
-    
-    nummos   = remain / 1.month
-    remain   = remain - ( nummos * 1.month   )
-
-    numweeks = remain / 1.week
-    remain   = remain - ( numweeks * 1.week   )
-
-    numdays  = remain / 1.day
-    remain   = remain - ( numdays  * 1.day    )
-
-    numhours = remain / 1.hour
-    remain   = remain - ( numhours * 1.hour   )
-
-    nummins  = remain / 1.minute
-    remain   = remain - ( nummins  * 1.minute )
-
-    numsecs  = remain
-
-    components = [
-      [numyears, is_short ? "y" : "year"],
-      [nummos,   is_short ? "mo" : "month"],
-      [numweeks, is_short ? "w" : "week"],
-      [numdays,  is_short ? "d" : "day"],
-      [numhours, is_short ? "h" : "hour"],
-      [nummins,  is_short ? "m" : "minute"],
-      [numsecs,  is_short ? "s" : "second"]
-    ]
-
-    
-   components = components.select { |c| c[0] > 0 }
-   components.pop   while components.size > 0 && components[-1] == 0 
-   components.shift while components.size > 0 && components[0]  == 0 
-   
-    if options[:num_components]
-      while components.size > options[:num_components]
-        components.pop
-      end
-    end
-
-    final = ""
-
-    while components.size > 0
-      comp = components.shift
-      num  = comp[0]
-      unit = comp[1]
-      if !is_short
-        unit += "s" if num > 1
-        unless final.blank?
-          if components.size > 0
-            final += ", "
-          else
-            final += " and "
-          end
-        end
-      end
-      final += !is_short ? "#{num} #{unit}" : "#{num}#{unit}"
-    end
-
-    final
-  end
-
-  # Returns +pastdate+ as as pretty date or datetime with an
-  # amount of time elapsed since then expressed in parens
-  # just after it, e.g.,
-  #
-  #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
-  def pretty_past_date(pastdate, what = :datetime)
-    loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
-    locdate = to_localtime(pastdate,what)
-    elapsed = pretty_elapsed(Time.now - loctime)
-    "#{locdate} (#{elapsed} ago)"
-  end
-  
-  # Format a byte size for display in the view.
-  # Returns the size as one format of
-  #
-  #   "12.3 Gb"
-  #   "12.3 Mb"
-  #   "12.3 Kb"
-  #   "123 bytes"
-  #   "unknown"     # if size is blank
-  #
-  # Note that these are the DECIMAL SI prefixes.
-  #
-  # The option :blank can be given a
-  # string value to return if size is blank,
-  # instead of "unknown".
-  def pretty_size(size, options = {})
-    if size.blank?
-      options[:blank] || "unknown"
-    elsif size >= 1_000_000_000
-      sprintf("%6.1f Gb", size/(1_000_000_000.0)).strip
-    elsif size >=     1_000_000
-      sprintf("%6.1f Mb", size/(    1_000_000.0)).strip
-    elsif size >=         1_000
-      sprintf("%6.1f Kb", size/(        1_000.0)).strip
-    else
-      sprintf("%d bytes", size).strip
-    end 
-  end
-
-  # Returns one of two things depending on +condition+:
-  # If +condition+ is FALSE, returns +string1+
-  # If +condition+ is TRUE, returns +string2+ colorized in red.
-  # If no +string2+ is supplied, then it will be considered to
-  # be the same as +string1+.
-  # Options can be use to specify other colors (as :color1 and
-  # :color2, respectively)
-  #
-  # Examples:
-  #
-  #     red_if( ! is_alive? , "Alive", "Down!" )
-  #
-  #     red_if( num_matches == 0, "#{num_matches} found" )
-  def red_if(condition, string1, string2 = string1, options = { :color2 => 'red' } )
-    if condition
-      color = options[:color2] || 'red'
-      string = string2 || string1
-    else
-      color = options[:color1]
-      string = string1
-    end
-    return color ? html_colorize(ERB::Util.html_escape(string),color) : ERB::Util.html_escape(string)
-  end
-
-  # Returns a string of text colorized in HTML.
-  # The HTML code will be in a SPAN, like this:
-  #   <SPAN STYLE="COLOR:color">text</SPAN>
-  # The default color is 'red'.
-  def html_colorize(text, color = "red", options = {})
-    "<span style=\"color: #{color}\">#{ERB::Util.html_escape(text)}</span>".html_safe
-  end
-
-  # Calls the view helper method 'pluralize'
-  def view_pluralize(*args) #:nodoc:
-    ApplicationController.helpers.pluralize(*args)
-  end
-  
-  #Directive to be used in controllers to make
-  #actions available to the API
-  def self.api_available(actions = :all)
-    @api_action_code = actions
-  end
-  
-  def self.api_actions #:nodoc:
-    unless @api_actions
-      @api_actions ||= []
-      actions = @api_action_code || :none
-      case actions
-      when :all
-        @api_actions = self.instance_methods(false).map(&:to_sym)
-      when :none
-        @api_actions = []
-      when Symbol
-        @api_actions = [actions]
-      when Array
-        @api_actions = actions.map(&:to_sym)
-      when Hash
-        if actions[:only]
-          only_available = actions[:only]
-          only_available = [only_available] unless only_available.is_a?(Array)
-          only_available.map!(&:to_sym)
-          @api_actions = only_available
-        elsif actions[:except]
-          unavailable = actions[:except]
-          unavailable = [unavailable] unless unavailable.is_a?(Array)
-          unavailable.map!(&:to_sym)
-          @api_actions = self.instance_methods(false).map(&:to_sym) - unavailable
-        end
-      else
-        if actions.respond_to?(:to_sym)
-          @api_actions << actions.to_sym
-        else
-          cb_error "Invalid action definition: #{actions}."
-        end
-      end
-    end
-    
-    @api_actions
-  end
-
-  #Before filter that checks that blocks certain actions
-  #from the API
-  def api_validity_check
-    if request.format && request.format.to_sym == :xml
-      valid_actions = self.class.api_actions || []
-      current_action = params[:action].to_sym
-      
-      unless valid_actions.include? current_action
-        render :xml => {:error  => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}"}, :status  => :bad_request 
       end
     end
   end
