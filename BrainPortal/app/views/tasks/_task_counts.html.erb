@@ -27,8 +27,8 @@
     <tr>
       <th></th>
       <% sorted_stats.each do |stat| %>
-        <th><%= stat.sub(/^CbrainTask::/,"") %></th>
-      <% end %>
+        <th><%= stat == "TOTAL" ? stat.capitalize : stat.sub(/^CbrainTask::/,"") %></th>
+      <% end %>                                               
     </tr>
     
     <% sorted_users = user_info.keys.sort { |a,b| a.login <=> b.login } %>

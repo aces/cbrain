@@ -98,7 +98,7 @@
       <% end %>
 
       <!-- Total by bourreau -->
-      <% if @users.count > 1%>
+      <% if @users.count > 1 %>
         <tr>
           <td class="left_align">Total</td>
             <% @bourreaux.each do |b| %>
@@ -117,7 +117,7 @@
           <% end %>
           
           <!-- Total -->
-          <% if @bourreaux.count > 1%>
+          <% if @bourreaux.count > 1 && @users.count > 1 %>
             <td>
               <%= disk_space_info_display((tasklist.sum( :cluster_workdir_size) || 0), nil, 1_000_000) do %>
                 <%= format_task_size_unk(
