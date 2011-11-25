@@ -51,7 +51,9 @@
       <% sorted_classes.each do |klass| %>
         <td><%= index_count_filter fileclasses_totcount[klass], :userfiles, {:user_id => sorted_users, :file_format => klass}.merge(additionnal_filt) %></td>
       <% end %>
-      <td><%= index_count_filter all_totcount, :userfiles, {:user_id => sorted_users}.merge(additionnal_filt) %></td>
+      <% if have_tot_col %>
+        <td><%= index_count_filter all_totcount, :userfiles, {:user_id => sorted_users}.merge(additionnal_filt) %></td>
+      <% end %>
     <% end %>
     
   </table>

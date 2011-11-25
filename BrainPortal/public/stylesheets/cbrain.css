@@ -207,16 +207,7 @@ tr.selected_row {
     background-color: yellow;
 }
 
-.order_icon {
-    padding: 0px 2px 0px 2px;
-    background-color: white;
-    color: #ff3333;
-    text-align: center;
-    font-weight: bold;
-    font-size: 11px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-}
+
 
 /* % ######################################################### */
 /* % Property List Table Styles */
@@ -305,6 +296,7 @@ table.property_list td.white_background_text {
 }
 
 
+
 /* % ######################################################### */
 /* % Resource List Table Styles */
 /* % These are usually used on pretty tables of data */
@@ -380,6 +372,12 @@ table.resource_list tr.subtitle_bordered {
 .sort_header {
   border-bottom: thin solid white; 
 }
+
+.order_icon {
+    color: #ffffff;
+}
+
+
 
 /* % ############################################## */
 /* % Simpler table than the default; used mostly */

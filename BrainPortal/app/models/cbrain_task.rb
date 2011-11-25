@@ -239,6 +239,7 @@ class CbrainTask < ActiveRecord::Base
       attval = self.cluster_workdir
       return attval if attval.blank? || attval =~ /^\// # already full path?
       shared_dir = self.cluster_shared_dir # from its bourreau's cms_shared_dir
+      return nil if shared_dir.blank?
       return "#{shared_dir}/#{attval}"
     end
 

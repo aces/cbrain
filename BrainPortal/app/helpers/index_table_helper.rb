@@ -171,9 +171,13 @@ module IndexTableHelper
         end
         
         atts = @header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
-        html = ["<th #{atts}>#{@header_text}"]
+        html = [ "<th #{atts}>" ]
         unless filters.blank?
-          html << "&nbsp;<span style=\"color: white\">&bull;</span>"
+          html << "<span style=\"color: white\">&bull;</span>&nbsp;"
+        end
+        html << @header_text
+        unless filters.blank?
+          #html << "&nbsp;<span style=\"color: white\">&bull;</span>"
           html << "<br>\n"
           html << "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
@@ -344,7 +348,7 @@ module IndexTableHelper
     
     return "" unless location == current_order
     
-    icon = (current_dir == 'DESC') ? '&uarr;' : '&darr;'
+    icon = (current_dir == 'DESC') ? '&#x25B2;' : '&#x25BC;'  # triangle, UP and DOWN
     
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end

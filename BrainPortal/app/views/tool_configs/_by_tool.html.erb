@@ -74,7 +74,7 @@
               <%= html_colorize("'everyone'", 'green') %>
             <% else %>
               <% links = projs.map { |g| link_to_group_if_editable(g) } %>
-              <%= links.join(" &amp; ").html_safe %>
+              <%= links.join(" &cap; ").html_safe %>
             <% end %>
           </td>
           <td class="left_align">

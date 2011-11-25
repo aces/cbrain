@@ -16,7 +16,7 @@ module UserfilesHelper
     end
   end
   
-  def filename_listing(userfile)
+  def filename_listing(userfile, link_options={})
     html = []
     html << tree_view_icon(@filter_params["tree_sort"], userfile.level) if (userfile.level || 0) > 0
     if userfile.is_a? FileCollection
@@ -26,7 +26,7 @@ module UserfilesHelper
     end
     html << ajax_link(file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :datatype => "script", :title => "Show in Unfiltered File List")
     html << " "
-    html << link_to_userfile_if_accessible(userfile)
+    html << link_to_userfile_if_accessible(userfile, nil, link_options)
     userfile.sync_status.each do |syncstat| 
       html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
     end 
