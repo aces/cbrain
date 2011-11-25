@@ -43,11 +43,13 @@ class User < ActiveRecord::Base
   attr_accessor :password #:nodoc:
 
   validates_presence_of     :full_name, :login, :role
-  validates_presence_of     :password,                   :if => :password_required?
-  validates_presence_of     :password_confirmation,      :if => :password_required?
-  validates_length_of       :password, :minimum => 8,    :if => :password_required?
-  validates_confirmation_of :password,                   :if => :password_required?
   validates_length_of       :login,    :within => 3..40
+  validates                 :password,
+                            :length => { :minimum => 8 },
+                            :confirmation => true,
+                            :presence => true,
+                            :if => :password_required?
+  validates_presence_of     :password_confirmation,      :if => :password_required?
   validates                 :email,    
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$/i },
                             :allow_blank => true
@@ -55,6 +57,7 @@ class User < ActiveRecord::Base
   validate                  :prevent_group_collision,    :on => :create
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
+  validate                  :password_strength_check,    :if => :password_required?
   
   before_create             :add_system_groups
   before_save               :encrypt_password
@@ -341,6 +344,18 @@ class User < ActiveRecord::Base
   def site_manager_check  #:nodoc:
     if self.role == "site_manager" && self.site_id.blank?
       errors.add(:site_id, "manager role must be associated with a site.")
+    end
+  end
+  
+  def password_strength_check #:nodoc:
+    score = 0
+    score += 1 if self.password =~ /[A-Z]/
+    score += 1 if self.password =~ /[a-z]/
+    score += 1 if self.password =~ /\d/
+    score += 1 if self.password =~ /[^A-Za-z\d]/
+    score += 1 if self.password.length > 14
+    if score < 3
+      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length.")
     end
   end
   
