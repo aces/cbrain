@@ -1105,9 +1105,15 @@ class ClusterTask < CbrainTask
     self.cluster_workdir = "#{rel_path}/#{basedir}" # newest convention is "00/12/34/basedir".
     fulldir = self.full_cluster_workdir # builds using the cluster_workdir and the bourreau's cms_shared_dir
     self.addlog("Trying to create workdir '#{fulldir}'.")
-    self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
-    Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
-    self.save
+    begin
+      self.class.mkdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) # mkdir "00/12/34"
+      Dir.mkdir(fulldir,0700) unless File.directory?(fulldir)
+      self.save
+    rescue => ex
+      self.cluster_workdir = nil
+      self.save
+      raise ex
+    end
   end
 
   # Remove the directory created to run the job.
@@ -1142,6 +1148,9 @@ class ClusterTask < CbrainTask
         self.update_attribute(:cluster_workdir_size, mat[1].to_i.kilobytes)
         self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
       end
+    else
+      self.update_attribute(:cluster_workdir_size,nil)
+      self.update_attribute(:cluster_workdir,nil)
     end
     return self.cluster_workdir_size
   rescue
