@@ -115,18 +115,17 @@ class BourreauxController < ApplicationController
       
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @bourreau }
+        format.xml { render      :xml    => @bourreau }
       end
     else
       respond_to do |format|
-        format.js  { render :partial => "shared/failed_create", :locals => {:model_name => "bourreau"} }
-        format.xml { render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity   }
+        format.js  { render :partial => "shared/failed_create",  :locals => { :model_name => "bourreau" } }
+        format.xml { render :xml     => @bourreau.errors.to_xml, :status =>   :unprocessable_entity       }
       end
     end
   end
 
   def update #:nodoc:
-
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
     
@@ -143,10 +142,8 @@ class BourreauxController < ApplicationController
     @groups = current_user.available_groups
     unless @bourreau.errors.empty?
       respond_to do |format|
-        format.html do
-          render :action => 'edit'
-        end
-        format.xml { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+        format.html { render :action => 'edit' }
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return
     end
@@ -180,14 +177,8 @@ class BourreauxController < ApplicationController
     flash[:notice] = "#{@bourreau.class.to_s} #{@bourreau.name} successfully updated"
 
     respond_to do |format|
-      format.html do
-        if params[:tool_management] != nil 
-          redirect_to(:controller => "tools", :action =>"tool_management")
-        else
-          redirect_to(bourreaux_url)
-        end
-      end
-      format.xml { head :ok }
+      format.html { redirect_to :action => :index }
+      format.xml  { head        :ok }
     end
   end
 

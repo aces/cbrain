@@ -871,13 +871,6 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
-  # This method is NOT part of the sanctionned API, it
-  # is here only FYI. It should be redefined properly
-  # in subclasses.
-  def provider_full_path(userfile) #:nodoc:
-    raise "Error: method not yet implemented in subclass."
-  end
-
 
 
   #################################################################
