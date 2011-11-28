@@ -29,7 +29,8 @@
       col.cell(:class => "left") do |tool|
         result = ""
         tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b|
-          tcs = ToolConfig.where( :bourreau_id => b.id, :tool_id => tool.id )
+          tcs = ToolConfig.where( :bourreau_id => b.id, :tool_id => tool.id ).all
+puts_red tcs.inspect        
           tcs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
           result += link_to_bourreau_if_accessible(b)
           if tcs.size >= 1
