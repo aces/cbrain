@@ -123,11 +123,6 @@ class ToolsController < ApplicationController
       end                                                     
   end
       
-  def tool_management #:nodoc:
-      @tools = Tool.order("tools.name")
-      @bourreaux = Bourreau.all
-  end
-
   private
   
   def autoload_all_tools #:nodoc:

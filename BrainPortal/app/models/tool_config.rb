@@ -32,6 +32,8 @@ class ToolConfig < ActiveRecord::Base
   has_many       :cbrain_tasks
   belongs_to     :group        # can be nil; means 'everyone' in that case.
 
+  validates_presence_of :description
+
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
