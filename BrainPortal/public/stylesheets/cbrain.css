@@ -1036,25 +1036,14 @@ pre {
     padding-right: 1em;
     padding-top: 0.2em;
     padding-bottom: 0.2em;
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
 }
-
-.menu_bar_left {
-    margin-left: 0em;
-}
-
 
 
 /* % ######################################################### */
 /* % Userfiles Index File Manager */
 /* % ######################################################### */
-
-/* DIV that contains the file manager and its two menu bars */
-#userfiles_menus_and_filelist {
-    width: 100%;
-    padding-right: 1em;
-}
 
 .active_filters {
   padding-top: 1em;
@@ -1082,10 +1071,6 @@ pre {
 
 .page_links {
     text-align: center;
-}
-
-#userfiles_table {
-    width: 100%;
 }
 
 .userfiles_tool_selector {

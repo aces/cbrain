@@ -332,6 +332,43 @@ module IndexTableHelper
     header = text.html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
     ajax_link( header, url, link_options )
   end
+
+  #Alternate toggle for session attributes that switch between values 'on' and 'off'.
+  def set_toggle(old_value)
+   old_value == 'on' ? 'off' : 'on'
+  end
+  
+  #Indents children files in the Userfile index table *if* the 
+  #current ordering is 'tree view'.
+  def tree_view_icon(tree_sort, level)
+    multiplier = level || 0
+    if tree_sort
+      ('&nbsp' * 4 * multiplier + '&#x21b3;').html_safe
+    end
+  end
+  
+  #Set direction for resource list sorting
+  def set_dir(current_order, sort_params)
+    return unless sort_params
+    prev_order = sort_params["order"]
+    sort_order = sort_params["dir"]
+    
+    if(current_order.to_s == prev_order.to_s)
+      sort_order.to_s.upcase == 'DESC' ? '' : 'DESC'
+    end
+  end
+
+  #Show count of an association and link to association's page.
+  def index_count_filter(count, controller, filters, options={})
+     count = count.to_i
+     return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
+     return "0" if count == 0 && ! options[:link_zeros]
+     filter_reset_link count,
+                       :controller   => controller,
+                       :filters      => filters,
+                       :ajax         => false,
+                       :clear_params => options[:clear_params]
+  end
   
   #Set arrow icon for ordering of userfiles. I.e. display a red arrow
   #next to the header of a given column in the Userfile index table *if*
