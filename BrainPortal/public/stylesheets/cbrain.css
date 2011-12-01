@@ -497,17 +497,10 @@ h1.warning {
   text-decoration: none; 
 }
 
-.red_times_icon {
-  color: red;
+.bold_icon {
   font-weight: bold;
   text-decoration: none; 
-} 
-
-.green_o_icon {
-  color: green;
-  font-weight: bold;
-  text-decoration: none; 
-}
+}           
 
 
 

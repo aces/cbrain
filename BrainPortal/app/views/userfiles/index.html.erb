@@ -15,13 +15,14 @@
         <%= render :partial => 'userfiles_display' %>
       </div>
       
-
-      <center>
-        Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-        <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-          <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-        <% end %>
-      </center>
+      <%
+      legend_array = []
+      [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name|
+        legend_array << [ status_html_symbol(name), name ]
+      end
+      %>
+      
+      <%= center_legend("Synchronization symbols:", *legend_array )%>
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 

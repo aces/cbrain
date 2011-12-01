@@ -18,7 +18,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :task_workdir_size]
+  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :task_workdir_size, :rr_access_dp]
                                                                 
 
   def index #:nodoc:
@@ -502,7 +502,7 @@ class BourreauxController < ApplicationController
       end
     end
 
-    redirect_to :action => :rr_disk_usage
+    redirect_to :action => :rr_disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
     
   end
 
@@ -515,6 +515,12 @@ class BourreauxController < ApplicationController
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
     @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
+
+  def rr_access_dp
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+    @dps       = DataProvider.find_all_accessible_by_user(current_user).all  { |a,b| a.name <=> b.name }
+  end
+
   
   private
 

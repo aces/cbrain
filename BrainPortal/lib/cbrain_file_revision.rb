@@ -180,7 +180,7 @@ class CbrainFileRevision
 
     # Alright, here's a set of default values in case anything goes wrong.
     @commit   = "UnknownId"
-    @date     = "0000-00-00"
+    @date     = "1970-01-01"
     @time     = "00:00:00"
     @author   = "UnknownAuthor"
 
