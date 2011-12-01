@@ -112,6 +112,7 @@ module ViewHelpers
   #
   #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
   def pretty_past_date(pastdate, what = :datetime)
+    return "(Unknown)" if pastdate.blank?
     loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
     elapsed = pretty_elapsed(Time.now - loctime)

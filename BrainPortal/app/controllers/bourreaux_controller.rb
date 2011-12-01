@@ -517,8 +517,23 @@ class BourreauxController < ApplicationController
   end
 
   def rr_access_dp
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
-    @dps       = DataProvider.find_all_accessible_by_user(current_user).all  { |a,b| a.name <=> b.name }
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort     { |a,b| a.name <=> b.name }
+    @dps       = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+
+    refresh    = params[:refresh]
+    refresh_bs = []
+    if refresh == 'all'
+      refresh_bs = @bourreaux
+    else
+      refresh_bs = @bourreaux.select { |b| b.id == refresh.to_i }
+    end
+
+    refresh_bs.each do |b|
+      if b.online? && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
+        b.send_command_check_data_providers(@dps.map &:id) rescue true
+      end
+    end
+
   end
 
   

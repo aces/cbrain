@@ -769,27 +769,31 @@ class RemoteResource < ActiveRecord::Base
   #  - "alive"       ('online' is true and is_alive? is true)
   #  - "down"        ('online' is true but is_alive? is false)
   #
-  # The returned states are stored in a single long string
-  # in format:
-  #
-  #   "id1=stat1,id2=stat2,id3=stat3"
+  # The returned states are stored in the meta data store
+  # as a hash.
   def self.process_command_check_data_providers(command)
     dp_ids = command.data_provider_ids || []
-    statuses = ""
-    dp_ids.each do |dp_id|
-      dp  = DataProvider.find_by_id(dp_id)
-      if ! dp
-        stat = "notexist"
-      elsif ! dp.online?
-        stat = "offline"
-      else 
-        alive = dp.is_alive? rescue false
-        stat = (alive ? "alive" : "down")
+    return true if dp_ids.empty?
+    rr = RemoteResource.current_resource()
+    last_update = rr.meta[:data_provider_statuses_last_update]
+    return true if last_update && last_update > 30.seconds.ago
+    CBRAIN::spawn_with_active_records(:admin, "DP Check") do
+      dp_stats = {}
+      dp_ids.each do |dp_id|
+        dp  = DataProvider.find_by_id(dp_id)
+        if ! dp
+          stat = "notexist"
+        elsif ! dp.online?
+          stat = "offline"
+        else 
+          alive = dp.is_alive? rescue false
+          stat = (alive ? "alive" : "down")
+        end
+        dp_stats[dp_id] = stat
       end
-      statuses += "," unless statuses.blank?
-      statuses += "#{dp_id}=#{stat}"
+      rr.meta[:data_provider_statuses]             = dp_stats
+      rr.meta[:data_provider_statuses_last_update] = Time.now
     end
-    command[:data_provider_status] = statuses
     true
   end
 
