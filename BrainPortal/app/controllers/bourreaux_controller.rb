@@ -529,7 +529,7 @@ class BourreauxController < ApplicationController
     end
 
     refresh_bs.each do |b|
-      if b.online? && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
+      if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
         b.send_command_check_data_providers(@dps.map &:id) rescue true
       end
     end
