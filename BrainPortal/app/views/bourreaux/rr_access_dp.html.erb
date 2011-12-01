@@ -1,0 +1,63 @@
+
+<!-- *********************************** -->
+<!-- Dp access by bourreau -->
+<!-- *********************************** -->
+
+<% title "Servers Access to Data Providers" %>
+
+<h2>Servers Access to Data Providers</h2>
+
+<% if @bourreaux.empty? || @dps.empty? %>
+
+There is no information to show at this time.
+
+<% else %>
+
+<% 
+b_is_alive   = Bourreau.where( :online => true ).select(&:is_alive?).index_by &:id
+dp_is_online = DataProvider.find_all_accessible_by_user(current_user).where( :online => true ).index_by &:id
+dp_ids       = dp_is_online.keys
+%>
+
+<span class="display_cell">
+  <table>
+
+    <tr>
+      <th></th>
+      <% @dps.each do |dp| %>
+        <th>
+        <%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %>
+        </th>
+      <% end %>
+    </tr>
+    
+    
+    <% @bourreaux.each do |bourreau| %>
+      <tr>
+        <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user) %></td>
+        
+        <% if !b_is_alive[bourreau.id] %>
+          <td colspan="<%= @dps.count %>" >Execution Server Not Alive</td>
+        <% else %>
+          <%
+            dp_stats = {}
+            unless dp_ids.empty?
+              command  = bourreau.send_command_check_data_providers(dp_ids) rescue nil
+              dp_stats = command.data_provider_status_as_hash
+            end 
+          %>
+          <% @dps.each do |dp| %>
+            <td> <%= !dp_is_online[dp.id]  ? times_icon("grey") : dp_stats[dp.id.to_s] == "alive" ? o_icon : times_icon %></td>
+          <% end %>
+        <% end %>
+      
+      </tr>
+    <% end %>
+    
+  </table>
+  
+  <%= center_legend("Data Provider Status:", [o_icon,"alive"], [times_icon,"down"], [times_icon("grey"),"offline"] )%>
+  
+</span>
+
+<% end %>

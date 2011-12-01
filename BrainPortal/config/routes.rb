@@ -59,6 +59,7 @@ CbrainRailsPortal::Application.routes.draw do
       get  'rr_access'
       get  'task_workdir_size'
       post 'cleanup_caches'
+      get  'rr_access_dp'
     end
   end
 

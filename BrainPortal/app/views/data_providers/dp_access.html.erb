@@ -8,7 +8,11 @@
 
 <h2>Data Provider Access Report</h2>
 
-<% if @providers.size > 0 && @users.size > 0 %>
+<% if @providers.empty? || @users.empty? %>
+
+There is no information to show at this time.
+
+<% else %>
 
 <span class="display_cell">
   <table>
@@ -29,14 +33,14 @@
         %>
         
         <% @providers.each do |dp| %>
-          <td><%= accessible_dp[dp.id] ? green_o_icon : red_times_icon %></td>
+          <td><%= accessible_dp[dp.id] ? o_icon : times_icon %></td>
         <% end %>
       </tr>
     <% end %>
   
   </table>
   
-  <p/><%= access_legend %>
+  <%= center_legend(nil, [o_icon,"accessible"], [times_icon,"not accessible"] )%>
   
 </span>
 

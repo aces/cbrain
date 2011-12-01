@@ -23,6 +23,11 @@
               :datatype  => 'script', :class  => "button"
   %>
   
+  <%= link_to ("Access to Data Providers"),
+              {:controller  => :bourreaux, :action  => :rr_access_dp},
+              :datatype  => 'script', :class  => "button"
+  %>
+  
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
