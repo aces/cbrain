@@ -22,7 +22,7 @@ class Object
     if self.const_defined?("Revision_info")
       self.const_get("Revision_info")
     else
-      "$" + "Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor " + "$"
+      "$" + "Id: unknownFile 0 1970-01-01 00:00:00Z unknownAuthor " + "$"
     end
   end
 
