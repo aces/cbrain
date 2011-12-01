@@ -67,7 +67,7 @@ module SelectBoxHelper
           #label += " " * (12 - label.size) if label.size < 12
           label += " (#{group_user_full})" if ! group_user_full.blank?
         elsif group.is_a?(SiteGroup)
-          group_site_header = split_description(group.site.description)[0] rescue nil
+          group_site_header = group.site.description.lines.first.strip rescue nil
           label += " (#{crop_text_to(20,group_site_header)})" if ! group_site_header.blank?
         end
         [label, group.id.to_s]

@@ -1,4 +1,4 @@
-<div class="menu_bar menu_bar_left">
+<div class="menu_bar#">
   <%= new_model_button 'Create User', new_user_path %>
   <span id="view_option_button"> 
       <%= render :partial => "view_option_button" %>
@@ -8,7 +8,7 @@
 <div class="active_filters">
   <%= render :partial => 'shared/active_filters', :locals => {:model => :user} %>
 </div>
-<div id="pagination" class="pagination">
+<div class="pagination">
   <%= render :partial => 'pagination' %>
 </div>
 

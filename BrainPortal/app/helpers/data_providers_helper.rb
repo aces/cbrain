@@ -3,6 +3,40 @@ module DataProvidersHelper
 
   Revision_info=CbrainFileRevision[__FILE__]
   
+  # This method reformats a long SSH key text so that it
+  # is folded on several lines.
+  def pretty_ssh_key(ssh_key)
+     return "(None)" if ssh_key.blank?
+     return ssh_key
+     #pretty = ""
+     #while ssh_key != ""
+     #  pretty += ssh_key[0,200] + "\n"
+     #  ssh_key[0,200] = ""
+     #end
+     #pretty
+  end
+  
+  # Creates a link called "(info)" that presents as an overlay
+  # the set of descriptions for the data providers given in argument.
+  def overlay_data_providers_descriptions(data_providers = nil)
+    data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
+    paragraphs = data_providers.collect do |dp|
+      one_description = <<-"HTML"
+        <h3>#{h(dp.name)}</h3>
+        <pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
+      HTML
+    end
+    all_descriptions = <<-"HTML"
+      <h2>Data Providers Descriptions</h2>
+      <div class="generalbox">#{paragraphs.join("")}</div>
+    HTML
+    link =
+       overlay_content_link("(info)", :enclosing_element => 'span') do
+         all_descriptions.html_safe
+       end
+    link.html_safe
+  end
+  
   def class_param_for_name(name, klass=Userfile) #:nodoc:
     matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }
     

@@ -9,11 +9,9 @@
 
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
     <%= hidden_field_tag :page, @current_page %>
-
-    <div>
       
       <%= render :partial => "userfiles/file_menu" %>
-      <div id="userfiles_display">
+      <div id="userfiles_display" class="index_block">
         <%= render :partial => 'userfiles_display' %>
       </div>
       
@@ -24,8 +22,6 @@
           <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
         <% end %>
       </center>
-    </div>
-
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 

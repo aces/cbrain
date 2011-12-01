@@ -29,13 +29,11 @@ types_list      = type_stats[:types_list]
 user_types_info = type_stats[:user_types_info]
 %>
 
-<%= javascript_tag "var current_options = null;" %>
-
 <h2>Account details for <%= @user.full_name %></h2>
 
   <div class="display_cell">
 
-   <table class = "property_list">
+   <table class="property_list">
      <tr class="<%= cycle("list-odd", "list-even") %>">
        <th>Name:</th>
        <td><%=h @user.full_name %></td>
