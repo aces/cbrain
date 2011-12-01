@@ -502,7 +502,7 @@ class BourreauxController < ApplicationController
       end
     end
 
-    redirect_to :action => :rr_disk_usage
+    redirect_to :action => :rr_disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
     
   end
 

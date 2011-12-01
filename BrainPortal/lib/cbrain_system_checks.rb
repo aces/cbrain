@@ -95,7 +95,8 @@ class CbrainSystemChecks < CbrainChecker
     #-----------------------------------------------------------------------------
     
     rev = DataProvider.revision_info.self_update
-    if rev.date == '0000-00-00' # this is the value returned if CbrainFileRevision can't fetch the rev.
+    # Invalid rev dates are 0000-00-00 or before 1971
+    if (rev.date !~ /(\d\d\d\d)/ || Regexp.last_match[1].to_i < 1971)
       puts "C> \t- Error: We don't have a working mechanism for tracking revision numbers."
       puts "C> \t  Either GIT isn't installed and in your path, or the static file with"
       puts "C> \t  the list of revision numbers for CbrainFileRevision is missing."
