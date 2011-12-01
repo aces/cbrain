@@ -39,13 +39,15 @@ dp_ids       = dp_is_online.keys
         <% if !b_is_alive[bourreau.id] %>
           <td colspan="<%= @dps.count %>" >Execution Server Not Alive</td>
         <% else %>
-          <%
-            dp_stats = {}
-            unless dp_ids.empty?
-              command  = bourreau.send_command_check_data_providers(dp_ids) rescue nil
-              dp_stats = command.data_provider_status_as_hash
-            end 
-          %>
+          <% dp_stats = {} %>
+            <% unless dp_ids.empty? %>
+              <% command  = bourreau.send_command_check_data_providers(dp_ids) rescue nil %>
+              <% if command.nil? %>
+                <td colspan="<%= @dps.count %>" > <%= html_colorize("Execution Server Not Responding") %></td>
+                <% next %>
+              <% end %>
+              <% dp_stats = command.data_provider_status_as_hash %>
+            <% end %> 
           <% @dps.each do |dp| %>
             <td> <%= !dp_is_online[dp.id]  ? times_icon("grey") : dp_stats[dp.id.to_s] == "alive" ? o_icon : times_icon %></td>
           <% end %>
