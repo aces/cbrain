@@ -121,6 +121,9 @@ h5 {
     display: inline !important;
 }
 
+.display_inline_block {
+    display: inline-block;
+}
 
 
 /* % ######################################################### */
@@ -1083,6 +1086,31 @@ pre {
     display: table-row;
 }
 
+/* % ######################################################### */
+/* % Show page table formatting */
+/* % ######################################################### */
+
+.show_table {
+  border-collapse: collapse;
+  border: none;
+  width: 100%;
+}
+
+.show_table th {
+  background: none;
+  font-weight: bold;
+  border: none;
+  color: black;
+  text-align: left;
+}
+
+.show_table td {
+  background: none;
+  color: black;
+  border: none;
+  margin: 0;
+  text-align: left;
+}
 
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
