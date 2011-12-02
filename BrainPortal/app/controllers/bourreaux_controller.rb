@@ -528,10 +528,22 @@ class BourreauxController < ApplicationController
       refresh_bs = @bourreaux.select { |b| b.id == refresh.to_i }
     end
 
+    sent_refresh = [] # for flash message
     refresh_bs.each do |b|
       if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
         b.send_command_check_data_providers(@dps.map &:id) rescue true
+        sent_refresh << b.name
       end
+    end
+
+    if ! refresh.blank?
+      if sent_refresh.size > 0
+        flash[:notice] = "Sent a request to check the Data Providers to these servers: #{sent_refresh.join(", ")}\n" +
+                         "This will be done in background and can take several minutes before the reports are ready."
+      else
+        flash[:notice] = "No refresh needed, access information is recent enough."
+      end
+      redirect_to :action => :rr_access_dp  # try again, without the 'refresh' param
     end
 
   end

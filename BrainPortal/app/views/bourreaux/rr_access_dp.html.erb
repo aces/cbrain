@@ -83,7 +83,7 @@ b_can_refresh = @bourreaux.select { |b| b.online? && b.has_owner_access?(current
   <% if !dps_offline.empty? %>
     </p>    
     <strong>Data Providers offline:</strong> 
-    <% array_to_table(dps_offline, :ratio => "1:10", :min_data => 10) do |dp| %>
+    <%= array_to_table(dps_offline, :ratio => "1:10", :min_data => 10) do |dp| %>
       <%= link_to_data_provider_if_accessible(dp, current_user) %>
     <% end %>
   <%end%>
