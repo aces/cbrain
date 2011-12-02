@@ -631,10 +631,11 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a +check_data_providers+ command to a
   # RemoteResource, whether local or not. dp_ids should be
-  # an array of Data Provdier IDs. The returned statuses
-  # will be in the command object's :data_provider_status,
-  # a long string in this format:
-  #  "id1=offline,id2=alive,id3=>down" etc
+  # an array of Data Provider IDs. The command
+  # does not return any useful information, it simply
+  # launches a background job on the RemoteResource
+  # which polls the Data Providers and store the
+  # results in the meta data store.
   def send_command_check_data_providers(dp_ids=[])
     command = RemoteCommand.new(
       :command           => 'check_data_providers',
