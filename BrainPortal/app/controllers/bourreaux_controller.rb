@@ -212,12 +212,12 @@ class BourreauxController < ApplicationController
 
   def load_info #:nodoc:
 
-    if params[:current_value].blank?
+    if params[:bourreau_id].blank?
       render :text  => ""
       return
     end
 
-    @bourreau  = Bourreau.find(params[:current_value])
+    @bourreau  = Bourreau.find(params[:bourreau_id])
 
     respond_to do |format|
       format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
