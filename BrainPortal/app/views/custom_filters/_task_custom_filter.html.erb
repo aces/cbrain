@@ -3,7 +3,7 @@
 <p>
    Task:<br>
    <%= select_tag 'data[type]',
-       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, custom_filter.data["type"]),
+       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.constantize.pretty_name, t] }, custom_filter.data["type"]),
       :multiple => true, :size => 10
    %>
 </p>

@@ -39,7 +39,7 @@
     t.describe_sort_column("Filename", 'Userfile', 'name') do |col|
       col.cell(:class => "left") { |u| filename_listing(u, :html_options => { :class => !u.available? ? 'error_link' : nil } ) }
     end
-    t.sort_column("Type", 'Userfile', 'type', :filters => basic_filters_for(@header_scope, Userfile, :type)) { |u| u.pretty_type }
+    t.sort_column("Type", 'Userfile', 'type', :filters => basic_filters_for(@header_scope, Userfile, :type){|s| s.constantize.pretty_type}) { |u| u.pretty_type }
   %>
   <% unless @filter_params["details"] == 'off' %>
     <% t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@header_scope, Userfile, :user, :name_method => "login")) { |u| link_to_user_if_accessible(u.user) } %>

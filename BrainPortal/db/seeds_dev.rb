@@ -816,7 +816,7 @@ User.all.each do |user|
         howlong = rand(10) + 5
         tc = ToolConfig.find_by_tool_id_and_bourreau_id(tool.id, bourreau.id)
         next unless tc.can_be_accessed_by?(user)
-        taskclass = tool.cbrain_task_class.sub(/CbrainTask::/,"")
+        taskclass = tool.cbrain_task_class.demodulize
         task = CbrainTask.const_get(taskclass).seed_record!(
           { :user_id                  => user.id,
             :group_id                 => group.id,

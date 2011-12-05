@@ -279,11 +279,14 @@ module IndexTableHelper
     
     # Explicitly set the row code to be used to render the table.
     # If used, column definition will only be used for the headers.
-    def row_override(&block)
-      @row_override = block
+    def row_override(options={},&block)
+      @row_override_options = options
+      @row_override         = block
     end
     
     def row_override?(object) #:nodoc:
+      cond = @row_override_options ? @row_override_options[:if] : nil
+      return false if cond && ! cond.call(object)
       @row_override ? true : false
     end
     
