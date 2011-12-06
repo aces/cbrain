@@ -297,13 +297,17 @@ class User < ActiveRecord::Base
   
   #Create a random string (currently for passwords).
   def random_string
-    length = rand(5) + 6
+    length = rand(4) + 4
     s = ""
     length.times do
       c = rand(75) + 48
       c += 1 if c == 96
       s << c
     end
+    s += ("A".."Z").to_a[rand(26)]
+    s += ("a".."z").to_a[rand(26)]
+    s += ("0".."9").to_a[rand(10)]
+    s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
    
