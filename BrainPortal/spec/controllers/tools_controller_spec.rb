@@ -28,18 +28,18 @@ describe ToolsController do
       describe "bourreau_select" do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
-        it "should render empty text if current_value is empty" do
-          get(:bourreau_select, {'current_value' => ""})
+        it "should render empty text if tool_id is empty" do
+          get(:bourreau_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
         it "should render bourreau_select" do
-          get(:bourreau_select,{'current_value' => real_tool.id.to_s})
+          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
           response.should render_template("tools/_bourreau_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'current_value' => "abc"})
+          get(:bourreau_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
@@ -137,22 +137,6 @@ describe ToolsController do
         end
       end
   
-      describe "tool_managment" do
-  
-        it "should call find on Tool" do
-          Tool.should_receive(:order)
-          get :tool_management
-        end
-  
-        it "should assign bourreaux" do
-          Bourreau.should_receive(:all)
-          get :tool_management
-        end
-        it "should render tamplate tool_manager" do
-          get :tool_management
-          response.should render_template("tool_management")
-        end
-      end
     end
 
     context "user is a standard user" do
@@ -179,18 +163,18 @@ describe ToolsController do
       describe "bourreau_select" do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
-        it "should render empty text if current_value is empty" do
-          get(:bourreau_select, {'current_value' => ""})
+        it "should render empty text if tool_id is empty" do
+          get(:bourreau_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
         it "should render bourreau_select" do
-          get(:bourreau_select,{'current_value' => real_tool.id.to_s})
+          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
           response.should render_template("tools/_bourreau_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'current_value' => "abc"})
+          get(:bourreau_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
@@ -228,13 +212,6 @@ describe ToolsController do
         end
       end
   
-      describe "tool_managment" do
-  
-        it "should redirect to error page" do
-          get :tool_management
-          response.code.should == '401'
-        end
-      end
     end
 
     context "user is a site_manager" do
@@ -261,18 +238,18 @@ describe ToolsController do
       describe "bourreau_select" do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
-        it "should render empty text if current_value is empty" do
-          get(:bourreau_select, {'current_value' => ""})
+        it "should render empty text if tool_id is empty" do
+          get(:bourreau_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
         it "should render bourreau_select" do
-          get(:bourreau_select,{'current_value' => real_tool.id.to_s})
+          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
           response.should render_template("tools/_bourreau_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'current_value' => "abc"})
+          get(:bourreau_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
@@ -310,13 +287,6 @@ describe ToolsController do
         end
       end
   
-      describe "tool_managment" do
-  
-        it "should redirect to error page" do
-          get :tool_management
-          response.code.should == '401'
-        end
-      end
     end
   end
 
