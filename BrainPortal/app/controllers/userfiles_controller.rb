@@ -146,7 +146,12 @@ class UserfilesController < ApplicationController
       end
 
       # Paginate the list of simple objects
-      page_of_userfiles = Userfile.paginate(simple_userfiles, @current_page, @userfiles_per_page)
+      page_of_userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
+                            pager.replace(simple_userfiles[offset, offset + @userfiles_per_page] || [])
+                            pager.total_entries = simple_userfiles.size
+                            pager
+                          end
+      
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
       real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )

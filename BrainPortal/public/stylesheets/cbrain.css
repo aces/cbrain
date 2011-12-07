@@ -1053,7 +1053,6 @@ pre {
   padding: 0;
   margin-right: 0;
   margin-left: 0;
-  min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
 }
 
 .pagination_right_side {
