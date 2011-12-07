@@ -2,8 +2,8 @@ Factory.define :user do |user|
   user.sequence(:full_name)  { |n| "Bob #{n}" }           
   user.sequence(:login)      { |n| "user#{n}" }
   user.sequence(:email)      { |n| "user#{n}@example.com" }
-  user.password              "password"
-  user.password_confirmation "password"
+  user.password              "Password!"
+  user.password_confirmation "Password!"
   user.role                  "user"
   user.association           :site
 end

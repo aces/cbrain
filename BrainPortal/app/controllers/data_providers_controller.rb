@@ -416,6 +416,7 @@ class DataProvidersController < ApplicationController
         previously_registered_userfiles << registered_file
       elsif userfile.save
         newly_registered_userfiles << userfile
+        userfile.addlog("Registered on DataProvider '#{@provider.name}' as '#{userfile.name}'.")
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
         num_skipped += 1

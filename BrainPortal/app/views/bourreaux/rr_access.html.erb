@@ -25,8 +25,7 @@ There is no information to show at this time.
       <% end %>
     </tr>
     
-    <% sorted_users = @users.sort { |a,b| a.login <=> b.login } %>
-    <% sorted_users.each do |user| %>
+    <% @users.each do |user| %>
       <% 
       accessible_rr = RemoteResource.find_all_accessible_by_user(user).index_by &:id || {}
       %>

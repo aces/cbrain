@@ -424,26 +424,6 @@ describe Userfile do
 
   end
 
-  describe "#self.paginate" do
-    
-    it "should call replace only once if we have no files" do
-      pager = double('pager')
-      WillPaginate::Collection.stub!(:create).and_yield(pager)
-      pager.should_receive(:replace)
-      pager.stub!(:total_entries=)
-      Userfile.paginate([1],1,10)
-     end
-
-     it "should call total_entries= only once if we have no files" do
-      pager = double('pager')
-      WillPaginate::Collection.stub!(:create).and_yield(pager)
-      pager.stub!(:replace)
-      pager.should_receive(:total_entries=).and_return(true)
-      Userfile.paginate([1],1,10)
-     end
-
-   end
-
   describe "#can_be_accessed_by?" do
     let(:user) {Factory.create(:user)}
    

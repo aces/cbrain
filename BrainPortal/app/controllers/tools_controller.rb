@@ -76,7 +76,7 @@ class ToolsController < ApplicationController
     @tool = Tool.new(params[:tool])
 
     task_class = @tool.cbrain_task_class || "CbrainTask::Object"
-    task_class = task_class.dup.sub!(/^CbrainTask::/,"")
+    task_class = task_class.demodulize
     subclass = CbrainTask.const_get(task_class) rescue Object
     unless subclass < CbrainTask # strictly subclass
       @tool.errors.add(:cbrain_task_class, "doesn't seem to be a code subclass of CbrainTask.")
@@ -133,7 +133,7 @@ class ToolsController < ApplicationController
     PortalTask.descendants.map(&:name).sort.each do |tool|
       next if current_user.available_tools.find_by_cbrain_task_class(tool) # already exists
       @tool = Tool.new(
-                  :name               => tool.sub(/^CbrainTask::/, ""),
+                  :name               => tool.demodulize,
                   :cbrain_task_class  => tool,
                   :user_id            => User.find_by_login("admin").id,
                   :group_id           => Group.everyone.id,

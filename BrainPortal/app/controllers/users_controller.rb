@@ -207,7 +207,7 @@ class UsersController < ApplicationController
     end
     
     if params[:meta]
-      add_meta_data_from_form(@user, [:pref_userfiles_per_page, :pref_bourreau_id, :pref_data_provider_id])
+      add_meta_data_from_form(@user, [ :pref_bourreau_id, :pref_data_provider_id])
     end
     
     respond_to do |format|

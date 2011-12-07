@@ -1,11 +1,14 @@
 
-<!-- *********************************** -->
-<!-- Dp access by bourreau -->
-<!-- *********************************** -->
-
 <% title "Servers Access to Data Providers" %>
 
 <h2>Servers Access to Data Providers</h2>
+
+<p class="medium_paragraphs">
+This page shows which Data Providers (columns) can be accessed by which Execution Server (rows).
+If you want to launch jobs on a particular Execution Server, make sure they are
+configured to
+access files on Data Providers marked by green circles (&nbsp;<%= o_icon %>&nbsp;).
+</p>
 
 <% if @bourreaux.empty? || @dps.empty? %>
 
@@ -13,18 +16,29 @@ There is no information to show at this time.
 
 <% else %>
 
-<% 
-b_is_alive   = Bourreau.where( :online => true ).select(&:is_alive?).index_by &:id
-dp_is_online = DataProvider.find_all_accessible_by_user(current_user).where( :online => true ).index_by &:id
-dp_ids       = dp_is_online.keys
+<%
+dps_online    = DataProvider.select { |d| d.online? }
+dps_offline   = @dps - dps_online
+b_can_refresh = @bourreaux.select { |b| b.online? && b.has_owner_access?(current_user) }
 %>
 
 <span class="display_cell">
-  <table>
 
+  <table>
+    
+    <tr>
+      <th colspan="2">Execution Servers</th>
+      <th colspan="<%= dps_online.count %>">Data Providers</th>
+    </tr>
     <tr>
       <th></th>
-      <% @dps.each do |dp| %>
+      <th>
+        Last Checked 
+        <% if b_can_refresh.size > 1 %>
+          (<%= link_to "Refresh all", { :refresh => 'all' }, :class => "header_link" %>)
+        <% end %>
+      </th>
+      <% dps_online.each do |dp| %>
         <th>
         <%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %>
         </th>
@@ -34,31 +48,54 @@ dp_ids       = dp_is_online.keys
     
     <% @bourreaux.each do |bourreau| %>
       <tr>
-        <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user) %></td>
-        
-        <% if !b_is_alive[bourreau.id] %>
-          <td colspan="<%= @dps.count %>" >Execution Server Not Alive</td>
-        <% else %>
-          <% dp_stats = {} %>
-            <% unless dp_ids.empty? %>
-              <% command  = bourreau.send_command_check_data_providers(dp_ids) rescue nil %>
-              <% if command.nil? %>
-                <td colspan="<%= @dps.count %>" > <%= html_colorize("Execution Server Not Responding") %></td>
-                <% next %>
-              <% end %>
-              <% dp_stats = command.data_provider_status_as_hash %>
-            <% end %> 
-          <% @dps.each do |dp| %>
-            <td> <%= !dp_is_online[dp.id]  ? times_icon("grey") : dp_stats[dp.id.to_s] == "alive" ? o_icon : times_icon %></td>
+        <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => bourreau.online? ? nil : 'error_link' }) %></td>
+        <td class="left_align">
+          <% last_update = bourreau.meta[:data_provider_statuses_last_update] %>
+          <% if last_update.blank? %>
+            (Unknown)
+          <% else %>
+            <%= pretty_elapsed(Time.now.to_i - last_update.to_i, :num_components => 2) %> ago
           <% end %>
-        <% end %>
-      
+          <% if bourreau.online? && b_can_refresh.include?(bourreau) %>
+            (<%= link_to "Refresh", :refresh => bourreau.id %>)
+          <% end %>
+        </td>
+        <% if ! bourreau.online? %>
+          <td colspan="<%= dps_online.count %>" > <%= html_colorize("Execution Server is Offline") %></td>
+        <% else %>
+          <% dp_stats = bourreau.meta[:data_provider_statuses] %>
+          <% if dp_stats.blank? || dp_stats.empty? %>
+            <td colspan="<%= dps_online.count %>"><%= html_colorize("Information not yet available") %></td>
+          <% else %>
+            <% dps_online.each do |dp| %>
+              <td><%= dp_stats[dp.id] == "alive" ? o_icon : times_icon %></td>
+            <% end %>
+          <% end %>
+       <% end %>
       </tr>
     <% end %>
     
   </table>
   
-  <%= center_legend("Data Provider Status:", [o_icon,"alive"], [times_icon,"down"], [times_icon("grey"),"offline"] )%>
+  <%= center_legend("Data Provider Status:", [o_icon,"alive"], [times_icon,"down"] )%>
+  
+ 
+  <% if !dps_offline.empty? %>
+    </p>    
+    <strong>Data Providers offline:</strong> 
+    <%= array_to_table(dps_offline, :ratio => "1:10", :min_data => 10) do |dp| %>
+      <%= link_to_data_provider_if_accessible(dp, current_user) %>
+    <% end %>
+  <%end%>
+  
+  <p>
+  
+  <% if !b_can_refresh.empty? %>
+    <strong>Note: </strong>Clicking on <em>Refresh</em> triggers a background process on the server
+    that will poll each Data Provider; this can take several minutes to complete.
+  <% end %>
+  
+  
   
 </span>
 

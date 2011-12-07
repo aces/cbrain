@@ -290,7 +290,7 @@ class User < ActiveRecord::Base
   end
     
   def password_required? #:nodoc:
-    crypted_password.blank? || !password.blank?
+    crypted_password.blank? || !password.nil?
   end
 
   private
@@ -353,11 +353,13 @@ class User < ActiveRecord::Base
   
   def password_strength_check #:nodoc:
     score = 0
-    score += 1 if self.password =~ /[A-Z]/
-    score += 1 if self.password =~ /[a-z]/
-    score += 1 if self.password =~ /\d/
-    score += 1 if self.password =~ /[^A-Za-z\d]/
-    score += 1 if self.password.length > 14
+    unless self.password.blank?
+      score += 1 if self.password =~ /[A-Z]/
+      score += 1 if self.password =~ /[a-z]/
+      score += 1 if self.password =~ /\d/
+      score += 1 if self.password =~ /[^A-Za-z\d]/
+      score += 1 if self.password.length > 14
+    end
     if score < 3
       errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length.")
     end

@@ -156,7 +156,7 @@ class CbrainTask < ActiveRecord::Base
   # Returns a simple name for the task (without the Cbrain prefix stuff).
   # Example: from 'CbrainTask::Civet' we get 'Civet'
   def name
-    @name ||= self.class.to_s.sub(/^CbrainTask::/,"")
+    @name ||= self.class.to_s.demodulize
   end
 
   # Returns a longer name for the task (without the Cbrain prefix stuff)
@@ -188,7 +188,7 @@ class CbrainTask < ActiveRecord::Base
   # Can be customized by subclasses to improve views, by keep it short.
   # By default, returns the same value as the +name+ class method.
   def self.pretty_name
-    @pretty_name ||= self.to_s.sub(/^CbrainTask::/,"")
+    @pretty_name ||= self.to_s.demodulize
   end
 
   # Returns the Tool object associated with the task.

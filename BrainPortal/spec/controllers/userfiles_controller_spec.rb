@@ -33,21 +33,6 @@ describe UserfilesController do
           get :index, "userfiles" => { "view_all" => "off" }
           assigns[:userfiles].to_a.should =~ Userfile.all(:conditions => {:user_id => admin.id})
         end
-        context "paginating" do
-          before(:each) do
-            admin.meta["pref_userfiles_per_page"] = 2
-            session[:userfiles] ||= {}
-            session[:userfiles]["view_all"] = "on"
-          end
-          it "should paginate if pagination is on" do
-            get :index, "userfiles" => { "pagination" => "on" }, "format" => "html"
-            assigns[:userfiles].per_page.should == 2
-          end
-          it "should not paginate if pagination is off"do
-            get :index, "userfiles" => { "pagination" => "off" }, "format" => "html"
-            assigns[:userfiles].per_page.should be > 2
-          end
-        end
         it "should tree sort if tree sorting is on" do
           get :index, "userfiles" => { "tree_sort" => "on", "view_all" => "on" }, "format" => "html"
           assigns[:userfiles].to_a.should == Userfile.tree_sort(Userfile.all(:order => "userfiles.name"))

@@ -212,12 +212,12 @@ class BourreauxController < ApplicationController
 
   def load_info #:nodoc:
 
-    if params[:current_value].blank?
+    if params[:bourreau_id].blank?
       render :text  => ""
       return
     end
 
-    @bourreau  = Bourreau.find(params[:current_value])
+    @bourreau  = Bourreau.find(params[:bourreau_id])
 
     respond_to do |format|
       format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
@@ -517,8 +517,35 @@ class BourreauxController < ApplicationController
   end
 
   def rr_access_dp
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
-    @dps       = DataProvider.find_all_accessible_by_user(current_user).all  { |a,b| a.name <=> b.name }
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort     { |a,b| a.name <=> b.name }
+    @dps       = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+
+    refresh    = params[:refresh]
+    refresh_bs = []
+    if refresh == 'all'
+      refresh_bs = @bourreaux
+    else
+      refresh_bs = @bourreaux.select { |b| b.id == refresh.to_i }
+    end
+
+    sent_refresh = [] # for flash message
+    refresh_bs.each do |b|
+      if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
+        b.send_command_check_data_providers(@dps.map &:id) rescue true
+        sent_refresh << b.name
+      end
+    end
+
+    if ! refresh.blank?
+      if sent_refresh.size > 0
+        flash[:notice] = "Sent a request to check the Data Providers to these servers: #{sent_refresh.join(", ")}\n" +
+                         "This will be done in background and can take several minutes before the reports are ready."
+      else
+        flash[:notice] = "No refresh needed, access information is recent enough."
+      end
+      redirect_to :action => :rr_access_dp  # try again, without the 'refresh' param
+    end
+
   end
 
   

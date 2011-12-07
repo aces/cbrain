@@ -411,23 +411,6 @@ class Userfile < ActiveRecord::Base
     @level ||= 0
   end
 
-  #Produces the list of files to display for a paginated Userfile index
-  #view.
-  def self.paginate(files, page, preferred_per_page)
-    per_page = (preferred_per_page || Default_num_pages).to_i
-    page     = page.to_i
-    max_page = (files.size + per_page - 1 ) / per_page
-    page     = max_page if page > max_page
-    page     = 1   if page < 1
-    offset = (page - 1) * per_page
-
-    WillPaginate::Collection.create(page, per_page) do |pager|
-      pager.replace(files[offset, per_page])
-      pager.total_entries = files.size
-      pager
-    end
-  end
-
   #Returns whether or not +user+ has access to this
   #userfile.
   def can_be_accessed_by?(user, requested_access = :write)

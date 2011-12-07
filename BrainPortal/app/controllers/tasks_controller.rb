@@ -183,7 +183,7 @@ class TasksController < ApplicationController
       return
     end
     
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     
     @task             = CbrainTask.const_get(@toolname).new
 
@@ -300,7 +300,7 @@ class TasksController < ApplicationController
     end
 
     # A brand new task object!
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
