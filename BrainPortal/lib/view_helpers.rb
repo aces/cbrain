@@ -192,7 +192,7 @@ module ViewHelpers
     "\r"    => '\n',
     "'"     => "\\'"
   }
-
+  
   # Escape a string containing HTML code so that it is a valid
   # javascript constant string; the string will be quoted
   # with single quotes (') on each end.

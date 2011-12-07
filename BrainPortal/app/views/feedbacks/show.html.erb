@@ -1,25 +1,20 @@
 
 <% title 'Feedback' %>
 
-<h2>Feedback</h2>
+<br>
+<%= error_messages_for :feedback, :header_message => "Feedback could not be updated." %>
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@feedback, :width => 1, :edit_path => feedback_path(@feedback)) do |t| %>
+    <% t.edit_cell(:summary, :disabled => (!current_user.has_role?(:admin) && current_user.id != @feedback.user_id)) do %>
+      <%= text_field_tag "feedback[summary]", @feedback.summary %>
+    <% end %>
+    <% t.cell("Author") { link_to_user_with_tooltip(@feedback.user) } %>
+    <% t.cell("Date Submitted") { to_localtime(@feedback.created_at,:datetime) }  %>
+    <% t.edit_cell(:details, :content => h(@feedback.details).gsub("\n", "<br>"), :disabled => (!current_user.has_role?(:admin) && current_user.id != @feedback.user_id)) do %>
+      <%= text_area_tag "feedback[details]", @feedback.details, :cols => 40 %><br>
+      <%= submit_tag "Update" %>
+    <% end %>
+  <% end %>
+</div>
 
-<table class = "property_list">
-   <tr>
-     <th class = "center_align_heading" colspan="2"><%= @feedback.summary %></th>
-   </tr>
-
-   <tr>
-      <td> <%= link_to_user_with_tooltip(@feedback.user) %> </td>
-      <td> <%= to_localtime(@feedback.created_at,:datetime) %> </td>
-   </tr>
-
-   <tr>
-     <td colspan="2" class="white_background_text"><%= simple_format h(@feedback.details) %></td>
-   </tr>
-</table>
-
-<% if current_user.has_role?(:admin) || current_user.id == @feedback.user_id %>
-    <%= link_to 'Edit', edit_feedback_path(@feedback) %> &nbsp;
-    <%= link_to 'Destroy', @feedback, :confirm => 'Are you sure?', :method => :delete %>
-<% end %>
 

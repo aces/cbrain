@@ -13,16 +13,11 @@
       <%= render :partial => "userfiles/file_menu" %>
       <div id="userfiles_display" class="index_block">
         <%= render :partial => 'userfiles_display' %>
+        
+        <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
+        <%= center_legend("Synchronization symbols:", *sync_statuses.map{ |s| [ status_html_symbol(s), s ] } )%>
       </div>
-      
-      <%
-      legend_array = []
-      [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name|
-        legend_array << [ status_html_symbol(name), name ]
-      end
-      %>
-      
-      <%= center_legend("Synchronization symbols:", *legend_array )%>
+  
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 

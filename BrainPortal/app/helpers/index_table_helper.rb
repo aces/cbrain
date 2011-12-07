@@ -199,7 +199,7 @@ module IndexTableHelper
           proc      = cell[0]
           options   = cell[1] || {}
           condition = cell[2]
-          content   = proc ? @template.capture(object, &proc) : "" if condition.blank? || condition.call(object)
+          content   = proc ? @template.cb_capture(object, &proc) : "" if condition.blank? || condition.call(object)
           
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
           html << "<td #{atts}>#{content}</td>\n"
@@ -290,7 +290,7 @@ module IndexTableHelper
     def row_override_html(object) #:nodoc:
       return "" unless @row_override
       
-      @template.capture(object, &@row_override)
+      @template.cb_capture(object, &@row_override)
     end
     
     # Manually set text to be displayed in an empty row.
@@ -389,6 +389,15 @@ module IndexTableHelper
     
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end
+  
+  def cb_capture(*args)
+    value = nil
+    buffer = with_output_buffer { value = yield(*args) }
+    if string = buffer.presence || value
+      ERB::Util.html_escape string.to_s
+    end
+  end
+  
   
   # Build an index table.
   def index_table(collection, options = {})

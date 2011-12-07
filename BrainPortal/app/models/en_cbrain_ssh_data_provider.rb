@@ -71,8 +71,6 @@ class EnCbrainSshDataProvider < SshDataProvider
       req = sftp.rename(oldpath,newpath).wait
       return false unless req.response.ok?
 
-      userfile.name = newname
-      userfile.save
       return true
 
     end

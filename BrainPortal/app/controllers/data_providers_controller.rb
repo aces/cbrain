@@ -46,62 +46,12 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    stats = ModelsReport.gather_filetype_statistics(
-              :users     => current_user.available_users.all,
-              :providers => @provider
-            )
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_totcount        = stats[:user_totcount]
-    @all_totcount         = stats[:all_totcount]
-
-    # List of acceptable users
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # Create disk usage statistics table
-    stats_options = { :users            => userlist,
-                      :providers        => [ @provider ],
-                      :remote_resources => [],
-                    }
-    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
+    prepare_file_stats
     
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
     end
-  end
-  
-  def edit #:nodoc:
-    @provider = DataProvider.find(params[:id])
-
-    unless @provider.has_owner_access?(current_user)
-       flash[:error] = "You cannot edit a provider that you do not own."
-       redirect_to :action => :index
-       return
-    end
-
-    @typelist = get_type_list
-
-    @ssh_keys = get_ssh_public_keys
-
-    respond_to do |format|
-      format.html { render :action => :edit }
-      format.xml  { render :xml => @provider }
-    end
-
   end
 
   def new #:nodoc:
@@ -164,7 +114,6 @@ class DataProvidersController < ApplicationController
   end
 
   def update #:nodoc:
-
     @user     = current_user
     id        = params[:id]
     @provider = DataProvider.find(id)
@@ -172,13 +121,13 @@ class DataProvidersController < ApplicationController
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        respond_to do |format|
-        format.html { redirect_to :action => :index }
+        format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
        end
        return
     end
 
-    fields    = params[:data_provider]
+    fields    = params[:data_provider] || {}
     subtype   = fields.delete(:type)
 
     @provider.update_attributes(fields)
@@ -187,14 +136,16 @@ class DataProvidersController < ApplicationController
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
-        format.html { redirect_to(data_providers_url) }
+        format.html { redirect_to :action => :show }
         format.xml  { render :xml  => @provider }
       end   
     else
+      @provider.reload
+      prepare_file_stats
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
       respond_to do |format|
-        format.html { render :action => 'edit' }
+        format.html { render :action => 'show' }
         format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -576,6 +527,40 @@ class DataProvidersController < ApplicationController
   end
   
   private 
+  
+  def prepare_file_stats #:nodoc:
+    stats = ModelsReport.gather_filetype_statistics(
+              :users     => current_user.available_users.all,
+              :providers => @provider
+            )
+    @user_fileclass_count = stats[:user_fileclass_count]
+    @fileclasses_totcount = stats[:fileclasses_totcount]
+    @user_totcount        = stats[:user_totcount]
+    @all_totcount         = stats[:all_totcount]
+
+    # List of acceptable users
+    userlist         = if check_role(:admin)
+                         User.all
+                       elsif check_role(:site_manager)
+                         current_user.site.users
+                       else
+                         [ current_user ]
+                       end
+
+    # Create disk usage statistics table
+    stats_options = { :users            => userlist,
+                      :providers        => [ @provider ],
+                      :remote_resources => [],
+                    }
+    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
+
+    # Keys and arrays into statistics tables, for HTML output
+    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
+    @report_rrs         = @report_stats['!rrs!']
+    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
+    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
+    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
+  end
   
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 

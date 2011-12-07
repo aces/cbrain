@@ -97,7 +97,6 @@ class CbrainLocalDataProvider < LocalDataProvider
     end
     return false unless FileUtils.move(oldpath,newpath)
     #impl_provider_erase(userfile) # just to erase old subdirs paths
-    userfile.name = newname
     true
   end
 

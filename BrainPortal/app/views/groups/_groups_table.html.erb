@@ -54,7 +54,6 @@
     end
     t.describe_column("Operations") do |col|
       col.cell { |g| link_to 'Switch', {:action => :switch, :id => g.id}, :class => 'action_link', :method  => :post }
-      col.edit_link   :if => Proc.new { |g| g.can_be_edited_by?(current_user) } 
       col.delete_link :if => Proc.new { |g| g.can_be_edited_by?(current_user) }
     end
   end

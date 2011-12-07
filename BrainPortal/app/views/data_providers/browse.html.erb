@@ -24,7 +24,7 @@
                             [ "... move the files to Data Provider ->", "MOVE" ],
                             [ "... copy the files to Data Provider ->", "COPY" ]
                          ]
-      auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move]
+      auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
     %>
     <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
 

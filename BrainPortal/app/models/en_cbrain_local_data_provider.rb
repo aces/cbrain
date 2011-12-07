@@ -86,8 +86,6 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     oldparent = oldpath.parent
     newpath   = oldparent + newname
     return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
-    userfile.name = newname
-    userfile.save
     true
   end
 

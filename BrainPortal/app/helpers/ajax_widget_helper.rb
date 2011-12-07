@@ -22,23 +22,25 @@ module AjaxWidgetHelper
   end
   
   #Create an inline edit field.
-  def inline_edit_field(p_name, url, options = {}, &block)
+  def inline_text_field(p_name, url, options = {}, &block)
     name = p_name
     initial_text = capture(&block)
     initial_value = options.delete(:initial_value) || initial_text
     field_label = options.delete(:label)
     field_label += ":  " unless field_label.blank?
+    method = options.delete(:method) || "post"
+    method = method.to_s.downcase
     
-    options_setup("inline_edit_field", options)
+    options_setup("inline_text_field", options)
     options["data-trigger"] = options.delete(:trigger) || ".current_text"
     
     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
     
     safe_concat("<div #{atts}>")
     safe_concat("<span class=\"current_text\">#{initial_text}</span>")
-    safe_concat(form_tag_html(:action  => url_for(url), :class  => "inline_edit_form")) 
+    safe_concat(form_tag_html(:action  => url_for(url), :class  => "inline_text_form", :method => method)) 
     safe_concat("#{field_label}")
-    safe_concat(text_field_tag(name, initial_value, :class => "inline_edit_input")) 
+    safe_concat(text_field_tag(name, initial_value, :class => "inline_text_input")) 
     safe_concat("</form>")
     safe_concat("</div>") 
     ""

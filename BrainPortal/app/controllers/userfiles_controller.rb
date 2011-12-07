@@ -176,7 +176,7 @@ class UserfilesController < ApplicationController
     @user_groups    = current_user.available_groups.order("type")
     @default_group  = current_user.own_group.id
     @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
-    @data_providers.reject! { |dp| dp.meta[:no_uploads] }
+    @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
     @bourreaux      = Bourreau.find_all_accessible_by_user(current_user).where( :online => true )
     @preferred_bourreau_id = current_user.meta["pref_bourreau_id"]
 
@@ -306,24 +306,8 @@ class UserfilesController < ApplicationController
   def new #:nodoc:
      @user_tags      = current_user.available_tags
      @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
-     @data_providers.reject! { |dp| dp.meta[:no_uploads] }
+     @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
      render :partial => "new"
-  end
-  
-  # GET /userfiles/1/edit
-  def edit  #:nodoc:
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
-
-    # This allows the user to manually trigger the syncing to the Portal's cache
-    @sync_status = 'ProvNewer' # same terminology as in SyncStatus
-    state = @userfile.local_sync_status
-    @sync_status = state.status if state
-
-    @user_groups = current_user.available_groups.order(:type)
-
-    @tags = current_user.available_tags
-
-    @log  = @userfile.getlog rescue nil
   end
 
   # Triggers the mass synchronization of several userfiles
@@ -546,56 +530,46 @@ class UserfilesController < ApplicationController
   def update  #:nodoc:
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
-    flash[:notice] ||= ""
-    flash[:error]  ||= ""
+    flash[:notice] = ""
+    flash[:error]  = ""
 
     attributes    = params[:userfile] || {}
     new_user_id   = attributes.delete :user_id
     new_group_id  = attributes.delete :group_id
     old_name      = new_name = @userfile.name 
 
-    if ! @userfile.has_owner_access?(current_user)
-      attributes = {}
-    else
-      old_name = @userfile.name
-      new_name = attributes[:name] || old_name
-
-      if ! Userfile.is_legal_filename?(new_name)
-        flash[:error] += "Error: filename '#{new_name}' is not acceptable (illegal characters?)."
-        new_name = old_name
-      end
-
-      attributes[:name] = old_name # we must NOT rename the file yet
-
+    if @userfile.has_owner_access?(current_user)
+      # IMPORTANT: File type change MUST come first as we will change the class of the object.
       if params[:file_type]
-        unless @userfile.update_file_type(params[:file_type])
-          flash[:error] += "\nCould not update file format."
+        if @userfile.update_file_type(params[:file_type])
+          @userfile = Userfile.find(@userfile.id)
+        else
+          @userfile.errors.add(:type, "could not be updated.")
         end
       end
+      
+      old_name = @userfile.name
+      new_name = attributes.delete(:name) || old_name
 
       @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-
+      
+      if @userfile.update_attributes(attributes)
+        if new_name != old_name
+          @userfile.provider_rename(new_name)
+        end
+      end
     end
 
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
-
     respond_to do |format|
-      if @userfile.update_attributes(attributes)
-        if new_name != old_name
-           if @userfile.provider_rename(new_name)
-              @userfile.save
-           end
-        end
+      if @userfile.errors.empty?
         flash[:notice] += "#{@userfile.name} successfully updated."
-        format.html { redirect_to(:action  => 'edit') }
+        format.html { redirect_to(:action  => 'show') }
         format.xml  { head :ok }
       else
-        flash[:error] += "#{@userfile.name} has NOT been updated."
-        @userfile.name = old_name
-        @tags = current_user.available_tags
-        @user_groups = current_user.available_groups.order(:type)
-        format.html { render :action  => 'edit' }
+        @userfile.reload
+        format.html { render(:action  => 'show') }
         format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
       end
     end

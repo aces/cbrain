@@ -49,7 +49,7 @@ class ActiveRecord::Base
     return true if meta_keys.is_a?(Array) && meta_keys.empty?
     meta_keys = myparams.keys if meta_keys == :all
     meta_keys.each do |key|
-      self.meta[key] = myparams[key] # assignment of nil deletes the key
+      self.meta[key] = myparams[key] if myparams.has_key?(key) # assignment of nil deletes the key
     end
     true
   end

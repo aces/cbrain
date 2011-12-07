@@ -1718,3 +1718,10 @@ td.middle {
   font-size: 11px;
   text-align: center;
 }
+
+/* Basic styling */
+.float_left {
+  float: left;
+}
+
+

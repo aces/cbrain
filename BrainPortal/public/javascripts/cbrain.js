@@ -98,15 +98,15 @@ function load_behaviour(event){
    // See TabBar class
    loaded_element.find(".tabs").tabs();
    
-   loaded_element.find(".inline_edit_field").each(function() {
-     var inline_edit_field = jQuery(this);
-     var data_type = inline_edit_field.attr("data-type");
-     var target = inline_edit_field.attr("data-target");
-     var method = inline_edit_field.attr("data-method");
+   loaded_element.find(".inline_text_field").each(function() {
+     var inline_text_field = jQuery(this);
+     var data_type = inline_text_field.attr("data-type");
+     var target = inline_text_field.attr("data-target");
+     var method = inline_text_field.attr("data-method");
      if(!method) method = "POST";
      if(!data_type) data_type = "script";
      
-     var form = inline_edit_field.children("form")
+     var form = inline_text_field.children("form")
             .hide()
             .ajaxForm({
               type: method,
@@ -114,13 +114,13 @@ function load_behaviour(event){
               success: function(data){
                 modify_target(data, target);     
               }});
-     var input_field = form.find(".inline_edit_input");
-     var text = inline_edit_field.find(".current_text");
-     var trigger = inline_edit_field.find(inline_edit_field.attr("data-trigger"));
+     var input_field = form.find(".inline_text_input");
+     var text = inline_text_field.find(".current_text");
+     var trigger = inline_text_field.find(inline_text_field.attr("data-trigger"));
      
-     var data_type = inline_edit_field.attr("data-type");
-     var target = inline_edit_field.attr("data-target");
-     var method = inline_edit_field.attr("data-method");
+     var data_type = inline_text_field.attr("data-type");
+     var target = inline_text_field.attr("data-target");
+     var method = inline_text_field.attr("data-method");
      if(!method) method = "POST";
      if(!data_type) data_type = "script";
 
@@ -342,6 +342,14 @@ jQuery(
         }
      }
      return false;  
+   });
+
+   jQuery(".inline_edit_field_link").live("click", function(){
+     var link = jQuery(this);
+     var default_text = link.closest(".inline_edit_field_default_text");
+     var form = default_text.siblings(".inline_edit_field_form");
+     default_text.hide();
+     form.show();
    });
 
    //Highlighting on ressource list tables.

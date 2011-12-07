@@ -46,11 +46,6 @@ class FeedbacksController < ApplicationController
     @feedback = Feedback.new
     render :partial => "new"
   end
-   
-  # GET /feedbacks/1/edit
-  def edit #:nodoc:
-    @feedback = Feedback.find(params[:id])
-  end
 
   # POST /feedbacks
   # POST /feedbacks.xml
@@ -85,10 +80,11 @@ class FeedbacksController < ApplicationController
     respond_to do |format|
       if @feedback.update_attributes(params[:feedback])
         flash[:notice] = 'Feedback was successfully updated.'
-        format.html { redirect_to feedbacks_path }
+        format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
       else
-        format.html { render :action => "edit" }
+        @feedback.reload
+        format.html { render :action => "show" }
         format.xml  { render :xml => @feedback.errors, :status => :unprocessable_entity }
       end
     end
