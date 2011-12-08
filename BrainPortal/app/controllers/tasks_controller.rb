@@ -74,15 +74,16 @@ class TasksController < ApplicationController
     
     @filter_params["per_page"] ||= 25
     
-    per_page     = @filter_params["per_page"].to_i
-    per_page     = 500 if per_page > 500
-    per_page     = 25  if per_page < 25
-    current_page = give_valid_page(params[:page])
-    offset       = (current_page - 1) * per_page
+    @per_page     = @filter_params["per_page"].to_i
+    @per_page     = 500 if @per_page > 500
+    @per_page     = 25  if @per_page < 25
+    current_page  = give_valid_page(params[:page])
+    offset        = (current_page - 1) * @per_page
+    @filter_params["per_page"] = @per_page
 
     if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
-      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
+      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @per_page ).group( :launch_time ).map(&:launch_time)
       @tasks = {} # hash lt => task_info
       launch_times.each do |lt|
          first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
@@ -100,7 +101,7 @@ class TasksController < ApplicationController
       end
       pagination_list = launch_times
     else
-      task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( per_page )
+      task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @per_page )
       @tasks = {}
       task_list.each do |t|
         @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
@@ -108,7 +109,7 @@ class TasksController < ApplicationController
       pagination_list = task_list.map(&:id)
     end
     
-    @paginated_list = WillPaginate::Collection.create(current_page, per_page) do |pager|
+    @paginated_list = WillPaginate::Collection.create(current_page, @per_page) do |pager|
       pager.replace(pagination_list)
       pager.total_entries = @total_entries
       pager

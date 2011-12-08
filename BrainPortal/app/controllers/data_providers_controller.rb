@@ -292,10 +292,10 @@ class DataProvidersController < ApplicationController
     
     current_page = (params[:page] || 1).to_i
     params[:pagination] ||= "on"
-    per_page = params[:pagination] == "on" ? 50 : 999_999_999
+    @per_page = params[:pagination] == "on" ? 50 : 999_999_999
 
     unless request.format.to_sym == :xml
-      @fileinfolist = @fileinfolist.paginate(:page => current_page, :per_page => per_page) 
+      @fileinfolist = @fileinfolist.paginate(:page => current_page, :per_page => @per_page) 
     end
     
     respond_to do |format|

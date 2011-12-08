@@ -38,20 +38,19 @@ class UsersController < ApplicationController
     @filter_params["per_page"] ||= 200
 
     if [:html, :js].include?(request.format.to_sym)
-      per_page = @filter_params["per_page"].to_i
-      per_page = 500 if per_page > 500
-      per_page = 25  if per_page < 25  
+      @per_page = @filter_params["per_page"].to_i
+      @per_page = 500 if @per_page > 500
+      @per_page = 25  if @per_page < 25  
     else
-      per_page = 999_999_999
+      @per_page = 999_999_999
     end
-
-    @filter_params["per_page"] = per_page
+    @filter_params["per_page"] = @per_page
     
     current_page  = (params[:page] || 1).to_i
     @total_users  = @users.count 
 
     # Turn the array ordered_real into the final paginated collection
-    @users = @users.paginate(:page => current_page, :per_page => per_page) 
+    @users = @users.paginate(:page => current_page, :per_page => @per_page) 
     
     respond_to do |format|
       format.html # index.html.erb
