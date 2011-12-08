@@ -119,6 +119,14 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+  ########################################################################
+  # CBRAIN Helper for pagination
+  ########################################################################
+
+  def give_valid_page(page=1)
+    page = page.to_i < 1 ? 1 : page.to_i 
+  end
   
   ########################################################################
   # CBRAIN Exception Handling (Filters)

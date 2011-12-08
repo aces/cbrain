@@ -106,18 +106,17 @@ class UserfilesController < ApplicationController
     # Pagination variables
     #------------------------------
 
-
     @filter_params["per_page"] ||= 50
 
     if [:html, :js].include?(request.format.to_sym)
-      @userfiles_per_page = @filter_params["per_page"].to_i
-      @userfiles_per_page = 500 if @userfiles_per_page > 500
-      @userfiles_per_page = 25  if @userfiles_per_page < 25
+      per_page = @filter_params["per_page"].to_i
+      per_page = 500 if per_page > 500
+      per_page = 25  if per_page < 25
     else
-      @userfiles_per_page = 999_999_999
+      per_page = 999_999_999
     end
-    @current_page = params[:page] || 1
-    offset = (@current_page.to_i - 1) * @userfiles_per_page
+    current_page = give_valid_page(params[:page])
+    offset       = (current_page.to_i - 1) * per_page
 
     #------------------------------
     # Final paginated array of objects
@@ -141,13 +140,13 @@ class UserfilesController < ApplicationController
         find_file_id    = params[:find_file_id].to_i
         find_file_index = simple_userfiles.index{ |u| u.id == find_file_id }
         if find_file_index
-          @current_page = (find_file_index / @userfiles_per_page) + 1
+          current_page = (find_file_index / per_page) + 1
         end
       end
 
       # Paginate the list of simple objects
-      page_of_userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
-                            pager.replace(simple_userfiles[offset, offset + @userfiles_per_page] || [])
+      page_of_userfiles = WillPaginate::Collection.create(current_page, per_page) do |pager|
+                            pager.replace(simple_userfiles[offset, offset + per_page] || [])
                             pager.total_entries = simple_userfiles.size
                             pager
                           end
@@ -167,7 +166,7 @@ class UserfilesController < ApplicationController
     end
 
     # Turn the array ordered_real into the final paginated collection
-    @userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
+    @userfiles = WillPaginate::Collection.create(current_page, per_page) do |pager|
       pager.replace(ordered_real)
       pager.total_entries = @userfiles_total
       pager

@@ -20,12 +20,8 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @filter_params["max_show"] ||= 50
     @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
-    @filter_params["sort_hash"]["dir"] ||= "DESC"
-    @max_show = @filter_params["max_show"].to_i
-    @max_show = 500 if @max_show > 500
-    @max_show = 25  if @max_show < 25
+    @filter_params["sort_hash"]["dir"]   ||= "DESC"
     
     scope = base_filtered_scope
     unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"
@@ -33,13 +29,21 @@ class MessagesController < ApplicationController
     end
     @total_entries = scope.count
     
-    page = (params[:page] || 1).to_i
-    page = 1 if page < 1
-    offset = (page - 1) * @max_show
+    #------------------------------
+    # Pagination variables
+    #------------------------------
+
+    @filter_params["max_show"] ||= 50
     
-    scope = scope.limit(@max_show).offset(offset)
-    @messages = WillPaginate::Collection.create(page, @max_show) do |pager|
-      pager.replace(scope)
+    per_page        = @filter_params["max_show"].to_i
+    per_page        = 500 if per_page > 500
+    per_page        = 25  if per_page < 25
+    current_page    = give_valid_page(params[:page])
+    offset          = (current_page - 1) * per_page
+    pagination_list = scope.limit(per_page).offset(offset)
+    
+    @messages = WillPaginate::Collection.create(current_page, per_page) do |pager|
+      pager.replace(pagination_list)
       pager.total_entries = @total_entries
       pager
     end

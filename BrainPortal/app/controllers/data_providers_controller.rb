@@ -286,16 +286,16 @@ class DataProvidersController < ApplicationController
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
-    page = (params[:page] || 1).to_i
+    #------------------------------
+    # Pagination variables
+    #------------------------------
+    
+    current_page = (params[:page] || 1).to_i
     params[:pagination] ||= "on"
-    @per_page = params[:pagination] == "on" ? 50 : 999_999_999
+    per_page = params[:pagination] == "on" ? 50 : 999_999_999
 
     unless request.format.to_sym == :xml
-      @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
-        pager.replace(@fileinfolist[(page-1) * @per_page, @per_page])
-        pager.total_entries = @fileinfolist.size
-        pager
-      end
+      @fileinfolist = @fileinfolist.paginate(:page => current_page, :per_page => per_page) 
     end
     
     respond_to do |format|
