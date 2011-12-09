@@ -46,15 +46,7 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    # Get stat for file_counts
-    stats = ModelsReport.gather_filetype_statistics(
-              :users     => current_user.available_users.all,
-              :providers => @provider
-            )
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @user_totcount        = stats[:user_totcount]
-    @all_totcount         = stats[:all_totcount]
+    prepare_file_stats
 
     respond_to do |format|
       format.html # show.html.erb
@@ -149,6 +141,7 @@ class DataProvidersController < ApplicationController
       end   
     else
       @provider.reload
+      prepare_file_stats
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
       respond_to do |format|
@@ -535,6 +528,20 @@ class DataProvidersController < ApplicationController
   end
   
   private
+
+  def prepare_file_stats #:nodoc:
+    
+    # Get stat for file_counts
+    stats = ModelsReport.gather_filetype_statistics(
+              :users     => current_user.available_users.all,
+              :providers => @provider
+            )
+    @fileclasses_totcount = stats[:fileclasses_totcount]
+    @user_fileclass_count = stats[:user_fileclass_count]
+    @user_totcount        = stats[:user_totcount]
+    @all_totcount         = stats[:all_totcount]
+
+  end
 
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
