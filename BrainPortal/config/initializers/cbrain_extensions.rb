@@ -395,20 +395,3 @@ class Hash
 
 end
 
-###################################################################
-# CBRAIN Extensions to WillPaginate
-###################################################################
-
-class WillPaginate::Collection
-
-  class << self
-    alias_method :original_create, :create
-
-    def create(page, per_page, total = nil, &block)
-      page = 1 if page.to_i < 1
-      original_create(page, per_page,total, &block )
-    end
-    
-  end
-  
-end

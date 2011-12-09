@@ -68,18 +68,8 @@ class TasksController < ApplicationController
     @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
     @total_entries     = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
-    #------------------------------
-    # Pagination variables
-    #------------------------------
-    
-    @filter_params["per_page"] ||= 25
-    
-    @per_page     = @filter_params["per_page"].to_i
-    @per_page     = 500 if @per_page > 500
-    @per_page     = 25  if @per_page < 25
-    current_page  = give_valid_page(params[:page])
-    offset        = (current_page - 1) * @per_page
-    @filter_params["per_page"] = @per_page
+    # For Pagination
+    offset = (@current_page - 1) * @per_page
 
     if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
@@ -108,8 +98,8 @@ class TasksController < ApplicationController
       end
       pagination_list = task_list.map(&:id)
     end
-    
-    @paginated_list = WillPaginate::Collection.create(current_page, @per_page) do |pager|
+
+    @paginated_list = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
       pager.replace(pagination_list)
       pager.total_entries = @total_entries
       pager

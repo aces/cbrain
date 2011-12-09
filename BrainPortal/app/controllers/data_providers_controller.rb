@@ -286,16 +286,13 @@ class DataProvidersController < ApplicationController
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
-    #------------------------------
-    # Pagination variables
-    #------------------------------
-    
-    current_page = (params[:page] || 1).to_i
+    # For Pagination
     params[:pagination] ||= "on"
-    @per_page = params[:pagination] == "on" ? 50 : 999_999_999
+    prepare_pagination_variables if params[:pagination] == "on"
+    @per_page = 999_999_999 if params[:pagination] != "on"
 
     unless request.format.to_sym == :xml
-      @fileinfolist = @fileinfolist.paginate(:page => current_page, :per_page => @per_page) 
+      @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
     end
     
     respond_to do |format|

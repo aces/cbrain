@@ -101,23 +101,11 @@ class UserfilesController < ApplicationController
     # Add a secondary sorting column (name)
     sorted_scope = sorted_scope.order(:name) unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
 
-    
-    #------------------------------
-    # Pagination variables
-    #------------------------------
-
-    @filter_params["per_page"] ||= 50
-
-    if [:html, :js].include?(request.format.to_sym)
-      @per_page = @filter_params["per_page"].to_i
-      @per_page = 500 if @per_page > 500
-      @per_page = 25  if @per_page < 25
-    else
+    # For Pagination
+    unless [:html, :js].include?(request.format.to_sym)
       @per_page = 999_999_999
     end
-    current_page = give_valid_page(params[:page])
-    offset       = (current_page.to_i - 1) * @per_page
-    @filter_params["per_page"] = @per_page
+    offset        = (@current_page - 1) * @per_page
 
     #------------------------------
     # Final paginated array of objects
@@ -146,11 +134,7 @@ class UserfilesController < ApplicationController
       end
 
       # Paginate the list of simple objects
-      page_of_userfiles = WillPaginate::Collection.create(current_page, @per_page) do |pager|
-                            pager.replace(simple_userfiles[offset, offset + @per_page] || [])
-                            pager.total_entries = simple_userfiles.size
-                            pager
-                          end
+      page_of_userfiles = simple_userfiles[offset, @per_page] || []
       
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
@@ -167,8 +151,8 @@ class UserfilesController < ApplicationController
     end
 
     # Turn the array ordered_real into the final paginated collection
-    @userfiles = WillPaginate::Collection.create(current_page, @per_page) do |pager|
-      pager.replace(ordered_real)
+    @userfiles = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
+      pager.replace(ordered_real || [])
       pager.total_entries = @userfiles_total
       pager
     end
