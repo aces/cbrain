@@ -46,6 +46,16 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
+    # Get stat for file_counts
+    stats = ModelsReport.gather_filetype_statistics(
+              :users     => current_user.available_users.all,
+              :providers => @provider
+            )
+    @fileclasses_totcount = stats[:fileclasses_totcount]
+    @user_fileclass_count = stats[:user_fileclass_count]
+    @user_totcount        = stats[:user_totcount]
+    @all_totcount         = stats[:all_totcount]
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
@@ -524,7 +534,20 @@ class DataProvidersController < ApplicationController
 
   end
   
-  private 
+  private
+
+  def get_type_list #:nodoc:
+    typelist = %w{ SshDataProvider } 
+    if check_role(:admin) || check_role(:site_manager)
+      typelist += %w{ 
+                      EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
+                      CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
+                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
+                      IncomingVaultSshDataProvider
+                    }
+    end
+    typelist
+  end
   
   def get_ssh_public_keys #:nodoc:
     # Get SSH key for this BrainPortal
