@@ -46,8 +46,6 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    prepare_file_stats
-    
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
@@ -141,7 +139,6 @@ class DataProvidersController < ApplicationController
       end   
     else
       @provider.reload
-      prepare_file_stats
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
       respond_to do |format|
@@ -288,8 +285,11 @@ class DataProvidersController < ApplicationController
 
     # For Pagination
     params[:pagination] ||= "on"
-    prepare_pagination_variables if params[:pagination] == "on"
-    @per_page = 999_999_999 if params[:pagination] != "on"
+    if params[:pagination] == "on"
+      prepare_pagination_variables
+    else
+      @per_page = 999_999_999
+    end
 
     unless request.format.to_sym == :xml
       @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
@@ -526,53 +526,6 @@ class DataProvidersController < ApplicationController
   
   private 
   
-  def prepare_file_stats #:nodoc:
-    stats = ModelsReport.gather_filetype_statistics(
-              :users     => current_user.available_users.all,
-              :providers => @provider
-            )
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_totcount        = stats[:user_totcount]
-    @all_totcount         = stats[:all_totcount]
-
-    # List of acceptable users
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # Create disk usage statistics table
-    stats_options = { :users            => userlist,
-                      :providers        => [ @provider ],
-                      :remote_resources => [],
-                    }
-    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
-  end
-  
-  def get_type_list #:nodoc:
-    typelist = %w{ SshDataProvider } 
-    if check_role(:admin) || check_role(:site_manager)
-      typelist += %w{ 
-                      EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
-                      CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
-                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
-                      IncomingVaultSshDataProvider
-                    }
-    end
-    typelist
-  end
-
   def get_ssh_public_keys #:nodoc:
     # Get SSH key for this BrainPortal
     portal_ssh_key = RemoteResource.current_resource.get_ssh_public_key

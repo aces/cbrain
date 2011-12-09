@@ -125,6 +125,8 @@ class ApplicationController < ActionController::Base
   # CBRAIN Helper for pagination
   ########################################################################
 
+  #This prevents users to give wrong number page for example -1 or 999_999_999_9999_999
+  #and limit the per_page variable in order to be in a certain range
   def prepare_pagination_variables
 
     # Validate per_page
