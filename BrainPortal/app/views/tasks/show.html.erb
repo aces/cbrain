@@ -62,6 +62,7 @@
   </div>
 <% end %>
 
+
 <%= error_messages_for :task, :header_message => "Task could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
@@ -109,6 +110,8 @@
 
   <br>
 
+
+
   <fieldset>
     <legend>Parameters</legend>
     <%= build_tabs do |tb| %>
@@ -130,12 +133,16 @@
 
   <br>
 
+
+
   <fieldset>
     <legend>Processing Log</legend>
     <pre><%= @task.getlog -%></pre>
   </fieldset>
 
   <br>
+
+
 
   <%
      prereqs     = @task.prerequisites || {}
@@ -145,31 +152,33 @@
      for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
      for_postpro = for_postpro.attributes unless for_postpro.is_a?(Hash)
   %>
+
   <% unless for_setup.empty? && for_postpro.empty? %>
+
     <fieldset>
       <legend>Prerequisites</legend>
-      <table class="property_list show_task_table">
 
-      
-          <% if for_setup.size > 0 %>
-            <tr>
-              <th class="center_align_heading" colspan="2">Setup Prerequisites</td>
-            </tr>
-            <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
-          <% end %>
-          <% if for_postpro.size > 0 %>
-            <tr>
-              <th class="center_align_heading" colspan="2">Post Processing Prerequisites</td>
-            </tr>
-            <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
-          <% end %>
+      <table class="property_list show_task_prerequisites">
+        <% if for_setup.size > 0 %>
+          <tr>
+            <th class="center_align_heading" colspan="2">Setup Prerequisites</td>
+          </tr>
+          <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
+        <% end %>
+        <% if for_postpro.size > 0 %>
+          <tr>
+            <th class="center_align_heading" colspan="2">Post Processing Prerequisites</td>
+          </tr>
+          <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
+        <% end %>
+      </table>
 
-       </table>
     </fieldset>
 
     <br>
 
   <% end %>
+
 
 
   <%
@@ -180,40 +189,33 @@
 
   <fieldset>
     <legend>Cluster Job's Captured Output</legend>
-    <table class="property_list show_task_table">
-        <% if @task.run_number > 1 %>
-          <tr>
-            <th colspan="2" class="subtitle">
-              Other runs: <% 1.upto(@task.run_number) do |rn| %>
-                <% if rn == @run_number.to_i %>
-                  <%= rn %>
-                <% else %>
-                  <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
-                <% end %>
-              <% end %>
-            </th>
-          </tr>
+
+    <% if @task.run_number > 1 %>
+      <strong>Outputs are available for several runs:</strong>
+      <% 1.upto(@task.run_number) do |rn| %>
+        <% if rn == @run_number.to_i %>
+          <%= rn %>
+        <% else %>
+          <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
         <% end %>
+      <% end %>
+      <p>
+    <% end %>
 
-        <tr>
-          <td class="property_list_details" colspan="2">
-            <%= build_tabs do |tb| %>
-              <%= tb.tab("Standard Out") do %>
-                <pre class="standard_out"><%= prettystdout -%></pre>
-              <% end %>
-              <%= tb.tab("Standard Error") do %>
-                <pre class="standard_out"><%= prettystderr -%></pre>
-              <% end %>
-              <% if current_user.has_role?(:admin) %>
-                <%= tb.tab("Script") do %>
-                  <pre class="script_preview"><%= prettyscript %></pre>
-                <% end %>
-              <% end %>
-            <% end %>
-          </td>
-        </tr>
+    <%= build_tabs do |tb| %>
+      <%= tb.tab("Standard Out") do %>
+        <pre class="standard_out"><%= prettystdout -%></pre>
+      <% end %>
+      <%= tb.tab("Standard Error") do %>
+        <pre class="standard_out"><%= prettystderr -%></pre>
+      <% end %>
+      <% if current_user.has_role?(:admin) %>
+        <%= tb.tab("Script") do %>
+          <pre class="script_preview"><%= prettyscript %></pre>
+        <% end %>
+      <% end %>
+    <% end %>
 
-     </table>
   </fieldset>    
 
 </div>

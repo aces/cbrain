@@ -1277,14 +1277,14 @@ pre {
 /* % Task Show and Edit */
 /* % ######################################################### */
 
-.show_task_table {
+.show_task_prerequisites {
     clear: both;
     margin-right: auto;
     margin-left: 0px;
-    width: 950px;
+    width: 100%;
 }
 
-.show_task_table td {
+.show_task_prerequisites td {
     text-align: left;
     margin-right: 0em;
 }
