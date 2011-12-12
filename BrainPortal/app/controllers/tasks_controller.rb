@@ -45,12 +45,17 @@ class TasksController < ApplicationController
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
     end
     
-    sort_order = @filter_params["sort_hash"]["order"]
-    sort_dir   = @filter_params["sort_hash"]["dir"]
+    @sort_order = @filter_params["sort_hash"]["order"]
+    @sort_dir   = @filter_params["sort_hash"]["dir"]
     # Set sort order and make it persistent.
-    if sort_order == "cbrain_tasks.batch"
-      sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
-      sort_dir   = 'DESC'
+    if @sort_order == "cbrain_tasks.batch"
+      if @filter_params["filter_hash"]["launch_time"]
+        @sort_order = "cbrain_tasks.updated_at"
+        @sort_dir   = "DESC"
+      else
+        @sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+        @sort_dir   = 'DESC'
+      end
     end
 
     # Handle custom filters
@@ -77,9 +82,9 @@ class TasksController < ApplicationController
     page = 1 if page < 1
     offset = (page - 1) * @tasks_per_page
 
-    if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
+    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["launch_time"] && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
-      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
+      launch_times   = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
       @tasks = {} # hash lt => task_info
       launch_times.each do |lt|
          first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
@@ -97,14 +102,13 @@ class TasksController < ApplicationController
       end
       pagination_list = launch_times
     else
-      task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
+      task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @tasks_per_page )
       @tasks = {}
       task_list.each do |t|
         @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
       end
       pagination_list = task_list.map(&:id)
     end
-    
     @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
       pager.replace(pagination_list)
       pager.total_entries = @total_entries
