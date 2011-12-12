@@ -63,12 +63,19 @@
 <% end %>
 
 <%= error_messages_for :task, :header_message => "Task could not be updated." %>
+
 <div class="display_inline_block" style="min-width: 50%">
+
   <%= show_table(@task) do |t| %>
+
     <% t.cell("Task Name") do %>
       <%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %>
     <% end %>
     <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>") } %>
+
+    <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
+    <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
+
     <% t.cell("Tool Version") do %>
       <% if current_user.has_role?(:admin) && @task.tool_config %>
         <%= link_to @task.tool_config.short_description, tool_config_path(@task.tool_config) %>
@@ -76,11 +83,20 @@
         <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
       <% end %>
     <% end %>
-    <% 
-      t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) } 
-      t.cell("Current Status") { colored_status(@task.status) }
-      t.attribute_cell(:run_number)
-    %>
+    <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
+
+    <% t.cell("Current Status") { colored_status(@task.status) } %>
+    <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
+
+    <% t.attribute_cell(:run_number) %>
+    <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
+
+    <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
+    <% t.empty_cell %>
+
+    <% t.cell("Cluster Job's Work Directory") { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
+    <% t.empty_cell %>
+
     <% t.cell("Size of Work Directory") do %>
       <% if @task.share_wd_tid %>
         ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
@@ -88,14 +104,11 @@
         <%= pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
       <% end %>
     <% end %>
-    <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
-    <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
-    <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
-    <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
-    <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
-    <% t.cell("Cluster Job's Work Directory") { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
+
   <% end %>
+
   <br>
+
   <fieldset>
     <legend>Parameters</legend>
     <%= build_tabs do |tb| %>
@@ -114,12 +127,16 @@
        <% end %>
      <% end %>
   </fieldset>
+
   <br>
+
   <fieldset>
     <legend>Processing Log</legend>
     <pre><%= @task.getlog -%></pre>
   </fieldset>
+
   <br>
+
   <%
      prereqs     = @task.prerequisites || {}
      prereqs     = prereqs.attributes unless prereqs.is_a?(Hash)
@@ -147,16 +164,20 @@
             <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
           <% end %>
 
-
-       <%
-          prettystdout = @task.cluster_stdout || "(None)"
-          prettystderr = @task.cluster_stderr || "(None)"
-          prettyscript = @task.script_text    || "(None)"
-       %>
        </table>
     </fieldset>
+
     <br>
+
   <% end %>
+
+
+  <%
+    prettystdout = @task.cluster_stdout || "(None)"
+    prettystderr = @task.cluster_stderr || "(None)"
+    prettyscript = @task.script_text    || "(None)"
+  %>
+
   <fieldset>
     <legend>Cluster Job's Captured Output</legend>
     <table class="property_list show_task_table">
@@ -173,7 +194,6 @@
             </th>
           </tr>
         <% end %>
-
 
         <tr>
           <td class="property_list_details" colspan="2">
