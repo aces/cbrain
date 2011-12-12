@@ -394,3 +394,4 @@ class Hash
   end
 
 end
+

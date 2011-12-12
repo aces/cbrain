@@ -31,6 +31,7 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :password_reset
   before_filter :adjust_system_time_zone
+  before_filter :prepare_pagination_variables, :only => :index 
   around_filter :handle_cbrain_errors, :activate_user_time_zone
     
   # See ActionController::RequestForgeryProtection for details
@@ -119,6 +120,29 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+  ########################################################################
+  # CBRAIN Helper for pagination
+  ########################################################################
+
+  #This prevents users to give wrong number page for example -1 or 999_999_999_9999_999
+  #and limit the per_page variable in order to be in a certain range
+  def prepare_pagination_variables
+
+    # Validate per_page
+    @per_page     = @filter_params["per_page"].to_i
+    @per_page     = 25  if @per_page < 25 
+    @per_page     = 500 if @per_page > 500
+    @filter_params["per_page"] = @per_page
+
+    # Validate page
+    @current_page = params[:page].to_i
+    @current_page = 1           if @current_page < 1
+    @current_page = 999_999_999 if @current_page > 999_999_999
+    
+  end
+
+  
   
   ########################################################################
   # CBRAIN Exception Handling (Filters)

@@ -124,8 +124,12 @@ module SelectBoxHelper
     end 
     
     grouped_dps     = data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
-    grouped_options = grouped_options_for_select(grouped_dps.collect {|pair| [pair.first, pair.last.sort_by(&:name).map{|dp| [dp.name, dp.id.to_s]}] }, 
-                      selected)
+    grouped_oplists = [ "CBRAIN Official Storage", "User Storage" ].collect do |group_title|
+       dps_in_group = grouped_dps[group_title].sort_by(&:name)
+       [ group_title, dps_in_group.map {|dp| [dp.name, dp.id.to_s]}]
+    end
+    grouped_options = grouped_options_for_select(grouped_oplists, selected)
+
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true

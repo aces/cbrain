@@ -101,23 +101,11 @@ class UserfilesController < ApplicationController
     # Add a secondary sorting column (name)
     sorted_scope = sorted_scope.order(:name) unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
 
-    
-    #------------------------------
-    # Pagination variables
-    #------------------------------
-
-
-    @filter_params["per_page"] ||= 50
-
-    if [:html, :js].include?(request.format.to_sym)
-      @userfiles_per_page = @filter_params["per_page"].to_i
-      @userfiles_per_page = 500 if @userfiles_per_page > 500
-      @userfiles_per_page = 25  if @userfiles_per_page < 25
-    else
-      @userfiles_per_page = 999_999_999
+    # For Pagination
+    unless [:html, :js].include?(request.format.to_sym)
+      @per_page = 999_999_999
     end
-    @current_page = params[:page] || 1
-    offset = (@current_page.to_i - 1) * @userfiles_per_page
+    offset        = (@current_page - 1) * @per_page
 
     #------------------------------
     # Final paginated array of objects
@@ -130,7 +118,7 @@ class UserfilesController < ApplicationController
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       filtered_scope   = filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       @userfiles_total = filtered_scope.size
-      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@userfiles_per_page).all
+      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects
@@ -141,16 +129,12 @@ class UserfilesController < ApplicationController
         find_file_id    = params[:find_file_id].to_i
         find_file_index = simple_userfiles.index{ |u| u.id == find_file_id }
         if find_file_index
-          @current_page = (find_file_index / @userfiles_per_page) + 1
+          current_page = (find_file_index / @per_page) + 1
         end
       end
 
       # Paginate the list of simple objects
-      page_of_userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
-                            pager.replace(simple_userfiles[offset, offset + @userfiles_per_page] || [])
-                            pager.total_entries = simple_userfiles.size
-                            pager
-                          end
+      page_of_userfiles = simple_userfiles[offset, @per_page] || []
       
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
@@ -167,8 +151,8 @@ class UserfilesController < ApplicationController
     end
 
     # Turn the array ordered_real into the final paginated collection
-    @userfiles = WillPaginate::Collection.create(@current_page, @userfiles_per_page) do |pager|
-      pager.replace(ordered_real)
+    @userfiles = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
+      pager.replace(ordered_real || [])
       pager.total_entries = @userfiles_total
       pager
     end

@@ -260,7 +260,7 @@
 
       <tr class="<%= cycle("list-odd", "list-even") %>">
         <th>Host name</th>
-        <td class="left_align"> <%= @info.host_name == @bourreau.ssh_control_host ? @info.host_name : html_colorize(@info.host_name, "red") %>
+        <td class="left_align"> <%= @info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? @info.host_name : html_colorize(@info.host_name, "red") %>
         </td>
       </tr>
 

@@ -20,7 +20,7 @@ class UsersController < ApplicationController
   
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'users.full_name'
-    
+
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
     
     @header_scope = current_user.available_users
@@ -31,33 +31,15 @@ class UsersController < ApplicationController
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
     @users_task_counts=CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
 
-    #------------------------------
-    # Pagination variables
-    #------------------------------
-
-
-    @filter_params["per_page"] ||= 200
-
-    if [:html, :js].include?(request.format.to_sym)
-      @users_per_page = @filter_params["per_page"].to_i
-      @users_per_page = 500 if @users_per_page > 500
-      @users_per_page = 25  if @users_per_page < 25  
-    else
-      @users_per_page = 999_999_999
+    # For Pagination
+    unless [:html, :js].include?(request.format.to_sym)
+      @per_page = 999_999_999
     end
-
-    @filter_params["per_page"] = @users_per_page
     
-    @current_page = (params[:page] || 1).to_i
-    offset        = (@current_page - 1) * @users_per_page
-    @total_users  = @users.count 
+    @total_users  = @users.count
 
     # Turn the array ordered_real into the final paginated collection
-    @users = WillPaginate::Collection.create(@current_page, @users_per_page) do |pager|
-      pager.replace(@users.all[offset, @users_per_page])
-      pager.total_entries = @total_users
-      pager
-    end
+    @users = @users.paginate(:page => @current_page, :per_page => @per_page)
     
     respond_to do |format|
       format.html # index.html.erb
@@ -76,21 +58,6 @@ class UsersController < ApplicationController
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"]) 
     @log                    = @user.getlog()
-
-    # Create disk usage statistics table
-    stats_options = { :users            => [@user],
-                      :providers        => DataProvider.find_all_accessible_by_user(@user).all,
-                      :remote_resources => [],
-                    }
-    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
-    
 
     respond_to do |format|
       format.html # show.html.erb

@@ -88,8 +88,8 @@ class CbrainTask::Parallelizer < ClusterTask
     params   = self.params || {}
     self.addlog("Marking all tasks as ready.")
     self.enabled_subtasks.each do |otask|
+      otask.status_transition!("Configured", "Data Ready")
       otask.addlog("#{self.fullname} marking me as \"Data Ready\".")
-      otask.status_transition!(otask.status, "Data Ready")
       otask.remove_prerequisites_for_post_processing(self)
       otask.save!
       otask.meta[:configure_only] = nil # task becomes normal so it can be manipulated by user
