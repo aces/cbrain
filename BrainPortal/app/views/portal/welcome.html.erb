@@ -109,23 +109,24 @@
     </p>  
   </div>
 
+  <% if @tasks.size > 0 %>
+    <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
+    <div class="generalbox">
 
+      <h1><%= link_to "Latest Updated Tasks", :controller  => :tasks, :action  => :index %></h1>
 
-
-  <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
-
-
-
-
-  <div class="generalbox">
-
-    <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :completed } %>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :running } %>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :failed } %>
-
-  </div>
+      <div class="task_summary">
+        <table class="task_summary_table">
+          <% for task in @tasks %>
+            <tr>
+              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td><%= colored_status(task.status) %></td>
+              <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+  
+    </div>
+  <% end %>
 
