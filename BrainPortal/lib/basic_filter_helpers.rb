@@ -31,7 +31,7 @@ module BasicFilterHelpers
   # Simply adding <att>=<val> to a URL on an index page that uses this method
   # will automatically filter as long as <att> is a valid attribute or named
   # scope.
-  def base_filtered_scope(filtered_scope = resource_class.scoped({}))
+  def base_filtered_scope(filtered_scope = resource_class.scoped({}), do_sort = true)
     @filter_params["filter_hash"].each do |att, val|
       if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
         filtered_scope = filtered_scope.send(att, *val)
@@ -41,7 +41,7 @@ module BasicFilterHelpers
         @filter_params["filter_hash"].delete att
       end
     end
-    if @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
+    if do_sort && @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
       filtered_scope = filtered_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
     end
     filtered_scope
