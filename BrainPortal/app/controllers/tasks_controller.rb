@@ -99,10 +99,12 @@ class TasksController < ApplicationController
       end
       pagination_list = launch_times
     else
-      task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
       
       if @showing_batch
-        task_list = task_list.sort { |t1,t2| t1.cmp_by_batch_rank(t2) }
+        task_list = scope.all.sort { |t1,t2| t1.cmp_by_batch_rank(t2) }
+        task_list = task_list[offset, @per_page]
+      else
+        task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
       end
       
       @tasks = {}
