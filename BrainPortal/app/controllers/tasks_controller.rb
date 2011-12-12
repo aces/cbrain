@@ -48,12 +48,12 @@ class TasksController < ApplicationController
     @sort_order = @filter_params["sort_hash"]["order"]
     @sort_dir   = @filter_params["sort_hash"]["dir"]
     # Set sort order and make it persistent.
-    @is_child = false #i.e. don't show levels for individual entries.
+    @showing_batch = false #i.e. don't show levels for individual entries.
     if @sort_order == "cbrain_tasks.batch"
       if @filter_params["filter_hash"]["launch_time"]
         @sort_order = "cbrain_tasks.updated_at"
         @sort_dir   = "DESC"
-        @is_child   = true
+        @showing_batch   = true
       else
         @sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
         @sort_dir   = 'DESC'
@@ -100,6 +100,10 @@ class TasksController < ApplicationController
       pagination_list = launch_times
     else
       task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
+      
+      if @showing_batch
+        task_list = task_list.sort { |t1,t2| t1.cmp_by_batch_rank(t2) }
+      end
       
       @tasks = {}
       task_list.each do |t|

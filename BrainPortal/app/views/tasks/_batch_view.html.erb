@@ -5,7 +5,7 @@
   <%= render :partial => 'task_table_row',
              :locals  => { :task             => task_info[:first_task],
                            :task_available   => @bourreau_status[task_info[:first_task].bourreau.id] ? true : false,
-                           :is_child         => @is_child,
+                           :is_child         => @showing_batch,
                          }
   %>
 
