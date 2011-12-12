@@ -51,13 +51,8 @@ class PortalController < ApplicationController
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).collect(&:id)
-    tasks        = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids )
-    @tasks_by_status = {
-      :completed => tasks.where( :status => CbrainTask::COMPLETED_STATUS ).order( "updated_at DESC" ).limit(5).all,
-      :running   => tasks.where( :status => CbrainTask::RUNNING_STATUS ).order( "updated_at DESC" ).limit(5).all,
-      :failed    => tasks.where( :status => CbrainTask::FAILED_STATUS ).order( "updated_at DESC" ).limit(5).all
-    }
-
+    @tasks       = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids,
+                   :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
   end
   
   #Display general information about the CBRAIN project.
