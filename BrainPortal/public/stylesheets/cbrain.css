@@ -984,31 +984,8 @@ pre {
 /* % Task summary in welcome page */
 /* % ############################################## */
 
-.task_summary {
-    clear: both;
-    margin-left:0px;
-    margin-right: auto;
-    text-align: left;
-    padding: 1em;
-    margin-top: 0em;
-}
-
-.task_summary_count {
-    font-size: 1.3em;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.task_summary_count a {
-    font-size: 0.5em;
-    font-weight: normal;
-    color: blue;
-}
 
 .task_summary_table {
-    margin-top: 1em;
-    margin-left:0px;
-    margin-right: auto;
     border: 0px;
     background-color: #E4E4E4;
 }
