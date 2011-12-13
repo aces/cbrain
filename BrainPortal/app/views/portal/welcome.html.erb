@@ -84,7 +84,7 @@
 
 
 
-  <div class="generalbox">
+  <div class="generalbox no_wrap">
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
     <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
@@ -116,7 +116,8 @@
 
   <% if @tasks.size > 0 %>
     <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
-    <div class="generalbox">
+    
+    <div class="generalbox no_wrap">
 
       <h1><%= link_to "Latest Updated Tasks", :controller  => :tasks, :action  => :index %></h1>
 
