@@ -81,8 +81,10 @@
     if @filter_params["details"] == 'on'
       t.sort_column("Description", RemoteResource, :description)
     end
-    t.column("Operations", :colspan => 5)  
+    number_op = 5
+    t.column("Operations", :colspan => number_op)  
   %>
+  
   <% t.row_override do |rr| %>
     <% if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached?  %>
       <% staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id), 
@@ -90,12 +92,13 @@
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}",
                            :replace        => true,
                            :error_message  => "<td colspan=\"#{t.num_cells}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do %>
-          <td colspan="<%= t.num_cells %>" class="loading_message">Checking '<%= rr.name %>'...</td>
+          <td colspan="<%= t.num_cells + number_op %>" class="loading_message">Checking '<%= rr.name %>'...</td>
       <% end %>
     <% else %>
       <%= render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr } %>
     <% end %>
   <% end %>
+  
 <% end %>
 
 
