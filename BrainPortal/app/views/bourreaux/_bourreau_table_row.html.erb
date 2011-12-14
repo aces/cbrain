@@ -1,5 +1,6 @@
 <%
    info        = bourreau.info
+   b_alive     = info.name != "???"
    diskrev     = info.revision
    runrev      = info.starttime_revision
    worker_pids = info.worker_pids
@@ -13,9 +14,9 @@
    task_space_unkn  = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count : ""
 %>
 
-<tr class="row_highlight <%= cycle("list-odd", "list-even") %>" id="bourreau_<%= bourreau.id %>">
+<tr class="row_highlight <%= row_number % 2 == 0 ? "list-even" : "list-odd" %>" id="bourreau_<%= bourreau.id %>">
   <td><%= isbourreau ? "Execution" : "Portal" %></td>
-  <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => bourreau.online? ? nil : 'error_link' } ) %></td>
+  <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
         <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}".html_safe %>
@@ -32,10 +33,10 @@
     <td><%= link_to_site_if_accessible(bourreau.site_affiliation) %></td>
     <td><%= bourreau.time_zone || "(Unset)" %></td>
   <% end %>
-  <td><%= red_if( ! bourreau.online,      "Yes", "Offline" ) %></td>
+  <td><%= red_if( ! bourreau.online, "Yes", "Offline" ) %></td>
   <td>
-      <% if info.name == "???" %>
-        <%= html_colorize("Down!") %>
+      <% if ! b_alive %>
+        <%= red_if( bourreau.online? , "-", "Down!" ) %>
       <% else %>
         <%= html_tool_tip("#{pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)}", :offset_x => 50) do %>
           Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
@@ -45,7 +46,13 @@
   </td>
 
   <% if isbourreau %>
-    <td><%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})", "Stopped" ) %></td>
+    <td>
+        <% if bourreau.online? %>
+         <%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})" , "Stopped" ) %>
+        <% else %>
+          -
+        <% end %>
+    </td>
     <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
     <td>
         <%= html_tool_tip(
