@@ -14,7 +14,7 @@
    task_space_unkn  = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count : ""
 %>
 
-<tr class="row_highlight <%= cycle("list-odd", "list-even") %>" id="bourreau_<%= bourreau.id %>">
+<tr class="row_highlight <%= row_number % 2 == 0 ? "list-even" : "list-odd" %>" id="bourreau_<%= bourreau.id %>">
   <td><%= isbourreau ? "Execution" : "Portal" %></td>
   <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
