@@ -18,7 +18,7 @@
           <strong>Users currently online:</strong> <%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
         </p>
         <p><strong>Recent activity:</strong></p>
-        <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :td_class => 'no_wrap', :cols => 1) do |entry,r,c| %>
+        <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
           <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
           <%= entry[:active] ? "Active" : "Logged out" %>
           <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
@@ -104,7 +104,7 @@
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'simple', :td_class => 'no_wrap', :cols => 4) %>
+      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
@@ -126,7 +126,7 @@
             <tr>
               <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
               <td><%= colored_status(task.status) %></td>
-              <td class="no_wrap"><%= to_localtime(task.updated_at,:datetime) %></td>
+              <td><%= to_localtime(task.updated_at,:datetime) %></td>
             </tr>
           <% end %>
         </table>
