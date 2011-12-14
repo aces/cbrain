@@ -49,6 +49,10 @@ Factory.define :data_provider do |data_provider|
   data_provider_factory.call(data_provider)
 end
 
+Factory.define :ssh_data_provider do |ssh_data_provider|
+  data_provider_factory.call(ssh_data_provider)
+end
+
 Factory.define :cbrain_smart_data_provider do |cbrain_smart_data_provider|
   data_provider_factory.call(cbrain_smart_data_provider)
 end

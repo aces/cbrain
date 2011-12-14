@@ -881,49 +881,6 @@ describe UserfilesController do
         response.should render_template("show")
       end
     end
-    describe "edit" do
-      let(:mock_status) {double("status", :status => "ProvNewer")}
-      before(:each) do
-        Userfile.stub!(:find_accessible_by_user).and_return(mock_userfile)
-        mock_userfile.stub!(:local_sync_status).and_return(mock_status)
-      end
-      it "should find the requested userfile" do
-        Userfile.should_receive(:find_accessible_by_user).and_return(mock_userfile)
-        get :edit, :id => 1
-      end
-      it "should retreive the sync status" do
-        mock_status.stub!(:status).and_return("userfile_status")
-        get :edit, :id => 1
-        assigns[:sync_status].should == "userfile_status"
-      end
-      it "should set the sync status to 'Prov Newer' if it isn't set yet" do
-        mock_userfile.stub!(:local_sync_status).and_return(nil)
-        get :edit, :id => 1
-        assigns[:sync_status].should == "ProvNewer"
-      end
-      it "should retreive the user's groups" do
-        get :edit, :id => 1
-        assigns[:user_groups].should =~ admin.available_groups
-      end
-      it "should retreive the userfile's tags" do
-        get :edit, :id => 1
-        assigns[:tags].should =~ admin.available_tags
-      end
-      it "should retreive the userfile's log" do
-        mock_userfile.stub!(:getlog).and_return("userfile_log")
-        get :edit, :id => 1
-        assigns[:log].should == "userfile_log"
-      end
-      it "should set the log to nil if an error occurs" do
-        mock_userfile.stub!(:getlog).and_raise(StandardError)
-        get :edit, :id => 1
-        assigns[:log].should be_nil
-      end
-      it "should render the edit page" do
-        get :edit, :id => 1
-        response.should render_template("edit")
-      end
-    end
     describe "update" do
       before(:each) do
         Userfile.stub!(:find_accessible_by_user).and_return(mock_userfile)
@@ -984,9 +941,9 @@ describe UserfilesController do
           put :update, :id => 1
           flash[:notice].should include_text("successfully updated")
         end
-        it "should redirect to the edit page" do
+        it "should redirect to the show page" do
           put :update, :id => 1
-          response.should redirect_to(:action => :edit)
+          response.should redirect_to(:action => :show)
         end
       end
       context "when the update is unsuccesful" do
@@ -997,9 +954,9 @@ describe UserfilesController do
           put :update, :id => 1
           flash[:error].should include_text("has NOT been updated")
         end
-        it "should render the edit action" do
+        it "should render the show action" do
           put :update, :id => 1
-          response.should render_template(:edit)
+          response.should render_template(:show)
         end
       end
     end
@@ -1075,12 +1032,6 @@ describe UserfilesController do
     describe "show" do
       it "should redirect the login page" do
         get :show, :id => 1
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
-    describe "edit" do
-      it "should redirect the login page" do
-        get :edit, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
     end
