@@ -1,99 +1,90 @@
+<div name="dataprovider_files" class="index_block">
 
-<tr>
-  <td colspan="7">
-    <div class="dp_browse_pages">
-      <%= will_paginate @fileinfolist %>
-      <% if @fileinfolist.total_entries > 50 %>
-        <%= ajax_link "Toggle Pagination", {:controller  => :data_providers, :action  => :browse, :pagination => set_toggle(params[:pagination])}, :datatype  => "script" %>
-        <br>
-      <% end %>
-      <%= ajax_link 'Refresh list of files', browse_data_provider_path(:refresh => true, :pagination  => params[:pagination] ), :datatype  => 'script' %>
-     </div>
-            
-     <% if params[:search] %>
-       <div id="current_filters">
-         Filtering: <strong><%= params[:search] %></strong><%= ajax_link delete_icon, {:action  => :browse, :pagination  => params[:pagination]}, :datatype  => 'script' %>
-       </div>
-     <% end %>
-   </td>
-</tr>
-
-
-<tr>
-  <th><%= select_all_checkbox "checkbox" %></th>
-  <th onMouseOver="jQuery('#name_search_filter').show()" onMouseOut="jQuery('#name_search_filter').hide();">
-    Name
-    <div id="name_search_filter" class="filter_list" style="display:none;">
-      Search: <%= ajax_search_box :search, browse_data_provider_path(:pagination  => params[:pagination]) %>
-    </div>
-  </th>
-  <th>Size</th>
-  <th>
-    Type<br>
-    <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_classes.map(&:pretty_type) ) %><br>
-    <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_classes.map(&:pretty_type) ) %>
-  </th>
-  <th>Last modified</th>
-  <th>Registered?</th>
-  <th>Note</th>
-</tr>
-
-
-<% @fileinfolist.each do |fi| %>
-  <%
-     fi_name     = fi.name
-     fi_size     = fi.size
-     fi_type     = fi.symbolic_type
-     fi_mtime    = fi.mtime
-
-     fi_userfile = fi.userfile
-     fi_ok       = fi.state_ok
-     fi_message  = fi.message
-  %>
-  <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
-
-    <% if fi_ok %>
-      <td><%= check_box_tag("basenames[]",fi_name, false, :class  => "checkbox") %></td>
-    <% else %>
-      <td></td>
+  <div class="active_filter">
+    <% if params[:search] %>
+       Filters: 
+       <span class="current_filters_item">
+         Name like: <%= params[:search] %>
+       </span>
+       <%= ajax_link delete_icon, {:action  => :browse, :per_page  => params[:per_page]}, :datatype  => 'script' %>
     <% end %>
+  </div>
 
-    <td class="left"><%= fi_name %></td>
-
-    <td><%= fi_type == :regular ? fi_size : "-" %></td>
-
-    <% if fi_userfile %>
-      <td><%= fi_userfile.class.to_s %></td>
-    <% else %>
-       <% if ! fi_ok %>
-         <td><%= html_colorize("Unacceptable?") %></td>
-       <% elsif fi_type == :regular %>
-         <td>
-           <%= 
-             select_tag("filetypes[]",
-               options_for_select(SingleFile.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)), 
-               :class  => "file_select")
-           %>
-         </td>
-       <% elsif fi_type == :directory %>
-         <td>
-          <%= 
-            select_tag("filetypes[]",
-                options_for_select(FileCollection.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)), 
-                :class  => "directory_select")
-          %>
-         </td>
-       <% end %>
-    <% end %>
-
-    <td><%= to_localtime(Time.at(fi_mtime),:datetime) %></td>
-
-    <% if fi_userfile %>
-      <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
-    <% else %>
-      <td>No</td>
-    <% end %>
-    <td><%= fi_message %></td>
-  </tr>
-
-<% end %> <!-- each fileinfo -->
+  <div class="pagination">
+    <%= render :partial => 'browse_pagination' %>
+  </div>
+  
+  <table class="resource_list" id="dp_browse_table"> 
+    <tr>
+      <th><%= select_all_checkbox "checkbox" %></th>
+      <th>Name</th>
+      <th>Size</th>
+      <th>Type<br>
+        <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_classes.map(&:pretty_type) ) %><br>
+        <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_classes.map(&:pretty_type) ) %>
+      </th>
+      <th>Last modified</th>
+      <th>Registered?</th>
+      <th>Note</th>
+    </tr>
+    
+    
+    <% @fileinfolist.each do |fi| %>
+      <%
+         fi_name     = fi.name
+         fi_size     = fi.size
+         fi_type     = fi.symbolic_type
+         fi_mtime    = fi.mtime
+    
+         fi_userfile = fi.userfile
+         fi_ok       = fi.state_ok
+         fi_message  = fi.message
+      %>
+      <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
+    
+        <% if fi_ok %>
+          <td><%= check_box_tag("basenames[]",fi_name, false, :class  => "checkbox") %></td>
+        <% else %>
+          <td></td>
+        <% end %>
+    
+        <td class="left"><%= fi_name %></td>
+    
+        <td><%= fi_type == :regular ? fi_size : "-" %></td>
+    
+        <% if fi_userfile %>
+          <td><%= fi_userfile.class.to_s %></td>
+        <% else %>
+           <% if ! fi_ok %>
+             <td><%= html_colorize("Unacceptable?") %></td>
+           <% elsif fi_type == :regular %>
+             <td>
+               <%= 
+                 select_tag("filetypes[]",
+                   options_for_select(SingleFile.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)), 
+                   :class  => "file_select")
+               %>
+             </td>
+           <% elsif fi_type == :directory %>
+             <td>
+              <%= 
+                select_tag("filetypes[]",
+                    options_for_select(FileCollection.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)), 
+                    :class  => "directory_select")
+              %>
+             </td>
+           <% end %>
+        <% end %>
+    
+        <td><%= to_localtime(Time.at(fi_mtime),:datetime) %></td>
+    
+        <% if fi_userfile %>
+          <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
+        <% else %>
+          <td>No</td>
+        <% end %>
+        <td><%= fi_message %></td>
+      </tr>
+    <% end %> <!-- each fileinfo -->
+  </table>
+</div>

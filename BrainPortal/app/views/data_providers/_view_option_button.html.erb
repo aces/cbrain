@@ -1,0 +1,13 @@
+<%= button_with_dropdown_menu("View Options") do %>
+  <div class="view_options">
+
+    <%= ajax_link 'Refresh list of files', browse_data_provider_path(:refresh => true, :per_page=> params[:per_page] ), :datatype  => 'script' %>
+  
+    <%= form_tag({:controller => :data_providers, :action => :browse}, :method => :get) do %>
+      Number of files per page:
+      <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
+    <% end %>
+    
+  </div>
+<% end %>
+

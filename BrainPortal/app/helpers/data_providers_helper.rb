@@ -19,6 +19,15 @@ module DataProvidersHelper
   # Creates a link called "(info)" that presents as an overlay
   # the set of descriptions for the data providers given in argument.
   def overlay_data_providers_descriptions(data_providers = nil)
+    all_descriptions = data_providers_descriptions(data_providers)
+    link =
+       overlay_content_link("(info)", :enclosing_element => 'span') do
+         all_descriptions.html_safe
+       end
+    link.html_safe
+  end
+
+  def data_providers_descriptions(data_providers = nil)
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
     paragraphs = data_providers.collect do |dp|
       one_description = <<-"HTML"
@@ -30,12 +39,9 @@ module DataProvidersHelper
       <h2>Data Providers Descriptions</h2>
       <div class="generalbox">#{paragraphs.join("")}</div>
     HTML
-    link =
-       overlay_content_link("(info)", :enclosing_element => 'span') do
-         all_descriptions.html_safe
-       end
-    link.html_safe
+    all_descriptions.html_safe
   end
+  
   
   def class_param_for_name(name, klass=Userfile) #:nodoc:
     matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }

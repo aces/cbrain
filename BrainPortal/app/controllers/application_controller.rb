@@ -130,15 +130,15 @@ class ApplicationController < ActionController::Base
   def prepare_pagination_variables
 
     # Validate per_page
-    @per_page     = @filter_params["per_page"].to_i
-    @per_page     = 25  if @per_page < 25 
-    @per_page     = 500 if @per_page > 500
-    @filter_params["per_page"] = @per_page
+    @per_page     ||= @filter_params["per_page"].to_i
+    @per_page       = 25  if @per_page < 25 
+    @per_page       = 500 if @per_page > 500
+    # @filter_params["per_page"] = @per_page
 
     # Validate page
-    @current_page = params[:page].to_i
-    @current_page = 1           if @current_page < 1
-    @current_page = 999_999_999 if @current_page > 999_999_999
+    @current_page ||= params[:page].to_i
+    @current_page   = 1           if @current_page < 1
+    @current_page   = 999_999_999 if @current_page > 999_999_999
     
   end
 
