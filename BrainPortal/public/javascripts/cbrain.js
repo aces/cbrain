@@ -561,9 +561,12 @@ jQuery(
    });
 
    jQuery('.external_submit_button').live('click', function(e) {
+     var button = jQuery(this);
+     var commit = button.attr("value");
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
 
+     $(form).append("<input type=\'hidden\' name=\'commit\' value=\'"+commit+"\'>");
      form.submit();
      
      return false;

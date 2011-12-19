@@ -1,0 +1,46 @@
+<%= button_with_dropdown_menu("Register files") do %>
+  <h4>Register files</h4>
+  <div style="white-space: nowrap;">
+
+    <strong>Optional:</strong> when registering, automatically...
+    <br/>
+    <%= group_select :other_group_id, {}, { :include_blank => "... assign them to project ..." } %>
+  
+    <% auto_do_options = [
+                            [ "... move the files to Data Provider ->", "MOVE" ],
+                            [ "... copy the files to Data Provider ->", "COPY" ]
+                         ]
+      auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
+    %>
+    <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
+  
+    <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } %>
+    <%= data_provider_select :other_data_provider_id,
+        { :data_providers => main_dp_set },
+        { :include_blank => "(Select another Data Provider)" }
+    %>
+    
+    <% dp_description = data_providers_descriptions(main_dp_set) %>
+    <%= html_tool_tip("info", :offset_y => 25) do %>
+      <%= dp_description %>
+    <% end %>
+    
+    
+    <%= external_submit_button("Register", "browse_form", :class => "button" ) %> 
+    
+    <P>
+    <strong>Important notes about automatically copying and moving files:</strong>
+    <P>
+  
+    <UL>
+      <LI>The operation will start in background as soon as you click 'Register files'.</LI>
+      <LI>While the operation is in progress, do not modify the files on the current Data Provider!</LI>
+      <LI>While the COPY operation is in progress, there will seem to be two registered versions of the file in the file manager (one on each Data Provider).</LI>
+      <LI>After the COPY operation is done, the files will still be visible here and will no longer seem to be registered.</LI>
+      <LI>Attempts to COPY or MOVE files to Data Providers where identically named files already exist will be ignored.</LI>
+    </UL>
+    
+  </div>
+  
+<% end %>
+

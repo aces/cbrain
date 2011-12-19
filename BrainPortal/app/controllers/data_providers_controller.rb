@@ -287,13 +287,10 @@ class DataProvidersController < ApplicationController
     end
 
     # For Pagination
-    params[:pagination] ||= "on"
-    if params[:pagination] == "on"
-      prepare_pagination_variables
-    else
-      @per_page = 999_999_999
-    end
+    @per_page = params[:per_page].to_i      
+    prepare_pagination_variables
 
+    @file_count   = @fileinfolist.count
     unless request.format.to_sym == :xml
       @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
     end
