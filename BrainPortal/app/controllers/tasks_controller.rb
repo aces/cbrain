@@ -142,7 +142,7 @@ class TasksController < ApplicationController
     
     bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.where( :bourreau_id => @bourreaux.map(&:id) )
+      scope = scope.where( :bourreau_id => bourreaux.map(&:id) )
     end
 
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank" ).readonly(false)
