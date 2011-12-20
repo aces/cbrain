@@ -1193,6 +1193,7 @@ pre {
 
 .current_filters_item {
   color: #0471B4;
+  margin-right: 0.5em;
 }
 
 /* current_filters is an ID because the element is modified with AJAX */

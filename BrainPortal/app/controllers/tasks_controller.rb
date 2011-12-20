@@ -19,8 +19,8 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:   
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
-    bourreau_ids = @bourreaux.map &:id
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreau_ids = bourreaux.map &:id
     
     # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
     if current_project
@@ -121,7 +121,7 @@ class TasksController < ApplicationController
     end
 
     @bourreau_status = {}
-    status = @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}
+    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }
     respond_to do |format|
       format.html
       format.xml  { render :xml => @tasks }
@@ -140,7 +140,7 @@ class TasksController < ApplicationController
     
     scope = scope.where( :launch_time => params[:launch_time] )
     
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user)
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.where( :bourreau_id => @bourreaux.map(&:id) )
     end
@@ -149,7 +149,7 @@ class TasksController < ApplicationController
         
     @tasks = scope                     
     @bourreau_status = {}
-    @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
+    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
     
     render :layout => false
   end
@@ -669,12 +669,10 @@ class TasksController < ApplicationController
   # Some useful variables for the views for 'new' and 'edit'
   def initialize_common_form_values #:nodoc:
 
-    @data_providers   = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
-
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
     bourreau_ids = tool.bourreaux.map &:id
-    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids )
+    bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
     unless @task.class.properties[:no_presets]
@@ -695,7 +693,7 @@ class TasksController < ApplicationController
     end
 
     # Tool Configurations
-    valid_bourreau_ids = @bourreaux.index_by &:id
+    valid_bourreau_ids = bourreaux.index_by &:id
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
     @tool_configs      = tool.tool_configs # all of them, too much actually
     @tool_configs.reject! do |tc|

@@ -128,7 +128,15 @@ module SelectBoxHelper
     [ "CBRAIN Official Storage", "User Storage" ].collect do |group_title|
        next unless dps_in_group = grouped_dps[group_title]
        dps_in_group = dps_in_group.sort_by(&:name)
-       grouped_oplists << [ group_title, dps_in_group.map {|dp| [dp.name, dp.id.to_s]} ]
+       options_dps  = dps_in_group.map do |dp|
+         opt_pair = [ dp.name, dp.id.to_s ]
+         unless dp.online?
+           opt_pair[0] += " (offline)"
+           opt_pair << { :disabled => "true" }
+         end
+         opt_pair #  [ "DpName", "3" ]    or   [ "DpName", "3", { :disabled => "true" } ]
+       end
+       grouped_oplists << [ group_title, options_dps ]  # [ "GroupName", [  [ dp1, 1 ], [dp2, 2] ] ]
     end
     grouped_options = grouped_options_for_select(grouped_oplists.compact, selected)
 
@@ -165,19 +173,25 @@ module SelectBoxHelper
     else
       selected = selector.to_s
     end 
-    if bourreaux && bourreaux.size > 0
-      options = options_for_select(bourreaux.sort_by(&:name).map {|b| [b.name, b.id.to_s]}, 
-                        selected)
-      blank_label = select_tag_options.delete(:include_blank)
-      if blank_label
-        blank_label = "" if blank_label == true
-        options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
-      end
-      
-      select_tag parameter_name, options, select_tag_options
-    else
-      "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe
+
+    return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.blank?
+
+    bourreaux_pairs = bourreaux.sort_by(&:name).map do |b|
+       opt_pair = [ b.name, b.id.to_s ]
+       unless b.online?
+         opt_pair[0] += " (offline)"
+         opt_pair << { :disabled => "true" }
+       end
+       opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
     end
+    options = options_for_select(bourreaux_pairs, selected)
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
+    end
+    
+    select_tag parameter_name, options, select_tag_options
   end
 
   #Create a standard tool config select box for selecting a tool config in a form.

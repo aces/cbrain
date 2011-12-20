@@ -157,21 +157,6 @@ class UserfilesController < ApplicationController
       pager
     end
 
-    #------------------------------
-    # Other view variables
-    #------------------------------
-
-    @user_tags      = current_user.available_tags
-    @user_groups    = current_user.available_groups.order("type")
-    @default_group  = current_user.own_group.id
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
-    @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
-    @bourreaux      = Bourreau.find_all_accessible_by_user(current_user).where( :online => true )
-    @preferred_bourreau_id = current_user.meta["pref_bourreau_id"]
-
-    # For the 'new' panel
-    @userfile = Userfile.new( :group_id => current_user.own_group.id )
-
     respond_to do |format|
       format.html
       format.js
@@ -294,7 +279,7 @@ class UserfilesController < ApplicationController
   
   def new #:nodoc:
      @user_tags      = current_user.available_tags
-     @data_providers = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
+     @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
      @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
      render :partial => "new"
   end

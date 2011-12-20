@@ -1,4 +1,13 @@
-<%= button_with_dropdown_menu("Delete files") do %>
-  <%= external_submit_button("Delete", "browse_form", :class  => "button") %>
+<%= button_with_dropdown_menu("Delete Files") do %>
+  <p class="medium_paragraphs">
+  This panel allows you to <strong>delete permanently</strong> files that
+  are present on the remote Data Provider. Note that this operation will
+  work whether or not the files are registered. If they are registered,
+  the will be unregistered first.
+  </p>
+
+  <p class="centered">
+    <%= external_submit_button("Delete the files!", "browse_form", :class  => "button") %>
+  </p>
 <% end %>
 

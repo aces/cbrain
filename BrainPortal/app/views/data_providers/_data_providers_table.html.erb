@@ -1,7 +1,7 @@
 
 <%
-   user_storage     = @data_providers.select { |dp|   ( dp.class <= SshDataProvider ) }
-   official_storage = @data_providers.select { |dp| ! ( dp.class <= SshDataProvider ) }
+   user_storage     = @data_providers.select { |dp|   dp.is_browsable? }
+   official_storage = @data_providers.select { |dp| ! dp.is_browsable? }
 %>
 
 <div class="menu_bar">
