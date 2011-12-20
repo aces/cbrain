@@ -29,86 +29,75 @@ types_list      = type_stats[:types_list]
 user_types_info = type_stats[:user_types_info]
 %>
 
-<h2>Account details for <%= @user.full_name %></h2>
-
-  <div class="display_cell">
-
-   <table class="property_list">
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Name:</th>
-       <td><%=h @user.full_name %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Login:</th>
-       <td><%=h @user.login %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Role:</th>
-       <td><%=h @user.role.humanize %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Email:</th>
-       <td><%= auto_link_email_addresses h(@user.email) %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Site:</th>
-       <td><%= link_to_site_if_accessible(@user.site) %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>City:</th>
-       <td><%= @user.city %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-        <th>Country:</th>
-        <td><%= @user.country %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Time Zone:</th>
-       <td><%= @user.time_zone || "(Unset)" %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Last Connected:</th>
-       <td><%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at)} ago)" : "(Never)" %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Default Execution Server:</th>
-       <td><%= link_to_bourreau_if_accessible(@default_bourreau) %></td>
-     </tr>
-     <tr class="<%= cycle("list-odd", "list-even") %>">
-       <th>Default Data Provider:</th>
-       <td><%= link_to_data_provider_if_accessible(@default_data_provider) %></td>
-     </tr>
-     <% if current_user.has_role? :admin %>
-       <tr class="<%= cycle("list-odd", "list-even") %>">
-         <th>Access Report:</th>
-         <td><%= link_to 'Access?', :controller => :tool_configs, :user_id => @user.id %></td>
-       </tr>
-     <% end %>
-   </table>
-
-  </div>
-
-<div class="display_cell" style="padding: 1em;">
-  <%= build_accordion do |acc| %>
-    <%= acc.section "Edit Account Info" do %>
-      <%= render :partial => "account_info" %>   
-    <% end %>
-    <%= acc.section "Change Password" do %>
-      <%= render :partial => "change_password" %>   
-    <% end %>
-    <%= acc.section "Edit Preferences" do %>
-      <%= render :partial => "preferences" %>   
-    <% end %>
+<div class="menu_bar">
+  <% if check_role(:admin) %>
+    <%= link_to 'View Access Report', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
   <% end %>
 </div>
-
-  <P>
+<br>
+<%= error_messages_for :user, :header_message => "User could not be updated." %>
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@user, :edit_path => user_path(@user), :edit_condition => edit_permission?(@user)) do |t| %>
+    <% 
+      t.edit_cell(:full_name) { text_field_tag "user[full_name]", @user.full_name }
+      t.attribute_cell(:login)
+    %>
+    <% t.edit_cell(:password, :content => "********") do %>
+         Password<br> <%= password_field_tag "user[password]" %><br>
+         Confirm Password<br> <%= password_field_tag "user[password_confirmation]" %><br>
+         <%= submit_tag 'Change Password' %>
+    <% end %>
+    <%
+      t.edit_cell(:role, :content => @user.role.humanize, :disabled => !((check_role(:admin) || check_role(:site_manager)) && not_admin_user(@user))) do 
+        select_tag "user[role]", options_for_select(roles_for_user(current_user), :selected => @user.role), :class => "submit_onchange"
+      end
+      t.edit_cell(:email, :content => auto_link_email_addresses(h(@user.email))) { text_field_tag "user[email]", @user.email }
+      t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin)) do
+        select_tag "user[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @user.site_id), :include_blank => true, :class => "submit_onchange"
+      end
+      t.edit_cell(:city) { text_field_tag "user[city]", @user.city }
+      t.edit_cell(:country) { text_field_tag "user[country]", @user.country }
+      t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do
+        select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange"
+      end
+      t.cell("Last Connected") do
+        @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)"
+      end
+      t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
+        bourreau_select(     "meta[pref_bourreau_id]",
+                                 { :bourreaux => Bourreau.find_all_accessible_by_user(current_user),
+                                   :selector => @user.meta["pref_bourreau_id"] },
+                                 { :include_blank => true, :class => "submit_onchange" } )
+      end
+      t.edit_cell("meta[pref_data_provider_id]", :header => "Default data provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
+        data_provider_select("meta[pref_data_provider_id]",
+                                 { :selector =>  @user.meta["pref_data_provider_id"] },
+                                 { :include_blank => true, :class => "submit_onchange" } )
+      end
+      if current_user.has_role?(:admin) && not_admin_user(@user) 
+        t.edit_cell(:account_locked, :header => "Account Locked?", :content => (@user.account_locked.present? ? "True" : "False")) do
+          select_tag "user[account_locked]", options_for_select([["False", nil], ["True", 1]], :selected => (1 if @user.account_locked?)), :class => "submit_onchange"
+        end
+      end
+    %>
+  <% end %>
+</div>
 
   <div>
 
    <table class = "resource_list">
       <tr>
-        <th colspan="3">Projects</th>
+        <th colspan="3">
+          Projects 
+          <% if check_role(:admin) || check_role(:site_manager) %>
+            <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
+              <%= form_for @user do |f| -%>
+                <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
+                <%= submit_tag 'Update Projects' %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </th>
       </tr>
 
       <tr>

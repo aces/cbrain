@@ -83,7 +83,6 @@
 
   <% if bourreau.has_owner_access?(current_user) %>
 
-    <td><%= link_to 'Edit', edit_bourreau_path(bourreau), :class => 'action_link' %></td>
     <td>
       <% if RemoteResource.current_resource.id != bourreau.id %>
         <%= 

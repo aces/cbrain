@@ -16,8 +16,8 @@ module RichUiHelper
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
 
     link = h(cropped_header) + " " + 
-      overlay_content_link("(more)", :enclosing_element => 'span' ) do
-        ("<h2>#{h(header)}</h2>\n<pre>" + h(body) + "</pre>").html_safe
+      html_tool_tip(link_to("(more)", "#")) do
+        ("<h4>#{h(header)}</h4>\n<pre>" + h(body) + "</pre>").html_safe
       end
     link.html_safe
   end

@@ -16,6 +16,10 @@ module ShowTableHelper
       build_cell(ERB::Util.html_escape(header), @template.capture(&block))
     end
     
+    def row(&block)
+      build_cell("", @template.capture(&block), :no_header => true, :colspan => @width * 2)
+    end
+    
     def attribute_cell(field, options = {})
       header = options[:header] || field.to_s.humanize
       build_cell(ERB::Util.html_escape(header), ERB::Util.html_escape(@object.send(field)))
@@ -39,12 +43,20 @@ module ShowTableHelper
     
     private
     
-    def build_cell(head = "", content = "")
+    def build_cell(head = "", content = "", options = {})
+      no_header = options.delete(:no_header)
+      header_options = options.delete(:th_options) || {}
+      cell_options = options.delete(:td_options) || {}
+      header_atts = header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+      cell_atts = header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+      shared_atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
       html = []
-      header = head.to_s
-      header += ":" unless header.blank?
-      html << "<th>#{ERB::Util.html_escape(header)}</th>"
-      html << "<td>#{ERB::Util.html_escape(content.to_s)}</td>"
+      unless no_header
+        header = head.to_s
+        header += ":" unless header.blank?
+        html << "<th #{header_atts} #{shared_atts}>#{ERB::Util.html_escape(header)}</th>"
+      end
+      html << "<td #{cell_atts} #{shared_atts}>#{ERB::Util.html_escape(content.to_s)}</td>"
       @cells << html.join("\n").html_safe
     end
   end
@@ -88,10 +100,7 @@ module ShowTableHelper
         html << "</tr>"
       end
     end
-    remaining_cells = tb.width - (tb.cells.size % tb.width)
-    if remaining_cells > 0
-      html << ("<th /><td />" * remaining_cells) + "</tr>"
-    end
+
     html << "</table>"
     html << "</fieldset>"
     

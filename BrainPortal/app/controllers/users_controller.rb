@@ -183,10 +183,7 @@ class UsersController < ApplicationController
         format.html { redirect_to @user }
         format.xml  { head :ok }
       else
-        flash.now[:error] ||= ""
-        @user.errors.each do |field, message|
-          flash.now[:error] += "#{field} #{message}.\n".humanize
-        end
+        @user.reload
         format.html { render :action => "show" }
         format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
       end

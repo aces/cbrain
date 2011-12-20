@@ -30,7 +30,7 @@
     </tr>
     <% bourreaux.each do |bourreau| %>
     <tr class="<%= cycle("list-odd", "list-even") %>">
-      <td><%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %></td>
+      <td><%= link_to_bourreau_if_accessible(bourreau, nil, :path => bourreau_path(bourreau)) %></td>
       <td><%= link_to_group_if_editable(bourreau.group) %></td>
       <td><%= red_if(! bourreau.can_be_accessed_by?(user), "Yes", "NO!") %></td>
     </tr>

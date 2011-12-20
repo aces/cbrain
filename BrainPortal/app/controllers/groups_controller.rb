@@ -113,7 +113,7 @@ class GroupsController < ApplicationController
 
     params[:group].delete :creator_id #creator_id is immutable
 
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login).reject{|u| u.login == 'admin'}
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
       if @group.update_attributes(params[:group])
         flash[:notice] = 'Project was successfully updated.'
