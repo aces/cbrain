@@ -1,21 +1,33 @@
 
 <% title 'Browse Data Provider' %>
 
-<div class="menu_bar">
-  <%= render :partial => "register_button" %>
-  <%= render :partial => "unregister_button" %>
-  <%= nil and render :partial => "delete_button" %>
-  <%= render :partial => "view_option_button" %>
-</div>
-
-<h2>Files Available On Data Provider '<%= @provider.name %>'</h2>
-
 <%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
+
+  <div class="menu_bar">
+    <%= render :partial => "register_button" %>
+    <%= render :partial => "unregister_button" %>
+    <%= render :partial => "delete_button" %>
+    <%= render :partial => "view_option_button" %>
+  </div>
+
+  <h2>Files Available On Remote Data Provider '<%= @provider.name %>'</h2>
 
   <div class="resource_list" id="dp_browse_table">
     <%= render :partial => 'dp_browse_table' %>
   </div>
 
 <% end %>
+
+<p class="medium_paragraphs">
+<strong>Important note about the behavior of this Data Provider:</strong>
+<% if @provider.meta[:must_erase].present? %>
+  Files registered on this Data Provider will be <strong>deleted completely</strong>
+  if the <strong>Delete</strong> button of the file manager is used.
+<% else %>
+  Files registered on the Data Provider will only be <strong>unregistered</strong>
+  if the <strong>Delete</strong> button of the file manager is used. Please use
+  the <strong>Delete Files</strong> panel above to remove them completely.
+<% end %>
+</p>
 
 

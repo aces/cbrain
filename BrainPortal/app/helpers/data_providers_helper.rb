@@ -31,17 +31,17 @@ module DataProvidersHelper
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
     paragraphs = data_providers.collect do |dp|
       one_description = <<-"HTML"
-        <h3>#{h(dp.name)}</h3>
-        <pre>#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
+        <strong>#{h(dp.name)}</strong>
+        <br/>
+        <pre class="medium_paragraphs">#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
       HTML
     end
     all_descriptions = <<-"HTML"
-      <h2>Data Providers Descriptions</h2>
-      <div class="generalbox">#{paragraphs.join("")}</div>
+      <h4>Data Providers Descriptions</h4>
+      #{paragraphs.join("")}
     HTML
     all_descriptions.html_safe
   end
-  
   
   def class_param_for_name(name, klass=Userfile) #:nodoc:
     matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }

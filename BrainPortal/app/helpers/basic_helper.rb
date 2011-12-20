@@ -55,7 +55,7 @@ module BasicHelper
   # Produces a pretty 'delete' symbol (used mostly for removing
   # active filters)
   def delete_icon
-    "&nbsp;<span class=\"delete_icon\">&otimes;</span>&nbsp;".html_safe
+    "<span class=\"delete_icon\">&otimes;</span>".html_safe
   end
   
 end

@@ -322,19 +322,20 @@ class DataProvidersController < ApplicationController
     basenames = [basenames] unless basenames.is_a? Array
     filetypes = [filetypes] unless filetypes.is_a? Array
     do_unreg  = params[:commit] =~ /unregister/i
+    do_erase  = params[:commit] =~ /delete/i
 
     # Automatic MOVE or COPY operation?
     move_or_copy = params[:auto_do]                || ""
     other_provid = params[:other_data_provider_id] || nil
     new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
     past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
-    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !do_unreg
+    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !(do_unreg || do_erase)
       flash[:error] = "Error: you selected to automatically #{move_or_copy} your files but did not specify a destination Data Provider."
       redirect_to :action => :browse
       return
     end
     
-    @fileinfolist = get_recent_provider_list_all(params[:refresh])
+    @fileinfolist = get_recent_provider_list_all(params[:refresh].present?)
 
     base2info = {}
     @fileinfolist.each { |fi| base2info[fi.name] = fi }
@@ -350,6 +351,7 @@ class DataProvidersController < ApplicationController
     newly_registered_userfiles      = []
     previously_registered_userfiles = []
     num_unregistered = 0
+    num_erased       = 0
     num_skipped      = 0
 
     flash[:error]  = ""
@@ -361,21 +363,41 @@ class DataProvidersController < ApplicationController
 
     basenames.each do |basename|
 
-      # Unregister old files
+      # Unregister files
 
-      if do_unreg
+      if do_unreg || do_erase
         userfile = Userfile.where(:name => basename, :data_provider_id => @provider.id).first
-        unless userfile
-          num_skipped += 1
-          next
-        end
-        unless userfile.has_owner_access?(current_user)
+        if userfile.blank?
+          num_skipped += 1 unless do_erase
+        elsif ! userfile.has_owner_access?(current_user)
           flash[:error] += "Error: file #{basename} does not belong to you. File not unregistered.\n"
           num_skipped += 1
           next
+        else
+          num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
+          userfile.destroy_log rescue true
         end
-        num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
-        userfile.destroy_log rescue true
+        next unless do_erase
+      end
+
+      # Erase unregistered files
+
+      if do_erase
+        fileinfo      = base2info[basename] rescue nil
+        next unless fileinfo
+        temp_class    = fileinfo.symbolic_type == :directory ? FileCollection : SingleFile
+        temp_userfile = temp_class.new(
+           :name          => basename,
+           :data_provider => @provider,
+           :user_id       => current_user.id,
+           :group_id      => current_user.own_group.id
+        ).freeze # do not save this file! it's only used temporarily to delete the content on the DP
+        erase_ok = @provider.provider_erase(temp_userfile) rescue nil
+        if erase_ok
+          num_erased += 1
+        else
+          num_skipped += 1
+        end
         next
       end
 
@@ -427,6 +449,9 @@ class DataProvidersController < ApplicationController
 
     if newly_registered_userfiles.size > 0
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
+    elsif num_erased > 0
+      clear_browse_provider_local_cache_file(current_user, @provider)
+      flash[:notice] += "Erased #{num_erased} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
     else
