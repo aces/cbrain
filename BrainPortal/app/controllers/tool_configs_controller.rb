@@ -182,7 +182,7 @@ class ToolConfigsController < ApplicationController
                     if @tool_config.tool_id
                       redirect_to edit_tool_path(@tool_config.tool)
                     else
-                      redirect_to edit_bourreau_path(@tool_config.bourreau)
+                      redirect_to bourreau_path(@tool_config.bourreau)
                     end
                     }
         format.xml  { head :ok }
@@ -205,7 +205,7 @@ class ToolConfigsController < ApplicationController
                     if @tool_config.tool_id
                       redirect_to edit_tool_path(@tool_config.tool)
                     else
-                      redirect_to edit_bourreau_path(@tool_config.bourreau)
+                      redirect_to bourreau_path(@tool_config.bourreau)
                     end
                   }
       format.xml  { head :ok }

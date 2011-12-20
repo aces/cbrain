@@ -9,7 +9,7 @@
 <fieldset>
 
   <legend>
-      Execution Server: <%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %>
+      Execution Server: <%= link_to_bourreau_if_accessible(bourreau, nil, :path => bourreau_path(bourreau)) %>
       in project '<%= link_to_group_if_editable(bourreau.group) %>'
   </legend>
 

@@ -1,51 +1,81 @@
 
 <% title "Site" %>
 
-<h2>Information about site '<%= @site.name %>'</h2>
-
 <div class="menu_bar">
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>    
 </div>
 
 <br>
 
-<table class="property_list show_file_table">
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Description:</th>
-     <td><%= overlay_description(@site.description) %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Managers:</th>
-     <td><%= @site.managers.collect(&:login).join(", ") %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Number of users:</th>
-     <td><%= @site.users.count %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Number of groups:</th>
-     <td><%= @site.groups.count %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Number of files:</th>
-     <td><%= @site.userfiles_find_all.count %></td>
-   </tr>  
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Number of data providers:</th>
-     <td><%= @site.data_providers_find_all.count %></td>
-   </tr>
-   <tr class="<%= cycle('list-odd', 'list-even') %>">
-     <th class="right_align">Number of remote resources:</th>
-     <td><%= @site.remote_resources_find_all.count %></td>
-   </tr>
-</table>
+<%= error_messages_for :site, :header_message => "site could not be updated." %>
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@site, :edit_path => site_path(@site), :edit_condition => check_role(:admin)) do |t| %>
+    <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
+    <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
+      <%= text_area_tag "site[description]", @site.description %><br/>
+      <small>The first line should be a short summary, and the<br> rest are for any special notes for the users.</small><br>
+      <%= submit_tag "Update" %>
+    <% end %>
+    <% 
+      t.cell("Managers") { @site.managers.collect(&:login).join(", ") }
+      t.cell("Number of Users") { @site.users.count }
+      t.cell("Number of Projects") { @site.groups.count }
+      t.cell("Number of Files") { @site.userfiles_find_all.count }
+      t.cell("Number of Data Providers") { @site.data_providers_find_all.count }
+      t.cell("Number of Remote Resources") { @site.remote_resources_find_all.count }
+    %>
+  <% end %>
+</div>
 
 <br>
 
 <table class="resource_list">
   <tr>
-    <th>Users</th>
-    <th>Projects</th>
+    <th>
+      Users
+      <% if check_role(:admin) %>
+        <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+          <%= form_for(@site) do |f| %>
+
+            
+            <div class="display_cell">
+              <label>Users</label>
+              <table class="button_table">
+                <tr>
+                  <td>Login</td>
+                  <td>Regular User</td>
+                  <td>Site Manager</td>
+                </tr>
+                <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
+                  <tr>
+                    <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
+                    <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
+                    <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+                  </tr>
+                <% end %>
+              </table>
+            </div>
+
+            <div class="display_row">
+              <P>
+              <%= f.submit "Update Users" %>
+            </div>
+
+          <% end %>
+        <% end %>
+      <% end %>
+    </th>
+    <th>
+      Projects
+      <% if check_role(:admin) %>
+        <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+          <%= form_for(@site) do |f| %>
+            <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
+            <%= submit_tag 'Update Projects' %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </th>
     <th>Data Providers</th>
     <th>Remote Resources</th>
   </tr>
@@ -57,9 +87,4 @@
   </tr>
 </table>
 
-<p>
-
-<% if check_role(:admin) %>
-  <%= link_to 'Edit', edit_site_path(@site), :class => 'action_link' %><br>
-<% end %>
 

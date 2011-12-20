@@ -65,23 +65,6 @@ class BourreauxController < ApplicationController
     sensible_defaults(@bourreau)
     render :partial => "new"
   end
-  
-  def edit #:nodoc:
-    @bourreau = RemoteResource.find(params[:id])
-    
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
-    
-    @users  = current_user.available_users
-    @groups = current_user.available_groups
-
-    sensible_defaults(@bourreau)
-
-    respond_to do |format|
-      format.html { render :action => :edit }
-      format.xml  { render :xml => @bourreau }
-    end
-
-  end
 
   def create #:nodoc:
     fields    = params[:bourreau]

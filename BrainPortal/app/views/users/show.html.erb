@@ -92,7 +92,7 @@ user_types_info = type_stats[:user_types_info]
           <% if check_role(:admin) || check_role(:site_manager) %>
             <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
               <%= form_for @user do |f| -%>
-                <%= render :partial => 'group_tables' %>
+                <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
                 <%= submit_tag 'Update Projects' %>
               <% end %>
             <% end %>

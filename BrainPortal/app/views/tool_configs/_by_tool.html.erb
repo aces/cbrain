@@ -44,7 +44,7 @@
       <% if tcs.size == 0 %>
         <tr class="<%= cycle("list-odd", "list-even") %>">
           <td class="left_align no_wrap">
-            <%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %>
+            <%= link_to_bourreau_if_accessible(bourreau, nil, :path => bourreau_path(bourreau)) %>
             in project '<%= link_to_group_if_editable(bourreau.group) %>'
           </td>
           <td class="left_align no_wrap"><%= html_colorize("No versions configured") %></td>
@@ -56,7 +56,7 @@
         <tr class="<%= cycle("list-odd", "list-even") %>">
         <% if idx == 0 %>
           <td rowspan="<%= tcs.size %>" class="left_align no_wrap">
-            <%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %>
+            <%= link_to_bourreau_if_accessible(bourreau, nil, :path => bourreau_path(bourreau)) %>
             in project '<%= link_to_group_if_editable(bourreau.group) %>'
           </td>
         <% end %>

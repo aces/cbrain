@@ -44,6 +44,7 @@ function load_behaviour(event){
      var dialog_link = enclosing_div.children('.overlay_content_link');
      var dialog = enclosing_div.children(".overlay_content")
      var content_width = parseInt(dialog_link.attr('data-width'));
+     var content_height = parseInt(dialog_link.attr('data-height'));
      
      dialog.remove().appendTo("body");
 
@@ -51,7 +52,8 @@ function load_behaviour(event){
          modal: true,
          position: "center",
          resizable: false,
-         width: content_width
+         width: content_width,
+         height: content_height
      });
 
      dialog_link.click(function(){

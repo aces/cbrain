@@ -54,7 +54,7 @@
       </div>
 
       <div class="display_cell">
-        <%= render :partial => 'group_tables' %>
+        <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %>
       </div>
 
     <% end %>
