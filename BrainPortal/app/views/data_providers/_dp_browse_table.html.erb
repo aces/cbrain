@@ -1,12 +1,18 @@
 <div name="dataprovider_files" class="index_block">
 
+  <h2>Files Available On Remote Data Provider '<%= @provider.name %>'
+  <% if @as_user != current_user %>
+    (Browsing as user '<%= @as_user.login %>')
+  <% end %>
+  </h2>
+
   <div class="active_filter">
     <% if params[:search] %>
        Filters: 
        <span class="current_filters_item">
          Name like: <%= params[:search] %>
        </span>
-       <%= ajax_link delete_icon, {:action  => :browse, :per_page  => params[:per_page]}, :datatype  => 'script' %>
+       <%= ajax_link delete_icon, {:action  => :browse}, :datatype  => 'script' %>
     <% end %>
   </div>
 
@@ -27,7 +33,6 @@
       <th>Registered?</th>
       <th>Note</th>
     </tr>
-    
     
     <% @fileinfolist.each do |fi| %>
       <%

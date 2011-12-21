@@ -17,7 +17,8 @@ class DataProvidersController < ApplicationController
   api_available :except => [:disk_usage, :cleanup]
 
   before_filter :login_required
-  before_filter :manager_role_required, :only  => [:new, :create]
+  before_filter :manager_role_required, :only => [:new, :create]
+  before_filter :update_filters,        :only => [:index, :browse, :register]
    
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
@@ -212,18 +213,25 @@ class DataProvidersController < ApplicationController
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.is_browsable?                                                                            
-      flash[:error] = "You cannot browse this provider."                                                                             
-      respond_to do |format|                                                                                                         
-        format.html { redirect_to :action => :index }                                                                                
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
-      end                                                                                                                                                                                        
-      return                                                                                                                                                                                     
+    @filter_params["browse_hash"] ||= {}
+    @per_page = @filter_params["browse_hash"]["per_page"]
+    validate_pagination_values # validates @per_page and @current_page
+    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
+    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+
+    unless @provider.is_browsable?
+      flash[:error] = "You cannot browse this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }
+      end
+      return
     end
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = get_recent_provider_list_all(params[:refresh])
+      @fileinfolist = get_recent_provider_list_all(params[:refresh], @as_user)
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes. 
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
@@ -286,10 +294,6 @@ class DataProvidersController < ApplicationController
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
-    # For Pagination
-    @per_page = params[:per_page].to_i      
-    prepare_pagination_variables
-
     @file_count   = @fileinfolist.count
     unless request.format.to_sym == :xml
       @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
@@ -306,15 +310,20 @@ class DataProvidersController < ApplicationController
   #Register a list of files into the system.
   #The files' meta data will be saved as Userfile resources.
   def register
-    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.is_browsable?                                                                            
-      flash[:error] = "You cannot register files from this provider."                                                                             
-      respond_to do |format|                                                                                                         
-        format.html { redirect_to :action => :index }                                                                                
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
-      end                                                                                                                                                                                        
-      return                                                                                                                                                                                     
+    @filter_params["browse_hash"] ||= {}
+    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
+    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+
+    unless @provider.is_browsable?
+      flash[:error] = "You cannot register files from this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }
+      end
+      return
     end
 
     basenames = params[:basenames] || []
@@ -335,7 +344,7 @@ class DataProvidersController < ApplicationController
       return
     end
     
-    @fileinfolist = get_recent_provider_list_all(params[:refresh].present?)
+    @fileinfolist = get_recent_provider_list_all(params[:refresh].presence, @as_user)
 
     base2info = {}
     @fileinfolist.each { |fi| base2info[fi.name] = fi }
@@ -389,7 +398,7 @@ class DataProvidersController < ApplicationController
         temp_userfile = temp_class.new(
            :name          => basename,
            :data_provider => @provider,
-           :user_id       => current_user.id,
+           :user_id       => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
            :group_id      => current_user.own_group.id
         ).freeze # do not save this file! it's only used temporarily to delete the content on the DP
         erase_ok = @provider.provider_erase(temp_userfile) rescue nil
@@ -426,7 +435,7 @@ class DataProvidersController < ApplicationController
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
                                :size             => size,
-                               :user_id          => current_user.id,
+                               :user_id          => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
                                :group_id         => file_group_id,
                                :data_provider_id => @provider.id )
       
@@ -449,8 +458,11 @@ class DataProvidersController < ApplicationController
 
     if newly_registered_userfiles.size > 0
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
+      if @as_user != current_user
+        flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!"
+      end
     elsif num_erased > 0
-      clear_browse_provider_local_cache_file(current_user, @provider)
+      clear_browse_provider_local_cache_file(@as_user, @provider)
       flash[:notice] += "Erased #{num_erased} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
@@ -588,12 +600,12 @@ class DataProvidersController < ApplicationController
     keys
   end
 
-  def get_recent_provider_list_all(refresh = false) #:nodoc:
+  def get_recent_provider_list_all(refresh = false, as_user = current_user) #:nodoc:
 
     refresh = false if refresh.blank? || refresh.to_s == 'false'
 
     # Check to see if we can simply reload the cached copy
-    cache_file = browse_provider_local_cache_file(current_user, @provider)
+    cache_file = browse_provider_local_cache_file(as_user, @provider)
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
        fileinfolist = YAML::load(filelisttext)
@@ -601,7 +613,7 @@ class DataProvidersController < ApplicationController
     end
 
     # Get info from provider
-    fileinfolist = @provider.provider_list_all(current_user)
+    fileinfolist = @provider.provider_list_all(as_user)
 
     # Write a new cached copy
     File.open(cache_file + ".tmp","w") do |fh|
@@ -619,8 +631,8 @@ class DataProvidersController < ApplicationController
   end
 
   def clear_browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user,provider)
-    File.unkink(cache_file) rescue true
+    cache_file = browse_provider_local_cache_file(user, provider)
+    File.unlink(cache_file) rescue true
   end
 
 end
