@@ -6,7 +6,7 @@ module BasicFilterHelpers
     includer.class_eval do
       helper_method :current_session,   :current_project
       helper_method :basic_filters_for, :association_filters_for
-      before_filter :update_filters,    :only => :index
+      before_filter :update_filters
     end
   end
 

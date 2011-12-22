@@ -18,7 +18,6 @@ class DataProvidersController < ApplicationController
 
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
-  before_filter :update_filters,        :only => [:index, :browse, :register]
    
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
