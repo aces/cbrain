@@ -28,7 +28,7 @@ module DataProvidersHelper
   end
 
   def data_providers_descriptions(data_providers = nil)
-    data_providers ||= DataProvider.find_all_accessible_by_user(current_user)
+    data_providers ||= DataProvider.find_all_accessible_by_user(current_user).all
     paragraphs = data_providers.collect do |dp|
       one_description = <<-"HTML"
         <strong>#{h(dp.name)}</strong>

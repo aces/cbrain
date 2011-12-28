@@ -35,7 +35,7 @@
     %>
     <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
   
-    <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).select { |dp| ! dp.is_browsable? } %>
+    <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
     <%= data_provider_select :other_data_provider_id,
         { :data_providers => main_dp_set },
         { :include_blank => "(Select another Data Provider)" }

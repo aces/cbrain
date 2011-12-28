@@ -366,7 +366,9 @@ module IndexTableHelper
      count = count.to_i
      return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
      return "0" if count == 0 && ! options[:link_zeros]
-     filter_reset_link count,
+     controller = :bourreaux if controller.to_sym == :remote_resources
+     name = options[:name] || count
+     filter_reset_link name,
                        :controller   => controller,
                        :filters      => filters,
                        :ajax         => false,

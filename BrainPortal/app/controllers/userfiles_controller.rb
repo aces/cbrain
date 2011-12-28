@@ -186,7 +186,7 @@ class UserfilesController < ApplicationController
     else
       child_ids.delete(parent_id)
       @children = Userfile.find_accessible_by_user(params[:child_ids], current_user)
-      @parent = Userfile.find_accessible_by_user(params[:parent_id], current_user)
+      @parent   = Userfile.find_accessible_by_user(params[:parent_id], current_user)
       @children.each { |c| c.move_to_child_of(@parent) }
     end
     

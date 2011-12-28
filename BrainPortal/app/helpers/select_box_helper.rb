@@ -113,7 +113,7 @@ module SelectBoxHelper
     if selector.nil?
       selector = current_user.meta["pref_data_provider_id"]
     end
-    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
+    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user).all
   
     if selector.respond_to?(:data_provider_id)
       selected = selector.data_provider_id.to_s
@@ -164,7 +164,7 @@ module SelectBoxHelper
     if selector.nil?
       selector = current_user.meta["pref_bourreau_id"]
     end
-    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user).all
   
     if selector.respond_to?(:bourreau_id)
       selected = selector.bourreau_id.to_s

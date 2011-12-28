@@ -19,7 +19,7 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:   
-    bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     bourreau_ids = bourreaux.map &:id
     
     # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
@@ -140,7 +140,7 @@ class TasksController < ApplicationController
     
     scope = scope.where( :launch_time => params[:launch_time] )
     
-    bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.where( :bourreau_id => bourreaux.map(&:id) )
     end

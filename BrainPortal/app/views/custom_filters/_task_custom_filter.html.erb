@@ -33,7 +33,7 @@
 </p> 
 <p>
    Execution Server:<br>
-   <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user), :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
+   <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
 <p>
    Filtering by date: <br/> 

@@ -20,6 +20,8 @@ class CbrainTask < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include ResourceAccess
+
   before_validation     :set_group
 
   validates_presence_of :user_id
@@ -186,11 +188,19 @@ class CbrainTask < ActiveRecord::Base
     self.name
   end
 
-  # Returns a prettier name for the task's class
-  # Can be customized by subclasses to improve views, by keep it short.
-  # By default, returns the same value as the +name+ class method.
+  # Returns a prettier name for the task's class.
+  # Can be customized by subclasses to improve views,
+  # but keep it short.
+  #
+  #   CbrainTask::NiakPipepelineFmriPreprocess returns "Niak pipeline fmri preprocess"
+  def self.pretty_type
+    @pretty_type ||= self.to_s.demodulize.underscore.humanize
+  end
+
+  # For backward compatibility.
+  # Invokes pretty_type().
   def self.pretty_name
-    @pretty_name ||= self.to_s.demodulize
+    self.pretty_type
   end
 
   # Returns the Tool object associated with the task.

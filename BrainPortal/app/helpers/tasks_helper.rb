@@ -28,6 +28,8 @@ module TasksHelper
   end
 
   StatesToColor = {
+          # Task state name                  => [ color, sort_rank ]
+          # --------------------------------    --------------------
           'Configured'                       => [ "orange",  25 ],
           'New'                              => [ "blue",    20 ],
           'Setting Up'                       => [ "blue",    30 ],

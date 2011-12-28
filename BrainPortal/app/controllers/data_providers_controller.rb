@@ -176,7 +176,7 @@ class DataProvidersController < ApplicationController
   end
   
   def is_alive #:nodoc:
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)        
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
     respond_to do |format|
       format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
@@ -458,7 +458,7 @@ class DataProvidersController < ApplicationController
     if newly_registered_userfiles.size > 0
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
       if @as_user != current_user
-        flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!"
+        flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
       end
     elsif num_erased > 0
       clear_browse_provider_local_cache_file(@as_user, @provider)

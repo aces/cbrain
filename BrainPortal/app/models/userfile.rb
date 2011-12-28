@@ -479,7 +479,7 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    self.accessible_for_user(user, options).all
+    self.accessible_for_user(user, options)
   end
 
   #This method takes in an array to be used as the :+conditions+
@@ -490,7 +490,7 @@ class Userfile < ActiveRecord::Base
     
     access_requested = options[:access_requested] || :write
     
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).all.map(&:id)
     
     query_user_string = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"

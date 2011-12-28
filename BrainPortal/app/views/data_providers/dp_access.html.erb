@@ -29,7 +29,7 @@ There is no information to show at this time.
         <td><%= link_to_user_with_tooltip(user) %></td>
             
         <% 
-        accessible_dp = DataProvider.find_all_accessible_by_user(user).index_by &:id || {}
+        accessible_dp = DataProvider.find_all_accessible_by_user(user).all.index_by &:id || {}
         %>
         
         <% @providers.each do |dp| %>

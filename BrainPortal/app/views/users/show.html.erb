@@ -1,41 +1,18 @@
 
 <% title "Account Info" %>
 
-<% 
-file_stats = ModelsReport.gather_filetype_statistics(
-           :users     => @user.available_users.all,
-           :providers => DataProvider.all
-         )
-user_fileclass_count = file_stats[:user_fileclass_count]
-fileclasses_totcount = file_stats[:fileclasses_totcount]
-user_totcount        = file_stats[:user_totcount]
-all_totcount         = file_stats[:all_totcount]
-%>
-
-<%
-stats = ModelsReport.gather_task_statistics(
-           :users     => @user.available_users.all,
-           :bourreaux => Bourreau.all
-         )
-
-status_stats    = stats[0]
-statuses        = status_stats[:statuses]
-statuses_list   = status_stats[:statuses_list]
-user_tasks_info = status_stats[:user_task_info]
-
-type_stats      = stats[1]
-types           = type_stats[:types]
-types_list      = type_stats[:types_list]
-user_types_info = type_stats[:user_types_info]
-%>
-
 <div class="menu_bar">
   <% if check_role(:admin) %>
-    <%= link_to 'View Access Report', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
+    <%= link_to 'View Access Reports', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
   <% end %>
+
+  <%= link_to 'View Object Reports',   { :controller => :portal, :action => :report }, :class => "button" %>
 </div>
+
 <br>
+
 <%= error_messages_for :user, :header_message => "User could not be updated." %>
+
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@user, :edit_path => user_path(@user), :edit_condition => edit_permission?(@user)) do |t| %>
     <% 
@@ -65,7 +42,7 @@ user_types_info = type_stats[:user_types_info]
       end
       t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
         bourreau_select(     "meta[pref_bourreau_id]",
-                                 { :bourreaux => Bourreau.find_all_accessible_by_user(current_user),
+                                 { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all,
                                    :selector => @user.meta["pref_bourreau_id"] },
                                  { :include_blank => true, :class => "submit_onchange" } )
       end
@@ -118,39 +95,6 @@ user_types_info = type_stats[:user_types_info]
    </table>
 
   </div>
-
-  <P>
-
-  <%= render :partial => 'userfiles/file_counts',
-             :locals => { :fileclasses_totcount => fileclasses_totcount,
-                          :user_fileclass_count => user_fileclass_count,
-                          :user_totcount        => user_totcount,
-                          :all_totcount         => all_totcount,
-                          :additionnal_filt     => {}
-                        }
-  %>
-  
-  <P>
-  
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => statuses,
-                          :list             => statuses_list,
-                          :user_info        => user_tasks_info,
-                          :additionnal_filt => {},
-                          :by               => :status
-             }
-  %>
-  
-  <P>
-  
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => types,
-                          :list             => types_list,
-                          :user_info        => user_types_info,
-                          :additionnal_filt => {},
-                          :by               => :type
-                        }
-  %>
 
   <P>
 

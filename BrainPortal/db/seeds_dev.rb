@@ -789,7 +789,7 @@ User.all.each do |user|
       :group_id => user.own_group.id
     }
   )
-  Userfile.find_all_accessible_by_user(user).each do |f|
+  Userfile.find_all_accessible_by_user(user).all.each do |f|
     next unless f.name =~ /diary/
     f.tags ||= []
     f.tags += [ mydiarytag ]

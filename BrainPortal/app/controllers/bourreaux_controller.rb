@@ -198,7 +198,7 @@ class BourreauxController < ApplicationController
     refreshed_bourreaux = []
     skipped_bourreaux   = []
 
-    RemoteResource.find_all_accessible_by_user(current_user).each do |b|
+    RemoteResource.find_all_accessible_by_user(current_user).all.each do |b|
       if b.is_alive?
         info = b.info
         ssh_key = info.ssh_public_key
@@ -434,7 +434,7 @@ class BourreauxController < ApplicationController
     userlist         = current_user.available_users.all
 
     # List of acceptable remote_resources
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Index of acceptable users and remote_resources
     userlist_index   = userlist.index_by &:id

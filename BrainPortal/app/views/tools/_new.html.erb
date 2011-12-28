@@ -1,6 +1,6 @@
 <span id="new_model">
   <%= button_with_dropdown_menu('Create New Tool', :open => true) do %>
-    <% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user) %>
+    <% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user).all %>
 
     <%= ajax_form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 

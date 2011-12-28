@@ -2,6 +2,7 @@
 # CBRAIN Routing Table
 
 CbrainRailsPortal::Application.routes.draw do
+  match "/report", :controller => :portal, :action => :report
 
   # Session
   resource  :session
