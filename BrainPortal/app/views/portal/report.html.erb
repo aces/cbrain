@@ -1,0 +1,189 @@
+
+<% title 'Tabular Reports' %>
+
+<% full_att_list =
+            [
+              [ 'Users',          'user_id' ],
+              [ 'Projects',       'group_id' ],
+              [ 'Data Providers', 'data_provider_id' ],
+              [ 'Servers',        'bourreau_id' ],
+              [ 'Status',         'status' ],
+              [ 'Type',           'type' ],
+              [ 'Site',           'site_id' ],
+              [ 'Category',       'category' ],
+              [ 'Role',           'role' ],
+              [ 'Tool',           'tool_id' ],
+              [ 'City',           'city' ],
+              [ 'Country',        'country' ],
+            ]
+   #restricted_att_list = @model_atts.blank? ? full_att_list : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
+   restricted_att_list = @model_atts.blank? ? [] : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
+   att_ok              = restricted_att_list.present?
+%>
+
+<h2>Automatic Tabular Report Maker</h2>
+
+<p class="medium_paragraphs">
+This form allows you to generate many different kind of reports
+in a tabular layout. Proceed as follow:
+</p>
+
+<ul>
+  <li><strong>Select the type of report</strong> in the grey box. Most reports
+      will count the number of objects accessible to you, but some of them
+      will perform summation of some attributes.
+  </li>
+  <li><strong>Click on "Lookup columns and rows"</strong> and the form will be adjusted
+      to show you which attributes you can select for the rows and columns of
+      your table.
+  </li>
+  <li><strong>Select an attribute for the rows and columns</strong> using each of the selection
+      boxes shown at the top and left of the table area.
+  </li>
+  <li><strong>Click on "Generate Report"</strong> and the table will be created with
+      hot links to the appropriate index pages for your objects. You can
+      modify the report's properties and regenerate it anew any time you want.
+  </li>
+</ul>
+  
+
+<%= form_tag( "/report" , :method => :get) do %>
+
+<br>
+
+<div class="display_cell centered">
+
+<div class="notesbox" style="width: auto">
+    <%= select_tag(:table_name,
+          options_for_select(
+            [
+              [ '(Select the report type)',                    "",                                                  ],
+              [ 'Files - count',                               Userfile.table_name                                  ],
+              [ 'Files - sum of sizes',                        Userfile.table_name + ".sum(size)"                   ],
+              [ 'Files - total files in collections',          Userfile.table_name + ".sum(num_files)"              ],
+              [ 'Tasks - count',                               CbrainTask.table_name                                ],
+              [ 'Tasks - sum of workdir space',                CbrainTask.table_name + ".sum(cluster_workdir_size)" ],
+            ] + ((current_user.has_role?(:admin) || current_user.has_role?(:site_admin)) ? [
+              [ 'Servers - count',                             RemoteResource.table_name                            ],
+              [ 'Data Providers - count',                      DataProvider.table_name                              ],
+              [ 'Users - count',                               User.table_name                                      ],
+              [ 'Projects - count',                            Group.table_name                                     ],
+              [ 'Tools - count',                               Tool.table_name                                      ],
+              [ 'Tool Versions - count',                       ToolConfig.table_name                                ],
+            ] : []),
+            params[:table_name]
+          )
+        )
+    %>
+    <%= submit_tag('Lookup columns and rows') %>
+</div>
+
+<br>
+
+<div>
+
+  <div class="display_cell" style="vertical-align: middle">
+    <p>
+      <br>
+      <br>
+      <%= select_tag(:row_type, options_for_select( [ [ "(Select row type)", "" ] ] + restricted_att_list, params[:row_type] )) if att_ok %>&nbsp;&nbsp;
+    </p>
+  </div>
+
+  <div class="display_cell">
+
+    <div>
+      <p>
+        <%= select_tag(:col_type, options_for_select( [ [ "(Select column type)", "" ] ] + restricted_att_list, params[:col_type] )) if att_ok %>
+      </p>
+    </div>
+
+    <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
+      <%
+         to_s_proc = Proc.new { |x| x.to_s.demodulize }
+         col_proc = to_s_proc
+         row_proc = to_s_proc
+         if @filter_col_key =~ /^(\w+)_id$/
+           col_model = Regexp.last_match[1].classify.constantize
+           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+         end
+         if @filter_row_key =~ /^(\w+)_id$/
+           row_model = Regexp.last_match[1].classify.constantize
+           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+         end
+      %>
+
+      <table>
+        <tr>
+        <th></th>
+          <% @table_col_values.each do |col_key| %>
+            <th><%= col_proc.call(col_key) %></th>
+          <% end %>
+        <th>Total</th>
+        </tr>
+
+        <% total_total  = 0 %>
+        <% total_of_col = {} %>
+        <% @table_row_values.each do |row_key| %>
+          <% total_of_row = 0 %>
+          <tr>
+          <th><%= row_proc.call(row_key) %></th>
+          <% @table_col_values.each do |col_key| %>
+            <%
+               total_of_col[col_key] ||= 0
+               cell_value = @table_content[ [ row_key, col_key ] ]
+               if cell_value.present?
+                 total_of_row          += cell_value
+                 total_of_col[col_key] += cell_value
+                 total_total           += cell_value
+               end
+            %>
+            <% pretty_cell_value = @filter_show_proc ? @filter_show_proc.call(cell_value) : cell_value %>
+            <td><%= index_count_filter(cell_value, @filter_model, { @filter_row_key => row_key, @filter_col_key => col_key }, :name => pretty_cell_value) %></td>
+          <% end %>
+          <% pretty_row_tot = @filter_show_proc ? @filter_show_proc.call(total_of_row) : total_of_row %>
+          <td><%= index_count_filter(total_of_row, @filter_model, { @filter_row_key => row_key }, :name => pretty_row_tot) %></td>
+          </tr>
+        <% end %>
+
+        <tr>
+          <th>Total</th>
+          <% @table_col_values.each do |col_key| %>
+            <% col_tot = total_of_col[col_key] %>
+            <% pretty_col_tot = @filter_show_proc ? @filter_show_proc.call(col_tot) : col_tot %>
+            <td><%= index_count_filter(col_tot, @filter_model, { @filter_col_key => col_key }, :name => pretty_col_tot) %></td>
+          <% end %>
+          <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
+          <td><%= index_count_filter(pretty_tot_tot, @filter_model, {}, :name => pretty_tot_tot) %></td>
+        </tr>
+
+      </table>
+
+    <% elsif @table_ok %>
+      <p class="groupentry">
+      There are <%= html_colorize("no objects","red") %> found for this report.<br/>
+      Try with other reporting parameters.
+      </p>
+    <% else %>
+      <p class="groupentry">
+      The report will appear here once you've selected<br/>
+       the proper table content and types for the rows and columns.
+      </p>
+    <% end %>
+
+  </div>
+
+  <br>
+
+  <% if @table_ok %>
+    <%= submit_tag('Refresh Report') %>
+  <% else %>
+    <%= submit_tag('Generate Report') if att_ok %>
+  <% end %>
+
+</div>
+
+</div>
+
+<% end %>
+
