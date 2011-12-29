@@ -11,7 +11,7 @@
     <% t.cell("Author") { link_to_user_with_tooltip(@feedback.user) } %>
     <% t.cell("Date Submitted") { to_localtime(@feedback.created_at,:datetime) }  %>
     <% t.edit_cell(:details, :content => h(@feedback.details).gsub("\n", "<br>"), :disabled => (!current_user.has_role?(:admin) && current_user.id != @feedback.user_id)) do %>
-      <%= text_area_tag "feedback[details]", @feedback.details, :cols => 40 %><br>
+      <%= text_area_tag "feedback[details]", @feedback.details, :rows => 20, :cols => 80 %><br>
       <%= submit_tag "Update" %>
     <% end %>
   <% end %>

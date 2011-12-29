@@ -12,7 +12,7 @@
   <%= show_table(@site, :edit_path => site_path(@site), :edit_condition => check_role(:admin)) do |t| %>
     <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
     <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
-      <%= text_area_tag "site[description]", @site.description %><br/>
+      <%= text_area_tag "site[description]", @site.description, :rows => 10, :cols => 40 %><br/>
       <small>The first line should be a short summary, and the<br> rest are for any special notes for the users.</small><br>
       <%= submit_tag "Update" %>
     <% end %>
