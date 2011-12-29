@@ -4,9 +4,16 @@
 <%= error_messages_for :userfile, :header_message => "#{@userfile.name} could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@userfile, :edit_path => userfile_path(@userfile)) do |t| %>
+
     <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do %>
       <%= text_field_tag "userfile[name]", @userfile.name %>
     <% end %>
+
+    <% t.cell("Created at") do %>
+      <%= h(to_localtime(@userfile.created_at,:datetime)) %>
+      (<%= pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3) %> ago)
+    <% end %>
+
     <% t.cell("Type") do %>
       <%= inline_edit_field(@userfile, :type, userfile_path(@userfile), :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
         <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name), :class => "submit_onchange" %>
@@ -15,25 +22,19 @@
         (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>.</span>)
       <% end %>
     <% end %>
-    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => "Owner") do %>
-      <%= user_select("userfile[user_id]", { :selector => @userfile }, :class => "submit_onchange") %>
+
+    <% t.cell("Modified at") do %>
+      <%= to_localtime(@userfile.updated_at,:datetime) %>
+      (<%= pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3) %> ago)
     <% end %>
+
     <% t.cell("Size") do %>
       <%= @userfile.format_size %>
       <% if @userfile.size && @userfile.size >= 1_000 -%>
         = <%= @userfile.size %> bytes
       <% end -%>
     <% end %>
-    <% 
-      t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } 
-      t.cell("Children") { array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 1 ) {|u,r,c| link_to_userfile_if_accessible(u)} }
-    %>
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user) || @userfile.format_source_id)) do %>
-      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s }, :class => "submit_onchange" %>
-    <% end  %>
-    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
-      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]]), :class => "submit_onchange") %>
-    <% end %>
+
     <% t.cell("Data Provider") do %>
       <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= @userfile.data_provider.class.to_s %> )
@@ -42,6 +43,15 @@
         <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
       <% end %>
     <% end %>
+
+    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => "Owner") do %>
+      <%= user_select("userfile[user_id]", { :selector => @userfile }, :class => "submit_onchange") %>
+    <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user) || @userfile.format_source_id)) do %>
+      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s }, :class => "submit_onchange" %>
+    <% end  %>
+
     <% t.cell("Tags") do %>
       <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
       <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
@@ -58,22 +68,28 @@
         <% end %>
       <% end %>
     <% end %>
-    <% t.cell("Created at") do %>
-      <%=h(to_localtime(@userfile.created_at,:datetime)) %>
-      (<%= pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3) %> ago)
+
+    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
+      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]]), :class => "submit_onchange") %>
     <% end %>
-    <% t.cell("Modified at") do %>
-      <%= to_localtime(@userfile.updated_at,:datetime) %>
-      (<%= pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3) %> ago)
+
+    <% t.cell("Parent", :show_width => 2) { link_to_userfile_if_accessible(@userfile.parent) } %>
+
+    <% t.cell("Children", :show_width => 2) do %>
+      <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3 ) do |u,r,c| %>
+        <%= link_to_userfile_if_accessible(u) %>
+      <% end %>
     <% end %>
+
     <% if current_user.has_role? :admin %>
-      <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path") %>
+      <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path", :show_width => 2) %>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-        <% t.cell("Remote SSH Data Provider path") do %>
+        <% t.cell("Remote SSH Data Provider path", :show_width => 2) do %>
           <%= @userfile.data_provider.provider_full_path(@userfile) %>
         <% end %>
       <% end %>
     <% end %>
+
   <% end %>
   
   <br>

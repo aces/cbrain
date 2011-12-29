@@ -393,5 +393,23 @@ class Hash
     self
   end
 
+  # Turns a hash table into a string suitable to be used
+  # as HTML element attributes.
+  #
+  #   { "colspan" => 3, :style => "color: #ffffff", :x => '<>' }.to_html_attributes
+  #
+  # will return the string
+  #
+  #   'colspan="3" style="color: blue" x="&lt;&gt;"'
+  def to_html_attributes
+    self.inject("") do |result,attpair|
+      attname   = attpair[0]
+      attvalue  = attpair[1]
+      result   += " " if result.present?
+      result   += "#{attname}=\"#{ERB::Util.html_escape(attvalue)}\""
+      result
+    end
+  end
+
 end
 

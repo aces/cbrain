@@ -73,7 +73,7 @@ class PortalController < ApplicationController
 
   end
 
-  def report
+  def report #:nodoc:
     table_name = params[:table_name] || ""
     table_op   = 'count'
     row_type   = params[:row_type]   || ""

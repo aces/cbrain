@@ -14,69 +14,99 @@
 <%= error_messages_for :provider, :header_message => "Provider could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%"> 
   <%= show_table(@provider, :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
+
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "data_provider[name]", @provider.name %>
     <% end %>
+
     <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
       <%= text_area_tag "data_provider[description]", @provider.description, :cols => 40 %><br>
       <%= submit_tag "Update" %>
     <% end %>
-    <% 
-      if check_role(:admin) || @provider.user_id == current_user.id
-        t.attribute_cell(:type)
-        t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.svn_id_pretty_rev_author_date }
-        t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.svn_id_pretty_rev_author_date }
-      end 
-    %>
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin) ) do %>
-      <%= user_select("data_provider[user_id]", { :selector => @provider }, :class => "submit_onchange" ) %>
+
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.attribute_cell(:type) %>
+    <% else %>
+      <% t.empty_cell %>
     <% end %>
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
-      <%= group_select("data_provider[group_id]", { :selector => @provider }, :class => "submit_onchange") %>
-    <% end %>
-    <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
-    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
-      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
-    <% end %>
+
     <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
       <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online), :class => "submit_onchange" %>
     <% end %>
+
+    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin) ) do %>
+      <%= user_select("data_provider[user_id]", { :selector => @provider }, :class => "submit_onchange" ) %>
+    <% end %>
+
     <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
       <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only), :class => "submit_onchange" %>
     <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
+      <%= group_select("data_provider[group_id]", { :selector => @provider }, :class => "submit_onchange") %>
+    <% end %>
+
     <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
       <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable), :class => "submit_onchange" %>
     <% end %>
-    <% t.edit_cell(:remote_dir, :header => "Physical Data Location") do %>
+
+    <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
+
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.svn_id_pretty_rev_author_date } %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
+      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
+    <% end %>
+
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.svn_id_pretty_rev_author_date } %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
       <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
     <% end %>
+
   <% end %>
+
   <% if check_role(:admin) || @provider.user_id == current_user.id %>
     <%= show_table(@provider, :header => "SSH parameters for remote Data Providers", :edit_path => data_provider_path(@provider)) do |t| %>
       <% t.edit_cell(:remote_host)  do %>
         <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
       <% end %>
-      <% t.edit_cell(:remote_user) do %>
-        <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
-      <% end %>
       <% t.edit_cell(:remote_port) do %>
         <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>
       <% end %>
+      <% t.edit_cell(:remote_user) do %>
+        <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
+      <% end %>
     <% end %>
   <% end %>
+
   <%= show_table(@provider, :header => "Other Properties", :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
     <% if @provider.is_browsable? %>
+
       <% t.edit_cell("meta[must_move]", :header => "Files must be copied/moved upon registration", :content => (@provider.meta["must_move"].present? ? "True" : "False")) do %>
         <%= select_tag "meta[must_move]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["must_move"].presence), :class => "submit_onchange" %>
       <% end %>
+
       <% t.edit_cell("meta[must_erase]", :header => "Files will always be erased upon de-registration", :content => (@provider.meta["must_erase"].present? ? "True" : "False")) do %>
         <%= select_tag "meta[must_erase]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["must_erase"].presence), :class => "submit_onchange" %>
       <% end %>
+
     <% end %>
+
     <% t.edit_cell("meta[no_uploads]", :header => "Cannot be used for uploading files in the file manager", :content => (@provider.meta["no_uploads"].present? ? "True" : "False")) do %>
       <%= select_tag "meta[no_uploads]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["no_uploads"].presence), :class => "submit_onchange" %>
     <% end %>
+
   <% end %>
+
 </div>
 
    

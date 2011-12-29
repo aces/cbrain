@@ -1071,6 +1071,8 @@ pre {
   border: none;
   color: black;
   text-align: left;
+  white-space: nowrap;
+  width: 20%;
 }
 
 .show_table td {

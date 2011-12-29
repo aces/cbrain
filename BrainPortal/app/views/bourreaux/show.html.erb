@@ -13,8 +13,13 @@
 <P>
 
 <%= error_messages_for :bourreau, :header_message => "Server could not be updated." %>
+
 <div class="display_inline_block" style="min-width: 50%">
+
+
+
   <%= show_table(@bourreau, :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "bourreau[name]", @bourreau.name %><br>
       <small>
@@ -23,53 +28,77 @@
         for this server to restart properly later on.
       </small>
     <% end %>
+
     <% t.edit_cell(:description, :content =>  overlay_description(@bourreau.description)) do %>
       <small>The first line should be a short summary, and the rest are for any special notes for the users.</small><br>
       <%= text_area_tag "bourreau[description]", @bourreau.description %><br>
       <%= submit_tag "Update" %>
     <% end %>
-    <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
+
     <% t.attribute_cell(:class) %>
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin)) do %>
-      <%= user_select("bourreau[user_id]", { :selector => @bourreau }, :class => "submit_onchange" ) %>
-    <% end %>
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@bourreau.group)) do %>
-      <%= group_select("bourreau[group_id]", {:selector => @bourreau}, :class => "submit_onchange" ) %>
-    <% end %>
+
     <% t.edit_cell(:online, :header => "Status", :content => (@bourreau.online ? "Online" : "Offline")) do %>
       <%= select_tag "bourreau[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @bourreau.online), :class => "submit_onchange" %>
     <% end %>
+
+    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin)) do %>
+      <%= user_select("bourreau[user_id]", { :selector => @bourreau }, :class => "submit_onchange" ) %>
+    <% end %>
+
     <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || "(Unset)") ) do %>
       <%= select_tag "bourreau[time_zone]", time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
     <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@bourreau.group)) do %>
+      <%= group_select("bourreau[group_id]", {:selector => @bourreau}, :class => "submit_onchange" ) %>
+    <% end %>
+
+    <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
+
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
   <% end %>
+
+
+
   <% if (check_role(:admin) || @bourreau.user_id == current_user.id) %>
     <%= show_table(@bourreau, :header => "Connection Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+
       <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
         <%= text_field_tag "bourreau[ssh_control_host]", @bourreau.ssh_control_host %>
       <% end %>
-      <% t.edit_cell(:ssh_control_user, :header => "SSH User") do %>
-        <%= text_field_tag "bourreau[ssh_control_user]", @bourreau.ssh_control_user %>
-      <% end %>
-      <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do %>
-        <%= text_field_tag "bourreau[ssh_control_port]", @bourreau.ssh_control_port, :size => 6 %>
-      <% end %>
+
       <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do %>
         <%= text_field_tag "bourreau[ssh_control_rails_dir]", @bourreau.ssh_control_rails_dir, :size => 60 %>
       <% end %>
-      <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do %>
-        <%= text_field_tag "bourreau[proxied_host]", @bourreau.proxied_host %>
+
+      <% t.edit_cell(:ssh_control_user, :header => "SSH User") do %>
+        <%= text_field_tag "bourreau[ssh_control_user]", @bourreau.ssh_control_user %>
       <% end %>
+
       <% if is_bourreau %>
         <% t.edit_cell(:tunnel_mysql_port, :header => "Database Server Remote Tunnel Port") do %>
           <%= text_field_tag "bourreau[tunnel_mysql_port]", @bourreau.tunnel_mysql_port, :size => 6 %>
         <% end %>
+      <% else %>
+        <% t.empty_cell %>
       <% end %>
+
+      <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do %>
+        <%= text_field_tag "bourreau[ssh_control_port]", @bourreau.ssh_control_port, :size => 6 %>
+      <% end %>
+
       <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do %>
         <%= text_field_tag "bourreau[tunnel_actres_port]", @bourreau.tunnel_actres_port, :size => 6 %>
       <% end %>
+
+      <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do %>
+        <%= text_field_tag "bourreau[proxied_host]", @bourreau.proxied_host %>
+      <% end %>
+
     <% end %>
+
+
+
     <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
         <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
@@ -77,7 +106,7 @@
         status of all files from all Data Providers! Also, the Rails app will have to<br>
         be restarted, and all files in that directory will be erased!</small>
       <% end %>
-      <% t.edit_cell(:dp_ignore_patterns, :header => "Patterns for filenames to ignore") do %>
+      <% t.edit_cell(:dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => (@bourreau.dp_ignore_patterns || []).join(", ")) do %>
         <%= text_field_tag "bourreau[dp_ignore_patterns]", @bourreau.dp_ignore_patterns, :size => 60 %><br/>
         <small>Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</small>
       <% end %>
@@ -102,8 +131,12 @@
         if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</small>
       <% end %>
     <% end %>
+
+
+
     <% if is_bourreau %>
       <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+
         <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
           <%= select_tag "bourreau[cms_class]", options_for_select([
                   [ "(Unconfigured)",  "" ],
@@ -115,29 +148,24 @@
               ], :selected => @bourreau.cms_class), :class => "submit_onchange"
           %>
         <% end %>
-        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory") do %>
-          <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :size => 60 %><br/>
-          <small>Mandatory. This directory must be visible and writable from all nodes.<br>
-                 This is were the work subdirectories for all tasks will be created.</small>
-        <% end %>
+
         <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do %>
           <%= text_field_tag "bourreau[cms_default_queue]", @bourreau.cms_default_queue %><br/>
           <small>Optional.</small>
         <% end %>
-        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
-          <%= text_field_tag :cms_extra_qsub_args, @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
-          <small>Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</small>
-        <% end %>
-        <% t.cell("Common configuration for all tasks") do %>
-          <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
-          <%= tool_config ? (link_to "Show", tool_config_path( :id => tool_config)) : "No tool config" %>
-        <% end %>
+
         <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
           <%= select_tag 'meta[task_limit_total]',
               options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
                                   @bourreau.meta[:task_limit_total] ), :class => "submit_onchange"
           %>
         <% end %>
+
+        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
+          <%= text_field_tag :cms_extra_qsub_args, @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
+          <small>Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</small>
+        <% end %>
+
         <% t.edit_cell 'meta[task_limit_user_default]', 
                        :header => "Default maximum number of active tasks for each user", 
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
@@ -147,6 +175,18 @@
           %>
           <small>(Unless specified below)</small>
         <% end %>
+
+        <% t.cell("Common configuration for all tasks") do %>
+          <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
+          <%= tool_config ? (link_to "Show", tool_config_path( :id => tool_config)) : "No tool config" %>
+        <% end %>
+
+        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do %>
+          <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :size => 60 %><br/>
+          <small>Mandatory. This directory must be visible and writable from all nodes.<br>
+                 This is were the work subdirectories for all tasks will be created.</small>
+        <% end %>
+
         <% content = capture do %>
           <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
             <% metkey = "task_limit_user_#{user.id}".to_sym %>
@@ -155,9 +195,10 @@
             <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
           <% end %>
         <% end %>
+
         <% t.edit_cell 'meta[task_limit_user_default]', 
                        :header => "Maximum number of active tasks per user", 
-                       :content => content do %>
+                       :content => content, :show_width => 2 do %>
           <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4) do |user,r,c| %>
             <% metkey = "task_limit_user_#{user.id}".to_sym %>
             <%= link_to_user_with_tooltip(user) %>:
@@ -218,45 +259,55 @@
         <% end %>
       <% end %>
     <% end %>
+
+
+
     <%= show_table(@info, :header => "Runtime Information") do |t| %>
       <% if @info.name == "???" %>
         <% t.row do %>
           This server is currently <font color="red">DOWN</font>.
         <% end %>
       <% else %>
-        <% t.cell("Revision Info (Server Side)") do %>
-          <strong>Process Start Revision: </strong><%= @info.starttime_revision %><br/>
-          <strong>Process Start Last Change Author: </strong><%= @info.lc_author %><br/>
-          <strong>Process Start Last Change Revision: </strong><%= @info.lc_rev %><br/>
-          <strong>Process Start Last Change Date: </strong><%= @info.lc_date %><br/>
-          <strong>Disk Code Revision: </strong><%= red_if(@info.revision != @info.starttime_revision, @info.revision) %>
-        <% end %>
-        <% 
-          t.cell("Host Name") { @info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? @info.host_name : html_colorize(@info.host_name, "red") }
-          t.cell("Host IP Address") { @info.host_ip }
-          t.cell("Host OS Type") { @info.host_uname }
-          t.cell("Host Uptime") { @info.host_uptime }
-        %>
-        <% t.cell("Server uptime") do %>
-          Up since: <%= to_localtime(@info.uptime.to_i.ago,:datetime) %><br>
+
+        <% t.cell("Process Start Revision", :show_width => 2) { @info.starttime_revision } %>
+        <% t.cell("Process Start Last Change Author", :show_width => 2) { @info.lc_author } %>
+        <% t.cell("Process Start Last Change Revision", :show_width => 2) { @info.lc_rev } %>
+        <% t.cell("Process Start Last Change Date", :show_width => 2) { @info.lc_date } %>
+        <% t.cell("Disk Code Revision", :show_width => 2) { red_if(@info.revision != @info.starttime_revision, @info.revision) } %>
+
+        <% t.blank_row %>
+
+        <% t.cell("Remote Host Name", :show_width => 2) { @info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? @info.host_name : html_colorize(@info.host_name, "red") } %>
+        <% t.cell("Remote Host IP Address", :show_width => 2) { @info.host_ip } %>
+        <% t.cell("Remote Host OS Type", :show_width => 2) { @info.host_uname } %>
+        <% t.cell("Remote Host Uptime", :show_width => 2) { @info.host_uptime } %>
+        <% t.cell("Rails Server uptime", :show_width => 2) do %>
+          Up since: <%= to_localtime(@info.uptime.to_i.ago,:datetime) %>
           (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
         <% end %>
+
+        <% t.blank_row %>
+
         <% if is_bourreau %>
           <% t.cell("Worker PIDs") { @info.worker_pids } %>
-          <% t.cell("Worker Revision Info") do %>
-            <strong>Last Change Author: </strong><%= @info.worker_lc_author %><br>
-            <strong>Last Change Revision: </strong><%= @info.worker_lc_rev %><br>
-            <strong>Last Change Date: </strong><%= @info.worker_lc_date %>
-          <% end %>
           <% t.cell("Number of Tasks Running") { @info.tasks_tot + " / " + @info.tasks_max } %>
-          <% t.cell("Cluster Management System") do %>
-            Type: <%= @bourreau.cms_class == @info.bourreau_cms ? @info.bourreau_cms : html_colorize(@info.bourreau_cms, "red") %><br>
-            Rev:  <%= @info.bourreau_cms_rev.svn_id_pretty_rev_author_date %>
-          <% end %>
+
+          <% t.cell("Workers Last Change Author") { @info.worker_lc_author } %>
+          <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != @info.bourreau_cms, @info.bourreau_cms) } %>
+
+          <% t.cell("Workers Last Change Revision") { @info.worker_lc_rev } %>
+          <% t.cell("Cluster Management System Revision") { @info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
+
+          <% t.cell("Workers Last Change Date") { @info.worker_lc_date } %>
+          <% t.empty_cell %>
         <% end %>
-        <% t.cell("SSH Public Key") do %>
+
+        <% t.blank_row %>
+
+        <% t.cell("SSH Public Key", :show_width => 2) do %>
           <SMALL><SMALL><PRE class="ssh_key"><%= @info.ssh_public_key.strip %><PRE></SMALL></SMALL>
         <% end %>
+
       <% end %>
     <% end %>
   <% end %>
