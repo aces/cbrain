@@ -93,7 +93,7 @@ class BourreauxController < ApplicationController
     
     cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    fields    = @bourreau.is_a?(Bourreau) ? params[:bourreau] : params[:brain_portal]
+    fields    = params[:bourreau]
     fields ||= {}
     
     subtype = fields.delete(:type)
