@@ -74,10 +74,8 @@
     <% end %>
 
     <%
-      if current_user.has_role?(:admin) && not_admin_user(@user) 
-        t.edit_cell(:account_locked, :header => "Account Locked", :content => (@user.account_locked.present? ? "True" : "False")) do
-          select_tag "user[account_locked]", options_for_select([["False", nil], ["True", 1]], :selected => (1 if @user.account_locked?)), :class => "submit_onchange"
-        end
+      if current_user.has_role?(:admin) && not_admin_user(@user)
+        t.boolean_edit_cell('user[account_locked]', @user.account_locked, "1", "", :header => "Account Locked")
       end
     %>
 

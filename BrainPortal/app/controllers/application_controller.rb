@@ -249,10 +249,15 @@ class ApplicationController < ActionController::Base
   #   @myobj.meta[:def] = 'z'
   #   @myobj.meta[:xyz] = 'A'
   #
-  # See ActRecMetaData for more information.
-  def add_meta_data_from_form(target_object, meta_keys = [], myparams = params)
+  # This method is a wrapper around the method update_meta_data()
+  # from module ActRecMetaData ; in particular, it supplies
+  # the option :delete_on_blank by default, and extracts
+  # by default the hash tables of value for +meta_params+ from
+  # params[:meta]. See ActRecMetaData for more information.
+  def add_meta_data_from_form(target_object, meta_keys = [], meta_params = nil, options = {})
     return true if meta_keys.empty?
-    target_object.update_meta_data(myparams[:meta] || {}, meta_keys)
+    meta_params = meta_params.presence || params[:meta] || {}
+    target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
   end
 
 end

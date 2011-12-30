@@ -11,7 +11,9 @@
 </div>
 
 <P>
+
 <%= error_messages_for :provider, :header_message => "Provider could not be updated." %>
+
 <div class="display_inline_block" style="min-width: 50%"> 
   <%= show_table(@provider, :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
 
@@ -91,19 +93,13 @@
   <%= show_table(@provider, :header => "Other Properties", :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
     <% if @provider.is_browsable? %>
 
-      <% t.edit_cell("meta[must_move]", :header => "Files must be copied/moved upon registration", :content => (@provider.meta["must_move"].present? ? "True" : "False")) do %>
-        <%= select_tag "meta[must_move]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["must_move"].presence), :class => "submit_onchange" %>
-      <% end %>
+      <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
 
-      <% t.edit_cell("meta[must_erase]", :header => "Files will always be erased upon de-registration", :content => (@provider.meta["must_erase"].present? ? "True" : "False")) do %>
-        <%= select_tag "meta[must_erase]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["must_erase"].presence), :class => "submit_onchange" %>
-      <% end %>
+      <% t.boolean_edit_cell("meta[must_erase]", @provider.meta["must_erase"], "on", "", :header => "Files will always be erased upon de-registration") %>
 
     <% end %>
 
-    <% t.edit_cell("meta[no_uploads]", :header => "Cannot be used for uploading files in the file manager", :content => (@provider.meta["no_uploads"].present? ? "True" : "False")) do %>
-      <%= select_tag "meta[no_uploads]", options_for_select([["False", nil], ["True", "on"]], :selected => @provider.meta["no_uploads"].presence), :class => "submit_onchange" %>
-    <% end %>
+    <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
   <% end %>
 

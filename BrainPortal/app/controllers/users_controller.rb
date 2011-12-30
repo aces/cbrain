@@ -173,12 +173,9 @@ class UsersController < ApplicationController
       @user.site = current_user.site
     end
     
-    if params[:meta]
-      add_meta_data_from_form(@user, [ :pref_bourreau_id, :pref_data_provider_id])
-    end
-    
     respond_to do |format|
       if @user.save
+        add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to @user }
         format.xml  { head :ok }

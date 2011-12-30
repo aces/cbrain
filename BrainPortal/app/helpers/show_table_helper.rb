@@ -32,6 +32,15 @@ module ShowTableHelper
       options[:disabled] ||= @edit_disabled
       build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, edit_path, options, &block) }, options)
     end
+
+    def boolean_edit_cell(field, checked, checked_value = "1", unchecked_value = "0", options = {}, &block)
+      options[:content] ||= @template.disabled_checkbox(checked)
+      if block_given?
+        edit_cell(field, options, &block)
+      else
+        edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, checked.present?, :class => "submit_onchange") }
+      end
+    end
     
     def empty_cell(n = 1, options = {})
       n.times { build_cell("","",options) }
@@ -68,11 +77,10 @@ module ShowTableHelper
   end
   
   def inline_edit_field(object, attribute, url, options = {}, &block)
-     field = attribute.to_s
-     default_text = h(options.delete(:content) || object.send(field))
+     default_text = h(options.delete(:content) || object.send(attribute))
      return default_text if options.delete(:disabled)
      method = options.delete(:method) || :put
-     if object.errors.include?(field.to_sym)
+     if object.errors.include?(attribute)
        default_text = "<span style=\"color:red\">#{default_text}</span>"
      end
      html = []

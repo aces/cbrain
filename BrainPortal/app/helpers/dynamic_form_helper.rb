@@ -212,5 +212,11 @@ module DynamicFormHelper
     
     submit_tag(name, options)
   end
+
+  # Creates a disabled checkbox, which will be checked if
+  # +checked+ is present.
+  def disabled_checkbox(checked = nil)
+    check_box_tag(:dummy_disabled_cheackbox, "", checked.present?, :disabled => true)
+  end
   
 end
