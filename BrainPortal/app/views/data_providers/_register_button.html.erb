@@ -24,17 +24,29 @@
   <strong>When registering, automatically...</strong>
   <br/>
 
-  <div style="white-space: nowrap;">
-    <%= group_select :other_group_id, {}, { :include_blank => "... assign them to project ..." } %>
+  <table class="simple">
+    <tr>
+      <td class="centered">&darr; ... assign them to project ... &darr;</td>
+      <td class="centered">&darr; ... move or copy them ... &darr;</td>
+      <td class="centered">&darr; ... to ... &darr;</td>
+      <td rowspan="2" class="centered">
+        <%= external_submit_button("Register the files!", "browse_form", :class => "button" ) %> 
+      </td>
+    </tr>
+    <tr>
+      <td><%= group_select :other_group_id, {}, { :include_blank => "(Select a project)" } %></td>
   
+    <td>
     <% auto_do_options = [
-                            [ "... move the files to Data Provider ->", "MOVE" ],
-                            [ "... copy the files to Data Provider ->", "COPY" ]
+                            [ "... MOVE the files to Data Provider ->", "MOVE" ],
+                            [ "... COPY the files to Data Provider ->", "COPY" ]
                          ]
       auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
     %>
     <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
+    </td>
   
+    <td>
     <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
     <%= data_provider_select :other_data_provider_id,
         { :data_providers => main_dp_set },
@@ -44,9 +56,9 @@
     <%= html_tool_tip("(info)", :offset_y => 25) do %>
       <%= data_providers_descriptions(main_dp_set) %>
     <% end %>
+    </td>
+  </table>
 
-    <%= external_submit_button("Register the files!", "browse_form", :class => "button" ) %> 
-  </div>
 
   <P>
   <strong>Important notes about automatically copying and moving files:</strong>
