@@ -43,8 +43,8 @@ module SelectBoxHelper
   #[groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
-    selector = options[:selector]
-    groups    = options[:groups] || current_user.available_groups
+    selector = options[:selector] || current_session[:active_group_id]
+    groups   = options[:groups]   || current_user.available_groups
   
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s

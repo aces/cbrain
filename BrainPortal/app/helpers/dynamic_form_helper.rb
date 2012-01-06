@@ -216,7 +216,7 @@ module DynamicFormHelper
   # Creates a disabled checkbox, which will be checked if
   # +checked+ is present.
   def disabled_checkbox(checked = nil)
-    check_box_tag(:dummy_disabled_cheackbox, "", checked.present?, :disabled => true)
+    check_box_tag(:dummy_disabled_checkbox, "", checked.present?, :disabled => true)
   end
   
 end

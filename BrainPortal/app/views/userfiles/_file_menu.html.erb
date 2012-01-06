@@ -47,7 +47,7 @@
         <hr>
         <h4>Projects</h4>
         Change Project: 
-        <%= group_select('userfile[group_id]') %>
+        <%= group_select('userfile[group_id]', {}, { :include_blank => "(select another project)" } ) %>
         <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <P>
         Project Permission Update: 

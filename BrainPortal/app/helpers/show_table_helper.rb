@@ -61,7 +61,7 @@ module ShowTableHelper
       header_options = options.delete(:th_options) || {}
       cell_options   = options.delete(:td_options) || {}
       show_width     = options.delete(:show_width) || 1
-      cell_options[:colspan] = (show_width-1)*2+1 if show_width > 1
+      cell_options[:colspan] = (show_width-1)*2+1+(no_header ? 1 : 0) if show_width > 1 || no_header
       header_atts    = header_options.to_html_attributes
       cell_atts      = cell_options.to_html_attributes
       shared_atts    = options.to_html_attributes

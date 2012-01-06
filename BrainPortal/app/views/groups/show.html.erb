@@ -28,6 +28,10 @@
 
     <% t.empty_cell %>
 
+  <% end %>
+
+  <%= show_table(@group, :header => 'Resources') do |t| %>
+
     <% t.cell("Files") { index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true } %>
 
     <% t.cell("Tasks") { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
@@ -39,12 +43,17 @@
       <% t.cell("Execution") { index_count_filter Bourreau.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "Bourreau"} } %>
     <% end %>
 
-    <% t.blank_row %>
+  <% end %>
+
+  <%= show_table(@group, :header => 'Members') do |t| %>
 
     <% default_text = array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20 ) { |u,r,c| link_to_user_with_tooltip(u) } %>
-    <% t.edit_cell(:user_id, :content => default_text, :show_width => 2,
+
+    <% t.edit_cell(:user_id, :show_width => 2,
+                             :header  => 'Members',
+                             :content => default_text, :show_width => 2,
                              :disabled => current_user.has_role?(:user)) do %>
-      <div class="generalbox">
+      <div class="generalbox" style="width: 100%">
         <%= render :partial => 'users_form' %><br>
         <%= submit_tag "Update Users" %>
       </div> 

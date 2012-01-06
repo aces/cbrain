@@ -80,6 +80,23 @@
     %>
 
   <% end %>
+
+  <%= show_table(@user, :header => 'Resources') do |t| %>
+
+    <% t.cell("Files") { index_count_filter @user.userfiles.count, :userfiles, {:user_id => @user.id}, :show_zeros => true } %>
+
+    <% t.cell("Tasks") { index_count_filter @user.cbrain_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true } %>
+
+    <% if current_user.has_role?(:admin) %>
+      <% t.cell("Tools")          { index_count_filter @user.tools.count, :tools, {:user_id => @user.id} } %>
+      <% t.cell("Data Providers") { index_count_filter @user.data_providers.count, :data_providers, {:user_id => @user.id} } %>
+      <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux, {:user_id => @user.id, :type => "BrainPortal"} } %>
+      <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count, :bourreaux, {:user_id => @user.id, :type => "Bourreau"} } %>
+    <% end %>
+
+  <% end %>
+
+
 </div>
 
   <div>
