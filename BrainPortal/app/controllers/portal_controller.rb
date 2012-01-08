@@ -13,6 +13,8 @@
 class PortalController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__]
+
+  before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
   
   #Display a user's home page with information about their account.
   def welcome #:nodoc:

@@ -193,15 +193,17 @@ tr.selected_row {
 }
 
 
+/* The following style proudly brought to you by Pierre Rioux, after MUCH trial and error! */
 .vertical_text {
     display: block;
     white-space: nowrap;
     width: 1.5em;
     height: 20em;
-    -webkit-transform: rotate(-90deg) translate(-19em, 0em); 
-    -moz-transform: rotate(-90deg) translate(-19em, 0em);                                 
-    -webkit-transform-origin: 0 0;
-    -moz-transform-origin: 0 0;
+    margin: auto;
+    -webkit-transform: rotate(-90deg) translate(0.5em, 100%); 
+    -moz-transform: rotate(-90deg) translate(0.5em, 100%);                                 
+    -webkit-transform-origin: 0 100%;
+    -moz-transform-origin: 0 100%;
 }
 
 /* % ######################################################### */
