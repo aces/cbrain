@@ -211,6 +211,16 @@ tr.selected_row {
 }
 
 
+.vertical_text {
+    display: block;
+    white-space: nowrap;
+    width: 1.5em;
+    height: 20em;
+    -webkit-transform: rotate(-90deg) translate(-19em, 0em); 
+    -moz-transform: rotate(-90deg) translate(-19em, 0em);                                 
+    -webkit-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+}
 
 /* % ######################################################### */
 /* % Property List Table Styles */
