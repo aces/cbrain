@@ -18,7 +18,7 @@ There is no information to show at this time.
   <table>
     
     <tr>
-      <th></th>
+      <th class="blank"></th>
       <% @providers.each do |dp| %>
         <th><%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
       <% end %>

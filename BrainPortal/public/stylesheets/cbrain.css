@@ -132,16 +132,15 @@ h5 {
 
 table {
     border-spacing: 0em;
-    border: 2px solid #6699CC;
+    border: 2px solid black;
 }
 
 table th {
-    width: auto;
-    border: 1px solid #9CF;
-    color: #ffffff;
-    background: #0471B4;
-    padding-left: 10px;
-    padding-right: 10px;
+    border: 2px solid white;
+    color: #333333;
+    background: #eeeeee;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
     text-align: center;
     text-indent: 0px;
     font-family: Verdana;
@@ -150,8 +149,8 @@ table th {
 }
 
 table td {
-    width: auto;
-    border: 1px solid #9CF;
+    border: 1px solid #dddddd;
+    /* background: white; */
     color: #404040;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -163,30 +162,13 @@ table td {
     font-size: 11px;
 }
 
-td.title {
-    width: auto;
-    background: #0471B4;
-    color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-}
-
-th.subtitle {
-    width: auto;
+th.supertitle {
     background-color: #05A3D6;
     color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
+}
+
+th.blank {
+    background-color: inherit;
 }
 
 td.tabletext {
@@ -536,7 +518,7 @@ a {
 }
 
 .header_link {
-    color: white
+    color: #333355;
 }
 
 .error_link {

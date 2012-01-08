@@ -31,7 +31,7 @@ b_can_refresh = @bourreaux.select { |b| b.online? && b.has_owner_access?(current
       <th colspan="<%= dps_online.count %>">Data Providers</th>
     </tr>
     <tr>
-      <th></th>
+      <th>Name</th>
       <th>
         Last Checked 
         <% if b_can_refresh.size > 1 %>

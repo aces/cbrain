@@ -129,7 +129,7 @@
 
 <div>
   <table>
-    <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
+    <tr><th colspan="2" class="supertitle">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
     <% @ssh_keys.each do |pair| %>
       <tr><th><%= pair[0] %></th></tr>
       <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>

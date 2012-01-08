@@ -115,7 +115,7 @@ in a tabular layout. Proceed as follow:
 
       <table>
         <tr>
-        <th></th>
+        <th class="blank"></th>
           <% @table_col_values.each do |col_key| %>
             <th><div class="vertical_text"><%= col_proc.call(col_key) %></div></th>
           <% end %>
