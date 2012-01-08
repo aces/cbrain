@@ -117,9 +117,9 @@ in a tabular layout. Proceed as follow:
         <tr>
         <th class="blank"></th>
           <% @table_col_values.each do |col_key| %>
-            <th><div class="vertical_text"><%= col_proc.call(col_key) %></div></th>
+            <th class="vertical_text_container"><div class="vertical_text"><%= col_proc.call(col_key) %></div></th>
           <% end %>
-        <th><div class="vertical_text">Total</div></th>
+        <th class="vertical_text_container"><div class="vertical_text">Total</div></th>
         </tr>
 
         <% total_total  = 0 %>

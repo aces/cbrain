@@ -193,13 +193,37 @@ tr.selected_row {
 }
 
 
-/* The following style proudly brought to you by Pierre Rioux, after MUCH trial and error! */
-.vertical_text {
+
+/* % ######################################################### */
+/* % Support for vertical text labels. */
+/* % The following styles proudly brought to you by Pierre Rioux, after MUCH trial and error! */
+/* % ######################################################### */
+
+/*
+   The DIV's height is set to 20em, which is just enough for
+   and name such as "Failed PostProcess Prerequisites".
+   You can override the vertical size of the DIV using
+     style="height: 35em"
+   in the DIV element's attributes; if the container of
+   the DIV is a proper .vertical_text_container, the
+   sizes and positions will adjust properly automatically.
+   The DIV's width is set to 1.5 em, which is just enough
+   for one line of text.
+*/
+
+/* Use this on whatever contains the DIV with .vertical_text */
+.vertical_text_container {
+   vertical-align: bottom; /* will position the DIV at the bottom */
+}
+
+/* Use this to encapsulate text written from bottom up, sideways */
+div.vertical_text {
     display: block;
     white-space: nowrap;
     width: 1.5em;
     height: 20em;
     margin: auto;
+    text-align: left;
     -webkit-transform: rotate(-90deg) translate(0.5em, 100%); 
     -moz-transform: rotate(-90deg) translate(0.5em, 100%);                                 
     -webkit-transform-origin: 0 100%;
