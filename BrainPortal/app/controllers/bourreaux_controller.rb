@@ -44,7 +44,8 @@ class BourreauxController < ApplicationController
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
-    prepare_show_variables
+    @info = @bourreau.info
+    @log  = @bourreau.getlog
     
     respond_to do |format|
       format.html # show.html.erb
@@ -105,9 +106,8 @@ class BourreauxController < ApplicationController
     @groups = current_user.available_groups
     unless @bourreau.errors.empty?
       @bourreau.reload
-      prepare_show_variables
       respond_to do |format|
-        format.html { render :action => 'show' }
+        format.html { redirect_to :action => 'show' }
         format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return
@@ -516,31 +516,6 @@ class BourreauxController < ApplicationController
   
   private
   
-  def prepare_show_variables
-    @info = @bourreau.info
-
-    myusers = current_user.available_users.all
-
-    stats = ModelsReport.gather_task_statistics(
-               :users     => myusers,
-               :bourreaux => @bourreau
-         )
-
-
-    status_stats     = stats[0]
-    @statuses        = status_stats[:statuses]
-    @statuses_list   = status_stats[:statuses_list]
-    @user_tasks_info = status_stats[:user_task_info]
-
-    type_stats       = stats[1]
-    @types           = type_stats[:types]
-    @types_list      = type_stats[:types_list]
-    @user_types_info = type_stats[:user_types_info]
-
-    
-    @log = @bourreau.getlog
-  end
-
   # Adds sensible default values to some field for
   # new objects, or existing ones being edited.
   def sensible_defaults(portal_or_bourreau)

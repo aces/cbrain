@@ -6,6 +6,14 @@
    
 <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
+    <% if is_bourreau %>    
+
+      <%= link_to 'Task Statistics By Status', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :commit => "Generate" }, :class => "button" %>
+
+      <%= link_to 'Task Statistics By Type', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :commit => "Generate" }, :class => "button" %>
+    
+    <%end%>
+    
     <%= link_to 'Delete', bourreau_path(@bourreau), { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?", :method => :delete, :class => "button" } %>
   </div>
 <% end %>
@@ -310,35 +318,6 @@
 
       <% end %>
     <% end %>
-  <% end %>
-
-  <% if is_bourreau %>
-
-  <P>
-
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => @statuses,
-                          :list             => @statuses_list,
-                          :user_info        => @user_tasks_info,
-                          :additionnal_filt => {:bourreau_id => @bourreau.id},
-                          :by               => :status
-                        }
-  %>
-
-  <P>
-
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => @types,
-                          :list             => @types_list,
-                          :user_info        => @user_types_info,
-                          :additionnal_filt => {:bourreau_id => @bourreau.id},
-                          :by               => :type
-                        }
-  %>
-
-
-  <P>
-
   <% end %>
 
   <P>
