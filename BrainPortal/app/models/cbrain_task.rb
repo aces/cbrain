@@ -188,6 +188,12 @@ class CbrainTask < ActiveRecord::Base
     self.name
   end
 
+  # For backward compatibility.
+  # Invokes pretty_type().
+  def self.pretty_name
+    self.pretty_type
+  end
+
   # Returns the Tool object associated with the task.
   # Unfortunately, there isn't a clear association between
   # a task and a tool; it's based on the class name stored
