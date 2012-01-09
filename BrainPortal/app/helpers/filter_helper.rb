@@ -73,7 +73,7 @@ module FilterHelper
     else
       ajax         = true
     end
-    unless options[:pretty]
+    unless options.delete(:pretty)
       params_hash = {controller.to_sym  => params_hash}
     end
     url = {:controller => controller, :action => :index}.merge params_hash
