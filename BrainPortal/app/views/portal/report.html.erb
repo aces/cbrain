@@ -187,7 +187,7 @@ in a tabular layout. Proceed as follow:
         <%= group_select :group_id, { :selector => params[:group_id] }, :include_blank => '(Any Project)' %>
       <% end %>
       <% if @model_atts.include?(:data_provider_id) %>
-        <%= data_provider_select :date_provider_id, { :selector => params[:data_provider_id] }, :include_blank => '(Any Data Provider)' %>
+        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id] }, :include_blank => '(Any Data Provider)' %>
       <% end %>
       <% if @model_atts.include?(:bourreau_id) %>
         <%= bourreau_select :bourreau_id, { :selector => params[:bourreau_id] }, :include_blank => '(Any Server)' %>
