@@ -175,6 +175,34 @@ in a tabular layout. Proceed as follow:
 
   <br>
 
+  <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
+    <div class="notesbox" style="width: auto">
+
+      <strong>Optional:</strong> fix some attributes:<br/>
+
+      <% if @model_atts.include?(:user_id) %>
+        <%= user_select :user_id, { :selector => params[:user_id] }, :include_blank => '(Any User)' %>
+      <% end %>
+      <% if @model_atts.include?(:group_id) %>
+        <%= group_select :group_id, { :selector => params[:group_id] }, :include_blank => '(Any Project)' %>
+      <% end %>
+      <% if @model_atts.include?(:data_provider_id) %>
+        <%= data_provider_select :date_provider_id, { :selector => params[:data_provider_id] }, :include_blank => '(Any Data Provider)' %>
+      <% end %>
+      <% if @model_atts.include?(:bourreau_id) %>
+        <%= bourreau_select :bourreau_id, { :selector => params[:bourreau_id] }, :include_blank => '(Any Server)' %>
+      <% end %>
+      <% if @model_atts.include?(:type) %>
+        <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %>
+      <% end %>
+      <% if @model_atts.include?(:status) %>
+        <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
+      <% end %>
+    </div>
+
+    <br>
+  <% end %>
+
   <% if @table_ok %>
     <%= submit_tag('Refresh Report') %>
   <% else %>
