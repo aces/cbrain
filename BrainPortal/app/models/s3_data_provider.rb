@@ -36,7 +36,7 @@ class S3DataProvider < DataProvider
   end
 
   def is_browsable?
-    false
+    true
   end
 
   def impl_sync_to_cache(userfile)
@@ -73,11 +73,18 @@ class S3DataProvider < DataProvider
     @s3_connection.s3object.rename s3_filename(userfile), s3_filename(userfile,newname), bucket_name
   end
 
-#  def impl_provider_list_all
- #   file_names=[]
-  #  s3_connection.bucket.objects(bucket_name).each do |
-  #end
- 
+ def impl_provider_list_all(user)
+   s3_connection.bucket.find(bucket_name).objects.map { |object| 
+     file = DataProvider::FileInfo.new()
+     filename = filename_from_s3_filename(object.key)[1]
+     file.name = filename
+     file.symbolic_type = :regular
+     file.mtime = Time.parse(object.about()["date"]).to_i
+     file.size = 0
+     file
+   }
+ end
+
 end
 
 
