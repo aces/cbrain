@@ -61,11 +61,12 @@ class ClusterTask < CbrainTask
   include NumericalSubdirTree
 
   # These basenames might get modified with suffixes appended to them.
-  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{id}.sh"
-  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{id}"
-  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{name}.{id}"
+  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{run_id}.sh"
+  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{run_id}"
+  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{name}.{run_id}"
 
   before_destroy :before_destroy_terminate_and_rm_workdir
+  validate       :task_is_proper_subclass
 
   ##################################################################
   # Core Object Methods
@@ -766,19 +767,6 @@ class ClusterTask < CbrainTask
 
 
   ##################################################################
-  # ActiveRecord Lifecycle methods
-  ##################################################################
-
-  # All object destruction also implies termination!
-  def before_destroy_terminate_and_rm_workdir #:nodoc:
-    self.terminate rescue true
-    self.remove_cluster_workdir
-    true
-  end
-
-
-
-  ##################################################################
   # Cluster Job's STDOUT And STDERR Files Methods
   ##################################################################
 
@@ -1155,6 +1143,25 @@ class ClusterTask < CbrainTask
     return self.cluster_workdir_size
   rescue
     return nil
+  end
+
+  ##################################################################
+  # Lifecycle hooks
+  ##################################################################
+
+  private
+
+  # All object destruction also implies termination!
+  def before_destroy_terminate_and_rm_workdir #:nodoc:
+    self.terminate rescue true
+    self.remove_cluster_workdir
+    true
+  end
+
+  # Returns true only if
+  def task_is_proper_subclass #:nodoc:
+    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless ClusterTask.subclasses.include? self.class
+    true
   end
 
 end

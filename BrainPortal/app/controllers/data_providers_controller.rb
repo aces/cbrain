@@ -46,8 +46,6 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    prepare_file_stats
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
@@ -89,7 +87,7 @@ class DataProvidersController < ApplicationController
     @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
     
     if errors.empty? && @provider.save
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
     else
       errors.each do |attr, msg|
         @provider.errors.add(attr, msg)
@@ -133,7 +131,7 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(fields)
 
     if @provider.errors.empty?
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
@@ -141,11 +139,9 @@ class DataProvidersController < ApplicationController
       end   
     else
       @provider.reload
-      prepare_file_stats
       @ssh_keys = get_ssh_public_keys
-      @typelist = get_type_list
       respond_to do |format|
-        format.html { render :action => 'show' }
+        format.html { redirect_to :action => 'show' }
         format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -561,20 +557,6 @@ class DataProvidersController < ApplicationController
   end
   
   private
-
-  def prepare_file_stats #:nodoc:
-    
-    # Get stat for file_counts
-    stats = ModelsReport.gather_filetype_statistics(
-              :users     => current_user.available_users.all,
-              :providers => @provider
-            )
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @user_totcount        = stats[:user_totcount]
-    @all_totcount         = stats[:all_totcount]
-
-  end
 
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 

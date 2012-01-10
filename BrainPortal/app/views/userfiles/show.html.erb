@@ -99,7 +99,9 @@
   %>
 </div>  
 
-<% if @userfile.can_be_accessed_by?(current_user) %>
+
+
+<% if @userfile.can_be_accessed_by?(current_user) && ! @userfile.data_provider.meta[:no_viewers] %>
   <% unless @userfile.is_locally_synced? %>
 
     <P>
@@ -123,26 +125,36 @@
 
 <% end %>
 
+
 <P>
+
+
 <% unless @userfile.viewers.blank? %>
   <fieldset>
     <legend>Contents</legend>
-    <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-      <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
-        <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
-        <%= submit_tag "Change View" %>
-      <% end %>
-      <br>
-    <% end  %>
-    <div id="userfile_viewer">
-      <div class="display_userfile">   
-        <% if @default_viewer %>
-           <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+    <% if @userfile.data_provider.meta[:no_viewers] %>
+      (This file cannot be viewed at all as it is stored on Data Provider
+      <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+      which is marked as <strong>non-viewable</strong>)
+    <% else %>
+      <% if @userfile.viewers && @userfile.viewers.size > 1 %>
+        <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
+          <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
+          <%= submit_tag "Change View" %>
         <% end %>
+        <br>
+      <% end  %>
+      <div id="userfile_viewer">
+        <div class="display_userfile">   
+          <% if @default_viewer %>
+             <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+          <% end %>
+        </div>
       </div>
-    </div>
+    <% end %>
   </fieldset>
 <% end %>
+
 <P>
 
 <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>

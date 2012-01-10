@@ -3,10 +3,10 @@
 
 <div class="menu_bar">
   <% if check_role(:admin) %>
-    <%= link_to 'View Access Reports', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
+    <%= link_to 'Tool Access Reports', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
   <% end %>
 
-  <%= link_to 'View Object Reports',   { :controller => :portal, :action => :report }, :class => "button" %>
+  <%= link_to 'Report Maker',   { :controller => :portal, :action => :report }, :class => "button" %>
 </div>
 
 <br>

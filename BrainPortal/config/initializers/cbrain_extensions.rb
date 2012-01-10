@@ -14,6 +14,20 @@
 ###################################################################
 class ActiveRecord::Base
 
+  ############################################################################
+  # Pretty Type methods
+  ############################################################################
+
+  # Default 'pretty' type name for the model.
+  def self.pretty_type
+    self.to_s.demodulize.underscore.titleize
+  end
+
+  # Default 'pretty' type name for the object.
+  def pretty_type
+    self.class.pretty_type
+  end
+
   ###################################################################
   # ActiveRecord Added Behavior For MetaData
   ###################################################################

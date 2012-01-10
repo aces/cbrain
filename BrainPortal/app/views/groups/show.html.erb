@@ -45,7 +45,7 @@
 
   <% end %>
 
-  <%= show_table(@group, :header => 'Members') do |t| %>
+  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
     <% default_text = array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20 ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
