@@ -237,17 +237,18 @@ class ApplicationController < ActionController::Base
   # Example: let's say that when posting to update object @myobj,
   # the also form sent this to the controller:
   #
-  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A' } ... }
+  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A', :spa => "" } ... }
   #
   # Then calling
   #
-  #   add_meta_data_from_form(@myobj, [ :def, :xyz ])
+  #   add_meta_data_from_form(@myobj, [ :def, :xyz, :nope, :spa ])
   #
   # will result in two meta data pieces of information added
-  # to the object @myobj, like this:
+  # to the object @myobj, and one of them deleted, like this:
   #
   #   @myobj.meta[:def] = 'z'
   #   @myobj.meta[:xyz] = 'A'
+  #   @myobj.meta[:spa] = nil # which will delete the meta key
   #
   # This method is a wrapper around the method update_meta_data()
   # from module ActRecMetaData ; in particular, it supplies

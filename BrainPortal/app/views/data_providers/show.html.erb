@@ -106,6 +106,8 @@
 
     <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
+    <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
+
   <% end %>
 
 </div>

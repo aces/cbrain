@@ -87,7 +87,7 @@ class DataProvidersController < ApplicationController
     @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
     
     if errors.empty? && @provider.save
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
     else
       errors.each do |attr, msg|
         @provider.errors.add(attr, msg)
@@ -131,7 +131,7 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(fields)
 
     if @provider.errors.empty?
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
