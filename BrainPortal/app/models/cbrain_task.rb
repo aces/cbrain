@@ -30,8 +30,6 @@ class CbrainTask < ActiveRecord::Base
   validates_presence_of :status
   validates_presence_of :tool_config_id
 
-  validate              :task_is_proper_subclass
-  
   belongs_to            :bourreau
   belongs_to            :user
   belongs_to            :group
@@ -760,17 +758,6 @@ class CbrainTask < ActiveRecord::Base
     
       self.group_id = owner.own_group.id
     end
-  end
-
-  # Returns true only if
-  def task_is_proper_subclass #:nodoc:
-    # Of the two sets below, one is always empty:
-    # - PortalTask  has subclasses only on a Portal server.
-    # - ClusterTask has subclasses only on a Bourreau server.
-    unless (PortalTask.subclasses + ClusterTask.subclasses).include? self.class
-      self.errors.add(:base, "is not a proper subclass of CbrainTask.")
-    end
-    true
   end
 
 end

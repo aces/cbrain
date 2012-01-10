@@ -17,6 +17,8 @@ class PortalTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  validate              :task_is_proper_subclass
+
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
   # simply setting the task's status to the value modifies the
@@ -599,6 +601,18 @@ class PortalTask < CbrainTask
       cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
     end
     self.params = cur_params
+    true
+  end
+
+  ##################################################################
+  # Lifecycle hooks
+  ##################################################################
+
+  private
+
+  # Returns true only if
+  def task_is_proper_subclass #:nodoc:
+    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless PortalTask.subclasses.include? self.class
     true
   end
 
