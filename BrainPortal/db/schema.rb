@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110919172601) do
+ActiveRecord::Schema.define(:version => 20120110202707) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -42,7 +42,9 @@ ActiveRecord::Schema.define(:version => 20110919172601) do
     t.integer  "level"
     t.integer  "rank"
     t.integer  "results_data_provider_id"
-    t.decimal  "cluster_workdir_size",     :precision => 24, :scale => 0
+    t.decimal  "cluster_workdir_size",        :precision => 24, :scale => 0
+    t.boolean  "workdir_archived"
+    t.integer  "workdir_archive_userfile_id"
   end
 
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"

@@ -77,7 +77,7 @@ b_can_refresh = @bourreaux.select { |b| b.online? && b.has_owner_access?(current
     
   </table>
   
-  <%= center_legend("Data Provider Status:", [o_icon,"alive"], [times_icon,"down"] )%>
+  <%= center_legend("Data Provider Status:", [ [o_icon, "alive"], [times_icon, "down"] ] ) %>
   
  
   <% if !dps_offline.empty? %>

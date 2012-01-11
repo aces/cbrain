@@ -607,8 +607,14 @@ class TasksController < ApplicationController
         tasks << task
       end
 
-      grouped_tasks = tasks.group_by &:bourreau_id
+      # Some security validations
+      new_bourreau_id = params[:dup_bourreau_id].presence
+      archive_dp_id   = params[:archive_dp_id].presence
+      new_bourreau_id = nil unless new_bourreau_id &&     Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+      archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
 
+      # Go through tasks, grouped by bourreau
+      grouped_tasks = tasks.group_by &:bourreau_id
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
@@ -627,7 +633,7 @@ class TasksController < ApplicationController
           end
           skippedtasks = btasklist - oktasks
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks,new_status,params[:dup_bourreau_id]) # TODO parse returned command object?
+            bourreau.send_command_alter_tasks(oktasks, new_status, new_bourreau_id, archive_dp_id) # TODO parse returned command object?
             sent_ok += oktasks.size
           end
           sent_skipped += skippedtasks.size

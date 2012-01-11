@@ -42,3 +42,10 @@
     end
   end 
 %>
+
+<%= center_legend("Workdir archiving status symbols:", [ 
+      [ colored_archived_status(:workdir),  "On Cluster"  ],
+      [ colored_archived_status(:userfile), "As File"     ],
+    ])
+%>
+

@@ -1,0 +1,22 @@
+
+Archived content of task <%= link_to_task_if_accessible(@userfile.meta[:original_task_id], current_user, :name_method => :fullname ) %>
+
+<p>
+
+<% if @userfile.is_locally_synced? %>
+
+  <%
+    tar_list_io = IO.popen("tar -tvzf #{@userfile.cache_full_path}","r") rescue nil
+    tar_list    = tar_list_io.read rescue nil
+    tar_list_io.close rescue nil
+  %>
+    
+  <% if tar_list.present? %>
+    List of files in archive:
+    <pre class="standard_out script_preview"><%= tar_list %></pre>
+  <% else %>
+    File not synchronized, content cannot be listed for the moment.
+  <% end %>
+
+<% end %>
+
