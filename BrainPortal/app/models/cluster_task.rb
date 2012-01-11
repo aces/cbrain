@@ -894,6 +894,10 @@ class ClusterTask < CbrainTask
       return false
     end
 
+    # These two vars used only in rescue or ensure clauses
+    full_tar_file      = (Pathname.new(full) + tar_file).to_s
+    full_temp_tar_file = (Pathname.new(full) + temp_tar_file).to_s
+
     Dir.chdir(full) do
 
       if File.exists?(temp_tar_file)
@@ -944,11 +948,12 @@ class ClusterTask < CbrainTask
 
   rescue => ex
     self.addlog_exception(ex, "Archiving process exception:")
+    File.unlink(full_tar_file) rescue true
     return false
 
   ensure
-    File.unlink(tar_capture)   rescue true
-    File.unlink(temp_tar_file) rescue true
+    File.unlink(tar_capture)        rescue true
+    File.unlink(full_temp_tar_file) rescue true
   end
 
   # This method performs the inverse of 
