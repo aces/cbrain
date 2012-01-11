@@ -913,7 +913,8 @@ class ClusterTask < CbrainTask
 
       # Remove some common warnings
       # "tar: something.sock: socket ignored"
-      out.gsub!(/tar.*ignored/,"")
+      # "tar: .: file changed as we read it"
+      out.gsub!(/tar.*ignored|tar.*changed as we read it/,"")
 
       if ! out.blank?
         outlines = out.split(/\n/)
