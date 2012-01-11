@@ -206,30 +206,36 @@
   <fieldset>
     <legend>Cluster Job's Captured Output</legend>
 
-    <% if @task.run_number > 1 %>
-      <strong>Outputs are available for several runs:</strong>
-      <% 1.upto(@task.run_number) do |rn| %>
-        <% if rn == @run_number.to_i %>
-          <%= rn %>
-        <% else %>
-          <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
-        <% end %>
-      <% end %>
-      <p>
-    <% end %>
+    <% if @task.workdir_archived? %>
+      Since this task is archived, outputs aren't available right now.
+    <% else %>
 
-    <%= build_tabs do |tb| %>
-      <%= tb.tab("Standard Out") do %>
-        <pre class="standard_out"><%= prettystdout -%></pre>
+      <% if @task.run_number > 1 %>
+        <strong>Outputs are available for several runs:</strong>
+        <% 1.upto(@task.run_number) do |rn| %>
+          <% if rn == @run_number.to_i %>
+            <%= rn %>
+          <% else %>
+            <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
+          <% end %>
+        <% end %>
+        <p>
       <% end %>
-      <%= tb.tab("Standard Error") do %>
-        <pre class="standard_out"><%= prettystderr -%></pre>
-      <% end %>
-      <% if current_user.has_role?(:admin) %>
-        <%= tb.tab("Script") do %>
-          <pre class="script_preview"><%= prettyscript %></pre>
+
+      <%= build_tabs do |tb| %>
+        <%= tb.tab("Standard Out") do %>
+          <pre class="standard_out"><%= prettystdout -%></pre>
+        <% end %>
+        <%= tb.tab("Standard Error") do %>
+          <pre class="standard_out"><%= prettystderr -%></pre>
+        <% end %>
+        <% if current_user.has_role?(:admin) %>
+          <%= tb.tab("Script") do %>
+            <pre class="script_preview"><%= prettyscript %></pre>
+          <% end %>
         <% end %>
       <% end %>
+
     <% end %>
 
   </fieldset>    

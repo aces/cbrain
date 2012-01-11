@@ -163,7 +163,7 @@ class TasksController < ApplicationController
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
-    if (request.format.to_sym != :xml) || params[:get_task_outputs]
+    if ((request.format.to_sym != :xml) || params[:get_task_outputs]) && ! @task.workdir_archived?
       begin
         bourreau           = @task.bourreau
         control            = bourreau.send_command_get_task_outputs(task_id,@run_number)

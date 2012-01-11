@@ -14,7 +14,7 @@ class TaskWorkdirArchive < SingleFile
   has_viewer :task_workdir_archive
   
   def self.file_name_pattern #:nodoc:
-    /^CbrainTask_Workdir_\d+\.tar\.gz$/i
+    /^CbrainTask_Workdir_[\w\-]+\.tar\.gz$/i
   end
 
   def self.pretty_type #:nodoc:

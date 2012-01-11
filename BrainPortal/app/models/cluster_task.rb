@@ -856,7 +856,8 @@ class ClusterTask < CbrainTask
   ##################################################################
 
   def in_situ_workdir_archive_file #:nodoc:
-    "CbrainTask_Workdir_#{self.id}.tar.gz" # note: also check in the TaskWorkdirArchive model
+    fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/^_*/,"").sub(/_*$/,"")
+    "CbrainTask_Workdir_#{fn_id}.tar.gz" # note: also check in the TaskWorkdirArchive model
   end
 
   # This method will create a .tar.gz file of the
