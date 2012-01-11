@@ -930,10 +930,12 @@ class ClusterTask < CbrainTask
         return false
       end
 
-      if ! ret
-        self.addlog("Error creating TAR archive: the tar command returned false.")
-        return false
-      end
+      # Commented-out, as some tar implementations work fine and still return false
+      # on warnings.
+      #if ! ret
+      #  self.addlog("Error creating TAR archive: the tar command returned false.")
+      #  return false
+      #end
 
       File.rename(temp_tar_file, tar_file)
       self.workdir_archived = true
