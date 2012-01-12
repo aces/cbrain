@@ -18,7 +18,7 @@ module DynamicFormHelper
   def submit_button(value,html_opts={}) 
     html_opts[:class] ||= ""
     html_opts[:class] +=  " button"
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    atts = html_opts.to_html_attributes
     return "<input type=\"submit\" value=\"#{h(value)}\" #{atts} />".html_safe
   end
   
@@ -31,7 +31,7 @@ module DynamicFormHelper
     options[:class] +=  " select_all"
     
     options["data-checkbox-class"] = checkbox_class
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    atts = options.to_html_attributes 
     
     "<input type='checkbox' #{atts}/>".html_safe
   end
@@ -45,7 +45,7 @@ module DynamicFormHelper
     options[:class] +=  " select_master"
     
     options["data-select-class"] = select_class
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} 
+    atts = options.to_html_attributes 
     
     result =  "<select #{atts}>\n"
     result += select_options.map{|text| "<option>#{h(text)}</option>"}.join("\n")
