@@ -147,6 +147,23 @@ module ViewHelpers
     end 
   end
 
+  # This method returns the same thing as pretty_size,
+  # except that the different size orders are colored
+  # distinctly. Colors can be overriden in +options+, with
+  # the default looking like:
+  #   { :gb => 'red', :mb => 'purple', :kb => 'blue', :bytes => nil }
+  def colored_pretty_size(size, options = {})
+    pretty = pretty_size(size, options)
+    if pretty =~ / (Gb|Mb|Kb|bytes)$/
+      suffix = Regexp.last_match[1].downcase.to_sym
+      return html_colorize(pretty, options[:gb].presence || 'red')    if suffix == :gb
+      return html_colorize(pretty, options[:mb].presence || 'purple') if suffix == :mb
+      return html_colorize(pretty, options[:kb].presence || 'blue')   if suffix == :kb
+      return html_colorize(pretty, options[:bytes]) if options[:bytes].present?
+    end
+    pretty # default
+  end
+
   # Returns one of two things depending on +condition+:
   # If +condition+ is FALSE, returns +string1+
   # If +condition+ is TRUE, returns +string2+ colorized in red.
@@ -174,8 +191,11 @@ module ViewHelpers
   # Returns a string of text colorized in HTML.
   # The HTML code will be in a SPAN, like this:
   #   <SPAN STYLE="COLOR:color">text</SPAN>
-  # The default color is 'red'.
+  # The default +color+ is 'red'.
+  # A value of 'default' or nil for +color+ will
+  # just return the +text+ without the SPAN.
   def html_colorize(text, color = "red", options = {})
+    return text.html_safe if color.blank? || color == 'default'
     "<span style=\"color: #{color}\">#{ERB::Util.html_escape(text)}</span>".html_safe
   end
 

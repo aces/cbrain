@@ -23,22 +23,29 @@
       :multiple => true, :size => 10
   %>
 </p>
+
 <p>
    Description:<br>
    <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
 </p>
+
 <p>
    Owner:<br>
    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
 </p> 
+
 <p>
    Execution Server:<br>
    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
+
 <p>
-   Filtering by date: <br/> 
-   <%= render :partial => 'custom_filter_date_selection', :locals  => {:custom_filter  => custom_filter} %>
-   <br/>
+Filtering by date: <br/> 
+<%= render :partial => 'custom_filter_date_selection', :locals  => {:custom_filter  => custom_filter} %>
+
+<p>
+   Archiving Status: <br/>
+   <%= select :data, :archiving_status, [["Don't filter by archiving status", ''], ["Not archived", 'none'], ["Archived on cluster", 'cluster'], ["Archived as file", 'file']], :selected => custom_filter.data["archiving_status"] %>
 </p>
 
 

@@ -68,6 +68,8 @@ class ClusterTask < CbrainTask
   before_destroy :before_destroy_terminate_and_rm_workdir
   validate       :task_is_proper_subclass
 
+
+
   ##################################################################
   # Core Object Methods
   ##################################################################
@@ -87,6 +89,7 @@ class ClusterTask < CbrainTask
     self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
     self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
   end
+
 
 
   ##################################################################
@@ -133,6 +136,7 @@ class ClusterTask < CbrainTask
   def job_walltime_estimate
     24.hours
   end
+
 
 
   ##################################################################
@@ -283,7 +287,7 @@ class ClusterTask < CbrainTask
   # This method acts like the new() method of Userfile,
   # but if the attribute list match a file already
   # existing then it will return that file instead
-  # if a new() entry. This is useful when writing
+  # of a new() entry. This is useful when writing
   # recoverable or restartable code that creates a
   # report or a result file, for instance.
   # +klass+ must be a class that is a subclass of
@@ -330,7 +334,7 @@ class ClusterTask < CbrainTask
   # comment can be appended to the message.
   def addlog_to_userfiles_processed(userfiles,comment = "")
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
-    myname   = self.bname_tid
+    myname   = self.fullname
     mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
@@ -345,7 +349,7 @@ class ClusterTask < CbrainTask
   # comment can be appended to the message.
   def addlog_to_userfiles_created(userfiles,comment = "")
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
-    myname   = self.bname_tid
+    myname   = self.fullname
     mylink   = "/tasks/#{self.id}" # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
@@ -362,7 +366,7 @@ class ClusterTask < CbrainTask
   def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment = "")
     creatorlist = [ creatorlist ] unless creatorlist.is_a?(Array)
     createdlist = [ createdlist ] unless createdlist.is_a?(Array)
-    myname   = self.bname_tid
+    myname   = self.fullname
     mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     creatorlist.each do |creator|
@@ -451,6 +455,7 @@ class ClusterTask < CbrainTask
 
     cb_error "Expected Task object to be in 'Setting Up' state." unless
       self.status == 'Setting Up'
+    return false if self.workdir_archived?
 
     begin
       self.addlog("Setting Up.")
@@ -486,6 +491,7 @@ class ClusterTask < CbrainTask
 
     cb_error "Expected Task object to be in 'Post Processing' state." unless
       self.status == 'Post Processing'
+    return false if self.workdir_archived?
 
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
@@ -541,6 +547,8 @@ class ClusterTask < CbrainTask
       cb_error "Unknown blank status obtained from CbrainTask ActiveRecord #{self.id}."
     end
 
+    return ar_status if self.workdir_archived?
+
     # The list below contains states that are either final
     # or are are moved to other states using other mechanism
     # than a check with the cluster's state. For instance:
@@ -580,6 +588,7 @@ class ClusterTask < CbrainTask
   #Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
+    return false if self.workdir_archived?
 
     # Cluster job termination
     if cur_status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
@@ -620,6 +629,7 @@ class ClusterTask < CbrainTask
   # Suspend the task (if it's currently in an appropriate state.)
   def suspend
     return false unless self.status == "On CPU"
+    return false if self.workdir_archived?
     begin
       self.scir_session.suspend(self.cluster_jobid)
       self.status_transition(self.status, "Suspended")
@@ -630,6 +640,7 @@ class ClusterTask < CbrainTask
 
   # Resume processing the task if it was suspended.
   def resume
+    return false if self.workdir_archived?
     begin
       return false unless self.status == "Suspended"
       self.scir_session.resume(self.cluster_jobid)
@@ -642,6 +653,7 @@ class ClusterTask < CbrainTask
   # Put the task on hold if it is currently queued.
   def hold
     return false unless self.status == "Queued"
+    return false if self.workdir_archived?
     begin
       self.scir_session.hold(self.cluster_jobid)
       self.status_transition(self.status, "On Hold")
@@ -652,6 +664,7 @@ class ClusterTask < CbrainTask
 
   # Release the task from state On Hold.
   def release
+    return false if self.workdir_archived?
     begin
       return false unless self.status == "On Hold"
       self.scir_session.release(self.cluster_jobid)
@@ -672,6 +685,7 @@ class ClusterTask < CbrainTask
   # This simply sets a special value in the 'status' field
   # that will be handled by the Bourreau Worker.
   def recover
+    return false if self.workdir_archived?
     curstat = self.status
     if curstat =~ /^Failed (Setup|PostProcess) Prerequisites$/
       failed_where = Regexp.last_match[1]
@@ -698,6 +712,7 @@ class ClusterTask < CbrainTask
   # that will be handled by the Bourreau Worker. The +atwhat+
   # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
+    return false if self.workdir_archived?
     begin
       return false unless self.status =~ /Completed|Terminated|Duplicated/
       return false unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
@@ -728,6 +743,7 @@ class ClusterTask < CbrainTask
   # [[:fail]] Some prerequisites have failed and thus at
   #           this point the task can never proceed.
   def prerequisites_fulfilled?(for_state)
+    return :fail if self.workdir_archived?
     allprereqs = self.prerequisites    || {}
     prereqs    = allprereqs[for_state] || {}
     return :go if prereqs.empty?
@@ -825,7 +841,7 @@ class ClusterTask < CbrainTask
      self.cluster_stdout = nil
      self.cluster_stderr = nil
      self.script_text    = nil
-     return if self.new_record?
+     return if self.new_record? || self.workdir_archived?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
@@ -845,6 +861,276 @@ class ClusterTask < CbrainTask
      true
   end
 
+
+
+  ##################################################################
+  # Work Directory Archiving API
+  ##################################################################
+
+  def in_situ_workdir_archive_file #:nodoc:
+    fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/^_*/,"").sub(/_*$/,"")
+    "CbrainTask_Workdir_#{fn_id}.tar.gz" # note: also check in the TaskWorkdirArchive model
+  end
+
+  # This method will create a .tar.gz file of the
+  # content of the task's work directory. The tar
+  # file will be left in the work directory itself,
+  # and all other files will be removed. The
+  # basename of the tar file can be obtained from
+  # in_situ_workdir_archive_file(). Restoring the
+  # state of the workdir can be performed with
+  # unarchive_work_directory().
+  def archive_work_directory
+    return false if self.share_wd_tid
+    return true  if self.workdir_archived?
+
+    cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+
+    tar_file      = self.in_situ_workdir_archive_file
+    temp_tar_file = "T_#{tar_file}"
+    tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
+
+    if self.status !~ /Completed|Failed|Terminated/
+      self.addlog("Cannot archive: status is #{self.status}")
+      return false
+    end
+
+    if self.cluster_workdir.blank?
+      self.addlog("Cannot archive: no work directory configured.")
+      return false
+    end
+
+    full=self.full_cluster_workdir
+    if ! Dir.exists?(full)
+      self.addlog("Cannot archive: work directory '#{full}' does not exist.")
+      return false
+    end
+
+    # These two vars used only in rescue or ensure clauses
+    full_tar_file      = (Pathname.new(full) + tar_file).to_s
+    full_temp_tar_file = (Pathname.new(full) + temp_tar_file).to_s
+
+    Dir.chdir(full) do
+
+      if File.exists?(temp_tar_file)
+        self.addlog("Cannot archive: it seems an archiving process is already in progress.")
+        # TODO check date on temp_tar_file and proceed instead if it's really old?
+        return false
+      end
+
+      self.addlog("Attempting to archive work directory.")
+
+      ret = system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
+      out = File.read(tar_capture) rescue ""
+
+      # Remove some common warnings
+      # "tar: something.sock: socket ignored"
+      # "tar: .: file changed as we read it"
+      out.gsub!(/tar.*ignored|tar.*changed as we read it/,"")
+
+      if ! out.blank?
+        outlines = out.split(/\n/)
+        if outlines.size > 10
+          outlines[10..99999] = [ "(#{outlines.size-10} more lines)" ]
+        end
+        self.addlog("Error creating TAR archive. Output of tar:\n#{outlines.join("\n")}")
+        return false
+      end
+
+      if ! File.exists?(temp_tar_file)
+        self.addlog("Error creating TAR archive: no file found after command, and no output?")
+        return false
+      end
+
+      # Commented-out, as some tar implementations work fine and still return false
+      # on warnings.
+      #if ! ret
+      #  self.addlog("Error creating TAR archive: the tar command returned false.")
+      #  return false
+      #end
+
+      File.rename(temp_tar_file, tar_file)
+      self.workdir_archived = true
+      self.save!
+
+      entries = Dir.entries(".").reject { |e| e == '.' || e == '..' || e == tar_file }
+      entries.each { |e| FileUtils.remove_dir(e, true) rescue true }
+    end
+
+    self.update_size_of_cluster_workdir
+
+    true
+
+  rescue => ex
+    self.addlog_exception(ex, "Archiving process exception:")
+    File.unlink(full_tar_file) rescue true
+    return false
+
+  ensure
+    File.unlink(tar_capture)        rescue true
+    File.unlink(full_temp_tar_file) rescue true
+  end
+
+  # This method performs the inverse of 
+  # archive_work_directory() : given a tar file
+  # in the root of the work directory, it will
+  # extract it then erase the tar file itself.
+  def unarchive_work_directory
+    return false if     self.share_wd_tid
+    return true  unless self.workdir_archived?
+
+    cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+
+    tar_file      = self.in_situ_workdir_archive_file
+    tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
+
+    if self.cluster_workdir.blank?
+      self.addlog("Cannot unarchive: no work directory configured.")
+      return false
+    end
+
+    full=self.full_cluster_workdir
+    if ! Dir.exists?(full)
+      self.addlog("Cannot unarchive: work directory '#{full}' does not exist.")
+      return false
+    end
+
+    Dir.chdir(full) do
+
+      if ! File.exists?(tar_file)
+        self.addlog("Cannot unarchive: tar archive does not exist.")
+        return false
+      end
+
+      self.addlog("Attempting to unarchive work directory.")
+
+      ret = system("tar -xzf '#{tar_file}' </dev/null >'#{tar_capture}' 2>&1")
+      out = File.read(tar_capture) rescue ""
+
+      if ! out.blank? || ! ret
+        outlines = out.split(/\n/)
+        if outlines.size > 10
+          outlines[10..99999] = [ "(#{outlines.size-10} more lines)" ]
+        end
+        outlines = [ "(No output; tar command only returned false)" ] if outlines.empty?
+        self.addlog("Error extracting TAR archive. Output of tar:\n#{outlines.join("\n")}")
+        return false
+      end
+
+      File.unlink(tar_file) rescue true
+    end
+
+    self.workdir_archived = false
+    self.save!
+    self.update_size_of_cluster_workdir
+
+    true
+
+  rescue => ex
+    self.addlog_exception(ex, "Unarchiving process exception:")
+    return false
+
+  ensure
+    File.unlink(tar_capture)   rescue true
+  end
+
+  # This method performs the same steps as
+  # archive_work_directory, with the added
+  # steps that the tar file will be recorded
+  # as a userfile belonging to the task's
+  # owner and the work directory completely
+  # erased. The data provider_for the file
+  # is the task's results_data_provider_id.
+  # Restoring the state of the workdir can be performed
+  # with unarchive_work_directory_from_userfile().
+  def archive_work_directory_to_userfile(dp_id = nil)
+    return false unless self.archive_work_directory
+    file_id  = self.workdir_archive_userfile_id
+    return true if file_id
+
+    full=self.full_cluster_workdir
+    if ! Dir.exists?(full)
+      self.addlog("Cannot archive: work directory '#{full}' does not exist.")
+      return false
+    end
+
+    dp_dest = dp_id.presence || self.results_data_provider_id
+    if dp_dest.blank?
+      self.addlog("Cannot archive: no Data Provider specified.")
+      return false
+    end
+
+    tar_file = self.in_situ_workdir_archive_file
+
+    Dir.chdir(full) do
+      if ! File.exists?(tar_file)
+        self.addlog("Cannot archive: tar archive does not exist.")
+        return false
+      end
+      self.addlog("Attempting to create TaskWorkdirArchive.")
+      file     = safe_userfile_find_or_new(TaskWorkdirArchive,
+                   :name             => tar_file,
+                   :data_provider_id => dp_dest,
+                   :user_id          => self.user_id,
+                   :group_id         => self.group_id
+                 )
+      file.save!
+      file.cache_copy_from_local_file(tar_file)
+      file.cache_erase
+      file.meta[:original_task_id]       = self.id
+      file.meta[:original_task_fullname] = self.fullname
+      file.save
+      self.addlog_to_userfiles_created(file)
+      self.workdir_archive_userfile_id = file.id
+      self.addlog("Added archive file '#{file.name}' (ID #{file.id}).")
+      self.save
+    end
+
+    self.remove_cluster_workdir
+    true
+  end
+
+  # This method performs the inverse of 
+  # archive_work_directory_to_userfile() : using
+  # the TaskWorkdirArchive file specified in
+  # the workdir_archive_userfile_id attribute,
+  # the method fetches it, and use its content
+  # to recreate the task's work directory.
+  def unarchive_work_directory_from_userfile
+    return false unless self.workdir_archived? && self.workdir_archive_userfile_id
+
+    cb_error "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+
+    file = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
+    unless file
+      self.addlog("Cannot unarchive: TaskWorkdirArchive does not exist.")
+      self.workdir_archive_userfile_id=nil
+      self.save
+      return false
+    end
+
+    self.addlog("Attempting to restore TaskWorkdirArchive.")
+
+    file.sync_to_cache
+
+    tar_file = self.in_situ_workdir_archive_file
+
+    self.make_cluster_workdir
+    Dir.chdir(self.full_cluster_workdir) do
+      safe_symlink(file.cache_full_path, tar_file)
+    end
+    file.addlog("Restored as symlink in work directory of task '#{self.name}'")
+
+    return false unless self.unarchive_work_directory
+
+    file.cache_erase
+
+    self.workdir_archive_userfile_id=nil
+    self.save
+  end
 
 
   ##################################################################
@@ -1054,7 +1340,7 @@ class ClusterTask < CbrainTask
 
 
   ##################################################################
-  # Cluster Job Shared Work Directory Methods
+  # Cluster Job Work Directory Methods
   ##################################################################
 
   # Create the directory in which to run the job.
@@ -1116,6 +1402,7 @@ class ClusterTask < CbrainTask
     self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir      = nil
     self.cluster_workdir_size = nil
+    self.save
     true
   end
 
@@ -1145,6 +1432,8 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+
+
   ##################################################################
   # Lifecycle hooks
   ##################################################################
@@ -1160,7 +1449,7 @@ class ClusterTask < CbrainTask
 
   # Returns true only if
   def task_is_proper_subclass #:nodoc:
-    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless ClusterTask.subclasses.include? self.class
+    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless ClusterTask.descendants.include? self.class
     true
   end
 

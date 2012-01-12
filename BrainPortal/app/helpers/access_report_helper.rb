@@ -13,13 +13,15 @@ module AccessReportHelper
   end
 
   # Produces a centered legend 
-    def center_legend(title, *legend_a)
-      legend  = "<center>\n"
-      legend += "#{title}&nbsp;&nbsp;&nbsp;&nbsp;\n" if title
-      legend_a.each do |l|
-        legend += "#{l[0]}:&nbsp#{l[1]}&nbsp;&nbsp;&nbsp;&nbsp;\n"
-      end
-      legend += "</center>\n"
+  def center_legend(title, legend_a)
+    legend  = "<center>"
+    legend += "#{title}&nbsp;&nbsp;&nbsp;&nbsp;" if title
+    legend_a.each do |pair|
+      symbol = pair[0]
+      label  = pair[1]
+      legend += "#{symbol}:&nbsp#{label}&nbsp;&nbsp;&nbsp;&nbsp;"
+    end
+    legend += "</center>\n"
     return legend.html_safe
   end
   

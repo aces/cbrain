@@ -556,7 +556,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :go
                 },
 
-     'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
+    'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
                   'Standby'                          => :go,
                   'Completed'                        => :fail,
                   'Terminated'                       => :fail,
@@ -567,7 +567,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :fail
                 },
 
-     'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
+    'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
                   'Configured'                       => :go,
                   'Completed'                        => :fail,
                   'Terminated'                       => :fail,
@@ -741,6 +741,22 @@ class CbrainTask < ActiveRecord::Base
   end
   
   
+
+  ##################################################################
+  # Archiving Support Methods
+  ##################################################################
+
+  # Returns nil if the task is not archived in any way;
+  # returns :workdir if the task is archived in its own work directory,
+  # returns :userfile if the task is archived as a userfile.
+  def archived_status
+    return nil       unless self.workdir_archived?
+    return :userfile if     self.workdir_archive_userfile_id.present?
+    return :workdir
+  end
+
+
+
   ##################################################################
   # Lifecycle hooks
   ##################################################################

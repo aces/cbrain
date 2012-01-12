@@ -14,7 +14,7 @@
         <%= render :partial => 'userfiles_display' %>
         
         <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
-        <%= center_legend("Synchronization symbols:", *sync_statuses.map{ |s| [ status_html_symbol(s), s ] } )%>
+        <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [ status_html_symbol(s), s ] } ) %>
       </div>
   
   <% end %> <!-- form -->

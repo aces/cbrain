@@ -158,5 +158,17 @@ module UserfilesHelper
     safe_concat('</div>')
     ""
   end
+
+  # Returned a colorized size for the userfile ; if the
+  # userfile is a FileCollection, appends the number of
+  # files in the collection.
+  #
+  #   123.4 Mb
+  #   123.4 Mb (78 files)
+  def colored_format_size(userfile)
+    size = colored_pretty_size(userfile.size)
+    size += " (#{userfile.num_files.presence || '?'} files)" if userfile.is_a?(FileCollection)
+    size.html_safe
+  end
   
 end

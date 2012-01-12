@@ -181,7 +181,7 @@ class CbrainSystemChecks < CbrainChecker
           Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
           Message.send_message(User.admin,
             :type          => :system,
-            :header        => "Report of cache crud removal on '#{myself.name}'",
+            :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
             :description   => "These relative paths in the local Data Provider cache were\n" +
                               "removed as there is no longer any userfiles matching them.\n",
             :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort.join("\n"),

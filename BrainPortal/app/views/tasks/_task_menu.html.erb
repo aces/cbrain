@@ -98,10 +98,54 @@
             %>
           <p/>
         <% end %>
+
+        <%= button_with_dropdown_menu("Archiving") do %>
+          <p class="dropmenu_info">
+            This panel allows you to archive the content of the work directory
+            of your tasks. This can only be done on tasks that are in a final
+            state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.
+          </p>
+          <p class="dropmenu_info">
+            The process can take a very long time for each task being archived or restored, so
+            be patient and do not request this action multiple times in parallel.
+          </p>
+          <p class="dropmenu_info">
+            There are two different 'levels' of archiving:<br/>
+            <ul>
+              <li class="dropmenu_info">
+                Archiving <em>On Cluster</em> means that the task's files will be compressed
+                and archived but will stay on the cluster's side. Such tasks are shown
+                with the symbol <%= colored_archived_status(:workdir) %> in the index table.
+              </li>
+              <li class="dropmenu_info">
+                Archiving <em>As File</em> means that the archive will
+                be brought back to your file manager as a '<%= TaskWorkdirArchive.pretty_type %>' file
+                and no data at all will be left on the cluster side. Such tasks are shown
+                with the symbol <%= colored_archived_status(:userfile) %> in the index table.
+              </li>
+            </ul>
+          </p>
+          <p class="dropmenu_info">
+            The rest of the information about the tasks will not be affected in any way
+            when they are archived.
+          </p>
+          <p class="centered">
+            <%= hijacker_submit_button("Archive On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("Archive As File",    :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "button") %>
+            <%= hijacker_submit_button("Unarchive Tasks",    :url => url_for(:action  => :operation, :operation => 'unarchive'),    :method  => :post, :datatype => :script, :class => "button") %>
+            <br/>
+            <br/>
+            Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br/>
+            <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
+          <p/>
+        <% end %>
+
         <%= button_with_dropdown_menu("Filters") do %>
           <%= render :partial => 'tasks/filters' %>
         <% end %>
+
         <span id="view_option_button">
           <%= render :partial => 'view_option_button' %>
         </span>
+
       </div>

@@ -74,6 +74,19 @@ module TasksHelper
     html_colorize(h(status),StatesToColor[status][0])
   end
 
+  # Returns a colored indicator for the archived status of a task,
+  # as returned by the CbrainTask instance method archived_status()
+  def colored_archived_status(archived_status = nil)
+    return "" if archived_status.blank?
+    if archived_status == :userfile
+      html_colorize("F", 'green')
+    elsif archived_status == :workdir
+      html_colorize("C", 'orange')
+    else
+      html_colorize("?",'red') # should never happen
+    end
+  end
+
   def cmp_status_order(status1,status2) #:nodoc:
     info1 = StatesToColor[status1] # can be nil
     info2 = StatesToColor[status2] # can be nil

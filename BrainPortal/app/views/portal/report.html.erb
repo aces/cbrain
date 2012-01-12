@@ -154,7 +154,7 @@ in a tabular layout. Proceed as follow:
             <td><%= index_count_filter(col_tot, @filter_model, { @filter_col_key => col_key }, :name => pretty_col_tot) %></td>
           <% end %>
           <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
-          <td><%= index_count_filter(pretty_tot_tot, @filter_model, {}, :name => pretty_tot_tot) %></td>
+          <td><%= index_count_filter(total_total, @filter_model, {}, :name => pretty_tot_tot) %></td>
         </tr>
 
       </table>
@@ -181,16 +181,16 @@ in a tabular layout. Proceed as follow:
       <strong>Optional:</strong> fix some attributes:<br/>
 
       <% if @model_atts.include?(:user_id) %>
-        <%= user_select :user_id, { :selector => params[:user_id] }, :include_blank => '(Any User)' %>
+        <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %>
       <% end %>
       <% if @model_atts.include?(:group_id) %>
-        <%= group_select :group_id, { :selector => params[:group_id] }, :include_blank => '(Any Project)' %>
+        <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %>
       <% end %>
       <% if @model_atts.include?(:data_provider_id) %>
-        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id] }, :include_blank => '(Any Data Provider)' %>
+        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %>
       <% end %>
       <% if @model_atts.include?(:bourreau_id) %>
-        <%= bourreau_select :bourreau_id, { :selector => params[:bourreau_id] }, :include_blank => '(Any Server)' %>
+        <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %>
       <% end %>
       <% if @model_atts.include?(:type) %>
         <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %>

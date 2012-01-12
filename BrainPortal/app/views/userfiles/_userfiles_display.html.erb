@@ -52,9 +52,9 @@
   <% end %>
   <% t.sort_column("Size", 'Userfile', 'size') do |u| %>
     <% if u.size != nil %>
-      <span title="<%= u.size %> bytes"><%= u.format_size %></span>
+      <span title="<%= u.size %> bytes"><%= colored_format_size(u) %></span>
     <% else %>
-      <font color="red">unknown</font>"
+      <%= html_colorize("unknown","red") %>
     <% end %>
   <% end %>
   <% t.column("Tags", :filters => @tag_filters) { |u| u.get_tags_for_user(current_user).collect{ |t| h(t.name) }.join("<br>").html_safe } %>

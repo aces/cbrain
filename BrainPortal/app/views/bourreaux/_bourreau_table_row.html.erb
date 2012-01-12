@@ -64,7 +64,7 @@
     </td>
     <% if @filter_params["details"] == 'on' %>
       <td>
-        <%= pretty_size(task_space_known) %>
+        <%= colored_pretty_size(task_space_known) %>
         <%= "(#{task_space_unkn} unkn)" if task_space_unkn > 0 %>
       </td>
     <% end %>

@@ -243,14 +243,15 @@ class Bourreau < RemoteResource
   # +new_task_status+ is one of the keywords recognized by
   # process_command_alter_tasks(); in the case where operation
   # is 'Duplicated', then a +new_bourreau_id+ can be supplied too.
-  def send_command_alter_tasks(tasks,new_task_status,new_bourreau_id=nil)
+  def send_command_alter_tasks(tasks,new_task_status,new_bourreau_id=nil,archive_dp_id=nil)
     tasks    = [ tasks ] unless tasks.is_a?(Array)
     task_ids = tasks.map { |t| t.is_a?(CbrainTask) ? t.id : t.to_i }
     command  = RemoteCommand.new(
-      :command         => 'alter_tasks',
-      :task_ids        => task_ids.join(","),
-      :new_task_status => new_task_status,
-      :new_bourreau_id => new_bourreau_id
+      :command                  => 'alter_tasks',
+      :task_ids                 => task_ids.join(","),
+      :new_task_status          => new_task_status,
+      :new_bourreau_id          => new_bourreau_id,
+      :archive_data_provider_id => archive_dp_id
     )
     send_command(command)
   end
@@ -333,6 +334,53 @@ class Bourreau < RemoteResource
         old_status = task.status # so we can detect if the operation did anything.
         task.update_status
 
+        # 'Destroy' is different, it terminates (if allowed) then
+        # removes all traces of the task from the DB.
+        if newstatus == "Destroy"  # verb instead of adjective
+          task.destroy
+          next
+        end
+
+        # The 'Duplicated' operation copies the task object into a brand new task.
+        # As a side effect, the task can be reassigned to another Bourreau too
+        # (Note that the task will fail at Setup if the :share_wd_id attribute specify
+        # a task that currently is on the original Bourreau).
+        # Duplicating a task could also be performed on the client side (BrainPortal).
+        if newstatus == 'Duplicated'
+          new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
+          new_task = task.class.new(task.attributes) # a kind of DUP!
+          new_task.bourreau_id                 = new_bourreau_id
+          new_task.cluster_jobid               = nil
+          new_task.cluster_workdir             = nil
+          new_task.cluster_workdir_size        = nil
+          new_task.workdir_archived            = false
+          new_task.workdir_archive_userfile_id = nil
+          new_task.run_number                  = 0
+          new_task.status                      = "Duplicated"
+          new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
+          task=new_task
+        end
+
+        # Handle archiving or unarchiving the task's workdir
+        if newstatus == 'ArchiveWorkdir'
+          task.archive_work_directory
+          next
+        elsif newstatus == 'ArchiveWorkdirAsFile'
+          task.archive_work_directory_to_userfile(command.archive_data_provider_id)
+          next
+        elsif newstatus == 'UnarchiveWorkdir'
+          if task.archived_status == :userfile # automatically guess which kind of unarchiving to do
+            task.unarchive_work_directory_from_userfile
+          else
+            task.unarchive_work_directory
+          end
+          next
+        end
+
+        # No other operations are allowed for archived tasks,
+        # no matter what their status is.
+        next if task.workdir_archived?
+
         # The method we'll now call are defined in the Bourreau side's CbrainTask model.
         # These methods trigger task control actions on the cluster.
         # They will update the "status" field depending on the action's result;
@@ -344,33 +392,9 @@ class Bourreau < RemoteResource
         task.release      if newstatus == "Queued"
         task.terminate    if newstatus == "Terminated"
 
-        # 'Destroy' is different, it terminates (if allowed) then
-        # removes all traces of the task from the DB.
-        if newstatus == "Destroy"  # verb instead of adjective
-          task.destroy
-          next
-        end
-
         # These actions trigger special handling code in the workers
         task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
         task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' or 'Terminated' tasks only
-
-        # The 'Duplicated' operation copies the task object into a brand new task.
-        # As a side effect, the task can be reassigned to another Bourreau too
-        # (Note that the task will fail at Setup if the :share_wd_id attribute specify
-        # a task that currently is on the original Bourreau).
-        # Duplicating a task could also be performed on the client side (BrainPortal).
-        if (newstatus == 'Duplicated')
-          new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
-          new_task = task.class.new(task.attributes) # a kind of DUP!
-          new_task.bourreau_id     = new_bourreau_id
-          new_task.cluster_jobid   = nil
-          new_task.cluster_workdir = nil
-          new_task.run_number      = 0
-          new_task.status          = "Duplicated"
-          new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
-          task=new_task
-        end
 
         # OK now, if something has changed (based on status), we proceed we the update.
         next unless task.status != old_status
@@ -378,8 +402,9 @@ class Bourreau < RemoteResource
         task.save
         tasks_affected += 1 if task.bourreau_id == myself.id
       rescue => ex
-        puts "Something has gone wrong altering task '#{task_id}' with new status '#{newstatus}'."
-        puts "#{ex.class.to_s}: #{ex.message}"
+        Rails.logger.debug "Something has gone wrong altering task '#{task_id}' with new status '#{newstatus}'."
+        Rails.logger.debug "#{ex.class.to_s}: #{ex.message}"
+        Rails.logger.debug ex.backtrace.join("\n")
       end
     end
 

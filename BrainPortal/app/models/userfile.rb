@@ -15,17 +15,11 @@ require 'set'
 #
 #<b>Userfile should not be instantiated directly.</b> Instead, all files
 #should be registered through one of the subclasses (SingleFile, FileCollection
-#or CivetCollection as of this writing).
+#or CivetOutput as of this writing).
 #
 #=Attributes:
 #[*name*] The name of the file.
 #[*size*] The size of the file.
-#[*task*] The CbrainTask (if any) that produced this file.
-#=Acts as:
-#[*nested_set*] The nested set module allows for the creation of
-#               a tree structure of userfiles. Userfiles created
-#               as the output of some processing on a given userfile
-#               will be considered children of that userfile.
 #= Associations:
 #*Belongs* *to*:
 #* User
@@ -273,22 +267,6 @@ class Userfile < ActiveRecord::Base
       self.save
     else
       false
-    end
-  end
-  
-  #Format size for display in the view.
-  #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
-  def format_size
-    if size.blank?
-      "unknown"
-    elsif size >= 1_000_000_000
-      sprintf "%6.1f Gb", size/(1_000_000_000.0)
-    elsif size >=     1_000_000
-      sprintf "%6.1f Mb", size/(    1_000_000.0)
-    elsif size >=         1_000
-      sprintf "%6.1f Kb", size/(        1_000.0)
-    else
-      sprintf "%d bytes", size
     end
   end
   
