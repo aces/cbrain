@@ -52,7 +52,7 @@
   <% end %>
   <% t.sort_column("Size", 'Userfile', 'size') do |u| %>
     <% if u.size != nil %>
-      <span title="<%= u.size %> bytes"><%= u.format_size %></span>
+      <span title="<%= u.size %> bytes"><%= colored_format_size(u) %></span>
     <% else %>
       <%= html_colorize("unknown","red") %>
     <% end %>

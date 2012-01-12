@@ -58,11 +58,6 @@ class FileCollection < Userfile
     true
   end
   
-  # Returns a string to be displayed as the size in views.
-  def format_size
-    super + " (#{self.num_files} files)"
-  end
-  
   # Calculates and sets the size attribute (active recount forced)
   def set_size!
     allfiles       = self.list_files(:all, :regular) || []

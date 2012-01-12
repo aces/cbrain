@@ -270,22 +270,6 @@ class Userfile < ActiveRecord::Base
     end
   end
   
-  #Format size for display in the view.
-  #Returns the size as "<tt>nnn bytes</tt>" or "<tt>nnn KB</tt>" or "<tt>nnn MB</tt>" or "<tt>nnn GB</tt>".
-  def format_size
-    if size.blank?
-      "unknown"
-    elsif size >= 1_000_000_000
-      sprintf "%6.1f Gb", size/(1_000_000_000.0)
-    elsif size >=     1_000_000
-      sprintf "%6.1f Mb", size/(    1_000_000.0)
-    elsif size >=         1_000
-      sprintf "%6.1f Kb", size/(        1_000.0)
-    else
-      sprintf "%d bytes", size
-    end
-  end
-  
   # Add a format to this userfile.
   def add_format(userfile)
     source_file = self.format_source || self

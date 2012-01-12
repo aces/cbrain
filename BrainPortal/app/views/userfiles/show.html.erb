@@ -29,7 +29,7 @@
     <% end %>
 
     <% t.cell("Size") do %>
-      <%= @userfile.format_size %>
+      <%= colored_format_size(@userfile) %>
       <% if @userfile.size && @userfile.size >= 1_000 -%>
         = <%= @userfile.size %> bytes
       <% end -%>
