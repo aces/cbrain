@@ -15,7 +15,7 @@ require 'set'
 #
 #<b>Userfile should not be instantiated directly.</b> Instead, all files
 #should be registered through one of the subclasses (SingleFile, FileCollection
-#or CivetCollection as of this writing).
+#or CivetOutput as of this writing).
 #
 #=Attributes:
 #[*name*] The name of the file.

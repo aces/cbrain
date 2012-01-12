@@ -195,7 +195,7 @@ module ViewHelpers
   # A value of 'default' or nil for +color+ will
   # just return the +text+ without the SPAN.
   def html_colorize(text, color = "red", options = {})
-    return text.html_safe if color == 'default' || color.blank?
+    return text.html_safe if color.blank? || color == 'default'
     "<span style=\"color: #{color}\">#{ERB::Util.html_escape(text)}</span>".html_safe
   end
 
