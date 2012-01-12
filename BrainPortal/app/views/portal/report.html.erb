@@ -154,7 +154,7 @@ in a tabular layout. Proceed as follow:
             <td><%= index_count_filter(col_tot, @filter_model, { @filter_col_key => col_key }, :name => pretty_col_tot) %></td>
           <% end %>
           <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
-          <td><%= index_count_filter(pretty_tot_tot, @filter_model, {}, :name => pretty_tot_tot) %></td>
+          <td><%= index_count_filter(total_total, @filter_model, {}, :name => pretty_tot_tot) %></td>
         </tr>
 
       </table>

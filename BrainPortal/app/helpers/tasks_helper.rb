@@ -79,9 +79,9 @@ module TasksHelper
   def colored_archived_status(archived_status = nil)
     return "" if archived_status.blank?
     if archived_status == :userfile
-      html_colorize("F", 'blue')
+      html_colorize("F", 'green')
     elsif archived_status == :workdir
-      html_colorize("C", 'purple')
+      html_colorize("C", 'orange')
     else
       html_colorize("?",'red') # should never happen
     end
