@@ -106,7 +106,7 @@
       <% if @task.share_wd_tid %>
         ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
       <% else %>
-        <%= pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+        <%= colored_pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
       <% end %>
     <% end %>
 

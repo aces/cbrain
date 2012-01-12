@@ -9,7 +9,7 @@
 </span>
 <span class="pagination_right_side">
   <% if @total_space_known > 0 %>
-  Total task space used: <%= pretty_size(@total_space_known) %>
+  Total task space used: <%= colored_pretty_size(@total_space_known) %>
   <% end %>
   <% if @total_space_unkn  > 0 %>
   (<%= pluralize @total_space_unkn, "task" %> without space estimates)

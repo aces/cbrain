@@ -50,7 +50,7 @@
     
             <td>
               <%= disk_space_info_display(cell[:size] || 0, nil, 1_000_000) do %>
-                <%= pretty_size(cell[:size]).gsub(/ / ,"&nbsp;").html_safe %></br>
+                <%= pretty_size(cell[:size]) %></br>
                 <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe %>
                 <% if cell[:unknowns] > 0 %>
                   </br><%= pluralize(cell[:unknowns],"unknown").gsub(/ / ,"&nbsp;").html_safe %>

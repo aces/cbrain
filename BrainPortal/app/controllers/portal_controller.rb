@@ -151,7 +151,7 @@ class PortalController < ApplicationController
     @filter_model      = "tasks" if @filter_model == 'cbrain_tasks'
     @filter_row_key    = row_type
     @filter_col_key    = col_type
-    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| pretty_size(x) }) : nil
+    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| colored_pretty_size(x) }) : nil
   end
 
 end

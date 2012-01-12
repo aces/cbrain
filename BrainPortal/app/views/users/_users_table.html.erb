@@ -34,16 +34,18 @@
     t.sort_column("Country", "User", "country", :filters => basic_filters_for(@header_scope, 'users', 'country'), &:country)
     t.sort_column("Time Zone", "User", "time_zone") { |u| u.time_zone || "(Unset)" }
     t.column("Files") do |u|
-      index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1 )
+      size = Userfile.where(:user_id => u.id).sum(:size)
+      index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1 ) +
+      ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
     end
     t.column("Tasks") do |u|
       size = CbrainTask.real_tasks.where(:user_id => u.id).sum(:cluster_workdir_size)
       unk  = CbrainTask.real_tasks.where(:user_id => u.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
       index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1 ) +
-      ( (size  > 0 && unk  > 0) ? " (#{pretty_size(size)} used, #{unk} unkn)" :
-        (size  > 0 && unk == 0) ? " (#{pretty_size(size)} used)" :
+      ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
+        (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
         (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
-      )
+      ).html_safe
     end
     t.describe_column("Operations") do |col|
       col.delete_link(:if => Proc.new { |u| u != User.admin }, :confirm => Proc.new { |u| "Are you sure you want to delete user '#{u.login}'?" })

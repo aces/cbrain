@@ -24,7 +24,7 @@
     <td><%= colored_status(task.status) %></td>
     <td><%= task.run_number %></td>
     <td>
-       <%= task.share_wd_tid ? "(Shared)" : pretty_size(task.cluster_workdir_size, :blank => "") %>
+       <%= task.share_wd_tid ? "(Shared)" : colored_pretty_size(task.cluster_workdir_size, :blank => "") %>
        <%= colored_archived_status(task.archived_status) %>
     </td>
     <td><%= to_localtime(task.created_at,:datetime) -%></td>
