@@ -130,7 +130,7 @@ module SelectBoxHelper
        dps_in_group = dps_in_group.sort_by(&:name)
        options_dps  = dps_in_group.map do |dp|
          opt_pair = [ dp.name, dp.id.to_s ]
-         unless dp.online?
+         if (! dp.online?) && (! options[:offline_is_ok])
            opt_pair[0] += " (offline)"
            opt_pair << { :disabled => "true" }
          end
@@ -178,7 +178,7 @@ module SelectBoxHelper
 
     bourreaux_pairs = bourreaux.sort_by(&:name).map do |b|
        opt_pair = [ b.name, b.id.to_s ]
-       unless b.online?
+       if (! b.online?) && (! options[:offline_is_ok])
          opt_pair[0] += " (offline)"
          opt_pair << { :disabled => "true" }
        end

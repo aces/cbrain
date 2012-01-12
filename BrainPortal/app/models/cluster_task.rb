@@ -455,6 +455,7 @@ class ClusterTask < CbrainTask
 
     cb_error "Expected Task object to be in 'Setting Up' state." unless
       self.status == 'Setting Up'
+    return false if self.workdir_archived?
 
     begin
       self.addlog("Setting Up.")
@@ -490,6 +491,7 @@ class ClusterTask < CbrainTask
 
     cb_error "Expected Task object to be in 'Post Processing' state." unless
       self.status == 'Post Processing'
+    return false if self.workdir_archived?
 
     # This used to be run in background, but now that
     # we have a worker subprocess, we no longer need
@@ -545,6 +547,8 @@ class ClusterTask < CbrainTask
       cb_error "Unknown blank status obtained from CbrainTask ActiveRecord #{self.id}."
     end
 
+    return ar_status if self.workdir_archived?
+
     # The list below contains states that are either final
     # or are are moved to other states using other mechanism
     # than a check with the cluster's state. For instance:
@@ -584,6 +588,7 @@ class ClusterTask < CbrainTask
   #Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
+    return false if self.workdir_archived?
 
     # Cluster job termination
     if cur_status.match(/^(On CPU|On Hold|Suspended|Queued)$/)
@@ -624,6 +629,7 @@ class ClusterTask < CbrainTask
   # Suspend the task (if it's currently in an appropriate state.)
   def suspend
     return false unless self.status == "On CPU"
+    return false if self.workdir_archived?
     begin
       self.scir_session.suspend(self.cluster_jobid)
       self.status_transition(self.status, "Suspended")
@@ -634,6 +640,7 @@ class ClusterTask < CbrainTask
 
   # Resume processing the task if it was suspended.
   def resume
+    return false if self.workdir_archived?
     begin
       return false unless self.status == "Suspended"
       self.scir_session.resume(self.cluster_jobid)
@@ -646,6 +653,7 @@ class ClusterTask < CbrainTask
   # Put the task on hold if it is currently queued.
   def hold
     return false unless self.status == "Queued"
+    return false if self.workdir_archived?
     begin
       self.scir_session.hold(self.cluster_jobid)
       self.status_transition(self.status, "On Hold")
@@ -656,6 +664,7 @@ class ClusterTask < CbrainTask
 
   # Release the task from state On Hold.
   def release
+    return false if self.workdir_archived?
     begin
       return false unless self.status == "On Hold"
       self.scir_session.release(self.cluster_jobid)
@@ -676,6 +685,7 @@ class ClusterTask < CbrainTask
   # This simply sets a special value in the 'status' field
   # that will be handled by the Bourreau Worker.
   def recover
+    return false if self.workdir_archived?
     curstat = self.status
     if curstat =~ /^Failed (Setup|PostProcess) Prerequisites$/
       failed_where = Regexp.last_match[1]
@@ -702,6 +712,7 @@ class ClusterTask < CbrainTask
   # that will be handled by the Bourreau Worker. The +atwhat+
   # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
+    return false if self.workdir_archived?
     begin
       return false unless self.status =~ /Completed|Terminated|Duplicated/
       return false unless atwhat =~ /^(Setup|Cluster|PostProcess)$/
@@ -732,6 +743,7 @@ class ClusterTask < CbrainTask
   # [[:fail]] Some prerequisites have failed and thus at
   #           this point the task can never proceed.
   def prerequisites_fulfilled?(for_state)
+    return :fail if self.workdir_archived?
     allprereqs = self.prerequisites    || {}
     prereqs    = allprereqs[for_state] || {}
     return :go if prereqs.empty?
@@ -829,7 +841,7 @@ class ClusterTask < CbrainTask
      self.cluster_stdout = nil
      self.cluster_stderr = nil
      self.script_text    = nil
-     return if self.new_record?
+     return if self.new_record? || self.workdir_archived?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil

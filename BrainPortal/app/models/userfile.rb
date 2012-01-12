@@ -20,12 +20,6 @@ require 'set'
 #=Attributes:
 #[*name*] The name of the file.
 #[*size*] The size of the file.
-#[*task*] The CbrainTask (if any) that produced this file.
-#=Acts as:
-#[*nested_set*] The nested set module allows for the creation of
-#               a tree structure of userfiles. Userfiles created
-#               as the output of some processing on a given userfile
-#               will be considered children of that userfile.
 #= Associations:
 #*Belongs* *to*:
 #* User
