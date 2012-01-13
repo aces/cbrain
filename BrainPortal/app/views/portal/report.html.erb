@@ -105,11 +105,11 @@ in a tabular layout. Proceed as follow:
          row_proc = to_s_proc
          if @filter_col_key =~ /^(\w+)_id$/
            col_model = Regexp.last_match[1].classify.constantize
-           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
          end
          if @filter_row_key =~ /^(\w+)_id$/
            row_model = Regexp.last_match[1].classify.constantize
-           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
          end
       %>
 

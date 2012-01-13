@@ -35,12 +35,12 @@ b_can_refresh = @bourreaux.select { |b| b.online? && b.has_owner_access?(current
       <th>
         Last Checked 
         <% if b_can_refresh.size > 1 %>
-          (<%= link_to "Refresh all", { :refresh => 'all' }, :class => "header_link" %>)
+          (<%= link_to "Refresh all", { :refresh => 'all' } %>)
         <% end %>
       </th>
       <% dps_online.each do |dp| %>
         <th>
-        <%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %>
+        <%= link_to_data_provider_if_accessible(dp, current_user) %>
         </th>
       <% end %>
     </tr>

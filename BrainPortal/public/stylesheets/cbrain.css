@@ -547,10 +547,6 @@ a {
     vertical-align: +1px;
 }
 
-.header_link {
-    color: #333355;
-}
-
 .error_link {
     color: red !important;
 }
