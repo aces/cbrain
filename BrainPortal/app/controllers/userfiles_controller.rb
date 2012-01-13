@@ -255,7 +255,6 @@ class UserfilesController < ApplicationController
         render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
       end
     rescue
-      raise
       render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "404"
     end
   end
