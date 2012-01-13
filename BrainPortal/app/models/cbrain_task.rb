@@ -68,7 +68,8 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
 
-  scope :real_tasks, where("cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'")
+  scope :real_tasks,   where("cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'")
+  scope :not_archived, where("( cbrain_tasks.workdir_archived = 0 or cbrain_tasks.workdir_archived is null )")
   
 
   # The attribute 'prerequisites' is a serialized hash table

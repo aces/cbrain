@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120110202707) do
+ActiveRecord::Schema.define(:version => 20120113153023) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -43,7 +43,7 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.integer  "rank"
     t.integer  "results_data_provider_id"
     t.decimal  "cluster_workdir_size",        :precision => 24, :scale => 0
-    t.boolean  "workdir_archived"
+    t.boolean  "workdir_archived",                                           :default => false, :null => false
     t.integer  "workdir_archive_userfile_id"
   end
 
@@ -75,13 +75,13 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.string   "remote_host"
     t.integer  "remote_port"
     t.string   "remote_dir"
-    t.boolean  "online"
-    t.boolean  "read_only"
+    t.boolean  "online",        :default => false, :null => false
+    t.boolean  "read_only",     :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
-    t.boolean  "not_syncable",  :default => false
+    t.boolean  "not_syncable",  :default => false, :null => false
     t.string   "time_zone"
   end
 
@@ -133,14 +133,14 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.text     "description"
     t.text     "variable_text"
     t.string   "message_type"
-    t.boolean  "read"
+    t.boolean  "read",          :default => false, :null => false
     t.integer  "user_id"
     t.datetime "expiry"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "last_sent"
-    t.boolean  "critical"
-    t.boolean  "display"
+    t.boolean  "critical",      :default => false, :null => false
+    t.boolean  "display",       :default => false, :null => false
   end
 
   add_index "messages", ["user_id"], :name => "index_messages_on_user_id"
@@ -168,8 +168,8 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online"
-    t.boolean  "read_only"
+    t.boolean  "online",                :default => false, :null => false
+    t.boolean  "read_only",             :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -180,7 +180,7 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked"
+    t.boolean  "portal_locked",         :default => false, :null => false
     t.integer  "cache_trust_expire",    :default => 0
     t.datetime "time_of_death"
     t.text     "ssh_public_key"
@@ -210,12 +210,12 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
   end
 
   create_table "sessions", :force => true do |t|
-    t.string   "session_id", :null => false
+    t.string   "session_id",                    :null => false
     t.text     "data"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.boolean  "active"
+    t.boolean  "active",     :default => false, :null => false
   end
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
@@ -303,7 +303,7 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.string   "type"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                  :default => false
+    t.boolean  "group_writable",                                  :default => false, :null => false
     t.integer  "num_files"
     t.integer  "format_source_id"
   end
@@ -327,12 +327,12 @@ ActiveRecord::Schema.define(:version => 20120110202707) do
     t.datetime "updated_at"
     t.string   "role"
     t.integer  "site_id"
-    t.boolean  "password_reset"
+    t.boolean  "password_reset",                          :default => false, :null => false
     t.string   "time_zone"
     t.string   "city"
     t.string   "country"
     t.datetime "last_connected_at"
-    t.boolean  "account_locked"
+    t.boolean  "account_locked",                          :default => false, :null => false
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
