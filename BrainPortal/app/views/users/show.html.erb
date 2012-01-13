@@ -83,15 +83,29 @@
 
   <%= show_table(@user, :header => 'Resources') do |t| %>
 
-    <% t.cell("Files") { index_count_filter @user.userfiles.count, :userfiles, {:user_id => @user.id}, :show_zeros => true } %>
+    <% t.cell("Files") do
+         size = Userfile.where(:user_id => @user.id).sum(:size)
+         index_count_filter(@user.userfiles.count, :userfiles, { :user_id => @user.id }, :show_zeros => true ) +
+         ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
+       end
+    %>
 
-    <% t.cell("Tasks") { index_count_filter @user.cbrain_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true } %>
+    <% t.cell("Tasks") do
+         size = CbrainTask.real_tasks.where(:user_id => @user.id).sum(:cluster_workdir_size)
+         unk  = CbrainTask.real_tasks.where(:user_id => @user.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
+         index_count_filter(@user.cbrain_tasks.real_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true ) +
+         ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
+           (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
+           (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
+         ).html_safe
+       end
+    %>
 
     <% if current_user.has_role?(:admin) %>
-      <% t.cell("Tools")          { index_count_filter @user.tools.count, :tools, {:user_id => @user.id} } %>
-      <% t.cell("Data Providers") { index_count_filter @user.data_providers.count, :data_providers, {:user_id => @user.id} } %>
-      <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux, {:user_id => @user.id, :type => "BrainPortal"} } %>
-      <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count, :bourreaux, {:user_id => @user.id, :type => "Bourreau"} } %>
+      <% t.cell("Tools")          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
+      <% t.cell("Data Providers") { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
+      <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux,      {:user_id => @user.id, :type => "BrainPortal"} } %>
+      <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count,    :bourreaux,      {:user_id => @user.id, :type => "Bourreau"} } %>
     <% end %>
 
   <% end %>
