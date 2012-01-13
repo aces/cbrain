@@ -113,6 +113,8 @@
 
 </div>
 
+<% unless current_user.has_role? :admin %>
+
   <div>
 
    <table class="resource_list">
@@ -150,6 +152,8 @@
   </div>
 
   <P>
+
+<% end %>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 
