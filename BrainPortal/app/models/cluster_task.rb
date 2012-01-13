@@ -916,6 +916,8 @@ class ClusterTask < CbrainTask
       if File.exists?(temp_tar_file)
         self.addlog("Cannot archive: it seems an archiving process is already in progress.")
         # TODO check date on temp_tar_file and proceed instead if it's really old?
+        full_temp_tar_file = nil # so that nothing happens in ensure clause
+        tar_capture        = nil # so that nothing happens in ensure clause
         return false
       end
 

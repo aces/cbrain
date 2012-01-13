@@ -61,7 +61,7 @@ class HttpUserAgent
     end
 
     # Identify the browser
-    priority_list = [ 'Konqueror', 'Chrome', 'Safari', 'Opera', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
+    priority_list = [ 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
     priority_list.each do |name|
       lcname = name.downcase
       next unless keyvals.has_key?(lcname)
@@ -71,7 +71,7 @@ class HttpUserAgent
     end
 
     # Identify the OS and architecture
-    self.os_name = case adj_ua # case statement mostly from D. Meyer's code
+    self.os_name = case adj_ua # case statement mostly from D. Meyer's code, adjusted by P.R.
       when /iPad/                       ; 'iPad'
       when /iPod/                       ; 'iPod'
       when /iPhone/                     ; 'iPhone'

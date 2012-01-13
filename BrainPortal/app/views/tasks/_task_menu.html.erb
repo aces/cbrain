@@ -127,7 +127,8 @@
           </p>
           <p class="dropmenu_info">
             The rest of the information about the tasks will not be affected in any way
-            when they are archived.
+            when they are archived. No operation can be performed on archived task, except
+            of course unarchiving them.
           </p>
           <p class="centered">
             <%= hijacker_submit_button("Archive On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
