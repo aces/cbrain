@@ -1,7 +1,7 @@
 
 <% title 'About' %>
 
-<div class="credit_box">
+<div class="display_cell credit_box">
 
    <p><b>CBRAIN Project Overview:</b></p>
 
@@ -59,6 +59,8 @@ after the NEP program is completed.</p>
 
 </div>
 
+<br>
+
 <div class="display_cell credit_box">
   <h3>Revision Information</h3>
   <p><strong>CBRAIN Revision:</strong> <%= @revinfo['Revision'] %></p>
@@ -76,14 +78,16 @@ after the NEP program is completed.</p>
   <% end %>
 </div>
 
+<div class="box_spacer"></div>
+
 <div class="display_cell credit_box">
   <h3>Licensing Information</h3>
   <fieldset>
     <legend>
-     GPL License
+     GNU Public License
     </legend>
-    The CBRAIN code base is distributed under the GPL.<br/>
-    Copyright Alan C. Evans - McGill University 2011<br/>
+    The CBRAIN code base is distributed under the GNU Public License (GPL).<br/>
+    Copyright Alan C. Evans - McGill University 2008-2012<br/>
     A copy of the text of the license can be found here.
     <%= show_hide_toggle "(Show)", "#gpl_panel", :class  => 'action_link' %>
     <div id="gpl_panel" style="display: none">
@@ -109,4 +113,8 @@ after the NEP program is completed.</p>
     </div>
   </fieldset>
 </div>
+
+<br/>
+
+<%= render :partial => 'logo_footer' %>
 
