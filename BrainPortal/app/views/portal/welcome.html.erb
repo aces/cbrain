@@ -83,10 +83,6 @@
   
 
 
-      <p>
-        <strong>Exceptions</strong>
-      </p>
-
       <% 
         one_day_ex    = LoggedException.where([ "created_at > ?", 1.day.ago ]).count
         three_day_ex  = LoggedException.where([ "created_at > ?", 3.day.ago ]).count
@@ -94,6 +90,10 @@
         all_ex        = LoggedException.count
       %>
       <% if all_ex > 0 %>
+        <p>
+          <strong>Exceptions</strong>
+        </p>
+
         <div class="exception_report">
           There are internal exceptions logged:<br/>
           <ul>
