@@ -39,12 +39,19 @@
    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
 
-<p>
-Filtering by date: <br/> 
-<%= render :partial => 'custom_filter_date_selection', :locals  => {:custom_filter  => custom_filter} %>
+  Filtering by date: <br/> 
+  <%= render :partial => '/shared/date_range', :locals  => {:date_attribute            => ['data[date_attribute]',            custom_filter[:data]["date_attribute"]], 
+                                                            :absolute_or_relative_from => ['data[absolute_or_relative_from]', custom_filter[:data]['absolute_or_relative_from']],
+                                                            :absolute_or_relative_to   => ['data[absolute_or_relative_to]',   custom_filter[:data]['absolute_or_relative_to']],
+                                                            :relative_from             => ['data[relative_from]',             custom_filter[:data]['relative_from']],
+                                                            :relative_to               => ['data[relative_to]',               custom_filter[:data]['relative_to']],
+                                                            :absolute_from             => ['data[absolute_from]',             custom_filter[:data]['absolute_from']],
+                                                            :absolute_to               => ['data[absolute_to]',               custom_filter[:data]['absolute_to']]
+                                                            }
+%>
 
 <p>
-   Archiving Status: <br/>
+   Archiving status: <br/>
    <%= select :data, :archiving_status, [["Don't filter by archiving status", ''], ["Not archived", 'none'], ["Archived on cluster", 'cluster'], ["Archived as file", 'file']], :selected => custom_filter.data["archiving_status"] %>
 </p>
 

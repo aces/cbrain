@@ -39,32 +39,25 @@ class CustomFilter < ActiveRecord::Base
       
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include DateRange
+  
   serialize_as_indifferent_hash :data
       
   belongs_to    :user
     
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => [:user_id, :type]
-  validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
-                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
+  validates_format_of     :name, :with => /^[\w\-\=\.\+\?\!\s]*$/, 
+                                 :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
-  validate :check_filter_date
+  validate :validate_date
   
-  def check_filter_date
-    return true if self.data["date_attribute"].blank?
-    
-    if self.data["absolute_or_relative_from"] == "abs" && self.data["abs_from"].blank?
-      errors.add(:base, "You should enter an absolute 'from' date or de-select radio button")
-    end
-	  
-    if self.data["absolute_or_relative_to"] == "abs" && self.data["abs_to"].blank?
-      errors.add(:base, "You should enter an absolute 'to' date or de-select radio button")
-    end
+  def validate_date
+    error_mess = check_filter_date(self.data["date_attribute"],  self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
+                                   self.data["absolute_from"], self.data["absolute_to"], self.data["relative_from"], self.data["relative_to"])
+    return true if error_mess == ""
+    errors.add(:base, error_mess)
 
-    if self.data["absolute_or_relative_to"] == "rel" && self.data["absolute_or_relative_from"] == "rel" && self.data["rel_date_from"] == self.data["rel_date_to"]
-      errors.add(:base, "You should choose 2 differents relatives dates")
-    end
-    
   end
 
   #Main method used for custom filtering. Should be redefined in subclasses to 
@@ -94,40 +87,17 @@ class CustomFilter < ActiveRecord::Base
   #Return +scope+ modified to filter the CbrainTask entry's dates.
   def scope_date(scope)
 
-    date_at = self.data["date_attribute"] # assignation ... 
-    return scope if date_at !~ /^(updated_at|created_at)$/
-
-    offset = Time.now.in_time_zone.utc_offset.seconds
-
-    abs_from         = self.data["abs_from"]
-    abs_to           = self.data["abs_to"]
-    rel_from         = self.data["rel_date_from"]
-    rel_to           = self.data["rel_date_to"]
-    mode_is_abs_from = self.data['absolute_or_relative_from'] == "abs"
-    mode_is_abs_to   = self.data['absolute_or_relative_to']   == "abs"
-
-    if mode_is_abs_from
-      user_start = DateTime.parse(abs_from)
-    else
-      user_start = Time.now - rel_from.to_i
-    end
-
-    if mode_is_abs_to
-      user_end = DateTime.parse(abs_to)
-    else
-      user_end = Time.now - rel_to.to_i
-    end
-
-    need_switching = user_start > user_end
-    user_start,user_end = user_end,user_start if need_switching
-    user_end            = user_end + 1.day    if ( !need_switching && mode_is_abs_to ) || (need_switching && mode_is_abs_from)
-
-    target_table = self.target_filtered_table
-    scope = scope.scoped(:conditions  => ["#{target_table}.#{date_at} >= ?", user_start - offset])
-    scope = scope.scoped(:conditions  => ["#{target_table}.#{date_at} <= ?", user_end   - offset])
+    date_at               = self.data["date_attribute"] # assignation ...
+    mode_is_absolute_from = self.data['absolute_or_relative_from'] == "absolute"
+    mode_is_absolute_to   = self.data['absolute_or_relative_to']   == "absolute"
+    absolute_from         = self.data["absolute_from"]
+    absolute_to           = self.data["absolute_to"]
+    relative_from         = self.data["relative_from"]
+    relative_to           = self.data["relative_to"]
+    table_name            = self.target_filtered_table
     
-    scope
-    
+    scope = add_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
+                                     absolute_from, absolute_to, relative_from, relative_to,date_at );
   end
   
   private
