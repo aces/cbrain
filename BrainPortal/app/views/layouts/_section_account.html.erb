@@ -3,27 +3,28 @@
 <!-- PARTIAL: ACCOUNT SECTION -->
 <!-- ************************ -->
 
-<div id="account">
+<div class="account">
 
-  <span id="home_credits">
-    <a class="home" href="/home">Home</a>
+  <span class="home_credits">
+    <a href="/home">Home</a>
     <% if current_user %>
       <%= link_to 'My Account', current_user %>
+      <% help_url = RemoteResource.current_resource.help_url %>
+      <% if help_url.present? %>
+        <%= link_to "User Manual", help_url, :target => '_blank' %>
+      <% end %>
+      <%= link_to 'Feedback', feedbacks_path %>
     <% end %>
-    <% help_url = RemoteResource.current_resource.help_url %>
-    <% unless help_url.blank? %>
-      <a href="<%= url_for(help_url.strip) %>" onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">User Manual</a>
-    <% end %>
-    <a class="credits" href="/">Credits</a>
+    <%= link_to "Credits", "/credits" %>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>
 
-  <span id="loggedas">
+  <span class="loggedas">
     <% if current_user %>
       Logged in as <%= current_user.full_name %>
-      <a href="/logout">Sign out</a>
+      <%= link_to "Sign out", "/logout" %>
     <% else %>
-      <a href="/login">Sign in</a>
+      <%= link_to "Sign in", "/login" %>
     <% end %>
   </span>
 

@@ -704,7 +704,7 @@ pre {
     display: inline-table;
 }
 
-#errorExplanation {
+.errorExplanation {
     width: 400px;
     border: 2px solid red;
     padding: 7px;
@@ -714,7 +714,7 @@ pre {
     color: #000;
 }
 
-#errorExplanation h2 {
+.errorExplanation h2 {
     text-align: left;
     font-weight: bold;
     padding: 5px 5px 5px 15px;
@@ -725,13 +725,13 @@ pre {
     color: #fff;
 }
 
-#errorExplanation p {
+.errorExplanation p {
     color: #000;
     margin-bottom: 0;
     padding: 5px;
 }
 
-#errorExplanation ul li {
+.errorExplanation ul li {
     font-size: 12px;
     list-style: square;
     color: #000;
@@ -743,7 +743,7 @@ pre {
 /* % Account Section of Application Layout */
 /* % ######################################################### */
 
-#account {
+.account {
     background: #0471B4;
     color: #fff;
     height:1.8em;
@@ -752,22 +752,20 @@ pre {
     margin: 0px;
 }
 
-#account a {
+.account a {
     color: #fff;
     padding-right: 8px;
     font-weight: bold;
     text-decoration: none;
 }
 
-#account #home_credits {
+.home_credits {
     display: inline;
 }
 
-#account #loggedas {
-    display: inline;
+.loggedas {
     float: right;
     margin-right: 0.5em;
-    color: #ffffff;
 }
 
 
@@ -855,17 +853,6 @@ pre {
   color: #000;
 }
 
-#site_div{
-  padding-top: 0.10em;
-  font-size: 1.2em;
-  margin-left: 9em;
-}
-
-#site_div h1{
-  color: #000;
-  font-size: 1.2em;
-}
-
 #header_project_menu {
   color: #F33;
   margin: 0.8em 1em 0 0;
@@ -902,18 +889,25 @@ pre {
 /* % ######################################################### */
 
 .footer {
-    height: 2em;
     clear: both;
     border-top: 2px solid #e4e4e4;
     font-size: 0.9em;
     color: #aaa;
-    padding: 5px;
     text-align: center;
     background: #ffffff;
     vertical-align: bottom;
 }
 
-.footer a {
+/* % ######################################################### */
+/* % Footer Section of Credits Layout */
+/* % ######################################################### */
+
+.credits_footer {
+    clear: both;
+    vertical-align: bottom;
+}
+
+.credits_footer a {
     color: white;
     text-decoration: none;
 }
@@ -938,7 +932,6 @@ pre {
 /* ######################################################### */
 
 .credit_box {
-    float: left;
     margin-left: 1em;
     margin-right: 1em;
     margin-bottom: 1em;
@@ -948,18 +941,13 @@ pre {
     line-height: 1.5em;
     border: 1px solid #e4e4e4;
     padding:6px;
-}
-
-.credit_splitleft {
-    float: left;
     width: 50%;
 }
 
-.credit_splitright {
-    float: right;
-    width: 50%;
+.box_spacer {
+    min-width: 1em;
+    display: table-cell;
 }
-
 
 
 /* ######################################################### */
@@ -1001,7 +989,7 @@ pre {
 
 
 /* % ############################################## */
-/* % Task summary in welcome page */
+/* % Welcome page */
 /* % ############################################## */
 
 
@@ -1015,6 +1003,12 @@ pre {
     font-weight: bold;
     border: 0px;
     text-align: left;
+}
+
+.exception_report {
+  border: 2px solid red;
+  background: #ffeeee;
+  padding: 3px;
 }
 
 
@@ -1101,6 +1095,7 @@ pre {
   border: none;
   margin: 0;
   text-align: left;
+  white-space: nowrap;
 }
 
 /* % ######################################################### */
