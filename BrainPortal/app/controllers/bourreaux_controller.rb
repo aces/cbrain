@@ -51,7 +51,6 @@ class BourreauxController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }
     end
-
   end
   
   def new #:nodoc:

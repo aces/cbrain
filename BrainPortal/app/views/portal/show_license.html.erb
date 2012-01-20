@@ -1,0 +1,12 @@
+<div class="license_agreement">
+  <% unless current_user.signed_license_agreements.include?(@license) %>
+    <%= form_tag :action => :sign_license, :license => @license %>
+      <%= hidden_field_tag :license, @license %>
+  <% end %>
+  <%= render :file => "public/licenses/#{@license}.html" %>
+  <% unless current_user.signed_license_agreements.include?(@license) %>
+      <%= submit_tag "I Agree" %>
+      <%= submit_tag "I Do Not Agree" %>
+    </form>
+  <% end %>
+</div>

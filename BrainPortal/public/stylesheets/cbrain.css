@@ -884,6 +884,26 @@ pre {
 }
 
 
+/* % ######################################################### */
+/* % End User License Agreement */
+/* % ######################################################### */
+
+.license_agreement {
+  width: 50%;
+  display: inline-block;
+}
+
+.bold_text {
+  font-weight: bold;
+}
+
+.center_text {
+  text-align: center;
+}
+
+.em_text {
+  font-style: italic;
+}
 
 /* % ######################################################### */
 /* % Main Content Section of Application Layout */

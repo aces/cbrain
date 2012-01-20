@@ -64,6 +64,16 @@
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
+    <% if !is_bourreau %>
+      <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>
+        <small>
+          Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+        </small>
+        <br>
+        <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+        <%= submit_tag "Update" %>
+      <% end %>
+    <% end %>
   <% end %>
 
 

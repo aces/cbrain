@@ -12,7 +12,7 @@ module ShowTableHelper
       @cells          = []
     end
     
-    def cell(header, options = {}, &block)
+    def cell(header = "", options = {}, &block)
       build_cell(ERB::Util.html_escape(header), @template.capture(&block), options)
     end
     
