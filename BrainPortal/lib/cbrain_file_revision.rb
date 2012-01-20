@@ -253,12 +253,15 @@ class CbrainFileRevision
 
     # Live value
     git_tag = nil
+    seen = {}
     Dir.chdir(Rails.root.to_s) do
-      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
-      git_tag = tags_set.shift unless tags_set.empty? # extract first as a starting point
+      tags_set = `git tag -l`.split # initial list: all tags we can find
+      git_tag = tags_set.shift unless tags_set.empty? # extract last as a starting point
+      seen[git_tag] = true
       while tags_set.size > 0
-        tags_set = `git tag --contains '#{git_tag}'`.split.shuffle.reject { |v| v == @git_tag }
+        tags_set = `git tag --contains '#{git_tag}'`.split.sort.reject { |v| seen[v] }
         git_tag = tags_set.shift unless tags_set.empty? # new first
+        seen[git_tag] = true
       end
       if git_tag
         num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
