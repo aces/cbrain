@@ -141,15 +141,16 @@ class GroupsController < ApplicationController
     end
   end
   
-  def switch_panel 
+  def switch_panel #:nodoc:
     @all_projects = current_user.available_groups.partition {|p| p.class.to_s == "WorkGroup" }.map{ |set| set.sort_by(&:name)  }.flatten
-    render :layout => false
+    @redirect_controller = params[:redirect_controller] || :groups
+    render :partial => 'switch_panel'
   end
   
   def switch #:nodoc:
     redirect_controller = params[:redirect_controller] || :groups
-    redirect_action = params[:redirect_action] || :index
-    redirect_id = params[:redirect_id]
+    redirect_action     = params[:redirect_action] || :index
+    redirect_id         = params[:redirect_id]
 
     redirect_path = { :controller => redirect_controller, :action => redirect_action }
     redirect_path[:id] = redirect_id unless redirect_id.blank?

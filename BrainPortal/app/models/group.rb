@@ -72,7 +72,15 @@ class Group < ActiveRecord::Base
 
   # Returns a 'group category name' as seen by +as_user+.
   def pretty_category_name(as_user)
-    self.class.to_s.underscore.titleize.sub(/group/i,"Project")
+    self.class.pretty_type
+  end
+
+  def pretty_type #:nodoc:
+    self.class.pretty_type
+  end
+
+  def self.pretty_type #:nodoc:
+    self.to_s.demodulize.underscore.titleize.sub(/group/i,"Project")
   end
 
   # Returns true of +name+ is a legal group name. Also called

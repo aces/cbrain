@@ -3,8 +3,10 @@
   <%= overlay_ajax_link "Help", "/doc/feedback/feedback.html", :class  => "button" %>      
 </div>
 
-<div class="active_filters">
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :feedback} %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :feedback} %>
+  <span>
 </div>
                  
 <%= form_tag({:controller => :feedbacks, :action => :delete_feedback}, :method => :delete) do %>

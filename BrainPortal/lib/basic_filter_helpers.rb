@@ -67,16 +67,17 @@ module BasicFilterHelpers
   #Create filtered array to be used by TableBuilder for
   #basic attribute filters.
   def basic_filters_for(scope, tab, col, &block)
-    table     = tab.to_s.underscore.pluralize
-    column    = col.to_sym
-    formatter = block || Proc.new { |text| text }
-    
+    table         = tab.to_s.underscore.pluralize
+    column        = col.to_sym
+    pretty_method = (column == :type) ? :pretty_type : column
+    formatter     = block || Proc.new { |text| text }
+
     scope.select( "#{table}.#{column}, COUNT(#{table}.#{column}) as count" ).
           where( "#{table}.#{column} IS NOT NULL" ).
           group("#{table}.#{column}").
           order("#{table}.#{column}").
           reject { |obj| obj.send(column).blank? }.
-          map { |obj|  ["#{formatter.call(obj.send(column))} (#{obj.count})", :filters => {column => obj.send(column)}]}
+          map { |obj| ["#{formatter.call(obj.send(pretty_method))} (#{obj.count})", :filters => {column => obj.send(column)}]}
   end
   
   #Create filtered array to be used by TableBuilder for

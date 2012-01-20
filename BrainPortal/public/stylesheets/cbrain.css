@@ -332,6 +332,7 @@ table.property_list td.white_background_text {
     border: 0px;
     border-collapse: collapse;
     margin-top: 0.8em;
+    width: 100%;
 }
 
 .resource_list th {
@@ -775,7 +776,7 @@ pre {
 /* % ######################################################### */
 
 #header {
-    height: 7em;
+    height: 6em;
     margin: 0px;
     background-color: #05A3D6;
     position: relative;
@@ -843,19 +844,21 @@ pre {
     color: white;
 }
 
+.active_label {
+  font-weight: bold;
+}
+
 #active_project_div {
-  font-size: 1.2em;
-  margin-left: 20em;
+  white-space: nowrap;
 }
 
 #active_project_div h1 {
-  font-size: 1.2em;
   color: #000;
 }
 
 #header_project_menu {
   color: #F33;
-  margin: 0.8em 1em 0 0;
+  /* margin: 0.8em 1em 0 0; */
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
@@ -1032,31 +1035,60 @@ pre {
 /* % Userfiles Index File Manager */
 /* % ######################################################### */
 
-.active_filters {
-  padding-top: 1em;
+.active_status {
+  padding: 0;
+  width: 100%;
+  display: table;
+  margin-right: 0;
+  margin-left: 0;
+  margin-top: 0.8em;
 }
 
-.pagination_left_side {
+.active_status_left_side {
+  display: inline;
+  text-align: left;
+  white-space: nowrap;
+  padding-right: 2em;
   float: left;
-  text-align:left;
-  font-weight:bold;
+}
+
+.active_status_right_side {
+  display: inline;
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 2em;
+  float: right;
 }
 
 .pagination {
-  text-align: center;
+  width: 100%;
+  display: table;
   padding: 0;
   margin-right: 0;
   margin-left: 0;
+  margin-top: 0.8em;
+}
+
+.pagination_left_side {
+  display: table-cell;
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-right: 2em;
 }
 
 .pagination_right_side {
-  float:right; 
-  text-align:right;
-  font-weight:bold;
+  display: table-cell;
+  text-align: right;
+  font-weight: bold;
+  padding-left: 2em;
 }
 
 .page_links {
-    text-align: center;
+  display: table-cell;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0 1em;
 }
 
 .userfiles_tool_selector {

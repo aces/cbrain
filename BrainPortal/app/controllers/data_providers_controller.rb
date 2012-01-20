@@ -283,7 +283,7 @@ class DataProvidersController < ApplicationController
 
     end
 
-    if params[:search]
+    if params[:search].present?
       search_term = params[:search].to_s.downcase
       params[:page] = 1
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}

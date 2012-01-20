@@ -5,9 +5,12 @@
   </span>
 </div>
 
-<div class="active_filters">
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :user} %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :user} %>
+  </span>
 </div>
+
 <div class="pagination">
   <%= render :partial => 'pagination' %>
 </div>

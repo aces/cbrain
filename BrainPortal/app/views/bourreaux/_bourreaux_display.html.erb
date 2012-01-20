@@ -31,29 +31,16 @@
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
-<div class="active_filters">
-  <% unless @filter_params["filter_hash"].blank? %>  
-     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
-      <span id="current_filters">
-        <% 
-          filters = @filter_params["filter_hash"].map do |att, val| 
-            if att == "type"
-              "<span class=\"current_filters_item\">#{crop_text_to(30, "Type:#{val == "Bourreau" ? "Execution" : "Portal"}")}</span>" + filter_remove_link(delete_icon, att)
-            else
-              "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:remote_resource, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
-            end            
-          end 
-        %>
-        <%= filters.join(", ").html_safe %>
-      </span>
-  <% end %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
+  <span>
 </div>
-
 
 <% operations_width_colspan = 5 %>
 <%= index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t| %>
   <%
-    t.sort_column("Server Class", RemoteResource, :type, :filters => basic_filters_for(@header_scope, RemoteResource, :type){ |t| t == "Bourreau" ? "Execution" : "Portal" })
+    t.sort_column("Server Type", RemoteResource, :type, :filters => basic_filters_for(@header_scope, RemoteResource, :type))
     t.sort_column("Server Name", RemoteResource, :name)
     if @filter_params["details"] == 'on'
       t.column("Revision Numbers")

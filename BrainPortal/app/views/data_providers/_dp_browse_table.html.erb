@@ -6,18 +6,26 @@
   <% end %>
   </h2>
 
-  <div class="active_filter">
-    <% if params[:search] %>
-       Filters: 
-       <span class="current_filters_item">
-         Name like: <%= params[:search] %>
-       </span>
-       <%= ajax_link delete_icon, {:action  => :browse}, :datatype  => 'script' %>
-    <% end %>
-  </div>
+  <% if params[:search].present? %>
+    <div class="active_status">
+      <span class="active_status_left_side">
+         <span class="active_label">Active Filters:</span>
+         <span class="current_filters_item">
+           Name like: <%= params[:search] %>
+         </span>
+         <%= ajax_link delete_icon, {:action  => :browse}, :datatype  => 'script' %>
+      </span>
+    </div>
+  <% end %>
 
   <div class="pagination">
-    <%= render :partial => 'browse_pagination' %>
+    <span class="page_links">
+      <%= will_paginate @fileinfolist, :container => false %> (<%= pluralize @file_count, "files" %>)
+    </span>
+
+    <span class="pagination_right_side">
+      Search by name: <%= ajax_search_box :search, browse_data_provider_path %>
+    </span>
   </div>
   
   <table class="resource_list" id="dp_browse_table"> 

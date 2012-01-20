@@ -5,12 +5,7 @@
 
 <div id="header">
 
-  <div id="mni_logo"></div>
   <h1><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></h1>
-
-    <% if current_user %>
-      <%= render :partial => 'layouts/section_menu_project_select' %>
-    <% end %>
 
     <div id="main-menu">
 
