@@ -13,45 +13,19 @@
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
 </div>
 
-<div class="active_filters">
-  <% unless @filter_params["filter_hash"].blank? %>  
-     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
-      <span id="current_filters">
-        <% 
-          filters = @filter_params["filter_hash"].map do |att, val|
-            if att == "time_interval" 
-              s = val[0].to_i
-              e = val[1].to_i
-              s,e = e,s if e > s
-              s_text = pretty_elapsed(s, :num_components  => 1) + " ago"
-              s_text = "now" if s == 0
-              s_text = "the big bang" if s > 10.years
-              e_text = pretty_elapsed(e, :num_components  => 1) + " ago"
-              e_text = "now" if e == 0
-              e_text = "the big bang" if e > 10.years
-              text = "Time interval: between #{s_text} and #{e_text}"
-             "<span class=\"current_filters_item\">#{h(text).capitalize}</span>" + filter_remove_link(delete_icon, att)
-            elsif att == "critical"
-              text = val == '1' ? "Critical" : "Not critical"
-              "<span class=\"current_filters_item\">#{text}</span>" + filter_remove_link(delete_icon, att)
-            elsif att == "read"
-              text = val == '1' ? "Read" : "Unread"
-              "<span class=\"current_filters_item\">#{text}</span>" + filter_remove_link(delete_icon, att)
-            else
-              "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:message, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
-            end
-          end 
-        %>
-        <%= filters.compact.join(", ").html_safe %>
-      </span>
-  <% end %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :message} %>
+  <span>
 </div>
+
 <div class="pagination">
   <span class="page_links">
     <%= will_paginate @messages, :container => false %>
     (<%= pluralize @total_entries, "message" %>)
   </span>
 </div>
+
 <%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
     <%= index_table @messages, :class => "resource_list", :id => "message_table" do |t| %>
       <%

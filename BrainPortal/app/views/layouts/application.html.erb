@@ -13,7 +13,7 @@
 <html lang="en">
 
   <head>
-    <title><%= Rails.env == 'production' ? "CBRAIN" : RemoteResource.current_resource.name %><%= yield :title %></title>
+    <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
     <link rel="shortcut icon" type="image/giv" href="/images/favicon.gif" />
 
     <%= csrf_meta_tag %>

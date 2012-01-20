@@ -5,12 +5,7 @@
 
 <div id="header">
 
-  <div id="mni_logo"></div>
-  <h1>CBRAIN <%= yield :title %></h1>
-
-    <% if current_user %>
-      <%= render :partial => 'layouts/section_menu_project_select' %>
-    <% end %>
+  <h1><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></h1>
 
     <div id="main-menu">
 
@@ -31,9 +26,6 @@
             <li <%= set_selected(params[:controller], :bourreaux) %>>
               <%= link_to 'Servers', bourreaux_path %>
             </li>               
-            <li <%= set_selected(params[:controller], :feedbacks) %>>
-              <%= link_to 'Feedback', feedbacks_path %>
-            </li>
             <li <%= set_selected(params[:controller], :messages) %>>
               <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
             </li>
@@ -51,17 +43,8 @@
               <li <%= set_selected(params[:controller], :sites) %>>
                 <%= link_to 'Sites', sites_path %>
               </li>  
-               
-              <li <%= set_selected(params[:controller], :logged_exception) %>>
-                <%= link_to 'Logged Exceptions', :controller  => :logged_exceptions, :action  => :index %>
-              </li>
             <% end %>
 
-            <% if current_user.site %>
-              <li <%= set_selected(params[:controller], :user_site_show) %>>
-                <%= link_to "#{current_user.site.name} Info", site_path(current_user.site) %>
-              </li> 
-            <% end %>
          </ul>
       <% end %>               
 

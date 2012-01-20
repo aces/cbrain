@@ -895,6 +895,10 @@ class DataProvider < ActiveRecord::Base
   # Utility Non-API
   #################################################################
 
+  def self.pretty_type #:nodoc:
+    self.to_s
+  end
+
   # Returns the site this data provider belongs to.
   def site
     @site ||= self.user.site

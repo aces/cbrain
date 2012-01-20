@@ -12,7 +12,12 @@
 class BrainPortal < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__]
-    
+
+  
+  def self.pretty_type #:nodoc:
+    "Portal"
+  end
+
   def lock! #:nodoc:
     self.update_attributes!(:portal_locked => true)
   end

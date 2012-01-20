@@ -19,6 +19,10 @@ class Bourreau < RemoteResource
 
   attr_accessor :operation_messages # no need to store in DB
 
+  def self.pretty_type #:nodoc:
+    "Execution"
+  end
+
   # Returns the single ToolConfig object that describes the configuration
   # for this Bourreau for all CbrainTasks, or nil if it doesn't exist.
   def global_tool_config
