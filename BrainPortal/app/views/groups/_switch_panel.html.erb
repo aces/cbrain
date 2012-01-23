@@ -18,20 +18,21 @@
 
     <%= button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu", :open => true) do %> 	
       <div id="project_menu_items">
-        <small>
-          Choosing an Active Project affects the visibility of<br/>
-          <em>everything</em> in the interface (files, tasks etc).<br/>
-          Use this as a way to concentrate on a particular project.<br/>
-        </small>
-
-        <p/>	    	
-
+        <p>
+          Choosing an Active Project affects the visibility of <strong>files</strong><br/>
+          and <strong>tasks</strong> the interface.<br/>
+        <p>
+          It's a bit like having a permanent filter on the <em>Project</em> column<br/>
+          (which will actually disappear when you choose your active project).<br/>
+          Use this as a way to concentrate on a particular project.
+        <p>
         <div class="group_selector">
           <%= form_tag :controller => :groups, :action => :switch do %>
             <%= group_select('id', {:groups =>  @all_projects, :selector => current_project }, {:include_blank => "None", :class => "submit_onchange"}) %>
             <%= hidden_field_tag :redirect_controller, @redirect_controller %>
           <% end %>
         </div>
+        <p>
       </div>          
     <% end %>
 

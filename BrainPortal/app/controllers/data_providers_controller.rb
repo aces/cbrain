@@ -565,7 +565,8 @@ class DataProvidersController < ApplicationController
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
                       CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
-                      IncomingVaultSshDataProvider
+                      IncomingVaultSshDataProvider 
+                      S3DataProvider
                     }
     end
     typelist
