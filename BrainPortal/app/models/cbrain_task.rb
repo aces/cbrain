@@ -30,8 +30,6 @@ class CbrainTask < ActiveRecord::Base
   validates_presence_of :status
   validates_presence_of :tool_config_id
 
-  validate              :task_is_proper_subclass
-  
   belongs_to            :bourreau
   belongs_to            :user
   belongs_to            :group
@@ -70,7 +68,8 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
 
-  scope :real_tasks, where("cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'")
+  scope :real_tasks,   where("cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'")
+  scope :not_archived, where("( cbrain_tasks.workdir_archived = 0 or cbrain_tasks.workdir_archived is null )")
   
 
   # The attribute 'prerequisites' is a serialized hash table
@@ -186,15 +185,6 @@ class CbrainTask < ActiveRecord::Base
   # The default is the same as the +name+ instance method.
   def pretty_name
     self.name
-  end
-
-  # Returns a prettier name for the task's class.
-  # Can be customized by subclasses to improve views,
-  # but keep it short.
-  #
-  #   CbrainTask::NiakPipepelineFmriPreprocess returns "Niak pipeline fmri preprocess"
-  def self.pretty_type
-    @pretty_type ||= self.to_s.demodulize.underscore.humanize
   end
 
   # For backward compatibility.
@@ -567,7 +557,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :go
                 },
 
-     'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
+    'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
                   'Standby'                          => :go,
                   'Completed'                        => :fail,
                   'Terminated'                       => :fail,
@@ -578,7 +568,7 @@ class CbrainTask < ActiveRecord::Base
                   'Failed PostProcess Prerequisites' => :fail
                 },
 
-     'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
+    'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
                   'Configured'                       => :go,
                   'Completed'                        => :fail,
                   'Terminated'                       => :fail,
@@ -752,6 +742,22 @@ class CbrainTask < ActiveRecord::Base
   end
   
   
+
+  ##################################################################
+  # Archiving Support Methods
+  ##################################################################
+
+  # Returns nil if the task is not archived in any way;
+  # returns :workdir if the task is archived in its own work directory,
+  # returns :userfile if the task is archived as a userfile.
+  def archived_status
+    return nil       unless self.workdir_archived?
+    return :userfile if     self.workdir_archive_userfile_id.present?
+    return :workdir
+  end
+
+
+
   ##################################################################
   # Lifecycle hooks
   ##################################################################
@@ -769,17 +775,6 @@ class CbrainTask < ActiveRecord::Base
     
       self.group_id = owner.own_group.id
     end
-  end
-
-  # Returns true only if
-  def task_is_proper_subclass #:nodoc:
-    # Of the two sets below, one is always empty:
-    # - PortalTask  has subclasses only on a Portal server.
-    # - ClusterTask has subclasses only on a Bourreau server.
-    unless (PortalTask.subclasses + ClusterTask.subclasses).include? self.class
-      self.errors.add(:base, "is not a proper subclass of CbrainTask.")
-    end
-    true
   end
 
 end

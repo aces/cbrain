@@ -6,6 +6,14 @@
    
 <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
+    <% if is_bourreau %>    
+
+      <%= link_to 'Task Statistics By Status', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :commit => "Generate" }, :class => "button" %>
+
+      <%= link_to 'Task Statistics By Type', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :commit => "Generate" }, :class => "button" %>
+    
+    <%end%>
+    
     <%= link_to 'Delete', bourreau_path(@bourreau), { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?", :method => :delete, :class => "button" } %>
   </div>
 <% end %>
@@ -56,43 +64,60 @@
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
+
+    <% if is_portal %>
+      <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>
+        <small>
+          Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+        </small>
+        <br>
+        <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+        <%= submit_tag "Update" %>
+      <% end %>
+      
+      <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
+        <%= text_field_tag "bourreau[help_url]", @bourreau.help_url %><br/>
+        <small>If set, the portal will show a link called 'User Manual' in the account bar at the top.</small>
+      <% end %>
+    <% end %>
   <% end %>
 
 
 
   <% if (check_role(:admin) || @bourreau.user_id == current_user.id) %>
-    <%= show_table(@bourreau, :header => "Connection Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-      <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
-        <%= text_field_tag "bourreau[ssh_control_host]", @bourreau.ssh_control_host %>
-      <% end %>
+    <% if is_bourreau %>
 
-      <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do %>
-        <%= text_field_tag "bourreau[ssh_control_rails_dir]", @bourreau.ssh_control_rails_dir, :size => 60 %>
-      <% end %>
+      <%= show_table(@bourreau, :header => "Connection Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-      <% t.edit_cell(:ssh_control_user, :header => "SSH User") do %>
-        <%= text_field_tag "bourreau[ssh_control_user]", @bourreau.ssh_control_user %>
-      <% end %>
+        <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
+          <%= text_field_tag "bourreau[ssh_control_host]", @bourreau.ssh_control_host %>
+        <% end %>
 
-      <% if is_bourreau %>
+        <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do %>
+          <%= text_field_tag "bourreau[ssh_control_rails_dir]", @bourreau.ssh_control_rails_dir, :size => 60 %>
+        <% end %>
+
+        <% t.edit_cell(:ssh_control_user, :header => "SSH User") do %>
+          <%= text_field_tag "bourreau[ssh_control_user]", @bourreau.ssh_control_user %>
+        <% end %>
+
         <% t.edit_cell(:tunnel_mysql_port, :header => "Database Server Remote Tunnel Port") do %>
           <%= text_field_tag "bourreau[tunnel_mysql_port]", @bourreau.tunnel_mysql_port, :size => 6 %>
         <% end %>
-      <% else %>
-        <% t.empty_cell %>
-      <% end %>
 
-      <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do %>
-        <%= text_field_tag "bourreau[ssh_control_port]", @bourreau.ssh_control_port, :size => 6 %>
-      <% end %>
+        <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do %>
+          <%= text_field_tag "bourreau[ssh_control_port]", @bourreau.ssh_control_port, :size => 6 %>
+        <% end %>
 
-      <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do %>
-        <%= text_field_tag "bourreau[tunnel_actres_port]", @bourreau.tunnel_actres_port, :size => 6 %>
-      <% end %>
+        <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do %>
+          <%= text_field_tag "bourreau[tunnel_actres_port]", @bourreau.tunnel_actres_port, :size => 6 %>
+        <% end %>
 
-      <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do %>
-        <%= text_field_tag "bourreau[proxied_host]", @bourreau.proxied_host %>
+        <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do %>
+          <%= text_field_tag "bourreau[proxied_host]", @bourreau.proxied_host %>
+        <% end %>
+
       <% end %>
 
     <% end %>
@@ -265,7 +290,7 @@
     <%= show_table(@info, :header => "Runtime Information") do |t| %>
       <% if @info.name == "???" %>
         <% t.row do %>
-          This server is currently <font color="red">DOWN</font>.
+          This server is currently <%= html_colorize("DOWN", "red") %>.
         <% end %>
       <% else %>
 
@@ -305,40 +330,11 @@
         <% t.blank_row %>
 
         <% t.cell("SSH Public Key", :show_width => 2) do %>
-          <SMALL><SMALL><PRE class="ssh_key"><%= @info.ssh_public_key.strip %><PRE></SMALL></SMALL>
+          <SMALL><SMALL><PRE class="ssh_key"><%= @info.ssh_public_key.strip %></PRE></SMALL></SMALL>
         <% end %>
 
       <% end %>
     <% end %>
-  <% end %>
-
-  <% if is_bourreau %>
-
-  <P>
-
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => @statuses,
-                          :list             => @statuses_list,
-                          :user_info        => @user_tasks_info,
-                          :additionnal_filt => {:bourreau_id => @bourreau.id},
-                          :by               => :status
-                        }
-  %>
-
-  <P>
-
-  <%= render :partial => 'tasks/task_counts',
-             :locals => { :counts           => @types,
-                          :list             => @types_list,
-                          :user_info        => @user_types_info,
-                          :additionnal_filt => {:bourreau_id => @bourreau.id},
-                          :by               => :type
-                        }
-  %>
-
-
-  <P>
-
   <% end %>
 
   <P>

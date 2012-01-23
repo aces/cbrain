@@ -105,11 +105,11 @@ in a tabular layout. Proceed as follow:
          row_proc = to_s_proc
          if @filter_col_key =~ /^(\w+)_id$/
            col_model = Regexp.last_match[1].classify.constantize
-           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
          end
          if @filter_row_key =~ /^(\w+)_id$/
            row_model = Regexp.last_match[1].classify.constantize
-           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user,:html_options => {:class => "header_link"}) }
+           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
          end
       %>
 
@@ -154,7 +154,7 @@ in a tabular layout. Proceed as follow:
             <td><%= index_count_filter(col_tot, @filter_model, { @filter_col_key => col_key }, :name => pretty_col_tot) %></td>
           <% end %>
           <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
-          <td><%= index_count_filter(pretty_tot_tot, @filter_model, {}, :name => pretty_tot_tot) %></td>
+          <td><%= index_count_filter(total_total, @filter_model, {}, :name => pretty_tot_tot) %></td>
         </tr>
 
       </table>
@@ -174,6 +174,34 @@ in a tabular layout. Proceed as follow:
   </div>
 
   <br>
+
+  <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
+    <div class="notesbox" style="width: auto">
+
+      <strong>Optional:</strong> fix some attributes:<br/>
+
+      <% if @model_atts.include?(:user_id) %>
+        <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %>
+      <% end %>
+      <% if @model_atts.include?(:group_id) %>
+        <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %>
+      <% end %>
+      <% if @model_atts.include?(:data_provider_id) %>
+        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %>
+      <% end %>
+      <% if @model_atts.include?(:bourreau_id) %>
+        <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %>
+      <% end %>
+      <% if @model_atts.include?(:type) %>
+        <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %>
+      <% end %>
+      <% if @model_atts.include?(:status) %>
+        <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
+      <% end %>
+    </div>
+
+    <br>
+  <% end %>
 
   <% if @table_ok %>
     <%= submit_tag('Refresh Report') %>

@@ -19,7 +19,7 @@ There is no information to show at this time.
     <tr>
       <th class="blank"></th>
       <% @remote_r.each do |bourreau| %>
-        <th><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => {:class => "header_link"}) %>
+        <th><%= link_to_bourreau_if_accessible(bourreau, current_user) %>
           <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
         </th>
       <% end %>
@@ -40,7 +40,7 @@ There is no information to show at this time.
     
   </table>
   
-  <%= center_legend(nil, [o_icon,"accessible"], [times_icon,"not accessible"] )%>
+  <%= center_legend(nil, [ [o_icon, "accessible"], [times_icon, "not accessible"] ] ) %>
   
 </span>
 

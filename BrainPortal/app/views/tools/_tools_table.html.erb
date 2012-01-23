@@ -12,8 +12,10 @@
   <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button" %>
 </div> 
 
-<div class="active_filters">
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
+  </span>
 </div>
 
 <%= index_table(@tools, :class => "resource_list") do |t| %>

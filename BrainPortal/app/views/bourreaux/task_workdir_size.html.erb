@@ -47,7 +47,7 @@
         <th class="blank"></th>
         <% @bourreaux.each do |b| %>
           <th>
-            <%= link_to_bourreau_if_accessible(b, current_user, :html_options => {:class => "header_link"}) %>
+            <%= link_to_bourreau_if_accessible(b, current_user) %>
           </th>
         <% end %>
         <% if @bourreaux.count > 1%>

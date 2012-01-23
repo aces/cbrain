@@ -11,6 +11,10 @@
 
 class CbrainTask::CbSerializer
 
+  def self.pretty_type #:nodoc:
+    "CBRAIN Serializer"
+  end
+
   # Returns the list of tasks parallelized;
   # this list includes only the tasks that have been
   # 'enabled' (disabling can be triggered using the

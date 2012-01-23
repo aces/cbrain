@@ -170,7 +170,7 @@ module IndexTableHelper
           @header_options[:onMouseOut]  = "jQuery('#filters_list_#{self.object_id}').hide()"
         end
         
-        atts = @header_options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+        atts = @header_options.to_html_attributes
         html = [ "<th #{atts}>" ]
         unless filters.blank?
           html << "<span style=\"color: white\">&bull;</span>&nbsp;"
@@ -201,7 +201,7 @@ module IndexTableHelper
           condition = cell[2]
           content   = proc ? @template.cb_capture(object, &proc) : "" if condition.blank? || condition.call(object)
           
-          atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+          atts = options.to_html_attributes
           html << "<td #{atts}>#{content}</td>\n"
         end
         html.join
@@ -273,7 +273,7 @@ module IndexTableHelper
       
       options = @header_attributes.call(object)
       
-      atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+      atts = options.to_html_attributes
       atts
     end
     
@@ -407,7 +407,7 @@ module IndexTableHelper
   # Build an index table.
   def index_table(collection, options = {})
     table_builder = TableBuilder.new(self)
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+    atts = options.to_html_attributes
     
     yield(table_builder)
     

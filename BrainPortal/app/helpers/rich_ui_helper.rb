@@ -43,7 +43,7 @@ module RichUiHelper
       options[:class] ||= ""
       options[:class] +=  " tabs"
 
-      atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+      atts = options.to_html_attributes
 
       capture(bar,&block)  #Load content into bar object
 
@@ -112,7 +112,7 @@ module RichUiHelper
      options[:class] ||= ""
      options[:class] +=  " accordion"
 
-     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+     atts = options.to_html_attributes
 
      content = capture(AccordionBuilder.new, &block)
 
@@ -184,7 +184,7 @@ module RichUiHelper
 
      element = options.delete(:enclosing_element) || "div"
 
-     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+     atts = options.to_html_attributes
 
      content = capture(&block)
      return "" if content.blank?
@@ -229,7 +229,7 @@ module RichUiHelper
        content += render :partial => partial
      end
 
-     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+     atts = options.to_html_attributes
      safe_concat("<span #{atts}>")
      safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
      safe_concat("<div #{content_id} ABCD=1 #{display_style}class=\"drop_down_menu\">")
@@ -263,7 +263,7 @@ module RichUiHelper
      options[:class] ||= ""
      options[:class] +=  " show_toggle"
 
-     atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+     atts = options.to_html_attributes
      return " <#{element_type} #{atts}>#{h(text)}</#{element_type}>".html_safe
    end
    

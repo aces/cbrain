@@ -29,7 +29,7 @@
     <% end %>
 
     <% t.cell("Size") do %>
-      <%= @userfile.format_size %>
+      <%= colored_format_size(@userfile) %>
       <% if @userfile.size && @userfile.size >= 1_000 -%>
         = <%= @userfile.size %> bytes
       <% end -%>
@@ -97,54 +97,65 @@
     file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
                                :html  => {:class  => "action_link"}) 
   %>
-</div>  
+  
+  <% if @userfile.can_be_accessed_by?(current_user) && ! @userfile.data_provider.meta[:no_viewers] %>
+    <% unless @userfile.is_locally_synced? %>
 
-<% if @userfile.can_be_accessed_by?(current_user) %>
-  <% unless @userfile.is_locally_synced? %>
+      <P>
 
-    <P>
+      <% if @sync_status =~ /^To/ %>
+        <p>This data is currently being synchronized.</p>
+      <% elsif ! (@userfile.data_provider.online?) %>
+        <p>This data is not currently synchronized and<BR>
+           and its data provider is offline, so its content
+           is not viewable.
+        </p>
+      <% elsif ! (@userfile.data_provider.not_syncable?) %>
+        <p>This data is not currently synchronized.<BR>
+        Click <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
+        to start the synchronization process.<br>
+        This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+        </p>
+      <% end %>
 
-    <% if @sync_status =~ /^To/ %>
-      <p>This data is currently being synchronized.</p>
-    <% elsif ! (@userfile.data_provider.online?) %>
-      <p>This data is not currently synchronized and<BR>
-         and its data provider is offline, so its content
-         is not viewable.
-      </p>
-    <% elsif ! (@userfile.data_provider.not_syncable?) %>
-      <p>This data is not currently synchronized.<BR>
-      Click <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
-      to start the synchronization process.<br>
-      This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
-      </p>
     <% end %>
 
   <% end %>
 
-<% end %>
 
-<P>
-<% unless @userfile.viewers.blank? %>
-  <fieldset>
-    <legend>Contents</legend>
-    <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-      <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
-        <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
-        <%= submit_tag "Change View" %>
+  <P>
+
+
+  <% unless @userfile.viewers.blank? %>
+    <fieldset>
+      <legend>Contents</legend>
+      <% if @userfile.data_provider.meta[:no_viewers] %>
+        (This file cannot be viewed at all as it is stored on Data Provider
+        <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+        which is marked as <strong>non-viewable</strong>)
+      <% else %>
+        <% if @userfile.viewers && @userfile.viewers.size > 1 %>
+          <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
+            <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
+            <%= submit_tag "Change View" %>
+          <% end %>
+          <br>
+        <% end  %>
+        <div id="userfile_viewer">
+          <div class="display_userfile">   
+            <% if @default_viewer %>
+               <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+            <% end %>
+          </div>
+        </div>
       <% end %>
-      <br>
-    <% end  %>
-    <div id="userfile_viewer">
-      <div class="display_userfile">   
-        <% if @default_viewer %>
-           <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
-        <% end %>
-      </div>
-    </div>
-  </fieldset>
-<% end %>
-<P>
+    </fieldset>
+  <% end %>
 
-<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+  <P>
+
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+  
+</div>  
 
 

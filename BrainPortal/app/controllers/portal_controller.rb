@@ -57,6 +57,32 @@ class PortalController < ApplicationController
                    :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
   end
   
+  def show_license
+    @license = params[:license].gsub(/[^\w-]+/, "")
+  end
+   
+  def sign_license
+    @license = params[:license]
+    unless params[:commit] == "I Agree"
+      flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
+      redirect_to "/logout"
+      return
+    end
+    num_checkboxes = params[:num_checkboxes].to_i
+    if num_checkboxes > 0
+      num_checks = params.keys.grep(/^license_check/).size
+      if num_checks < num_checkboxes
+        flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
+        redirect_to :action => :show_license, :license => @license
+        return
+      end
+    end
+    signed_agreements = current_user.meta[:signed_license_agreements] || []
+    signed_agreements << @license
+    current_user.meta[:signed_license_agreements] = signed_agreements
+    redirect_to home_path
+  end
+  
   #Display general information about the CBRAIN project.
   def credits #:nodoc:
     # Nothing to do, just let the view show itself.
@@ -102,8 +128,8 @@ class PortalController < ApplicationController
        User             => [ [ :role, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
     }) if current_user.has_role?(:admin) ||  current_user.has_role?(:site_admin)
 
-    model       = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
-    model_brk   = allowed_breakdown[model] || [[],[]]
+    @model       = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
+    model_brk   = allowed_breakdown[@model] || [[],[]]
     @model_atts = model_brk[0] || [] # used by view to limit types of rows and cols ?
     model_ops   = model_brk[1] || [ 'count' ]
     unless model_ops.include?(table_op) && @model_atts.include?(row_type.to_sym) && @model_atts.include?(col_type.to_sym) && row_type != col_type
@@ -116,14 +142,21 @@ class PortalController < ApplicationController
     @table_ok = true
 
     # Compute access restriction to content
-    if model.respond_to?(:find_all_accessible_by_user)
-       @table_content = model.find_all_accessible_by_user(current_user)  # no .all here yet! We need to compute more later on
+    if @model.respond_to?(:find_all_accessible_by_user)
+       @table_content = @model.find_all_accessible_by_user(current_user)  # no .all here yet! We need to compute more later on
     else
-       @table_content = model.where({})
+       @table_content = @model.where({})
        if ! current_user.has_role?(:admin)
-         @table_content = rel.where(:user_id  => current_user.available_users.map(&:id))  if model.columns_hash['user_id']
-         @table_content = rel.where(:group_id => current_user.available_groups.map(&:id)) if model.columns_hash['group_id']
+         @table_content = @table_content.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
+         @table_content = @table_content.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
        end
+    end
+
+    # Add fixed values
+    @model_atts.each do |att|
+      val = params[att]
+      next unless val.present?
+      @table_content = @table_content.where(att => val)
     end
 
     # Compute content
@@ -140,11 +173,11 @@ class PortalController < ApplicationController
     # TODO: sort values better?
 
     # For making filter links inside the table
-    @filter_model      = model.to_s.pluralize.underscore
+    @filter_model      = @model.to_s.pluralize.underscore
     @filter_model      = "tasks" if @filter_model == 'cbrain_tasks'
     @filter_row_key    = row_type
     @filter_col_key    = col_type
-    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| pretty_size(x) }) : nil
+    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| colored_pretty_size(x) }) : nil
   end
 
 end

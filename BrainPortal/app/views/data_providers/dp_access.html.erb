@@ -20,7 +20,7 @@ There is no information to show at this time.
     <tr>
       <th class="blank"></th>
       <% @providers.each do |dp| %>
-        <th><%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
+        <th><%= link_to_data_provider_if_accessible(dp, current_user) %></th>
       <% end %>
     </tr>
       
@@ -40,7 +40,7 @@ There is no information to show at this time.
   
   </table>
   
-  <%= center_legend(nil, [o_icon,"accessible"], [times_icon,"not accessible"] )%>
+  <%= center_legend(nil, [ [o_icon, "accessible"], [times_icon, "not accessible"] ] ) %>
   
 </span>
 

@@ -74,6 +74,21 @@ module TasksHelper
     html_colorize(h(status),StatesToColor[status][0])
   end
 
+  # Returns a colored indicator for the archived status of a task,
+  # as returned by the CbrainTask instance method archived_status()
+  def colored_archived_status(archived_status = nil)
+    return "" if archived_status.blank?
+    if archived_status == :userfile
+      #html_colorize("&loz;-F".html_safe, 'green')
+      html_colorize("&nabla;".html_safe, 'green')
+    elsif archived_status == :workdir
+      #html_colorize("&loz;-C".html_safe, '#FF6600')
+      html_colorize("&loz;".html_safe, '#FF6600')
+    else
+      html_colorize("?",'red') # should never happen
+    end
+  end
+
   def cmp_status_order(status1,status2) #:nodoc:
     info1 = StatesToColor[status1] # can be nil
     info2 = StatesToColor[status2] # can be nil
@@ -81,6 +96,10 @@ module TasksHelper
     cmp = (info1[1] <=> info2[1]) # compare their ranks
     return cmp if cmp != 0
     status1 <=> status2 # in case of equality, compare by name again
+  end
+
+  def all_ordered_status #:nodoc:
+    @_all_ordered_status ||= StatesToColor.keys.reject { |s| s =~ /preset|total/i }.sort { |a,b| cmp_status_order(a,b) }
   end
 
   # Returns a HTML for task Report with task, size and

@@ -34,7 +34,7 @@ module AjaxWidgetHelper
     options_setup("inline_text_field", options)
     options["data-trigger"] = options.delete(:trigger) || ".current_text"
     
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    atts = options.to_html_attributes
     
     safe_concat("<div #{atts}>")
     safe_concat("<span class=\"current_text\">#{initial_text}</span>")
@@ -80,7 +80,7 @@ module AjaxWidgetHelper
     options["data-url"] = url
     
     #This builds an html attribute string from the html_opts hash
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    atts = options.to_html_attributes
     
     initial_content = capture(&block) if block_given?
     initial_content ||= html_colorize("Loading...")
@@ -100,7 +100,7 @@ module AjaxWidgetHelper
     options[:class] +=  " script_loader"
     
     #This builds an html attribute string from the html_opts hash
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    atts = options.to_html_attributes
     
     "<div #{atts}></div>".html_safe
   end
@@ -115,7 +115,7 @@ module AjaxWidgetHelper
     options_setup("staggered_loader", options)
     options["data-url"] = url
      
-    atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
+    atts = options.to_html_attributes
     if block_given?
       initial_content=capture(&block)
     else
@@ -172,7 +172,7 @@ module AjaxWidgetHelper
       html_opts["data-before"] = before
     end
     #This builds an html attribute string from the html_opts hash
-    atts = html_opts.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "} #Thanks tarek for the trick ;p  You're welcome!
+    atts = html_opts.to_html_attributes
 
     
     initial_content=capture(&block)+((render partial unless !partial) || "")

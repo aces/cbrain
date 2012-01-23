@@ -1,0 +1,40 @@
+<div id="active_project_div">
+  <span class="active_label" style="float: left">Active Project:&nbsp;</span>
+
+  <% if params[:action].to_sym != :switch_panel %>
+
+    <%=
+      ajax_link (current_project ? current_project.name : "None"), 
+                        switch_panel_groups_path(:redirect_controller => params[:controller]),
+                        :id                     => "header_project_menu", :class => "button",
+                        :target                 => "#active_project_div",
+                        :replace                => true,
+                        :loading_message        => '<span style="color: red">Loading...</span>',
+                        :loading_message_target => "#header_project_menu",
+                        :datatype               => 'html'
+    %>
+
+  <% else %>
+
+    <%= button_with_dropdown_menu((current_project ? current_project.name : "None"), :button_id  => "header_project_menu", :open => true) do %> 	
+      <div id="project_menu_items">
+        <small>
+          Choosing an Active Project affects the visibility of<br/>
+          <em>everything</em> in the interface (files, tasks etc).<br/>
+          Use this as a way to concentrate on a particular project.<br/>
+        </small>
+
+        <p/>	    	
+
+        <div class="group_selector">
+          <%= form_tag :controller => :groups, :action => :switch do %>
+            <%= group_select('id', {:groups =>  @all_projects, :selector => current_project }, {:include_blank => "None", :class => "submit_onchange"}) %>
+            <%= hidden_field_tag :redirect_controller, @redirect_controller %>
+          <% end %>
+        </div>
+      </div>          
+    <% end %>
+
+  <% end %>
+
+</div>

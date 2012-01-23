@@ -14,7 +14,7 @@
     <tr>
       <th class="blank"></th>
       <% @report_dps_all.each do |dp| %>
-        <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
+        <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user) %></th>
       <% end %>
     </tr>
     
@@ -45,7 +45,7 @@
           <td>
           
             <%= disk_space_info_display(cell[:size] || 0, nil, 1_000_000) do %>
-              <%= pretty_size(cell[:size]).gsub( / / ,"&nbsp;").html_safe %></br>
+              <%= pretty_size(cell[:size]) %></br>
               <%= 
                 filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe,
                                   :controller => :userfiles,

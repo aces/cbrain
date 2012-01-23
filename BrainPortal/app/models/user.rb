@@ -115,6 +115,14 @@ class User < ActiveRecord::Base
     self.login
   end
   
+  def signed_license_agreements
+    self.meta[:signed_license_agreements] || []
+  end
+  
+  def unsigned_license_agreements
+    RemoteResource.current_resource.license_agreements - self.signed_license_agreements
+  end
+  
   #Create a random password (to be sent for resets).
   def set_random_password
     s = random_string

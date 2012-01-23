@@ -30,6 +30,7 @@ class TaskCustomFilter < CustomFilter
     scope = scope_bourreau(scope)     unless self.data["bourreau_id"].blank?
     scope = scope_date(scope)         unless self.data["date_attribute"].blank?
     scope = scope_status(scope)       unless self.data["status"].blank?
+    scope = scope_archive(scope)      unless self.data["archiving_status"].blank?
     scope
   end
 
@@ -90,6 +91,19 @@ class TaskCustomFilter < CustomFilter
   def scope_status(scope)
     return scope if self.data["status"].is_a?(Array) && self.data["status"].all? { |v| v.blank? }
     scope.scoped(:conditions => {:status => self.data["status"]})
+  end
+
+  def scope_archive(scope)
+    keyword = self.data["archiving_status"] || ""
+    case keyword
+    when "none"
+      return scope.scoped(:conditions => "( cbrain_tasks.workdir_archived = 0 or cbrain_tasks.workdir_archived is null )")
+    when "cluster"
+      return scope.scoped(:conditions => { :workdir_archived => true, :workdir_archive_userfile_id => nil })
+    when "file"
+      return scope.scoped(:conditions => { :workdir_archived => true }).scoped( :conditions => "cbrain_tasks.workdir_archive_userfile_id is not null" )
+    end
+    return scope # anything else, no operation.
   end
   
 end

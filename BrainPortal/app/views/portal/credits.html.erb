@@ -1,9 +1,9 @@
 
 <% title 'Credits' %>
 
-<div class="credit_splitleft"> 
+<div class="display_cell">
 
-   <div class="credit_box">
+   <span class="credit_box display_cell">
       <h3><big>Canadian Brain Imaging Research Network (CBRAIN)</big></h3>
 
       <h3>Funded by Canada's Advanced Network (CANARIE)</h3>
@@ -24,13 +24,11 @@ brain imaging researchers, the platform will be generalizable to other imaging
 domains, such as radiology, surgical planning and heart imaging, with profound 
 consequences for Canadian medical research.
 (<%= link_to "More Information", about_us_path %>)</p>
-   </div>
+   </span>
 
-</div>
+   <span class="box_spacer"></span>
 
-<div class="credit_splitright">
-
-   <div class="credit_box">
+   <span class="credit_box display_cell">
      <h3>Participating Research Centers</h3>
      <ul type="none">
      <li><b>Montreal Neurological Institute, McGill University (Lead)</b><br>
@@ -71,7 +69,9 @@ consequences for Canadian medical research.
      </li><br>
      <li><strong>CBRAIN</strong> acknowledges the contributions of IBM Canada, Jonathan Harlap and Sebastian Muehlboeck.</li>
      </ul>
-   </div>
+   </span>
 
 </div>
+
+<%= render :partial => 'logo_footer' %>
 

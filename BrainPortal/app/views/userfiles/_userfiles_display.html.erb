@@ -1,26 +1,19 @@
-<div class="active_filters">
-  <% unless @filter_params["filter_hash"].blank? && @filter_params["filter_tags_array"].blank? && @filter_params["filter_custom_filters_array"].blank? %>  
-     Active Filters (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
-      <span id="current_filters">
-        <% 
-          filters = @filter_params["filter_hash"].map do |att, val| 
-            "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(:userfiles, att, val, {:user  => :login}))}</span>" + filter_remove_link(delete_icon, att)
-          end 
-          filters += current_user.available_tags.find(@filter_params["filter_tags_array"]).map do |tag|
-            "<span class=\"current_filters_item\">#{crop_text_to(30, "Tag: #{tag.name}")}</span>" + filter_remove_link(delete_icon, tag.id, :parameter  => :filter_tags_array)
-          end
-          filters += current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).map do |filter|
-            "<span class=\"current_filters_item\">#{crop_text_to(30, "Custom: #{filter.name}")}</span>" + filter_remove_link(delete_icon, filter.id, :parameter  => :filter_custom_filters_array)
-          end
-        %>
-        <%= filters.join(", ").html_safe %>
-      </span>
-  <% end %>
+
+<div class="active_status">
+
+  <span class="active_status_left_side">
+    <%= render :partial => 'groups/switch_panel' %>
+  </span>
+
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :userfile} %>
+  </span>
+
 </div>
+
 <div class="pagination">
   <%= render :partial => 'userfiles/pagination' %>
 </div>
-
 
 <%= index_table @userfiles, :class => "resource_list", :id => "userfiles_table" do |t| %>
   <%
@@ -39,7 +32,7 @@
     t.describe_sort_column("Filename", 'Userfile', 'name') do |col|
       col.cell(:class => "left") { |u| filename_listing(u, :html_options => { :class => !u.available? ? 'error_link' : nil } ) }
     end
-    t.sort_column("Type", 'Userfile', 'type', :filters => basic_filters_for(@header_scope, Userfile, :type){|s| s.constantize.pretty_type}) { |u| u.pretty_type }
+    t.sort_column("File Type", 'Userfile', 'type', :filters => basic_filters_for(@header_scope, Userfile, :type)) { |u| u.pretty_type }
   %>
   <% unless @filter_params["details"] == 'off' %>
     <% t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@header_scope, Userfile, :user, :name_method => "login")) { |u| link_to_user_if_accessible(u.user) } %>
@@ -52,9 +45,9 @@
   <% end %>
   <% t.sort_column("Size", 'Userfile', 'size') do |u| %>
     <% if u.size != nil %>
-      <span title="<%= u.size %> bytes"><%= u.format_size %></span>
+      <span title="<%= u.size %> bytes"><%= colored_format_size(u) %></span>
     <% else %>
-      <font color="red">unknown</font>"
+      <%= html_colorize("unknown","red") %>
     <% end %>
   <% end %>
   <% t.column("Tags", :filters => @tag_filters) { |u| u.get_tags_for_user(current_user).collect{ |t| h(t.name) }.join("<br>").html_safe } %>

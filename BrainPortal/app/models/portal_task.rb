@@ -17,6 +17,8 @@ class PortalTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  validate              :task_is_proper_subclass
+
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
   # simply setting the task's status to the value modifies the
@@ -34,7 +36,10 @@ class PortalTask < CbrainTask
     "restart_setup"       => "Restart Setup",
     "restart_cluster"     => "Restart Cluster",
     "restart_postprocess" => "Restart PostProcess",
-    "duplicate"           => "Duplicated"
+    "duplicate"           => "Duplicated",
+    "archive"             => "ArchiveWorkdir",
+    "archive_file"        => "ArchiveWorkdirAsFile",
+    "unarchive"           => "UnarchiveWorkdir",
   }
 
   # In order to optimize the set of state transitions
@@ -63,13 +68,13 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Failed To Setup"                  => [ "Duplicated", "Recover" ],
-    "Failed On Cluster"                => [ "Duplicated", "Recover" ],
-    "Failed To PostProcess"            => [ "Duplicated", "Recover" ],
-    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover" ],
-    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover" ],
-    "Terminated"                       => [ "Duplicated", "Restart Setup" ],
-    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess" ],
+    "Failed To Setup"                  => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Failed On Cluster"                => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Failed To PostProcess"            => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Terminated"                       => [ "Duplicated", "Restart Setup", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
     "Duplicated"                       => [ "Restart Setup" ],
 
     #===============================================================================
@@ -599,6 +604,18 @@ class PortalTask < CbrainTask
       cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
     end
     self.params = cur_params
+    true
+  end
+
+  ##################################################################
+  # Lifecycle hooks
+  ##################################################################
+
+  private
+
+  # Returns true only if
+  def task_is_proper_subclass #:nodoc:
+    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless PortalTask.descendants.include? self.class
     true
   end
 

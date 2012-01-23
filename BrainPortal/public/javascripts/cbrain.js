@@ -37,30 +37,6 @@ function modify_target(data, target, options){
 //NOTE: DO NOT USE .live() or .delegate() in here.
 function load_behaviour(event){
    var loaded_element = jQuery(event.target);
-   //Overlay dialogs
-   //See overlay_dialog_with_button()
-   loaded_element.find(".overlay_dialog").each( function(index,element){
-     var enclosing_div = jQuery(this);
-     var dialog_link = enclosing_div.children('.overlay_content_link');
-     var dialog = enclosing_div.children(".overlay_content")
-     var content_width = parseInt(dialog_link.attr('data-width'));
-     var content_height = parseInt(dialog_link.attr('data-height'));
-     
-     dialog.remove().appendTo("body");
-
-     dialog.dialog({ autoOpen: false,
-         modal: true,
-         position: "center",
-         resizable: false,
-         width: content_width,
-         height: content_height
-     });
-
-     dialog_link.click(function(){
-       dialog.dialog('open');
-       return false; 
-     });
-   });
    
    /////////////////////////////////////////////////////////////////////
    //
@@ -244,38 +220,60 @@ function load_behaviour(event){
     staggered_loading(0, staggered_load_elements);
 
     function staggered_loading(index, element_array){
-       if(index >= element_array.length) return;
-
-       var current_element = jQuery(element_array[index]);
-       var url = current_element.attr("data-url");
-       var error_message = current_element.attr("data-error");
-       var replace = current_element.attr("data-replace");
-       jQuery.ajax({
-         dataType: 'html',
-         url: url,
-         target: current_element,
-         timeout: 50000,
-         success: function(data) {
-             var new_content = jQuery(data);
-             if(replace == "true"){
-               current_element.replaceWith(new_content);
-             }else{
-               current_element.html(new_content);
-             }
-             new_content.trigger("new_content");
-         },
-         error: function(e) {
-           if(!error_message){
-             error_message = "<span class='loading_message'>Error loading element</span>";
-           }
-           current_element.html(error_message);
-         },
-         complete: function(e) {
-           staggered_loading(index+1, element_array);
-         }
-       });
-     }
-
+      if(index >= element_array.length) return;
+    
+      var current_element = jQuery(element_array[index]);
+      var url = current_element.attr("data-url");
+      var error_message = current_element.attr("data-error");
+      var replace = current_element.attr("data-replace");
+      jQuery.ajax({
+        dataType: 'html',
+        url: url,
+        target: current_element,
+        timeout: 50000,
+        success: function(data) {
+            var new_content = jQuery(data);
+            if(replace == "true"){
+              current_element.replaceWith(new_content);
+            }else{
+              current_element.html(new_content);
+            }
+            new_content.trigger("new_content");
+        },
+        error: function(e) {
+          if(!error_message){
+            error_message = "<span class='loading_message'>Error loading element</span>";
+          }
+          current_element.html(error_message);
+        },
+        complete: function(e) {
+          staggered_loading(index+1, element_array);
+        }
+      });
+    }
+     
+    //Overlay dialogs
+    //See overlay_dialog_with_button()
+    loaded_element.find(".overlay_dialog").each( function(index,element){
+      var enclosing_div = jQuery(this);
+      var dialog_link = enclosing_div.children('.overlay_content_link');
+      var dialog = enclosing_div.children(".overlay_content")
+      var content_width = parseInt(dialog_link.attr('data-width'));
+      var content_height = parseInt(dialog_link.attr('data-height'));
+    
+      dialog.dialog({ autoOpen: false,
+          modal: true,
+          position: "center",
+          resizable: false,
+          width: content_width,
+          height: content_height
+      });
+    
+      dialog_link.click(function(){
+        dialog.dialog('open');
+        return false; 
+      });
+    });
 
   /**
    * When this sees a div with

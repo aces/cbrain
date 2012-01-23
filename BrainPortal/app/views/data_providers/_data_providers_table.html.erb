@@ -15,12 +15,12 @@
               :datatype  => 'script', :class  => "button"
   %>
 
-  <%= link_to ("Access Report"),
+  <%= link_to "User Access Report",
              {:controller  => :data_providers, :action  => :dp_access},
               :datatype  => 'script', :class  => "button"
   %>   
   
-  <%= link_to ("Disk Usage Report"),
+  <%= link_to "Disk Usage Report",
               {:controller  => :data_providers, :action  => :dp_disk_usage},
               :datatype  => 'script', :class  => "button"
   %>   
@@ -28,8 +28,10 @@
   <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>
 
-<div class="active_filters">
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
+<div class="active_status">
+  <span class="active_status_left_side">
+    <%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
+  </span>
 </div>
 
 <fieldset>

@@ -29,7 +29,7 @@ class ApplicationController < ActionController::Base
   before_filter :always_activate_session
   before_filter :set_cache_killer
   before_filter :prepare_messages
-  before_filter :password_reset
+  before_filter :check_account_validity
   before_filter :adjust_system_time_zone
   around_filter :handle_cbrain_errors, :activate_user_time_zone
     
@@ -110,9 +110,28 @@ class ApplicationController < ActionController::Base
     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
   end
   
-  # Force the user to change their password if they just did a reset.
-  def password_reset
-    if current_user && current_user.password_reset && params[:controller] != "sessions"
+  # Check if the user needs to change their password
+  # or sign license agreements.
+  def check_account_validity
+    return true unless current_user
+    return true if params[:controller] == "sessions"
+
+    #Check if license agreement have been signed
+    unsigned_agreements = current_user.unsigned_license_agreements
+
+    unless unsigned_agreements.empty?
+      return true if params[:controller] == "portal" && params[:action] =~ /license$/
+      return true if current_user.has_role?(:admin) && params[:controller] == "bourreaux"
+      if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
+        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first
+      elsif current_user.has_role?(:admin)
+        flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
+        flash[:error] += "Please place the license file in /public/licenses or remove it from below."
+        redirect_to bourreau_path(RemoteResource.current_resource)
+      end
+    end
+    #Check if passwords been reset.
+    if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
         flash[:notice] = "Please reset your password."
         redirect_to user_path(current_user)
@@ -237,17 +256,18 @@ class ApplicationController < ActionController::Base
   # Example: let's say that when posting to update object @myobj,
   # the also form sent this to the controller:
   #
-  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A' } ... }
+  #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A', :spa => "" } ... }
   #
   # Then calling
   #
-  #   add_meta_data_from_form(@myobj, [ :def, :xyz ])
+  #   add_meta_data_from_form(@myobj, [ :def, :xyz, :nope, :spa ])
   #
   # will result in two meta data pieces of information added
-  # to the object @myobj, like this:
+  # to the object @myobj, and one of them deleted, like this:
   #
   #   @myobj.meta[:def] = 'z'
   #   @myobj.meta[:xyz] = 'A'
+  #   @myobj.meta[:spa] = nil # which will delete the meta key
   #
   # This method is a wrapper around the method update_meta_data()
   # from module ActRecMetaData ; in particular, it supplies
