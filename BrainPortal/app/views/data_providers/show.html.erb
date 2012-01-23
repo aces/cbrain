@@ -93,6 +93,16 @@
         <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
       <% end %>
     <% end %>
+
+    <%= show_table(@provider, :header => "Cloud Storage Configuration", :edit_path => data_provider_path(@provider)) do |t| %>
+      <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_client_token, :header => 'Client Token', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :size => 50 %>
+      <% end %>
+    <% end %>
+
   <% end %>
 
   <%= show_table(@provider, :header => "Other Properties", :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>

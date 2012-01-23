@@ -192,6 +192,22 @@
 <p>
 
 <fieldset class="groupentry">
+  <legend>Cloud Storage Configuration</legend>
+
+  <span title="Identifier for cloud storage service.">
+    <p><%= f.label :cloud_storage_client_identifier, "Client Identifier" %><br/>
+    <%= f.text_field :cloud_storage_client_identifier %></p>
+  </span>
+
+  <span title="Token or password for cloud storage service.">
+    <p><%= f.label :cloud_storage_client_token, "Client Token" %><br/>
+    <%= f.text_field :cloud_storage_client_token, :size => 50 %></p>
+  </span>
+</fieldset>
+
+<p>
+
+<fieldset class="groupentry">
 <legend>Physical data location</legend>
 
   <span title="Directory used for storing files">

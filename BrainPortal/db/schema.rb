@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120116203623) do
+ActiveRecord::Schema.define(:version => 20120123190749) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -75,14 +75,16 @@ ActiveRecord::Schema.define(:version => 20120116203623) do
     t.string   "remote_host"
     t.integer  "remote_port"
     t.string   "remote_dir"
-    t.boolean  "online",        :default => false, :null => false
-    t.boolean  "read_only",     :default => false, :null => false
+    t.boolean  "online",                          :default => false, :null => false
+    t.boolean  "read_only",                       :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
-    t.boolean  "not_syncable",  :default => false, :null => false
+    t.boolean  "not_syncable",                    :default => false, :null => false
     t.string   "time_zone"
+    t.string   "cloud_storage_client_identifier"
+    t.string   "cloud_storage_client_token"
   end
 
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"

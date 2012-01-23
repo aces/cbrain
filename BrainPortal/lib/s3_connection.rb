@@ -2,17 +2,16 @@ require 'aws/s3'
 
 class S3Connection
   include AWS::S3
-  def initialize
-    @base = Base
-    @service = Service
-    @bucket = Bucket
+  def initialize(access_key, secret_key)
+    @base     = Base
+    @service  = Service
+    @bucket   = Bucket
     @s3object = S3Object
     
     @base.establish_connection!(
-      :access_key_id     => (ENV['S3_ACCESS_KEY'] || "blah"),
-      :secret_access_key => (ENV['S3_SECRET_KEY'] || "blah")
+      :access_key_id     => (access_key || "blah"),
+      :secret_access_key => (secret_key || "blah")
     )
-
   end
   
   attr_accessor :base,:service, :bucket, :s3object

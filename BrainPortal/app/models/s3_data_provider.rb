@@ -1,10 +1,9 @@
 class S3DataProvider < DataProvider 
-  #validates_presence_of :access_key_id, :secret_access_key
 
-  after_initialize :init_connection
+  validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
 
   def init_connection
-    @s3_connection = S3Connection.new()
+    @s3_connection = S3Connection.new(self.cloud_storage_client_identifier, self.cloud_storage_client_token)
   end
 
   def bucket_name 
@@ -28,11 +27,15 @@ class S3DataProvider < DataProvider
   end
 
   def create_base_bucket
+    init_connection
     @s3_connection.create_bucket(bucket_name)
   end
   
   def impl_is_alive?
+    init_connection
     @s3_connection.connected?
+  rescue
+    false
   end
 
   def is_browsable?
@@ -40,6 +43,7 @@ class S3DataProvider < DataProvider
   end
 
   def impl_sync_to_cache(userfile)
+    init_connection
     local_full = cache_full_pathname(userfile)
 
     mkdir_cache_subdirs(userfile)
@@ -54,6 +58,7 @@ class S3DataProvider < DataProvider
   end
 
   def impl_sync_to_provider(userfile)
+    init_connection
     create_base_bucket unless @s3_connection.bucket_exists?(bucket_name)
     local_full = cache_full_pathname(userfile)                                                                                                                  
     mkdir_cache_subdirs(userfile)                                                                                     
@@ -62,31 +67,29 @@ class S3DataProvider < DataProvider
     end                                                                                                                    
     bucket = @s3_connection.bucket.find(bucket_name)                                                               
     @s3_connection.s3object.store(s3_filename(userfile), open(local_full), bucket_name)
-    
   end
 
   def impl_provider_erase(userfile)
+    init_connection
     @s3_connection.s3object.delete(s3_filename(userfile), bucket_name)
   end
   
   def impl_provider_rename(userfile,newname)
+    init_connection
     @s3_connection.s3object.rename s3_filename(userfile), s3_filename(userfile,newname), bucket_name
   end
 
- def impl_provider_list_all(user)
-   s3_connection.bucket.find(bucket_name).objects.map { |object| 
-     file = DataProvider::FileInfo.new()
-     filename = filename_from_s3_filename(object.key)[1]
-     file.name = filename
-     file.symbolic_type = :regular
-     file.mtime = Time.parse(object.about()["date"]).to_i
-     file.size = 0
-     file
-   }
+  def impl_provider_list_all(user)
+    init_connection
+    s3_connection.bucket.find(bucket_name).objects.map do |object| 
+      file = DataProvider::FileInfo.new()
+      filename = filename_from_s3_filename(object.key)[1]
+      file.name = filename
+      file.symbolic_type = :regular
+      file.mtime = Time.parse(object.about()["date"]).to_i
+      file.size = 0
+      file
+    end
  end
 
 end
-
-
-
-  
