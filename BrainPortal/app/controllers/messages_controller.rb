@@ -24,9 +24,6 @@ class MessagesController < ApplicationController
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
     
     scope = base_filtered_scope
-    unless current_user.has_role?(:admin) && @filter_params["view_all"] == "on"
-      scope = scope.scoped(:conditions => {:user_id => current_user.id})
-    end
     @total_entries = scope.count
     
     # For Pagination

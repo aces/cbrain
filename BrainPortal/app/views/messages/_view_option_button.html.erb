@@ -1,12 +1,5 @@
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
-    <% if current_user.has_role?(:admin) %>
-      <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show your messages ": "Show all messages", 
-                        :parameter => :view_all,
-                        :value     => set_toggle(@filter_params["view_all"]) 
-      %>
-      <br/>
-    <% end %>
     <%= form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
       Number of messages per page:
       <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>

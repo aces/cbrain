@@ -14,11 +14,9 @@
     </div>
   </td>
   
-  <% if render_for == :index && current_user.has_role?(:admin) && @filter_params["view_all"] == "on" %>
-    <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
-      <%= mess.user.login %>
-    </td>
-  <% end %>
+  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+    <%= mess.user.login %>
+  </td>
 
   <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
     <%= to_localtime(mess.last_sent, :datetime) %>
