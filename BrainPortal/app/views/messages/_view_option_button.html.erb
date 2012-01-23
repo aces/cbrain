@@ -9,7 +9,7 @@
     <% end %>
     <%= form_tag({:controller => :messages, :action => :index}, :method => :get) do %>
       Number of messages per page:
-      <%= select_tag( :max_show, options_for_select( [25, 50, 100, 200, 500 ], @max_show ), :class => "submit_onchange" ) %>
+      <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
       <%= hidden_field_tag :update_filter, true %>
     <% end %>
   </div>

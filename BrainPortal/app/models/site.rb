@@ -124,10 +124,19 @@ class Site < ActiveRecord::Base
   alias own_group system_group
 
   def unset_managers #:nodoc:
+    @old_managers = []
     self.managers.each do |user|
       if user.has_role? :site_manager # could be :admin too, which we leave alone
+        @old_managers << user
         user.update_attribute(:role, "user")
       end
+    end
+  end
+  
+  def restore_managers #:nodoc:
+    @old_managers ||= []
+    @old_managers.each do |user|
+      user.update_attribute(:role, "site_manager")
     end
   end
   

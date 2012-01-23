@@ -2,8 +2,8 @@ Factory.define :user do |user|
   user.sequence(:full_name)  { |n| "Bob #{n}" }           
   user.sequence(:login)      { |n| "user#{n}" }
   user.sequence(:email)      { |n| "user#{n}@example.com" }
-  user.password              "password"
-  user.password_confirmation "password"
+  user.password              "Password!"
+  user.password_confirmation "Password!"
   user.role                  "user"
   user.association           :site
 end
@@ -47,6 +47,10 @@ end
 
 Factory.define :data_provider do |data_provider|
   data_provider_factory.call(data_provider)
+end
+
+Factory.define :ssh_data_provider do |ssh_data_provider|
+  data_provider_factory.call(ssh_data_provider)
 end
 
 Factory.define :cbrain_smart_data_provider do |cbrain_smart_data_provider|

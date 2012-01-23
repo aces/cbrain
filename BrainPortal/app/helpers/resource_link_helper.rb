@@ -116,7 +116,7 @@ module ResourceLinkHelper
   # The link created will be to the edit page of the group.
   def link_to_group_if_editable(group, cur_user = current_user, options = {})
     if group.is_a?(WorkGroup) || group.is_a?(InvisibleGroup)
-      link_to_group_if_accessible(group, cur_user, options.dup.merge(:path => edit_group_path(group)))
+      link_to_group_if_accessible(group, cur_user, options.dup.merge(:path => group_path(group)))
     else
       group.name
     end

@@ -30,18 +30,13 @@ describe User do
     @user.save.should == false
   end
   
-  it "should not save without an email" do
-    @user.email = nil
-    @user.save.should == false
-  end
-  
   it "should not save without a role" do 
     @user.role = nil
     @user.save.should == false
   end
   
-  it "should not save without a password" do
-    @user.password = nil
+  it "should not save with blank password" do
+    @user.password = ""
     @user.save.should == false
   end
   

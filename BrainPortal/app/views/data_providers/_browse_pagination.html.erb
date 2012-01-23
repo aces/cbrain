@@ -1,0 +1,9 @@
+<span class="page_links">
+  <%= will_paginate @fileinfolist, :container => false %>
+  (<%= pluralize @file_count, "files" %>)
+</span>
+<span class="pagination_right_side">
+  Search by name:
+  <%= ajax_search_box :search, browse_data_provider_path %>
+</span>
+<br>

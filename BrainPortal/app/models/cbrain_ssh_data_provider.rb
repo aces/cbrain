@@ -85,7 +85,6 @@ class CbrainSshDataProvider < SshDataProvider
       req = sftp.rename(oldpath,newpath).wait
       return false unless req.response.ok?
 
-      userfile.name = newname
       return true
 
     end

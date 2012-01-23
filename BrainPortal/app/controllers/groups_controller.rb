@@ -40,22 +40,13 @@ class GroupsController < ApplicationController
   
   def show #:nodoc:
     @group = current_user.available_groups.find(params[:id])
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
   end
 
   def new  #:nodoc:
     @group = WorkGroup.new
     @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
     render :partial => "new"
-  end
-
-  # GET /groups/1/edit
-  def edit  #:nodoc:
-    if current_user.has_role? :admin
-      @group = current_user.available_groups.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
-    else
-      @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
-    end
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
   end
 
   # POST /groups
@@ -100,6 +91,10 @@ class GroupsController < ApplicationController
       @group = WorkGroup.find(params[:id])
     end
 
+    unless params[:commit] == "Update Users"
+      params[:group][:user_ids] = @group.user_ids.map(&:to_s)
+    end
+
     params[:group][:user_ids] ||= []
 
     if current_user.has_role?(:admin) && params[:invisible_group] == "1"
@@ -118,14 +113,15 @@ class GroupsController < ApplicationController
 
     params[:group].delete :creator_id #creator_id is immutable
 
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
       if @group.update_attributes(params[:group])
         flash[:notice] = 'Project was successfully updated.'
-        format.html { redirect_to groups_path }
+        format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
       else
-        @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login).reject{|u| u.login == 'admin'}
-        format.html { render :action => "edit" }
+        @group.reload
+        format.html { render :action => "show" }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
     end

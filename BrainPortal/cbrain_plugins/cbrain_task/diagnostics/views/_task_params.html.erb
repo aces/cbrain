@@ -81,7 +81,7 @@
 
 <div id="dp_test" style="display:none;">
 
-<%= array_to_table(DataProvider.find_all_accessible_by_user(current_user), :cols => 6, :td_class => 'left_align' ) do |dp,r,c| %>
+<%= array_to_table(DataProvider.find_all_accessible_by_user(current_user).all, :cols => 6, :td_class => 'left_align' ) do |dp,r,c| %>
   <%= form.params_check_box "dp_check_ids[]", { :id => "dp_check_#{dp.id}", :class => "dp_check", :checked => params[:dp_check_ids].include?(dp.id.to_s) }, dp.id.to_s, "" %>
   <%= label_tag "dp_check_#{dp.id}", h(dp.name) %>
 <% end %>

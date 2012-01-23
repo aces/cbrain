@@ -7,13 +7,17 @@
 
 <h2>Execution Server Access Report</h2>
 
-<% if ! @remote_r.empty? && ! @users.empty? %>
+<% if @remote_r.empty? || @users.empty? %>
+
+There is no information to show at this time.
+
+<% else %>
 
 <span class="display_cell">
   <table>
 
     <tr>
-      <th></th>
+      <th class="blank"></th>
       <% @remote_r.each do |bourreau| %>
         <th><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => {:class => "header_link"}) %>
           <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
@@ -21,23 +25,22 @@
       <% end %>
     </tr>
     
-    <% sorted_users = @users.sort { |a,b| a.login <=> b.login } %>
-    <% sorted_users.each do |user| %>
+    <% @users.each do |user| %>
       <% 
-      accessible_rr = RemoteResource.find_all_accessible_by_user(user).index_by &:id || {}
+      accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {}
       %>
       <tr>
         <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
         
         <% @remote_r.each do |bourreau| %>
-          <td> <%= accessible_rr[bourreau.id]  ? green_o_icon : red_times_icon %></td>
+          <td> <%= accessible_rr[bourreau.id]  ? o_icon : times_icon %></td>
         <% end %>
       </tr>
     <% end %>
     
   </table>
   
-  <p/><%= access_legend %>
+  <%= center_legend(nil, [o_icon,"accessible"], [times_icon,"not accessible"] )%>
   
 </span>
 

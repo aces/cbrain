@@ -4,12 +4,12 @@ module BasicFilterHelpers
   
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :current_session, :current_project
+      helper_method :current_session,   :current_project
       helper_method :basic_filters_for, :association_filters_for
       before_filter :update_filters
     end
   end
-  
+
   #Returns the current session as a CbrainSession object.
   def current_session
     @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
@@ -31,7 +31,7 @@ module BasicFilterHelpers
   # Simply adding <att>=<val> to a URL on an index page that uses this method
   # will automatically filter as long as <att> is a valid attribute or named
   # scope.
-  def base_filtered_scope(filtered_scope = resource_class.scoped({}))
+  def base_filtered_scope(filtered_scope = resource_class.scoped({}), do_sort = true)
     @filter_params["filter_hash"].each do |att, val|
       if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
         filtered_scope = filtered_scope.send(att, *val)
@@ -41,7 +41,7 @@ module BasicFilterHelpers
         @filter_params["filter_hash"].delete att
       end
     end
-    if @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
+    if do_sort && @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
       filtered_scope = filtered_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
     end
     filtered_scope
@@ -98,30 +98,55 @@ module BasicFilterHelpers
   end
   
   # Set up the current_session variable. Mainly used to set up the filter hash to be
-   # used by index actions.
-   def update_filters
-     current_controller = params[:controller]
-     params[current_controller] ||= {}
-     clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
-     clear_param_key    = clear_params.first
-     clear_param_value  = params[clear_param_key]
-     if clear_param_key
-       params[current_controller][clear_param_key.to_s] = clear_param_value
-     end
-     clear_params.each { |p| params.delete p.to_s }
-     if params[:update_filter]
-       update_filter      = params[:update_filter].to_s
-       parameters = request.query_parameters.clone
-       parameters.delete "update_filter"
-       if update_filter =~ /_hash$/
-         params[current_controller][update_filter] = parameters
-       else
-         params[current_controller] = parameters
-       end
-       params.delete "update_filter"
-       parameters.keys.each { |p|  params.delete p}
-     end
-     current_session.update(params)
-     @filter_params = current_session.params_for(params[:controller])
-   end
+  # used by index actions.
+  def update_filters
+    current_controller = params[:controller]
+    params[current_controller] ||= {}
+    clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
+    clear_param_key    = clear_params.first
+    clear_param_value  = params[clear_param_key]
+    if clear_param_key
+      params[current_controller][clear_param_key.to_s] = clear_param_value
+    end
+    clear_params.each { |p| params.delete p.to_s }
+    if params[:update_filter]
+      update_filter      = params[:update_filter].to_s
+      parameters = request.query_parameters.clone
+      parameters.delete "update_filter"
+      if update_filter =~ /_hash$/
+        params[current_controller][update_filter] = parameters
+      else
+        params[current_controller] = parameters
+      end
+      params.delete "update_filter"
+      parameters.keys.each { |p|  params.delete p}
+    end
+    current_session.update(params)
+
+    @filter_params = current_session.params_for(params[:controller])
+    validate_pagination_values
+  end
+
+  ########################################################################
+  # CBRAIN Helper for pagination
+  ########################################################################
+
+  # This prevents users to give wrong number page for example -1 or 999_999_999_9999_999
+  # and limit the per_page variable in order to be in a certain range.
+  # If the values for @per_page or @current_page are already set, you can
+  # use this method to sanitize them.
+  def validate_pagination_values #:nodoc:
+    # Validate per_page
+    @per_page     ||= @filter_params["per_page"]
+    @per_page       = @per_page.to_i
+    @per_page       = 25  if @per_page < 25
+    @per_page       = 500 if @per_page > 500
+
+    # Validate page
+    @current_page ||= params[:page]
+    @current_page   = @current_page.to_i
+    @current_page   = 1      if @current_page < 1
+    @current_page   = 99_999 if @current_page > 99_999
+  end
+
 end

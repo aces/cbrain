@@ -1,157 +1,114 @@
 
 <% title 'Data Provider Info' %>
 
-<h2>Information about Data Provider '<%= @provider.name %>'</h2>
+<div class="menu_bar">
+  <% if check_role(:admin) || @provider.user_id == current_user.id %>
+    <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
+    <% if @provider.is_browsable? %>
+      <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
+    <% end %>
+  <% end %>
+</div>
 
-<div class="generalbox">
+<P>
 
-  <div class="menu_bar menu_bar_left">
+<%= error_messages_for :provider, :header_message => "Provider could not be updated." %>
+
+<div class="display_inline_block" style="min-width: 50%"> 
+  <%= show_table(@provider, :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
+
+    <% t.edit_cell(:name) do %>
+      <%= text_field_tag "data_provider[name]", @provider.name %>
+    <% end %>
+
+    <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
+      <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
+      <%= submit_tag "Update" %>
+    <% end %>
+
     <% if check_role(:admin) || @provider.user_id == current_user.id %>
-      <%= link_to 'Edit',   edit_data_provider_path(@provider), :class => "button" %>
-      <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
-      <% if @provider.is_browsable? %>
-        <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
+      <% t.attribute_cell(:type) %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
+      <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online), :class => "submit_onchange" %>
+    <% end %>
+
+    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin) ) do %>
+      <%= user_select("data_provider[user_id]", { :selector => @provider }, :class => "submit_onchange" ) %>
+    <% end %>
+
+    <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
+      <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only), :class => "submit_onchange" %>
+    <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
+      <%= group_select("data_provider[group_id]", { :selector => @provider }, :class => "submit_onchange") %>
+    <% end %>
+
+    <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
+      <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable), :class => "submit_onchange" %>
+    <% end %>
+
+    <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
+
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.svn_id_pretty_rev_author_date } %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
+      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
+    <% end %>
+
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.svn_id_pretty_rev_author_date } %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
+      <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
+    <% end %>
+
+  <% end %>
+
+  <% if check_role(:admin) || @provider.user_id == current_user.id %>
+    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers", :edit_path => data_provider_path(@provider)) do |t| %>
+      <% t.edit_cell(:remote_host)  do %>
+        <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
+      <% end %>
+      <% t.edit_cell(:remote_port) do %>
+        <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>
+      <% end %>
+      <% t.edit_cell(:remote_user) do %>
+        <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
       <% end %>
     <% end %>
-  </div>
+  <% end %>
 
-  <P>
+  <%= show_table(@provider, :header => "Other Properties", :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
+    <% if @provider.is_browsable? %>
 
-   <table class="property_list">
+      <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
 
-      <tr>
-        <th colspan="2" class="subtitle">Implementation information</th>
-      </tr>
+      <% t.boolean_edit_cell("meta[must_erase]", @provider.meta["must_erase"], "on", "", :header => "Files will always be erased upon de-registration") %>
 
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Name</th>
-          <td><%= @provider.name %></td>
-      </tr>
-      
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Description</th>
-          <td><%= overlay_description(@provider.description) %></td>
-      </tr>
+    <% end %>
 
-      <% if check_role(:admin) || @provider.user_id == current_user.id %>
+    <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Type</th>
-          <td><%= @provider.class.to_s %></td>
-      </tr>
+  <% end %>
 
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Revision Info (DataProvider)</th>
-          <td><%= DataProvider.revision_info.svn_id_pretty_rev_author_date %></td>
-      </tr>
+</div>
 
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Revision Info (<%= @provider.class.to_s %>)</th>
-          <td><%= @provider.revision_info.svn_id_pretty_rev_author_date %></td>
-      </tr>
-
-      <% end %>
-
-      <tr>
-        <th colspan="2" class="subtitle">Access information</th>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Owner</th>
-          <td><%= link_to_user_with_tooltip(@provider.user) %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Project</th>
-          <td><%= link_to_group_if_accessible(@provider.group) %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Site</th>
-          <td><%= link_to_site_if_accessible(@provider.site) %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Time Zone</th>
-          <td><%= @provider.time_zone || "(Unset)" %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Status</th>
-          <td><%= @provider.online ? "Online" : "Offline" %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Mode</th>
-          <td><%= @provider.read_only ? "Read Only" : "Read/Write" %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Syncability</th>
-          <td><%= @provider.not_syncable ? "NOT syncable" : "Fully syncable" %></td>
-      </tr>
-
-      <% if check_role(:admin) || @provider.user_id == current_user.id %>
-
-      <tr>
-        <th colspan="2" class="subtitle">SSH parameters for remote Data Providers</th>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Remote Host</th>
-          <td><%= @provider.remote_host %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Remote User</th>
-          <td><%= @provider.remote_user %></td>
-      </tr>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Remote Port</th>
-          <td><%= @provider.remote_port %></td>
-      </tr>
-      
-      <tr>
-        <th colspan="2" class="subtitle">Physical data location</th>
-      </tr>
-      
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Remote Directory</th>
-          <td><%= @provider.remote_dir %></td>
-      </tr>
-      
-      <tr>
-        <th colspan="2" class="subtitle">Other properties</th>
-      </tr>
-
-      <% if @provider.is_browsable? %>
-        <tr class="<%= cycle("list-odd", "list-even") %>">
-            <th>Files must be copied/moved upon registration</th>
-            <td><%= @provider.meta["must_move"] ? "True" : "False" %></td>
-        </tr>
-
-        <tr class="<%= cycle("list-odd", "list-even") %>">
-            <th>Files will always be erased upon de-registration</th>
-            <td><%= @provider.meta["must_erase"] ? "True" : "False" %></td>
-        </tr>
-      <% end %>
-
-      <tr class="<%= cycle("list-odd", "list-even") %>">
-          <th>Cannot be used for uploading files in the file manager</th>
-          <td><%= @provider.meta["no_uploads"] ? "True" : "False" %></td>
-      </tr>
-
-
-      <% end %>
-
-   </table>
-   
-</div> <!-- End class="generalbox" -->
    
 <P>
 
-<div class="generalbox">
+<div>
 
   <%= render :partial => 'userfiles/file_counts',
               :locals => { :fileclasses_totcount => @fileclasses_totcount,
@@ -170,9 +127,9 @@
 
 <P>
 
-<div class="generalbox">
+<div>
   <table>
-    <tr><th colspan="2">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
+    <tr><th colspan="2" class="supertitle">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
     <% @ssh_keys.each do |pair| %>
       <tr><th><%= pair[0] %></th></tr>
       <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>

@@ -706,11 +706,6 @@ describe DataProvider do
       lambda{provider.provider_readhandle(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  describe "#provider_full_path" do
-    it "should raise an exception, if not implemented in a subclass" do
-      lambda{provider.provider_full_path(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
-    end
-  end
   describe "#site" do
     it "should return the associated site" do
       provider.site.should == provider.user.site

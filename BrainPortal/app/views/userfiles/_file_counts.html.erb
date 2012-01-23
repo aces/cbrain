@@ -11,13 +11,13 @@
   
   <%
   sorted_classes = fileclasses_totcount.keys.sort { |a,b| a <=> b }
-  have_tot_col   = sorted_classes.count > 1 ? true : false
+  have_tot_col   = sorted_classes.count > 1
   sorted_users   = user_fileclass_count.keys.sort { |a,b| a.login <=> b.login }
   %>
 
   <table>
     <tr>
-      <th colspan="<%= 2 + sorted_classes.size %>">File Registration Statistics</th>
+      <th colspan="<%= 2 + sorted_classes.size %>" class="supertitle">File Registration Statistics</th>
     </tr>
     <tr>
       <th></th>

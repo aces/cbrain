@@ -283,10 +283,20 @@ end
                  RemoteResource.all
                end
 
-    # All files that belong to these users on these data providers
-    filelist = Userfile.where( {} )
-    filelist = filelist.where( :user_id          => userlist.map(&:id) ) if ! users.nil?
-    filelist = filelist.all
+    # Base relation for file status
+    base_rel = SyncStatus.joins(:userfile).group([ 'userfiles.user_id', 'sync_status.remote_resource_id'])
+#    base_rel = base_rel.where(:status => [ 'InSync', 'Corrupted', 'CacheNewer', 'ToCache', 'ToProvider' ])
+    base_rel = base_rel.where("userfiles.user_id" => userlist.map(&:id)) if users.present?
+    base_rel = base_rel.where(:remote_resource_id => rrlist.map(&:id))   if remote_resources.present?
+    base_rel = base_rel.where([ "accessed_at < ?", accessed_before])     if accessed_before.present?
+    base_rel = base_rel.where([ "accessed_at > ?", accessed_after])      if accessed_after.present?
+
+    # The four queries with the stats
+    num_entries_hash = base_rel.count
+    size_tot_hash    = base_rel.sum(:size)
+    num_files_hash   = base_rel.sum(:num_files)
+    num_unk_hash     = base_rel.where("size is null").count
+    singles_hash     = base_rel.where([ "userfiles.type in (?)", SingleFile.descendants.map(&:name) + [ 'SingleFile' ]]).where("num_files is null").count
 
     # Arrays and hashes used to record the names of the
     # rows and columns of the report
@@ -300,49 +310,38 @@ end
     # the stats for one users on all data providers.
     stats = { all_users_label => {} }
 
-    filelist.each do |userfile|
-      filetype          = userfile.class.to_s
-      size              = userfile.size
-      num_files         = userfile.num_files || 1
+    all_uid_rrid_pairs = num_entries_hash.keys | size_tot_hash.keys | num_files_hash.keys | num_unk_hash.keys | singles_hash.keys
+    all_uid_rrid_pairs.each do |uid_rrid|
+      num_entries = num_entries_hash[uid_rrid] || 0
+      size_tot    = size_tot_hash[uid_rrid]    || 0
+      num_files   = num_files_hash[uid_rrid]   || 0
+      num_unk     = num_unk_hash[uid_rrid]     || 0
+      num_singles = singles_hash[uid_rrid]     || 0
 
-      user_id           = userfile.user_id
-      user              = users_index[user_id]
+      user_id = uid_rrid[0].to_i  # might be a string as a consequence of join
+      user    = users_index[user_id]
+      next unless user # just to be safe, should never happen
+
+      rr_id   = uid_rrid[1].to_i  # might be a string as a consequence of join
+      rr      = rr_index[rr_id]
+      next unless rr # just to be safe, should never happen
 
       stats[user]                ||= {} # row init
-
       cells = []
 
-      # Gather information from caches on remote_resources
-      synclist = userfile.sync_status
-      synclist.each do |syncstat| # we assume ALL status keywords mean there is some content in the cache
-
-        # Only syncstats on the remote_resources we want to look at
-        rr_id   = syncstat.remote_resource_id
-        rr      = rr_index[rr_id]
-        next unless rr
-
-        # Only syncstats with proper access time
-        accessed_at = syncstat.accessed_at
-        next if accessed_before && accessed_at > accessed_before
-        next if accessed_after  && accessed_at < accessed_after
-
-        # rr_cell is normal cell for one user on one remote resource
-        # tr_cell is total cell for all users on one remote resource
-        rr_cell = stats[user][rr]            ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
-        tr_cell = stats[all_users_label][rr] ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
-        cells << rr_cell
-        cells << tr_cell
-      end
+      # rr_cell is normal cell for one user on one remote resource
+      # tr_cell is total cell for all users on one remote resource
+      rr_cell = stats[user][rr]            ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
+      tr_cell = stats[all_users_label][rr] ||= { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
+      cells << rr_cell
+      cells << tr_cell
 
       # Update counts for all cells
       cells.each do |cell|
-        if size
-          cell[:size]        += size
-          cell[:num_entries] += 1
-          cell[:num_files]   += num_files
-        else
-          cell[:unknowns] += 1
-        end
+        cell[:size]        += size_tot.to_i
+        cell[:num_entries] += num_entries.to_i
+        cell[:num_files]   += num_files.to_i + num_singles.to_i
+        cell[:unknowns]    += num_unk.to_i
       end
     end
 
@@ -357,6 +356,5 @@ end
 
     stats
   end
-  
 
 end

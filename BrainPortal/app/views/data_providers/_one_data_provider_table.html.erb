@@ -45,8 +45,7 @@
     end
 
     t.describe_column("Operations") do |col|
-      col.edit_link
-      col.delete_link
+      col.delete_link(:if  => Proc.new { |dp| dp.has_owner_access?(current_user) })
       col.cell(:if  => Proc.new { |dp| dp.is_browsable? && dp.can_be_accessed_by?(current_user) && dp.online? }) do |dp|
         link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
       end

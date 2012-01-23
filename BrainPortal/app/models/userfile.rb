@@ -411,23 +411,6 @@ class Userfile < ActiveRecord::Base
     @level ||= 0
   end
 
-  #Produces the list of files to display for a paginated Userfile index
-  #view.
-  def self.paginate(files, page, preferred_per_page)
-    per_page = (preferred_per_page || Default_num_pages).to_i
-    page     = page.to_i
-    max_page = (files.size + per_page - 1 ) / per_page
-    page     = max_page if page > max_page
-    page     = 1   if page < 1
-    offset = (page - 1) * per_page
-
-    WillPaginate::Collection.create(page, per_page) do |pager|
-      pager.replace(files[offset, per_page])
-      pager.total_entries = files.size
-      pager
-    end
-  end
-
   #Returns whether or not +user+ has access to this
   #userfile.
   def can_be_accessed_by?(user, requested_access = :write)
@@ -496,7 +479,7 @@ class Userfile < ActiveRecord::Base
   #[For regular users:] all files that belong to the user all
   #                     files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    self.accessible_for_user(user, options).all
+    self.accessible_for_user(user, options)
   end
 
   #This method takes in an array to be used as the :+conditions+
@@ -507,7 +490,7 @@ class Userfile < ActiveRecord::Base
     
     access_requested = options[:access_requested] || :write
     
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).map(&:id)
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).all.map(&:id)
     
     query_user_string = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"

@@ -18,7 +18,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :task_workdir_size]
+  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :task_workdir_size, :rr_access_dp]
                                                                 
 
   def index #:nodoc:
@@ -44,29 +44,8 @@ class BourreauxController < ApplicationController
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
 
-    @info = @bourreau.info
-
-    myusers = current_user.available_users.all
-
-    stats = ModelsReport.gather_task_statistics(
-               :users     => myusers,
-               :bourreaux => @bourreau
-         )
-
-
-    status_stats     = stats[0]
-    @statuses        = status_stats[:statuses]
-    @statuses_list   = status_stats[:statuses_list]
-    @user_tasks_info = status_stats[:user_task_info]
-
-    type_stats       = stats[1]
-    @types           = type_stats[:types]
-    @types_list      = type_stats[:types_list]
-    @user_types_info = type_stats[:user_types_info]
-
+    prepare_show_variables
     
-    @log = @bourreau.getlog
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }
@@ -86,23 +65,6 @@ class BourreauxController < ApplicationController
     sensible_defaults(@bourreau)
     render :partial => "new"
   end
-  
-  def edit #:nodoc:
-    @bourreau = RemoteResource.find(params[:id])
-    
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.has_owner_access?(current_user)
-    
-    @users  = current_user.available_users
-    @groups = current_user.available_groups
-
-    sensible_defaults(@bourreau)
-
-    respond_to do |format|
-      format.html { render :action => :edit }
-      format.xml  { render :xml => @bourreau }
-    end
-
-  end
 
   def create #:nodoc:
     fields    = params[:bourreau]
@@ -115,24 +77,24 @@ class BourreauxController < ApplicationController
       
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @bourreau }
+        format.xml { render      :xml    => @bourreau }
       end
     else
       respond_to do |format|
-        format.js  { render :partial => "shared/failed_create", :locals => {:model_name => "bourreau"} }
-        format.xml { render :xml => @bourreau.errors.to_xml, :status => :unprocessable_entity   }
+        format.js  { render :partial => "shared/failed_create",  :locals => { :model_name => "bourreau" } }
+        format.xml { render :xml     => @bourreau.errors.to_xml, :status =>   :unprocessable_entity       }
       end
     end
   end
 
   def update #:nodoc:
-
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
     
     cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
 
-    fields    = @bourreau.is_a?(Bourreau) ? params[:bourreau] : params[:brain_portal]
+    fields    = params[:bourreau]
+    fields ||= {}
     
     subtype = fields.delete(:type)
   
@@ -142,11 +104,11 @@ class BourreauxController < ApplicationController
     @users  = current_user.available_users
     @groups = current_user.available_groups
     unless @bourreau.errors.empty?
+      @bourreau.reload
+      prepare_show_variables
       respond_to do |format|
-        format.html do
-          render :action => 'edit'
-        end
-        format.xml { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+        format.html { render :action => 'show' }
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return
     end
@@ -180,14 +142,8 @@ class BourreauxController < ApplicationController
     flash[:notice] = "#{@bourreau.class.to_s} #{@bourreau.name} successfully updated"
 
     respond_to do |format|
-      format.html do
-        if params[:tool_management] != nil 
-          redirect_to(:controller => "tools", :action =>"tool_management")
-        else
-          redirect_to(bourreaux_url)
-        end
-      end
-      format.xml { head :ok }
+      format.html { redirect_to :action => :show }
+      format.xml  { head        :ok }
     end
   end
 
@@ -216,17 +172,17 @@ class BourreauxController < ApplicationController
   
   def row_data #:nodoc:
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource }
+    render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource, :row_number => params[:row_number].to_i }
   end
 
   def load_info #:nodoc:
 
-    if params[:current_value].blank?
+    if params[:bourreau_id].blank?
       render :text  => ""
       return
     end
 
-    @bourreau  = Bourreau.find(params[:current_value])
+    @bourreau  = Bourreau.find(params[:bourreau_id])
 
     respond_to do |format|
       format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
@@ -242,7 +198,7 @@ class BourreauxController < ApplicationController
     refreshed_bourreaux = []
     skipped_bourreaux   = []
 
-    RemoteResource.find_all_accessible_by_user(current_user).each do |b|
+    RemoteResource.find_all_accessible_by_user(current_user).all.each do |b|
       if b.is_alive?
         info = b.info
         ssh_key = info.ssh_public_key
@@ -478,7 +434,7 @@ class BourreauxController < ApplicationController
     userlist         = current_user.available_users.all
 
     # List of acceptable remote_resources
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user)
+    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Index of acceptable users and remote_resources
     userlist_index   = userlist.index_by &:id
@@ -511,7 +467,7 @@ class BourreauxController < ApplicationController
       end
     end
 
-    redirect_to :action => :rr_disk_usage
+    redirect_to :action => :rr_disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
     
   end
 
@@ -524,8 +480,66 @@ class BourreauxController < ApplicationController
     @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
     @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
+
+  def rr_access_dp
+    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort     { |a,b| a.name <=> b.name }
+    @dps       = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+
+    refresh    = params[:refresh]
+    refresh_bs = []
+    if refresh == 'all'
+      refresh_bs = @bourreaux
+    else
+      refresh_bs = @bourreaux.select { |b| b.id == refresh.to_i }
+    end
+
+    sent_refresh = [] # for flash message
+    refresh_bs.each do |b|
+      if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
+        b.send_command_check_data_providers(@dps.map &:id) rescue true
+        sent_refresh << b.name
+      end
+    end
+
+    if ! refresh.blank?
+      if sent_refresh.size > 0
+        flash[:notice] = "Sent a request to check the Data Providers to these servers: #{sent_refresh.join(", ")}\n" +
+                         "This will be done in background and can take several minutes before the reports are ready."
+      else
+        flash[:notice] = "No refresh needed, access information is recent enough."
+      end
+      redirect_to :action => :rr_access_dp  # try again, without the 'refresh' param
+    end
+
+  end
+
   
   private
+  
+  def prepare_show_variables
+    @info = @bourreau.info
+
+    myusers = current_user.available_users.all
+
+    stats = ModelsReport.gather_task_statistics(
+               :users     => myusers,
+               :bourreaux => @bourreau
+         )
+
+
+    status_stats     = stats[0]
+    @statuses        = status_stats[:statuses]
+    @statuses_list   = status_stats[:statuses_list]
+    @user_tasks_info = status_stats[:user_task_info]
+
+    type_stats       = stats[1]
+    @types           = type_stats[:types]
+    @types_list      = type_stats[:types_list]
+    @user_types_info = type_stats[:user_types_info]
+
+    
+    @log = @bourreau.getlog
+  end
 
   # Adds sensible default values to some field for
   # new objects, or existing ones being edited.

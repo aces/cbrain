@@ -121,6 +121,9 @@ h5 {
     display: inline !important;
 }
 
+.display_inline_block {
+    display: inline-block;
+}
 
 
 /* % ######################################################### */
@@ -129,16 +132,15 @@ h5 {
 
 table {
     border-spacing: 0em;
-    border: 2px solid #6699CC;
+    border: 2px solid black;
 }
 
 table th {
-    width: auto;
-    border: 1px solid #9CF;
-    color: #ffffff;
-    background: #0471B4;
-    padding-left: 10px;
-    padding-right: 10px;
+    border: 2px solid white;
+    color: #333333;
+    background: #eeeeee;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
     text-align: center;
     text-indent: 0px;
     font-family: Verdana;
@@ -147,8 +149,8 @@ table th {
 }
 
 table td {
-    width: auto;
-    border: 1px solid #9CF;
+    border: 1px solid #dddddd;
+    /* background: white; */
     color: #404040;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -160,30 +162,13 @@ table td {
     font-size: 11px;
 }
 
-td.title {
-    width: auto;
-    background: #0471B4;
-    color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-}
-
-th.subtitle {
-    width: auto;
+th.supertitle {
     background-color: #05A3D6;
     color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
+}
+
+th.blank {
+    background-color: inherit;
 }
 
 td.tabletext {
@@ -208,6 +193,42 @@ tr.selected_row {
 }
 
 
+
+/* % ######################################################### */
+/* % Support for vertical text labels. */
+/* % The following styles proudly brought to you by Pierre Rioux, after MUCH trial and error! */
+/* % ######################################################### */
+
+/*
+   The DIV's height is set to 20em, which is just enough for
+   and name such as "Failed PostProcess Prerequisites".
+   You can override the vertical size of the DIV using
+     style="height: 35em"
+   in the DIV element's attributes; if the container of
+   the DIV is a proper .vertical_text_container, the
+   sizes and positions will adjust properly automatically.
+   The DIV's width is set to 1.5 em, which is just enough
+   for one line of text.
+*/
+
+/* Use this on whatever contains the DIV with .vertical_text */
+.vertical_text_container {
+   vertical-align: bottom; /* will position the DIV at the bottom */
+}
+
+/* Use this to encapsulate text written from bottom up, sideways */
+div.vertical_text {
+    display: block;
+    white-space: nowrap;
+    width: 1.5em;
+    height: 20em;
+    margin: auto;
+    text-align: left;
+    -webkit-transform: rotate(-90deg) translate(0.5em, 100%); 
+    -moz-transform: rotate(-90deg) translate(0.5em, 100%);                                 
+    -webkit-transform-origin: 0 100%;
+    -moz-transform-origin: 0 100%;
+}
 
 /* % ######################################################### */
 /* % Property List Table Styles */
@@ -494,17 +515,10 @@ h1.warning {
   text-decoration: none; 
 }
 
-.red_times_icon {
-  color: red;
+.bold_icon {
   font-weight: bold;
   text-decoration: none; 
-} 
-
-.green_o_icon {
-  color: green;
-  font-weight: bold;
-  text-decoration: none; 
-}
+}           
 
 
 
@@ -530,7 +544,7 @@ a {
 }
 
 .header_link {
-    color: white
+    color: #333355;
 }
 
 .error_link {
@@ -988,31 +1002,8 @@ pre {
 /* % Task summary in welcome page */
 /* % ############################################## */
 
-.task_summary {
-    clear: both;
-    margin-left:0px;
-    margin-right: auto;
-    text-align: left;
-    padding: 1em;
-    margin-top: 0em;
-}
-
-.task_summary_count {
-    font-size: 1.3em;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.task_summary_count a {
-    font-size: 0.5em;
-    font-weight: normal;
-    color: blue;
-}
 
 .task_summary_table {
-    margin-top: 1em;
-    margin-left:0px;
-    margin-right: auto;
     border: 0px;
     background-color: #E4E4E4;
 }
@@ -1036,25 +1027,14 @@ pre {
     padding-right: 1em;
     padding-top: 0.2em;
     padding-bottom: 0.2em;
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
 }
-
-.menu_bar_left {
-    margin-left: 0em;
-}
-
 
 
 /* % ######################################################### */
 /* % Userfiles Index File Manager */
 /* % ######################################################### */
-
-/* DIV that contains the file manager and its two menu bars */
-#userfiles_menus_and_filelist {
-    width: 100%;
-    padding-right: 1em;
-}
 
 .active_filters {
   padding-top: 1em;
@@ -1071,7 +1051,6 @@ pre {
   padding: 0;
   margin-right: 0;
   margin-left: 0;
-  min-width: 900px; /* NOTE: this also makes sure the two menu bars are wide enough! */
 }
 
 .pagination_right_side {
@@ -1084,10 +1063,6 @@ pre {
     text-align: center;
 }
 
-#userfiles_table {
-    width: 100%;
-}
-
 .userfiles_tool_selector {
     padding: 0 1em;
     display: table-row;
@@ -1098,6 +1073,33 @@ pre {
     display: table-row;
 }
 
+/* % ######################################################### */
+/* % Show page table formatting */
+/* % ######################################################### */
+
+.show_table {
+  border-collapse: collapse;
+  border: none;
+  width: 100%;
+}
+
+.show_table th {
+  background: none;
+  font-weight: bold;
+  border: none;
+  color: black;
+  text-align: left;
+  white-space: nowrap;
+  width: 20%;
+}
+
+.show_table td {
+  background: none;
+  color: black;
+  border: none;
+  margin: 0;
+  text-align: left;
+}
 
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
@@ -1211,6 +1213,7 @@ pre {
 
 .current_filters_item {
   color: #0471B4;
+  margin-right: 0.5em;
 }
 
 /* current_filters is an ID because the element is modified with AJAX */
@@ -1272,14 +1275,14 @@ pre {
 /* % Task Show and Edit */
 /* % ######################################################### */
 
-.show_task_table {
+.show_task_prerequisites {
     clear: both;
     margin-right: auto;
     margin-left: 0px;
-    width: 950px;
+    width: 100%;
 }
 
-.show_task_table td {
+.show_task_prerequisites td {
     text-align: left;
     margin-right: 0em;
 }
@@ -1712,3 +1715,10 @@ td.middle {
   font-size: 11px;
   text-align: center;
 }
+
+/* Basic styling */
+.float_left {
+  float: left;
+}
+
+

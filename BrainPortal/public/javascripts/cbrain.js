@@ -44,6 +44,7 @@ function load_behaviour(event){
      var dialog_link = enclosing_div.children('.overlay_content_link');
      var dialog = enclosing_div.children(".overlay_content")
      var content_width = parseInt(dialog_link.attr('data-width'));
+     var content_height = parseInt(dialog_link.attr('data-height'));
      
      dialog.remove().appendTo("body");
 
@@ -51,7 +52,8 @@ function load_behaviour(event){
          modal: true,
          position: "center",
          resizable: false,
-         width: content_width
+         width: content_width,
+         height: content_height
      });
 
      dialog_link.click(function(){
@@ -98,15 +100,15 @@ function load_behaviour(event){
    // See TabBar class
    loaded_element.find(".tabs").tabs();
    
-   loaded_element.find(".inline_edit_field").each(function() {
-     var inline_edit_field = jQuery(this);
-     var data_type = inline_edit_field.attr("data-type");
-     var target = inline_edit_field.attr("data-target");
-     var method = inline_edit_field.attr("data-method");
+   loaded_element.find(".inline_text_field").each(function() {
+     var inline_text_field = jQuery(this);
+     var data_type = inline_text_field.attr("data-type");
+     var target = inline_text_field.attr("data-target");
+     var method = inline_text_field.attr("data-method");
      if(!method) method = "POST";
      if(!data_type) data_type = "script";
      
-     var form = inline_edit_field.children("form")
+     var form = inline_text_field.children("form")
             .hide()
             .ajaxForm({
               type: method,
@@ -114,13 +116,13 @@ function load_behaviour(event){
               success: function(data){
                 modify_target(data, target);     
               }});
-     var input_field = form.find(".inline_edit_input");
-     var text = inline_edit_field.find(".current_text");
-     var trigger = inline_edit_field.find(inline_edit_field.attr("data-trigger"));
+     var input_field = form.find(".inline_text_input");
+     var text = inline_text_field.find(".current_text");
+     var trigger = inline_text_field.find(inline_text_field.attr("data-trigger"));
      
-     var data_type = inline_edit_field.attr("data-type");
-     var target = inline_edit_field.attr("data-target");
-     var method = inline_edit_field.attr("data-method");
+     var data_type = inline_text_field.attr("data-type");
+     var target = inline_text_field.attr("data-target");
+     var method = inline_text_field.attr("data-method");
      if(!method) method = "POST";
      if(!data_type) data_type = "script";
 
@@ -344,6 +346,14 @@ jQuery(
      return false;  
    });
 
+   jQuery(".inline_edit_field_link").live("click", function(){
+     var link = jQuery(this);
+     var default_text = link.closest(".inline_edit_field_default_text");
+     var form = default_text.siblings(".inline_edit_field_form");
+     default_text.hide();
+     form.show();
+   });
+
    //Highlighting on ressource list tables.
    jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
    jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
@@ -553,9 +563,12 @@ jQuery(
    });
 
    jQuery('.external_submit_button').live('click', function(e) {
+     var button = jQuery(this);
+     var commit = button.attr("value");
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
 
+     $(form).append("<input type=\'hidden\' name=\'commit\' value=\'"+commit+"\'>");
      form.submit();
      
      return false;

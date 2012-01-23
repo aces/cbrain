@@ -146,6 +146,12 @@ class CbrainTask::Diagnostics < ClusterTask
         echo ""
       fi
 
+      if test -f /etc/system-release ; then
+        echo "==== System Release ===="
+        cat /etc/system-release
+        echo ""
+      fi
+
       if test -e /proc/cpuinfo ; then
         echo "==== CPU Info ===="
         cat /proc/cpuinfo | sort | uniq

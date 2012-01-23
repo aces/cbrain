@@ -1,4 +1,4 @@
-<div class="menu_bar menu_bar_left">
+<div class="menu_bar">
   <% if current_user.has_role?(:admin) %>
     <%= new_model_button 'Create New Tool', new_tool_path %>
        
@@ -6,8 +6,6 @@
       <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => " button" %>
     </span>
             
-    <%= link_to 'Manage Tools', { :controller => :tools, :action => :tool_management }, :class => " button" %>
-
     <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => " button" %>
   <% end %>
 
@@ -50,14 +48,14 @@ puts_red tcs.inspect
     end
     t.describe_column("Help/Info") do |col|
       col.cell do |tool|
-        tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore
+        tool_plain_name = tool.cbrain_task_class.demodulize.underscore
         help_path = "/doc/tasks/#{tool_plain_name}_options.html"
         if File.exist?( Rails.root.to_s + "/public" + help_path )
           overlay_ajax_link "Help", help_path
         end
       end
       col.cell do |tool|
-        tool_plain_name = tool.cbrain_task_class.sub(/^CbrainTask::/,"").underscore
+        tool_plain_name = tool.cbrain_task_class.demodulize.underscore
         info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html"
         if File.exist?( Rails.root.to_s + "/public" + info_path )
           overlay_ajax_link "Info", info_path

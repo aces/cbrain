@@ -19,8 +19,8 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:   
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
-    bourreau_ids = @bourreaux.map &:id
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
+    bourreau_ids = bourreaux.map &:id
     
     # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
     if current_project
@@ -45,12 +45,19 @@ class TasksController < ApplicationController
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
     end
     
-    sort_order = @filter_params["sort_hash"]["order"]
-    sort_dir   = @filter_params["sort_hash"]["dir"]
+    @sort_order = @filter_params["sort_hash"]["order"]
+    @sort_dir   = @filter_params["sort_hash"]["dir"]
     # Set sort order and make it persistent.
-    if sort_order == "cbrain_tasks.batch"
-      sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
-      sort_dir   = 'DESC'
+    @showing_batch = false #i.e. don't show levels for individual entries.
+    if @sort_order == "cbrain_tasks.batch"
+      if @filter_params["filter_hash"]["launch_time"]
+        @sort_order = "cbrain_tasks.updated_at"
+        @sort_dir   = "DESC"
+        @showing_batch   = true
+      else
+        @sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+        @sort_dir   = 'DESC'
+      end
     end
 
     # Handle custom filters
@@ -63,23 +70,18 @@ class TasksController < ApplicationController
 
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
-    @total_tasks = scope.count    # number of TASKS
+    @total_tasks       = scope.count    # number of TASKS
     @total_space_known = scope.sum(:cluster_workdir_size)
     @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-    @total_entries = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
+    @total_entries     = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
-    @filter_params["per_page"] ||= 25
-    @tasks_per_page = @filter_params["per_page"].to_i
-    @tasks_per_page = 500 if @tasks_per_page > 500
-    @tasks_per_page = 25  if @tasks_per_page < 25
+    # For Pagination
+    offset = (@current_page - 1) * @per_page
 
-    page = (params[:page] || 1).to_i
-    page = 1 if page < 1
-    offset = (page - 1) * @tasks_per_page
-
-    if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' && request.format.to_sym != :xml
+    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["launch_time"] && request.format.to_sym != :xml
       @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
-      launch_times   = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page ).group( :launch_time ).map(&:launch_time)
+      launch_times   = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).group( :launch_time ).map(&:launch_time)
+
       @tasks = {} # hash lt => task_info
       launch_times.each do |lt|
          first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
@@ -97,22 +99,29 @@ class TasksController < ApplicationController
       end
       pagination_list = launch_times
     else
-      task_list = scope.order( "#{sort_order} #{sort_dir}" ).offset( offset ).limit( @tasks_per_page )
+      
+      if @showing_batch
+        task_list = scope.all.sort { |t1,t2| t1.cmp_by_batch_rank(t2) }
+        task_list = task_list[offset, @per_page]
+      else
+        task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
+      end
+      
       @tasks = {}
       task_list.each do |t|
         @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
       end
       pagination_list = task_list.map(&:id)
     end
-    
-    @paginated_list = WillPaginate::Collection.create(page, @tasks_per_page) do |pager|
+
+    @paginated_list = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
       pager.replace(pagination_list)
       pager.total_entries = @total_entries
       pager
     end
 
     @bourreau_status = {}
-    status = @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}
+    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }
     respond_to do |format|
       format.html
       format.xml  { render :xml => @tasks }
@@ -131,16 +140,16 @@ class TasksController < ApplicationController
     
     scope = scope.where( :launch_time => params[:launch_time] )
     
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.where( :bourreau_id => @bourreaux.map(&:id) )
+      scope = scope.where( :bourreau_id => bourreaux.map(&:id) )
     end
 
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank" ).readonly(false)
         
     @tasks = scope                     
     @bourreau_status = {}
-    @bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
+    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
     
     render :layout => false
   end
@@ -183,7 +192,7 @@ class TasksController < ApplicationController
       return
     end
     
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     
     @task             = CbrainTask.const_get(@toolname).new
 
@@ -300,7 +309,7 @@ class TasksController < ApplicationController
     end
 
     # A brand new task object!
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.sub(/^CbrainTask::/, "")
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
@@ -546,9 +555,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).map(&:id)
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -660,12 +669,10 @@ class TasksController < ApplicationController
   # Some useful variables for the views for 'new' and 'edit'
   def initialize_common_form_values #:nodoc:
 
-    @data_providers   = DataProvider.find_all_accessible_by_user(current_user).where( :online => true )
-
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
     bourreau_ids = tool.bourreaux.map &:id
-    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids )
+    bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
     unless @task.class.properties[:no_presets]
@@ -686,7 +693,7 @@ class TasksController < ApplicationController
     end
 
     # Tool Configurations
-    valid_bourreau_ids = @bourreaux.index_by &:id
+    valid_bourreau_ids = bourreaux.index_by &:id
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
     @tool_configs      = tool.tool_configs # all of them, too much actually
     @tool_configs.reject! do |tc|

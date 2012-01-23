@@ -169,6 +169,23 @@ module ActRecLog
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  # Check that the the class this module is being included into is a valid one.
+  def self.included(includer) #:nodoc:
+    unless includer <= ActiveRecord::Base
+      raise "#{includer} is not an ActiveRecord model. The ActRecLog module cannot be used with it."
+    end
+
+    includer.class_eval do
+      extend ClassMethods
+      after_create  :propagate_tmp_log
+      after_destroy :destroy_log
+    end
+  end
+
+  module ClassMethods #:nodoc:
+    # None for the moment.
+  end
+
   # Add a log +message+ to the CBRAIN logging system
   # The first time a message is created, some revision
   # information about the current ActiveRecord class

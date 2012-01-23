@@ -8,24 +8,15 @@
 <div id="userfiles_menus_and_filelist">
 
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
-    <%= hidden_field_tag :page, @current_page %>
-
-    <div>
       
       <%= render :partial => "userfiles/file_menu" %>
-      <div id="userfiles_display">
+      <div id="userfiles_display" class="index_block">
         <%= render :partial => 'userfiles_display' %>
+        
+        <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
+        <%= center_legend("Synchronization symbols:", *sync_statuses.map{ |s| [ status_html_symbol(s), s ] } )%>
       </div>
-      
-
-      <center>
-        Synchronization symbols:&nbsp;&nbsp;&nbsp;&nbsp;
-        <% [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ].each do |name| %>
-          <%= status_html_symbol(name) %>:&nbsp;<%= name %>&nbsp;&nbsp;&nbsp;&nbsp;
-        <% end %>
-      </center>
-    </div>
-
+  
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 

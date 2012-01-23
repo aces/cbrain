@@ -2,6 +2,7 @@
 # CBRAIN Routing Table
 
 CbrainRailsPortal::Application.routes.draw do
+  match "/report", :controller => :portal, :action => :report
 
   # Session
   resource  :session
@@ -59,6 +60,7 @@ CbrainRailsPortal::Application.routes.draw do
       get  'rr_access'
       get  'task_workdir_size'
       post 'cleanup_caches'
+      get  'rr_access_dp'
     end
   end
 
@@ -108,7 +110,6 @@ CbrainRailsPortal::Application.routes.draw do
   resources :tools do
     collection do
       get    'bourreau_select'
-      get    'tool_management'
       post   'assign_tools'
     end
   end

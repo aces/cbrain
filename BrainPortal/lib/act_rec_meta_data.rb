@@ -69,6 +69,7 @@ module ActRecMetaData
 
     includer.class_eval do
       extend ClassMethods
+      after_destroy :destroy_all_meta_data
     end
   end
 
@@ -247,8 +248,65 @@ module ActRecMetaData
     return true if self.new_record? || ! self.id # ignore records with no ID
     allmeta = self.meta.all
     @_cbrain_meta = nil
-    return true unless allmeta
-    MetaDataStore.delete(allmeta.map &:id) # was: destroy_without_callbacks
+    return true unless allmeta && allmeta.size > 0
+    MetaDataStore.delete(allmeta.map &:id)
+    true
+  end
+
+  # Update the meta data information of the record based on
+  # a explicit subset the content of the hash +meta_params+.
+  #
+  # Example: if we have
+  #
+  #   meta_params = { :abc => "2", :def => 'z', :xyz => 'A' }
+  #
+  # Then calling
+  #
+  #   @myobj.update_meta_data(meta_params, [ :def, :xyz, :nope ])
+  #
+  # will result in two meta data pieces of information added
+  # to the object @myobj, like this:
+  #
+  #   @myobj.meta[:def] = 'z'
+  #   @myobj.meta[:xyz] = 'A'
+  #
+  # +meta_keys+ can be provided to limit the set of keys to
+  # be updated; the default is the keyword :all which means all
+  # keys in +meta_params+ .
+  # 
+  # An explicit value of nil for a key will delete the meta
+  # data entry, just like an assignement to nil does in
+  # the meta data store.
+  #
+  # Options:
+  #
+  # If the option :delete_on_blank is true, then values that
+  # return true to .blank? will cause the meta data entry
+  # to be deleted. For instance, normally:
+  #
+  #   @myobj.update_meta_data( { :zut => "" }, [ :zut ])
+  #
+  # will result in the meta data value "" set to the meta key :zut,
+  # but this:
+  #
+  #   @myobj.update_meta_data( { :zut => "" }, [ :zut ], :delete_on_blank => true)
+  #
+  # will actually delete the meta key :zut as if its value in the
+  # hash table had been set to nil.
+  #
+  # If the options :delete_on_absence is true, then keys specified
+  # in meta_keys that are not present in meta_params will cause the
+  # meta key to also be deleted.
+  def update_meta_data(meta_params = {}, meta_keys = :all, options = {})
+    return true if meta_keys.is_a?(Array) && meta_keys.empty?
+    meta_keys = meta_params.keys if meta_keys == :all
+    meta_keys.each do |key|
+      if meta_params.has_key?(key) || options[:delete_on_absence]
+        new_value = meta_params[key]
+        new_value = nil if options[:delete_on_blank] && new_value.blank?
+        self.meta[key] = new_value # assignment of nil deletes the key
+      end
+    end
     true
   end
 

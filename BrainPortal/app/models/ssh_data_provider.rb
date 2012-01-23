@@ -112,7 +112,6 @@ class SshDataProvider < DataProvider
       end
       begin
         sftp.rename!(oldpath,newpath)
-        userfile.name = newname
         return true
       rescue => ex
         return false

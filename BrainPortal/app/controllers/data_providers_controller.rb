@@ -17,7 +17,7 @@ class DataProvidersController < ApplicationController
   api_available :except => [:disk_usage, :cleanup]
 
   before_filter :login_required
-  before_filter :manager_role_required, :only  => [:new, :create]
+  before_filter :manager_role_required, :only => [:new, :create]
    
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
@@ -46,62 +46,12 @@ class DataProvidersController < ApplicationController
 
     @ssh_keys = get_ssh_public_keys
 
-    stats = ModelsReport.gather_filetype_statistics(
-              :users     => current_user.available_users.all,
-              :providers => @provider
-            )
-    @user_fileclass_count = stats[:user_fileclass_count]
-    @fileclasses_totcount = stats[:fileclasses_totcount]
-    @user_totcount        = stats[:user_totcount]
-    @all_totcount         = stats[:all_totcount]
+    prepare_file_stats
 
-    # List of acceptable users
-    userlist         = if check_role(:admin)
-                         User.all
-                       elsif check_role(:site_manager)
-                         current_user.site.users
-                       else
-                         [ current_user ]
-                       end
-
-    # Create disk usage statistics table
-    stats_options = { :users            => userlist,
-                      :providers        => [ @provider ],
-                      :remote_resources => [],
-                    }
-    @report_stats    = ApplicationController.helpers.gather_dp_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_dps         = @report_stats['!dps!'] # does not include the 'all' column, if any
-    @report_rrs         = @report_stats['!rrs!']
-    @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
-    
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
     end
-  end
-  
-  def edit #:nodoc:
-    @provider = DataProvider.find(params[:id])
-
-    unless @provider.has_owner_access?(current_user)
-       flash[:error] = "You cannot edit a provider that you do not own."
-       redirect_to :action => :index
-       return
-    end
-
-    @typelist = get_type_list
-
-    @ssh_keys = get_ssh_public_keys
-
-    respond_to do |format|
-      format.html { render :action => :edit }
-      format.xml  { render :xml => @provider }
-    end
-
   end
 
   def new #:nodoc:
@@ -164,7 +114,6 @@ class DataProvidersController < ApplicationController
   end
 
   def update #:nodoc:
-
     @user     = current_user
     id        = params[:id]
     @provider = DataProvider.find(id)
@@ -172,13 +121,13 @@ class DataProvidersController < ApplicationController
     unless @provider.has_owner_access?(current_user)
        flash[:error] = "You cannot edit a provider that you do not own."
        respond_to do |format|
-        format.html { redirect_to :action => :index }
+        format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
        end
        return
     end
 
-    fields    = params[:data_provider]
+    fields    = params[:data_provider] || {}
     subtype   = fields.delete(:type)
 
     @provider.update_attributes(fields)
@@ -187,14 +136,16 @@ class DataProvidersController < ApplicationController
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads])
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
-        format.html { redirect_to(data_providers_url) }
+        format.html { redirect_to :action => :show }
         format.xml  { render :xml  => @provider }
       end   
     else
+      @provider.reload
+      prepare_file_stats
       @ssh_keys = get_ssh_public_keys
       @typelist = get_type_list
       respond_to do |format|
-        format.html { render :action => 'edit' }
+        format.html { render :action => 'show' }
         format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -225,7 +176,7 @@ class DataProvidersController < ApplicationController
   end
   
   def is_alive #:nodoc:
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)        
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
     respond_to do |format|
       format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
@@ -261,18 +212,25 @@ class DataProvidersController < ApplicationController
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.is_browsable?                                                                            
-      flash[:error] = "You cannot browse this provider."                                                                             
-      respond_to do |format|                                                                                                         
-        format.html { redirect_to :action => :index }                                                                                
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
-      end                                                                                                                                                                                        
-      return                                                                                                                                                                                     
+    @filter_params["browse_hash"] ||= {}
+    @per_page = @filter_params["browse_hash"]["per_page"]
+    validate_pagination_values # validates @per_page and @current_page
+    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
+    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+
+    unless @provider.is_browsable?
+      flash[:error] = "You cannot browse this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }
+      end
+      return
     end
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = get_recent_provider_list_all(params[:refresh])
+      @fileinfolist = get_recent_provider_list_all(params[:refresh], @as_user)
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes. 
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
@@ -335,16 +293,9 @@ class DataProvidersController < ApplicationController
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
-    page = (params[:page] || 1).to_i
-    params[:pagination] ||= "on"
-    @per_page = params[:pagination] == "on" ? 50 : 999_999_999
-
+    @file_count   = @fileinfolist.count
     unless request.format.to_sym == :xml
-      @fileinfolist = WillPaginate::Collection.create(page, @per_page) do |pager|
-        pager.replace(@fileinfolist[(page-1) * @per_page, @per_page])
-        pager.total_entries = @fileinfolist.size
-        pager
-      end
+      @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
     end
     
     respond_to do |format|
@@ -358,15 +309,20 @@ class DataProvidersController < ApplicationController
   #Register a list of files into the system.
   #The files' meta data will be saved as Userfile resources.
   def register
-    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.is_browsable?                                                                            
-      flash[:error] = "You cannot register files from this provider."                                                                             
-      respond_to do |format|                                                                                                         
-        format.html { redirect_to :action => :index }                                                                                
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }                                                                                                    
-      end                                                                                                                                                                                        
-      return                                                                                                                                                                                     
+    @filter_params["browse_hash"] ||= {}
+    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
+    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+
+    unless @provider.is_browsable?
+      flash[:error] = "You cannot register files from this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }
+      end
+      return
     end
 
     basenames = params[:basenames] || []
@@ -374,19 +330,20 @@ class DataProvidersController < ApplicationController
     basenames = [basenames] unless basenames.is_a? Array
     filetypes = [filetypes] unless filetypes.is_a? Array
     do_unreg  = params[:commit] =~ /unregister/i
+    do_erase  = params[:commit] =~ /delete/i
 
     # Automatic MOVE or COPY operation?
     move_or_copy = params[:auto_do]                || ""
     other_provid = params[:other_data_provider_id] || nil
     new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
     past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
-    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !do_unreg
+    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !(do_unreg || do_erase)
       flash[:error] = "Error: you selected to automatically #{move_or_copy} your files but did not specify a destination Data Provider."
       redirect_to :action => :browse
       return
     end
     
-    @fileinfolist = get_recent_provider_list_all(params[:refresh])
+    @fileinfolist = get_recent_provider_list_all(params[:refresh].presence, @as_user)
 
     base2info = {}
     @fileinfolist.each { |fi| base2info[fi.name] = fi }
@@ -402,6 +359,7 @@ class DataProvidersController < ApplicationController
     newly_registered_userfiles      = []
     previously_registered_userfiles = []
     num_unregistered = 0
+    num_erased       = 0
     num_skipped      = 0
 
     flash[:error]  = ""
@@ -413,21 +371,41 @@ class DataProvidersController < ApplicationController
 
     basenames.each do |basename|
 
-      # Unregister old files
+      # Unregister files
 
-      if do_unreg
+      if do_unreg || do_erase
         userfile = Userfile.where(:name => basename, :data_provider_id => @provider.id).first
-        unless userfile
-          num_skipped += 1
-          next
-        end
-        unless userfile.has_owner_access?(current_user)
+        if userfile.blank?
+          num_skipped += 1 unless do_erase
+        elsif ! userfile.has_owner_access?(current_user)
           flash[:error] += "Error: file #{basename} does not belong to you. File not unregistered.\n"
           num_skipped += 1
           next
+        else
+          num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
+          userfile.destroy_log rescue true
         end
-        num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
-        userfile.destroy_log rescue true
+        next unless do_erase
+      end
+
+      # Erase unregistered files
+
+      if do_erase
+        fileinfo      = base2info[basename] rescue nil
+        next unless fileinfo
+        temp_class    = fileinfo.symbolic_type == :directory ? FileCollection : SingleFile
+        temp_userfile = temp_class.new(
+           :name          => basename,
+           :data_provider => @provider,
+           :user_id       => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
+           :group_id      => current_user.own_group.id
+        ).freeze # do not save this file! it's only used temporarily to delete the content on the DP
+        erase_ok = @provider.provider_erase(temp_userfile) rescue nil
+        if erase_ok
+          num_erased += 1
+        else
+          num_skipped += 1
+        end
         next
       end
 
@@ -456,7 +434,7 @@ class DataProvidersController < ApplicationController
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename, 
                                :size             => size,
-                               :user_id          => current_user.id,
+                               :user_id          => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
                                :group_id         => file_group_id,
                                :data_provider_id => @provider.id )
       
@@ -465,6 +443,7 @@ class DataProvidersController < ApplicationController
         previously_registered_userfiles << registered_file
       elsif userfile.save
         newly_registered_userfiles << userfile
+        userfile.addlog("Registered on DataProvider '#{@provider.name}' as '#{userfile.name}'.")
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
         num_skipped += 1
@@ -478,6 +457,12 @@ class DataProvidersController < ApplicationController
 
     if newly_registered_userfiles.size > 0
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
+      if @as_user != current_user
+        flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
+      end
+    elsif num_erased > 0
+      clear_browse_provider_local_cache_file(@as_user, @provider)
+      flash[:notice] += "Erased #{num_erased} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
     else
@@ -575,8 +560,22 @@ class DataProvidersController < ApplicationController
 
   end
   
-  private 
-  
+  private
+
+  def prepare_file_stats #:nodoc:
+    
+    # Get stat for file_counts
+    stats = ModelsReport.gather_filetype_statistics(
+              :users     => current_user.available_users.all,
+              :providers => @provider
+            )
+    @fileclasses_totcount = stats[:fileclasses_totcount]
+    @user_fileclass_count = stats[:user_fileclass_count]
+    @user_totcount        = stats[:user_totcount]
+    @all_totcount         = stats[:all_totcount]
+
+  end
+
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
     if check_role(:admin) || check_role(:site_manager)
@@ -590,7 +589,7 @@ class DataProvidersController < ApplicationController
     end
     typelist
   end
-
+  
   def get_ssh_public_keys #:nodoc:
     # Get SSH key for this BrainPortal
     portal_ssh_key = RemoteResource.current_resource.get_ssh_public_key
@@ -601,12 +600,12 @@ class DataProvidersController < ApplicationController
     keys
   end
 
-  def get_recent_provider_list_all(refresh = false) #:nodoc:
+  def get_recent_provider_list_all(refresh = false, as_user = current_user) #:nodoc:
 
     refresh = false if refresh.blank? || refresh.to_s == 'false'
 
     # Check to see if we can simply reload the cached copy
-    cache_file = browse_provider_local_cache_file(current_user, @provider)
+    cache_file = browse_provider_local_cache_file(as_user, @provider)
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
        fileinfolist = YAML::load(filelisttext)
@@ -614,7 +613,7 @@ class DataProvidersController < ApplicationController
     end
 
     # Get info from provider
-    fileinfolist = @provider.provider_list_all(current_user)
+    fileinfolist = @provider.provider_list_all(as_user)
 
     # Write a new cached copy
     File.open(cache_file + ".tmp","w") do |fh|
@@ -632,8 +631,8 @@ class DataProvidersController < ApplicationController
   end
 
   def clear_browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user,provider)
-    File.unkink(cache_file) rescue true
+    cache_file = browse_provider_local_cache_file(user, provider)
+    File.unlink(cache_file) rescue true
   end
 
 end

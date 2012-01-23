@@ -30,7 +30,7 @@
     </tr>
     <% bourreaux.each do |bourreau| %>
     <tr class="<%= cycle("list-odd", "list-even") %>">
-      <td><%= link_to_bourreau_if_accessible(bourreau, nil, :path => edit_bourreau_path(bourreau)) %></td>
+      <td><%= link_to_bourreau_if_accessible(bourreau, nil, :path => bourreau_path(bourreau)) %></td>
       <td><%= link_to_group_if_editable(bourreau.group) %></td>
       <td><%= red_if(! bourreau.can_be_accessed_by?(user), "Yes", "NO!") %></td>
     </tr>
@@ -44,8 +44,8 @@
   <strong>Tool Access Summary:</strong><br/>
   <table>
     <tr class="<%= cycle("list-odd", "list-even") %>">
-      <th class="subtitle centered" colspan="3">Tool Summary</th>
-      <th class="subtitle centered" colspan="<%= bourreaux.size %>">Number Of Versions Accessible, Per Server</th>
+      <th class="supertitle" colspan="3">Tool Summary</th>
+      <th class="supertitle" colspan="<%= bourreaux.size %>">Number Of Versions Accessible, Per Server</th>
     </tr>
     <tr>
       <th>Tool</th>

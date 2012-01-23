@@ -20,6 +20,8 @@ class CbrainTask < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include ResourceAccess
+
   before_validation     :set_group
 
   validates_presence_of :user_id
@@ -27,6 +29,8 @@ class CbrainTask < ActiveRecord::Base
   validates_presence_of :group_id
   validates_presence_of :status
   validates_presence_of :tool_config_id
+
+  validate              :task_is_proper_subclass
   
   belongs_to            :bourreau
   belongs_to            :user
@@ -156,7 +160,7 @@ class CbrainTask < ActiveRecord::Base
   # Returns a simple name for the task (without the Cbrain prefix stuff).
   # Example: from 'CbrainTask::Civet' we get 'Civet'
   def name
-    @name ||= self.class.to_s.sub(/^CbrainTask::/,"")
+    @name ||= self.class.to_s.demodulize
   end
 
   # Returns a longer name for the task (without the Cbrain prefix stuff)
@@ -184,11 +188,19 @@ class CbrainTask < ActiveRecord::Base
     self.name
   end
 
-  # Returns a prettier name for the task's class
-  # Can be customized by subclasses to improve views, by keep it short.
-  # By default, returns the same value as the +name+ class method.
+  # Returns a prettier name for the task's class.
+  # Can be customized by subclasses to improve views,
+  # but keep it short.
+  #
+  #   CbrainTask::NiakPipepelineFmriPreprocess returns "Niak pipeline fmri preprocess"
+  def self.pretty_type
+    @pretty_type ||= self.to_s.demodulize.underscore.humanize
+  end
+
+  # For backward compatibility.
+  # Invokes pretty_type().
   def self.pretty_name
-    @pretty_name ||= self.to_s.sub(/^CbrainTask::/,"")
+    self.pretty_type
   end
 
   # Returns the Tool object associated with the task.
@@ -757,6 +769,17 @@ class CbrainTask < ActiveRecord::Base
     
       self.group_id = owner.own_group.id
     end
+  end
+
+  # Returns true only if
+  def task_is_proper_subclass #:nodoc:
+    # Of the two sets below, one is always empty:
+    # - PortalTask  has subclasses only on a Portal server.
+    # - ClusterTask has subclasses only on a Bourreau server.
+    unless (PortalTask.subclasses + ClusterTask.subclasses).include? self.class
+      self.errors.add(:base, "is not a proper subclass of CbrainTask.")
+    end
+    true
   end
 
 end

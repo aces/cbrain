@@ -1,10 +1,7 @@
 module ViewHelpers
   
   def self.included(includer) #:nodoc:
-    includer.class_eval do
-      helper_method :to_localtime, :pretty_elapsed, :pretty_past_date, :pretty_size, :red_if, :html_colorize
-      helper_method :view_pluralize
-    end
+    includer.send(:helper_method, *self.instance_methods)
   end
   
   #################################################################################
@@ -115,6 +112,7 @@ module ViewHelpers
   #
   #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
   def pretty_past_date(pastdate, what = :datetime)
+    return "(Unknown)" if pastdate.blank?
     loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
     elapsed = pretty_elapsed(Time.now - loctime)
@@ -184,5 +182,30 @@ module ViewHelpers
   # Calls the view helper method 'pluralize'
   def view_pluralize(*args) #:nodoc:
     ApplicationController.helpers.pluralize(*args)
+  end
+  
+  HTML_FOR_JS_ESCAPE_MAP = {
+  #  '"'     => '\\"',    # wrong, we leave it as is
+  #  '</'    => '<\/',    # wrong too
+    '\\'    => '\\\\',
+    "\r\n"  => '\n',
+    "\n"    => '\n',
+    "\r"    => '\n',
+    "'"     => "\\'"
+  }
+  
+  # Escape a string containing HTML code so that it is a valid
+  # javascript constant string; the string will be quoted
+  # with single quotes (') on each end.
+  # There exists a helper in module ActionView::Helpers::JavaScriptHelper
+  # called escape_javascript(), but it also escapes some character sequences
+  # that create problems within Javascript code intended to substitute
+  # HTML in a document.
+  def html_for_js(string)
+    # "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
+    return "''".html_safe if string.nil? || string == ""
+    with_substititions = string.gsub(/(\\|\r?\n|[\n\r'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!
+    with_quotes = "'#{with_substititions}'"
+    with_quotes.html_safe
   end
 end

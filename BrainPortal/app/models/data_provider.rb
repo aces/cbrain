@@ -638,15 +638,26 @@ class DataProvider < ActiveRecord::Base
   # provider is performed first. The method returns
   # true if the rename operation was successful.
   def provider_rename(userfile,newname)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
-    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
+    cb_error "Error: provider #{self.name} is offline."               unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."             if     self.read_only?
+    cb_error "Error: userfile #{userfile.name} in an invalid state."  unless userfile.valid?
     return true if newname == userfile.name
-    return false unless Userfile.is_legal_filename?(newname)
+    unless Userfile.is_legal_filename?(newname)
+      userfile.errors.add(:name, "contains illegal characters.")
+      return false
+    end
     target_exists = self.userfiles.first(:conditions => { :name => newname, :user_id => userfile.user_id } )
     return false if target_exists
     cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do
-      impl_provider_rename(userfile,newname.to_s) && userfile.save
+      if impl_provider_rename(userfile,newname.to_s)
+        userfile.name = newname
+        userfile.save!
+        true
+      else
+        userfile.errors.add(:name, "could not be changed on data provider.")
+        false
+      end
     end
   end
 

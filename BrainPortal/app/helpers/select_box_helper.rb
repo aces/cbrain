@@ -43,8 +43,8 @@ module SelectBoxHelper
   #[groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
-    selector = options[:selector]
-    groups    = options[:groups] || current_user.available_groups
+    selector = options[:selector] || current_session[:active_group_id]
+    groups   = options[:groups]   || current_user.available_groups
   
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
@@ -67,7 +67,7 @@ module SelectBoxHelper
           #label += " " * (12 - label.size) if label.size < 12
           label += " (#{group_user_full})" if ! group_user_full.blank?
         elsif group.is_a?(SiteGroup)
-          group_site_header = split_description(group.site.description)[0] rescue nil
+          group_site_header = group.site.description.lines.first.strip rescue nil
           label += " (#{crop_text_to(20,group_site_header)})" if ! group_site_header.blank?
         end
         [label, group.id.to_s]
@@ -113,7 +113,7 @@ module SelectBoxHelper
     if selector.nil?
       selector = current_user.meta["pref_data_provider_id"]
     end
-    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
+    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user).all
   
     if selector.respond_to?(:data_provider_id)
       selected = selector.data_provider_id.to_s
@@ -124,8 +124,22 @@ module SelectBoxHelper
     end 
     
     grouped_dps     = data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
-    grouped_options = grouped_options_for_select(grouped_dps.collect {|pair| [pair.first, pair.last.sort_by(&:name).map{|dp| [dp.name, dp.id.to_s]}] }, 
-                      selected)
+    grouped_oplists = []
+    [ "CBRAIN Official Storage", "User Storage" ].collect do |group_title|
+       next unless dps_in_group = grouped_dps[group_title]
+       dps_in_group = dps_in_group.sort_by(&:name)
+       options_dps  = dps_in_group.map do |dp|
+         opt_pair = [ dp.name, dp.id.to_s ]
+         unless dp.online?
+           opt_pair[0] += " (offline)"
+           opt_pair << { :disabled => "true" }
+         end
+         opt_pair #  [ "DpName", "3" ]    or   [ "DpName", "3", { :disabled => "true" } ]
+       end
+       grouped_oplists << [ group_title, options_dps ]  # [ "GroupName", [  [ dp1, 1 ], [dp2, 2] ] ]
+    end
+    grouped_options = grouped_options_for_select(grouped_oplists.compact, selected)
+
     blank_label = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
@@ -150,7 +164,7 @@ module SelectBoxHelper
     if selector.nil?
       selector = current_user.meta["pref_bourreau_id"]
     end
-    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user).all
   
     if selector.respond_to?(:bourreau_id)
       selected = selector.bourreau_id.to_s
@@ -159,19 +173,25 @@ module SelectBoxHelper
     else
       selected = selector.to_s
     end 
-    if bourreaux && bourreaux.size > 0
-      options = options_for_select(bourreaux.sort_by(&:name).map {|b| [b.name, b.id.to_s]}, 
-                        selected)
-      blank_label = select_tag_options.delete(:include_blank)
-      if blank_label
-        blank_label = "" if blank_label == true
-        options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
-      end
-      
-      select_tag parameter_name, options, select_tag_options
-    else
-      "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe
+
+    return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.blank?
+
+    bourreaux_pairs = bourreaux.sort_by(&:name).map do |b|
+       opt_pair = [ b.name, b.id.to_s ]
+       unless b.online?
+         opt_pair[0] += " (offline)"
+         opt_pair << { :disabled => "true" }
+       end
+       opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
     end
+    options = options_for_select(bourreaux_pairs, selected)
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
+    end
+    
+    select_tag parameter_name, options, select_tag_options
   end
 
   #Create a standard tool config select box for selecting a tool config in a form.

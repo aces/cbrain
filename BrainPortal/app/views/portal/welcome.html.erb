@@ -5,17 +5,20 @@
 
 <% if current_user.has_role?(:admin) %>
 
-    <div class="generalbox">
+    <div class="generalbox no_wrap">
+    
       <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
-
-      <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
-
+      
+      <p>
+        <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
+      </p>
+      
       <% if @active_users %>
         <p>
-        <strong>Users currently online:</strong> <%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
+          <strong>Users currently online:</strong> <%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
         </p>
         <p><strong>Recent activity:</strong></p>
-        <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :td_class => 'no_wrap', :cols => 1) do |entry,r,c| %>
+        <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
           <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
           <%= entry[:active] ? "Active" : "Logged out" %>
           <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
@@ -42,20 +45,22 @@
         <% end %>
       <% end %>
 
-      <br>
-        There are currently <%= CbrainSession.count %> entries in the sessions table.<br>
-      <%= form_tag home_path do %>
-        Clear sessions older than
-        <%= select_tag :session_clear, options_for_select( [
-             [ "One month ago",     1.month.to_i   ],
-             [ "One week ago",      1.week.to_i    ],
-             [ "One day ago",       1.day.to_i     ],
-             [ "One hour ago",      1.hour.to_i    ]
-           ]) %>
-        <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
-      <% end %>
-      <br>
-
+      <br/>
+      
+        There are currently <%= CbrainSession.count %> entries in the sessions table.<br/>
+        <%= form_tag home_path do %>
+          Clear sessions older than
+          <%= select_tag :session_clear, options_for_select( [
+               [ "One month ago",     1.month.to_i   ],
+               [ "One week ago",      1.week.to_i    ],
+               [ "One day ago",       1.day.to_i     ],
+               [ "One hour ago",      1.hour.to_i    ]
+             ]) %>
+          <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
+        <% end %>
+  
+      <br/>
+      
       <%= form_tag home_path do %>
         <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
@@ -79,7 +84,7 @@
 
 
 
-  <div class="generalbox">
+  <div class="generalbox no_wrap">
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
     <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
@@ -99,7 +104,7 @@
     </p>
     <p>
       <strong>Tools available to you:</strong><br/>
-      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'simple', :td_class => 'no_wrap', :cols => 4) %>
+      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
@@ -109,23 +114,23 @@
     </p>  
   </div>
 
+  <% if @tasks.size > 0 %>
+    <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
+    
+    <div class="generalbox no_wrap">
 
+      <h1><%= link_to "Latest Updated Tasks", :controller  => :tasks, :action  => :index %></h1>
 
-
-  <div class="display_cell">&nbsp;&nbsp;&nbsp;</div>
-
-
-
-
-  <div class="generalbox">
-
-    <h1><%= link_to "Tasks", :controller  => :tasks, :action  => :index %></h1>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :completed } %>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :running } %>
-
-    <%= render :partial => 'task_summary_box', :locals => { :status_key => :failed } %>
-
-  </div>
+        <table class="task_summary_table">
+          <% for task in @tasks %>
+            <tr>
+              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td><%= colored_status(task.status) %></td>
+              <td><%= to_localtime(task.updated_at,:datetime) %></td>
+            </tr>
+          <% end %>
+        </table>
+    </div>
+  
+  <% end %>
 

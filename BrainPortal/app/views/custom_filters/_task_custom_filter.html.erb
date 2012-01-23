@@ -3,7 +3,7 @@
 <p>
    Task:<br>
    <%= select_tag 'data[type]',
-       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.sub(/^CbrainTask::/, ""), t] }, custom_filter.data["type"]),
+       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.constantize.pretty_name, t] }, custom_filter.data["type"]),
       :multiple => true, :size => 10
    %>
 </p>
@@ -33,7 +33,7 @@
 </p> 
 <p>
    Execution Server:<br>
-   <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user), :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
+   <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
 </p>
 <p>
    Filtering by date: <br/> 

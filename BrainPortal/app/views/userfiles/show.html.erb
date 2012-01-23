@@ -1,184 +1,150 @@
 
 <% title "File Info" %>
+<br>
+<%= error_messages_for :userfile, :header_message => "#{@userfile.name} could not be updated." %>
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@userfile, :edit_path => userfile_path(@userfile)) do |t| %>
 
-<h2>File details for <%= @userfile.name %></h2>
+    <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do %>
+      <%= text_field_tag "userfile[name]", @userfile.name %>
+    <% end %>
 
-<div class="generalbox">
+    <% t.cell("Created at") do %>
+      <%= h(to_localtime(@userfile.created_at,:datetime)) %>
+      (<%= pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3) %> ago)
+    <% end %>
 
+    <% t.cell("Type") do %>
+      <%= inline_edit_field(@userfile, :type, userfile_path(@userfile), :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
+        <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name), :class => "submit_onchange" %>
+      <% end %>
+      <% if @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
+        (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>.</span>)
+      <% end %>
+    <% end %>
+
+    <% t.cell("Modified at") do %>
+      <%= to_localtime(@userfile.updated_at,:datetime) %>
+      (<%= pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3) %> ago)
+    <% end %>
+
+    <% t.cell("Size") do %>
+      <%= @userfile.format_size %>
+      <% if @userfile.size && @userfile.size >= 1_000 -%>
+        = <%= @userfile.size %> bytes
+      <% end -%>
+    <% end %>
+
+    <% t.cell("Data Provider") do %>
+      <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+      ( <%= @userfile.data_provider.class.to_s %> )
+      <%= "Cached: " unless @userfile.sync_status.blank? %>
+      <% @userfile.sync_status.each do |syncstat| %>
+        <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+      <% end %>
+    <% end %>
+
+    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => "Owner") do %>
+      <%= user_select("userfile[user_id]", { :selector => @userfile }, :class => "submit_onchange") %>
+    <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user) || @userfile.format_source_id)) do %>
+      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s }, :class => "submit_onchange" %>
+    <% end  %>
+
+    <% t.cell("Tags") do %>
+      <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
+      <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
+        <% if current_user.available_tags.count > 0 %>
+          <%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
+            <%= hidden_field_tag "file_ids[]", @userfile.id %>
+            <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
+            <select name="tags[]" multiple="multiple" style="width:150px" >
+            <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+            </select>
+            <br>
+            <%= submit_tag "Update Tags" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
+      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]]), :class => "submit_onchange") %>
+    <% end %>
+
+    <% t.cell("Parent", :show_width => 2) { link_to_userfile_if_accessible(@userfile.parent) } %>
+
+    <% t.cell("Children", :show_width => 2) do %>
+      <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3 ) do |u,r,c| %>
+        <%= link_to_userfile_if_accessible(u) %>
+      <% end %>
+    <% end %>
+
+    <% if current_user.has_role? :admin %>
+      <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path", :show_width => 2) %>
+      <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
+        <% t.cell("Remote SSH Data Provider path", :show_width => 2) do %>
+          <%= @userfile.data_provider.provider_full_path(@userfile) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+  <% end %>
+  
+  <br>
   <%= 
     file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
                                :html  => {:class  => "action_link"}) 
   %>
+</div>  
 
-  <% if @userfile.can_be_accessed_by?(current_user) %>
-    <div class="menu_bar menu_bar_left">
-      <%= link_to "Edit File", edit_userfile_path(@userfile), :class  => "button" %>
-    </div>
-  <% end %>
-  
-  <table class="property_list edit_file_table">
-    
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Name:</th>
-      <td colspan="2"><%= @userfile.name %></td>
-    </tr>
-    
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Type:</th>
-      <td><%= @userfile.pretty_type %></td>
-      <td>
-        <% if @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
-          (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>. You can edit the file type <%= link_to "here", edit_userfile_path(@userfile), :class  => "action_link" %></span>)
-        <% end %>
-      </td>
-    </tr>
-    
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Owner:</th>
-      <td><%= link_to_user_with_tooltip(@userfile.user) %></td>
-      <td></td>
-    </tr>
-    
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Size:</th>
-      <td><%= @userfile.format_size %></td>
-      <td><% if @userfile.size && @userfile.size >= 1_000 -%>
-          = <%= @userfile.size %> bytes
-          <% end -%>
-      </td>
-    </tr>  
+<% if @userfile.can_be_accessed_by?(current_user) %>
+  <% unless @userfile.is_locally_synced? %>
 
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Parent:</th>
-      <td><%= link_to_userfile_if_accessible(@userfile.parent) %></td>
-      <td></td>
-    </tr>
+    <P>
 
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Children:</th>
-      <td><%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 1 ) {|u,r,c| link_to_userfile_if_accessible(u)} %></td>
-      <td></td>
-    </tr>
- 
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Created at:</th>
-      <td><%=h(to_localtime(@userfile.created_at,:datetime)) %></td>
-      <td>(<%= pretty_elapsed(Time.now - @userfile.created_at) %> ago)</td>
-    </tr>
-
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Modified at:</th>
-      <td><%= to_localtime(@userfile.updated_at,:datetime) %></td>
-      <td>(<%= pretty_elapsed(Time.now - @userfile.updated_at) %> ago)</td>
-    </tr>
- 
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Project:</th>
-      <td><%= link_to_group_if_accessible(@userfile.group) %></td>
-      <td></td>
-    </tr>
-    
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-      <th class="right_align">Project permission on file:</th>
-      <td><%= @userfile.group_writable? ? "Read/Write" : "Read" %></td>
-      <td></td>
-    </tr>
-
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Data Provider:</th>
-        <td>
-          <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-          ( <%= @userfile.data_provider.class.to_s %> )
-        </td>
-        <td>
-          <%= "Cached: " unless @userfile.sync_status.blank? %>
-          <% @userfile.sync_status.each do |syncstat| %>
-            <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
-          <% end %>
-        </td>
-    </tr>
-
-    <% if current_user.has_role? :admin %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th class="right_align">Local Data Provider (cache) path:</th>
-          <td colspan="2"><%= @userfile.cache_full_path %></td>
-      </tr>
-      <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th class="right_align">Remote SSH Data Provider path:</th>
-          <td colspan="2"><%= @userfile.data_provider.provider_full_path(@userfile) %></td>
-      </tr>
-      <% end %>
+    <% if @sync_status =~ /^To/ %>
+      <p>This data is currently being synchronized.</p>
+    <% elsif ! (@userfile.data_provider.online?) %>
+      <p>This data is not currently synchronized and<BR>
+         and its data provider is offline, so its content
+         is not viewable.
+      </p>
+    <% elsif ! (@userfile.data_provider.not_syncable?) %>
+      <p>This data is not currently synchronized.<BR>
+      Click <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
+      to start the synchronization process.<br>
+      This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
+      </p>
     <% end %>
 
-    <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <th class="right_align">Tags:</th>
-        <td colspan="2">
-            <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
-            <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
-              <% if current_user.available_tags.count > 0 %>
-                <%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
-                  <%= hidden_field_tag "file_ids[]", @userfile.id %>
-                  <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
-                  <select name="tags[]" multiple="multiple" style="width:150px" >
-                  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
-                  </select>
-                  <br>
-                  <%= submit_tag "Update Tags" %>
-                <% end %>
-              <% end %>
-            <% end %>
-        </td>
-    </tr>
-  </table>
-
-  <% if @userfile.can_be_accessed_by?(current_user) %>
-    <% unless @userfile.is_locally_synced? %>
-
-      <P>
-
-      <% if @sync_status =~ /^To/ %>
-        <p>This data is currently being synchronized.</p>
-      <% elsif ! (@userfile.data_provider.online?) %>
-        <p>This data is not currently synchronized and<BR>
-           and its data provider is offline, so its content
-           is not viewable.
-        </p>
-      <% elsif ! (@userfile.data_provider.not_syncable?) %>
-        <p>This data is not currently synchronized.<BR>
-        Click <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
-        to start the synchronization process.<br>
-        This will allow you to view displayable contents<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>.
-        </p>
-      <% end %>
-
-    <% end %>
-  
   <% end %>
-  
-  <P>
-  <% unless @userfile.viewers.blank? %>
-    <fieldset>
-      <legend>Contents</legend>
-      <% if @userfile.viewers && @userfile.viewers.size > 1 %>
-        <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
-          <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
-          <%= submit_tag "Change View" %>
+
+<% end %>
+
+<P>
+<% unless @userfile.viewers.blank? %>
+  <fieldset>
+    <legend>Contents</legend>
+    <% if @userfile.viewers && @userfile.viewers.size > 1 %>
+      <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
+        <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
+        <%= submit_tag "Change View" %>
+      <% end %>
+      <br>
+    <% end  %>
+    <div id="userfile_viewer">
+      <div class="display_userfile">   
+        <% if @default_viewer %>
+           <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
         <% end %>
-        <br>
-      <% end  %>
-      <div id="userfile_viewer">
-        <div class="display_userfile">   
-          <% if @default_viewer %>
-             <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
-          <% end %>
-        </div>
       </div>
-    </fieldset>
-  <% end %>
-  <P>
+    </div>
+  </fieldset>
+<% end %>
+<P>
 
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
 
-</div>
 

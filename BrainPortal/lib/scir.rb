@@ -178,6 +178,8 @@ class Scir
       system("bash","-c","#{command} 0</dev/null 1>#{outfile} 2>#{errfile}")
       out = File.read(outfile) rescue nil
       err = File.read(errfile) rescue nil
+      File.unlink(outfile)     rescue true
+      File.unlink(errfile)     rescue true
       [ out, err ]
     end
 

@@ -44,7 +44,7 @@
     <table>
       
       <tr>
-        <th></th>
+        <th class="blank"></th>
         <% @bourreaux.each do |b| %>
           <th>
             <%= link_to_bourreau_if_accessible(b, current_user, :html_options => {:class => "header_link"}) %>
@@ -55,13 +55,10 @@
         <% end %>
       </tr>
       
-
-      
-      <% sorted_users = @users.sort { |a,b| a.login <=> b.login } %>
-      <% sorted_users.each do |user| %>
-        <% accessible_rr = RemoteResource.find_all_accessible_by_user(user).index_by &:id || {} %>
+      <% @users.each do |user| %>
+        <% accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {} %>
         <tr>
-          <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
+          <th><%= link_to_user_with_tooltip(user) %></th>
           
           <% @bourreaux.each do |b| %>
           <% cell_key = [ user.id, b.id ] %>

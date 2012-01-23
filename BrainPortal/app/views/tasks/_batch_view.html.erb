@@ -5,7 +5,7 @@
   <%= render :partial => 'task_table_row',
              :locals  => { :task             => task_info[:first_task],
                            :task_available   => @bourreau_status[task_info[:first_task].bourreau.id] ? true : false,
-                           :is_child         => false,
+                           :is_child         => @showing_batch,
                          }
   %>
 
@@ -21,11 +21,16 @@
       <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
     </td>
     <td class="left">
-      <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
-        <% if launch_time %>
-          <%= "#{first_task.pretty_name} (Batch)" %>
-        <% else %>
-          <%= "(Various)" %>
+      <% if launch_time %>
+        <%= "#{first_task.pretty_name}" %>
+      <% else %>
+        Various Older Tasks
+      <% end %>
+      <% if task_info[:num_tasks] > @per_page && launch_time_param %>
+        <%= filter_reset_link "(Go to Batch)", :controller => :tasks, :filters  => { :launch_time => first_task.launch_time.to_s(:db) }, :ajax => false %> 
+      <% else %>
+        <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
+          (Expand Batch)
         <% end %>
       <% end %>
     </td>

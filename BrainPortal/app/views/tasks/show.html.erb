@@ -1,11 +1,9 @@
 
 <% title @task.name + ' Task Information' %>
 
-<h2><%= @task.pretty_name %> Task Information</h2>
-
 <% if @task.bourreau.online? %>
 
-  <div class="menu_bar menu_bar_left">
+  <div class="menu_bar">
 
   <table class="simple">
     <tr>
@@ -65,179 +63,159 @@
 <% end %>
 
 
-   <table class="property_list show_task_table">
+<%= error_messages_for :task, :header_message => "Task could not be updated." %>
 
-       <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Task Name</th>
-          <td class="left_align"><%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %></td>
-      </tr>
-      
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Task Description</th>
-          <td class="left_align"><%= simple_format(h(@task.description)) %></td>
-      </tr>
+<div class="display_inline_block" style="min-width: 50%">
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Tool Version </th>
-          <td class="left_align">
-            <% if current_user.has_role?(:admin) && @task.tool_config %>
-              <%= link_to @task.tool_config.short_description, tool_config_path(@task.tool_config) %>
-            <% else %>
-              <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
-            <% end %>
-          </td>
-      </tr>
+  <%= show_table(@task) do |t| %>
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Execution Server</th>
-          <td><%= link_to_bourreau_if_accessible(@task.bourreau) %></td>
-      </tr>
+    <% t.cell("Task Name") do %>
+      <%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %>
+    <% end %>
+    <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>") } %>
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Current Status</th>
-          <td><%= colored_status(@task.status) %></td>
-      </tr>
+    <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
+    <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
 
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Current Run Number</th>
-          <td><%= @task.run_number %></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Size Of Work Directory</th>
-          <td>
-              <% if @task.share_wd_tid %>
-                ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
-              <% else %>
-                <%= pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
-              <% end %>
-          </td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Time Submitted</th>
-          <td><%= to_localtime(@task.created_at,:datetime) -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Last Updated</th>
-          <td><%= to_localtime(@task.updated_at,:datetime) -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Owner</th>
-          <td><%= link_to_user_with_tooltip(@task.user) -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Project</th>
-          <td><%= link_to_group_if_accessible(@task.group) -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Cluster Job's ID</th>
-          <td><%= @task.cluster_jobid -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th>Cluster Job's Work Directory</th>
-          <td><%= @task.full_cluster_workdir || "(Not yet created or erased)" -%></td>
-      </tr>
-   
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-          <th class="center_align_heading" colspan="2">Parameters</th>
-      </tr>
-      
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-         <td class="property_list_details" colspan="2">
-         <%= build_tabs do |tb| %>
-           <%= tb.tab("Summary") do %>
-             <% begin %>
-               <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params => @task.params } %>
-             <% rescue ActionView::MissingTemplate %>
-               <pre>Problem loading summary view (no template provided by task author).</pre>
-             <% rescue => ex %>
-               <pre>Problem loading summary view (template error).</pre>
-               <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
-             <% end %>
-           <% end %>
-           <%= tb.tab("Raw") do %>
-             <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
-           <% end %>
+    <% t.cell("Tool Version") do %>
+      <% if current_user.has_role?(:admin) && @task.tool_config %>
+        <%= link_to @task.tool_config.short_description, tool_config_path(@task.tool_config) %>
+      <% else %>
+        <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
+      <% end %>
+    <% end %>
+    <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
+
+    <% t.cell("Current Status") { colored_status(@task.status) } %>
+    <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
+
+    <% t.attribute_cell(:run_number) %>
+    <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
+
+    <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
+    <% t.empty_cell %>
+
+    <% t.cell("Cluster Job's Work Directory") { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
+    <% t.empty_cell %>
+
+    <% t.cell("Size of Work Directory") do %>
+      <% if @task.share_wd_tid %>
+        ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
+      <% else %>
+        <%= pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+      <% end %>
+    <% end %>
+
+  <% end %>
+
+  <br>
+
+
+
+  <fieldset>
+    <legend>Parameters</legend>
+    <%= build_tabs do |tb| %>
+       <%= tb.tab("Summary") do %>
+         <% begin %>
+           <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params => @task.params } %>
+         <% rescue ActionView::MissingTemplate %>
+           <pre>Problem loading summary view (no template provided by task author).</pre>
+         <% rescue => ex %>
+           <pre>Problem loading summary view (template error).</pre>
+           <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
          <% end %>
-         </td>
-      </tr>
+       <% end %>
+       <%= tb.tab("Raw") do %>
+         <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
+       <% end %>
+     <% end %>
+  </fieldset>
 
-      <%
-         prereqs     = @task.prerequisites || {}
-         prereqs     = prereqs.attributes unless prereqs.is_a?(Hash)
-         for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
-         for_setup   = for_setup.attributes unless for_setup.is_a?(Hash)
-         for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
-         for_postpro = for_postpro.attributes unless for_postpro.is_a?(Hash)
-      %>
-      <% if for_setup.size > 0 %>
-        <tr>
-          <th class="center_align_heading" colspan="2">Setup Prerequisites</td>
-        </tr>
-        <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
+  <br>
+
+
+
+  <fieldset>
+    <legend>Processing Log</legend>
+    <pre><%= @task.getlog -%></pre>
+  </fieldset>
+
+  <br>
+
+
+
+  <%
+     prereqs     = @task.prerequisites || {}
+     prereqs     = prereqs.attributes unless prereqs.is_a?(Hash)
+     for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
+     for_setup   = for_setup.attributes unless for_setup.is_a?(Hash)
+     for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
+     for_postpro = for_postpro.attributes unless for_postpro.is_a?(Hash)
+  %>
+
+  <% unless for_setup.empty? && for_postpro.empty? %>
+
+    <fieldset>
+      <legend>Prerequisites</legend>
+
+      <table class="property_list show_task_prerequisites">
+        <% if for_setup.size > 0 %>
+          <tr>
+            <th class="center_align_heading" colspan="2">Setup Prerequisites</td>
+          </tr>
+          <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
+        <% end %>
+        <% if for_postpro.size > 0 %>
+          <tr>
+            <th class="center_align_heading" colspan="2">Post Processing Prerequisites</td>
+          </tr>
+          <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
+        <% end %>
+      </table>
+
+    </fieldset>
+
+    <br>
+
+  <% end %>
+
+
+
+  <%
+    prettystdout = @task.cluster_stdout || "(None)"
+    prettystderr = @task.cluster_stderr || "(None)"
+    prettyscript = @task.script_text    || "(None)"
+  %>
+
+  <fieldset>
+    <legend>Cluster Job's Captured Output</legend>
+
+    <% if @task.run_number > 1 %>
+      <strong>Outputs are available for several runs:</strong>
+      <% 1.upto(@task.run_number) do |rn| %>
+        <% if rn == @run_number.to_i %>
+          <%= rn %>
+        <% else %>
+          <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
+        <% end %>
       <% end %>
-      <% if for_postpro.size > 0 %>
-        <tr>
-          <th class="center_align_heading" colspan="2">Post Processing Prerequisites</td>
-        </tr>
-        <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
+      <p>
+    <% end %>
+
+    <%= build_tabs do |tb| %>
+      <%= tb.tab("Standard Out") do %>
+        <pre class="standard_out"><%= prettystdout -%></pre>
       <% end %>
-
-      <tr>
-          <th class="center_align_heading" colspan="2">Processing Log</th>
-      </tr>
-   
-      <tr>
-          <td colspan="2"><pre><%= @task.getlog -%></pre></td>
-      </tr>    
-   
-   <%
-      prettystdout = @task.cluster_stdout || "(None)"
-      prettystderr = @task.cluster_stderr || "(None)"
-      prettyscript = @task.script_text    || "(None)"
-   %>
-      <tr>
-        <th class="center_align_heading" colspan="2">Cluster Job's Captured Output</th>
-      </tr>
-
-      <% if @task.run_number > 1 %>
-        <tr>
-          <th colspan="2" class="subtitle">
-            Other runs: <% 1.upto(@task.run_number) do |rn| %>
-              <% if rn == @run_number.to_i %>
-                <%= rn %>
-              <% else %>
-                <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
-              <% end %>
-            <% end %>
-          </th>
-        </tr>
+      <%= tb.tab("Standard Error") do %>
+        <pre class="standard_out"><%= prettystderr -%></pre>
       <% end %>
+      <% if current_user.has_role?(:admin) %>
+        <%= tb.tab("Script") do %>
+          <pre class="script_preview"><%= prettyscript %></pre>
+        <% end %>
+      <% end %>
+    <% end %>
 
+  </fieldset>    
 
-      <tr>
-        <td class="property_list_details" colspan="2">
-          <%= build_tabs do |tb| %>
-            <%= tb.tab("Standard Out") do %>
-              <pre class="standard_out"><%= prettystdout -%></pre>
-            <% end %>
-            <%= tb.tab("Standard Error") do %>
-              <pre class="standard_out"><%= prettystderr -%></pre>
-            <% end %>
-            <% if current_user.has_role?(:admin) %>
-              <%= tb.tab("Script") do %>
-                <pre class="script_preview"><%= prettyscript %></pre>
-              <% end %>
-            <% end %>
-          <% end %>
-        </td>
-      </tr>
-
-   </table>
-
+</div>

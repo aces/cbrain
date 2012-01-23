@@ -1,4 +1,4 @@
-<span class="menu_bar menu_bar_left">
+<span class="menu_bar">
     <%= overlay_ajax_link 'Upload File', {:action => :new}, :class => "button menu_button" %>
     <%= button_with_dropdown_menu("Launch Task")  do %>
       <%= render :partial => 'userfiles/tool_selection' %>
@@ -47,7 +47,7 @@
         <hr>
         <h4>Projects</h4>
         Change Project: 
-        <%= group_select('userfile[group_id]', { :groups => @user_groups, :selector => @default_group } ) %>
+        <%= group_select('userfile[group_id]', {}, { :include_blank => "(select another project)" } ) %>
         <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <P>
         Project Permission Update: 

@@ -27,13 +27,9 @@ module TasksHelper
     "tasks/cbrain_plugins/cbrain_task/#{@task.name.underscore}/views/#{plain}.html.erb"
   end
 
-  # Shows a bent-arrow character indented by +level+ 'spaces'
-  # (actually, four NBSPs per level)
-  def task_tree_view_icon(level)
-    (('&nbsp' * 4 * level) + '&#x21b3;').html_safe
-  end
-
   StatesToColor = {
+          # Task state name                  => [ color, sort_rank ]
+          # --------------------------------    --------------------
           'Configured'                       => [ "orange",  25 ],
           'New'                              => [ "blue",    20 ],
           'Setting Up'                       => [ "blue",    30 ],

@@ -34,7 +34,7 @@ class SitesController < ApplicationController
   # GET /sites/1.xml
   def show #:nodoc:
     @site = current_user.has_role?(:admin) ? Site.find(params[:id]) : current_user.site
-
+    
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @site }
@@ -44,11 +44,6 @@ class SitesController < ApplicationController
   def new #:nodoc:
     @site = Site.new
     render :partial => "new"
-  end
- 
-  # GET /sites/1/edit
-  def edit #:nodoc:
-    @site = Site.find(params[:id])
   end
 
   # POST /sites
@@ -72,12 +67,22 @@ class SitesController < ApplicationController
   # PUT /sites/1.xml
   def update #:nodoc:
     @site = Site.find(params[:id])
+    
+    unless params[:commit] == "Update Users"
+      params[:site][:user_ids] = @site.user_ids
+      params[:site][:manager_ids] = @site.managers.map(&:id)
+    end
+    
+    unless params[:commit] == "Update Projects"
+      params[:site][:group_ids] = @site.group_ids
+    end
+    
     params[:site][:user_ids]    ||= []
     params[:site][:manager_ids] ||= []
     params[:site][:group_ids]   ||= [ @site.own_group.id ]
-    params[:site][:user_ids].map!    &:to_i
-    params[:site][:manager_ids].map! &:to_i
-    params[:site][:group_ids].map!   &:to_i
+    params[:site][:user_ids]    = params[:site][:user_ids].reject(&:blank?).map(&:to_i)
+    params[:site][:manager_ids] = params[:site][:manager_ids].reject(&:blank?).map(&:to_i)
+    params[:site][:group_ids]   = params[:site][:group_ids].reject(&:blank?).map(&:to_i)
     
     @site.unset_managers
 
@@ -87,7 +92,9 @@ class SitesController < ApplicationController
         format.html { redirect_to(@site) }
         format.xml  { head :ok }
       else
-        format.html { render :action => "edit" }
+        @site.restore_managers
+        @site.reload
+        format.html { render :action => "show" }
         format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
       end
     end

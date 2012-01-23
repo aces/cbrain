@@ -12,7 +12,7 @@
   <table>
   
     <tr>
-      <th></th>
+      <th class="blank"></th>
       <% @report_dps_all.each do |dp| %>
         <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
       <% end %>

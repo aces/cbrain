@@ -199,7 +199,7 @@ module IndexTableHelper
           proc      = cell[0]
           options   = cell[1] || {}
           condition = cell[2]
-          content   = proc ? @template.capture(object, &proc) : "" if condition.blank? || condition.call(object)
+          content   = proc ? @template.cb_capture(object, &proc) : "" if condition.blank? || condition.call(object)
           
           atts = options.inject(""){|result, att| result+="#{att.first}=\"#{att.last}\" "}
           html << "<td #{atts}>#{content}</td>\n"
@@ -279,18 +279,21 @@ module IndexTableHelper
     
     # Explicitly set the row code to be used to render the table.
     # If used, column definition will only be used for the headers.
-    def row_override(&block)
-      @row_override = block
+    def row_override(options={},&block)
+      @row_override_options = options
+      @row_override         = block
     end
     
     def row_override?(object) #:nodoc:
+      cond = @row_override_options ? @row_override_options[:if] : nil
+      return false if cond && ! cond.call(object)
       @row_override ? true : false
     end
     
     def row_override_html(object) #:nodoc:
       return "" unless @row_override
       
-      @template.capture(object, &@row_override)
+      @template.cb_capture(object, &@row_override)
     end
     
     # Manually set text to be displayed in an empty row.
@@ -332,6 +335,45 @@ module IndexTableHelper
     header = text.html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
     ajax_link( header, url, link_options )
   end
+
+  #Alternate toggle for session attributes that switch between values 'on' and 'off'.
+  def set_toggle(old_value)
+   old_value == 'on' ? 'off' : 'on'
+  end
+  
+  #Indents children files in the Userfile index table *if* the 
+  #current ordering is 'tree view'.
+  def tree_view_icon(tree_sort, level)
+    multiplier = level || 0
+    if tree_sort
+      ('&nbsp' * 4 * multiplier + '&#x21b3;').html_safe
+    end
+  end
+  
+  #Set direction for resource list sorting
+  def set_dir(current_order, sort_params)
+    return unless sort_params
+    prev_order = sort_params["order"]
+    sort_order = sort_params["dir"]
+    
+    if(current_order.to_s == prev_order.to_s)
+      sort_order.to_s.upcase == 'DESC' ? '' : 'DESC'
+    end
+  end
+
+  #Show count of an association and link to association's page.
+  def index_count_filter(count, controller, filters, options={})
+     count = count.to_i
+     return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
+     return "0" if count == 0 && ! options[:link_zeros]
+     controller = :bourreaux if controller.to_sym == :remote_resources
+     name = options[:name] || count
+     filter_reset_link name,
+                       :controller   => controller,
+                       :filters      => filters,
+                       :ajax         => false,
+                       :clear_params => options[:clear_params]
+  end
   
   #Set arrow icon for ordering of userfiles. I.e. display a red arrow
   #next to the header of a given column in the Userfile index table *if*
@@ -352,6 +394,15 @@ module IndexTableHelper
     
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end
+  
+  def cb_capture(*args)
+    value = nil
+    buffer = with_output_buffer { value = yield(*args) }
+    if string = buffer.presence || value
+      ERB::Util.html_escape string.to_s
+    end
+  end
+  
   
   # Build an index table.
   def index_table(collection, options = {})

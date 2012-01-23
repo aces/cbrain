@@ -2,23 +2,13 @@
 module UserfilesHelper
 
   Revision_info=CbrainFileRevision[__FILE__]
-
-  #Alternate toggle for session attributes that switch between values 'on' and 'off'.
-  def set_toggle(old_value)
-   old_value == 'on' ? 'off' : 'on'
-  end
   
-  #Indents children files in the Userfile index table *if* the 
-  #current ordering is 'tree view'.
-  def tree_view_icon(tree_sort, level)
-    if tree_sort == 'on'
-      ('&nbsp' * 4 * level + '&#x21b3;').html_safe
-    end
-  end
-  
+  # For display of userfile names, including: 
+  # type icon (collection or file), parentage icon,
+  # link to show page, sync status and formats.
   def filename_listing(userfile, link_options={})
     html = []
-    html << tree_view_icon(@filter_params["tree_sort"], userfile.level) if (userfile.level || 0) > 0
+    html << tree_view_icon(@filter_params["tree_sort"] == "on", userfile.level) if (userfile.level || 0) > 0
     if userfile.is_a? FileCollection
       file_icon = image_tag "/images/folder_icon_solid.png"
     else

@@ -62,7 +62,6 @@ class VaultLocalDataProvider < LocalDataProvider
     newpath   = userdir + newname
     begin
       FileUtils.mv(oldpath.to_s,newpath.to_s, :force => true)
-      userfile.name = newname.to_s
       return true
     rescue
       return false

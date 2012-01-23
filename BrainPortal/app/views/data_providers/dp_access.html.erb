@@ -8,13 +8,17 @@
 
 <h2>Data Provider Access Report</h2>
 
-<% if @providers.size > 0 && @users.size > 0 %>
+<% if @providers.empty? || @users.empty? %>
+
+There is no information to show at this time.
+
+<% else %>
 
 <span class="display_cell">
   <table>
     
     <tr>
-      <th></th>
+      <th class="blank"></th>
       <% @providers.each do |dp| %>
         <th><%= link_to_data_provider_if_accessible(dp, current_user, :html_options => {:class => "header_link"}) %></th>
       <% end %>
@@ -25,18 +29,18 @@
         <td><%= link_to_user_with_tooltip(user) %></td>
             
         <% 
-        accessible_dp = DataProvider.find_all_accessible_by_user(user).index_by &:id || {}
+        accessible_dp = DataProvider.find_all_accessible_by_user(user).all.index_by &:id || {}
         %>
         
         <% @providers.each do |dp| %>
-          <td><%= accessible_dp[dp.id] ? green_o_icon : red_times_icon %></td>
+          <td><%= accessible_dp[dp.id] ? o_icon : times_icon %></td>
         <% end %>
       </tr>
     <% end %>
   
   </table>
   
-  <p/><%= access_legend %>
+  <%= center_legend(nil, [o_icon,"accessible"], [times_icon,"not accessible"] )%>
   
 </span>
 
