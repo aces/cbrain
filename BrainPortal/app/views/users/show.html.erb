@@ -80,7 +80,13 @@
     %>
 
   <% end %>
-
+  <% unless @user.signed_license_agreements.empty? %>
+    <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>
+      <% @user.signed_license_agreements.each  do |la| %>
+        <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
+      <% end  %>
+    <% end %>
+  <% end %>
   <%= show_table(@user, :header => 'Resources') do |t| %>
 
     <% t.cell("Files") do

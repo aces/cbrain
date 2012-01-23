@@ -57,6 +57,32 @@ class PortalController < ApplicationController
                    :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
   end
   
+  def show_license
+    @license = params[:license].gsub(/[^\w-]+/, "")
+  end
+   
+  def sign_license
+    @license = params[:license]
+    unless params[:commit] == "I Agree"
+      flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
+      redirect_to "/logout"
+      return
+    end
+    num_checkboxes = params[:num_checkboxes].to_i
+    if num_checkboxes > 0
+      num_checks = params.keys.grep(/^license_check/).size
+      if num_checks < num_checkboxes
+        flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
+        redirect_to :action => :show_license, :license => @license
+        return
+      end
+    end
+    signed_agreements = current_user.meta[:signed_license_agreements] || []
+    signed_agreements << @license
+    current_user.meta[:signed_license_agreements] = signed_agreements
+    redirect_to home_path
+  end
+  
   #Display general information about the CBRAIN project.
   def credits #:nodoc:
     # Nothing to do, just let the view show itself.

@@ -66,6 +66,15 @@
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
 
     <% if is_portal %>
+      <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>
+        <small>
+          Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+        </small>
+        <br>
+        <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+        <%= submit_tag "Update" %>
+      <% end %>
+      
       <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
         <%= text_field_tag "bourreau[help_url]", @bourreau.help_url %><br/>
         <small>If set, the portal will show a link called 'User Manual' in the account bar at the top.</small>

@@ -3,7 +3,9 @@
 
 CbrainRailsPortal::Application.routes.draw do
   match "/report", :controller => :portal, :action => :report
-
+  match '/show_license/:license', :controller => :portal, :action => :show_license
+  match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via  => :post
+  
   # Session
   resource  :session
 

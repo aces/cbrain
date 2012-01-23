@@ -205,7 +205,9 @@ module ActRecMetaData
       mykey = mykey.to_s
       md = md_cache[mykey]
       return nil unless md
-      md.meta_value
+      mval = md.meta_value
+      return mval.dup if mval.duplicable?
+      mval
     end
 
     def delete_attribute(mykey) #:nodoc:
