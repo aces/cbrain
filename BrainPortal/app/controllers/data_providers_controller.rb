@@ -578,7 +578,7 @@ class DataProvidersController < ApplicationController
     portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
     keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
     # Get those of all other Bourreaux
-    keys += Bourreau.all.map{ |b| ["Execution Server '#{b.name}'", b.ssh_public_key] }
+    keys += Bourreau.find_all_accessible_by_user(current_user).map{ |b| ["Execution Server '#{b.name}'", b.ssh_public_key] }
     keys
   end
 
