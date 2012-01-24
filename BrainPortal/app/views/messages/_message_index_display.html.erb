@@ -31,9 +31,7 @@
       <%
         t.column(select_all_checkbox 'messlist')
         t.sort_column("Message", Message, :header)
-        if current_user.has_role?(:admin) && @filter_params["view_all"] == "on" 
-          t.sort_column("Recipient", User, :login)
-        end
+        t.sort_column("Recipient", User, :login)
         t.sort_column("Last Updated", Message, :last_sent)
         t.column("Operations", :colspan => "3")
         t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
