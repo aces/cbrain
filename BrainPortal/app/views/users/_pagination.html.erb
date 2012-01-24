@@ -1,9 +1,8 @@
-<span class="pagination_right_side">
-  Search by name:
-  <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
-</span>
 <span class="page_links">
   <%= will_paginate @paginated_list, :container => false %>
   (<%= pluralize @total_users, "users" %>)
 </span>
-<br>
+<span class="pagination_right_side">
+  Search by name:
+  <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
+</span>

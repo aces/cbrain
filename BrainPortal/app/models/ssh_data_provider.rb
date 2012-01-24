@@ -181,30 +181,30 @@ class SshDataProvider < DataProvider
     
     
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
-       entries = []
-       if userfile.is_a? FileCollection
-         if directory == :all
-           entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*")
-           entries.each { |e| e.instance_eval { @name = userfile.name + "/" + @name } }
-         else
-           directory = "." if directory == :top
-           base_dir = "/" + directory + "/"
-           base_dir.gsub!(/\/\/+/, "/")
-           base_dir.gsub!(/\/\.\//, "/")
-           entries = sftp.dir.entries(provider_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
-         end
-       else
-         request = sftp.stat(provider_full_path(userfile)) do |response|
-           attr = response[:attrs]
-           entry = Net::SFTP::Protocol::V01::Name.new(userfile.name,userfile.name,attr)
-           entries << entry
-         end
-         request.wait
-       end
-       attlist = [ 'symbolic_type', 'size', 'permissions',
-                   'uid',  'gid',  'owner', 'group',
-                   'atime', 'ctime', 'mtime' ]
-       entries.each do |entry|
+      entries = []
+      if userfile.is_a? FileCollection
+        if directory == :all
+          entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*")
+          entries.each { |e| e.instance_eval { @name = userfile.name + "/" + @name } }
+        else
+          directory = "." if directory == :top
+          base_dir = "/" + directory + "/"
+          base_dir.gsub!(/\/\/+/, "/")
+          base_dir.gsub!(/\/\.\//, "/")
+          entries = sftp.dir.entries(provider_full_path(userfile).to_s + base_dir ).reject{ |e| e.name =~ /^\./}.inject([]) { |result, e| result << e }
+        end
+      else
+        request = sftp.stat(provider_full_path(userfile)) do |response|
+          attr = response[:attrs]
+          entry = Net::SFTP::Protocol::V01::Name.new(userfile.name,userfile.name,attr)
+          entries << entry
+        end
+        request.wait
+      end
+      attlist = [ 'symbolic_type', 'size', 'permissions',
+                  'uid',  'gid',  'owner', 'group',
+                  'atime', 'ctime', 'mtime' ]
+      entries.each do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type
         next unless types.include?(type)
