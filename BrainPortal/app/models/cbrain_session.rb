@@ -167,7 +167,24 @@ class CbrainSession
   
   #Returns the params saved for +controller+.
   def params_for(controller)
-    @session[controller.to_sym]
+    @session[controller.to_sym] || {}
+  end
+  
+  #Find nested values without raising an exception.
+  def param_chain(*keys)
+    return nil if keys.empty?
+    final_key = keys.pop
+    empty_value = nil
+    empty_value = {} if final_key =~ /_hash$/
+    empty_value = [] if final_key =~ /_array$/
+    
+    current_hash = @session
+    keys.each do |k|
+      current_hash = current_hash[k]
+      return empty_value unless current_hash.is_a?(Hash)
+    end
+    return empty_value unless current_hash.has_key?(final_key)
+    current_hash[final_key]
   end
   
   #Hash-like access to session attributes.

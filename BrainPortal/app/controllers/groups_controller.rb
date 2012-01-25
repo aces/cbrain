@@ -152,6 +152,9 @@ class GroupsController < ApplicationController
     redirect_action     = params[:redirect_action] || :index
     redirect_id         = params[:redirect_id]
 
+    current_session.param_chain("userfiles", "filter_hash").delete("group_id")
+    current_session.param_chain("tasks"    , "filter_hash").delete("group_id")
+
     redirect_path = { :controller => redirect_controller, :action => redirect_action }
     redirect_path[:id] = redirect_id unless redirect_id.blank?
     
