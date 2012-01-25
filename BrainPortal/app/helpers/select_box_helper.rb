@@ -292,5 +292,192 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
+#------------------
+  #Create a standard task by status select box for selecting a task status for a form.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
+  #The +options+ hash can contain either or both of the following:
+  #[selector] used for default selection. This can be a task status.
+  #[task_status] the array of task status used to build the select box. Default CbrainTask::ALL_STATUS.
+  def task_status_select(parameter_name = "data[status]", options = {}, select_tag_options = {} )
+    options     = { :selector => options } unless options.is_a?(Hash)
+    selected    = options[:selector]
+    task_status = options[:task_status] || (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])
+
+    standard    = CbrainTask::RUNNING_STATUS + CbrainTask::COMPLETED_STATUS
+    waiting     = CbrainTask::QUEUED_STATUS  - CbrainTask::RUNNING_STATUS
+    failed      = CbrainTask::FAILED_STATUS
+    restarting  = CbrainTask::RESTART_STATUS
+    recovering  = CbrainTask::RECOVER_STATUS
+
+    status_grouped = {}
+    task_status.each do |status|
+      if standard.include?(status)
+        (status_grouped["Standard Cycle"] ||= []) << status
+      elsif waiting.include?(status)
+        (status_grouped["Waiting"]        ||= []) << status
+      elsif failed.include?(status)
+        (status_grouped["Failed"]         ||= []) << status
+      elsif restarting.include?(status)
+        (status_grouped["Restarting"]     ||= []) << status
+      elsif recovering.include?(status)
+        (status_grouped["Recovering"]     ||= []) << status 
+      else
+        (status_grouped["Other"]          ||= []) << status 
+      end
+    end
+
+    grouped_by_category = []
+    [ "Standard Cycle", "Waiting","Failed", "Restarting", "Recovering", "Unknown"].each do |category|
+      next unless status_grouped[category]
+      sorted_statuses = status_grouped[category].sort { |a,b| cmp_status_order(a,b) }
+      grouped_by_category << [ category , sorted_statuses ]
+    end
+
+    grouped_options = grouped_options_for_select grouped_by_category, selected
+    
+    blank_label = select_tag_options.delete(:include_blank)
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
+    end
+    
+    select_tag parameter_name, grouped_options, select_tag_options
+  end
+
+  #Create a standard userfiles type select box for selecting a userfile type for a form.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
+  #The +options+ hash can contain either or both of the following:
+  #[selector] used for default selection. This can be a Userfile type.
+  #[userfile_types] a list of Userfiles type used to build the select box.
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :userfile_types else only take 
+  #the classes in :userfile_types
+  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
+  #keep the top and the descendants, otherwise only takes the descendants.
+  def userfile_type_select(parameter_name = "file_type", options = {}, select_tag_options = {} )
+    options              = { :selector => options } unless options.is_a?(Hash)
+    generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
+    userfile_types       = (options[:userfile_types] || ["SingleFile","FileCollection"]).collect!{|type| type.constantize}
+    include_top          = options.has_key?(:include_top) ? options[:include_top] : true
+
+    type_select(parameter_name, options.dup.merge({:types => userfile_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
+  end
+
+  #Create a standard groups type select box for selecting a group type for a form.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
+  #The +options+ hash can contain either or both of the following:
+  #[selector] used for default selection. This can be a Group type.
+  #[group_types] a list of Groups type used to build the select box.
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :group_types else only take 
+  #the classes in :group_types
+  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
+  #keep the top and the descendants, otherwise only takes the descendants.
+  def group_type_select(parameter_name = "group_type", options = {}, select_tag_options = {} )
+    options              = { :selector => options } unless options.is_a?(Hash)
+    generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
+    group_types          = (options[:group_types] || ["SystemGroup", "WorkGroup"]).collect!{|type| type.constantize}
+    include_top          = options.has_key?(:include_top) ? options[:include_top] : true
+
+    type_select(parameter_name, options.dup.merge({:types => group_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
+  end
+
+  #Create a standard tasks type select box for selecting a task type for a form.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
+  #The +options+ hash can contain either or both of the following:
+  #[selector] used for default selection. This can be a Task type.
+  #[task_types] a list of Tasks type used to build the select box.
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :task_types else only take 
+  #the classes in :task_types
+  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
+  #keep the top and the descendants, otherwise only takes the descendants.
+  def task_type_select(parameter_name = "task_type", options = {}, select_tag_options = {} )
+    options              = { :selector => options } unless options.is_a?(Hash)
+    generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
+    task_types           = (options[:task_types] || ["PortalTask"]).collect!{|type| type.constantize}
+    include_top          = options.has_key?(:include_top) ? options[:include_top] : false
+
+    type_select(parameter_name, options.dup.merge({:types => task_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
+  end
+
+
+  #Create a standard types select box for selecting a types type for a form.
+  #The +parameter_name+ argument will be the name of the parameter 
+  #when the form is submitted and the +select_tag_options+ hash will be sent
+  #directly as options to the +select_tag+ helper method called to create the element.
+  #The +options+ hash can contain either or both of the following:
+  #[selector] used for default selection. This can be a type present in types.
+  #[types] a list of types used to build the select box.
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :types else only take 
+  #the classes in :types
+  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
+  #keep the top and the descendants, otherwise only takes the descendants.
+  def type_select(parameter_name = "type", options = {}, select_tag_options = {} )
+    options              = { :selector => options } unless options.is_a?(Hash)
+    generate_descendants = options[:generate_descendants]
+    types                = options[:types]
+    include_top          = options[:include_top]
+    blank_label          = select_tag_options.delete(:include_blank)
+    blank_label          = "" if blank_label == true
+    selected             = options[:selector]
+    
+    grouped_options      = ""
+    # Create a hierarchical select box with all the type
+    types.each do |type|
+      if generate_descendants
+        grouped_options += hierarchical_type_options_for_select(type, selected, :include_top => include_top)
+      else
+        grouped_options += options_for_select [[type.pretty_type, type.name]], selected
+      end
+    end
+
+    # Add blank label 
+    if blank_label
+      blank_label = "" if blank_label == true
+      grouped_options = "<option value=\"\">#{h(blank_label)}</option>" + grouped_options
+    end
+    
+    select_tag parameter_name, grouped_options.html_safe, select_tag_options
+  end
+
+  private
+
+  #Create an options_for_select box.
+  #The +top+ parameter is the top level type, one with which we start.
+  #The +selected+ parameter indicate which element need to be selected
+  #[:include_top] indicate if top is or is not keep in final options_for_select
+  def hierarchical_type_options_for_select(top, selected, options = {})
+    include_top = options.has_key?(:include_top) ? options[:include_top] : false
+    klass_lev   = { top => include_top ? 0 : -1 }
+    queue       = [ top ]
+    final       = []
+
+    while ! queue.empty? do
+       first = queue.shift
+       lev   = klass_lev[first]
+       desc  = first.direct_descendants.sort { |a,b| a.name <=> b.name }
+       desc.each { |d| klass_lev[d] = lev + 1 }
+       queue = desc + queue
+       final << first unless !include_top && first == top
+    end
+
+    ordered_type_grouped = []
+    final.each do |k|
+       lev = klass_lev[k]
+       ordered_type_grouped << ["#{("&nbsp;&nbsp;" * lev)}#{k.pretty_type}".html_safe,k.name]
+    end
+    
+    options_for_select ordered_type_grouped, selected
+  end
+  
 end
+
+
+  
 
