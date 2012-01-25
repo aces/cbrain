@@ -183,7 +183,7 @@ class CbrainSystemChecks < CbrainChecker
             :type          => :system,
             :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
             :description   => "These relative paths in the local Data Provider cache were\n" +
-                              "removed as there is no longer any userfiles matching them.\n",
+                              "removed as there are no longer any userfiles matching them.\n",
             :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort.join("\n"),
             :critical      => true,
             :send_email    => false

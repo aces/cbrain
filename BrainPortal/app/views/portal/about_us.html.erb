@@ -92,7 +92,7 @@ after the NEP program is completed.</p>
     <%= show_hide_toggle "(Show)", "#gpl_panel", :class  => 'action_link' %>
     <div id="gpl_panel" style="display: none">
       <pre>
-      <% txt = File.read(Rails.root.to_s + "/../GPL_v3.txt") rescue "Error getting license file." %>
+      <% txt = File.read(Rails.root.to_s + "/../LICENSE.txt") rescue "Error getting license file." %>
       <%= txt %>
       </pre>
     </div>
