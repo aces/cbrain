@@ -116,50 +116,49 @@
 
   <% end %>
 
+  <% unless @user.has_role? :admin %>
 
-</div>
+    <div>
 
-<% unless current_user.has_role? :admin %>
-
-  <div>
-
-   <table class="resource_list">
-      <tr>
-        <th colspan="3">
-          Projects 
-          <% if check_role(:admin) || check_role(:site_manager) %>
-            <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
-              <%= form_for @user do |f| -%>
-                <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
-                <%= submit_tag 'Update Projects' %>
+     <table class="resource_list">
+        <tr>
+          <th colspan="3">
+            Projects 
+            <% if check_role(:admin) || check_role(:site_manager) %>
+              <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
+                <%= form_for @user do |f| -%>
+                  <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
+                  <%= submit_tag 'Update Projects' %>
+                <% end %>
               <% end %>
             <% end %>
-          <% end %>
-        </th>
-      </tr>
+          </th>
+        </tr>
 
-      <tr>
-        <th>Project Name</th>
-        <th>Project Type</th>
-        <th>Members</th>
-      </tr>
+        <tr>
+          <th>Project Name</th>
+          <th>Project Type</th>
+          <th>Members</th>
+        </tr>
+
+     <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
+       <% next if group.name == 'everyone' %>
+       <tr class=<%= cycle("list-even", "list-odd") %> >
+         <td><%= link_to_group_if_accessible(group) %></td>
+         <td><%= group.pretty_category_name(current_user) %></td>
+         <td><%= array_to_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+       </tr>
+     <% end %>
+
+     </table>
+
+    </div>
+
+    <P>
+
+  <% end %>
   
-   <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
-     <% next if group.name == 'everyone' %>
-     <tr class=<%= cycle("list-even", "list-odd") %> >
-       <td><%= link_to_group_if_accessible(group) %></td>
-       <td><%= group.pretty_category_name(current_user) %></td>
-       <td><%= array_to_table(group.users, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
-     </tr>
-   <% end %>
-
-   </table>
-
-  </div>
-
-  <P>
-
-<% end %>
-
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+</div>
+
 
