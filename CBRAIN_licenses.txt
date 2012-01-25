@@ -1,31 +1,35 @@
 
-##################################################
-#   3rd party software licenses used in CBRAIN   #
-##################################################
-#
-# $Id$
-#
-
-- awesome_nested_set
-  MIT License
-  http://github.com/collectiveidea/awesome_nested_set/tree/master
+=================================================
+=  3rd party software licenses used in CBRAIN   =
+=  and acknowledgements of source code samples  =
+=================================================
 
 - RESTFUL authentication
   Rails' (MIT) License
   http://github.com/technoweenie/restful-authentication/tree/master
 
-- ActiveResource sample controller code
-  Original code provided by Jade Meskill, blog owner of
-  http://iamruinous.com/2007/10/01/creating-an-activeresource-compatible-controller/
-  Obtained his permission on October 27th, 2008.
-
-- acts_as_taggable_on_steroids (rails plugin)
-  Rails' (MIT) License
-  http://agilewebdevelopment.com/plugins/acts_as_taggable_on_steroids
-
 - Sample code for forking subprocesses that are ActiveRecord safe
   Original code provided by Scott Persinger
   From his blog: http://geekblog.vodpod.com/?p=26
+  Heavily modified and improved by Pierre Rioux;
+  see spawn_with_active_records()'s history.
 
 - Individual Ruby GEMs each have their own licensing terms.
+
+- The CBRAIN developers would like to acknowledge
+  the Redmine project as a source of inspiration and
+  technical examples, as well as for directly providing
+  some CSS stylesheet rules. CBRAIN's issue tracking
+  was also provided by a Redmine server.
+
+- tableH.js
+  F. Permadi 2005.
+  Highlights table row
+  Copyright (C) F. Permadi
+  See licence details in the files.
+
+- o3d library
+  Copyright 2009, Google Inc.
+  All rights reserved.
+  See licence details in the files.
 

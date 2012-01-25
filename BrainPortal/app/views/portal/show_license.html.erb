@@ -1,12 +1,19 @@
+<% is_signed = current_user.signed_license_agreements.include?(@license) %>
 <div class="license_agreement">
-  <% unless current_user.signed_license_agreements.include?(@license) %>
+  <% if ! is_signed %>
     <%= form_tag :action => :sign_license, :license => @license %>
       <%= hidden_field_tag :license, @license %>
   <% end %>
-  <%= render :file => "public/licenses/#{@license}.html" %>
-  <% unless current_user.signed_license_agreements.include?(@license) %>
+  <% content = File.read(Rails.root + "public/licenses/#{@license}.html") rescue "(Error fetching license text)" %>
+  <% content.gsub!(/<input\s/i,"<INPUT DISABLED CHECKED ") if is_signed %>
+  <%= content.html_safe %>
+  <p>
+  <hr>
+  <% if ! is_signed %>
       <%= submit_tag "I Agree" %>
       <%= submit_tag "I Do Not Agree" %>
     </form>
+  <% else %>
+    <strong>You have already signed this agreement.</strong>
   <% end %>
 </div>
