@@ -42,6 +42,9 @@
     <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
     (<%= pluralize @total_entries, "projects" %>)
   </span>
+  <span class="pagination_right_side">
+    Search by name: <%= ajax_search_box "name_like", groups_path(:update_filter => :filter_hash) %>
+  </span>
 </div>
 
 
