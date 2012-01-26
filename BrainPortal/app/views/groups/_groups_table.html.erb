@@ -1,6 +1,9 @@
 <div class="menu_bar">
    <%= new_model_button "Create Project", new_group_path %>
    <%= link_to "Switch Off Active Project", {:controller=>"groups", :action=>"switch"}, :method  => :post, :class  => :button %>
+   <span id="view_option_button"> 
+     <%= render :partial => "groups/view_option_button" %>
+   </span>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>       
 </div>
 
@@ -9,6 +12,15 @@
     <%= render :partial => 'shared/active_filters', :locals => {:model => :group} %>
   </span>
 </div>
+
+<div class="pagination">
+  <span class="page_links">
+    <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+    (<%= pluralize @total_entries, "projects" %>)
+  </span>
+</div>
+
+
 
 <%=
   index_table(@groups, :class => "resource_list") do |t|

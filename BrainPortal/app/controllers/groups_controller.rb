@@ -21,7 +21,18 @@ class GroupsController < ApplicationController
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @header_scope = current_user.available_groups
-    @groups = base_filtered_scope @header_scope.includes(:site)
+    scope = base_filtered_scope @header_scope.includes(:site)
+    @total_entries = scope.count
+    
+    # For Pagination
+    offset = (@current_page - 1) * @per_page
+    pagination_list  = scope.limit(@per_page).offset(offset)
+    
+    @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
+      pager.replace(pagination_list)
+      pager.total_entries = @total_entries
+      pager
+    end
     
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
     @group_id_2_userfile_counts      = Userfile.group("group_id").count
