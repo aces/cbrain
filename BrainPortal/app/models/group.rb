@@ -55,6 +55,8 @@ class Group < ActiveRecord::Base
   has_many                :cbrain_tasks
   has_many                :tags
   belongs_to              :site
+  
+  scope                   :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
 
   # Returns the unique and special group 'everyone'
   def self.everyone
