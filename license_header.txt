@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -19,15 +18,3 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
-
-class ImageFile < SingleFile
-
-  Revision_info=CbrainFileRevision[__FILE__]
-  
-  has_viewer :partial  => "image_file", :if  => :is_locally_synced?
-  
-  def self.file_name_pattern
-    /\.(jpe?g|gif|png)$/i
-  end
-  
-end

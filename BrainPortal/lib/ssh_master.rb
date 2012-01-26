@@ -2,14 +2,29 @@
 #
 # CBRAIN Project
 #
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
 # This class provides the functionality necessary to create,
 # destroy and manage persistent SSH master (control) connections
 # to other hosts.
 #
 # Original author: Pierre Rioux
-#
-# $Id$
-#
 
 require 'fcntl'
 require 'rubygems'
@@ -448,6 +463,7 @@ class SshMaster
   def ssh_shared_options(control_master="no")
     socket = self.control_path
     " -p #{@port}"                        +
+    " -A"                                 +
     " -o ConnectTimeout=10"               +
     " -o StrictHostKeyChecking=no"        +
     " -o PasswordAuthentication=no"       +
@@ -455,6 +471,7 @@ class SshMaster
     " -o KbdInteractiveDevices=none"      +
     " -o ServerAliveInterval=10"          +
     " -o ServerAliveCountMax=5"           +
+    " -o ForwardAgent=yes"                +
     " -o ControlMaster=#{control_master}" +
     " -o ControlPath=#{socket}"           +
     " #{@user}@#{@host} "
@@ -683,3 +700,4 @@ class SshMaster
   end
 
 end
+

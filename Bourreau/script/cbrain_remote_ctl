@@ -3,22 +3,40 @@
 #
 # CBRAIN Project
 #
-# Original author: Pierre Rioux
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
 #
-# $Id$
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
+
 
 # This script is a wrapper that launches the normal Rails script/server,
 # but with the added ability of receiving the content if the database.yml
 # file in standard output before it does so. Also, once the server is
 # started, the database.yml is deleted outright, closing a security hole.
-
+#
+# This script it NOT usually executed by a human, instead it is
+# invoked by the Portal when trying to start or stop a Bourreau.
+#
 # The command-line args are to be provided strictly in the order shown
 # below, and all of them should be present (this is done simply so that
 # this bash script is kept simple, as anyway this script is not meant
 # to be started manually by users).
-
-
+#
+#
 # To start the Rails app:
 #
 #   $0 start -e <environment> -p <port>
@@ -36,13 +54,14 @@
 # Note that if stdin contains nothing (zero bytes) the current
 # database.yml file will be used, or the script will restore and use
 # the backup file 'database.yml.cbrain_remote_bak'.
-
-
+#
+#
 # To stop the Rails app:
 #
 #   $0 stop
 #
 # which will result in killing the rails app.
+
 
 
 require 'rubygems'
