@@ -4,12 +4,10 @@
 #
 # PortalTask model <%= "#{class_name}" %>
 #
-# Original author: 
-#
-# $Id$
-#
 
 # A subclass of CbrainTask to launch <%= class_name %>.
+#
+# Original author: 
 class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__]

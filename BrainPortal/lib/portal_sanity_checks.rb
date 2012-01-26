@@ -2,11 +2,29 @@
 #
 # CBRAIN Project
 #
-# Sanity library for brainportal (this file was split from validation_portal.rb initializer 
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
+require 'socket'
+
+# Sanity library for BrainPortal
 #
 # Original author: Nicolas Kassis
-# 
-# $Id$
 #
 # This file contains a singleton Portal sanity checker class
 # Each sanity(database consitency) check is created in a instance method of the class 
@@ -20,10 +38,6 @@
 #
 # The is a rake task to run these sanity checks called rake db:sanity:check
 # This rake task should be run before starting cbrain for the first time. 
-#
-
-require 'socket'
-
 class PortalSanityChecks < CbrainChecker
 
   Revision_info=CbrainFileRevision[__FILE__]
@@ -359,8 +373,4 @@ class PortalSanityChecks < CbrainChecker
   end
 
 end
-
-
-
-
 
