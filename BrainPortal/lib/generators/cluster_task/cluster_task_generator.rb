@@ -26,8 +26,8 @@ class ClusterTaskGenerator < Rails::Generators::Base
 
   source_root File.expand_path("../templates", __FILE__)
 
-  argument     :file_name, :type => :string,  :default => "application"  
-  class_option :advanced,  :type => :boolean, :default => false
+  argument     :file_or_class, :type => :string,  :default => "application"  
+  class_option :advanced,      :type => :boolean, :default => false
 
   def create_task
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}"
@@ -47,8 +47,12 @@ class ClusterTaskGenerator < Rails::Generators::Base
     end
   end
 
+  def file_name
+    @_file_name ||= file_or_class.underscore
+  end
+
   def class_name
-    file_name.classify
+    @_class_name ||= file_or_class.classify
   end
   
 end

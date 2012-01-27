@@ -42,6 +42,7 @@
    #restricted_att_list = @model_atts.blank? ? full_att_list : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    restricted_att_list = @model_atts.blank? ? [] : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    att_ok              = restricted_att_list.present?
+   date_filtration     = params[:date_range] || {}
 %>
 
 <h2>Automatic Tabular Report Maker</h2>
@@ -201,28 +202,44 @@ in a tabular layout. Proceed as follow:
   <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
     <div class="notesbox" style="width: auto">
 
-      <strong>Optional:</strong> fix some attributes:<br/>
+      <strong>Optional:</strong> fix some attributes:<p>
 
+      <table class="simple">
+      <tr><td>
       <% if @model_atts.include?(:user_id) %>
-        <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %>
+        <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %><br>
       <% end %>
       <% if @model_atts.include?(:group_id) %>
-        <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %>
+        <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %><br>
       <% end %>
       <% if @model_atts.include?(:data_provider_id) %>
-        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %>
+        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %><br>
       <% end %>
       <% if @model_atts.include?(:bourreau_id) %>
-        <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %>
+        <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %><br>
       <% end %>
       <% if @model_atts.include?(:type) %>
-        <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %>
+        <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
       <% end %>
       <% if @model_atts.include?(:status) %>
-        <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
+        <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %><br>
       <% end %>
-    </div>
-
+      </td>
+      <td>
+      <%= 
+      render :partial => '/shared/date_range', :locals  => {:date_attribute            => ['date_range[date_attribute]',            date_filtration["date_attribute"]], 
+                                                            :absolute_or_relative_from => ['date_range[absolute_or_relative_from]', date_filtration['absolute_or_relative_from']],
+                                                            :absolute_or_relative_to   => ['date_range[absolute_or_relative_to]',   date_filtration['absolute_or_relative_to']],
+                                                            :relative_from             => ['date_range[relative_from]',             date_filtration['relative_from']],
+                                                            :relative_to               => ['date_range[relative_to]',               date_filtration['relative_to']],
+                                                            :absolute_from             => ['date_range[absolute_from]',             date_filtration['absolute_from']],
+                                                            :absolute_to               => ['date_range[absolute_to]',               date_filtration['absolute_to']]
+                                                            }
+      %>
+      </td></tr>
+      </table>
+      </div>
+      
     <br>
   <% end %>
 
