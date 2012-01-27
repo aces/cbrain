@@ -1424,6 +1424,8 @@ img {
     padding: 1em 1em 1em 2em;
     background-color: #05A3D6;
     text-align: left;
+    max-height: 30em;
+    overflow: auto;
 }
 
 

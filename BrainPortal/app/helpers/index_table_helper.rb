@@ -188,8 +188,9 @@ module IndexTableHelper
         filters = @header_options.delete :filters
         
         unless filters.blank?
-          @header_options[:onMouseOver] = "jQuery('#filters_list_#{self.object_id}').show()"
-          @header_options[:onMouseOut]  = "jQuery('#filters_list_#{self.object_id}').hide()"
+          @header_options[:class] ||= ""
+          @header_options[:class]  += " filter_header"
+          @header_options["data-target"] = "#filters_list_#{self.object_id}"
         end
         
         atts = @header_options.to_html_attributes

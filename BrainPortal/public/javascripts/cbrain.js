@@ -318,6 +318,18 @@ jQuery(
  function() {
    jQuery("body").bind("new_content", load_behaviour);
    jQuery("body").trigger("new_content");
+   
+   jQuery(".filter_header").live("mouseenter", function(){
+     var header = jQuery(this);
+     var target = header.attr("data-target");
+     jQuery(target).show();
+     return false;
+   }).live("mouseleave", function(){
+     var header = jQuery(this);
+     var target = header.attr("data-target");
+     jQuery(target).hide();
+     return false;
+   });
 
    /////////////////////////////////////////////////////////////////////
     //
@@ -326,9 +338,9 @@ jQuery(
     /////////////////////////////////////////////////////////////////////
 
     jQuery(".pagination a").live("click", function(){
-      link = jQuery(this);
-      url = link.attr("href");
-      pagination_div = link.closest(".pagination");
+      var link = jQuery(this);
+      var url = link.attr("href");
+      var pagination_div = link.closest(".pagination");
       pagination_div.html(" Loading... <BR>");
       jQuery.ajax({
         url: url,
