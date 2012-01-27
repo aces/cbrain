@@ -39,7 +39,7 @@ class CustomFilter < ActiveRecord::Base
       
   Revision_info=CbrainFileRevision[__FILE__]
 
-  include DateRange
+  include DateRangeRestriction
   
   serialize_as_indifferent_hash :data
       

@@ -4,14 +4,14 @@
 big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
 
 offset_times = [
-  [ "Now",               0.seconds.to_s ],
-  [ "One hour ago",      1.hour.to_s    ],
-  [ "Six hours ago",     6.hour.to_s    ],
-  [ "One day ago",       1.day.to_s     ],
-  [ "One week ago",      1.week.to_s    ],
-  [ "One month ago",     1.month.to_s   ],
-  [ "One year ago",      1.year.to_s   ],  
-  [ "The Big Bang",      big_bang       ]
+  [ "Now",               0.seconds.to_i.to_s ],
+  [ "One hour ago",      1.hour.to_i.to_s    ],
+  [ "Six hours ago",     6.hour.to_i.to_s    ],
+  [ "One day ago",       1.day.to_i.to_s     ],
+  [ "One week ago",      1.week.to_i.to_s    ],
+  [ "One month ago",     1.month.to_i.to_s   ],
+  [ "One year ago",      1.year.to_i.to_s    ],  
+  [ "The Big Bang",      big_bang.to_s       ]
 ]
 
 %>                                           
@@ -20,7 +20,7 @@ offset_times = [
 <div class="date_range_display_table" >
 
   <!-- First line -->
-  <div>
+  <div class="left_align">
     <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
     <%= radio_button_tag date_attribute[0], "created_at", date_attribute[1] == "created_at"    %> By creation date
     <%= radio_button_tag date_attribute[0], "updated_at", date_attribute[1] == "updated_at"    %> By update date

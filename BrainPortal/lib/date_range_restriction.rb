@@ -1,5 +1,5 @@
 
-module DateRange
+module DateRangeRestriction
 
   #Checks consistence of values for filtration by date.
   #For exemple if filtration by absolute_date_from will be process 

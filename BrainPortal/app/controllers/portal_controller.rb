@@ -14,6 +14,8 @@ class PortalController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  include DateRangeRestriction
+
   before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
   
   #Display a user's home page with information about their account.
@@ -102,11 +104,12 @@ class PortalController < ApplicationController
   end
 
   def report #:nodoc:
-    table_name = params[:table_name] || ""
-    table_op   = 'count'
-    row_type   = params[:row_type]   || ""
-    col_type   = params[:col_type]   || ""
-    submit     = params[:commit]     || "look"
+    table_name      = params[:table_name] || ""
+    table_op        = 'count'
+    row_type        = params[:row_type]   || ""
+    col_type        = params[:col_type]   || ""
+    submit          = params[:commit]     || "look"
+    date_filtration = params[:date_range]       || {}
 
     if table_name =~ /^(\w+)\.(\S+)$/
       table_name = Regexp.last_match[1]
@@ -128,7 +131,7 @@ class PortalController < ApplicationController
        User             => [ [ :role, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
     }) if current_user.has_role?(:admin) ||  current_user.has_role?(:site_admin)
 
-    @model       = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
+    @model      = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
     model_brk   = allowed_breakdown[@model] || [[],[]]
     @model_atts = model_brk[0] || [] # used by view to limit types of rows and cols ?
     model_ops   = model_brk[1] || [ 'count' ]
@@ -137,6 +140,14 @@ class PortalController < ApplicationController
       return # with false value for @table_ok
     end
 
+    #date_filtration verification
+    error_mess = check_filter_date(date_filtration["date_attribute"], date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
+                                   date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
+    if error_mess.present?
+      flash[:error] = "#{error_mess}"
+      return
+    end
+    
     return unless submit =~ /generate|refresh/i
 
     @table_ok = true
@@ -158,6 +169,12 @@ class PortalController < ApplicationController
       next unless val.present?
       @table_content = @table_content.where(att => val)
     end
+
+    # Add date filtration
+    mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute" ? true : false
+    mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute" ? true : false
+    @table_content = add_condition_to_scope(@table_content, table_name, mode_is_absolute_from , mode_is_absolute_to,
+        date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"], date_filtration["date_attribute"])
 
     # Compute content
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]

@@ -1701,7 +1701,8 @@ td.middle {
 }
 
 .date_range_with_size {
-  width: 12em;
+  width: auto;
+  white-space: nowrap
 }
 
 .date_range_with_size select {
