@@ -34,6 +34,12 @@
   <select name="tags[]" multiple="multiple">
      <%= options_from_collection_for_select @user_tags, 'id', 'name', {:include_blank => true, :selected => nil}      %>
   </select>
+  
+  <p>
+  
+  File type (optional):<br>
+  <%= userfile_type_select(:file_type, {}, :include_blank => "(Select a type)") %>
+  
 
   <% if current_project %>
     <%= hidden_field_tag 'userfile[group_id]', current_project.id %>
