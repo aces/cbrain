@@ -130,15 +130,15 @@ class ApplicationController < ActionController::Base
   # Check if the user needs to change their password
   # or sign license agreements.
   def check_account_validity
-    return true unless current_user
-    return true if params[:controller] == "sessions"
+    return unless current_user
+    return if params[:controller] == "sessions"
 
     #Check if license agreement have been signed
     unsigned_agreements = current_user.unsigned_license_agreements
 
     unless unsigned_agreements.empty?
-      return true if params[:controller] == "portal" && params[:action] =~ /license$/
-      return true if current_user.has_role?(:admin) && params[:controller] == "bourreaux"
+      return if params[:controller] == "portal" && params[:action] =~ /license$/
+      return if current_user.has_role?(:admin) && params[:controller] == "bourreaux"
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
         redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first
       elsif current_user.has_role?(:admin)
@@ -146,7 +146,9 @@ class ApplicationController < ActionController::Base
         flash[:error] += "Please place the license file in /public/licenses or remove it from below."
         redirect_to bourreau_path(RemoteResource.current_resource)
       end
+      return
     end
+
     #Check if passwords been reset.
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")

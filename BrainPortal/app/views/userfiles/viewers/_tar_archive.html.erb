@@ -1,4 +1,5 @@
 
+<%-
 #
 # CBRAIN Project
 #
@@ -19,19 +20,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
+-%>
 
-class TaskWorkdirArchive < TarArchive
+<% if @userfile.is_locally_synced? %>
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  <%
+    tar_list_io = IO.popen("tar -tvzf #{@userfile.cache_full_path}","r") rescue nil
+    tar_list    = tar_list_io.read rescue nil
+    tar_list_io.close rescue nil
+  %>
+    
+  <% if tar_list.present? %>
+    List of files in archive:
+    <pre class="standard_out script_preview"><%= tar_list %></pre>
+  <% else %>
+    File not synchronized, content cannot be listed for the moment.
+  <% end %>
 
-  has_viewer :task_workdir_archive
-  
-  def self.file_name_pattern #:nodoc:
-    /^CbrainTask_Workdir_[\w\-]+\.tar\.gz$/i
-  end
+<% end %>
 
-  def self.pretty_type #:nodoc:
-    "Task Workdir Archive"
-  end
-  
-end

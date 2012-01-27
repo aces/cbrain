@@ -20,18 +20,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class TaskWorkdirArchive < TarArchive
+class TarArchive < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  has_viewer :task_workdir_archive
+  has_viewer :tar_archive
   
   def self.file_name_pattern #:nodoc:
-    /^CbrainTask_Workdir_[\w\-]+\.tar\.gz$/i
+    /\.tar(\.gz)?$|\.tgz$/i
   end
 
   def self.pretty_type #:nodoc:
-    "Task Workdir Archive"
+    "Tar Archive"
   end
   
 end
