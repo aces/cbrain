@@ -1,10 +1,28 @@
 
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
 # CBRAIN Routing Table
 
 CbrainRailsPortal::Application.routes.draw do
-  match "/report", :controller => :portal, :action => :report
-  match '/show_license/:license', :controller => :portal, :action => :show_license
-  match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via  => :post
   
   # Session
   resource  :session
@@ -117,19 +135,26 @@ CbrainRailsPortal::Application.routes.draw do
   end
 
   # Special named routes
-  root                  :to               => 'portal#welcome'
-  match                 '/home'           => 'portal#welcome'
-  match                 '/credits'        => 'portal#credits'
-  match                 '/about_us'       => 'portal#about_us'
-  match                 '/login'          => 'sessions#new'
-  match                 '/session_status' => 'sessions#show'
-  match                 '/logout'         => 'sessions#destroy'
+  root  :to                       => 'portal#welcome'
+  match '/home'                   => 'portal#welcome'
+  match '/credits'                => 'portal#credits'
+  match '/about_us'               => 'portal#about_us'
+  match '/login'                  => 'sessions#new'
+  match '/session_status'         => 'sessions#show'
+  match '/logout'                 => 'sessions#destroy'
 
   # JIV java applet ; TODO remove and make part of a multi-file viewer framework (TBI)
-  match                 '/jiv'            => 'jiv#index'
-  match                 '/jiv/show'       => 'jiv#show'
+  match '/jiv'                    => 'jiv#index'
+  match '/jiv/show'               => 'jiv#show'
 
-  # Individual maps
+  # Report Maker
+  match "/report",                :controller => :portal, :action => :report
+
+  # Licence handling
+  match '/show_license/:license', :controller => :portal, :action => :show_license
+  match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via => :post
+
+  # ExceptionLogger Routes
   match "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
 end

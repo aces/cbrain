@@ -1,0 +1,9 @@
+<%= button_with_dropdown_menu("View Options") do %>
+  <div class="view_options">
+    <%= form_tag({:controller => :groups, :action => :index}, :method => :get) do %>
+      Number of messages per page:
+      <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
+      <%= hidden_field_tag :update_filter, true %>
+    <% end %>
+  </div>
+<% end %>

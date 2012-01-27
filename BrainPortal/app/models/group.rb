@@ -2,11 +2,22 @@
 #
 # CBRAIN Project
 #
-# Group model
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
 #
-# Original author: Tarek Sherif
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# $Id$
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
 #Model representing the Group resource. Groups are meant to represented collective access
@@ -44,6 +55,8 @@ class Group < ActiveRecord::Base
   has_many                :cbrain_tasks
   has_many                :tags
   belongs_to              :site
+  
+  scope                   :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
 
   # Returns the unique and special group 'everyone'
   def self.everyone

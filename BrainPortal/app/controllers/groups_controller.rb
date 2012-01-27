@@ -2,11 +2,22 @@
 #
 # CBRAIN Project
 #
-# Groups controller for the BrainPortal interface
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
 #
-# Original author: Tarek Sherif
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# $Id$
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
 #RESTful controller for the Group resource.
@@ -21,7 +32,18 @@ class GroupsController < ApplicationController
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @header_scope = current_user.available_groups
-    @groups = base_filtered_scope @header_scope.includes(:site)
+    scope = base_filtered_scope @header_scope.includes(:site)
+    @total_entries = scope.count
+    
+    # For Pagination
+    offset = (@current_page - 1) * @per_page
+    pagination_list  = scope.limit(@per_page).offset(offset)
+    
+    @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
+      pager.replace(pagination_list)
+      pager.total_entries = @total_entries
+      pager
+    end
     
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
     @group_id_2_userfile_counts      = Userfile.group("group_id").count

@@ -1,16 +1,33 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
-#
-# CBRAIN project
-#
-# $Id$
+
+require 'authenticated_system'
 
 # Superclass to all *BrainPortal* controllers. Contains
 # helper methods for checking various aspects of the current
 # session.
-
-require 'authenticated_system'
-
 class ApplicationController < ActionController::Base
 
   Revision_info=CbrainFileRevision[__FILE__]

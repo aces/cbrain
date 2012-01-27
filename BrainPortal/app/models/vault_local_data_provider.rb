@@ -2,10 +2,24 @@
 #
 # CBRAIN Project
 #
-# $Id$
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#
 # This class provides an implementation for a data provider
 # where the remote files are not even remote, they are local
 # to the currently running rails application. The provider's
@@ -25,7 +39,6 @@
 # so that their behavior is sensible.
 #
 # For the list of API methods, see the DataProvider superclass.
-#
 class VaultLocalDataProvider < LocalDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__]
