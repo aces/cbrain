@@ -463,7 +463,7 @@ class SshMaster
   def ssh_shared_options(control_master="no")
     socket = self.control_path
     " -p #{@port}"                        +
-    " -A"                                 +
+#    " -A"                                 +   # experimental
     " -o ConnectTimeout=10"               +
     " -o StrictHostKeyChecking=no"        +
     " -o PasswordAuthentication=no"       +
@@ -471,7 +471,7 @@ class SshMaster
     " -o KbdInteractiveDevices=none"      +
     " -o ServerAliveInterval=10"          +
     " -o ServerAliveCountMax=5"           +
-    " -o ForwardAgent=yes"                +
+#    " -o ForwardAgent=yes"                +   # experimental
     " -o ControlMaster=#{control_master}" +
     " -o ControlPath=#{socket}"           +
     " #{@user}@#{@host} "
