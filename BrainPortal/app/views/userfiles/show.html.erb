@@ -107,7 +107,7 @@
     <% if current_user.has_role? :admin %>
       <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path", :show_width => 2) %>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-        <% t.cell("Remote SSH Data Provider path", :show_width => 2) do %>
+        <% t.cell("Remote Data Provider path", :show_width => 2) do %>
           <%= @userfile.data_provider.provider_full_path(@userfile) %>
         <% end %>
       <% end %>

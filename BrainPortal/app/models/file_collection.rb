@@ -30,7 +30,7 @@ class FileCollection < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  has_viewer  :file_collection
+  has_viewer  :partial => 'file_collection', :if => :is_locally_synced?
   has_content :collection_file
 
   # Extract a collection from an archive.
