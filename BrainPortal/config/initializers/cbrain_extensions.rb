@@ -308,20 +308,25 @@ class String
   # :allow_unset, if true, allows substitution of an empty
   # string if a keyword is defined in the pattern but not
   # in the +keywords+ hash. Otherwise, an exception is raised.
+  # :leave_unset, if true, leaves unsubstituded keywords as-is
+  # in the string.
   def pattern_substitute(keywords, options = {})
     pat_comps = self.split(/(\{(?:[a-z0-9_]+(?:-\d+)?)\})/i)
-    final = ""
+    final = []
     pat_comps.each_with_index do |comp,i|
       if i.even?
-        final += comp
+        final << comp
       else
-        comp.gsub!(/[{}]/,"")
-        val = keywords[comp.downcase] || keywords[comp.downcase.to_sym]
-        cb_error "Cannot find value for keyword '{#{comp.downcase}}'." if val.nil? && ! options[:allow_unset]
-        final += val.to_s
+        barecomp = comp.tr("{}","")
+        val = keywords[barecomp.downcase] || keywords[barecomp.downcase.to_sym]
+        if val.nil?
+          cb_error "Cannot find value for keyword '{#{barecomp.downcase}}'." if options[:leave_unset].blank? && options[:allow_unset].blank?
+          val = comp                                                         if options[:leave_unset].present?
+        end
+        final << val.to_s
       end
     end
-    final
+    final.join
   end
 
 end

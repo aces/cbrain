@@ -1,0 +1,140 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+#
+# CBRAIN Project
+#
+# ClusterTask Model BashScriptor
+#
+
+# A subclass of ClusterTask to run BashScriptor.
+class CbrainTask::BashScriptor < ClusterTask
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
+  include RestartableTask
+  include RecoverableTask
+
+  # See CbrainTask.txt
+  def setup #:nodoc:
+    params       = self.params
+    file_ids      = params[:interface_userfile_ids] || []
+    file_ids.each do |id|
+      file = Userfile.find(id)
+      self.results_data_provider_id ||= file.data_provider_id
+      file.sync_to_cache
+    end
+    true
+  end
+
+  # See CbrainTask.txt
+  def cluster_commands #:nodoc:
+    params       = self.params
+
+    raw_text     = params[:bash_script]
+    raw_text.tr!("\r","") # text areas have CRs in line terminators, yuk!
+    raise "No bash script?!?" if raw_text.blank?
+
+    phase_1_text = raw_text.dup.pattern_substitute(
+      {
+        'cbrain_task_cluster_workdir' => self.bash_escape_path(self.full_cluster_workdir),
+        'cbrain_task_id'              => self.id,
+        'cbrain_task_run_number'      => self.run_number,
+        'cbrain_task_run_id'          => self.run_id,
+        'cbrain_cluster_name'         => self.bourreau.name 
+      },
+      :leave_unset => true
+    )
+
+    final_script = []
+
+    file_ids      = params[:interface_userfile_ids] || []
+    file_ids.each do |id|
+      file = Userfile.find(id)
+      txt  = phase_1_text.dup.pattern_substitute(
+        {
+          'cbrain_userfile_id'              => id,
+          'cbrain_userfile_name'            => file.name,
+          'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path)
+        },
+        :leave_unset => true
+      )
+      final_script << "\n# ===============================================================\n"
+      final_script <<   "# Script for file ID #{id} named #{file.name}\n"
+      final_script <<   "# ===============================================================\n"
+      final_script << "\n"
+      final_script << txt # multi line scripts are OK in array.
+      final_script << "\n\n"
+    end
+
+    final_script
+  end
+  
+  # See CbrainTask.txt
+  def save_results #:nodoc:
+    params       = self.params
+    stdout       = File.read(self.stdout_cluster_filename) rescue ""
+
+    out_ids      = []
+
+    # Parse the output, finding the special pleading sentence, your honor.
+    self.addlog("Searching standard output for magic sentence 'Please CBRAIN...'")
+    stdout.scan(/Please\s+CBRAIN,\s+save\s+(\S+)\s+to\s+([A-Z][a-zA-Z]+)\s+named\s+(\S+)(?:\s+as\s+child\s+of\s+(\d+))?/).each do |m|
+
+      # Extract significant components
+      src_path  = m[0]
+      out_type  = m[1]
+      out_name  = m[2]
+      parent_id = m[3]
+      self.addlog("Saving: '#{src_path}' to '#{out_type}' named '#{out_name}'#{parent_id.present? ? " child of #{parent_id}" : ""}")
+
+      # Create output file
+      out_class = out_type.constantize
+      cb_error "Type #{out_type} not a subclass of Userfile." unless out_class < Userfile
+      cb_error "No file found for path #{src_path} ?"         unless File.exists?(src_path)
+      out_userfile = safe_userfile_find_or_new(out_class, :name => out_name)
+      out_userfile.save!
+      out_userfile.cache_copy_from_local_file(src_path)
+
+      # Record logging info
+      out_ids << out_userfile.id
+      if parent_id.present?
+        parent = Userfile.find(parent_id)
+        out_userfile.move_to_child_of(parent)
+        self.addlog_to_userfiles_these_created_these( parent, out_userfile )
+      else
+        self.addlog_to_userfiles_created( out_userfile )
+      end
+      
+    end
+
+    params[:output_userfile_ids] = out_ids
+
+    true
+  end
+
+  def bash_escape_path(path) #:nodoc:
+    newpath = path.gsub("'","'\\''")
+    "'#{newpath}'"
+  end
+
+end
+

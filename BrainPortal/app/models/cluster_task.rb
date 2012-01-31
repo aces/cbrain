@@ -306,11 +306,11 @@ class ClusterTask < CbrainTask
   # containing at the minimum :name and :data_provider_id.
   # The :user_id and :group_id default to the task's.
   def safe_userfile_find_or_new(klass,attlist)
+    cb_error "Class for file must be a subclass of Userfile." unless klass < Userfile
+    attlist = attlist.dup
     attlist[:data_provider_id] ||= self.results_data_provider_id
-    cb_error "Class for file must be a subclass of Userfile." unless
-      klass < Userfile
-    cb_error "Attribute list missing a required attribute." unless
-      [ :name, :data_provider_id ].all? { |i| ! attlist[i].blank? } # minimal set!
+    cb_error "Attribute list missing a required attribute." if
+      [ :name, :data_provider_id ].any? { |i| attlist[i].blank? } # minimal set!
     unless attlist.has_key?(:user_id)
       cb_error "Cannot assign user to file." unless self.user_id
       attlist[:user_id] = self.user_id

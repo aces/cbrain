@@ -1,0 +1,91 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<strong>List of Userfiles selected:</strong><BR>
+<UL>
+  <% params[:interface_userfile_ids].each do |id| %>
+  <LI><%= h(Userfile.find(id).name) %></LI>
+  <% end %>
+</UL>
+
+<P>
+
+<strong>BASH script:</strong><br>
+This BASH script will be run once for each userfile in the list
+above.<br>
+<%= form.params_text_area :bash_script, :rows => 40, :cols => 160 %><br>
+<small>For large scripts, we recommand you edit the code in a separate text
+editor and paste it here once satisifed.</small>
+
+<P>
+Available substitutions:<br>
+<dl>
+
+<dt>{cbrain_userfile_id}</dt>
+<dd>ID of the userfile.</dd>
+
+<dt>{cbrain_userfile_name}</dt>
+<dd>Name of the userfile.</dd>
+
+<dt>{cbrain_userfile_cache_full_path}</dt>
+<dd>Full path to the cached copy of the file, escaped with single quotes.</dd>
+
+<dt>{cbrain_task_cluster_workdir}</dt>
+<dd>Full path to the work directory of the task (also escaped).</dd>
+
+<dt>{cbrain_task_id}</dt>
+<dd>ID of the task.</dd>
+
+<dt>{cbrain_task_run_number}</dt>
+<dd>The run number of the task.</dd>
+
+<dt>{cbrain_task_run_id}</dt>
+<dd>The run ID of the task; same as "{task_id}-{run_number}".</dd>
+
+<dt>{cbrain_cluster_name}</dt>
+<dd>The name of the execution server.</dd>
+
+</dl>
+
+<P>
+<strong>Output creation pattern:</strong><br>
+In order for the task to store files, make sure it prints
+in STDOUT a sentence with this exact format:<br>
+
+<pre class="script_preview">Please CBRAIN, save some/relative/path to SomeUserfileType named some_userfile_name [as child of userfile_id]</pre>
+
+For example:
+
+<pre class="script_preview">Please CBRAIN, save out/hello.report to LogFile named hello.log</pre>
+or
+<pre class="script_preview">Please CBRAIN, save out/hello.report to LogFile named hello.log as child of 12345</pre>
+
+<% if @task.new_record? %>
+<P>
+
+<strong>Automatic internal serialization:</strong><br>
+  Partition the list of files to process that many files per task:
+  <%= form.params_text_field :num_files_per_task, :size => 4 %>
+<% end %>
+
