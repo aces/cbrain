@@ -648,8 +648,8 @@ class Userfile < ActiveRecord::Base
     false
   end
   
-  # Returns whether this userfile's contents has been
-  # is in the local cache and valid.
+  # Returns whether this userfile's contents
+  # is present in the local cache and valid.
   #
   # The difference between this method and is_locally_synced?
   # is that this method will also return true if the contents

@@ -35,8 +35,9 @@ class S3DataProvider < DataProvider
   attr_accessor :s3_connection
   
   def s3_filename(userfile,newname=nil)
-    namekey = newname || userfile.name
-    "#{userfile.id}_#{namekey}"
+    namekey = newname.presence || userfile.name
+    ext = userfile.is_a?(FileCollection) ? ".TGZ" : ""
+    "#{userfile.id}_#{namekey}#{ext}"
   end
   
 
@@ -65,30 +66,58 @@ class S3DataProvider < DataProvider
   end
 
   def impl_sync_to_cache(userfile)
-    init_connection
-    local_full = cache_full_pathname(userfile)
+    init_connection  # s3 connection
 
     mkdir_cache_subdirs(userfile)
-    if userfile.is_a?(FileCollection)
-      cb_error "S3 data provider does not yet support file collection"
-    end
-    open(local_full, 'w') do |file|
-      @s3_connection.s3object.stream(s3_filename(userfile), bucket_name) do |chunk|
-        file.write chunk
+    local_full      = cache_full_pathname(userfile)
+    remote_filename = s3_filename(userfile)
+    dest_fh         = nil
+
+    Dir.chdir(Pathname.new(local_full).parent) do
+      if userfile.is_a?(FileCollection)
+        dest_fh = IO.popen("tar -xzf -","w:BINARY")
+      else
+        dest_fh = File.new(local_full,"w:BINARY")
       end
+      @s3_connection.s3object.stream(remote_filename, bucket_name) do |chunk|
+        dest_fh.write chunk
+      end
+      dest_fh.close
     end
+    true
+  ensure
+    dest_fh.close rescue true
   end
 
   def impl_sync_to_provider(userfile)
-    init_connection
+    init_connection  # s3 connection
     create_base_bucket unless @s3_connection.bucket_exists?(bucket_name)
-    local_full = cache_full_pathname(userfile)                                                                                                                  
-    mkdir_cache_subdirs(userfile)                                                                                     
-    if userfile.is_a?(FileCollection)                                                                                 
-      cb_error "S3 data provider does not yet support file collection"                                                
-    end                                                                                                                    
-    bucket = @s3_connection.bucket.find(bucket_name)                                                               
-    @s3_connection.s3object.store(s3_filename(userfile), open(local_full), bucket_name)
+
+    local_full      = cache_full_pathname(userfile)                                                                                                                  
+    remote_filename = s3_filename(userfile)
+    src_fh          = nil
+    tmp_tar_file    = "/tmp/s3_tar_#{Process.pid}_#{Time.now.to_i}.tgz"
+
+    Dir.chdir(Pathname.new(local_full).parent) do
+      if userfile.is_a?(FileCollection)                                                                                 
+        # Amazon does NOT provide chunked streaming.
+        # This means that IO.popen and File.popen both fail
+        # because they cannot provide a size for the content.
+        #src_fh = IO.popen("tar -czf - '#{userfile.name}'","r:BINARY")
+        # So, we have to make a local tarball instead. Hurgh.
+        system("tar", "-czf", tmp_tar_file, userfile.name)
+        src_fh = File.new(tmp_tar_file, "r:BINARY")
+      else
+        src_fh = File.new(local_full,"r:BINARY")
+      end                                                                                                                    
+      bucket = @s3_connection.bucket.find(bucket_name)                                                               
+      @s3_connection.s3object.store(remote_filename, src_fh, bucket_name, :content_type => 'binary/octet-stream')
+      src_fh.close
+    end
+    true
+  ensure
+    src_fh.close rescue true
+    File.unlink(tmp_tar_file) rescue true
   end
 
   def impl_provider_erase(userfile)

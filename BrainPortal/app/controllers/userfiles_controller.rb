@@ -288,10 +288,10 @@ class UserfilesController < ApplicationController
   end
   
   def new #:nodoc:
-     @user_tags      = current_user.available_tags
-     @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
-     @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
-     render :partial => "new"
+    @user_tags      = current_user.available_tags
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
+    @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
+    render :partial => "new"
   end
 
   # Triggers the mass synchronization of several userfiles
@@ -351,10 +351,15 @@ class UserfilesController < ApplicationController
   #            no files nested within directories will be extracted
   #            (the +collection+ option has no such limitations).
   def create #:nodoc:
-
+  
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
     params[:userfile] ||= {}
+    
+    file_type_name      = params[:file_type].presence || 'SingleFile'
+    file_type           = file_type_name.constantize rescue SingleFile
+    file_type           = SingleFile unless file_type < Userfile
+
     redirect_path = params[:redirect_to] || {:action  => :index}
 
     # Get the upload stream object
@@ -381,8 +386,9 @@ class UserfilesController < ApplicationController
     # Decide what to do with the raw data
     if params[:archive] == 'save'  # the simplest case first
 
-      userfile = SingleFile.new(
-                   params[:userfile].merge(
+      file_type = SingleFile unless file_type <= SingleFile
+      userfile  = file_type.new(
+                      params[:userfile].merge(
                      :name             => basename,
                      :user_id          => current_user.id,
                      :data_provider_id => data_provider_id,
@@ -443,7 +449,7 @@ class UserfilesController < ApplicationController
         return
       end
 
-      collectionType = FileCollection # TODO let user choose from the interface?
+      collectionType = FileCollection unless file_type <= FileCollection
 
       collection = collectionType.new(
         params[:userfile].merge(
@@ -499,7 +505,7 @@ class UserfilesController < ApplicationController
     system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        extract_from_archive(tmpcontentfile, attributes) # generates its own Messages
+        extract_from_archive(tmpcontentfile, file_type, attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
       end
@@ -1079,8 +1085,9 @@ class UserfilesController < ApplicationController
   #+archive_file_name+ is a path to an archive file (tar or zip).
   #+attributes+ is a hash of attributes for all the files,
   #they must contain at least user_id and data_provider_id
-  def extract_from_archive(archive_file_name, attributes = {}) #:nodoc:
+  def extract_from_archive(archive_file_name, file_type = SingleFile, attributes = {}) #:nodoc:
 
+    file_type = SingleFile unless file_type <= SingleFile
     escaped_archivefile = archive_file_name.gsub("'", "'\\\\''") # bash escaping
 
     # Check for required attributes
@@ -1146,7 +1153,7 @@ class UserfilesController < ApplicationController
 
     Dir.chdir(workdir) do
       successful_files.each do |file|
-        u = SingleFile.new(attributes)
+        u = file_type.new(attributes)
         u.name = file
         if u.save
           u.cache_copy_from_local_file(file)

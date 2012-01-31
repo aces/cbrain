@@ -49,12 +49,13 @@ class ApplicationController < ActionController::Base
   before_filter :check_account_validity
   before_filter :adjust_system_time_zone
   around_filter :handle_cbrain_errors, :activate_user_time_zone
+  after_filter  :log_user_info
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
   
-  
+
 
   ########################################################################
   # Controller Filters
@@ -156,6 +157,37 @@ class ApplicationController < ActionController::Base
         redirect_to user_path(current_user)
       end
     end
+  end
+
+  # 'After' callback: logs in the Rails logger information about the user who
+  # just performed the request.
+  def log_user_info
+    reqenv = request.env
+    login  = current_user ? current_user.login : "(none)"
+
+    # Get some info from session (when logged in)
+    ip     = current_session["guessed_remote_ip"]
+    host   = current_session["guessed_remote_host"] # only set when logged in
+
+    # Compute the info from the request (when not logged in)
+    ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    if host.blank? && ip =~ /^[\d\.]+$/
+      addrinfo = Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
+      host = addrinfo[0]
+    end
+
+    # Pretty user agent string
+    rawua = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
+    ua    = HttpUserAgent.new(rawua)
+    brow  = ua.browser_name    || "(unknown browser)"
+    b_ver = ua.browser_version
+
+    # Create final message
+    from  = (host.presence && host != ip) ? "#{host} (#{ip})" : ip
+    mess  = "User: #{login} from #{from} using #{brow} #{b_ver.presence}"
+    Rails.logger.info mess
+  rescue
+    true
   end
 
 
