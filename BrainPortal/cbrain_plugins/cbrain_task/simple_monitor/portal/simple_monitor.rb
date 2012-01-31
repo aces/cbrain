@@ -26,15 +26,5 @@ class CbrainTask::SimpleMonitor < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  def before_form #:nodoc:
-    params = self.params
-    cb_error "This task cannot be launched from the interface."
-  end
-
-  def after_form #:nodoc:
-    params = self.params
-    cb_error "This task cannot be launched from the interface."
-  end
-
 end
 
