@@ -185,11 +185,11 @@
 
   <%
      prereqs     = @task.prerequisites || {}
-     prereqs     = prereqs.attributes unless prereqs.is_a?(Hash)
+     prereqs     = {} unless prereqs.is_a?(Hash)
      for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
-     for_setup   = for_setup.attributes unless for_setup.is_a?(Hash)
+     for_setup   = {} unless for_setup.is_a?(Hash)
      for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
-     for_postpro = for_postpro.attributes unless for_postpro.is_a?(Hash)
+     for_postpro = {} unless for_postpro.is_a?(Hash)
   %>
 
   <% unless for_setup.empty? && for_postpro.empty? %>
