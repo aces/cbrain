@@ -59,7 +59,7 @@ class CbrainTask::BashScriptor < ClusterTask
         'cbrain_task_id'              => self.id,
         'cbrain_task_run_number'      => self.run_number,
         'cbrain_task_run_id'          => self.run_id,
-        'cbrain_cluster_name'         => self.bourreau.name 
+        'cbrain_cluster_name'         => self.bourreau.name
       },
       :leave_unset => true
     )
@@ -73,7 +73,8 @@ class CbrainTask::BashScriptor < ClusterTask
         {
           'cbrain_userfile_id'              => id,
           'cbrain_userfile_name'            => file.name,
-          'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path)
+          'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path),
+          'cbrain_touch_when_completed'     => self.bash_escape_path(self.qsub_script_basename.to_s + "-#{id}")
         },
         :leave_unset => true
       )
@@ -95,7 +96,17 @@ class CbrainTask::BashScriptor < ClusterTask
 
     out_ids      = []
 
-    # Parse the output, finding the special pleading sentence, your honor.
+    # Check conventional 'touch' files that mean 'completed on cluster'
+    file_ids     = params[:interface_userfile_ids] || []
+    file_ids.each do |id|
+      unless File.exists?(self.qsub_script_basename.to_s + "-#{id}")
+        self.addlog("Could not find the special file that indicates successful completion for file '#{id}'.")
+        self.addlog("Maybe you forgot to add 'touch {cbrain_touch_when_completed}' to your script?")
+        return false
+      end
+    end
+
+    # Parse the output, finding the special pleading sentences.
     self.addlog("Searching standard output for magic sentence 'Please CBRAIN...'")
     stdout.scan(/Please\s+CBRAIN,\s+save\s+(\S+)\s+to\s+([A-Z][a-zA-Z]+)\s+named\s+(\S+)(?:\s+as\s+child\s+of\s+(\d+))?/).each do |m|
 

@@ -32,6 +32,10 @@ class CbrainTask::BashScriptor < PortalTask
     { :num_files_per_task => 1 }
   end
 
+  def self.properties #:nodoc:
+    { :no_presets => true, :use_parallelizer => true }
+  end
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def before_form
