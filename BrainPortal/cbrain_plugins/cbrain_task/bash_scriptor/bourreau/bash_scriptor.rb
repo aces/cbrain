@@ -132,6 +132,8 @@ class CbrainTask::BashScriptor < ClusterTask
       cb_error "Type #{out_type} not a subclass of Userfile." unless out_class < Userfile
       cb_error "No file found for path #{src_path} ?"         unless File.exists?(src_path)
       out_userfile = safe_userfile_find_or_new(out_class, :name => out_name)
+      out_userfile.user_id  = (params[:saved_files_user_id].presence  || self.user_id).to_i
+      out_userfile.group_id = (params[:saved_files_group_id].presence || self.group_id).to_i
       out_userfile.save!
       out_userfile.cache_copy_from_local_file(src_path)
 
