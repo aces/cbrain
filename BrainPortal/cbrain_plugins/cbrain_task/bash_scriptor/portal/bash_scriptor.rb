@@ -29,7 +29,10 @@ class CbrainTask::BashScriptor < PortalTask
   # is created with #:nodoc: in this template.
   def self.default_launch_args #:nodoc:
     # Example: { :my_counter => 1, :output_file => "ABC.#{Time.now.to_i}" }
-    { :num_files_per_task => 1 }
+    { 
+      :num_files_per_task => 1, # only used for internal serializing on portal side
+      :time_estimate_per_file => 60  # in seconds
+    }
   end
 
   def self.properties #:nodoc:
@@ -41,7 +44,7 @@ class CbrainTask::BashScriptor < PortalTask
   def before_form
     params   = self.params
     ids      = params[:interface_userfile_ids]
-    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user == User.admin
+    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin
     ""
   end
 
@@ -50,7 +53,7 @@ class CbrainTask::BashScriptor < PortalTask
   def after_form #:nodoc:
     params = self.params
     #cb_error "Some error occurred."
-    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user == User.admin
+    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin
     if self.new_record? && (params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1)
       params_errors.add(:num_files_per_task, "must be a number greater than 1.")
     end

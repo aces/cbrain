@@ -22,12 +22,52 @@
 #
 -%>
 
-<strong>List of Userfiles selected:</strong><BR>
+<% file_ids = params[:interface_userfile_ids] || [] %>
+<strong><%= file_ids.size %> userfiles to be processed:</strong><BR>
 <UL>
-  <% params[:interface_userfile_ids].each do |id| %>
-  <LI><%= h(Userfile.find(id).name) %></LI>
+  <% file_ids[0,10].each do |id| %>
+    <LI><%= link_to_userfile_if_accessible id %></LI>
+  <% end %>
+  <% if file_ids.size > 10 %>
+    <LI><%= file_ids.size - 10 %> more files...)</LI>
   <% end %>
 </UL>
+
+<% if @task.new_record? %>
+<P>
+
+<strong>Automatic internal serialization:</strong><br>
+  Partition the list of files so each task will process
+  <%= form.params_text_field :num_files_per_task, :size => 4 %>
+  files.
+<% end %>
+
+<P>
+<strong>Files saved will have these properties:</strong><br>
+Owner:&nbsp;<%=   user_select  :saved_files_user_id.to_la,  { :selector => (params[:saved_files_user_id]  || @task.user_id) } %>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Project:&nbsp;<%= group_select :saved_files_group_id.to_la, { :selector => (params[:saved_files_group_id] || @task.group_id) } %>
+
+<p>
+<strong>Estimate how long it will take for each file to be processed:</strong>
+<%= form.params_select(:time_estimate_per_file,
+      options_for_select( [
+        [ "10 seconds",    "10" ],
+        [ "30 seconds",    "30" ],
+        [ "1 minute",      "60" ],
+        [ "2 minutes",    "120" ],
+        [ "3 minutes",    "180" ],
+        [ "5 minutes",    "300" ],
+        [ "10 minutes",   "600" ],
+        [ "15 minutes",   "900" ],
+        [ "30 minutes",  "1800" ],
+        [ "1 hour",      "3600" ],
+        [ "2 hours",     "7200" ],
+        [ "4 hours",    "14400" ]
+      ], (params[:time_estimate_per_file] || "60")
+      )
+   )
+%>
 
 <P>
 
@@ -39,7 +79,7 @@ above.<br>
 editor and paste it here once satisifed.</small>
 
 <P>
-Available substitutions:<br>
+<strong>Available substitutions:</strong><br>
 <dl>
 
 <dt>{cbrain_userfile_id}</dt>
@@ -74,21 +114,12 @@ Available substitutions:<br>
 <P>
 <strong>Output creation pattern:</strong><br>
 In order for the task to store files, make sure it prints
-in STDOUT a sentence with this exact format:<br>
+to STDOUT a sentence with this <em>exact</em> format:<br>
 
-<pre class="script_preview">Please CBRAIN, save some/relative/path to SomeUserfileType named some_userfile_name [as child of userfile_id]</pre>
+<pre class="script_preview">Please CBRAIN, save <span class="highlight_in_situ">some/relative/path</span> to <span class="highlight_in_situ">SomeUserfileType</span> named <span class="highlight_in_situ">some_userfile_name</span> [as child of <span class="highlight_in_situ">userfile_id</span>]</pre>
 
-For example:
+The parts <span class="highlight_in_situ">highlighted</span> are the parts you can adjust. For example:
 
-<pre class="script_preview">Please CBRAIN, save out/hello.report to LogFile named hello.log</pre>
-or
-<pre class="script_preview">Please CBRAIN, save out/hello.report to LogFile named hello.log as child of 12345</pre>
-
-<% if @task.new_record? %>
-<P>
-
-<strong>Automatic internal serialization:</strong><br>
-  Partition the list of files to process that many files per task:
-  <%= form.params_text_field :num_files_per_task, :size => 4 %>
-<% end %>
+<pre class="script_preview">Please CBRAIN, save <span class="highlight_in_situ">out/hello.report</span> to <span class="highlight_in_situ">LogFile</span> named <span class="highlight_in_situ">hello.log</span>
+Please CBRAIN, save <span class="highlight_in_situ">out/hello.report</span> to <span class="highlight_in_situ">LogFile</span> named <span class="highlight_in_situ">hello.log</span> as child of <span class="highlight_in_situ">12345</span></pre>
 

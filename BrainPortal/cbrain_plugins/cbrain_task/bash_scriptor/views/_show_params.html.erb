@@ -22,15 +22,26 @@
 #
 -%>
 
-<STRONG>Input:</STRONG>
-<P>
+<% file_ids = params[:interface_userfile_ids] || [] %>
+<strong><%= file_ids.size %> userfiles to be processed:</strong><BR>
 <UL>
-<% (params[:interface_userfile_ids].presence || []).each do |id| %>
-  <LI>Userfile: <%= link_to_userfile_if_accessible id %></LI>
-<% end %>
+  <% file_ids[0,10].each do |id| %>
+    <LI><%= link_to_userfile_if_accessible id %></LI>
+  <% end %>
+  <% if file_ids.size > 10 %>
+    <LI><%= file_ids.size - 10 %> more files...)</LI>
+  <% end %>
 </UL>
 
 <P>
+
+<strong>Options:</strong>
+<p>
+<ul>
+<li>Time estimate for each file: <%= pretty_elapsed(params[:time_estimate_per_file].to_i || 60) %></li>
+<li>Files saved as owner: <%= link_to_user_if_accessible params[:saved_files_user_id] %></li>
+<li>Files saved to project: <%= link_to_group_if_accessible params[:saved_files_group_id] %></li>
+</ul>
 
 <STRONG>Outputs:</STRONG>
 <P>

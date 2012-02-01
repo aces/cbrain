@@ -33,6 +33,16 @@ class CbrainTask::BashScriptor < ClusterTask
   include RestartableTask
   include RecoverableTask
 
+  def job_walltime_estimate #:nodoc:
+    params       = self.params
+    file_ids     = params[:interface_userfile_ids].presence || []
+    est_per_id   = params[:time_estimate_per_file].presence || 60
+
+    total = (file_ids.size + 1) * est_per_id.to_i
+    total = 60 if total < 60
+    total
+  end
+
   # See CbrainTask.txt
   def setup #:nodoc:
     params       = self.params
