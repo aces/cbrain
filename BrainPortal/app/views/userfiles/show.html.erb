@@ -39,7 +39,8 @@
 
     <% t.cell("Type") do %>
       <%= inline_edit_field(@userfile, :type, userfile_path(@userfile), :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
-        <%= select_tag "file_type", options_for_select(@userfile.valid_file_classes.map{ |c| [c.pretty_type, c.name]  }, @userfile.class.name), :class => "submit_onchange" %>
+        <% u_type = @userfile.is_a?(SingleFile) ? ["SingleFile"] : ["FileCollection"] %>
+        <%= userfile_type_select(:file_type, {:userfile_types => u_type, :selector => @userfile.class.name}, :class => "submit_onchange") %>
       <% end %>
       <% if @userfile.class.to_s =~ /^(SingleFile|FileCollection)$/ && @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
         (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>.</span>)
