@@ -35,8 +35,8 @@ class CbrainTask::BashScriptor < PortalTask
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def before_form
-    params = self.params
-    ids    = params[:interface_userfile_ids]
+    params   = self.params
+    ids      = params[:interface_userfile_ids]
     cb_error "This task can ONLY be launched by the administrator.\n" unless self.user == User.admin
     ""
   end
@@ -47,7 +47,9 @@ class CbrainTask::BashScriptor < PortalTask
     params = self.params
     #cb_error "Some error occurred."
     cb_error "This task can ONLY be launched by the administrator.\n" unless self.user == User.admin
-    params_errors.add(:num_files_per_task, "must be a number greater than 1.") if params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1
+    if self.new_record? && (params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1)
+      params_errors.add(:num_files_per_task, "must be a number greater than 1.")
+    end
     ""
   end
 
@@ -55,16 +57,28 @@ class CbrainTask::BashScriptor < PortalTask
     params     = self.params
     file_ids   = (params[:interface_userfile_ids] || []).dup
     ser_factor = (params[:num_files_per_task].presence || 1).to_i
+    tot_files  = file_ids.size
 
     task_list = []
 
+    offset_cnt = 0
     while file_ids.size > 0
       task   = self.clone
       subset = file_ids.slice!(0,ser_factor)
       task.params[:interface_userfile_ids] = subset
-      task.description  = task.description.blank? ? "" : task.description.strip + "\n\n"
-      task.description += subset.size == 1 ? "(1 file)" : "(#{subset.size} files)"
+      desc = task.description.blank? ? "" : task.description.strip + "\n\n"
+      subset[0,4].each do |id|
+        file = Userfile.find(id) rescue nil
+        next unless file
+        desc += file.name + "\n"
+      end
+      desc += "\n(#{subset.size} files"
+      desc +=   ", range: #{offset_cnt+1}..#{offset_cnt+subset.size} of #{tot_files}" if tot_files > 1
+      desc += ")\n"
+      task.description = desc
+      task.params.delete :num_files_per_task # keep it clean, as no longer needed.
       task_list << task
+      offset_cnt += ser_factor
     end
 
     task_list
