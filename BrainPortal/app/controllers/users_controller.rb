@@ -209,15 +209,17 @@ class UsersController < ApplicationController
     flash[:notice] = "User '#{@user.login}' destroyed" 
 
     respond_to do |format|
-      format.js  { redirect_to :action => :index, :format => :js}
-      format.xml { head :ok }
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js}
+      format.xml  { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "User not destroyed: #{e.message}"
     
     respond_to do |format|
-      format.js  { redirect_to :action => :index, :format => :js}
-      format.xml { head :conflict }
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js}
+      format.xml  { head :conflict }
     end
   end
 

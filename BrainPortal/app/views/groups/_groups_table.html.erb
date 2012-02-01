@@ -79,9 +79,8 @@
         index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, {:group_id => g.id, :type => "Bourreau"}
       end
     end
-    t.describe_column("Operations") do |col|
-      col.cell { |g| link_to 'Switch', {:action => :switch, :id => g.id}, :class => 'action_link', :method  => :post }
-      col.delete_link :if => Proc.new { |g| g.can_be_edited_by?(current_user) }
+    t.column("Switch") do |g|
+      link_to 'Switch', {:action => :switch, :id => g.id}, :class => 'action_link', :method  => :post 
     end
   end
 %>

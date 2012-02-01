@@ -44,7 +44,11 @@
 
 <%= index_table(@tools, :class => "resource_list") do |t| %>
   <% 
-    t.sort_column("Tool Name", Tool, :name, &:name)
+    if current_user.has_role?(:admin)
+      t.sort_column("Tool Name", Tool, :name) { |tool| link_to tool.name, { :action => :edit, :id => tool.id }}
+    else
+      t.sort_column("Tool Name", Tool, :name, &:name)
+    end
     t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) } 
     t.sort_column("Category", Tool, :category, :filters => basic_filters_for(@header_scope, Tool, :category), &:category)
     t.sort_column("Owner", User, :login, :filters => association_filters_for(@header_scope, Tool, :user, :name_method => :login)) { |tool| link_to_user_with_tooltip(tool.user) }
@@ -65,11 +69,7 @@
       end
     end
     if current_user.has_role?(:admin)
-      t.describe_column("Operations") do |col|
-        col.edit_link
-        col.delete_link
-        col.cell { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
-      end
+      t.column("Access?") { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
     end
     t.describe_column("Help/Info") do |col|
       col.cell do |tool|

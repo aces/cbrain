@@ -182,9 +182,11 @@ class GroupsController < ApplicationController
     
     if params[:id].blank?
       current_session[:active_group_id] = nil
+      flash[:notice] = "You no longer have an active project selected."
     else
       @group = current_user.available_groups.find(params[:id])
       current_session[:active_group_id] = @group.id
+      flash[:notice] = "Your active project is now '#{@group.name}'."
     end
     
     redirect_to redirect_path

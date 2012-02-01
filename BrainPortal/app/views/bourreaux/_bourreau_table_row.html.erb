@@ -106,18 +106,6 @@
   <% end %>
 
   <% if bourreau.has_owner_access?(current_user) %>
-
-    <td>
-      <% if RemoteResource.current_resource.id != bourreau.id %>
-        <%= 
-            delete_button 'Delete', bourreau_path(bourreau), :class  => "action_link", 
-                                                         :confirm  => "Are you sure you want to delete '#{bourreau.name}' ?", 
-                                                         :target  => "#bourreau_#{bourreau.id}",
-                                                         :loading_message  => "<td colspan='17' style='color:red; text-align:center'>Deleting...</td>"
-        %>
-       <% end %>
-    </td>
-
     <% if ! isbourreau %>
       <td colspan="2" />
     <% elsif ! bourreau.has_remote_control_info? %>
