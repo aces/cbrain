@@ -1,0 +1,53 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% file_ids = params[:interface_userfile_ids] || [] %>
+<strong><%= file_ids.size %> userfiles to be processed:</strong><BR>
+<UL>
+  <% file_ids[0,10].each do |id| %>
+    <LI><%= link_to_userfile_if_accessible id %></LI>
+  <% end %>
+  <% if file_ids.size > 10 %>
+    <LI><%= file_ids.size - 10 %> more files...)</LI>
+  <% end %>
+</UL>
+
+<P>
+
+<strong>Options:</strong>
+<p>
+<ul>
+<li>Time estimate for each file: <%= pretty_elapsed(params[:time_estimate_per_file].to_i || 60) %></li>
+<li>Files saved as owner: <%= link_to_user_if_accessible params[:saved_files_user_id] %></li>
+<li>Files saved to project: <%= link_to_group_if_accessible params[:saved_files_group_id] %></li>
+</ul>
+
+<STRONG>Outputs:</STRONG>
+<P>
+<UL>
+<% (params[:output_userfile_ids].presence || []).each do |id| %>
+  <LI>Userfile: <%= link_to_userfile_if_accessible id %></LI>
+<% end %>
+</UL>
+

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 */
 
@@ -249,13 +249,13 @@ div.vertical_text {
     height: 20em;
     margin: auto;
     text-align: left;
-    -webkit-transform:        rotate(-90deg) translate(0.5em, 100%); 
+    -webkit-transform:        rotate(-90deg) translate(0.5em, 100%);
     -webkit-transform-origin: 0 100%;
-    -moz-transform:           rotate(-90deg) translate(0.5em, 100%);                                 
+    -moz-transform:           rotate(-90deg) translate(0.5em, 100%);
     -moz-transform-origin:    0 100%;
-    -o-transform:             rotate(-90deg) translate(0.5em, 100%);                                 
+    -o-transform:             rotate(-90deg) translate(0.5em, 100%);
     -o-transform-origin:      0 100%;
-    -ms-transform:            rotate(-90deg) translate(0.5em, 100%);                                 
+    -ms-transform:            rotate(-90deg) translate(0.5em, 100%);
     -ms-transform-origin:     0 100%;
 }
 
@@ -343,7 +343,7 @@ table.resource_list tr.subtitle_bordered {
 }
 
 .sort_header {
-  border-bottom: thin solid white; 
+  border-bottom: thin solid white;
 }
 
 .order_icon {
@@ -464,13 +464,18 @@ h1.warning {
 .delete_icon {
   color: red;
   font-weight: bold;
-  text-decoration: none; 
+  text-decoration: none;
 }
 
 .bold_icon {
   font-weight: bold;
-  text-decoration: none; 
-}           
+  text-decoration: none;
+}
+
+.highlight_in_situ {
+  font-weight: bold;
+  color: purple;
+}
 
 
 
@@ -1494,13 +1499,13 @@ td.right_side {
 
 td.left_side {
     border-width: 0.2em 0em 0.2em 0.2em;
-    font-weight: bold;  
+    font-weight: bold;
     text-align: left;
 }
 
 td.middle {
     border-width: 0.2em 0em 0.2em;
-    font-weight: bold;  
+    font-weight: bold;
     padding: 0.25em;
 }
 

@@ -191,7 +191,7 @@ class Site < ActiveRecord::Base
       elsif user.has_role? :site_manager
         user.role = "user"
       end
-      user.save
+      user.save(false)
     end
   end
   

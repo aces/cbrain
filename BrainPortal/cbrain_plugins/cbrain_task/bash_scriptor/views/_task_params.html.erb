@@ -1,0 +1,125 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% file_ids = params[:interface_userfile_ids] || [] %>
+<strong><%= file_ids.size %> userfiles to be processed:</strong><BR>
+<UL>
+  <% file_ids[0,10].each do |id| %>
+    <LI><%= link_to_userfile_if_accessible id %></LI>
+  <% end %>
+  <% if file_ids.size > 10 %>
+    <LI><%= file_ids.size - 10 %> more files...)</LI>
+  <% end %>
+</UL>
+
+<% if @task.new_record? %>
+<P>
+
+<strong>Automatic internal serialization:</strong><br>
+  Partition the list of files so each task will process
+  <%= form.params_text_field :num_files_per_task, :size => 4 %>
+  files.
+<% end %>
+
+<P>
+<strong>Files saved will have these properties:</strong><br>
+Owner:&nbsp;<%=   user_select  :saved_files_user_id.to_la,  { :selector => (params[:saved_files_user_id]  || @task.user_id) } %>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Project:&nbsp;<%= group_select :saved_files_group_id.to_la, { :selector => (params[:saved_files_group_id] || @task.group_id) } %>
+
+<p>
+<strong>Estimate how long it will take for each file to be processed:</strong>
+<%= form.params_select(:time_estimate_per_file,
+      options_for_select( [
+        [ "10 seconds",    "10" ],
+        [ "30 seconds",    "30" ],
+        [ "1 minute",      "60" ],
+        [ "2 minutes",    "120" ],
+        [ "3 minutes",    "180" ],
+        [ "5 minutes",    "300" ],
+        [ "10 minutes",   "600" ],
+        [ "15 minutes",   "900" ],
+        [ "30 minutes",  "1800" ],
+        [ "1 hour",      "3600" ],
+        [ "2 hours",     "7200" ],
+        [ "4 hours",    "14400" ]
+      ], (params[:time_estimate_per_file] || "60")
+      )
+   )
+%>
+
+<P>
+
+<strong>BASH script:</strong><br>
+This BASH script will be run once for each userfile in the list
+above.<br>
+<%= form.params_text_area :bash_script, :rows => 40, :cols => 160 %><br>
+<small>For large scripts, we recommand you edit the code in a separate text
+editor and paste it here once satisifed.</small>
+
+<P>
+<strong>Available substitutions:</strong><br>
+<dl>
+
+<dt>{cbrain_userfile_id}</dt>
+<dd>ID of the userfile.</dd>
+
+<dt>{cbrain_userfile_name}</dt>
+<dd>Name of the userfile.</dd>
+
+<dt>{cbrain_userfile_cache_full_path}</dt>
+<dd>Full path to the cached copy of the file, escaped with single quotes.</dd>
+
+<dt>{cbrain_task_cluster_workdir}</dt>
+<dd>Full path to the work directory of the task (also escaped).</dd>
+
+<dt>{cbrain_task_id}</dt>
+<dd>ID of the task.</dd>
+
+<dt>{cbrain_task_run_number}</dt>
+<dd>The run number of the task.</dd>
+
+<dt>{cbrain_task_run_id}</dt>
+<dd>The run ID of the task; same as "{task_id}-{run_number}".</dd>
+
+<dt>{cbrain_cluster_name}</dt>
+<dd>The name of the execution server.</dd>
+
+<dt>{cbrain_touch_when_completed}</dt>
+<dd>A file that your script MUST touch to indicate it completed successfully.</dd>
+
+</dl>
+
+<P>
+<strong>Output creation pattern:</strong><br>
+In order for the task to store files, make sure it prints
+to STDOUT a sentence with this <em>exact</em> format:<br>
+
+<pre class="script_preview">Please CBRAIN, save <span class="highlight_in_situ">some/relative/path</span> to <span class="highlight_in_situ">SomeUserfileType</span> named <span class="highlight_in_situ">some_userfile_name</span> [as child of <span class="highlight_in_situ">userfile_id</span>]</pre>
+
+The parts <span class="highlight_in_situ">highlighted</span> are the parts you can adjust. For example:
+
+<pre class="script_preview">Please CBRAIN, save <span class="highlight_in_situ">out/hello.report</span> to <span class="highlight_in_situ">LogFile</span> named <span class="highlight_in_situ">hello.log</span>
+Please CBRAIN, save <span class="highlight_in_situ">out/hello.report</span> to <span class="highlight_in_situ">LogFile</span> named <span class="highlight_in_situ">hello.log</span> as child of <span class="highlight_in_situ">12345</span></pre>
+

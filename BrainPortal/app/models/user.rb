@@ -61,7 +61,7 @@ class User < ActiveRecord::Base
                             :if => :password_required?
   validates_presence_of     :password_confirmation,      :if => :password_required?
   validates                 :email,    
-                            :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$/i },
+                            :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
   validates_uniqueness_of   :login, :case_sensitive => false
   validate                  :prevent_group_collision,    :on => :create

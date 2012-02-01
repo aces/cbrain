@@ -80,6 +80,8 @@ class SitesController < ApplicationController
   def update #:nodoc:
     @site = Site.find(params[:id])
     
+    params[:site] ||= {}
+    
     unless params[:commit] == "Update Users"
       params[:site][:user_ids] = @site.user_ids
       params[:site][:manager_ids] = @site.managers.map(&:id)
