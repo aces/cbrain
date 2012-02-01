@@ -24,28 +24,15 @@
 
 <% custom_filter ||= @custom_filter %>
 
+
 <p>
    Task:<br>
-   <%= select_tag 'data[type]',
-       options_for_select( current_user.available_tools.map(&:cbrain_task_class).sort.map{ |t| [t.constantize.pretty_name, t] }, custom_filter.data["type"]),
-      :multiple => true, :size => 10
-   %>
+   <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
 </p>
 
 <p>
   Status:<br>
-  <%= select_tag 'data[status]',
-      grouped_options_for_select( [
-          [ 'Standard Cycle',        CbrainTask::RUNNING_STATUS + CbrainTask::COMPLETED_STATUS ],
-          [ 'Waiting',               CbrainTask::QUEUED_STATUS - CbrainTask::RUNNING_STATUS ],
-          [ 'Failed',                CbrainTask::FAILED_STATUS ],
-          [ 'Restarting',            CbrainTask::RESTART_STATUS ],
-          [ 'Recovering',            CbrainTask::RECOVER_STATUS ]
-        ],
-        custom_filter.data["status"]
-      ),
-      :multiple => true, :size => 10
-  %>
+  <%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :size => 10) %>
 </p>
 
 <p>

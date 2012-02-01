@@ -41,7 +41,7 @@
 
 <%= index_table(@users, :class => "resource_list") do |t| %>
   <% 
-  t.sort_column("Login", "User", "login") { |u|  link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil } ) }
+    t.sort_column("Login", "User", "login") { |u|  link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil } ) }
     t.describe_sort_column("Full name", "User", "full_name") { |col| col.cell :class => :left, &:full_name }
     t.sort_column("Email", "User", "email") { |u|  auto_link_email_addresses h(u.email) }
     t.sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}
@@ -75,7 +75,6 @@
       ).html_safe
     end
     t.describe_column("Operations") do |col|
-      col.delete_link(:if => Proc.new { |u| u != User.admin }, :confirm => Proc.new { |u| "Are you sure you want to delete user '#{u.login}'?" })
       col.cell(:if => Proc.new { |u| u != User.admin }) { |u| link_to 'Switch',  switch_user_path(u), :class => 'action_link', :method  => :post  }
       col.cell { |u| link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => u.id }, :class => 'action_link' }
     end

@@ -219,11 +219,24 @@ in a tabular layout. Proceed as follow:
         <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %><br>
       <% end %>
       <% if @model_atts.include?(:type) %>
-        <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
+        <% if @model <= Userfile %>
+          <%= userfile_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+        <% elsif @model <= CbrainTask %>
+          <%= task_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+        <% elsif @model <= Group %>
+          <%= group_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+        <% else %>
+          <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
+        <% end%>
       <% end %>
       <% if @model_atts.include?(:status) %>
-        <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %><br>
+        <% if @model <= CbrainTask %>
+          <%= task_status_select(:status, {:selector => params[:status]}, :include_blank => '(Any Status)') %><br>
+        <% else %>
+          <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
+        <% end %>
       <% end %>
+      
       </td>
       <td>
       <%= 

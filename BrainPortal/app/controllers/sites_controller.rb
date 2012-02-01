@@ -90,14 +90,14 @@ class SitesController < ApplicationController
     unless params[:commit] == "Update Projects"
       params[:site][:group_ids] = @site.group_ids
     end
-    
+
     params[:site][:user_ids]    ||= []
     params[:site][:manager_ids] ||= []
     params[:site][:group_ids]   ||= [ @site.own_group.id ]
     params[:site][:user_ids]    = params[:site][:user_ids].reject(&:blank?).map(&:to_i)
     params[:site][:manager_ids] = params[:site][:manager_ids].reject(&:blank?).map(&:to_i)
     params[:site][:group_ids]   = params[:site][:group_ids].reject(&:blank?).map(&:to_i)
-    
+
     @site.unset_managers
 
     respond_to do |format|
@@ -121,6 +121,7 @@ class SitesController < ApplicationController
     @site.destroy
 
     respond_to do |format|
+      format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js }
       format.xml  { head :ok }
     end

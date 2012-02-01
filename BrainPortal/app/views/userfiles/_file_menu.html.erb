@@ -87,12 +87,7 @@
         %>
         <hr>
         Update File Type:
-        <%=
-           select_tag :file_type, grouped_options_for_select(
-             [["Files",       SingleFile.valid_file_classes.map{|c| [c.pretty_type, c.name]}],
-              ["Collections", FileCollection.valid_file_classes.map{|c| [c.pretty_type, c.name]}]
-             ])
-         %>
+        <%= userfile_type_select %>
         <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Start QC: <%= 

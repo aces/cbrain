@@ -42,10 +42,6 @@
     end
     t.column("Number of Users") { |s| filter_add_link s.users.count.to_s, :controller => :users, :filters => {:site_id => s.id}, :ajax => false }
     t.column("Number of Projects") { |s| filter_add_link s.groups.count.to_s, :controller => :groups, :filters => {:site_id => s.id}, :ajax => false }
-    t.describe_column("Operations") do |col|
-      col.edit_link
-      col.delete_link
-    end
   %>
 <% end %>
 

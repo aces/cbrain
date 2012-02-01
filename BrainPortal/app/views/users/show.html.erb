@@ -30,6 +30,10 @@
   <% end %>
 
   <%= link_to 'Report Maker',   { :controller => :portal, :action => :report }, :class => "button" %>
+  
+  <% if @user != User.admin %>
+    <%= link_to 'Delete', user_path(@user), { :confirm => "Are you sure you want to delete '#{@user.name}' ?", :method => :delete, :class => "button" } %>
+  <% end %>
 </div>
 
 <br>

@@ -118,10 +118,6 @@ module TasksHelper
     status1 <=> status2 # in case of equality, compare by name again
   end
 
-  def all_ordered_status #:nodoc:
-    @_all_ordered_status ||= StatesToColor.keys.reject { |s| s =~ /preset|total/i }.sort { |a,b| cmp_status_order(a,b) }
-  end
-
   # Returns a HTML for task Report with task, size and
   # number of unknow
   def format_task_size_unk(task,size,unk)

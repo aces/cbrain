@@ -23,6 +23,7 @@
 -%>
 
 <% custom_filter ||= @custom_filter %>
+
 <p>
    Filename:<br>
    
@@ -30,12 +31,13 @@
        <%= text_field_tag "data[file_name_term]", custom_filter.data["file_name_term"] %>
      
 </p>
+
 <p>
-   File format:<br>
-   
-      <%= select :data, :type, Userfile.descendants.sort_by(&:name).map{ |u| [u.pretty_type, u.name] }, :include_blank  => true, :selected  => custom_filter.data["type"]  %>
-   
+  File format:<br>
+  <%= userfile_type_select("data[type]", {:selector => custom_filter.data["type"]}, :include_blank => true ) %>
 </p>
+
+<p>
    Filtering by date: <br/> 
    <%= render :partial => 'shared/date_range', :locals  => {:date_attribute            => ['data[date_attribute]',            custom_filter[:data]["date_attribute"]], 
                                                             :absolute_or_relative_from => ['data[absolute_or_relative_from]', custom_filter[:data]['absolute_or_relative_from']],
@@ -44,9 +46,9 @@
                                                             :relative_to               => ['data[relative_to]',               custom_filter[:data]['relative_to']],
                                                             :absolute_from             => ['data[absolute_from]',             custom_filter[:data]['absolute_from']],
                                                             :absolute_to               => ['data[absolute_to]',               custom_filter[:data]['absolute_to']]
-                                                           }
-  %>
+                                                           } %>
 </p>
+
 <p>
    Size:<br>
    
@@ -87,7 +89,6 @@
                   </tr>
               <% end %>
             </table>
-         
       </p>
 <% end %>
    

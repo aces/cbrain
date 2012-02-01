@@ -130,8 +130,9 @@ class ToolsController < ApplicationController
       @tool = current_user.available_tools.find(params[:id])  
       @tool.destroy                                           
                                                               
-      respond_to do |format|                                  
-        format.js  { redirect_to :action => :index, :format => :js }                                          
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.js   { redirect_to :action => :index, :format => :js }                                          
         format.xml  { head :ok }                              
       end                                                     
   end

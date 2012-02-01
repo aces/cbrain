@@ -68,12 +68,12 @@
       t.sort_column("Description", DataProvider, "description") { |dp|  overlay_description(dp.description) }
     end
 
-    t.describe_column("Operations") do |col|
-      col.delete_link(:if  => Proc.new { |dp| dp.has_owner_access?(current_user) })
-      col.cell(:if  => Proc.new { |dp| dp.is_browsable? && dp.can_be_accessed_by?(current_user) && dp.online? }) do |dp|
+    t.column("Operations") do |dp|
+      if dp.is_browsable? && dp.can_be_accessed_by?(current_user) && dp.online?
         link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
       end
     end
+    
   %>
 <% end %>
 
