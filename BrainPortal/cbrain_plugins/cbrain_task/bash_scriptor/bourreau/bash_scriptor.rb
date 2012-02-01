@@ -132,7 +132,7 @@ class CbrainTask::BashScriptor < ClusterTask
   end
 
   def bash_escape_path(path) #:nodoc:
-    newpath = path.gsub("'","'\\''")
+    newpath = path.to_s.gsub("'","'\\''")
     "'#{newpath}'"
   end
 
