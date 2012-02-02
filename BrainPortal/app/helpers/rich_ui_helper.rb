@@ -39,7 +39,8 @@ module RichUiHelper
 
     link = h(cropped_header) + " " + 
       html_tool_tip(link_to("(more)", "#")) do
-        ("<h4>#{h(header)}</h4>\n<pre>" + h(body) + "</pre>").html_safe
+        pre_body = body.blank? ? "" : "\n<pre>" + h(body) + "</pre>"
+        ("<h4>#{h(header)}</h4>#{pre_body}").html_safe
       end
     link.html_safe
   end
