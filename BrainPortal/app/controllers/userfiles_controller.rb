@@ -578,6 +578,10 @@ class UserfilesController < ApplicationController
                      ["update_attributes", {:group_id => params[:userfile][:group_id]}]
                    when "Update Permissions" 
                      ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
+                   when "Update Owner"
+                     if current_user.available_users.map(&:id).include?(params[:userfile][:user_id].to_i)
+                       ["update_attributes", {:user_id => params[:userfile][:user_id]}] 
+                     end
                    when "Update"
                      ["update_file_type", params[:file_type]]
                 end
