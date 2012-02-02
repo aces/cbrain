@@ -77,6 +77,12 @@
         Project Permission Update: 
         <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
         <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <% if !current_user.has_role?(:user) %>
+          <hr>
+          Change Owner:
+          <%= user_select('userfile[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
+          <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>   
+        <% end %>
         <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
