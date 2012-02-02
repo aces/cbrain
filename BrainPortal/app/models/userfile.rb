@@ -666,7 +666,7 @@ class Userfile < ActiveRecord::Base
   # Data Provider easy access methods
   ##############################################
 
-  # Cam this file have its owner changed
+  # Can this file have its owner changed?
   def allow_file_owner_change?
     self.data_provider.allow_file_owner_change?
   end 

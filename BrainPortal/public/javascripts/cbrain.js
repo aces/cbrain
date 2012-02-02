@@ -337,18 +337,6 @@ jQuery(
     //
     /////////////////////////////////////////////////////////////////////
 
-    jQuery(".pagination a").live("click", function(){
-      var link = jQuery(this);
-      var url = link.attr("href");
-      var pagination_div = link.closest(".pagination");
-      pagination_div.html(" Loading... <BR>");
-      jQuery.ajax({
-        url: url,
-        dataType: "script"
-      });
-      return false;
-    });
-
    jQuery(".show_toggle").live("click", function(){
      var current_element = jQuery(this);
      var target_element = jQuery(current_element.attr("data-target"));
