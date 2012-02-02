@@ -666,6 +666,11 @@ class Userfile < ActiveRecord::Base
   # Data Provider easy access methods
   ##############################################
 
+  # Cam this file have its owner changed
+  def allow_file_owner_change?
+    self.data_provider.allow_file_owner_change?
+  end 
+
   # See the description in class DataProvider
   def sync_to_cache
     self.data_provider.sync_to_cache(self)

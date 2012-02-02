@@ -568,7 +568,11 @@ class UserfilesController < ApplicationController
   # Updated tags, groups or group-writability flags for several
   # userfiles.
   def update_multiple #:nodoc:
-    filelist    = params[:file_ids] || []
+    access_requested = params[:commit] == "Update Tags" ? :read : :write
+    filelist    = Userfile.find_accessible_by_user(params[:file_ids] || [], current_user, :access_requested => access_requested)
+
+    success_count = 0
+    failure_count = 0
 
     operation = case params[:commit].to_s
                    # Critical! Case values must match labels of submit buttons!
@@ -579,6 +583,9 @@ class UserfilesController < ApplicationController
                    when "Update Permissions" 
                      ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
                    when "Update Owner"
+                     new_filelist = filelist.select(&:allow_file_owner_change?)
+                     failure_count += (filelist.size - new_filelist.size)
+                     filelist = new_filelist
                      if current_user.available_users.map(&:id).include?(params[:userfile][:user_id].to_i)
                        ["update_attributes", {:user_id => params[:userfile][:user_id]}] 
                      end
@@ -592,15 +599,9 @@ class UserfilesController < ApplicationController
       redirect_to redirect_action
       return
     end
-
-    access_requested = params[:commit] == "Update Tags" ? :read : :write
-
-    success_count = 0
-    failure_count = 0
     
-    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => access_requested).each do |userfile|
-
-     if userfile.send(*operation)
+    filelist.each do |userfile|
+      if userfile.send(*operation)
         success_count += 1
       else
         failure_count +=1
