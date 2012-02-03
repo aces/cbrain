@@ -1425,6 +1425,7 @@ img {
 
 .filter_list {
     position: absolute;
+    border: 3px solid #0471B4;
     margin: 0;
     padding: 1em 2em 1em 2em;
     background-color: #05A3D6;
