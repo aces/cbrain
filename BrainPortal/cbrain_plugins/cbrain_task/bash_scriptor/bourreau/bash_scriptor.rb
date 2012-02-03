@@ -85,7 +85,7 @@ class CbrainTask::BashScriptor < ClusterTask
           'cbrain_userfile_id'              => id,
           'cbrain_userfile_name'            => file.name,
           'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path),
-          'cbrain_touch_when_completed'     => self.bash_escape_path(self.qsub_script_basename.to_s + "-#{id}"),
+          'cbrain_touch_when_completed'     => self.bash_escape_path(self.full_cluster_workdir + (self.qsub_script_basename.to_s + "-#{id}")),
           'cbrain_userfile_list_counter'    => cnt+1
         },
         :leave_unset => true
@@ -93,6 +93,8 @@ class CbrainTask::BashScriptor < ClusterTask
       final_script << "\n# ===============================================================\n"
       final_script <<   "# Script for file ID #{id} named #{file.name}\n"
       final_script <<   "# ===============================================================\n"
+      final_script << "\n"
+      final_script << "cd #{self.bash_escape_path(self.full_cluster_workdir)}\n"
       final_script << "\n"
       final_script << txt # multi line scripts are OK in array.
       final_script << "\n\n"
@@ -120,7 +122,7 @@ class CbrainTask::BashScriptor < ClusterTask
 
     # Parse the output, finding the special pleading sentences.
     self.addlog("Searching standard output for magic sentence 'Please CBRAIN...'")
-    stdout.scan(/Please\s+CBRAIN,\s+save\s+(\S+)\s+to\s+([A-Z][a-zA-Z]+)\s+named\s+(\S+)(?:\s+as\s+child\s+of\s+(\d+))?/).each do |m|
+    stdout.scan(/Please\s+CBRAIN,\s+save\s+(\S+)\s+to\s+([A-Z][\w]+)\s+named\s+(\S+)(?:\s+as\s+child\s+of\s+(\d+))?/).each do |m|
 
       # Extract significant components
       src_path  = m[0]
