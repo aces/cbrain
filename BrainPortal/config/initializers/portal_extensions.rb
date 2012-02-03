@@ -31,3 +31,4 @@ class WillPaginate::ActionView::LinkRenderer
     url_params
   end
 end
+

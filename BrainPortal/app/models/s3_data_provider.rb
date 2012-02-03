@@ -24,48 +24,52 @@ class S3DataProvider < DataProvider
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
 
-  def init_connection
+  def init_connection #:nodoc:
     @s3_connection = S3Connection.new(self.cloud_storage_client_identifier, self.cloud_storage_client_token)
   end
 
-  def bucket_name 
+  def bucket_name #:nodoc:
     "gbrain_#{self.name}"
   end
   
   attr_accessor :s3_connection
   
-  def s3_filename(userfile,newname=nil)
+  def s3_filename(userfile,newname=nil) #:nodoc:
     namekey = newname.presence || userfile.name
     ext = userfile.is_a?(FileCollection) ? ".TGZ" : ""
     "#{userfile.id}_#{namekey}#{ext}"
   end
   
 
-  def provider_full_path(userfile)
+  def provider_full_path(userfile) #:nodoc:
     "#{bucket_name}/#{s3_filename(userfile)}"
   end
 
-  def filename_from_s3_filename(s3_filename)
+  def filename_from_s3_filename(s3_filename) #:nodoc:
     userfile_id,filename=s3_filename.split('_', 2)
   end
 
-  def create_base_bucket
+  def create_base_bucket #:nodoc:
     init_connection
     @s3_connection.create_bucket(bucket_name)
   end
   
-  def impl_is_alive?
+  def impl_is_alive? #:nodoc:
     init_connection
     @s3_connection.connected?
   rescue
     false
   end
 
-  def is_browsable?
+  def is_browsable? #:nodoc:
     false
   end
 
-  def impl_sync_to_cache(userfile)
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
+
+  def impl_sync_to_cache(userfile) #:nodoc:
     init_connection  # s3 connection
 
     mkdir_cache_subdirs(userfile)
@@ -89,7 +93,7 @@ class S3DataProvider < DataProvider
     dest_fh.close rescue true
   end
 
-  def impl_sync_to_provider(userfile)
+  def impl_sync_to_provider(userfile) #:nodoc:
     init_connection  # s3 connection
     create_base_bucket unless @s3_connection.bucket_exists?(bucket_name)
 
@@ -120,17 +124,17 @@ class S3DataProvider < DataProvider
     File.unlink(tmp_tar_file) rescue true
   end
 
-  def impl_provider_erase(userfile)
+  def impl_provider_erase(userfile) #:nodoc:
     init_connection
     @s3_connection.s3object.delete(s3_filename(userfile), bucket_name)
   end
   
-  def impl_provider_rename(userfile,newname)
+  def impl_provider_rename(userfile,newname) #:nodoc:
     init_connection
     @s3_connection.s3object.rename s3_filename(userfile), s3_filename(userfile,newname), bucket_name
   end
 
-  def impl_provider_list_all(user)
+  def impl_provider_list_all(user) #:nodoc:
     raise "Disabled"
   #  init_connection
   #  s3_connection.bucket.find(bucket_name).objects.map do |object| 

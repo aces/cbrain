@@ -80,34 +80,43 @@ editor and paste it here once satisifed.</small>
 
 <P>
 <strong>Available substitutions:</strong><br>
+
 <dl>
 
-<dt>{cbrain_userfile_id}</dt>
-<dd>ID of the userfile.</dd>
+  <dt>{cbrain_userfile_id}</dt>
+  <dd>ID of the userfile.</dd>
 
-<dt>{cbrain_userfile_name}</dt>
-<dd>Name of the userfile.</dd>
+  <dt>{cbrain_userfile_name}</dt>
+  <dd>Name of the userfile.</dd>
 
-<dt>{cbrain_userfile_cache_full_path}</dt>
-<dd>Full path to the cached copy of the file, escaped with single quotes.</dd>
+  <dt>{cbrain_userfile_cache_full_path}</dt>
+  <dd>Full path to the cached copy of the file, escaped with single quotes.</dd>
 
-<dt>{cbrain_task_cluster_workdir}</dt>
-<dd>Full path to the work directory of the task (also escaped).</dd>
+  <dt>{cbrain_task_cluster_workdir}</dt>
+  <dd>Full path to the work directory of the task (also escaped).</dd>
 
-<dt>{cbrain_task_id}</dt>
-<dd>ID of the task.</dd>
+  <dt>{cbrain_task_id}</dt>
+  <dd>ID of the task.</dd>
 
-<dt>{cbrain_task_run_number}</dt>
-<dd>The run number of the task.</dd>
+  <dt>{cbrain_task_run_number}</dt>
+  <dd>The run number of the task.</dd>
 
-<dt>{cbrain_task_run_id}</dt>
-<dd>The run ID of the task; same as "{task_id}-{run_number}".</dd>
+  <dt>{cbrain_task_run_id}</dt>
+  <dd>The run ID of the task; same as "{task_id}-{run_number}".</dd>
 
-<dt>{cbrain_cluster_name}</dt>
-<dd>The name of the execution server.</dd>
+  <dt>{cbrain_cluster_name}</dt>
+  <dd>The name of the execution server.</dd>
 
-<dt>{cbrain_touch_when_completed}</dt>
-<dd>A file that your script MUST touch to indicate it completed successfully.</dd>
+  <dt>{cbrain_userfile_list_size}</dt>
+  <dd>The number of files in the task's list. This value tops<br/>
+      at the value of the automatic serialization parameter, above.</dd> 
+
+  <dt>{cbrain_userfile_list_counter}</dt>
+  <dd>A counter for each file processed, with a value between 1<br/>
+      and {cbrain_userfile_list_size}.</dd>
+
+  <dt>{cbrain_touch_when_completed}</dt>
+  <dd>A file that your script MUST touch to indicate it completed successfully.</dd>
 
 </dl>
 

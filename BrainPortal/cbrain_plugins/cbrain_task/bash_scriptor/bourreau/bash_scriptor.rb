@@ -58,6 +58,7 @@ class CbrainTask::BashScriptor < ClusterTask
   # See CbrainTask.txt
   def cluster_commands #:nodoc:
     params       = self.params
+    file_ids     = params[:interface_userfile_ids] || []
 
     raw_text     = params[:bash_script]
     raw_text.tr!("\r","") # text areas have CRs in line terminators, yuk!
@@ -69,22 +70,23 @@ class CbrainTask::BashScriptor < ClusterTask
         'cbrain_task_id'              => self.id,
         'cbrain_task_run_number'      => self.run_number,
         'cbrain_task_run_id'          => self.run_id,
-        'cbrain_cluster_name'         => self.bourreau.name
+        'cbrain_cluster_name'         => self.bourreau.name,
+        'cbrain_userfile_list_size'   => file_ids.size
       },
       :leave_unset => true
     )
 
     final_script = []
 
-    file_ids      = params[:interface_userfile_ids] || []
-    file_ids.each do |id|
+    file_ids.each_with_index do |id,cnt|
       file = Userfile.find(id)
       txt  = phase_1_text.dup.pattern_substitute(
         {
           'cbrain_userfile_id'              => id,
           'cbrain_userfile_name'            => file.name,
           'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path),
-          'cbrain_touch_when_completed'     => self.bash_escape_path(self.qsub_script_basename.to_s + "-#{id}")
+          'cbrain_touch_when_completed'     => self.bash_escape_path(self.qsub_script_basename.to_s + "-#{id}"),
+          'cbrain_userfile_list_counter'    => cnt+1
         },
         :leave_unset => true
       )

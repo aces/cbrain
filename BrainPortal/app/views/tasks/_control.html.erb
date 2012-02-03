@@ -35,9 +35,8 @@
     </td>
 
     <td>
-      <strong>Save&nbsp;results&nbsp;to:</strong>
-      <%= overlay_data_providers_descriptions %><br>
-      <%= data_provider_select "cbrain_task[results_data_provider_id]", { :selector => @task.results_data_provider_id } , { :include_blank => "Data provider of input files" } %>
+      <strong>Save&nbsp;results&nbsp;to:</strong><br>
+      <%= data_provider_select "cbrain_task[results_data_provider_id]", { :selector => @task.results_data_provider_id } , { :include_blank => "Data provider of input files" } %><%= overlay_data_providers_descriptions %>
     </td>
 
     <td rowspan="2">
