@@ -112,8 +112,7 @@ class TasksController < ApplicationController
     else
       
       if @showing_batch
-        task_list = scope.all.sort { |t1,t2| t1.cmp_by_batch_rank(t2) }
-        task_list = task_list[offset, @per_page]
+        task_list = scope.order( "cbrain_tasks.rank, cbrain_tasks.level" ).offset( offset ).limit( @per_page )
       else
         task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
       end
