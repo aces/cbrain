@@ -80,12 +80,14 @@ class CbrainTask::BashScriptor < ClusterTask
 
     file_ids.each_with_index do |id,cnt|
       file = Userfile.find(id)
+      full_touch_file = self.full_cluster_workdir.to_s + "/" + self.qsub_script_basename.to_s + "-#{id}"
+      File.unlink(full_touch_file) rescue true # for restarts
       txt  = phase_1_text.dup.pattern_substitute(
         {
           'cbrain_userfile_id'              => id,
           'cbrain_userfile_name'            => file.name,
           'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path),
-          'cbrain_touch_when_completed'     => self.bash_escape_path(self.full_cluster_workdir + (self.qsub_script_basename.to_s + "-#{id}")),
+          'cbrain_touch_when_completed'     => self.bash_escape_path(full_touch_file),
           'cbrain_userfile_list_counter'    => cnt+1
         },
         :leave_unset => true
@@ -113,7 +115,8 @@ class CbrainTask::BashScriptor < ClusterTask
     # Check conventional 'touch' files that mean 'completed on cluster'
     file_ids     = params[:interface_userfile_ids] || []
     file_ids.each do |id|
-      unless File.exists?(self.qsub_script_basename.to_s + "-#{id}")
+      full_touch_file = self.full_cluster_workdir.to_s + "/" + self.qsub_script_basename.to_s + "-#{id}"
+      unless File.exists?(full_touch_file)
         self.addlog("Could not find the special file that indicates successful completion for file '#{id}'.")
         self.addlog("Maybe you forgot to add 'touch {cbrain_touch_when_completed}' to your script?")
         return false
