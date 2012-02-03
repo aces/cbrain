@@ -156,19 +156,6 @@ end
 # CBRAIN Kernel extensions
 ###################################################################
 
-class WillPaginate::ActionView::LinkRenderer
-  protected
-  def merge_get_params(url_params)
-    url_params
-  end
-end
-
-
-
-###################################################################
-# CBRAIN Kernel extensions
-###################################################################
-
 module Kernel
 
   private
