@@ -51,7 +51,7 @@
         Various Older Tasks
       <% end %>
       <% if task_info[:num_tasks] > @per_page && launch_time_param %>
-        <%= filter_reset_link "(Go to Batch)", :controller => :tasks, :filters  => { :launch_time => first_task.launch_time.to_s(:db) }, :ajax => false %> 
+        <%= filter_add_link "(Go to Batch)", :controller => :tasks, :filters  => { :launch_time => first_task.launch_time.to_s(:db) }, :ajax => false %> 
       <% else %>
         <%= on_click_ajax_replace({:element  => "a", :url  => url_for(:action => :batch_list, :launch_time => launch_time_param), :replace => "batch_loader_#{launch_time_id}", :position => "replace", :before  => "<td colspan='#{current_project ? "10" : "11"}' class='loading_message'>Loading...</td>"}, {:class  => "left"}) do %>
           (Expand Batch)
