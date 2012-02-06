@@ -45,25 +45,18 @@ class ToolConfig < ActiveRecord::Base
   has_many       :cbrain_tasks
   belongs_to     :group        # can be nil; means 'everyone' in that case.
 
-  validates_presence_of :description
+  validate       :presence_of_description # only when both tool_id and bourreau_id are defined
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
-  ## Provides a default group_id (backward compatibility)
-  #def group #:nodoc:
-  #  Group.find(self.group_id)
-  #end
-  #
-  ## Provides a default group_id (backward compatibility)
-  #def group_id #:nodoc:
-  #  myid = self.read_attribute(:group_id)
-  #  return myid if myid
-  #
-  #  myid = Group.everyone.id
-  #  self.update_attribute( { :group_id =>  myid } )
-  #  myid
-  #end
+  # A description is needed only when the tool config describes
+  # a precise version of a tool (for both the tool and the bourreau).
+  # There are more general tool configs that don't need a description.
+  def presence_of_description #:nodoc: validation callback
+    self.errors.add(:description,"cannot be blank.") if self.description.blank? && self.tool_id && self.bourreau_id
+    true
+  end
 
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
@@ -92,20 +85,40 @@ class ToolConfig < ActiveRecord::Base
   # set of variables provided by +extended_environement+ will be
   # applied instead.
   def apply_environment(use_extended = false)
-    env = (use_extended ? self.extended_environment : self.env_array) || []
+    env   = (use_extended ? self.extended_environment : self.env_array) || []
+    saved = ENV.to_hash
     env.each do |name,val|
-      ENV[name.to_s]=val.to_s
+      if val =~ /\$/
+        #puts_green "THROUGH BASH: #{name} => #{val}" # debug
+        newval = `bash -c 'echo \"#{val.strip}\"'`.strip  # this is quite inefficient, but how else to do it?
+        #puts_green "RESULT:     : #{name} => #{newval}" # debug
+      else
+        #puts_green "DIRECT      : #{name} => #{val}" # debug
+        newval = val
+      end
+      ENV[name.to_s]=newval.to_s
     end
-    true
+    return yield
+  ensure
+    #(ENV.keys - saved.keys).each { |spurious| ENV.delete(spurious.to_s); puts_red "SPURIOUS: #{spurious}" } # debug
+    #saved.each { |k,v| puts_cyan "RESTORED: #{ENV[k]=v.to_s}" unless ENV[k] == v } # debug
+    (ENV.keys - saved.keys).each { |spurious| ENV.delete(spurious.to_s) }
+    saved.each { |k,v| ENV[k]=v.to_s unless ENV[k] == v }
   end
 
   # Returns the set of environment variables as stored in
-  # the object, plus a few artificial ones. See the code.
+  # the object, plus a few artificial ones for CBRAIN usage.
+  #
+  #  CBRAIN_GLOBAL_TOOL_CONFIG_ID     : set to self.id if self represents a TOOL's global config
+  #  CBRAIN_GLOBAL_BOURREAU_CONFIG_ID : set to self.id if self represents a BOURREAU's global config
+  #  CBRAIN_TOOL_CONFIG_ID            : set to self.id
   def extended_environment
     env = (self.env_array || []).dup
-    env << [ "CBRAIN_GLOBAL_TOOL_CONFIG_ID",     self.id.to_s ] if self.bourreau_id.blank?
-    env << [ "CBRAIN_GLOBAL_BOURREAU_CONFIG_ID", self.id.to_s ] if self.tool_id.blank?
-    env << [ "CBRAIN_TOOL_CONFIG_ID",            self.id.to_s ] if ! self.tool_id.blank? && ! self.bourreau_id.blank?
+    if self.id.present?
+      env << [ "CBRAIN_GLOBAL_TOOL_CONFIG_ID",     self.id.to_s ] if self.bourreau_id.blank?
+      env << [ "CBRAIN_GLOBAL_BOURREAU_CONFIG_ID", self.id.to_s ] if self.tool_id.blank?
+      env << [ "CBRAIN_TOOL_CONFIG_ID",            self.id.to_s ] if ! self.tool_id.blank? && ! self.bourreau_id.blank?
+    end
     env
   end
 
