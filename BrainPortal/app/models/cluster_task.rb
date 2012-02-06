@@ -472,17 +472,18 @@ class ClusterTask < CbrainTask
       self.addlog("Setting Up.")
       self.record_cbraintask_revs
       self.make_cluster_workdir
-      self.apply_tool_config_environment
-      Dir.chdir(self.full_cluster_workdir) do
-        if ! self.setup  # as defined by subclass
-          self.addlog("Failed to setup: 'false' returned by setup().")
-          self.status_transition(self.status, "Failed To Setup")
-        elsif ! self.submit_cluster_job
-          self.addlog("Failed to start: 'false' returned by submit_cluster_job().")
-          self.status_transition(self.status, "Failed To Setup")
-        else
-          self.addlog("Setup and submit process successful.")
-          # the status is moving forward at its own pace now
+      self.apply_tool_config_environment do
+        Dir.chdir(self.full_cluster_workdir) do
+          if ! self.setup  # as defined by subclass
+            self.addlog("Failed to setup: 'false' returned by setup().")
+            self.status_transition(self.status, "Failed To Setup")
+          elsif ! self.submit_cluster_job
+            self.addlog("Failed to start: 'false' returned by submit_cluster_job().")
+            self.status_transition(self.status, "Failed To Setup")
+          else
+            self.addlog("Setup and submit process successful.")
+            # the status is moving forward at its own pace now
+          end
         end
       end
       self.update_size_of_cluster_workdir
@@ -511,18 +512,19 @@ class ClusterTask < CbrainTask
       self.addlog("Starting asynchronous postprocessing.")
       self.record_cbraintask_revs
       self.update_size_of_cluster_workdir
-      self.apply_tool_config_environment
-      saveok = false
-      Dir.chdir(self.full_cluster_workdir) do
-        # Call the subclass-provided save_results()
-        saveok = self.save_results
-      end
-      if ! saveok
-        self.status_transition(self.status, "Failed On Cluster")
-        self.addlog("Data processing failed on the cluster.")
-      else
-        self.addlog("Asynchronous postprocessing completed.")
-        self.status_transition(self.status, "Completed")
+      self.apply_tool_config_environment do
+        saveok = false
+        Dir.chdir(self.full_cluster_workdir) do
+          # Call the subclass-provided save_results()
+          saveok = self.save_results
+        end
+        if ! saveok
+          self.status_transition(self.status, "Failed On Cluster")
+          self.addlog("Data processing failed on the cluster.")
+        else
+          self.addlog("Asynchronous postprocessing completed.")
+          self.status_transition(self.status, "Completed")
+        end
       end
     rescue Exception => e
       self.addlog_exception(e,"Exception raised while post processing results:")
@@ -1234,14 +1236,21 @@ class ClusterTask < CbrainTask
   # the ToolConfig objects in effect for this job.
   def apply_tool_config_environment
     # Find the tool configuration in effect
-    # We need three objects, each can be nil.
-    bourreau_glob_config = self.bourreau.global_tool_config
-    tool_glob_config     = self.tool.global_tool_config
-    tool_config          = self.tool_config
+    # We need three objects fetched through association;
+    # each can be nil and in that case will be replaced by
+    # a placeholder ToolConfig object which doesn't change
+    # the environment.
+    bourreau_glob_config = (self.bourreau && self.bourreau.global_tool_config) || ToolConfig.new(:description => 'Placeholder Global Bourreau')
+    tool_glob_config     = (self.tool && self.tool.global_tool_config)         || ToolConfig.new(:description => 'Placeholder Global Tool')
+    tool_config          = self.tool_config                                    || ToolConfig.new(:description => 'Placeholder TC')
 
-    bourreau_glob_config.apply_environment(:extended) if bourreau_glob_config
-    tool_glob_config.apply_environment(:extended)     if tool_glob_config
-    tool_config.apply_environment(:extended)          if tool_config
+    bourreau_glob_config.apply_environment(:extended) do
+      tool_glob_config.apply_environment(:extended) do
+        tool_config.apply_environment(:extended) do
+          return yield
+        end
+      end
+    end
   end
 
   # Submit the actual job request to the cluster management software.
