@@ -26,7 +26,7 @@ namespace :doc do
      rdoc.rdoc_dir = 'doc/bourreau'
      rdoc.title    = "CBRAIN Bourreau API Documentation"
      rdoc.options << '-a'
-     rdoc.options << '-W https://redmine.cbrain.mcgill.ca/viewvc/CBRAIN/trunk/Bourreau/%s'
+     rdoc.options << '-W https://github.com/aces/cbrain/blob/master/Bourreau/%s'
      rdoc.main = 'doc/README_FOR_APP'
      rdoc.rdoc_files.include('doc/README_FOR_APP')
      rdoc.rdoc_files.include('app/*/*.rb')
