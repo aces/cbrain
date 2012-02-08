@@ -25,7 +25,7 @@
 <div class="menu_bar">
         <%= button_with_dropdown_menu("For Queued Tasks") do %>
           <p class="dropmenu_info">
-            This panel allows you to affect tasks that are still in the Execution Server's Queue and not
+            This panel allows you to affect tasks that are still in the Execution Server's queue and not
             yet on CPU. Not all Execution Servers support these operations.
           </p>
           <p class="centered">
@@ -101,7 +101,10 @@
             You can also remove tasks completely. This will erase the task's work area
             on the Execution Server, including temporary data files, but will not erase
             a successful task's output files. This is useful if you have
-            confidential data, for instance. 
+            confidential data, for instance. Removing a task <strong>will</strong> delete any
+            archives of the task's work directory, if any (as indicated by
+            the symbols <%= colored_archived_status(:workdir) %> and
+            <%= colored_archived_status(:userfile) %> in the 'Workdir Size' column).
           </p>
           <p class="centered">
             <%= 
