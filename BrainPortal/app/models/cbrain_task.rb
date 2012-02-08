@@ -34,6 +34,7 @@ class CbrainTask < ActiveRecord::Base
   include ResourceAccess
 
   before_validation     :set_group
+  after_destroy         :remove_workdir_archive
 
   validates_presence_of :user_id
   validates_presence_of :bourreau_id
@@ -46,6 +47,8 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :group
   belongs_to            :tool_config
   belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id
+
+  belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id
 
   # Pseudo Attributes (not saved in DB)
   attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
@@ -786,6 +789,15 @@ class CbrainTask < ActiveRecord::Base
     
       self.group_id = owner.own_group.id
     end
+  end
+
+  def remove_workdir_archive #:nodoc:
+    archive = self.workdir_archive
+    return true unless archive
+    archive.destroy
+    true
+  rescue
+    true
   end
 
 end
