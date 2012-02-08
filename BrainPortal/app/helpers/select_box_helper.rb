@@ -42,6 +42,8 @@ module SelectBoxHelper
       selected = selector.user_id.to_s
     elsif selector.is_a?(User)
       selected = selector.id.to_s
+    elsif selector.is_a?(Array) # for 'multiple' select
+      selected = selector
     else
       selected = selector.to_s
     end
@@ -72,6 +74,8 @@ module SelectBoxHelper
       selected = selector.group_id.to_s
     elsif selector.is_a?(Group)
       selected = selector.id.to_s
+    elsif selector.is_a?(Array) # for 'multiple' select
+      selected = selector
     else
       selected = selector.to_s
     end
@@ -141,6 +145,8 @@ module SelectBoxHelper
       selected = selector.data_provider_id.to_s
     elsif selector.is_a?(DataProvider)
       selected = selector.id.to_s
+    elsif selector.is_a?(Array) # for 'multiple' select
+      selected = selector
     else
       selected = selector.to_s
     end 
@@ -192,6 +198,8 @@ module SelectBoxHelper
       selected = selector.bourreau_id.to_s
     elsif selector.is_a?(Bourreau)
       selected = selector.id.to_s
+    elsif selector.is_a?(Array) # for 'multiple' select
+      selected = selector
     else
       selected = selector.to_s
     end 
@@ -242,6 +250,8 @@ module SelectBoxHelper
       selected = selector.tool_config_id.to_s
     elsif selector.is_a?(ToolConfig)
       selected = selector.id.to_s
+    elsif selector.is_a?(Array) # for 'multiple' select
+      selected = selector
     else
       selected = selector.to_s
     end
