@@ -693,7 +693,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
     rr_allowed_syncing!("synchronize content from")
-    rr_allowed_syncing!("synchronize content to", otherprovider)
+    rr_allowed_syncing!("synchronize content to", nil, otherprovider)
     dp_allows_copy!(otherprovider)
 
     new_name     = options[:name]     || userfile.name
@@ -778,7 +778,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
     rr_allowed_syncing!("synchronize content from")
-    rr_allowed_syncing!("synchronize content to", otherprovider)
+    rr_allowed_syncing!("synchronize content to", nil, otherprovider)
     dp_allows_copy!(otherprovider)
 
     new_name     = options[:name]     || userfile.name
@@ -1138,16 +1138,16 @@ class DataProvider < ActiveRecord::Base
   # Access restriction checking methods, using flags in meta-data.
   #################################################################
 
-  def rr_allowed_syncing?(check_dp = self) #:nodoc:
-    rr = RemoteResource.current_resource
+  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+    rr ||= RemoteResource.current_resource
     meta_key_disabled = "rr_no_sync_#{rr.id}"
     self.meta[meta_key_disabled].blank?
   end
 
-  def rr_allowed_syncing!(server_does_what, check_dp = self) #:nodoc:
-    rr = RemoteResource.current_resource
+  def rr_allowed_syncing!(server_does_what, rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+    rr ||= RemoteResource.current_resource
     cb_error "Error: server #{rr.name} cannot #{server_does_what} provider #{check_dp.name}." unless
-      self.rr_allowed_syncing?(check_dp)
+      self.rr_allowed_syncing?(rr, check_dp)
   end
 
   def dp_allows_copy?(other_dp) #:nodoc:

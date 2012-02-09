@@ -1105,6 +1105,10 @@ pre {
   background-color: #eeeeee;
 }
 
+.show_table th.checkbox_label {
+  text-align: right;
+}
+
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
 /* % ######################################################### */

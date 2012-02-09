@@ -496,15 +496,15 @@ class BourreauxController < ApplicationController
   end
 
   def rr_access_dp
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all.sort     { |a,b| a.name <=> b.name }
-    @dps       = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+    @rrs = RemoteResource.find_all_accessible_by_user(current_user).all.sort { |a,b| (b.type <=> a.type).nonzero? || (a.name <=> b.name) }
+    @dps = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
 
     refresh    = params[:refresh]
     refresh_bs = []
     if refresh == 'all'
-      refresh_bs = @bourreaux
+      refresh_bs = @rrs
     else
-      refresh_bs = @bourreaux.select { |b| b.id == refresh.to_i }
+      refresh_bs = @rrs.select { |b| b.id == refresh.to_i }
     end
 
     sent_refresh = [] # for flash message
