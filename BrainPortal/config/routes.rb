@@ -93,6 +93,7 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       get  'dp_disk_usage'
       get  'dp_access'
+      get  'dp_transfers'
     end
   end
 

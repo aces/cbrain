@@ -43,6 +43,11 @@
               :datatype  => 'script', :class  => "button"
   %>   
   
+  <%= link_to "Transfer Restrictions Report",
+             {:controller  => :data_providers, :action  => :dp_transfers},
+              :datatype  => 'script', :class  => "button"
+  %>   
+  
   <%= link_to "Disk Usage Report",
               {:controller  => :data_providers, :action  => :dp_disk_usage},
               :datatype  => 'script', :class  => "button"

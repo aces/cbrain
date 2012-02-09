@@ -26,6 +26,12 @@
 
 <h2>Servers Access to Data Providers</h2>
 
+<% if @rrs.empty? || @dps.empty? %>
+
+There is no information to show at this time.
+
+<% else %>
+
 <p class="medium_paragraphs">
 This page shows which Data Providers (columns) can be accessed by which Server (rows).
 </p>
@@ -43,12 +49,6 @@ Cells marked with <%= html_colorize('(no access)', 'red') %>
 indicate servers that are not allowed to access files on the Data Provider
 at all, in any way (streaming or synchronized), even if the Data Provider seems alive.
 </p>
-
-<% if @rrs.empty? || @dps.empty? %>
-
-There is no information to show at this time.
-
-<% else %>
 
 <%
 dps_online    = DataProvider.select { |d| d.online? }

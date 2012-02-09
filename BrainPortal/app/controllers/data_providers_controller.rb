@@ -214,6 +214,10 @@ class DataProvidersController < ApplicationController
     @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
 
+  def dp_transfers #:nodoc:
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+  end
+
   #Browse the files of a data provider.
   #This action is only available for data providers that are browsable.
   #Both registered and unregistered files will appear in the list. 
