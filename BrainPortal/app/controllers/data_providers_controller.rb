@@ -141,8 +141,9 @@ class DataProvidersController < ApplicationController
 
     @provider.update_attributes(fields)
 
+    meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
     if @provider.errors.empty?
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }

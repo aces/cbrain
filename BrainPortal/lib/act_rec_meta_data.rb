@@ -189,6 +189,17 @@ module ActRecMetaData
       true
     end
 
+    # Renders a pretty report of all meta keys.
+    def inspect
+      att = self.attributes.keys.sort
+      max = att.inject(0) { |tot,k| tot = k.size if k.size > tot;tot }
+      res = "\n"
+      att.each do |k|
+        res += sprintf("%-#{max}s => %s\n",k,self[k].inspect)
+      end
+      res
+    end
+
 
 
     ###################################################################

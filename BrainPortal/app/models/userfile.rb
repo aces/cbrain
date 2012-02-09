@@ -642,6 +642,7 @@ class Userfile < ActiveRecord::Base
     syncstat = self.local_sync_status
     return true if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
+    return false unless self.data_provifer.rr_allowed_syncing?
     self.sync_to_cache
     syncstat = self.local_sync_status(:refresh)
     return true if syncstat && syncstat.status == 'InSync'
