@@ -88,7 +88,7 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
       <tr>
         <td class="left_align"><%= link_to_bourreau_if_accessible(rr, current_user, :html_options => { :class => rr.online? ? nil : 'error_link' }) %><%= " (offline)" unless rr.online? %></td>
         <td><%= rr.is_a?(Bourreau) ? "Execution" : "Portal" %></td>
-        <td class="left_align">
+        <td class="left_align no_wrap">
           <% last_update = rr.meta[:data_provider_statuses_last_update] %>
           <% if last_update.blank? %>
             (Unknown)
