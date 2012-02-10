@@ -111,7 +111,7 @@ class User < ActiveRecord::Base
     @all_admins ||= self.find_all_by_role("admin")
   end
   
-  # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
+  # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
   def self.authenticate(login, password)
     u = find_by_login(login) # need to get the salt
     return nil unless u && u.authenticated?(password)
@@ -177,11 +177,6 @@ class User < ActiveRecord::Base
     self.remember_token_expires_at = nil
     self.remember_token            = nil
     save(:validate => false)
-  end
-
-  # Returns true if the user has just been activated.
-  def recently_activated? #:nodoc:
-    @activated
   end
   
   #Does this user's role match +role+?

@@ -125,8 +125,8 @@ Factory.define :tool do |tool|
   tool.association       :user
   tool.association       :group
   tool.category          "scientific tool"
-  tool.cbrain_task_class "CbrainTask::Snoozer"
-end
+  tool.cbrain_task_class { |n| "CbrainTask::Snoozer#{n}"}
+end                   
 
 Factory.define :userfile do |userfile|
     userfile.sequence(:name) { |n| "file_#{n}" }

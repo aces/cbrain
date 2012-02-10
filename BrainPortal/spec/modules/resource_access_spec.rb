@@ -189,7 +189,7 @@ describe ResourceAccess do
       it "should find group-associated resources" do
         DataProvider.find_accessible_by_user(group_resource.id, user).should == group_resource
       end
-      it "should rause ActiveRecord::RecordNotFound when used to find non-associated resources" do
+      it "should raise ActiveRecord::RecordNotFound when used to find non-associated resources" do
         lambda{DataProvider.find_accessible_by_user(free_resource.id, user)}.should raise_error(ActiveRecord::RecordNotFound)
       end
     end

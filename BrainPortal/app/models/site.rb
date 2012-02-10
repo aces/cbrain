@@ -187,11 +187,11 @@ class Site < ActiveRecord::Base
       if current_manager_ids.include?(user.id)
         if user.has_role? :user
           user.role = "site_manager"
-        end
+        end                
       elsif user.has_role? :site_manager
         user.role = "user"
       end
-      user.save(false)
+      user.save(:validate => false)
     end
   end
   
