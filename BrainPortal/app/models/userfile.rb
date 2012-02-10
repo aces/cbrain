@@ -685,11 +685,6 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
-  def cache_erase
-    self.data_provider.cache_erase(self)
-  end
-
-  # See the description in class DataProvider
   def cache_prepare
     self.save! if self.id.blank? # we need an ID to prepare the cache
     self.data_provider.cache_prepare(self)
@@ -700,6 +695,45 @@ class Userfile < ActiveRecord::Base
     self.data_provider.cache_full_path(self)
   end
 
+  # See the description in class DataProvider
+  def cache_readhandle(*args, &block)
+    self.data_provider.cache_readhandle(self, *args,  &block)
+  end
+
+  # See the description in class DataProvider
+  def cache_writehandle(*args, &block)
+    self.save!
+    self.data_provider.cache_writehandle(self, *args, &block)
+    self.set_size!
+  end
+
+  # See the description in class DataProvider
+  def cache_copy_from_local_file(filename)
+    self.save!
+    self.data_provider.cache_copy_from_local_file(self, filename)
+    self.set_size!
+  end
+
+  # See the description in class DataProvider
+  def cache_copy_to_local_file(filename)
+    self.save!
+    self.data_provider.cache_copy_to_local_file(self, filename)
+  end
+  
+  # See the description in class DataProvider
+  def cache_erase
+    self.data_provider.cache_erase(self)
+  end
+
+  # Returns an Array of FileInfo objects containing
+  # information about the files associated with this Userfile
+  # entry.
+  #
+  # Information is requested from the cache (not the actual data provider).
+  def cache_collection_index(directory = :all, allowed_types = :regular)
+    self.data_provider.cache_collection_index(self, directory, allowed_types)
+  end
+  
   # See the description in class DataProvider
   def provider_erase
     self.data_provider.provider_erase(self)
@@ -731,39 +765,10 @@ class Userfile < ActiveRecord::Base
   end
 
   # See the description in class DataProvider
-  def cache_readhandle(*args, &block)
-    self.data_provider.cache_readhandle(self, *args,  &block)
+  def provider_full_path
+    self.data_provider.provider_full_path(self)
   end
 
-  # See the description in class DataProvider
-  def cache_writehandle(*args, &block)
-    self.save!
-    self.data_provider.cache_writehandle(self, *args, &block)
-    self.set_size!
-  end
-
-  # See the description in class DataProvider
-  def cache_copy_from_local_file(filename)
-    self.save!
-    self.data_provider.cache_copy_from_local_file(self, filename)
-    self.set_size!
-  end
-
-  # See the description in class DataProvider
-  def cache_copy_to_local_file(filename)
-    self.save!
-    self.data_provider.cache_copy_to_local_file(self, filename)
-  end
-  
-  # Returns an Array of FileInfo objects containing
-  # information about the files associated with this Userfile
-  # entry.
-  #
-  # Information is requested from the cache (not the actual data provider).
-  def cache_collection_index(directory = :all, allowed_types = :regular)
-    self.data_provider.cache_collection_index(self, directory, allowed_types)
-  end
-  
   # Returns true if the data provider for the content of
   # this file is online.
   def available?
