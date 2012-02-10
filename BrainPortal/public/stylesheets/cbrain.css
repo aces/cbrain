@@ -822,7 +822,6 @@ pre {
 
 #header_project_menu span {
   padding: 0;
-  background-image: none;
 }
 
 
@@ -1094,12 +1093,20 @@ pre {
 }
 
 .show_table td {
-  background: none;
+/*  background: none; */
   color: black;
   border: none;
   margin: 0;
   text-align: left;
   white-space: nowrap;
+}
+
+.show_table td.subheader {
+  background-color: #eeeeee;
+}
+
+.show_table th.checkbox_label {
+  text-align: right;
 }
 
 /* % ######################################################### */

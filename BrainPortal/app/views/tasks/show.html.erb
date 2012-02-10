@@ -52,7 +52,9 @@
       <td><%= button_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "button" %></td>
     <% end %>
     <% if @task.status =~ /New|Queued|On Hold|On CPU|Suspended|Failed.*|Completed/ %>
-      <td><%= button_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to remove this task?", :class  => "button" %></td>
+      <% confirm  = "Are you sure you want to remove this task?" %>
+      <% confirm += "\n\nIMPORTANT NOTE: This will also remove its archived work directory." if @task.workdir_archive %>
+      <td><%= button_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "button" %></td>
     <% end %>
 
     <!-- FAILURE RECOVERY -->

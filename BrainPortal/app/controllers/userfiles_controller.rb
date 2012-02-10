@@ -321,11 +321,14 @@ class UserfilesController < ApplicationController
         sync_status = state.status if state
         
         if sync_status !~ /^To|InSync|Corrupted/
-          userfile.sync_to_cache
-          userfile.set_size  
+          if (userfile.sync_to_cache rescue nil)
+            userfile.set_size
+          end
         end
       end
     end # spawn
+
+    flash[:notice] = "Synchronization started in background. Files that cannot be synchronized will be skipped."
 
     if @userfiles.size == 1 && params[:back_to_show_page]
       redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id

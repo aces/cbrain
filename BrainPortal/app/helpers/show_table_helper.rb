@@ -39,6 +39,7 @@ module ShowTableHelper
     end
     
     def row(options = {}, &block)
+      pad_row_with_blank_cells(options)
       build_cell("", @template.capture(&block), options.dup.merge( { :no_header => true, :show_width => @width } ) )
     end
     
@@ -55,12 +56,12 @@ module ShowTableHelper
       build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, edit_path, options, &block) }, options)
     end
 
-    def boolean_edit_cell(field, checked, checked_value = "1", unchecked_value = "0", options = {}, &block)
-      options[:content] ||= @template.disabled_checkbox(checked)
+    def boolean_edit_cell(field, cur_value, checked_value = "1", unchecked_value = "0", options = {}, &block)
+      options[:content] ||= @template.disabled_checkbox(cur_value == checked_value)
       if block_given?
         edit_cell(field, options, &block)
       else
-        edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, checked.present?, :class => "submit_onchange") }
+        edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, cur_value == checked_value, :class => "submit_onchange") }
       end
     end
     
@@ -73,7 +74,13 @@ module ShowTableHelper
     end
 
     def blank_row(options = {})
+      pad_row_with_blank_cells(options)
       row(options) { "&nbsp;".html_safe }
+    end
+
+    def pad_row_with_blank_cells(options = {})
+      in_current_row = (@cells.inject(0) { |tot,c| tot += c[1]; tot } ) % @width  # c[1] is the show_width of each cell
+      empty_cell(@width - in_current_row, options) if in_current_row > 0
     end
     
     private

@@ -353,6 +353,7 @@ class DataProvider < ActiveRecord::Base
   def sync_to_cache(userfile)
     cb_error "Error: provider #{self.name} is offline."      unless self.online?
     cb_error "Error: provider #{self.name} is not syncable." if     self.not_syncable?
+    rr_allowed_syncing!("synchronize content from")
     SyncStatus.ready_to_copy_to_cache(userfile) do
       impl_sync_to_cache(userfile)
     end
@@ -364,6 +365,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline."      unless self.online?
     cb_error "Error: provider #{self.name} is read_only."    if     self.read_only?
     cb_error "Error: provider #{self.name} is not syncable." if     self.not_syncable?
+    rr_allowed_syncing!("synchronize content to")
     SyncStatus.ready_to_copy_to_dp(userfile) do
       impl_sync_to_provider(userfile)
     end
@@ -385,6 +387,7 @@ class DataProvider < ActiveRecord::Base
   def cache_prepare(userfile)
     cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
+    rr_allowed_syncing!("synchronize content to")
     SyncStatus.ready_to_modify_cache(userfile) do
       mkdir_cache_subdirs(userfile)
     end
@@ -642,6 +645,7 @@ class DataProvider < ActiveRecord::Base
   def provider_erase(userfile)
     cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
+    rr_allowed_syncing!("erase content on")
     SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_erase(userfile)
     end
@@ -656,6 +660,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline."               unless self.online?
     cb_error "Error: provider #{self.name} is read_only."             if     self.read_only?
     cb_error "Error: userfile #{userfile.name} in an invalid state."  unless userfile.valid?
+    rr_allowed_syncing!("rename content on")
     return true if newname == userfile.name
     unless Userfile.is_legal_filename?(newname)
       userfile.errors.add(:name, "contains illegal characters.")
@@ -687,6 +692,9 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is read_only."          if     self.read_only?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
+    rr_allowed_syncing!("synchronize content from")
+    rr_allowed_syncing!("synchronize content to", nil, otherprovider)
+    dp_allows_copy!(otherprovider)
 
     new_name     = options[:name]     || userfile.name
     new_user_id  = options[:user_id]  || userfile.user_id
@@ -769,6 +777,9 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline."            unless self.online?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
+    rr_allowed_syncing!("synchronize content from")
+    rr_allowed_syncing!("synchronize content to", nil, otherprovider)
+    dp_allows_copy!(otherprovider)
 
     new_name     = options[:name]     || userfile.name
     new_user_id  = options[:user_id]  || userfile.user_id
@@ -864,6 +875,7 @@ class DataProvider < ActiveRecord::Base
   def provider_list_all(user=nil)
     cb_error "Error: provider #{self.name} is offline."       unless self.online?
     cb_error "Error: provider #{self.name} is not browsable." unless self.is_browsable?
+    rr_allowed_syncing!("list content from")
     impl_provider_list_all(user)
   end
 
@@ -880,6 +892,7 @@ class DataProvider < ActiveRecord::Base
   # and returns an array of FileInfo objects. 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
+    rr_allowed_syncing!("fetch file content list from")
     impl_provider_collection_index(userfile, directory, allowed_types)
   end
 
@@ -890,6 +903,7 @@ class DataProvider < ActiveRecord::Base
   # exceptional situations when syncing is not welcome.
   def provider_readhandle(userfile, *args, &block)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
+    rr_allowed_syncing!("stream content from")
     if userfile.is_locally_synced?
       cache_readhandle(userfile, *args, &block)
     else
@@ -899,7 +913,7 @@ class DataProvider < ActiveRecord::Base
 
   # This method is NOT part of the sanctionned API, it
   # is here only FYI. It should be redefined properly
-  # in subclasses.
+  # in subclasses. TODO: make it official in the API.
   def provider_full_path(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
@@ -1118,6 +1132,35 @@ class DataProvider < ActiveRecord::Base
     end
   end
   
+
+
+  #################################################################
+  # Access restriction checking methods, using flags in meta-data.
+  #################################################################
+
+  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+    rr ||= RemoteResource.current_resource
+    meta_key_disabled = "rr_no_sync_#{rr.id}"
+    self.meta[meta_key_disabled].blank?
+  end
+
+  def rr_allowed_syncing!(server_does_what, rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+    rr ||= RemoteResource.current_resource
+    cb_error "Error: server #{rr.name} cannot #{server_does_what} provider #{check_dp.name}." unless
+      self.rr_allowed_syncing?(rr, check_dp)
+  end
+
+  def dp_allows_copy?(other_dp) #:nodoc:
+    meta_key_disabled = "dp_no_copy_#{other_dp.id}"
+    self.meta[meta_key_disabled].blank?
+  end
+
+  def dp_allows_copy!(other_dp) #:nodoc:
+    cb_error "Error: provider #{self.name} is not allowed to send data to provider #{other_dp.name}." unless
+      self.dp_allows_copy?(other_dp)
+  end
+
+
 
   #################################################################
   # Implementation-dependant method placeholders

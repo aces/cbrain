@@ -1,0 +1,84 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% title "Transfer Restrictions" %>
+
+<h2>Data Provider Transfer Restrictions Report</h2>
+
+<% if @providers.empty? || @providers.size < 2 %>
+
+There is no information to show at this time.
+
+<% else %>
+
+<p class="medium_paragraphs">
+This table shows which file transfers are allowed
+between Data Providers. The restrictions are not
+necessarily symmetrical: it's possible to configure
+Data Providers A and B such that transfers from
+A to B are allowed (<%= o_icon %>) while transfers
+from B to A are not (<%= times_icon %>).
+</p>
+
+<% num_prov = @providers.size %>
+
+<span class="display_cell">
+
+  <table>
+    
+    <tr>
+      <th colspan="2" rowspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<br>&uarr;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+      <th colspan="<%= num_prov %>">Destination Data Provider</th>
+    </tr>
+
+    <tr>
+      <% @providers.each do |dp| %>
+        <th><%= link_to_data_provider_if_accessible(dp, current_user) %></th>
+      <% end %>
+    </tr>
+      
+    <% @providers.each_with_index do |dp_row,idx| %>
+      <tr>
+        <% if idx == 0 %>
+          <th rowspan="<%= num_prov %>" class="vertical_text_container"><div class="vertical_text" style="height: auto; min-height: 14em">Source Data Provider</div></th>
+        <% end %>
+        <th><%= link_to_data_provider_if_accessible(dp_row, current_user) %></th>
+        <% @providers.each do |dp_col| %>
+          <% if dp_row == dp_col %>
+          <td class="blank"></td>
+          <% else %>
+          <td><%= dp_row.dp_allows_copy?(dp_col) ? o_icon : times_icon %></td>
+          <% end %>
+        <% end %>
+      </tr>
+    <% end %>
+  
+  </table>
+  
+  <%= center_legend("Copying or moving files:", [ [o_icon, "allowed"], [times_icon, "not allowed"] ] ) %>
+  
+</span>
+
+<% end %>
+
