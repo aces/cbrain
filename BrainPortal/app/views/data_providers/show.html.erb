@@ -174,7 +174,7 @@
   <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
 
   <% if other_rrs.size > 0 %>
-    <%= show_table(@provider, :width => 5, :header => 'Files can be synchronized (cached) to these Servers...', :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
+    <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers...', :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin) || @provider.user_id == current_user.id)) do |t| %>
       <% if rrs_by_category[:portal] %>
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>

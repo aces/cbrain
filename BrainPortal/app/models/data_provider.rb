@@ -113,12 +113,13 @@ require 'digest/md5'
 #
 # = Here is the complete list of API methods:
 #
-# == Status methods:
+# == Status or properties methods:
 #
 # * is_alive?
 # * is_alive!
 # * is_browsable?
 # * is_fast_syncing?
+# * allow_file_owner_change?
 #
 # == Access restriction methods:
 #
@@ -136,12 +137,12 @@ require 'digest/md5'
 #
 # * cache_prepare(userfile)
 # * cache_full_path(userfile)
-# * cache_collection_index(userfile, directory, allowed_types)
 # * cache_readhandle(userfile, rel_path)
 # * cache_writehandle(userfile, rel_path)
 # * cache_copy_from_local_file(userfile, localfilename)
 # * cache_copy_to_local_file(userfile, localfilename)
 # * cache_erase(userfile)
+# * cache_collection_index(userfile, directory, allowed_types)
 #
 # Note that all of these are also present in the Userfile model.
 #
@@ -151,9 +152,10 @@ require 'digest/md5'
 # * provider_rename(userfile, newname)
 # * provider_move_to_otherprovider(userfile, otherprovider, options = {})
 # * provider_copy_to_otherprovider(userfile, otherprovider, options = {})
-# * provider_list_all(user=nil)
 # * provider_collection_index(userfile, directory, allowed_types)
 # * provider_readhandle(userfile, rel_path)
+# * provider_full_path(userfile)
+# * provider_list_all(user=nil)
 #
 # Note that all of these except for provider_list_all() are
 # also present in the Userfile model.
@@ -291,7 +293,7 @@ class DataProvider < ActiveRecord::Base
 
 
   #################################################################
-  # Official Data API methods (work on userfiles)
+  #      Official DataProvider API methods
   #      - Provider query/access methods -
   #################################################################
   
@@ -911,9 +913,15 @@ class DataProvider < ActiveRecord::Base
     end
   end
 
-  # This method is NOT part of the sanctionned API, it
-  # is here only FYI. It should be redefined properly
-  # in subclasses. TODO: make it official in the API.
+  # This method does NOT necessarily make sense for
+  # all providers. Typically, it should provide (for
+  # informational purposes only) the 'remote' path
+  # where the file is actually stored on the data
+  # provider. If there is no such 'path', the
+  # provider could return any string representation
+  # it feels helpful. Subclasses can invoke there
+  # version of this method internally while implementing
+  # other methods.
   def provider_full_path(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
@@ -1138,23 +1146,35 @@ class DataProvider < ActiveRecord::Base
   # Access restriction checking methods, using flags in meta-data.
   #################################################################
 
+  # Returns true if RemoteResource +rr+ is allowed to access DataProvider +check_dp+
+  # (which defaults to self). The information for this restriction is maintained
+  # as a blacklist in the meta data store.
   def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
     rr ||= RemoteResource.current_resource
     meta_key_disabled = "rr_no_sync_#{rr.id}"
     self.meta[meta_key_disabled].blank?
   end
 
-  def rr_allowed_syncing!(server_does_what, rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+  # Works like rr_allowed_syncing? but raise an exception when the
+  # sync operation is not allowed. The exception message can be
+  # customized with the first argument.
+  def rr_allowed_syncing!(server_does_what = "access the files of", rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
     rr ||= RemoteResource.current_resource
     cb_error "Error: server #{rr.name} cannot #{server_does_what} provider #{check_dp.name}." unless
       self.rr_allowed_syncing?(rr, check_dp)
   end
 
+  # Returns true if the DataProvider is allowed to copy or move files to the
+  # other DataProvider +other_dp+ .
+  # The information for this restriction is maintained
+  # as a blacklist in the meta data store.
   def dp_allows_copy?(other_dp) #:nodoc:
     meta_key_disabled = "dp_no_copy_#{other_dp.id}"
     self.meta[meta_key_disabled].blank?
   end
 
+  # Works like dp_allows_copy? but raises an exception of the
+  # copy or move operation is not allowed.
   def dp_allows_copy!(other_dp) #:nodoc:
     cb_error "Error: provider #{self.name} is not allowed to send data to provider #{other_dp.name}." unless
       self.dp_allows_copy?(other_dp)
