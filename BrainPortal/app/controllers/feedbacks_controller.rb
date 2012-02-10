@@ -108,8 +108,8 @@ class FeedbacksController < ApplicationController
     @feedback.destroy
     
     respond_to do |format|
-      format.html { redirect_to(feedbacks_url) }
-      format.js   { redirect_to :action => :index, :format => :js }
+      format.html { redirect_to :action => :index, :status => 303 }
+      format.js   { redirect_to :action => :index, :format => :js, :status => 303 }
       format.xml  { head :ok }
     end
   end
