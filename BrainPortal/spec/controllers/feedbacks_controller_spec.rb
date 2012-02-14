@@ -112,16 +112,6 @@ describe FeedbacksController do
           response.should render_template("show")
         end
       end
-      describe "edit" do
-        it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id)
-          get :edit, :id => feedback.id
-        end
-        it "should render the edit page" do
-          get :edit, :id => feedback.id
-          response.should render_template("edit")
-        end
-      end
       describe "update" do
         it "should find the requested record" do
           Feedback.should_receive(:find).with(feedback.id)
@@ -141,14 +131,7 @@ describe FeedbacksController do
           end
           it "should redirect to the index" do
             put :update, :id => feedback.id
-            response.should redirect_to(:action => :index)
-          end
-        end
-        context "when update fails" do
-          it "should render the edit page" do
-            feedback.stub!(:update_attributes).and_return(false)
-            put :update, :id => feedback.id
-            response.should render_template("edit")
+            response.should redirect_to(:action => "show")
           end
         end
       end
@@ -184,12 +167,6 @@ describe FeedbacksController do
     describe "show" do
       it "should redirect the login page" do
         get :show, :id => 1
-        response.should redirect_to(:controller => :sessions, :action => :new)
-      end
-    end
-    describe "edit" do
-      it "should redirect the login page" do
-        get :edit, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
     end
