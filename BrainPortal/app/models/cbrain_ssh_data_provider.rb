@@ -42,6 +42,10 @@ class CbrainSshDataProvider < SshDataProvider
     false
   end
 
+  def allow_file_owner_change? #:nodoc:
+    false # nope, because files are stored in subdirectories named after the owner's name.
+  end
+
   def impl_sync_to_provider(userfile) #:nodoc:
     basename = userfile.name
     username = userfile.user.login
