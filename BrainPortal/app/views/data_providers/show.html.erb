@@ -98,8 +98,10 @@
       <% t.empty_cell %>
     <% end %>
 
-    <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
-      <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
+    <% if check_role(:admin) || @provider.user_id == current_user.id %>
+      <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
+        <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
+      <% end %>
     <% end %>
 
   <% end %>
