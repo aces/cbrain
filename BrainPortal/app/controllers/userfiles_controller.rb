@@ -452,6 +452,7 @@ class UserfilesController < ApplicationController
         return
       end
 
+      collectionType = file_type
       collectionType = FileCollection unless file_type <= FileCollection
 
       collection = collectionType.new(
