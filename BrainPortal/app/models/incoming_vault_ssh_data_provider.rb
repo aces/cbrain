@@ -42,8 +42,18 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
     end
   end
 
-  def allow_file_owner_change? #:nodoc:
-    false
+  def impl_provider_list_all(user = nil) #:nodoc:
+    tried_mkdir = false
+    begin
+      super(user)
+    rescue Net::SFTP::StatusException
+      raise if tried_mkdir
+      tried_mkdir = true
+      ssh_opts = self.ssh_shared_options
+      dir  = remote_shell_escape(self.browse_remote_dir(user))
+      bash_this("ssh -x -n #{ssh_opts} mkdir #{dir} >/dev/null 2>&1")
+      retry
+    end
   end
 
 end

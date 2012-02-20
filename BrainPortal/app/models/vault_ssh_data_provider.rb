@@ -40,6 +40,10 @@ class VaultSshDataProvider < SshDataProvider
     false
   end
 
+  def allow_file_owner_change? #:nodoc:
+    false # nope, because files are stored in subdirectories named after the owner's name.
+  end
+
   def impl_sync_to_provider(userfile) #:nodoc:
     username = userfile.user.login
     userdir = Pathname.new(remote_dir) + username
