@@ -136,16 +136,15 @@ class ApplicationController < ActionController::Base
 
     #Check if license agreement have been signed
     unsigned_agreements = current_user.unsigned_license_agreements
-
     unless unsigned_agreements.empty?
       return if params[:controller] == "portal" && params[:action] =~ /license$/
       return if current_user.has_role?(:admin) && params[:controller] == "bourreaux"
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first
+        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
       elsif current_user.has_role?(:admin)
         flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
         flash[:error] += "Please place the license file in /public/licenses or remove it from below."
-        redirect_to bourreau_path(RemoteResource.current_resource)
+        redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
       end
       return
     end
@@ -274,6 +273,7 @@ class ApplicationController < ActionController::Base
   # Find new messages to be displayed at the top of the page.
   def prepare_messages
     return unless current_user
+    return unless current_user.unsigned_license_agreements.empty?
     return if     request.format.blank?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
     
@@ -329,6 +329,14 @@ class ApplicationController < ActionController::Base
     return true if meta_keys.empty?
     meta_params = meta_params.presence || params[:meta] || {}
     target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
+  end
+  
+  def start_page_path
+    if current_user.has_role?(:admin)
+      url_for(:controller => :portal, :action => :welcome)
+    else
+      url_for(:controller => :groups, :action => :index)
+    end
   end
 
 end
