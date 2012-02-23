@@ -40,8 +40,9 @@ module TableMakerHelper
   #
   # Options control the layout of the table.
   #
-  #   :rows => number of rows
-  #   :cols => number of columns
+  #   :rows            => number of rows
+  #   :cols            => number of columns
+  #   :fill_by_columns => if true will fill table by columns
   #
   # If no :rows and :cols are supplied, a ratio of
   # rows:cols can be provided:
@@ -107,22 +108,30 @@ module TableMakerHelper
     td_callback ||= Proc.new { |elem,row,col| "<td#{tdclass}>#{elem}</td>" }
 
     result += "<table#{tableclass}#{tableid}>\n"
-    array.each_with_index do |elem,i|
-      col = i % cols
-      row = i / cols
-      if col == 0
-        result += "  " + tr_callback.call(row) + "\n"
-      end
-      formatted_elem = block_given? ? capture { h(yield(elem,row,col)) } : h(elem)
-      result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
-      if col + 1 == cols
-        result += "  </tr>\n"
+
+    0.upto(rows-1) do |row|
+      0.upto(cols-1) do |col|
+
+        idx  = options[:fill_by_columns] ? row+col*rows : col+row*cols
+   
+        if col == 0
+          result += "  " + tr_callback.call(row) + "\n"
+        end
+
+        if idx < array.size 
+          elem = array[idx]
+          formatted_elem = block_given? ? capture { h(yield(elem,row,col)) } : h(elem)
+          result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
+        else
+          result += "<td></td>"
+        end
+        
+        if col + 1 == cols
+          result += "  </tr>\n"
+        end
       end
     end
-    num_missing_tds = (cols - 1) - ((numelems-1) % cols)
-    if num_missing_tds > 0
-      result += "    <td colspan=\"#{num_missing_tds}\"></td>\n  </tr>\n"
-    end
+    
     result += "</table>\n"
 
     result.html_safe
@@ -142,23 +151,23 @@ module TableMakerHelper
         cellrows = Math.sqrt(cellent)         # rows per ratio grid cell
         rows     = (cellrows * rrat).to_i
       else
-        rows = Math.sqrt(size).to_i
+        rows = (Math.sqrt(size)+0.5).to_i
       end
       rows = 1    if rows == 0
     end
     if rows.nil?
       cols = size if cols > size
       cols = 1    if cols == 0
-      rows = (size.to_f / cols + 0.999).to_i
+      rows = (size+cols-1) / cols
       rows = 1    if rows == 0
     end
     if cols.nil?
       rows = size if rows > size
       rows = 1    if rows == 0
-      cols = size / rows
+      cols = (size+rows-1) / rows
       cols = 1    if cols == 0
     end
     return rows,cols
   end
-  
+
 end
