@@ -40,11 +40,17 @@ module TableMakerHelper
   #
   # Options control the layout of the table.
   #
-  #   :rows            => number of rows
-  #   :cols            => number of columns
-  #   :fill_by_columns => if true will fill table by columns
+  #   :rows                => number of rows
+  #   :cols                => number of columns
+  #   :fill_by_columns     => if true will fill table by columns
+  #   :leftover_cells_html => when true, each leftover cell is generated
+  #                           empty; when a string, must contain a full
+  #                           "<td>content</td>" for each such cell; when
+  #                           unset (de defautl), a single TD element with
+  #                           appropriate colspan or rowspan will fill the
+  #                           entire empty loftover space in the table.
   #
-  # If no :rows and :cols are supplied, a ratio of
+  # When no :rows and no :cols are supplied, a ratio of
   # rows:cols can be provided:
   #
   #   :ratio => "numrows:numcols" # e.g. "4:2"
@@ -52,7 +58,8 @@ module TableMakerHelper
   # Note that the method will try its best to fit the
   # number of elements of +array+ within the number of
   # rows and columns supplied. The default is to make
-  # the table kind of square.
+  # the table kind of square (with a slight bias towards
+  # horizontal tables when the rectangle isn't square).
   #
   #   :table_class => class(es) for the HTML TABLE element
   #   :tr_class    => class(es) for the HTML TR elements
@@ -90,7 +97,7 @@ module TableMakerHelper
       return result.html_safe
     end
 
-    rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols],options[:ratio])
+    rows,cols = complete_rows_cols(numelems,options[:rows],options[:cols],options[:ratio],options[:fill_by_columns])
 
     tableclass   = options[:table_class]
     trclass      = options[:tr_class]
@@ -109,10 +116,12 @@ module TableMakerHelper
 
     result += "<table#{tableclass}#{tableid}>\n"
 
+    num_cells = rows * cols
+
     0.upto(rows-1) do |row|
       0.upto(cols-1) do |col|
 
-        idx  = options[:fill_by_columns] ? row+col*rows : col+row*cols
+        idx = options[:fill_by_columns] ? row+col*rows : col+row*cols
    
         if col == 0
           result += "  " + tr_callback.call(row) + "\n"
@@ -123,7 +132,12 @@ module TableMakerHelper
           formatted_elem = block_given? ? capture { h(yield(elem,row,col)) } : h(elem)
           result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
         else
-          result += "<td></td>"
+          if options[:leftover_cells_html]
+            result += options[:leftover_cells_html].is_a?(String) ? options[:leftover_cells_html] : "<td></td>"
+          elsif idx == array.size
+            spanatt  = options[:fill_by_columns] ? "rowspan" : "colspan"
+            result  += "<td #{spanatt}=\"#{num_cells - array.size}\"></td>".html_safe
+          end
         end
         
         if col + 1 == cols
@@ -141,15 +155,16 @@ module TableMakerHelper
 
   # If one or both of :rows or :cols is missing,
   # compute the missing values.
-  def complete_rows_cols(size,rows,cols,ratio) #:nodoc:
+  def complete_rows_cols(size,rows,cols,ratio,by_columns=false) #:nodoc:
     if cols.nil? && rows.nil?
       if ! ratio.blank? && ratio =~ /^(\d*[1-9]\d*):(\d*[1-9]\d*)$/
         rrat     = Regexp.last_match[1].to_i
         crat     = Regexp.last_match[2].to_i
         rattot   = rrat * crat                # total 'cells' in ratio grid
-        cellent  = size.to_f / rattot.to_f    # entries per ratio grid cell
+        cellent  = size.to_f / rattot.to_f    # entries per ratio grid cell (float)
         cellrows = Math.sqrt(cellent)         # rows per ratio grid cell
-        rows     = (cellrows * rrat).to_i
+        rows     = (cellrows * rrat + 0.5).to_i
+        # cols will be infered in the cols.nil? block later
       else
         rows = (Math.sqrt(size)+0.5).to_i
       end
@@ -160,12 +175,14 @@ module TableMakerHelper
       cols = 1    if cols == 0
       rows = (size+cols-1) / cols
       rows = 1    if rows == 0
+      cols = (size+rows-1) / rows if by_columns.present? && cols > size/rows
     end
     if cols.nil?
       rows = size if rows > size
       rows = 1    if rows == 0
       cols = (size+rows-1) / rows
       cols = 1    if cols == 0
+      rows = (size+cols-1) / cols if by_columns.blank? && rows > size/cols
     end
     return rows,cols
   end

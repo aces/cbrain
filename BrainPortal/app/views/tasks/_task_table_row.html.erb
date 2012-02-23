@@ -38,7 +38,7 @@
   <tr class="list-unavailable row_highlight batch_listing_<%= launch_time_id %>" title="This task is on an Execution Server that is OFFLINE.">
     <td></td>
 <% end %>
-    <td class="left"><%= tree_view_icon(is_child, task.level) %><%= link_to_task_if_accessible(task, nil, :name => task.pretty_name) %></td>
+    <td class="left"><%= tree_view_icon(task.level) if is_child %><%= link_to_task_if_accessible(task, nil, :name => task.pretty_name) %></td>
     <td><%= overlay_description(task.description, :header_width => 35) %></td>
     <td><%= link_to_user_if_accessible(task.user) %></td>
     <% unless current_project %>

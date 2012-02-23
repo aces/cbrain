@@ -69,8 +69,8 @@ module AjaxWidgetHelper
   end
   
   ###############################################################
-  # Creates an html element which will have it's content updated 
-  # with a ajax call to the url specified in the options hash
+  # Creates an html element which will have its content updated 
+  # with an ajax call to the url specified in the options hash
   #
   # Options:
   # [:element] the type of element to generate. Defaults to "div".
@@ -78,7 +78,7 @@ module AjaxWidgetHelper
   #
   # Example:
   #
-  # <% ajax_element( "/data_providers", :element => "span", :class => "left right center")  do %>
+  # <% ajax_element( "/data_providers", :element => "span", :class => "left right center") do %>
   #   loading...
   # <% end %>
   #

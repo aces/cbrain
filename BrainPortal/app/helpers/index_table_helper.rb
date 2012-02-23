@@ -355,7 +355,7 @@ module IndexTableHelper
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
     link_options = options.reverse_merge(:datatype  => 'script')
     text = "<span class=\"sort_header\">" + h(name) + "</span>"
-    header = text.html_safe +  set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
+    header = text.html_safe + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
     ajax_link( header, url, link_options )
   end
 
@@ -364,13 +364,9 @@ module IndexTableHelper
    old_value == 'on' ? 'off' : 'on'
   end
   
-  #Indents children files in the Userfile index table *if* the 
-  #current ordering is 'tree view'.
-  def tree_view_icon(tree_sort, level)
-    multiplier = level || 0
-    if tree_sort
-      ('&nbsp' * 4 * multiplier + '&#x21b3;').html_safe
-    end
+  # Renders an 'down-and-right' arrow with an indentation proportional to +level+
+  def tree_view_icon(level = 0)
+    ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
   end
   
   #Set direction for resource list sorting
