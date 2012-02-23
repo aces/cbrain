@@ -22,12 +22,12 @@
 
 # Helper for building standard index tables with sorting and basic 
 # filtering. Essentially the developer will define the tables columns, 
-# and thes column definitions will be used to create rows, one each, 
+# and the column definitions will be used to create rows, one each, 
 # for a collection of objects provided.
 #
 # The primary method used to build tables is +index_table+ which is given 
 # a collection objects and a block. This block will be passed a 
-# TableBuilder object ot be used to describe the table:
+# TableBuilder object to be used to describe the table:
 #   <%= 
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
@@ -202,7 +202,7 @@ module IndexTableHelper
         unless filters.blank?
           #html << "&nbsp;<span style=\"color: white\">&bull;</span>"
           html << "<br>\n"
-          html << "<ul class=\"filter_list\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
+          html << "<ul class=\"filter_list hover_dropdown\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
           filters.each do |f|
             html << "<li>\n"
             html << @template.instance_eval { filter_add_link f[0], f[1] }

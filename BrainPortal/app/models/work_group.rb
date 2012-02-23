@@ -34,6 +34,14 @@ class WorkGroup < Group
     return 'Shared Work Project'
   end
   
+  def short_pretty_type
+    if self.users.count > 1
+      return "Shared"
+    else
+      return ""
+    end
+  end
+  
   def can_be_edited_by?(user)
     if user.has_role? :admin
       return true

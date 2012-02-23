@@ -40,6 +40,7 @@ module BasicFilterHelpers
   #Returns currently active project.
   def current_project
     return nil unless current_session[:active_group_id]
+    return nil if current_session[:active_group_id] == "all"
     
     if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
       @current_project = Group.find_by_id(current_session[:active_group_id])

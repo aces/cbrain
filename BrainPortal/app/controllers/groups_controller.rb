@@ -31,13 +31,33 @@ class GroupsController < ApplicationController
   # GET /groups.xml
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
+    @filter_params["button_view"] ||= "on"
     @header_scope = current_user.available_groups
     scope = base_filtered_scope @header_scope.includes(:site)
     @total_entries = scope.count
     
     # For Pagination
+    @per_page = 50 unless @filter_params["per_page"]
     offset = (@current_page - 1) * @per_page
-    pagination_list  = scope.limit(@per_page).offset(offset)
+     
+    if @filter_params["button_view"] == "on"
+      pagination_list = scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
+      num_workgroups  = pagination_list.size
+      num_missing     = @per_page - num_workgroups
+      
+      if num_missing > 0
+        total_workgroups = scope.where("groups.type = 'WorkGroup'").count
+        sys_offset = [offset - total_workgroups, 0].max
+        pagination_list += scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
+      end
+      num_missing = @per_page - pagination_list.size
+      if num_missing > 0 
+        pagination_list << "ALL"
+      end 
+      @total_entries += 1
+    else
+      pagination_list  = scope.limit(@per_page).offset(offset)
+    end
     
     @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
       pager.replace(pagination_list)
@@ -45,13 +65,18 @@ class GroupsController < ApplicationController
       pager
     end
     
-    @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
     @group_id_2_userfile_counts      = Userfile.group("group_id").count
     @group_id_2_task_counts          = CbrainTask.group("group_id").count
-    @group_id_2_tool_counts          = Tool.group("group_id").count
-    @group_id_2_data_provider_counts = DataProvider.group("group_id").count
-    @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
-    @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
+    if @filter_params["button_view"] == "on"
+      @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
+      @group_id_2_task_counts[nil]     = current_user.available_tasks.count
+    else
+      @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
+      @group_id_2_tool_counts          = Tool.group("group_id").count
+      @group_id_2_data_provider_counts = DataProvider.group("group_id").count
+      @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
+      @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
+    end
 
     respond_to do |format|
       format.js
@@ -182,14 +207,14 @@ class GroupsController < ApplicationController
     
     if params[:id].blank?
       current_session[:active_group_id] = nil
-      flash[:notice] = "You no longer have an active project selected."
+    elsif params[:id] == "all"
+      current_session[:active_group_id] = "all"
     else
       @group = current_user.available_groups.find(params[:id])
       current_session[:active_group_id] = @group.id
-      flash[:notice] = "Your active project is now '#{@group.name}'."
     end
     
-    redirect_to redirect_path
+    redirect_to userfiles_path
   end
 
 end

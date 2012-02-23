@@ -45,6 +45,21 @@ module RichUiHelper
     link.html_safe
   end
   
+  def hover_dropdown(header, options = {}, &block)
+    target_id = "hover_div_#{Time.now.to_i}"
+    options[:target] = "##{target_id}"
+    options[:style] = "display:inline-block"
+    options_setup("filter_header", options)
+    atts = options.to_html_attributes
+    html = ["<span #{atts}>\n"]
+    html << link_to(h(header), "#")
+    html << "<div id=#{target_id} class=\"hover_dropdown resource_header\" style=\"display:none\">\n"
+    html << capture(&block)
+    html << "</div>"
+    html << "</span>"
+    return html.join.html_safe
+  end
+  
   #Create tab bars in the interface.
    #Content is provided with a block.
    #[options] A hash of html options for the tab bar structure.

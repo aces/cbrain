@@ -96,6 +96,14 @@ class Group < ActiveRecord::Base
     self.to_s.demodulize.underscore.titleize.sub(/group/i,"Project")
   end
 
+  def short_pretty_type #:nodoc:
+   self.class.short_pretty_type
+  end
+
+  def self.short_pretty_type #:nodoc:
+    self.to_s.demodulize.underscore.titleize.sub(/\s*group\s*/i,"")
+  end
+
   # Returns true of +name+ is a legal group name. Also called
   # by active record validations.
   def self.is_legal_groupname?(name)

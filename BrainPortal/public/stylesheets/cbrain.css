@@ -752,8 +752,15 @@ pre {
 #main-menu {
     position: absolute;
     bottom: 0px;
-    left:6px;
     font-size: 11px;
+}
+
+.main_menu_left {
+  left:6px;
+}
+
+.main_menu_right {
+  right:6px;
 }
 
 #main-menu ul {
@@ -826,6 +833,97 @@ pre {
 
 
 /* % ######################################################### */
+/* % Project buttons */
+/* % ######################################################### */
+
+.project_button {
+  display: block;
+  float: left;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 0.4em;
+  margin: 1em;
+  width: 10em;
+  height: 10em;
+  border: 0.4em gray solid;
+  border-radius: 1em;
+  -moz-border-radius: 1em;
+  cursor: pointer;
+}
+
+.project_button h4{
+  color: white;
+  font-size: 15px;
+  padding-bottom: 4px;
+}
+
+.project_button:hover {
+  -webkit-transform:        scale(1.2);
+  -moz-transform:           scale(1.2);
+  -o-transform:             scale(1.2);
+  -ms-transform:            scale(1.2);
+}
+
+.project_button:active {
+  -webkit-transform:        scale(1);
+  -moz-transform:           scale(1);
+  -o-transform:             scale(1);
+  -ms-transform:            scale(1);
+}
+
+/* Gradients done using: http://www.colorzilla.com/gradient-editor/ */
+.work_project {
+  background: #4394df; /* Old browsers */
+  background: -moz-linear-gradient(-45deg,  #4394df 0%, #2174bd 24%, #064c8a 50%, #1e68a8 79%, #237cc9 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#4394df), color-stop(24%,#2174bd), color-stop(50%,#064c8a), color-stop(79%,#1e68a8), color-stop(100%,#237cc9)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* IE10+ */
+  background: linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4394df', endColorstr='#237cc9',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.work_project:active {
+  background: #4394df; /* Old browsers */
+  background: -moz-linear-gradient(-45deg,  #4394df 0%, #2174bd 24%, #064c8a 50%, #1e68a8 79%, #237cc9 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#4394df), color-stop(24%,#2174bd), color-stop(50%,#064c8a), color-stop(79%,#1e68a8), color-stop(100%,#237cc9)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* IE10+ */
+  background: linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4394df', endColorstr='#237cc9',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.system_project {
+  background: #fb3927; /* Old browsers */
+  background: -moz-linear-gradient(-45deg,  #fb3927 0%, #da1304 24%, #8f0a01 50%, #c21104 79%, #e71405 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fb3927), color-stop(24%,#da1304), color-stop(50%,#8f0a01), color-stop(79%,#c21104), color-stop(100%,#e71405)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* IE10+ */
+  background: linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fb3927', endColorstr='#e71405',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.system_project:active {
+  background: #fb3927; /* Old browsers */
+  background: -moz-linear-gradient(-45deg,  #fb3927 0%, #da1304 24%, #8f0a01 50%, #c21104 79%, #e71405 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fb3927), color-stop(24%,#da1304), color-stop(50%,#8f0a01), color-stop(79%,#c21104), color-stop(100%,#e71405)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* IE10+ */
+  background: linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fb3927', endColorstr='#e71405',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.giant{
+  margin-top: 0.3em;
+  font-size: 4em;
+}
+
+/* % ######################################################### */
 /* % End User License Agreement */
 /* % ######################################################### */
 
@@ -870,6 +968,11 @@ pre {
     text-align: center;
     background: #ffffff;
     vertical-align: bottom;
+}
+
+.footer a {
+    font-size: 0.9em;
+    color: #aaa;
 }
 
 /* % ######################################################### */
@@ -1425,13 +1528,14 @@ img {
 
 
 
+
+
 /* % ######################################################### */
 /* % Styles for Filtering Columns Headers */
 /* % Used in Task Index or Data Provider Browser */
 /* % ######################################################### */
 
 .filter_list {
-    position: absolute;
     border: 3px solid #0471B4;
     margin: 0;
     padding: 1em 2em 1em 2em;
@@ -1441,6 +1545,18 @@ img {
     overflow: auto;
 }
 
+.hover_dropdown {
+  position: absolute;
+  z-index: 999;
+}
+
+.resource_header {
+  border-top: 0;
+  margin: 0;
+  padding: 1em;
+  background-color: #0471B4;
+  text-align: left;
+}
 
 
 /* % ######################################################### */
