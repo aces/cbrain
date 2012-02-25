@@ -72,8 +72,8 @@ class ActiveRecord::Base
     attlist.each do |att|
       raise "Attribute '#{att}' not a symbol?!?" unless att.is_a?(Symbol)
       colinfo = self.columns_hash[att.to_s] || self.columns_hash[att]
-      raise "No such attribute '#{att}' for model #{self.name}"  unless colinfo
-      raise "Attribute '#{att}' is not of type :text or :string in the DB!" unless colinfo.type == :text || colinfo.type == :string
+      next unless colinfo
+      next unless colinfo.type == :text || colinfo.type == :string
       to_adjust[att] = encoding_name
     end
     after_initialize :adjust_forced_attribute_encodings
