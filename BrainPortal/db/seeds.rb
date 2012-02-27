@@ -194,7 +194,7 @@ admin = User.seed_record!(
   },
   {
     :full_name             => "CBRAIN Administrator",
-    :email                 => "nobody@#{hostname}"
+    :email                 => "nobody@localhost"
   },
   { :info_name_method => :login }
 ) do |u|

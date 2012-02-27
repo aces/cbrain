@@ -331,6 +331,25 @@ class ApplicationController < ActionController::Base
     target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
   end
   
+  ####################################################
+  #
+  # Changing default redirect code from 302 to 303
+  #
+  ####################################################
+  
+  alias :old_redirect_to :redirect_to
+
+  # Change default redirect code to 303
+  def redirect_to(options = {}, response_status = {})
+    if options.is_a?(Hash)
+      options[:status] ||= 303
+    else
+      response_status[:status] ||= 303
+    end
+    old_redirect_to(options, response_status)
+  end
+  
+  #Different home pages for admins and other users.
   def start_page_path
     if current_user.has_role?(:admin)
       url_for(:controller => :portal, :action => :welcome)
