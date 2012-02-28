@@ -161,8 +161,8 @@ class MessagesController < ApplicationController
     end
     
     respond_to do |format|
-      format.js { redirect_to :action => :index, :status => 303 }
-      format.xml  { head :ok }
+      format.js { redirect_to :action => :index }
+      format.xml { head :ok }
     end
   end
 
