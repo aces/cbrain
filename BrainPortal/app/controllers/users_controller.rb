@@ -25,6 +25,8 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  api_available :only => [ :create, :show ]
+
   before_filter :login_required,        :except => [:request_password, :send_password]  
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
   
@@ -71,7 +73,7 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @userfile }
+      format.xml  { render :xml => @user }
     end
   end
 
@@ -87,25 +89,30 @@ class UsersController < ApplicationController
     # uncomment at your own risk
     # reset_session
     params[:user] ||= {}
-    login     = params[:user].delete :login
-    role      = params[:user].delete :role
-    group_ids = params[:user].delete :group_ids
-    site_id   = params[:user].delete :site_id
+
+    # These atributes must be set explicitely
+    login          = params[:user].delete :login
+    role           = params[:user].delete :role
+    group_ids      = params[:user].delete :group_ids
+    site_id        = params[:user].delete :site_id
+    account_locked = params[:user].delete :account_locked
 
     no_password_reset_needed = params.delete(:no_password_reset_needed) == "1"
  
     @user = User.new(params[:user])
 
     if current_user.has_role? :admin
-      @user.login     = login     if login
-      @user.role      = role      if role
-      @user.group_ids = group_ids if group_ids
-      @user.site_id   = site_id   if site_id
+      @user.login          = login     if login
+      @user.role           = role      if role
+      @user.group_ids      = group_ids if group_ids
+      @user.site_id        = site_id   if site_id
+      @user.account_locked = (account_locked == "1")
     end
 
     if current_user.has_role? :site_manager
-      @user.login     = login     if login
-      @user.group_ids = group_ids if group_ids
+      @user.login          = login     if login
+      @user.group_ids      = group_ids if group_ids
+      @user.account_locked = (account_locked == "1")
       if role 
         if role == 'site_manager'
           @user.role = 'site_manager'
@@ -129,10 +136,14 @@ class UsersController < ApplicationController
         flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
-      redirect_to :action => :index, :format => :js
+      respond_to do |format|
+        format.js  { redirect_to :action => :index, :format => :js }
+        format.xml { render :xml => @user }
+      end
     else
       respond_to do |format|                                                                  
-        format.js {render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'user' }}
+        format.js  { render :partial  => 'shared/failed_create', :locals  => { :model_name  => 'user' } }
+        format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -156,6 +167,7 @@ class UsersController < ApplicationController
       params[:user][:time_zone] = nil # change "" to nil
     end
     
+    # These atributes must be set explicitely
     role           = params[:user].delete :role
     group_ids      = params[:user].delete :group_ids
     site_id        = params[:user].delete :site_id
