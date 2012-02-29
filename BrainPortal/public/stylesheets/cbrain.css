@@ -738,6 +738,15 @@ pre {
     color: #f8f8f8;
     float: left;
     padding: 10px;
+    color: white;
+}
+
+#header h1 a {
+    color: white;
+}
+
+#header a:hover {
+  background: gray;
 }
 
 #mni_logo {
@@ -754,6 +763,7 @@ pre {
     bottom: 0px;
     font-size: 11px;
 }
+
 
 .main_menu_left {
   left:6px;
@@ -789,7 +799,7 @@ pre {
     color: #fff;
 }
 
-#main-menu a:hover, a:active {
+#main-menu li a:hover, a:active {
     background: #ffffff none repeat scroll 0 0;
     color: #555555;
 }

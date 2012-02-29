@@ -46,14 +46,18 @@ module RichUiHelper
   end
   
   def hover_dropdown(header, options = {}, &block)
-    target_id = "hover_div_#{Time.now.to_i}"
+    @@hover_dropdown_div_ids ||= 0
+    @@hover_dropdown_div_ids += 1
+    target_id = "hover_div_#{@@hover_dropdown_div_ids}"
     options[:target] = "##{target_id}"
     options[:style] = "display:inline-block"
+    dropdown_class = "hover_dropdown "
+    dropdown_class += options.delete(:dropdown_class)
     options_setup("filter_header", options)
     atts = options.to_html_attributes
     html = ["<span #{atts}>\n"]
     html << link_to(h(header), "#")
-    html << "<div id=#{target_id} class=\"hover_dropdown resource_header\" style=\"display:none\">\n"
+    html << "<div id=#{target_id} class=\"#{dropdown_class}\" style=\"display:none\">\n"
     html << capture(&block)
     html << "</div>"
     html << "</span>"

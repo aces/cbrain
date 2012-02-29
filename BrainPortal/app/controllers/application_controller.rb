@@ -42,6 +42,7 @@ class ApplicationController < ActionController::Base
   rescue_from Exception, :with => :log_exception_handler
 
   helper        :all # include all helpers, all the time
+  helper_method :start_page_path
 
   before_filter :always_activate_session
   before_filter :set_cache_killer
@@ -332,10 +333,12 @@ class ApplicationController < ActionController::Base
   end
   
   def start_page_path
-    if current_user.has_role?(:admin)
-      url_for(:controller => :portal, :action => :welcome)
-    else
+    return "#" unless current_user
+    
+    if current_user.has_role?(:user)
       url_for(:controller => :groups, :action => :index)
+    else   
+      url_for(:controller => :portal, :action => :welcome)
     end
   end
 

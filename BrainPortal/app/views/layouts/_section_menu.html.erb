@@ -28,48 +28,43 @@
 
 <div id="header">
   <h1>
-    <%= RemoteResource.current_resource.name.presence || "CBRAIN" %>
-    <%= "- #{current_project.name}" if current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
-    <%= yield :title %>
+    <%= link_to_if(current_user, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
+    <%= h("- ") + link_to(current_project.name, group_path(current_project)) if current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
+    <%= yield(:title) %>
   </h1>
 
     <% if current_user %>
-      <% if  current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] = "index") %>
         <div id="main-menu" class="main_menu_left">
-           <ul>      
-             <li <%= set_selected(params[:controller], :userfiles) %>>
-               <%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %>
-             </li>
-             <li <%= set_selected(params[:controller], :tasks) %>>
-               <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
-             </li>
-             <% if !current_user.has_role?(:user) %>
-               <li <%= set_selected(params[:controller], :data_providers) %>>
-                 <%= link_to 'Data Providers', data_providers_path %>
-               </li>
-               <li <%= set_selected(params[:controller], :bourreaux) %>>
-                 <%= link_to 'Servers', bourreaux_path %>
-               </li>               
-               <li <%= set_selected(params[:controller], :tools) %>>
-                <%= link_to 'Tools', tools_path %>
-               </li>
-               <li <%= set_selected(params[:controller], :users) %>>
-                <%= link_to 'Users', users_path %>
-               </li>
+             <ul>
+               <% if !current_user.has_role?(:user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+                 <li <%= set_selected(params[:controller], :userfiles) %>>
+                   <%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %>
+                 </li>
+                 <li <%= set_selected(params[:controller], :tasks) %>>
+                   <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
+                 </li>
+               <% end %>
+               <% if !current_user.has_role?(:user) %>
+                 <li <%= set_selected(params[:controller], :data_providers) %>>
+                   <%= link_to 'Data Providers', data_providers_path %>
+                 </li>
+                 <li <%= set_selected(params[:controller], :bourreaux) %>>
+                   <%= link_to 'Servers', bourreaux_path %>
+                 </li>               
+                 <li <%= set_selected(params[:controller], :tools) %>>
+                  <%= link_to 'Tools', tools_path %>
+                 </li>
+                 <li <%= set_selected(params[:controller], :users) %>>
+                  <%= link_to 'Users', users_path %>
+                 </li>
+               <% end %>
                <% if current_user.has_role?(:admin) %>
                  <li <%= set_selected(params[:controller], :sites) %>>
                    <%= link_to 'Sites', sites_path %>
                  </li>  
                <% end %>
-             <% end %>
-          </ul>
+             </ul>
         </div>  <!-- End id="main_menu_left" -->
-       <% end %>
-       <div id="main-menu" class="main_menu_right">
-         <ul>                  
-          
-         </ul>
-       </div>  <!-- End id="main_menu_right" -->
   <% end %>  
 </div>   <!-- End id="header" -->   
 

@@ -37,7 +37,7 @@
       <%= link_to 'Projects', groups_path %>
       <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
       <% if current_user.has_role?(:user) %>
-        <%= hover_dropdown("Resources") do %>
+        <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
           <%= link_to 'Data Providers', data_providers_path %><BR>
           <%= link_to 'Servers', bourreaux_path %><BR>
           <%= link_to 'Tools', tools_path %><BR>
