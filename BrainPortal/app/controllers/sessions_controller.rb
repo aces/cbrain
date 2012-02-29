@@ -86,10 +86,10 @@ class SessionsController < ApplicationController
 
     # Everything OK
     current_session.activate
-    if params[:remember_me] == "1"
-      current_user.remember_me unless current_user.remember_token?
-      cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
-    end
+    #if params[:remember_me] == "1"
+    #  current_user.remember_me unless current_user.remember_token?
+    #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
+    #end
 
     # Record the best guess for browser's remote host name
     reqenv = request.env

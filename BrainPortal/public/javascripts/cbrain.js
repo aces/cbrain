@@ -458,8 +458,12 @@ jQuery(
 
    jQuery(".submit_onchange").live("change", function() {
        var select = jQuery(this);
+       var commit_value = select.attr("data-commit");
        var form   = select.closest("form");
-       form.submit()
+       if(commit_value){
+        jQuery("<input name=\"commit\" type=\"hidden\" value=\"" + commit_value +  "\">").appendTo(form);
+       }
+       form.submit();
    });
 
    

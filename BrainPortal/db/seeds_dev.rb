@@ -193,8 +193,8 @@ STEP
     },
     { :info_name_method => :login }
   ) do |u|
-    u.password              = u.login
-    u.password_confirmation = u.login
+    u.password              = u.login + "_123"
+    u.password_confirmation = u.login + "_123"
   end
 end
 
@@ -218,8 +218,8 @@ end
     },
     { :info_name_method => :login }
   ) do |u|
-    u.password              = u.login
-    u.password_confirmation = u.login
+    u.password              = u.login + "_123"
+    u.password_confirmation = u.login + "_123"
   end
 end
 
@@ -243,8 +243,8 @@ end
     },
     { :info_name_method => :login }
   ) do |u|
-    u.password              = u.login
-    u.password_confirmation = u.login
+    u.password              = u.login + "_123"
+    u.password_confirmation = u.login + "_123"
   end
 end
 
@@ -268,8 +268,8 @@ end
     },
     { :info_name_method => :login }
   ) do |u|
-    u.password              = u.login
-    u.password_confirmation = u.login
+    u.password              = u.login + "_123"
+    u.password_confirmation = u.login + "_123"
   end
 end
 
