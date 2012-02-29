@@ -56,10 +56,9 @@
     %>
       <% if g == "ALL" %>
         <a style="color:black" href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button">
-          <h4 style="color:black"><%= 'None' %></h4>
+          <h4 style="color:black">All</h4>
           Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
           Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
-          <div class="giant">X</div>
         </a>
       <% else %>
         <a href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= g.is_a?(SystemGroup) ? "system" : "work" %>_project">
