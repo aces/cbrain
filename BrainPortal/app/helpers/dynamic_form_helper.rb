@@ -120,6 +120,11 @@ module DynamicFormHelper
       options["data-reset-form"] = reset_form
     end
     
+    scroll_bottom = options.delete(:scroll_bottom)
+    if scroll_bottom
+      options["data-scroll-bottom"] = scroll_bottom
+    end
+    
     form_tag(url_for_options, options, *parameters_for_url, &block)
   end
   
@@ -170,6 +175,11 @@ module DynamicFormHelper
     reset_form = options.delete(:reset_form)
     unless reset_form.nil?
       options[:html]["data-reset-form"] = reset_form
+    end
+    
+    scroll_bottom = options.delete(:scroll_bottom)
+    if scroll_bottom
+      options["data-scroll-bottom"] = scroll_bottom
     end
     
     args << options

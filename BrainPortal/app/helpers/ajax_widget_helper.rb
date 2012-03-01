@@ -97,6 +97,16 @@ module AjaxWidgetHelper
       options["data-data"] = h data.to_json
     end
     
+    interval = options.delete(:interval)
+    if interval
+      options["data-interval"] = h interval
+    end
+    
+    scroll_bottom = options.delete(:scroll_bottom)
+    if scroll_bottom
+      options["data-scroll-bottom"] = h scroll_bottom
+    end
+    
     options_setup("ajax_element", options)
     
     options["data-url"] = url
@@ -112,6 +122,15 @@ module AjaxWidgetHelper
     html += "</#{element}>"
     
     html.html_safe
+  end
+  
+  def ajax_refresh_link(text, target, options = {})
+    options["data-target"] = target
+  
+    options[:class] ||= ""
+    options[:class] +=  " ajax_element_refresh_button"
+  
+    link_to text, "#", options 
   end
   
   #Request some js through ajax to be run on the current page.

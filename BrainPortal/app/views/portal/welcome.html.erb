@@ -194,4 +194,14 @@
     </div>
   
   <% end %>
-
+<% if current_user.has_role?(:admin) %>
+  <fieldset>
+    <legend>Logs</legend>
+    <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>
+      Number of lines to show: <%= select_tag "num_lines", options_for_select([1000, 5000, 10_000, 20_000], :selected => 5000) %>
+      <%= submit_tag "Refresh", :class => "button" %>
+    <% end %>
+    <br><br>
+    <%= ajax_element("/portal_log", :id => "portal_log", :scroll_bottom => true) %>
+  </fieldset>
+<% end %>

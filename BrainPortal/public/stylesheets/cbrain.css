@@ -565,7 +565,12 @@ a {
     line-height: 1.5em;
 }
 
-
+#portal_log {
+  max-height: 40em;
+  overflow: auto;
+  background-color: black;
+  color: white;
+}
 
 
 /* % #################################################################### */
