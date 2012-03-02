@@ -75,7 +75,7 @@ class PortalController < ApplicationController
     num_lines = (params[:num_lines] || 5000).to_i
     num_lines = 1000 if num_lines < 1000
     num_lines = 20_000 if num_lines > 20_000
-    log =  IO.popen("tail -#{num_lines} #{Rails.root + "log/#{Rails.env}.log"}", "r").read
+    log =  IO.popen("tail -#{num_lines} #{Rails.configuration.paths.log.first}", "r").read
     render :text => "<pre>#{ascii_color_to_html(log)}</pre>"
   end
   
