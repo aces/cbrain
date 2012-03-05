@@ -76,7 +76,7 @@ class PortalController < ApplicationController
     num_lines = 1000 if num_lines < 1000
     num_lines = 20_000 if num_lines > 20_000
     log =  IO.popen("tail -#{num_lines} #{Rails.configuration.paths.log.first}", "r").read
-    render :text => "<pre>#{ascii_color_to_html(log)}</pre>"
+    render :text => "<pre>#{colorize_logs(log)}</pre>"
   end
   
   def show_license
@@ -219,34 +219,28 @@ class PortalController < ApplicationController
   
   private
   
-  def ascii_color_to_html(data)
-    colors = { 
-              30 => :black,
-              31 => :red,
-              32 => :green,
-              33 => :yellow,
-              34 => :blue,
-              35 => :magenta,
-              36 => :cyan,
-              37 => :white,
-            }
-    color_keys = colors.keys
-    data.gsub!(/\e\[\d+m.*\e\[0m/) do |m|
-      color_match = false
-      color = nil
-      color_keys.each do |k|
-        if m =~ /\e\[#{k}m/
-          color_match = true
-          color = colors[k]
-        end
+  def colorize_logs(data)
+    data = ERB::Util.html_escape(data)
+    data.gsub!(/\e\[\d+m/, "")
+    data.gsub!(/^Started.+/) { |m| "<span style=\"color:lime\">#{m}</span>" }
+    data.gsub!(/  Parameters: .+/) { |m| "<span style=\"color:yellow; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}ms/) { |m| "<span style=\"color:green\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span style=\"color:yellow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span style=\"color:red; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span style=\"background-color:red; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^User: \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/ using \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    pair = false
+    data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
+      if pair
+        color = "coral"
+      else
+        color = "skyblue"
       end
-      result = m
-      result.gsub!(/\e\[\d+m/, "")
-      result.gsub!(/\e\[0m/, "")
-      result = "<span style=\"color:#{color}\">#{result}</span>" if color_match
-      result
+      pair = !pair
+      "<span style=\"color:#{color} \">#{m}</span>"
     end
-
+    
     data 
   end
 
