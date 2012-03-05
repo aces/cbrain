@@ -96,7 +96,9 @@ class TasksController < ApplicationController
       @tasks = {} # hash lt => task_info
       launch_times.each do |lt|
          first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
+         next unless first_task.present? # in rare case a delete operation happens in background
          tasks_in_batch = scope.where(:launch_time => lt).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
+         next unless tasks_in_batch.present? # in rare case a delete operation happens in background
          statuses = {}
          tot_tasks = 0
          tasks_in_batch.each do |stat_info|
