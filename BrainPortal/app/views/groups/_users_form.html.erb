@@ -72,7 +72,8 @@
   <%= array_to_table(@users,
       :cols        => 5,
       :table_class => 'button_table',
-      :td_class    => 'left_align no_wrap'
+      :td_class    => 'left_align no_wrap',
+      :fill_by_columns => true
       ) do |user,r,c| %>
         <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
         <%= link_to_user_with_tooltip(user) %>
@@ -94,7 +95,8 @@
   <%= array_to_table(@other_work_groups,
       :cols        => 5,
       :table_class => 'button_table',
-      :td_class    => 'left_align no_wrap'
+      :td_class    => 'left_align no_wrap',
+      :fill_by_columns => true
       ) do |group,r,c| %>
         <%= select_all_checkbox "workgroup_#{group.id}", :id => "workgroup_#{group.id}" %>
         <label for="workgroup_<%= group.id %>"><%= group.name -%></label>
@@ -118,7 +120,8 @@
   <%= array_to_table(@other_site_groups,
       :cols        => 5,
       :table_class => 'button_table',
-      :td_class    => 'left_align no_wrap'
+      :td_class    => 'left_align no_wrap',
+      :fill_by_columns => true
       ) do |group,r,c| %>
         <%= select_all_checkbox "sitegroup_#{group.id}", :id => "sitegroup_#{group.id}" %>
         <label for="sitegroup_<%= group.id %>"><%= group.name -%></label>

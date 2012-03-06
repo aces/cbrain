@@ -43,11 +43,15 @@ function modify_target(data, target, options){
        	}
        });
     }else{
+      current_target = jQuery(target);
       if(options["replace"]){
-        jQuery(target).replaceWith(new_content);
+        current_target.replaceWith(new_content);
       } else {
-        jQuery(target).html(new_content);
-      }     
+        current_target.html(new_content);
+      }
+      if(options["scroll_bottom"]){
+        current_target.scrollTop(current_target[0].scrollHeight);
+      }
     }
     new_content.trigger("new_content");
   }
@@ -181,13 +185,40 @@ function load_behaviour(event){
     // Delayed loading of content
     //
     /////////////////////////////////////////////////////////////////////
-
-    //See ajax_element() in application_helper.rb
-    //The ajax element will have its contents loaded by the response from an
-    //ajax request (so the element's conents will be loaded later with respect
-    //to the rest of the page). If the "data-replace" attribute is set to "true"
-    //the entire element will be replace an not just its contents.
-    loaded_element.find(".ajax_element").each(function (index,element){
+    
+    function fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom){
+      jQuery.ajax({
+          type: method,
+          url: url,
+          dataType: 'html',
+          data: data,
+          success: function(data) {
+              var new_content = jQuery(data);
+              if(replace == "true"){
+                current_element.replaceWith(new_content);
+              }else{
+                current_element.html(new_content);
+              }
+              new_content.trigger("new_content");
+              if(scroll_bottom){
+                current_element.scrollTop(current_element[0].scrollHeight);
+              }
+          },
+          error: function(e) {
+            if(!error_message){
+              error_message = "<span class='loading_message'>Error loading element</span>"; 
+            }
+            if(replace == "true"){
+              current_element.replaceWith(error_message);
+            }else{
+              current_element.html(error_message);
+            }
+          },
+          timeout: 50000
+        });
+    }
+    
+    function update_ajax_element(element){
       var current_element = jQuery(element);
       var method = current_element.attr("data-method")
       if(!method) method = "GET";
@@ -196,33 +227,34 @@ function load_behaviour(event){
       var replace = current_element.attr("data-replace");
       var data = current_element.attr("data-data");
       if(data) data = jQuery.parseJSON(data);
+      var interval = current_element.attr("data-interval");
+      var scroll_bottom = current_element.attr("data-scroll-bottom");
+      if(scroll_bottom == "false") scroll_bottom = false;
       
-      jQuery.ajax({
-        type: method,
-        url: url,
-        dataType: 'html',
-        data: data,
-        success: function(data) {
-            var new_content = jQuery(data);
-            if(replace == "true"){
-              current_element.replaceWith(new_content);
-            }else{
-              current_element.html(new_content);
-            }
-            new_content.trigger("new_content");
-        },
-        error: function(e) {
-          if(!error_message){
-            error_message = "<span class='loading_message'>Error loading element</span>"; 
-          }
-          if(replace == "true"){
-            current_element.replaceWith(error_message);
-          }else{
-            current_element.html(error_message);
-          }
-        },
-        timeout: 50000
-  	   });
+      if(interval){
+        interval = parseInt(interval) * 1000;
+        setInterval(fetch_update, interval, current_element, method, url, error_message, replace, data, scroll_bottom);
+      } else {
+        fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom);
+      }
+    }
+    
+    
+    //See ajax_element() in application_helper.rb
+    //The ajax element will have its contents loaded by the response from an
+    //ajax request (so the element's conents will be loaded later with respect
+    //to the rest of the page). If the "data-replace" attribute is set to "true"
+    //the entire element will be replace an not just its contents.
+    loaded_element.find(".ajax_element").each(function(index, element){
+      update_ajax_element(element);
+    });
+
+    loaded_element.find(".ajax_element_refresh_button").click(function(){
+      var button = jQuery(this);
+      var target = jQuery(button.attr("data-target"));
+      update_ajax_element(target);
+      
+      return false;
     });
 
     //See script_loader() in application_helper.rb
@@ -508,11 +540,12 @@ jQuery(
       var current_form =  jQuery(this);
       var target = current_form.attr("data-target");
       var reset_form = current_form.attr("data-reset-form");
+      var scroll_bottom = current_form.attr("data-scroll-bottom")
       if(reset_form != "false"){
         current_form.resetForm();
       }
       
-      modify_target(data, target);  
+      modify_target(data, target, {scroll_bottom : scroll_bottom});  
     });
 
    //Allows a textfield to submit an ajax request independently of

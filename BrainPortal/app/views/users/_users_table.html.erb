@@ -50,7 +50,7 @@
       result = ""
       if groups.size > 0
         result += html_tool_tip(pluralize(groups.size,"project"), :offset_x => 60 ) do
-                    array_to_table(groups, :table_class => 'simple', :ratio => "3:1") { |g,r,c| g.name }
+                    array_to_table(groups, :table_class => 'simple', :ratio => "3:1", :fill_by_columns => true) { |g,r,c| g.name }
                   end
       end
       result.html_safe

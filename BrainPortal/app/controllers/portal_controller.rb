@@ -28,6 +28,7 @@ class PortalController < ApplicationController
   include DateRangeRestriction
 
   before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  before_filter :admin_role_required, :only => :portal_log
   
   #Display a user's home page with information about their account.
   def welcome #:nodoc:
@@ -68,6 +69,14 @@ class PortalController < ApplicationController
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).all.collect(&:id)
     @tasks       = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids,
                    :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
+  end
+  
+  def portal_log
+    num_lines = (params[:num_lines] || 5000).to_i
+    num_lines = 1000 if num_lines < 1000
+    num_lines = 20_000 if num_lines > 20_000
+    log =  IO.popen("tail -#{num_lines} #{Rails.configuration.paths.log.first}", "r").read
+    render :text => "<pre>#{colorize_logs(log)}</pre>"
   end
   
   def show_license
@@ -206,6 +215,33 @@ class PortalController < ApplicationController
     @filter_row_key    = row_type
     @filter_col_key    = col_type
     @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| colored_pretty_size(x) }) : nil
+  end
+  
+  private
+  
+  def colorize_logs(data)
+    data = ERB::Util.html_escape(data)
+    data.gsub!(/\e\[\d+m/, "")
+    data.gsub!(/^Started.+/) { |m| "<span style=\"color:lime\">#{m}</span>" }
+    data.gsub!(/  Parameters: .+/) { |m| "<span style=\"color:yellow; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}ms/) { |m| "<span style=\"color:green\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span style=\"color:yellow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span style=\"color:red; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span style=\"background-color:red; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^User: \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/ using \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    pair = false
+    data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
+      if pair
+        color = "coral"
+      else
+        color = "skyblue"
+      end
+      pair = !pair
+      "<span style=\"color:#{color} \">#{m}</span>"
+    end
+    
+    data 
   end
 
 end

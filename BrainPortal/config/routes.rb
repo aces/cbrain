@@ -154,6 +154,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Licence handling
   match '/show_license/:license', :controller => :portal, :action => :show_license
   match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via => :post
+  
+  # Portal log
+  match '/portal_log', :controller => :portal, :action => :portal_log
 
   # ExceptionLogger Routes
   match "logged_exceptions/:action/:id", :controller => "logged_exceptions" 

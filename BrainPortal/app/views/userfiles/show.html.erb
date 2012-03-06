@@ -101,7 +101,7 @@
     <% t.cell("Parent", :show_width => 2) { link_to_userfile_if_accessible(@userfile.parent) } %>
 
     <% t.cell("Children", :show_width => 2) do %>
-      <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3 ) do |u,r,c| %>
+      <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
         <%= link_to_userfile_if_accessible(u) %>
       <% end %>
     <% end %>
