@@ -938,6 +938,20 @@ pre {
   font-size: 4em;
 }
 
+.project_select_dropdown {
+  background-color: #0471B4;
+  padding: 0.2em 1em 1em 1em;  
+  margin-top: 0.2em;
+  text-align: left;
+  max-height: 15em;
+  overflow-y: auto;
+  white-space: nowrap;
+}
+
+.project_select_dropdown a{
+  font-size: 0.7em;
+}
+
 /* % ######################################################### */
 /* % End User License Agreement */
 /* % ######################################################### */
