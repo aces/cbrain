@@ -36,6 +36,7 @@
           <% current_user.groups.where(:type => "WorkGroup").limit(20).all.each do |g| %>
             <%= link_to h(crop_text_to(15, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, :method => :post %><br>
           <% end %><br>
+          <%= link_to "All Projects", {:controller => :groups, :action => :switch, :id  => "all"}, :method => :post %><br>
           <%= link_to "More Projects", groups_path %>
         </div>
       <% end %>  
@@ -48,7 +49,7 @@
              <ul>
                <% if !current_user.has_role?(:user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
                  <li <%= set_selected(params[:controller], :userfiles) %>>
-                   <%= link_to 'Files', userfiles_path, :id => 'files_top_menu' %>
+                   <%= link_to 'Files', userfiles_path %>
                  </li>
                  <li <%= set_selected(params[:controller], :tasks) %>>
                    <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
