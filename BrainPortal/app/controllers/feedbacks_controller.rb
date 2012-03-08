@@ -69,7 +69,7 @@ class FeedbacksController < ApplicationController
         flash[:notice] = 'Feedback was successfully created.'
         Message.send_message( User.all_admins, {
                               :message_type   => :notice,
-                              :header         => "New feeback is available!",
+                              :header         => "New feedback is available!",
                               :description    => nil,
                               :variable_text  => "#{current_user.full_name} : [[View][/feedbacks/#{@feedback.id}]]"
                               }

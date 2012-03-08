@@ -104,8 +104,14 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
           <td>
             <% if dp_stats.blank? || dp_stats.empty? %>
               <%= html_colorize('?','purple') %>
+            <% elsif dp_stats[dp.id] == "alive" %>
+              <%= o_icon %>
+            <% elsif dp_stats[dp.id] == "down" %>
+              <%= times_icon %>
+            <% elsif dp_stats[dp.id] == "offline" %>
+              -
             <% else %>
-              <%= dp_stats[dp.id] == "alive" ? o_icon : times_icon %>
+              <%= html_colorize('?','purple') %>
             <% end %>
             <%= html_colorize('(no access)', 'red') if ! dp.rr_allowed_syncing?(rr) %>
           </td>

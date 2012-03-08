@@ -59,9 +59,12 @@ class CbrainMailer < ActionMailer::Base
     @cb_body.gsub!(/\s+\(\[\[.*?\]\]\)/, "")
     
     return true if @users.blank? || @users.empty?
+
+    emails = users.map(&:email).compact.uniq
+    return false if emails.blank?
     
     mail(
-      :to      => users.map(&:email),
+      :to      => emails,
       :subject => "CBRAIN Message: #{@subject}"
     )
   end
