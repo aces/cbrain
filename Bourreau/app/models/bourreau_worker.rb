@@ -190,6 +190,8 @@ class BourreauWorker < Worker
     mypid = Process.pid
     notification_needed = true # set to false later, in the case of restarts and recovers
 
+    task.reload
+
     initial_status      = task.status
     initial_change_time = task.updated_at
 

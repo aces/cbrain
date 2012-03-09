@@ -112,6 +112,7 @@ class CBRAIN
             #puts_green "FD #{fd} : #{flags} AC=#{io.autoclose?}"
             io.autoclose=false # IMPORTANT!
             if (flags & expect_flags) == expect_flags
+              io.autoclose=true # IMPORTANT!
               io.close rescue true
               #puts_cyan "-> Closed"
             end
