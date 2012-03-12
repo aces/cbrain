@@ -40,11 +40,10 @@ class Group < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  before_save             :set_default_creator
+  before_validation       :set_default_creator
   after_destroy           :reassign_models_to_owner_group
   
   validates_presence_of   :name
-  validates_uniqueness_of :name, :scope => :creator_id
   validate                :validate_groupname
   
   has_many                :tools
