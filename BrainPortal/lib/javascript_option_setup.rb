@@ -47,6 +47,11 @@ module JavascriptOptionSetup
       options["data-target"] = target
     end
     
+    remove_target = options.delete(:remove_target)
+    if remove_target
+      options["data-remove-target"] = remove_target
+    end
+    
     update_text = options.delete(:loading_message)
     if update_text
       options["data-loading-message"] = update_text
