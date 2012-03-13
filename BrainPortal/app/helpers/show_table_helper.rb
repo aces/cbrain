@@ -20,6 +20,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Helper for generating standard CBRAIN show tables. The developer
+# describes the attributes and headers for cells in the table and
+# the helper then produces the necessary HTML to arrange them on a 
+# page.
+#
+# The primary method used is +show_table+ which will be passed the 
+# object being described and a block. The block will be passed a
+# TableBuilder object to be used to describe the table.
+#   <%= 
+#     show_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
+#       ...
+#     end
+#   %>
+# 
+# Here, @feedbacks is the list of object defining rows in the table. The second argument
+# is just a hash table defining HTML attributes on the table.
+#
+
 module ShowTableHelper
   class TableBuilder
     attr_accessor :cells, :width

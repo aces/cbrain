@@ -26,7 +26,7 @@
 ###################################################################
 
 module WillPaginate
-  if const_defined?(:ViewHelpers)
+  if const_defined?(:ViewHelpers) # For will_paginate 3.0.pre2
     class ViewHelpers::LinkRenderer
       protected
       def base_url_params
@@ -35,7 +35,7 @@ module WillPaginate
     end
   end
   
-  if const_defined?(:ActionView)
+  if const_defined?(:ActionView) # For will_paginate 3.0.3
     class ActionView::LinkRenderer
       protected
       def merge_get_params(url_params)

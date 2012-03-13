@@ -115,9 +115,13 @@ class SessionsController < ApplicationController
     # Record that the user logged in
     current_user.addlog("Logged in from #{request.remote_ip}")
     portal.addlog("User #{current_user.login} logged in from #{request.remote_ip}")
-
+    
+    if current_user.has_role?(:admin)
+      current_session[:active_group_id] = "all"
+    end
+    
     respond_to do |format|
-      format.html { redirect_back_or_default('/home') }
+      format.html { redirect_back_or_default(start_page_path) }
       format.xml  { render :nothing => true, :status  => 200 }
     end
 
