@@ -29,16 +29,25 @@
 <div class="account">
 
   <span class="home_credits">
-    <a href="/home">Home</a>
     <% if current_user %>
+      <% if current_user.try(:has_role?, :admin) %>
+        <%= link_to "Dashboard", home_path %>
+      <% end %>
       <%= link_to 'My Account', current_user %>
+      <%= link_to 'Projects', groups_path %>
+      <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
+      <% if current_user.has_role?(:user) %>
+        <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
+          <%= link_to 'Data Providers', data_providers_path %><BR>
+          <%= link_to 'Servers', bourreaux_path %><BR>
+          <%= link_to 'Tools', tools_path %><BR>
+        <% end %>
+      <% end %>
       <% help_url = RemoteResource.current_resource.help_url %>
       <% if help_url.present? %>
         <%= link_to "User Manual", help_url, :target => '_blank' %>
       <% end %>
-      <%= link_to 'Feedback', feedbacks_path %>
     <% end %>
-    <%= link_to "Credits", "/credits" %>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>
 

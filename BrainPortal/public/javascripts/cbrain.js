@@ -420,7 +420,11 @@ jQuery(
      if(link.attr("data-width")) other_options["width"] = link.attr("data-width");
      if(link.attr("data-height")) other_options["height"] = link.attr("data-height");
      if(link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
-     if(datatype != "script"){
+     
+     var remove_target = link.attr("data-remove-target");
+     if(remove_target){
+        jQuery(remove_target).remove();
+      }else if(datatype != "script"){
        modify_target(data, target, other_options);
      }
    }).live("ajax:beforeSend", function(event, data, status, xhr){

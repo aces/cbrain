@@ -40,11 +40,10 @@ class Group < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  before_save             :set_default_creator
+  before_validation       :set_default_creator
   after_destroy           :reassign_models_to_owner_group
   
   validates_presence_of   :name
-  validates_uniqueness_of :name, :scope => :creator_id
   validate                :validate_groupname
   
   has_many                :tools
@@ -94,6 +93,14 @@ class Group < ActiveRecord::Base
 
   def self.pretty_type #:nodoc:
     self.to_s.demodulize.underscore.titleize.sub(/group/i,"Project")
+  end
+
+  def short_pretty_type #:nodoc:
+   self.class.short_pretty_type
+  end
+
+  def self.short_pretty_type #:nodoc:
+    self.to_s.demodulize.underscore.titleize.sub(/\s*group\s*/i,"")
   end
 
   # Returns true of +name+ is a legal group name. Also called

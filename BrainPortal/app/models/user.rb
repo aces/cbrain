@@ -64,7 +64,6 @@ class User < ActiveRecord::Base
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
   validates_uniqueness_of   :login, :case_sensitive => false
-  validate                  :prevent_group_collision,    :on => :create
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   validate                  :password_strength_check,    :if => :password_required?
@@ -323,12 +322,6 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
-   
-  def prevent_group_collision #:nodoc:
-    if self.login && SystemGroup.find_by_name(self.login)
-      errors.add(:login, "already in use by an existing project.")
-    end
-  end
   
   def immutable_login #:nodoc:
     if self.changed.include? "login"
@@ -385,7 +378,9 @@ class User < ActiveRecord::Base
   
   def add_system_groups #:nodoc:
     userGroup = UserGroup.new(:name => self.login, :site  => self.site)
-    userGroup.save!
+    unless userGroup.save
+      self.errors.add(:base, "User Group: #{userGroup.errors.full_messages.join(", ")}")
+    end
     
     everyoneGroup = Group.everyone
     group_ids = self.group_ids

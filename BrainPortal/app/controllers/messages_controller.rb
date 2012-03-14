@@ -160,10 +160,7 @@ class MessagesController < ApplicationController
       flash.now[:error] = "Could not delete message."
     end
     
-    respond_to do |format|
-      format.js { redirect_to :action => :index }
-      format.xml { head :ok }
-    end
+    head :ok
   end
 
 end

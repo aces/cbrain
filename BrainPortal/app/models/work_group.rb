@@ -26,12 +26,22 @@ class WorkGroup < Group
 
   Revision_info=CbrainFileRevision[__FILE__]
     
+  validates_uniqueness_of :name, :scope => :creator_id
+    
   def pretty_category_name(as_user)
     if self.users.size == 1
       return 'My Work Project' if self.users[0].id == as_user.id
       return "Personal Work Project of #{self.users[0].login}"
     end
     return 'Shared Work Project'
+  end
+  
+  def short_pretty_type
+    if self.users.count > 1
+      return "Shared"
+    else
+      return ""
+    end
   end
   
   def can_be_edited_by?(user)

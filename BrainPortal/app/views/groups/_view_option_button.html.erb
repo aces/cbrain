@@ -1,7 +1,13 @@
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
+    <%= 
+      filter_add_link (@filter_params["button_view"] == 'off' ? "Button View" : "List View"),
+                      :parameter => :button_view, 
+                      :value     => set_toggle(@filter_params["button_view"])
+    %>
+    <br>
     <%= form_tag({:controller => :groups, :action => :index}, :method => :get) do %>
-      Number of messages per page:
+      Number of projects per page:
       <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
       <%= hidden_field_tag :update_filter, true %>
     <% end %>

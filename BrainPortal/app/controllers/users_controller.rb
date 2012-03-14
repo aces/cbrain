@@ -246,12 +246,11 @@ class UsersController < ApplicationController
     myportal.addlog("Admin user '#{current_user.login}' switching to user '#{@user.login}'")
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
-
     current_session.clear_data!
-    current_user = @user
+    self.current_user = @user
     current_session[:user_id] = @user.id
     
-    redirect_to home_path
+    redirect_to start_page_path
   end
   
   def request_password #:nodoc:

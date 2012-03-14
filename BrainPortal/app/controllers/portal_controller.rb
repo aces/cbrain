@@ -37,7 +37,7 @@ class PortalController < ApplicationController
       return
     end
     
-    @num_files              = current_user.userfiles.size
+    @num_files              = current_user.userfiles.count
     @groups                 = current_user.has_role?(:admin) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])     

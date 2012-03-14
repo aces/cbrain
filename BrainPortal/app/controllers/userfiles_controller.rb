@@ -68,6 +68,12 @@ class UserfilesController < ApplicationController
     else
       @header_scope = @header_scope.where( :user_id => current_user.id )
     end
+    
+    # Filter by current project
+    if current_project
+      @header_scope = @header_scope.where( :group_id  => current_project.id )
+    end
+    
     tags_and_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     @tag_filters = tags_and_counts.map { |tc| ["#{tc.tag_name} (#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
     
@@ -82,11 +88,6 @@ class UserfilesController < ApplicationController
     
     unless tag_filters.blank?
       filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
-    end
-
-    # Filter by current project
-    if current_project
-      filtered_scope = filtered_scope.where( :group_id  => current_project.id )
     end
     
     #------------------------------
