@@ -91,7 +91,7 @@ after the NEP program is completed.</p>
   <p><strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %></p>
   <p><strong>Portal Last Changed Date:</strong> <%= to_localtime(@revinfo['Last Changed Date'],:datetime) %></p>
   <p><strong>Portal Up Since:</strong> <%= to_localtime(CBRAIN::Startup_LocalTime,:datetime) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)</p>
-  <% if current_user && current_user.has_role?(:admin) %>
+  <% if current_user && current_user.has_role?(:admin_user) %>
     <h3>Platform Information
     <%= show_hide_toggle "(Show)", "#platform_panel", :class  => 'action_link' %>
     </h3>

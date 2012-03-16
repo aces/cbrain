@@ -190,7 +190,7 @@ everyone = SystemGroup.seed_record!(
 admin = User.seed_record!(
   {
     :login     => 'admin',
-    :role      => 'admin'
+    :type      => 'AdminUser'
   },
   {
     :full_name             => "CBRAIN Administrator",

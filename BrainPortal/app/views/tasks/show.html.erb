@@ -103,7 +103,7 @@
     <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
 
     <% t.cell("Tool Version") do %>
-      <% if current_user.has_role?(:admin) && @task.tool_config %>
+      <% if current_user.has_role?(:admin_user) && @task.tool_config %>
         <%= link_to @task.tool_config.short_description, tool_config_path(@task.tool_config) %>
       <% else %>
         <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
@@ -254,7 +254,7 @@
         <%= tb.tab("Standard Error") do %>
           <pre class="standard_out"><%= prettystderr -%></pre>
         <% end %>
-        <% if current_user.has_role?(:admin) %>
+        <% if current_user.has_role?(:admin_user) %>
           <%= tb.tab("Script") do %>
             <pre class="script_preview"><%= prettyscript %></pre>
           <% end %>

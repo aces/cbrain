@@ -24,13 +24,12 @@ require 'digest/sha1'
 
 #Model representing CBrain users. 
 #All authentication of user access to the system is handle by the User model.
-#User level access to pages are handled through a given user's +role+ (either *admin* or *user*).
+#User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
 #
 #=Attributes:
 #[*full_name*] The full name of the user.
 #[*login*] The user's login ID.
 #[*email*] The user's e-mail address.
-#[*role*]  The user's role.
 #= Associations:
 #*Has* *many*:
 #* Userfile
@@ -52,7 +51,7 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name, :login, :role
+  validates_presence_of     :full_name, :login, :type
   validates_length_of       :login,    :within => 3..40
   validates                 :password,
                             :length => { :minimum => 8 },
@@ -64,6 +63,7 @@ class User < ActiveRecord::Base
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
   validates_uniqueness_of   :login, :case_sensitive => false
+  validate                  :prevent_group_collision,    :on => :create
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   validate                  :password_strength_check,    :if => :password_required?
@@ -105,9 +105,9 @@ class User < ActiveRecord::Base
     @admin ||= self.find_by_login("admin")
   end
   
-  #Return all users with role 'admin'
+  #Return all users with admin users.
   def self.all_admins
-    @all_admins ||= self.find_all_by_role("admin")
+    @all_admins ||= AdminUser.all("admin")
   end
   
   # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
@@ -180,12 +180,17 @@ class User < ActiveRecord::Base
   
   #Does this user's role match +role+?
   def has_role?(role)
-    return self.role == role.to_s
+    return self.class == role.to_s.classify.constantize
+  end
+  
+  #Does this user have +role+ rights?
+  def has_rights?(role)
+    return self.is_a? role.to_s.classify.constantize
   end
   
   #Find the tools that this user has access to.
   def available_tools(options = {})
-    if self.has_role? :admin
+    if self.has_role? :admin_user
       Tool.scoped(options)
     elsif self.has_role? :site_manager
       Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
@@ -206,7 +211,7 @@ class User < ActiveRecord::Base
   
   #Return the list of groups available to this user based on role.
   def available_groups(options = {})
-    if self.has_role? :admin
+    if self.has_role? :admin_user
       group_scope = Group.where(options)
     elsif self.has_role? :site_manager
       group_scope = Group.where(options)
@@ -227,7 +232,7 @@ class User < ActiveRecord::Base
   end
   
   def available_tasks(options = {})
-    if self.has_role? :admin
+    if self.has_role? :admin_user
       CbrainTask.where(options)
     elsif self.has_role? :site_manager
       CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids] )
@@ -238,7 +243,7 @@ class User < ActiveRecord::Base
   
   #Return the list of users under this user's control based on role.
   def available_users(options = {})
-    if self.has_role? :admin
+    if self.has_role? :admin_user
       user_scope = User.where(options)
     elsif self.has_role? :site_manager
       user_scope = self.site.users.where(options)
@@ -250,7 +255,7 @@ class User < ActiveRecord::Base
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    return true if user.has_role? :admin
+    return true if user.has_role? :admin_user
     return true if user.has_role?(:site_manager) && self.site_id == user.site_id
     self.id == user.id
   end
@@ -322,6 +327,12 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
+   
+  def prevent_group_collision #:nodoc:
+    if self.login && SystemGroup.find_by_name(self.login)
+      errors.add(:login, "already in use by an existing project.")
+    end
+  end
   
   def immutable_login #:nodoc:
     if self.changed.include? "login"
@@ -352,8 +363,8 @@ class User < ActiveRecord::Base
   end
   
   def site_manager_check  #:nodoc:
-    if self.role == "site_manager" && self.site_id.blank?
-      errors.add(:site_id, "manager role must be associated with a site.")
+    if self.class == SiteManager && self.site_id.blank?
+      errors.add(:site_id, "manager type must be associated with a site.")
     end
   end
   
@@ -378,9 +389,7 @@ class User < ActiveRecord::Base
   
   def add_system_groups #:nodoc:
     userGroup = UserGroup.new(:name => self.login, :site  => self.site)
-    unless userGroup.save
-      self.errors.add(:base, "User Group: #{userGroup.errors.full_messages.join(", ")}")
-    end
+    userGroup.save!
     
     everyoneGroup = Group.everyone
     group_ids = self.group_ids

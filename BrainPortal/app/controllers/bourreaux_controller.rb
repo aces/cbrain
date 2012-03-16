@@ -40,7 +40,7 @@ class BourreauxController < ApplicationController
     @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
     @bourreaux    = base_filtered_scope @header_scope.includes(:user, :group)
 
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
     end
     

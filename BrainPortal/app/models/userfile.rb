@@ -403,7 +403,7 @@ class Userfile < ActiveRecord::Base
   #Returns whether or not +user+ has access to this
   #userfile.
   def can_be_accessed_by?(user, requested_access = :write)
-    if user.has_role? :admin
+    if user.has_role? :admin_user
       return true
     end
     if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
@@ -422,7 +422,7 @@ class Userfile < ActiveRecord::Base
   #Returns whether or not +user+ has owner access to this
   #userfile.
   def has_owner_access?(user)
-    if user.has_role? :admin
+    if user.has_role? :admin_user
       return true
     end
     if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
@@ -475,7 +475,7 @@ class Userfile < ActiveRecord::Base
   #parameter for Userfile.where and modifies it to restrict based
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
-    return scope if user.has_role? :admin
+    return scope if user.has_role? :admin_user
     
     access_requested = options[:access_requested] || :write
     

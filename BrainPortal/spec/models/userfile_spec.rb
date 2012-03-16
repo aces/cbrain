@@ -24,6 +24,9 @@ require 'spec_helper'
 
 describe Userfile do
   let(:userfile) {Factory.create(:userfile)}
+  let(:user) {Factory.create(:normal_user)}
+  let(:site_manager) {Factory.create(:site_manager)}
+  let(:admin) {Factory.create(:admin_user)}
   
   it "should be valid with valid attributes" do
     userfile.valid?.should be true
@@ -437,18 +440,15 @@ describe Userfile do
   end
 
   describe "#can_be_accessed_by?" do
-    let(:user) {Factory.create(:user)}
    
     it "should return true if user is admin" do
-      user.role = "admin"
-      userfile.can_be_accessed_by?(user).should be_true
+      userfile.can_be_accessed_by?(admin).should be_true
      end
      
      it "should return true if user is site_manager of the site" do
-       userfile.stub_chain(:user, :site_id).and_return(user.site_id)
-       userfile.stub_chain(:group, :site_id).and_return(user.site_id)
-       user.role = "site_manager"
-       userfile.can_be_accessed_by?(user).should be_true
+       userfile.stub_chain(:user, :site_id).and_return(site_manager.site_id)
+       userfile.stub_chain(:group, :site_id).and_return(site_manager.site_id)
+       userfile.can_be_accessed_by?(site_manager).should be_true
      end
    
     it "should return true if user.id is same as self user.id" do
@@ -469,24 +469,20 @@ describe Userfile do
      
     it "should return false if all previous condition failed" do
       user.id = userfile.user_id + 1
-      user.role = "other"
       userfile.can_be_accessed_by?(user).should be_false
     end
   end
 
   describe "#has_owner_access?" do
-    let(:user) {Factory.create(:user)}
   
     it "should return true if user is admin" do
-      user.role = "admin"
-      userfile.has_owner_access?(user).should be_true
+      userfile.has_owner_access?(admin).should be_true
     end
 
     it "should return true if user is site_manager of the site" do
-       userfile.stub_chain(:user, :site_id).and_return(user.site_id)
-       userfile.stub_chain(:group, :site_id).and_return(user.site_id)
-       user.role = "site_manager"
-       userfile.can_be_accessed_by?(user).should be_true
+       userfile.stub_chain(:user, :site_id).and_return(site_manager.site_id)
+       userfile.stub_chain(:group, :site_id).and_return(site_manager.site_id)
+       userfile.can_be_accessed_by?(site_manager).should be_true
     end
     
     it "should return true if user is same as self user.id" do
@@ -496,14 +492,12 @@ describe Userfile do
   
     it "should return false if all previous condition failed" do
       user.id = userfile.user_id + 1
-      user.role = "other"
       userfile.can_be_accessed_by?(user).should be_false
     end
  
   end
 
   describe "#self.accessible_for_user" do
-    let(:user) {Factory.create(:user)}
                                 
     it "should call scoped with options" do
       userfile
@@ -524,7 +518,6 @@ describe Userfile do
   end
   
   describe "#self.find_accessible_by_user" do
-    let(:user) {Factory.create(:user)}
 
     it "should call accessible_for_user" do
       userfile
@@ -535,7 +528,6 @@ describe Userfile do
   end
 
   describe "#find_all_accessible_by_user" do
-    let(:user) {Factory.create(:user)}
     
     it "should call accessible_for_user" do
       userfile
@@ -546,22 +538,20 @@ describe Userfile do
   end
 
   describe "#self.restrict_access_on_query" do
-    let!(:user)      {Factory.create(:user)}
-    let!(:user1)     {Factory.create(:user, :site_id => user.site_id)}
+    let!(:user1)     {Factory.create(:normal_user, :site_id => user.site_id)}
     let!(:userfile1) {Factory.create(:userfile, :user_id => user.id, :group_writable => true)}
     let!(:userfile2) {Factory.create(:userfile, :user_id => user.id, :group_writable => false)}
     let!(:userfile3) {Factory.create(:userfile, :user_id => user1.id)}
     let!(:userfile4) {Factory.create(:userfile)}
     
     it "should return scope if user is admin" do
-      user.role = "admin"
       scope = Userfile.scoped({})
-      Userfile.restrict_access_on_query(user,scope).should be == scope
+      Userfile.restrict_access_on_query(admin,scope).should be == scope
     end
 
     it "should return only file writable by user" do
       scope = Userfile.scoped({})
-      Userfile.restrict_access_on_query(user,scope).all.should be =~ [userfile1]
+      Userfile.restrict_access_on_query(site_manager,scope).all.should be =~ [userfile1]
     end
 
     it "should return all file of user" do
@@ -708,7 +698,7 @@ describe Userfile do
   end
 
   describe "#next_available_file" do
-    let(:user) {Factory.create(:user)}
+    let(:user) {Factory.create(:normal_user)}
     let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 1).to_i)}
     let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 2).to_i)}
 
@@ -727,7 +717,7 @@ describe Userfile do
   end
 
   describe "#previous_available_file" do
-    let(:user) {Factory.create(:user)}
+    let(:user) {Factory.create(:normal_user)}
     let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 1).to_i)}
     let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 2).to_i)}
 

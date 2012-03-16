@@ -49,7 +49,7 @@
     
 <% else %>
     <br>
-   <% if current_user.has_role? :admin %>
+   <% if current_user.has_role? :admin_user %>
        <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
    <% else %>
        <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>

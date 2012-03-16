@@ -64,7 +64,7 @@
       <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online), :class => "submit_onchange" %>
     <% end %>
 
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin) ) do %>
+    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>
       <%= user_select("data_provider[user_id]", { :selector => @provider }, :class => "submit_onchange" ) %>
     <% end %>
 

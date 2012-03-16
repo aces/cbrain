@@ -122,7 +122,7 @@ describe CbrainSession do
         name = "cb_session#{i}"
         sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {}, :user_id => i, :active => true )
         user = "user#{i}"
-        let!(user.to_sym) {Factory.create(:user, :id => i)} if User.where(:id => i).size == 0
+        let!(user.to_sym) {Factory.create(:normal_user, :id => i)} if User.where(:id => i).size == 0
         let!(name.to_sym) {CbrainSession.new(sess, {:controller => "userfile"}, sess_model)}
       end
       

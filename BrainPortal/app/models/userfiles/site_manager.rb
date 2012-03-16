@@ -20,34 +20,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'spec_helper'
-
-describe Site do 
-  before(:each) do 
-    @site         = Factory.create(:site)
-    @site_manager = Factory.create(:site_manager, :site => @site)
-    @site_user    = Factory.create(:normal_user, :site => @site)
-    @site.save
-  end
-  
-  it "should save with valid attributes" do
-    @site.save.should be(true)
-  end
-  
-  it "should not save without a name" do
-    @site.name = nil
-    @site.save.should  be(false)
-  end
-  
-  it "should return the array of managers whened asked" do
-    @site.managers.should == [@site_manager]
-  end
-  
-  it "should set new managers on save" do
-    @site_user.type = "SiteManager"
-    @site_user.save
-    @site.managers.include?(@site_user).should be(true)
-  end
-    
+class SiteManager < NormalUser
 end
-

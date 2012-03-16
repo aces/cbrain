@@ -20,14 +20,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-Factory.define :user do |user|
+user_factory = Proc.new do |user|
   user.sequence(:full_name)  { |n| "Bob #{n}" }           
   user.sequence(:login)      { |n| "user#{n}" }
   user.sequence(:email)      { |n| "user#{n}@example.com" }
   user.password              "Password!"
   user.password_confirmation "Password!"
-  user.role                  "user"
+  user.type                  "NormalUser"
   user.association           :site
+end
+
+Factory.define :normal_user do |user|
+  user_factory.call(user)
+end
+
+Factory.define :site_manager do |user|
+  user_factory.call(user)
+end
+
+Factory.define :admin_user do |user|
+  user_factory.call(user)
 end
 
 Factory.sequence(:group_name)  { |n| "group_#{n}" }

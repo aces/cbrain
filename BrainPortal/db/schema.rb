@@ -1,25 +1,3 @@
-
-#
-# CBRAIN Project
-#
-# Copyright (C) 2008-2012
-# The Royal Institution for the Advancement of Learning
-# McGill University
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
-#
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -32,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120123190749) do
+ActiveRecord::Schema.define(:version => 20120313194957) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -349,7 +327,6 @@ ActiveRecord::Schema.define(:version => 20120123190749) do
     t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "role"
     t.integer  "site_id"
     t.boolean  "password_reset",                          :default => false, :null => false
     t.string   "time_zone"
@@ -357,10 +334,9 @@ ActiveRecord::Schema.define(:version => 20120123190749) do
     t.string   "country"
     t.datetime "last_connected_at"
     t.boolean  "account_locked",                          :default => false, :null => false
+    t.string   "type"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
-  add_index "users", ["role"], :name => "index_users_on_role"
 
 end
-

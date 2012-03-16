@@ -202,7 +202,7 @@ class Message < ActiveRecord::Base
     end
 
     # Message for normal users
-    if destination && !(destination.is_a?(User) && destination.has_role?(:admin))
+    if destination && !(destination.is_a?(User) && destination.has_role?(:admin_user))
       Message.send_message(destination,
         :message_type => :error,
         :header       => "Internal error: #{header}",

@@ -61,7 +61,7 @@
 #######################################
 %>
 
-  <% if current_user.has_role? :admin %>
+  <% if current_user.has_role? :admin_user %>
     <p>
     Make this a system group invisible to normal users:
     <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>

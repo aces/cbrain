@@ -28,17 +28,17 @@ describe ToolConfig do
   describe "#can_be_accessed_by?" do
     
     it "should allow admin access to any group" do
-      user  = Factory.create(:user,  :role => "admin")
+      user  = Factory.create(:admin_user)
       tool_config.can_be_accessed_by?(user).should be_true
     end
     
     it "should not allow non-admin user to access a group to which it is not" do
-      user  = Factory.create(:user)
+      user  = Factory.create(:normal_user)
       tool_config.can_be_accessed_by?(user).should be_false
     end
 
     it "should allow non-admin user to access a group to which it is" do
-      user  = Factory.create(:user)
+      user  = Factory.create(:normal_user)
       group = Factory.create(:group, :users => [user])
       tool_config.group = group
       user.reload

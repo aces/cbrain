@@ -72,7 +72,7 @@
       <%= select_tag "bourreau[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @bourreau.online), :class => "submit_onchange" %>
     <% end %>
 
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin)) do %>
+    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin_user)) do %>
       <%= user_select("bourreau[user_id]", { :selector => @bourreau }, :class => "submit_onchange" ) %>
     <% end %>
 

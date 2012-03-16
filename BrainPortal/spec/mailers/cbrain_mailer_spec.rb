@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe CbrainMailer do
-  let(:user) {Factory.create(:user)}
+  let(:user) {Factory.create(:normal_user)}
 
   describe "#registration_confirmation" do
     

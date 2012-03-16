@@ -40,7 +40,7 @@
       ]
     %>
     
-    <% if current_user.has_role?(:admin) %>
+    <% if current_user.has_role?(:admin_user) %>
       Message belongs to user:
       <%= user_select :user_id, { :selector => @filter_params["filter_hash"]["user_id"] }, { :include_blank => '(Any)' } %>
       <p/>

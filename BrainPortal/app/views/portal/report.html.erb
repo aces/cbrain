@@ -34,7 +34,7 @@
               [ 'Type',           'type' ],
               [ 'Site',           'site_id' ],
               [ 'Category',       'category' ],
-              [ 'Role',           'role' ],
+              [ 'Type',           'type' ],
               [ 'Tool',           'tool_id' ],
               [ 'City',           'city' ],
               [ 'Country',        'country' ],
@@ -87,7 +87,7 @@ in a tabular layout. Proceed as follow:
               [ 'Files - total files in collections',          Userfile.table_name + ".sum(num_files)"              ],
               [ 'Tasks - count',                               CbrainTask.table_name                                ],
               [ 'Tasks - sum of workdir space',                CbrainTask.table_name + ".sum(cluster_workdir_size)" ],
-            ] + ((current_user.has_role?(:admin) || current_user.has_role?(:site_admin)) ? [
+            ] + ((current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) ? [
               [ 'Servers - count',                             RemoteResource.table_name                            ],
               [ 'Data Providers - count',                      DataProvider.table_name                              ],
               [ 'Users - count',                               User.table_name                                      ],

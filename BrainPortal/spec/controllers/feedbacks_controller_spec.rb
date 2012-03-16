@@ -24,7 +24,7 @@ require 'spec_helper'
 
 describe FeedbacksController do
   let(:feedback) {mock_model(Feedback).as_null_object}
-  let(:current_user) {Factory.create(:user)}
+  let(:current_user) {Factory.create(:normal_user)}
   
   context "with a logged in user" do
     before(:each) do

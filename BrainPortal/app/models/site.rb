@@ -67,7 +67,7 @@ class Site < ActiveRecord::Base
 
   #Returns users that have manager access to this site (site managers or admins).
   def managers
-    self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []
+    self.users.where(:type => "SiteManager") || []
   end
   
   #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
@@ -140,7 +140,7 @@ class Site < ActiveRecord::Base
     self.managers.each do |user|
       if user.has_role? :site_manager # could be :admin too, which we leave alone
         @old_managers << user
-        user.update_attribute(:role, "user")
+        user.update_attribute(:type, "NormalUser")
       end
     end
   end
@@ -148,7 +148,7 @@ class Site < ActiveRecord::Base
   def restore_managers #:nodoc:
     @old_managers ||= []
     @old_managers.each do |user|
-      user.update_attribute(:role, "site_manager")
+      user.update_attribute(:type, "SiteManager")
     end
   end
   
@@ -160,7 +160,7 @@ class Site < ActiveRecord::Base
   
   def user_system_group_remove(user) #:nodoc:
     if user.has_role? :site_manager
-      user.update_attributes!(:role  => "user")
+      user.update_attribute(:type, "NormalUser")
     end
     user.own_group.update_attributes!(:site => nil)
   end
@@ -185,11 +185,11 @@ class Site < ActiveRecord::Base
     User.find(current_user_ids | current_manager_ids).each do |user|
       user.site_id = self.id
       if current_manager_ids.include?(user.id)
-        if user.has_role? :user
-          user.role = "site_manager"
+        if user.has_role? :normal_user
+          user.type = "SiteManager"
         end                
       elsif user.has_role? :site_manager
-        user.role = "user"
+        user.type = "NormalUser"
       end
       user.save(:validate => false)
     end

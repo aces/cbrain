@@ -611,7 +611,7 @@ class TasksController < ApplicationController
           next
         end
 
-        if task.user_id != current_user.id && current_user.role != 'admin'
+        if task.user_id != current_user.id && current_user.type != 'AdminUser'
           sent_skipped += 1
           next 
         end

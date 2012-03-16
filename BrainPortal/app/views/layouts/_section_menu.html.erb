@@ -47,7 +47,7 @@
     <% if current_user %>
         <div id="main-menu" class="main_menu_left">
              <ul>
-               <% if !current_user.has_role?(:user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+               <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
                  <li <%= set_selected(params[:controller], :userfiles) %>>
                    <%= link_to 'Files', userfiles_path %>
                  </li>
@@ -55,7 +55,7 @@
                    <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
                  </li>
                <% end %>
-               <% if !current_user.has_role?(:user) %>
+               <% if !current_user.has_role?(:normal_user) %>
                  <li <%= set_selected(params[:controller], :data_providers) %>>
                    <%= link_to 'Data Providers', data_providers_path %>
                  </li>
@@ -69,7 +69,7 @@
                   <%= link_to 'Users', users_path %>
                  </li>
                <% end %>
-               <% if current_user.has_role?(:admin) %>
+               <% if current_user.has_role?(:admin_user) %>
                  <li <%= set_selected(params[:controller], :sites) %>>
                    <%= link_to 'Sites', sites_path %>
                  </li>  

@@ -33,7 +33,7 @@ describe Group do
     end
     it "should  set creator to admin even if already set" do
       admin_user_id = User.admin.id
-      new_user_id = Factory.create(:user).id
+      new_user_id = Factory.create(:normal_user).id
       new_group = Factory.create(:system_group, :creator_id => new_user_id)
       new_group.creator_id.should == admin_user_id
     end

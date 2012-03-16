@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe Message do
-  let(:user)  {Factory.create(:user)}
+  let(:user)  {Factory.create(:normal_user)}
 
   describe "#send_message" do
 
@@ -74,7 +74,7 @@ describe Message do
   end
 
   describe "#forward_to_group" do
-    let(:user2) {Factory.create(:user)}
+    let(:user2) {Factory.create(:normal_user)}
     let(:mess1) {Factory.create(:message)}
 
     it "should not send message if destination user already have the message" do

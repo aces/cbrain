@@ -63,10 +63,10 @@ describe Group do
   end
   
   describe "#can_be_accessed_by?" do
-    let(:current_user) { Factory.create(:user) }
+    let(:current_user) { Factory.create(:normal_user) }
     
     it "should allow admin access to any group" do
-      current_user.role = "admin"
+      admin_user = User.admin
       group.can_be_accessed_by?(current_user).should be_true
     end
     
@@ -88,7 +88,7 @@ describe Group do
       new_group.creator_id.should == admin_user_id
     end
     it "should not set creator if already set" do
-      new_user_id = Factory.create(:user).id
+      new_user_id = Factory.create(:normal_user).id
       new_group = Factory.create(:group, :creator_id => new_user_id)
       new_group.creator_id.should == new_user_id
     end
