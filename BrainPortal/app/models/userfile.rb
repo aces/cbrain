@@ -817,24 +817,29 @@ class Userfile < ActiveRecord::Base
     end
     @ancestor_viewers ||= []
     @class_viewers    ||= []
-    class_v    = (@class_viewers).clone
-    ancestor_v = (@ancestor_viewers).clone
-    
-    class_v + ancestor_v
+    @class_viewers + @ancestor_viewers
   end
   
   # Add a content loader to the calling class.
   def self.has_content(options = {})
     new_content = ContentLoader.new(options)
-    @@content_loaders ||= []
-    if @@content_loaders.include?(new_content) 
+    @class_loaders ||= []
+    if @class_loaders.include?(new_content) 
       cb_error "Redefinition of content loader in class #{self.name}."
     end 
-    @@content_loaders << new_content
+    @class_loaders << new_content
   end
+  
   # List content loaders for the calling class.
   def self.content_loaders
-    @@content_loaders ||= []
+    unless @ancestor_loaders
+      if self.superclass.respond_to? :content_loaders
+        @ancestor_loaders = self.superclass.content_loaders
+      end
+    end
+    @ancestor_loaders ||= []
+    @class_loaders    ||= []
+    @class_loaders + @ancestor_loaders
   end
   
   #Find a content loader for this model. Priority is given
