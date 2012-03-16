@@ -83,9 +83,15 @@ module NumericalSubdirTree
       level1 = level0                 + threelevels[0]
       level2 = level1                 + threelevels[1]
       level3 = level2                 + threelevels[2]
-      Dir.mkdir(level1.to_s) unless File.directory?(level1.to_s)
-      Dir.mkdir(level2.to_s) unless File.directory?(level2.to_s)
-      Dir.mkdir(level3.to_s) unless File.directory?(level3.to_s)
+      unless File.directory?(level1.to_s)
+        Dir.mkdir(level1.to_s) rescue true
+      end
+      unless File.directory?(level2.to_s)
+        Dir.mkdir(level2.to_s) rescue true
+      end
+      unless File.directory?(level3.to_s)
+        Dir.mkdir(level3.to_s) rescue true
+      end
       true
     end
   
