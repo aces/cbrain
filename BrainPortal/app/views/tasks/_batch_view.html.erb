@@ -28,7 +28,7 @@
   # The following 'if' is needed in rare cases where a delete operation is happening in background
   # and by chance the task was deleted while building task_info
 
-  if task_info[:first_task].present?
+  if task_info.present? && task_info[:first_task].present?
 %>
 
 <% if task_info[:num_tasks] == 1 %>
