@@ -66,7 +66,7 @@ class CbrainSession
   #Returns the list of currently active users on the system.
   def self.active_users(options = {})
     active_sessions = session_class.where(
-      ["sessions.active = TRUE AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
+      ["sessions.active = 1 AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
     )
     user_ids = active_sessions.map(&:user_id).uniq
     scope = User.where(options)
