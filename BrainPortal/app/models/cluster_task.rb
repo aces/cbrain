@@ -1424,6 +1424,9 @@ class ClusterTask < CbrainTask
     self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir      = nil
     self.cluster_workdir_size = nil
+    if self.workdir_archived? && self.workdir_archive_userfile_id.blank?
+      self.workdir_archived = false # no longer archived on cluster!
+    end
     self.save
     true
   end
