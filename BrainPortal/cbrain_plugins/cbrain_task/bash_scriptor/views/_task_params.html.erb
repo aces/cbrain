@@ -34,15 +34,21 @@
 </UL>
 
 <% if @task.new_record? %>
-<P>
 
+  <% if file_ids.size > 1 %>
+    <p>
+    <strong>All tasks will share the same work directory:</strong>
+    <%= form.params_check_box :share_all_wds %>
+  <% end %>
+
+<p>
 <strong>Automatic internal serialization:</strong><br>
   Partition the list of files so each task will process
   <%= form.params_text_field :num_files_per_task, :size => 4 %>
   files.
 <% end %>
 
-<P>
+<p>
 <strong>Files saved will have these properties:</strong><br>
 Owner:&nbsp;<%=   user_select  :saved_files_user_id.to_la,  { :selector => (params[:saved_files_user_id]  || @task.user_id) } %>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
