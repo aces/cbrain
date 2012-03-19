@@ -414,6 +414,8 @@ class TasksController < ApplicationController
 
       spawn_messages = ""
 
+      share_wd_Nid_to_tid = {} # a negative number -> task_id
+
       tasklist.each do |task|
         begin
           if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
@@ -424,7 +426,14 @@ class TasksController < ApplicationController
           else
             task.status = "New" if task.status.blank?
           end
-          task.save!
+          share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
+          if share_wd_Nid.present? && share_wd_Nid <= 0
+            task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
+            task.save!
+            share_wd_Nid_to_tid[share_wd_Nid] = task.id
+          else
+            task.save!
+          end
         rescue => ex
           spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
         end

@@ -218,7 +218,18 @@ class BourreauWorker < Worker
 
       #####################################################################
       when 'New'
-        action = task.prerequisites_fulfilled?(:for_setup)
+        action = nil
+        if task.share_wd_tid.present?
+          workdir = nil
+          begin
+            workdir = task.full_cluster_workdir
+          rescue => ex
+            task.addlog("Shared work directory unavailable: #{ex.message}")
+            action = :fail
+          end
+          action ||= (workdir.present? && File.directory?(workdir)) ? nil : :wait # nil means: evaluate further prerequs.
+        end
+        action ||= task.prerequisites_fulfilled?(:for_setup)
         if action == :go
           # We need to raise an exception if we cannot successfully
           # transition ourselves.
