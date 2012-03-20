@@ -22,7 +22,7 @@
 #
 -%>
 
-<% tool_list = current_user.available_tools(:conditions => "tools.category <> 'background'") %>
+<% tool_list = current_user.available_tools.where("tools.category <> 'background'") %>
 
 <% unless tool_list.blank? %>
   

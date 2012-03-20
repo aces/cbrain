@@ -46,16 +46,6 @@ describe User do
       @user.save.should == false
     end
   
-    it "should not save without a type" do 
-      @user.type = nil
-      @user.save.should == false
-    end
-  
-    it "should not save with blank password" do
-      @user.password = ""
-      @user.save.should == false
-    end
-  
     it "should not save without a password_confirmation" do
       @user.password_confirmation = nil 
       @user.save.should == false
@@ -135,7 +125,6 @@ describe User do
   
   
   describe "#self.admin" do
-    let!(:admin) {Factory.create(:admin_user, :login => "admin")}
     
     it "should return user with login admin" do
       User.admin.should be == User.where(:login => "admin").first
@@ -146,7 +135,7 @@ describe User do
 
   
   describe "#self.all_admins" do
-    let!(:admin) {Factory.create(:admin_user, :login => "admin")}
+    let!(:admin) {Factory.create(:admin_user, :login => "admin_user2")}
     let!(:admin_user) {Factory.create(:admin_user, :login => "admin_user")}
     
     it "should return all users with role admin" do
@@ -357,11 +346,11 @@ describe User do
   
   describe "#availability" do
     let!(:admin)        {Factory.create(:admin_user)}
-    let!(:group)        {Factory.create(:group, :id => "2" ) }
-    let!(:site_manager) {Factory.create(:site_manager, :group_ids => ["2"])}
+    let!(:group)        {Factory.create(:group) }
+    let!(:site_manager) {Factory.create(:site_manager, :group_ids => [group.id])}
     
     describe "#tool" do
-      let!(:tool1)        {Factory.create(:tool, :group_id => "2")}
+      let!(:tool1)        {Factory.create(:tool, :group_id => group.id)}
       let!(:tool2)        {Factory.create(:tool, :category => "conversion tool")}
 
       describe "#available_tools" do
@@ -446,8 +435,8 @@ describe User do
 
   
     describe "#available_tags" do
-      let!(:my_tag)     {Factory.create(:tag,  :user_id => @user.id, :group_id => "2" )}
-      let!(:other_user) {Factory.create(:normal_user, :group_ids => ["2"])}
+      let!(:my_tag)     {Factory.create(:tag,  :user_id => @user.id, :group_id => group.id )}
+      let!(:other_user) {Factory.create(:normal_user, :group_ids => [group.id])}
       
       it "should return tag if it's mine" do
         @user.available_tags.should include(my_tag) 
@@ -512,7 +501,7 @@ describe User do
       let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
       
       it "should always return true if admin" do
-        @user.can_be_accessed_by?(admin).should be(true)
+        @user.can_be_accessed_by?(admin).should be_true
       end
 
       it "shoulda user can be accessible by a site manager if in same site" do
@@ -554,15 +543,15 @@ describe User do
 
   
   describe "#is_member_of_group" do
-    let!(:group) {Factory.create(:group, :id => "2")}
-    let!(:user_of_group_2) {Factory.create(:normal_user, :group_ids => ["2"])}
+    let!(:group) {Factory.create(:group)}
+    let!(:user_of_group_2) {Factory.create(:normal_user, :group_ids => [group.id])}
     
     it "should returns true if the user belongs to the +group_id+" do
       user_of_group_2.is_member_of_group(group).should be_true
     end
 
     it "should returns false if the user not belongs to the +group_id+" do
-      @user.is_member_of_group("2").should be_false
+      @user.is_member_of_group(group.id).should be_false
     end
     
   end
@@ -601,9 +590,9 @@ describe User do
 
   
   describe "#admin_check" do
-    let!(:admin) {Factory.create(:admin_user, :login => "admin")}
     
     it "should raise error if when try to destroy admin" do
+      admin = User.admin
       lambda{ admin.destroy }.should raise_error
     end
     
@@ -635,7 +624,7 @@ describe User do
     it "should not save a site manager without a site_id" do
       @user.type    = "SiteManager"
       @user.site_id = nil
-      @user.save.should be(false)
+      @user.save.should be_false
     end
     
   end
@@ -674,20 +663,21 @@ describe User do
   it "should check that a user is a site_manager on save" do
     @user.type = "SiteManager"
     @user.save
-    @user.site.managers.include?(@user).should be(true)
+    @user = User.find(@user.id)
+    @user.site.managers.include?(@user).should be_true
   end
 
 
   
   it "should create a new UserGroup with my login on create" do
     user_group=UserGroup.find_by_name(@user.login)
-    user_group.instance_of?(UserGroup).should be(true)
+    user_group.instance_of?(UserGroup).should be_true
   end
 
   
   
   it "should add me to the everyone group" do
-    @user.groups.include?(Group.everyone).should be(true)
+    @user.groups.include?(Group.everyone).should be_true
   end
 
   

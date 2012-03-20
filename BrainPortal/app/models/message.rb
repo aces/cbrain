@@ -216,7 +216,7 @@ class Message < ActiveRecord::Base
     end
     
     # Message for developers/admin
-    Message.send_message(User.find_all_by_role("admin"),
+    Message.send_message(User.all_admins,
       :message_type  => :error,
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 

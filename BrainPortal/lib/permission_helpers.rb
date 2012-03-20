@@ -29,9 +29,10 @@ module PermissionHelpers
     end
   end
   
-  #Checks that the current user's role matches +role+.
+  #Checks that the current user's has at least the rights associated
+  #with +role+.
   def check_role(role)
-    current_user && current_user.type == role.to_s.classify
+    current_user && current_user.has_rights?(role)
   end
   
   #Checks that the current user is not the default *admin* user.

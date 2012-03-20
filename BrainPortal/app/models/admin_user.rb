@@ -21,4 +21,21 @@
 #
 
 class AdminUser < SiteManager
+  
+  def available_tools  #:nodoc:
+    Tool.where({})
+  end
+  
+  def available_groups  #:nodoc:
+    Group.where({})
+  end
+  
+  def available_tasks  #:nodoc:
+    CbrainTask.where({})
+  end
+  
+  def available_users  #:nodoc:
+    User.where({})
+  end
+  
 end

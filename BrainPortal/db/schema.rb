@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120123190749) do
+ActiveRecord::Schema.define(:version => 20120313194957) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -334,7 +334,7 @@ ActiveRecord::Schema.define(:version => 20120123190749) do
     t.string   "country"
     t.datetime "last_connected_at"
     t.boolean  "account_locked",                          :default => false, :null => false
-    t.string   "role"
+    t.string   "type"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"

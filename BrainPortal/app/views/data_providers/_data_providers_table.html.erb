@@ -29,7 +29,7 @@
 
 <div class="menu_bar">
 
-  <% if check_role(:admin) || check_role(:site_manager) %>
+  <% if check_role(:site_manager) %>
     <%= new_model_button "Create New Data Provider", new_data_provider_path %>
   <% end %> 
 

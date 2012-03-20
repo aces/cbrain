@@ -25,7 +25,7 @@
 <% title "Account Info" %>
 
 <div class="menu_bar">
-  <% if check_role(:admin) %>
+  <% if check_role(:admin_user) %>
     <%= link_to 'Tool Access Reports', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
   <% end %>
 
@@ -101,7 +101,7 @@
     <% end %>
 
     <%
-      if current_user.has_role?(:admin) && not_admin_user(@user)
+      if current_user.has_role?(:admin_user) && not_admin_user(@user)
         t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "", :header => "Account Locked")
       end
     %>

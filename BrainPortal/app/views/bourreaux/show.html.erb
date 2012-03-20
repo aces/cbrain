@@ -27,7 +27,7 @@
 <% is_bourreau = @bourreau.is_a?(Bourreau) %>
 <% is_portal   = @bourreau.is_a?(BrainPortal) %>
    
-<% if check_role(:admin) || @bourreau.user_id == current_user.id %>
+<% if check_role(:admin_user) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
     <% if is_bourreau %>    
 
@@ -107,7 +107,7 @@
 
 
 
-  <% if (check_role(:admin) || @bourreau.user_id == current_user.id) %>
+  <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
 
     <% if is_bourreau %>
 

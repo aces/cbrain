@@ -99,7 +99,7 @@ describe Message do
         exception = Exception.new("error") 
         exception.stub(:backtrace).and_return([""])
         Message.send_internal_error_message("","head", exception)
-      end.should change { Message.count }.by(User.find_all_by_role("admin").count)
+      end.should change { Message.count }.by(User.all_admins.count)
     end
 
     it "send a message to all users and admin (admin + normal user)" do
@@ -108,7 +108,7 @@ describe Message do
         exception = Exception.new("error") 
         exception.stub(:backtrace).and_return([""])
         Message.send_internal_error_message(users,"head", exception)
-      end.should change { Message.count }.by(User.find_all_by_role("admin").count + users.size)
+      end.should change { Message.count }.by(User.all_admins.count + users.size)
     end
   
   end

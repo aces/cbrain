@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe ResourceAccess do
-  let(:user) { Factory.create(:normal_user) }
+  let(:normal_user) { Factory.create(:normal_user) }
   let(:site_manager) { Factory.create(:site_manager) }
   let(:admin) { Factory.create(:admin_user) }
   let(:free_resource)  { Factory.create(:data_provider) }
@@ -33,7 +33,9 @@ describe ResourceAccess do
   
   
   describe "#can_be_accessed_by?" do
-    describe "for admins" do      
+    describe "for admins" do
+      let(:user) { admin }
+            
       it "should give access to owned resource" do
         owned_resource.can_be_accessed_by?(admin).should be_true
       end
@@ -48,6 +50,8 @@ describe ResourceAccess do
       end
     end
     describe "for site managers" do
+      let(:user) { site_manager }
+      
       it "should give access to owned resource" do
         owned_resource.can_be_accessed_by?(site_manager).should be_true
       end
@@ -61,7 +65,9 @@ describe ResourceAccess do
         free_resource.can_be_accessed_by?(site_manager).should be_false
       end
     end
-    describe "for regular users" do      
+    describe "for regular users" do    
+      let(:user) { normal_user }  
+      
       it "should give access to owned resource" do
         owned_resource.can_be_accessed_by?(user).should be_true
       end
@@ -78,7 +84,8 @@ describe ResourceAccess do
   end
   
   describe "#has_owner_access?" do
-    describe "for admins" do      
+    describe "for admins" do
+      let(:user) { admin }      
       it "should give access to owned resource" do
         owned_resource.has_owner_access?(admin).should be_true
       end
@@ -92,7 +99,9 @@ describe ResourceAccess do
         free_resource.has_owner_access?(admin).should be_true
       end
     end
-    describe "for site managers" do      
+    describe "for site managers" do 
+      let(:user) { site_manager }   
+        
       it "should give access to owned resource" do
         owned_resource.has_owner_access?(site_manager).should be_true
       end
@@ -111,6 +120,7 @@ describe ResourceAccess do
       end
     end
     describe "for regular users" do
+      let(:user) { normal_user }  
       
       it "should give access to owned resource" do
         owned_resource.has_owner_access?(user).should be_true
@@ -128,28 +138,45 @@ describe ResourceAccess do
   end
    
   describe "#find_all_accessible_by_user" do
-    before(:each) do
-      free_resource
-      group_resource
-      site_resource
-      owned_resource
-    end
-      
-    it "should return all resources for admins" do
-      DataProvider.find_all_accessible_by_user(admin).sort_by(&:id).should == [free_resource, group_resource, site_resource, owned_resource].sort_by(&:id)
-    end
-    
-    it "should return owned, group and site-associated resources for site managers" do
-      DataProvider.find_all_accessible_by_user(site_manager).sort_by(&:id).should =~ [group_resource, site_resource, owned_resource].sort_by(&:id)
+    describe "for admins" do
+      let(:user) { admin }  
+      it "should return all resources for admins" do
+        free_resource
+        group_resource
+        site_resource
+        owned_resource
+        DataProvider.find_all_accessible_by_user(admin).sort_by(&:id).should == [free_resource, group_resource, site_resource, owned_resource].sort_by(&:id)
+      end
     end
     
-    it "should return owned and group-associated resources for regular users" do
-      DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should =~ [group_resource, owned_resource].sort_by(&:id)
+    describe "for site managers" do
+      let(:user) { site_manager }  
+      it "should return owned, group and site-associated resources for site managers" do
+        free_resource
+        group_resource
+        site_resource
+        owned_resource
+        DataProvider.find_all_accessible_by_user(site_manager).sort_by(&:id).should =~ [group_resource, site_resource, owned_resource].sort_by(&:id)
+      end
     end
+    
+    describe "for regular users" do
+      let(:user) { normal_user }  
+      it "should return owned and group-associated resources for regular users" do
+        free_resource
+        group_resource
+        site_resource
+        owned_resource
+        DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should =~ [group_resource, owned_resource].sort_by(&:id)
+      end
+    end
+    
   end
   
   describe "#find_accessible_by_user" do
     describe "for admins" do      
+      let(:user) { admin }
+      
       it "should find owned resources" do
         DataProvider.find_accessible_by_user(owned_resource.id, admin).should == owned_resource
       end
@@ -164,6 +191,8 @@ describe ResourceAccess do
       end
     end
     describe "for site managers" do      
+      let(:user) { site_manager }
+      
       it "should find owned resources" do
         DataProvider.find_accessible_by_user(owned_resource.id, site_manager).should == owned_resource
       end
@@ -177,7 +206,9 @@ describe ResourceAccess do
         lambda{DataProvider.find_accessible_by_user(free_resource.id, site_manager)}.should raise_error(ActiveRecord::RecordNotFound)
       end
     end
-    describe "for users" do      
+    describe "for users" do    
+      let(:user) { normal_user }  
+        
       it "should find owned resources" do
         DataProvider.find_accessible_by_user(owned_resource.id, user).should == owned_resource
       end

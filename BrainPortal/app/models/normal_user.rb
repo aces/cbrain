@@ -21,4 +21,24 @@
 #
 
 class NormalUser < User
+  
+  def available_tools  #:nodoc:
+    Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+  end
+  
+  def available_groups  #:nodoc:              
+    group_scope = self.groups.where("groups.name <> 'everyone'")
+    group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
+    
+    group_scope
+  end
+  
+  def available_tasks  #:nodoc:
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
+  end
+  
+  def available_users  #:nodoc:
+    User.where( :id => self.id )
+  end
+  
 end

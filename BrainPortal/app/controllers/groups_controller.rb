@@ -92,7 +92,7 @@ class GroupsController < ApplicationController
 
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     render :partial => "new"
   end
 

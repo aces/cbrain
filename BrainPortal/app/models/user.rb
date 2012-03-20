@@ -51,7 +51,7 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name, :login, :type
+  validates_presence_of     :full_name, :login
   validates_length_of       :login,    :within => 3..40
   validates                 :password,
                             :length => { :minimum => 8 },
@@ -101,12 +101,12 @@ class User < ActiveRecord::Base
     
   #Return the admin user
   def self.admin
-    @admin ||= self.find_by_login("admin")
+    @@admin ||= self.find_by_login("admin")
   end
   
   #Return all users with admin users.
   def self.all_admins
-    @all_admins ||= AdminUser.all("admin")
+    @@all_admins ||= AdminUser.all
   end
   
   # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
@@ -177,6 +177,12 @@ class User < ActiveRecord::Base
     save(:validate => false)
   end
   
+  ###############################################
+  #
+  # Permission methods
+  #
+  ###############################################
+  
   #Does this user's role match +role+?
   def has_role?(role)
     return self.class == role.to_s.classify.constantize
@@ -188,69 +194,36 @@ class User < ActiveRecord::Base
   end
   
   #Find the tools that this user has access to.
-  def available_tools(options = {})
-    if self.has_role? :admin_user
-      Tool.scoped(options)
-    elsif self.has_role? :site_manager
-      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
-    else
-      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
-    end
+  def available_tools
+    cb_error "#available_tools called from User base class! Method must be implement in a subclass."
   end
   
   #Find the scientific tools that this user has access to.
-  def available_scientific_tools(options = {})
-    self.available_tools(options).where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
+  def available_scientific_tools
+    self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
-  def available_conversion_tools(options = {})
-    self.available_tools(options).where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
+  def available_conversion_tools
+    self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
-  def available_groups(options = {})
-    if self.has_role? :admin_user
-      group_scope = Group.where(options)
-    elsif self.has_role? :site_manager
-      group_scope = Group.where(options)
-      group_scope = group_scope.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-      group_scope = group_scope.where("groups.name <> 'everyone'")
-      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
-    else                  
-      group_scope = self.groups.where(options)
-      group_scope = group_scope.where("groups.name <> 'everyone'")
-      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
-    end
-    
-    group_scope
+  def available_groups
+    cb_error "#available_groups called from User base class! Method must be implement in a subclass."
   end
   
-  def available_tags(options = {})
-    Tag.where(options).where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
+  def available_tags
+    Tag.where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
   
-  def available_tasks(options = {})
-    if self.has_role? :admin_user
-      CbrainTask.where(options)
-    elsif self.has_role? :site_manager
-      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids] )
-    else
-      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
-    end
+  def available_tasks
+    cb_error "#available_tasks called from User base class! Method must be implement in a subclass."
   end
   
   #Return the list of users under this user's control based on role.
-  def available_users(options = {})
-    if self.has_role? :admin_user
-      user_scope = User.where(options)
-    elsif self.has_role? :site_manager
-      user_scope = self.site.users.where(options)
-    else
-      user_scope = User.where( :id => self.id ).where(options)
-    end
-    
-    user_scope
+  def available_users
+    cb_error "#available_users called from User base class! Method must be implement in a subclass."
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
@@ -362,7 +335,7 @@ class User < ActiveRecord::Base
   end
   
   def site_manager_check  #:nodoc:
-    if self.class == SiteManager && self.site_id.blank?
+    if self.type == "SiteManager" && self.site_id.blank?
       errors.add(:site_id, "manager type must be associated with a site.")
     end
   end
