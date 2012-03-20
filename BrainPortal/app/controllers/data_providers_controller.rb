@@ -440,7 +440,7 @@ class DataProvidersController < ApplicationController
       end
 
       file_group_id   = params[:other_group_id].to_i unless params[:other_group_id].blank?
-      file_group_id ||= current_session[:active_group_id] || current_user.own_group.id
+      file_group_id ||= current_project.try(:id) || current_user.own_group.id
       file_group_id   = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(file_group_id)
 
       subclass = Class.const_get(subtype)

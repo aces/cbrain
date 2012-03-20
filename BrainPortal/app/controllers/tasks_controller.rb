@@ -212,7 +212,7 @@ class TasksController < ApplicationController
     @task.params      = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id = params[:bourreau_id] # may or may not be there
     @task.user        = current_user
-    @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
+    @task.group_id    = current_project.try(:id) || current_user.own_group.id
     @task.status      = "New"
 
     # Offer latest accessible tool config as default
@@ -324,7 +324,7 @@ class TasksController < ApplicationController
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
-    @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
+    @task.group_id  ||= current_project.try(:id) || current_user.own_group.id
     @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig
@@ -414,6 +414,8 @@ class TasksController < ApplicationController
 
       spawn_messages = ""
 
+      share_wd_Nid_to_tid = {} # a negative number -> task_id
+
       tasklist.each do |task|
         begin
           if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
@@ -424,7 +426,14 @@ class TasksController < ApplicationController
           else
             task.status = "New" if task.status.blank?
           end
-          task.save!
+          share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
+          if share_wd_Nid.present? && share_wd_Nid <= 0
+            task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
+            task.save!
+            share_wd_Nid_to_tid[share_wd_Nid] = task.id
+          else
+            task.save!
+          end
         rescue => ex
           spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
         end
