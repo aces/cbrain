@@ -180,6 +180,80 @@ function load_behaviour(event){
      	         
    });
    
+   
+   /////////////////////////////////////////////////////////////////////
+   //
+   // Project button behaviour
+   //
+   /////////////////////////////////////////////////////////////////////
+   
+   loaded_element.find(".project_button").each(function(event){
+      var project_button = jQuery(this);
+      var edit_button = project_button.find(".project_edit_button");
+      var delete_button = project_button.find(".project_delete_button");
+
+
+
+      edit_button.hide();
+      delete_button.hide();
+
+      project_button.mouseenter(function(){
+        edit_button.show();
+        delete_button.show();
+      }).mouseleave(function(){
+        edit_button.hide();
+        delete_button.hide();
+      });
+
+   }).mouseenter(function(){
+     var project_button = jQuery(this);
+     
+     project_button.css("-webkit-transform", "scale(1.1)");
+     project_button.css("-moz-transform", "scale(1.1)");
+     project_button.css("-o-transform", "scale(1.1)");
+     project_button.css("-ms-transform", "scale(1.1)");
+     
+   }).mouseleave(function(){
+     var project_button = jQuery(this);
+     
+     project_button.css("-webkit-transform", "scale(1)");
+     project_button.css("-moz-transform", "scale(1)");
+     project_button.css("-o-transform", "scale(1)");
+     project_button.css("-ms-transform", "scale(1)");
+   
+   }).mousedown(function(event){
+     if(event.target.nodeName == "A"){
+       return true;
+     }
+     
+     var project_button = jQuery(this);
+     
+     project_button.css("-webkit-transform", "scale(1.05)");
+     project_button.css("-moz-transform", "scale(1.05)");
+     project_button.css("-o-transform", "scale(1.05)");
+     project_button.css("-ms-transform", "scale(1.05)");
+   }).mouseup(function(){
+     var project_button = jQuery(this);
+   
+     project_button.css("-webkit-transform", "scale(1.1)");
+     project_button.css("-moz-transform", "scale(1.1)");
+     project_button.css("-o-transform", "scale(1.1)");
+     project_button.css("-ms-transform", "scale(1.1)");
+   }).click(function(event){
+     if(event.target.nodeName == "A"){
+       return true;
+     }
+     var project_button = jQuery(this);
+     
+     var url = project_button.attr("data-href");
+     var method = project_button.attr("data-method");
+     var link = jQuery("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
+     link.appendTo("body");
+     link.click();
+     
+   });
+   
+   
    /////////////////////////////////////////////////////////////////////
     //
     // Delayed loading of content

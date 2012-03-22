@@ -857,11 +857,10 @@ pre {
   text-align: center;
   text-decoration: none;
   color: white;
-  font-weight: bold;
   padding: 0.4em;
   margin: 1em;
-  width: 10em;
-  height: 10em;
+  width: 20em;
+  height: 8em;
   border: 0.4em gray solid;
   border-radius: 1em;
   -moz-border-radius: 1em;
@@ -870,22 +869,32 @@ pre {
 
 .project_button h4{
   color: white;
-  font-size: 15px;
+  font-weight: bold;
+  border-bottom: none;
+  margin-bottom: 0;
+  font-family: Verdana, sans-serif;
   padding-bottom: 4px;
 }
 
-.project_button:hover {
-  -webkit-transform:        scale(1.2);
-  -moz-transform:           scale(1.2);
-  -o-transform:             scale(1.2);
-  -ms-transform:            scale(1.2);
+.project_button hr {
+  margin-top: 0;
 }
 
-.project_button:active {
-  -webkit-transform:        scale(1);
-  -moz-transform:           scale(1);
-  -o-transform:             scale(1);
-  -ms-transform:            scale(1);
+.project_button_bottom_link {
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  position: absolute;
+  bottom: 1px;
+}
+
+.project_edit_button {
+  left: 5px;
+}
+
+.project_delete_button {
+  right: 5px;
 }
 
 /* Gradients done using: http://www.colorzilla.com/gradient-editor/ */
