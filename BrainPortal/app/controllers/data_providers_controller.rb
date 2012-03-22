@@ -171,15 +171,17 @@ class DataProvidersController < ApplicationController
     flash[:notice] = "Provider successfully deleted."
     
     respond_to do |format|
-      format.js { redirect_to :action => :index, :format => :js }
-      format.xml { head :ok }  
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js } # no longer used?
+      format.xml  { head :ok }  
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "Provider not destroyed: #{e.message}"
     
     respond_to do |format|
-      format.js  { redirect_to :action => :index}
-      format.xml { head :conflict }
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js } # no longer used?
+      format.xml  { head :conflict }
     end
   end
   
@@ -261,7 +263,12 @@ class DataProvidersController < ApplicationController
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
     end
 
-    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
+    # NOTE: next paragraph for initializing registered_files is also in register() action
+    registered_files = Userfile.where( :data_provider_id => @provider.id )
+    # On data providers where files are stored in a per user subdir, we limit our
+    # search of what's registered to only those belonging to @as_user
+    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
+    registered_files = registered_files.all.index_by(&:name)
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
@@ -379,18 +386,23 @@ class DataProvidersController < ApplicationController
 
     legal_subtypes = Userfile.descendants.map(&:name).index_by { |x| x }
 
-    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
+    # NOTE: next paragraph for initializing registered_files is also in browse() action
+    registered_files = Userfile.where( :data_provider_id => @provider.id )
+    # On data providers where files are stored in a per user subdir, we limit our
+    # search of what's registered to only those belonging to @as_user
+    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
+    registered_files = registered_files.all.index_by(&:name)
 
     basenames.each do |basename|
 
       # Unregister files
 
       if do_unreg || do_erase
-        userfile = Userfile.where(:name => basename, :data_provider_id => @provider.id).first
+        userfile = registered_files[basename]
         if userfile.blank?
           num_skipped += 1 unless do_erase
         elsif ! userfile.has_owner_access?(current_user)
-          flash[:error] += "Error: file #{basename} does not belong to you. File not unregistered.\n"
+          flash[:error] += "Error: file #{basename} is not registered such that you have the necessary permissions to unregister it. File not unregistered.\n"
           num_skipped += 1
           next
         else
