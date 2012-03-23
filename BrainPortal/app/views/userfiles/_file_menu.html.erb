@@ -28,7 +28,7 @@
       <%= render :partial => 'userfiles/tool_selection' %>
     <% end %>
     <%= button_with_dropdown_menu("Viewers") do %>
-      <%= submit_button("Jiv Viewer", {:name => "commit", :id => "jiv_submit"}) %>
+      <%= submit_button("Jiv Viewer", :id => "jiv_submit") %>
     <% end %>
     <%= button_with_dropdown_menu("File Management") do %>
       <h4>Download</h4>
