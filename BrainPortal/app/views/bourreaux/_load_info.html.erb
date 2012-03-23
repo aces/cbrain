@@ -25,9 +25,9 @@
 <%
    latest_in_queue_delay    = bourreau.meta[:latest_in_queue_delay]
    time_of_last_queue_delay = bourreau.meta[:time_of_latest_in_queue_delay]
-   num_active               = CbrainTask.status(:active).find_all_by_bourreau_id(bourreau.id).count
-   num_queued               = CbrainTask.status(:queued).find_all_by_bourreau_id(bourreau.id).count
-   num_processing           = CbrainTask.status(:processing).find_all_by_bourreau_id(bourreau.id).count
+   num_active               = CbrainTask.status(:active).where(:bourreau_id => bourreau.id).count
+   num_queued               = CbrainTask.status(:queued).where(:bourreau_id => bourreau.id).count
+   num_processing           = CbrainTask.status(:processing).where(:bourreau_id => bourreau.id).count
 %>
 
 <h4>Latest load information about this Execution Server</h4>
