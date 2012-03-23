@@ -94,7 +94,7 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
-  def before_form
+  def before_form #:nodoc:
     params = self.params
     ids    = params[:interface_userfile_ids]
     #cb_error "Some error occurred."
