@@ -97,7 +97,7 @@ class UsersController < ApplicationController
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
 
-    no_password_reset_needed = params.delete(:no_password_reset_needed) == "1"
+    no_password_reset_needed = params[:no_password_reset_needed] == "1"
  
     @user = User.new(params[:user])
 
