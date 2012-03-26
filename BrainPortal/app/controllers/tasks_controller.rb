@@ -576,9 +576,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).select("id").map(&:id)
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).select("id").map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -608,7 +608,7 @@ class TasksController < ApplicationController
 
     # This block will either run in background or not depending
     # on do_in_spawn
-    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to a list of tasks") do
+    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
       tasks = []
       tasklist.each do |task_id|
