@@ -24,11 +24,11 @@ class RubySourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  def self.pretty_type
+  def self.pretty_type #:nodoc:
     "Ruby source file"
   end
 
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.rb$/i
   end
   

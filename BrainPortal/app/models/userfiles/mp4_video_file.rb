@@ -26,11 +26,11 @@ class Mp4VideoFile < VideoFile
 
   has_viewer :partial => :html5_mp4_video, :if => :is_locally_synced?
   
-  def self.pretty_type
+  def self.pretty_type #:nodoc:
     "MP4 Video File"
   end
 
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.mp4$/i
   end
   
