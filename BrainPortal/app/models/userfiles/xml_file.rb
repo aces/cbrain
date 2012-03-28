@@ -24,7 +24,7 @@ class XMLFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.xml$/i
   end
   

@@ -26,7 +26,7 @@ class TextFile < SingleFile
   
   has_viewer :partial  => "text_file", :if  => :is_locally_synced?
   
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.txt$/i
   end
   

@@ -24,11 +24,11 @@ class VideoFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  def self.pretty_type
+  def self.pretty_type #:nodoc:
     "Video File"
   end
 
-  #def self.file_name_pattern
+  #def self.file_name_pattern #:nodoc:
   #  /\.sh$/i
   #end
   

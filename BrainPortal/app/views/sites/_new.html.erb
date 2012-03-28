@@ -31,16 +31,12 @@
       <div class="display_row">
         <%= f.label :name %><br/>
         <%= f.text_field :name %>
+
         <P>
 
-        <span title="Brief description of the site.">
-          <p><%= f.label :description, "Description" %><br/>
-          <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-          <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
-          </p>
-        </span>
-        <P>
-
+        <%= f.label :description, "Description" %><br/>
+        <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
+        <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
       </div>
 
       <div class="display_cell">
@@ -73,7 +69,7 @@
         </table>
       </div>
 
-      <div class="display_row">
+      <div class="display_row centered">
         <P>
         <%= f.submit "Create" %>
       </div>

@@ -26,7 +26,7 @@ class ImageFile < SingleFile
   
   has_viewer :partial  => "image_file", :if  => :is_locally_synced?
   
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.(jpe?g|gif|png)$/i
   end
   

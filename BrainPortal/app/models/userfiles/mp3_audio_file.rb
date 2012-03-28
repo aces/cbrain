@@ -26,11 +26,11 @@ class Mp3AudioFile < AudioFile
 
   has_viewer :partial => :html5_mp3_audio, :if => :is_locally_synced?
   
-  def self.pretty_type
+  def self.pretty_type #:nodoc:
     "MP3 Audio File"
   end
 
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.mp3$/i
   end
   
