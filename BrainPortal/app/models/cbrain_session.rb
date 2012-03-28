@@ -87,6 +87,7 @@ class CbrainSession
   end
   
   def self.recent_activity(n = 10, options = {}) #:nodoc:
+    self.clean_sessions
     last_sessions = session_class.where( "sessions.user_id IS NOT NULL" ).order("sessions.updated_at DESC")
     entries = []
     
@@ -107,6 +108,18 @@ class CbrainSession
     end
     
     entries
+  end
+
+  # Remove all spurious sessions entries:
+  #   a) older than 1 hour and
+  #   b) with no user_id and
+  #   c) not active
+  # These are usually created simply by any access to the
+  # login page.
+  def self.clean_sessions #:nodoc:
+    self.session_class.where("user_id is null").where([ "updated_at < ?", 1.hour.ago]).destroy_all
+  rescue
+    nil
   end
 
   # Erase most of the entries in the data
