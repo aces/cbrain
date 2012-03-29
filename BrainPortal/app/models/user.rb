@@ -54,6 +54,7 @@ class User < ActiveRecord::Base
 
   validates_presence_of     :full_name, :login, :role
   validates_length_of       :login,    :within => 3..40
+  validates_format_of       :login,    :with => /^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/
   validates                 :password,
                             :length => { :minimum => 8 },
                             :confirmation => true,
@@ -380,6 +381,7 @@ class User < ActiveRecord::Base
     userGroup = UserGroup.new(:name => self.login, :site  => self.site)
     unless userGroup.save
       self.errors.add(:base, "User Group: #{userGroup.errors.full_messages.join(", ")}")
+      return false
     end
     
     everyoneGroup = Group.everyone
@@ -391,6 +393,7 @@ class User < ActiveRecord::Base
       group_ids << site_group.id
     end
     self.group_ids = group_ids
+    true
   end
 
 end
