@@ -261,9 +261,9 @@ module ActRecMetaData
   # metadata associated with the ActiveRecord object.
   # See the methods in MetaDataHandler for more info.
   def meta
-    cb_error "Cannot manage metadata on the metadata store itself!" if self.is_a?(MetaDataStore)
-    cb_error "Cannot manage metadata on ActiveRecordLog objects!"   if self.is_a?(ActiveRecordLog)
-    cb_error "Cannot manage metadata on an object that hasn't been saved yet." unless self.id
+    raise "Cannot manage metadata on the metadata store itself!" if self.is_a?(MetaDataStore)
+    raise "Cannot manage metadata on ActiveRecordLog objects!"   if self.is_a?(ActiveRecordLog)
+    raise "Cannot manage metadata on an object that hasn't been saved yet." unless self.id
     @_cbrain_meta ||= MetaDataHandler.new(self.id, self.class.to_s)
   end
 
@@ -363,8 +363,8 @@ module ActRecMetaData
     #                     :conditions => { :lastname => 'Johnson' })
     #
     def find_all_by_meta_data(mykey,myval=nil,options={})
-      cb_error "Cannot search for MetaDataStore objects!"     if     self <= MetaDataStore
-      cb_error "Search key must be defined!"                  if     mykey.nil?
+      raise "Cannot search for MetaDataStore objects!"     if     self <= MetaDataStore
+      raise "Search key must be defined!"                  if     mykey.nil?
       mykey = mykey.to_s
       subclasses = [ self.to_s ] + self.descendants.map { |sc| sc.name.to_s }
       conditions = { :ar_class => subclasses, :meta_key => mykey }

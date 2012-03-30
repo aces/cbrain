@@ -55,7 +55,7 @@ class FileCollection < Userfile
       elsif archive_file_name =~ /\.zip/i
         system("unzip '#{escaped_tmparchivefile}'") 
       else
-        raise "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
+        cb_error "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
       end
     end
 
