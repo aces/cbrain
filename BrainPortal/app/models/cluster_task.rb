@@ -897,7 +897,7 @@ class ClusterTask < CbrainTask
     return false if self.share_wd_tid
     return true  if self.workdir_archived?
 
-    cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
+    raise "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -995,7 +995,7 @@ class ClusterTask < CbrainTask
     return false if     self.share_wd_tid
     return true  unless self.workdir_archived?
 
-    cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
+    raise "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -1116,7 +1116,7 @@ class ClusterTask < CbrainTask
   def unarchive_work_directory_from_userfile
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
-    cb_error "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
+    raise "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     file = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
@@ -1414,7 +1414,7 @@ class ClusterTask < CbrainTask
 
   # Remove the directory created to run the job.
   def remove_cluster_workdir
-    cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
+    raise "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if ! self.share_wd_tid.blank?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir

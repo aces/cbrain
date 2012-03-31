@@ -54,7 +54,7 @@ class WorkerPool
   # initializer.
   def self.create_or_find_pool(worker_class, desired_number_of_workers, initializers = {})
 
-    cb_error "Needs a worker class that is a subclass of 'Worker'." if
+    raise "Needs a worker class that is a subclass of 'Worker'." if
       ! worker_class.is_a?(Class) || ! (worker_class < Worker)
 
     pool = WorkerPool.new
@@ -84,7 +84,7 @@ class WorkerPool
   # Construct a pool for existing running workers of a certain class.
   def self.find_pool(worker_class)
 
-    cb_error "Needs a worker class that is a subclass of 'Worker'." if
+    raise "Needs a worker class that is a subclass of 'Worker'." if
       ! worker_class.is_a?(Class) || ! (worker_class < Worker)
 
     pool = WorkerPool.new
