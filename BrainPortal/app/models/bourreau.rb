@@ -173,6 +173,51 @@ class Bourreau < RemoteResource
     return false
   end
 
+  # Starts a Rails console on a remote Bourreau. The remote console's STDIN,
+  # STDOUT and STDERR channel will be connected to the current TTY. Obviously,
+  # this method is meant to be invoked while already on a portal side rails
+  # console, for debugging or inspecting a remote installation.
+  def start_remote_console
+    raise "This method can only be invoked in an interactive setting." unless STDIN.tty? && STDOUT.tty? && STDERR.tty?
+
+    unless self.has_remote_control_info?
+      self.operation_messages = "Not configured for remote control."
+      return false
+    end
+
+    unless RemoteResource.current_resource.is_a?(BrainPortal)
+      self.operation_messages = "Only a Portal can start a Bourreau."
+      return false
+    end
+
+    unless self.start_tunnels
+      self.operation_messages = "Could not start the SSH master connection."
+      return false
+    end
+
+    # What environment will it run under?
+    myrailsenv = Rails.env || "production"
+
+    # If we tunnel the DB, we get a non-blank yml file here
+    db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
+
+    # If the remote host is actually just a frontend before the REAL
+    # host, add the "-R host -H http_port -D db_port" special options to the command
+    proxy_args = ""
+    if ! self.proxied_host.blank?
+      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+    end
+  
+    # Copy the database.yml file
+    # Note: the database.yml file will be removed automatically by the cbrain_remote_ctl script when it exits.
+    copy_command = "cat > #{self.ssh_control_rails_dir}/config/database.yml"
+    self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
+
+    # SSH command to start the console.
+    start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv}'"
+    self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
+  end
+
   # This method adds Bourreau-specific information fields
   # to the RemoteResourceInfo object normally returned 
   # by the RemoteResource class method of the same name.

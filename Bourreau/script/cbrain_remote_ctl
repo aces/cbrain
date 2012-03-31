@@ -23,8 +23,8 @@
 
 
 
-# This script is a wrapper that launches the normal Rails script/server,
-# but with the added ability of receiving the content if the database.yml
+# This script is a wrapper that launches the normal Rails server,
+# but with the added ability of receiving the content of the database.yml
 # file in standard output before it does so. Also, once the server is
 # started, the database.yml is deleted outright, closing a security hole.
 #
@@ -44,7 +44,7 @@
 # which will result in reading the database.yml from stdin, installing
 # it, executing this command
 #
-#   script/server -e <environment> -p <port> -b 127.0.0.1 -d
+#   script/rails server thin -d -e <environment> -p <port> -b 127.0.0.1 -P pidfile
 #
 # and finally removing the database.yml file. Any database.yml file
 # already present before doing all this will be backed up in
@@ -61,6 +61,11 @@
 #   $0 stop
 #
 # which will result in killing the rails app.
+#
+#
+# To start a console
+#
+#   $0 console -e <environment>
 
 
 
@@ -79,7 +84,8 @@ require File.dirname(__FILE__) + '/../lib/ssh_master.rb' # ugly
 # Usage
 def usage(basename)
     puts "Usage: #{basename} [-R host -H http_port -D db_port] start -e <environment> -p <port>\n" +
-         "       #{basename} [-R host -H http_port -D db_port] stop"
+         "       #{basename} [-R host -H http_port -D db_port] stop" +
+         "       #{basename} [-R host -H http_port -D db_port] console -e <environment>"
     Kernel.exit(10)
 end
 
@@ -132,7 +138,7 @@ if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
 end
 
 # Check usage
-usage(basename) if ARGV.size !=1 && ARGV.size != 5    # 1 or 5 args!
+usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
 
 # To help diagnose problems, print Ruby's version.
 puts "You are using Ruby #{RUBY_VERSION}"
@@ -155,11 +161,19 @@ if ARGV.size == 1
 end
 
 #############################################################
-# Start
+# Start or Console
 #############################################################
 
-usage(basename) if ARGV[0] != "start" || ARGV[1] != "-e" || ARGV[3] != "-p"
-if File.exist?(pidfile)
+if ARGV[0] == "start"      # start -e env -p port
+  usage(basename) if ARGV.size != 5 || ARGV[1] != "-e" || ARGV[3] != "-p"
+elsif ARGV[0] == "console" # console -e env
+  usage(basename) if ARGV.size != 3 || ARGV[1] != "-e"
+else
+  usage(basename)
+end
+mode = ARGV[0] # start or console
+
+if mode == "start" && File.exist?(pidfile)
   pid = File.read(pidfile).to_i
   # TODO make check for running process platform-independent
   fatal("The Rails app seems to be running already (PID=#{pid}). Kill it first.") if File.exist?("/proc/#{pid}")
@@ -168,13 +182,13 @@ end
 
 # Check arguments
 environment = ARGV[2]
-port        = ARGV[4].to_i
+port        = mode == "start" ? ARGV[4].to_i : 1025 # console port number is dummy
 fatal("Environment argument must be 'production', 'development' or 'test'") unless
    environment =~ /^(production|development|test)$/
 fatal("Port argument must be a number greater than 1024 and less than 65530") unless
    port > 1024 && port < 65535
 
-db_yml_text = STDIN.read || ""
+db_yml_text = mode == "start" ? (STDIN.read || "") : ""
 db_file     = rails_home + "/config/database.yml"
 db_file_bak = rails_home + "/config/database.yml.cbrain_remote_bak"
 
@@ -202,12 +216,13 @@ else # db text is provided to us
   File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
 end
 
-# Start the server
+# Start the server or the console
 start_success=false
 start_log_file="#{rails_home}/log/server_start.log"
 raw_system_cmd = ""
 Dir.chdir(rails_home) do
-  rails_cmd_ar = [
+  rails_cmd_ar = (mode == "start") ?
+        [
           "script/rails", "server", "thin",
           "-d", # the -d will start it in background
           "-p", "#{port}",
@@ -215,30 +230,41 @@ Dir.chdir(rails_home) do
           "-b", "127.0.0.1",
           "-P", "#{pidfile}"
         ]
-  raw_system_cmd = "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'"
-  start_success=system("bash","-c",raw_system_cmd)
+     :
+        [
+          "script/rails", "console", "#{environment}",
+        ]
+  raw_system_cmd = (mode == "start") ?
+      "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'"
+    :
+      rails_cmd_ar.join(" ")
+  start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
 end
 
 # If we were provided with a database.yml, we need
 # to wait a bit and delete it once the server has read
 # it.
-if ! blank_yml
+if (! blank_yml) || mode == "console"
   File.unlink(db_file) rescue true
 end
 
-# Return a message to indicate to our calling context
-# whether or not the server started.
-if start_success
-  puts "Bourreau Started." # This string is used by the Portal controller!
+if mode == "start"
+  # Return a message to indicate to our calling context
+  # whether or not the server started.
+  if start_success
+    puts "Bourreau Started." # This string is used by the Portal controller!
+  else
+    puts "Bourreau Failed."
+    puts "Raw BASH command: #{raw_system_cmd}"
+    #if File.exists?(start_log_file)
+    #  puts "Here are the last 100 lines of the server's log:"
+    #  system("tail -100 '#{start_log_file}'")
+    #else
+    #  puts "No server log file found to help you out of this one :-("
+    #end
+  end
 else
-  puts "Bourreau Failed."
-  puts "Raw BASH command: #{raw_system_cmd}"
-  #if File.exists?(start_log_file)
-  #  puts "Here are the last 100 lines of the server's log:"
-  #  system("tail -100 '#{start_log_file}'")
-  #else
-  #  puts "No server log file found to help you out of this one :-("
-  #end
+  puts "\nBourreau Console Exited."
 end
 
 Kernel.exit(start_success ? 0 : 10)
