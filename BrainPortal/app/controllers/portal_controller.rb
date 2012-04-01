@@ -121,6 +121,15 @@ class PortalController < ApplicationController
       log = filtlogs.join("\n")
     end
 
+    if log.blank?
+      render :text => <<-NO_SHOW
+        <pre><span style=\"color:yellow; font-weight:bold\">
+          (No logs entries found for user '#{user_name || "(Unknown)"}' within the last #{num_lines} lines of the #{Rails.env} log)
+        </span></pre>
+      NO_SHOW
+      return
+    end
+
     # Render the pretty log
     render :text => "<pre>#{colorize_logs(log)}</pre>"
   end
