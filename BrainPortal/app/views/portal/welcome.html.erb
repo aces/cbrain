@@ -198,7 +198,7 @@
   <fieldset>
     <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
     <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>
-      Number of lines to show: <%= select_tag "num_lines", options_for_select([1000, 5000, 10_000, 20_000], :selected => 5000) %>
+      Number of lines to show: <%= select_tag "num_lines", options_for_select([100, 500, 1000, 5000, 10_000, 20_000], :selected => 5000) %>
       Filter by user: <%= user_select :log_user_id, params[:log_user_id], :include_blank => "(All users)" %>
       <strong>Hide lines:</strong>
         'Rendered': <%= check_box_tag :hide_rendered, "1", params[:hide_rendered] == "1" %>

@@ -73,20 +73,38 @@ class PortalController < ApplicationController
   
   def portal_log #:nodoc:
 
+    # Number of lines to show
     num_lines = (params[:num_lines] || 5000).to_i
-    num_lines = 1000 if num_lines < 1000
+    num_lines = 100 if num_lines < 100
     num_lines = 20_000 if num_lines > 20_000
+
+    # Filter by user
     user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
 
-    command = "tail -#{num_lines} #{Rails.configuration.paths.log.first} | perl -pe 's/\\e\\[[\\d;]*\\S//g'"
+    # Remove some less important lines; note that in production,
+    # only 'Rendered' is shown in this set.
     remove_egrep = []
     remove_egrep << "^Rendered"     if params[:hide_rendered].presence  == "1"
     remove_egrep << "^ *SQL "       if params[:hide_sql].presence       == "1"
     remove_egrep << "^ *CACHE "     if params[:hide_cache].presence     == "1"
     remove_egrep << "^ *AREL "      if params[:hide_arel].presence      == "1"
     remove_egrep << "^ *[^ ]* Load" if params[:hide_load].presence      == "1"
+
+    # Extract the raw data with escape sequences filtered.
+
+    # Version 1: tail first, filter after. We get less lines than expected.
+    #command  = "tail -#{num_lines} #{Rails.configuration.paths.log.first} | perl -pe 's/\\e\\[[\\d;]*\\S//g'"
+    #command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+
+    # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
+    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths.log.first}"
     command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+    command += " | tail -#{num_lines}"
+
+    # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
+
+    # Filter by username now.
     if user_name
       filtlogs = []
       paragraph = []
@@ -102,6 +120,8 @@ class PortalController < ApplicationController
       end
       log = filtlogs.join("\n")
     end
+
+    # Render the pretty log
     render :text => "<pre>#{colorize_logs(log)}</pre>"
   end
   
