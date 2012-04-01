@@ -196,12 +196,21 @@
   <% end %>
 <% if current_user.has_role?(:admin) %>
   <fieldset>
-    <legend>Logs</legend>
+    <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
     <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>
       Number of lines to show: <%= select_tag "num_lines", options_for_select([1000, 5000, 10_000, 20_000], :selected => 5000) %>
+      Filter by user: <%= user_select :log_user_id, params[:log_user_id], :include_blank => "(All users)" %>
+      <strong>Hide lines:</strong>
+        'Rendered': <%= check_box_tag :hide_rendered, "1", params[:hide_rendered] == "1" %>
+      <% if Rails.env == 'development' %>
+        | 'SQL':      <%= check_box_tag :hide_sql,      "1", params[:hide_sql]      == "1" %>
+        | 'Load':     <%= check_box_tag :hide_load,     "1", params[:hide_load]     == "1" %>
+        | 'CACHE':    <%= check_box_tag :hide_cache,    "1", params[:hide_cache]    == "1" %>
+        | 'AREL':     <%= check_box_tag :hide_arel,     "1", params[:hide_arel]     == "1" %>
+      <% end %>
       <%= submit_tag "Refresh", :class => "button" %>
     <% end %>
-    <br><br>
+    <br>
     <%= ajax_element("/portal_log", :id => "portal_log", :scroll_bottom => true) %>
   </fieldset>
 <% end %>
