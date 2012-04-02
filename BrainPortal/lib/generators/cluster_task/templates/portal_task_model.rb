@@ -1,13 +1,9 @@
+<% if @_license_text.present? -%>
 
-#
-# CBRAIN Project
-#
-# PortalTask model <%= "#{class_name}" %>
-#
+<%= @_license_text -%>
+<% end -%>
 
 # A subclass of CbrainTask to launch <%= class_name %>.
-#
-# Original author: 
 class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__]

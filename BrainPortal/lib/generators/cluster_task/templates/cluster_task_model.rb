@@ -1,13 +1,9 @@
+<% if @_license_text.present? -%>
 
-#
-# CBRAIN Project
-#
-# ClusterTask Model <%= "#{class_name}" %>
-#
+<%= @_license_text -%>
+<% end -%>
 
 # A subclass of ClusterTask to run <%= class_name %>.
-#
-# Original author:
 class <%= "CbrainTask::#{class_name}" %> < ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__]
