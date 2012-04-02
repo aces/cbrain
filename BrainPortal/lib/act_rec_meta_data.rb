@@ -107,11 +107,11 @@ module ActRecMetaData
   # For the rest of the API, see the documentation in module ActRecMetaData.
   class MetaDataHandler
 
-    attr_accessor :md_cache, :ar_class, :ar_id
+    attr_accessor :md_cache, :ar_id, :ar_table_name
 
-    def initialize(ar_id, ar_class) #:nodoc:
-      self.ar_class = ar_class.to_s
-      self.ar_id    = ar_id
+    def initialize(ar_id, ar_table_name) #:nodoc:
+      self.ar_id         = ar_id
+      self.ar_table_name = ar_table_name
       reload_cache
     end
 
@@ -211,14 +211,14 @@ module ActRecMetaData
     # Reloads the cached set of MetaDataStore objects
     # associated with the current ActiveRecord object.
     def reload_cache #:nodoc:
-      meta_data_records = MetaDataStore.where( :ar_id => self.ar_id, :ar_class => self.ar_class ).all
+      meta_data_records = MetaDataStore.where( :ar_id => self.ar_id, :ar_table_name => self.ar_table_name ).all
       self.md_cache     = meta_data_records.index_by { |ar| ar.meta_key }
     end
 
     def set_attribute(mykey,myval) #:nodoc
       return delete_attribute(mykey) if myval.nil?
       mykey = mykey.to_s
-      md = self.md_cache[mykey] || MetaDataStore.new( :ar_id => self.ar_id, :ar_class => self.ar_class, :meta_key => mykey )
+      md = self.md_cache[mykey] || MetaDataStore.new( :ar_id => self.ar_id, :ar_table_name => self.ar_table_name, :meta_key => mykey )
       md_cache[mykey] = md
       if md.meta_value != myval
         md.meta_value   = myval
@@ -264,7 +264,7 @@ module ActRecMetaData
     raise "Cannot manage metadata on the metadata store itself!" if self.is_a?(MetaDataStore)
     raise "Cannot manage metadata on ActiveRecordLog objects!"   if self.is_a?(ActiveRecordLog)
     raise "Cannot manage metadata on an object that hasn't been saved yet." unless self.id
-    @_cbrain_meta ||= MetaDataHandler.new(self.id, self.class.to_s)
+    @_cbrain_meta ||= MetaDataHandler.new(self.id, self.class.table_name)
   end
 
   # Destroy the metadata associated with an ActiveRecord.
@@ -366,15 +366,14 @@ module ActRecMetaData
       raise "Cannot search for MetaDataStore objects!"     if     self <= MetaDataStore
       raise "Search key must be defined!"                  if     mykey.nil?
       mykey = mykey.to_s
-      subclasses = [ self.to_s ] + self.descendants.map { |sc| sc.name.to_s }
-      conditions = { :ar_class => subclasses, :meta_key => mykey }
+      conditions = { :ar_table_name => self.table_name, :meta_key => mykey }
       conditions[:meta_value] = myval.to_yaml unless myval.nil?  # temp patch, because Rails doesn't serialize
       #conditions[:meta_value] = myval         unless myval.nil?  # proper code once Rails developers fix bug
       matched = MetaDataStore.where(conditions)
       objects = matched.map do |md|
-        md_ar_id    = md.ar_id
-        md_ar_class = md.ar_class
-        found_class = Class.const_get(md_ar_class)
+        md_ar_id         = md.ar_id
+        md_ar_table_name = md.ar_table_name
+        found_class      = md_ar_table_name.classify.constantize
         obj = found_class.where(options[:conditions] || {}).find(md_ar_id) rescue nil
         obj
       end

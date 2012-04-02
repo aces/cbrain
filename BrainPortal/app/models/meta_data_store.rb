@@ -41,7 +41,7 @@ class MetaDataStore < ActiveRecord::Base
   serialize_as_indifferent_hash :meta_value # not necessarily a hash, actually
 
   validates_presence_of   :meta_key
-  validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_class ]
+  validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_table_name ]
 
 end
 
