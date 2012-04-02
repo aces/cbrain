@@ -43,7 +43,7 @@ class ClusterTaskGenerator < Rails::Generators::Base
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}/views"
     template "portal_task_model.rb",  "cbrain_plugins/cbrain_task/#{file_name}/portal/#{file_name}.rb"
     template "cluster_task_model.rb", "cbrain_plugins/cbrain_task/#{file_name}/bourreau/#{file_name}.rb"
-    template "partial.html.erb",      "cbrain_plugins/cbrain_task/#{file_name}/views/_task_params.html.erb"
+    template "task_params.html.erb",      "cbrain_plugins/cbrain_task/#{file_name}/views/_task_params.html.erb"
     template "show_params.html.erb",  "cbrain_plugins/cbrain_task/#{file_name}/views/_show_params.html.erb"
     template "task_options.html.erb", "public/doc/tasks/#{file_name}_options.html"
     if File.exists?("cbrain_plugins/cbrain_task/#{file_name}.rb")
