@@ -2,10 +2,14 @@
 class AdjustMetaDataStoreArClass < ActiveRecord::Migration
 
   def self.up
-    add_column    :meta_data_store, :ar_table_name, :string, :after => :ar_class
+    add_column    :meta_data_store, :ar_table_name, :string, :after => :ar_id
     add_index     :meta_data_store, [ :ar_id, :ar_table_name ]
     add_index     :meta_data_store, [ :ar_id, :ar_table_name, :meta_key ]
     add_index     :meta_data_store,         [ :ar_table_name, :meta_key ]
+
+    MetaDataStore.reset_column_information
+    MetaDataStore.reset_column_information_and_inheritable_attributes_for_all_subclasses rescue nil
+    raise "Oh oh, can't find new column name in model?!?" unless MetaDataStore.columns_hash['ar_table_name'].present?
 
     puts "Adjusting #{MetaDataStore.count} meta data store entries (ar_class -> ar_table_name)... this may take some time."
 
@@ -23,10 +27,14 @@ class AdjustMetaDataStoreArClass < ActiveRecord::Migration
   end
 
   def self.down
-    add_column    :meta_data_store, :ar_class, :string, :after => :ar_table_name
+    add_column    :meta_data_store, :ar_class, :string, :after => :ar_id
     add_index     :meta_data_store, [ :ar_id, :ar_class ]
     add_index     :meta_data_store, [ :ar_id, :ar_class, :meta_key ]
     add_index     :meta_data_store,         [ :ar_class, :meta_key ]
+
+    MetaDataStore.reset_column_information
+    MetaDataStore.reset_column_information_and_inheritable_attributes_for_all_subclasses rescue nil
+    raise "Oh oh, can't find new column name in model?!?" unless MetaDataStore.columns_hash['ar_class'].present?
 
     puts "Adjusting #{MetaDataStore.count} meta data store entries (ar_table_name -> ar_class)... this may take some time."
 
@@ -50,3 +58,4 @@ class AdjustMetaDataStoreArClass < ActiveRecord::Migration
   end
 
 end
+

@@ -10,17 +10,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120402190437) do
+ActiveRecord::Schema.define(:version => 20120402205014) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
-    t.string   "ar_class"
+    t.string   "ar_table_name"
     t.text     "log"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "active_record_logs", ["ar_id", "ar_class"], :name => "index_active_record_logs_on_ar_id_and_ar_class"
+  add_index "active_record_logs", ["ar_id", "ar_table_name"], :name => "index_active_record_logs_on_ar_id_and_ar_table_name"
 
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"

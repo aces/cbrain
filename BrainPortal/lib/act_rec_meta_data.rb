@@ -272,7 +272,7 @@ module ActRecMetaData
   # callback when the record is destroyed, but it can be
   # called manually too.
   def destroy_all_meta_data
-    return true if self.is_a?(MetaDataStore)
+    return true if self.is_a?(MetaDataStore) || self.is_a?(ActiveRecordLog)
     return true if self.new_record? || ! self.id # ignore records with no ID
     allmeta = self.meta.all
     @_cbrain_meta = nil
