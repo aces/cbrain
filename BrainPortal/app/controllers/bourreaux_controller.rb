@@ -56,9 +56,6 @@ class BourreauxController < ApplicationController
     @bourreau = RemoteResource.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-
-    @info = @bourreau.info
-    @log  = @bourreau.getlog
     
     respond_to do |format|
       format.html # show.html.erb
@@ -119,7 +116,7 @@ class BourreauxController < ApplicationController
     unless @bourreau.errors.empty?
       @bourreau.reload
       respond_to do |format|
-        format.html { redirect_to :action => 'show' }
+        format.html { render :action => 'show' }
         format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return

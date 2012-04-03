@@ -2,4 +2,8 @@
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
-  hello: "Hello world"
+  activerecord:
+      attributes:
+        remote_resource:
+          dp_ignore_patterns:        Filename ignore patterns
+          spaced_dp_ignore_patterns: Filename ignore patterns

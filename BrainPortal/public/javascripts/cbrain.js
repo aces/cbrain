@@ -474,12 +474,34 @@ jQuery(
      return false;  
    });
 
-   jQuery(".inline_edit_field_link").live("click", function(){
+   jQuery(".inline_edit_form_link").live("click", function(){
      var link = jQuery(this);
-     var default_text = link.closest(".inline_edit_field_default_text");
-     var form = default_text.siblings(".inline_edit_field_form");
+     var default_text = link.closest(".inline_edit_form_default_text");
+     var form = default_text.siblings(".inline_edit_form");
      default_text.hide();
      form.show();
+   });
+   
+   $(".inline_edit_field_link").live("click", function(){
+     var link = $(this);
+     var visible = link.data("visible");
+     var current_text = link.html();
+     var alternate_text = link.data("alternate-text");
+     if(!alternate_text) alternate_text = "Cancel";
+     link.data("visible", !visible);
+     var group = link.closest(".inline_edit_field_group");
+     if(visible){
+       group.find(".inline_edit_field_default_text").show();
+       group.find(".inline_edit_field_input").hide();
+     }else{
+       group.find(".inline_edit_field_default_text").hide();
+        group.find(".inline_edit_field_input").show();
+     }
+     
+     link.html(alternate_text);
+     link.data("alternate-text", current_text);
+     
+     return false;
    });
 
    //Highlighting on ressource list tables.

@@ -33,12 +33,11 @@
 
 <%= error_messages_for :site, :header_message => "site could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@site, :edit_path => site_path(@site), :edit_condition => check_role(:admin)) do |t| %>
+  <%= show_table(@site, :edit_condition => check_role(:admin)) do |t| %>
     <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
     <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
       <%= text_area_tag "site[description]", @site.description, :rows => 10, :cols => 40 %><br/>
       <small>The first line should be a short summary, and the<br> rest are for any special notes for the users.</small><br>
-      <%= submit_tag "Update" %>
     <% end %>
   <% end %>
   <%= show_table(@site, :header => 'Resources') do |t| %>
@@ -54,65 +53,65 @@
       t.cell("Remote Resources") { @site.remote_resources_find_all.count }
     %>
   <% end %>
-</div>
+  
+  <br>
 
-<br>
+  <table class="resource_list">
+    <tr>
+      <th>
+        Users
+        <% if check_role(:admin) %>
+          <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+            <%= form_for(@site) do |f| %>
 
-<table class="resource_list">
-  <tr>
-    <th>
-      Users
-      <% if check_role(:admin) %>
-        <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
-          <%= form_for(@site) do |f| %>
 
-            
-            <div class="display_cell">
-              <label>Users</label>
-              <table class="button_table">
-                <tr>
-                  <td>Login</td>
-                  <td>Regular User</td>
-                  <td>Site Manager</td>
-                </tr>
-                <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
+              <div class="display_cell">
+                <label>Users</label>
+                <table class="button_table">
                   <tr>
-                    <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
-                    <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
-                    <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+                    <td>Login</td>
+                    <td>Regular User</td>
+                    <td>Site Manager</td>
                   </tr>
-                <% end %>
-              </table>
-            </div>
+                  <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
+                    <tr>
+                      <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
+                      <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
+                      <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+                    </tr>
+                  <% end %>
+                </table>
+              </div>
 
-            <div class="display_row">
-              <P>
-              <%= f.submit "Update Users" %>
-            </div>
+              <div class="display_row">
+                <P>
+                <%= f.submit "Update Users" %>
+              </div>
 
+            <% end %>
           <% end %>
         <% end %>
-      <% end %>
-    </th>
-    <th>
-      Projects
-      <% if check_role(:admin) %>
-        <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
-          <%= form_for(@site) do |f| %>
-            <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
-            <%= submit_tag 'Update Projects' %>
+      </th>
+      <th>
+        Projects
+        <% if check_role(:admin) %>
+          <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+            <%= form_for(@site) do |f| %>
+              <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
+              <%= submit_tag 'Update Projects' %>
+            <% end %>
           <% end %>
         <% end %>
-      <% end %>
-    </th>
-    <th>Data Providers</th>
-    <th>Remote Resources</th>
-  </tr>
-  <tr>
-    <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
-    <td><%= array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|g,r,c| link_to_group_if_accessible(g)} %></td>
-    <td><%= array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
-    <td><%= array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
-  </tr>
-</table>
+      </th>
+      <th>Data Providers</th>
+      <th>Remote Resources</th>
+    </tr>
+    <tr>
+      <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+      <td><%= array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|g,r,c| link_to_group_if_accessible(g)} %></td>
+      <td><%= array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
+      <td><%= array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'simple bordered') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
+    </tr>
+  </table>
+</div>
 

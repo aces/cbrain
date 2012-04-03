@@ -137,8 +137,10 @@ class GroupsController < ApplicationController
     else
       @group = WorkGroup.find(params[:id])
     end
+    
+    params[:group] ||= {}
 
-    unless params[:commit] == "Update Users"
+    unless params[:update_users].present?
       params[:group][:user_ids] = @group.user_ids.map(&:to_s)
     end
 

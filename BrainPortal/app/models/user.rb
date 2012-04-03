@@ -303,7 +303,7 @@ class User < ActiveRecord::Base
   end
     
   def password_required? #:nodoc:
-    crypted_password.blank? || !password.nil?
+    crypted_password.blank? || !password.blank?
   end
 
   private
