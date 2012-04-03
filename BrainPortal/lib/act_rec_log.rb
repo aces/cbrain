@@ -371,9 +371,9 @@ module ActRecLog
   def active_record_log #:nodoc:
     return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     myid    = self.id
-    myclass = self.class.to_s
+    mytable = self.class.table_name
     return nil if myid.blank?
-    ActiveRecordLog.where( :ar_id => myid, :ar_class => myclass ).first
+    ActiveRecordLog.where( :ar_id => myid, :ar_table_name => mytable ).first
   end
 
   def active_record_log_find_or_create #:nodoc:
@@ -382,14 +382,14 @@ module ActRecLog
     return arl if arl
     
     myid    = self.id
-    myclass = self.class.to_s
+    mytable = self.class.table_name
     return nil unless myid
-    message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{myclass} revision " +
+    message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{self.class} revision " +
               self.revision_info.svn_id_pretty_rev_author_date + "\n"
 
-    arl = ActiveRecordLog.create( :ar_id    => myid,
-                                  :ar_class => myclass,
-                                  :log      => message )
+    arl = ActiveRecordLog.create( :ar_id         => myid,
+                                  :ar_table_name => mytable,
+                                  :log           => message )
     arl
   end
 

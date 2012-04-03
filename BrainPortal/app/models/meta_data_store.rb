@@ -41,7 +41,14 @@ class MetaDataStore < ActiveRecord::Base
   serialize_as_indifferent_hash :meta_value # not necessarily a hash, actually
 
   validates_presence_of   :meta_key
-  validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_class ]
+  validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_table_name ]
+
+  def active_record_object #:nodoc:
+    ar_id = self.ar_id
+    klass = self.ar_table_name.classify.constantize rescue nil
+    return nil unless klass && ar_id && klass < ActiveRecord::Base
+    klass.find_by_id(ar_id)
+  end
 
 end
 

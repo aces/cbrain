@@ -1,25 +1,3 @@
-
-#
-# CBRAIN Project
-#
-# Copyright (C) 2008-2012
-# The Royal Institution for the Advancement of Learning
-# McGill University
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
-#
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -32,17 +10,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120123190749) do
+ActiveRecord::Schema.define(:version => 20120402205014) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
-    t.string   "ar_class"
+    t.string   "ar_table_name"
     t.text     "log"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "active_record_logs", ["ar_id", "ar_class"], :name => "index_active_record_logs_on_ar_id_and_ar_class"
+  add_index "active_record_logs", ["ar_id", "ar_table_name"], :name => "index_active_record_logs_on_ar_id_and_ar_table_name"
 
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"
@@ -171,16 +149,16 @@ ActiveRecord::Schema.define(:version => 20120123190749) do
 
   create_table "meta_data_store", :force => true do |t|
     t.integer  "ar_id"
-    t.string   "ar_class"
+    t.string   "ar_table_name"
     t.string   "meta_key"
     t.text     "meta_value"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "meta_data_store", ["ar_class", "meta_key"], :name => "index_meta_data_store_on_ar_class_and_meta_key"
-  add_index "meta_data_store", ["ar_id", "ar_class", "meta_key"], :name => "index_meta_data_store_on_ar_id_and_ar_class_and_meta_key"
-  add_index "meta_data_store", ["ar_id", "ar_class"], :name => "index_meta_data_store_on_ar_id_and_ar_class"
+  add_index "meta_data_store", ["ar_id", "ar_table_name", "meta_key"], :name => "index_meta_data_store_on_ar_id_and_ar_table_name_and_meta_key"
+  add_index "meta_data_store", ["ar_id", "ar_table_name"], :name => "index_meta_data_store_on_ar_id_and_ar_table_name"
+  add_index "meta_data_store", ["ar_table_name", "meta_key"], :name => "index_meta_data_store_on_ar_table_name_and_meta_key"
   add_index "meta_data_store", ["meta_key"], :name => "index_meta_data_store_on_meta_key"
 
   create_table "remote_resources", :force => true do |t|
@@ -363,4 +341,3 @@ ActiveRecord::Schema.define(:version => 20120123190749) do
   add_index "users", ["role"], :name => "index_users_on_role"
 
 end
-
