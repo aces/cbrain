@@ -162,7 +162,7 @@ class GroupsController < ApplicationController
 
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
-      if @group.update_attributes(params[:group])
+      if @group.update_attributes_with_logging(params[:group],current_user)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }

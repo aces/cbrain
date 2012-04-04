@@ -89,7 +89,7 @@ class FeedbacksController < ApplicationController
     @feedback = Feedback.find(params[:id])
 
     respond_to do |format|
-      if @feedback.update_attributes(params[:feedback])
+      if @feedback.update_attributes_with_logging(params[:feedback], current_user, %w( summary details ))
         flash[:notice] = 'Feedback was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }

@@ -88,17 +88,17 @@ class ClusterTask < CbrainTask
   # Automatically register the task's version when new() is invoked.
   def initialize(arguments = {}) #:nodoc:
     res = super(arguments)
-    self.record_cbraintask_revs
+    self.record_cbraintask_revs(2)
     res
   end
 
   # Records the revision number of ClusterTask and the
   # revision number of the its specific subclass.
-  def record_cbraintask_revs #:nodoc:
+  def record_cbraintask_revs(caller_level=1) #:nodoc:
     baserev = ClusterTask::Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
-    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => caller_level + 1)
+    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}",   :caller_level => caller_level + 1)
   end
 
 

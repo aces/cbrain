@@ -498,6 +498,7 @@ class TasksController < ApplicationController
     # the form's content.
     old_params   = @task.params.clone
     new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
+    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
     old_tool_config = @task.tool_config
     old_bourreau    = @task.bourreau
     @task.attributes = new_att # just updates without saving
@@ -553,11 +554,14 @@ class TasksController < ApplicationController
     # Log revision number of portal.
     @task.addlog_current_resource_revision
 
+    # Log task params changes
     @task.log_params_changes(old_params,@task.params)
-    @task.save!
+
+    # Log and save normal attributes of the task
+    @task.update_attributes_with_logging( nil , current_user, %w( results_data_provider_id ) )
 
     flash[:notice] += messages + "\n" unless messages.blank?
-    flash[:notice] += "New task parameters saved. See the log for changes, if any.\n"
+    flash[:notice] += "New task parameters saved. See the logs for changes, if any.\n"
     redirect_to :action => :show, :id => @task.id
   end
 

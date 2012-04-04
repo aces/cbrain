@@ -103,20 +103,21 @@ class BourreauxController < ApplicationController
   def update #:nodoc:
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
-    
-    cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+
+    cb_notice "This #{@bourreau.class.to_s} is not accessible by you." unless @bourreau.has_owner_access?(current_user)
+
+    @users    = current_user.available_users
+    @groups   = current_user.available_groups
 
     fields    = params[:bourreau]
     fields ||= {}
     
-    subtype = fields.delete(:type)
-  
+    subtype          = fields.delete(:type)
     old_dp_cache_dir = @bourreau.dp_cache_dir
-    @bourreau.update_attributes(fields)
 
-    @users  = current_user.available_users
-    @groups = current_user.available_groups
-    unless @bourreau.errors.empty?
+    if ! @bourreau.update_attributes_with_logging(fields, current_user,
+        RemoteResource.columns_hash.keys.grep(/actres|ssh|tunnel|url|dp_|cmw|worker|rr_timeout|proxied_host/)
+      )
       @bourreau.reload
       respond_to do |format|
         format.html { redirect_to :action => 'show' }

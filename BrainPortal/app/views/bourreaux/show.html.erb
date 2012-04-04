@@ -360,7 +360,10 @@
     <% end %>
   <% end %>
 
-  <P>
-
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
 </div>
+
+<% if @bourreau.has_owner_access?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
+<% end %>
+

@@ -549,9 +549,10 @@ class UserfilesController < ApplicationController
       @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
       
-      if @userfile.update_attributes(attributes)
+      if @userfile.update_attributes_with_logging(attributes, current_user, %w( group_writable num_files format_source_id parent_id ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
+          @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
         end
       end
     end

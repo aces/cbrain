@@ -116,3 +116,8 @@
   </tr>
 </table>
 
+
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %>
+
+

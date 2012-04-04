@@ -303,6 +303,53 @@ module ActRecLog
     self.addlog(full_message, :caller_level => caller_level + 1)
   end
 
+  # This method records in the object's log a list of
+  # all currenly pending changes to the object's attribute,
+  # if any.
+  def addlog_changed_attributes(by_user = nil, white_list = [], caller_level=0)
+    return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+    return true unless self.changed?
+    ext_white_list = white_list + %w(
+       name user_id group_id site_id type time_zone online
+       read_only size data_provider_id bourreau_id tool_id tool_config_id
+    )
+    by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
+    self.changed_attributes.each do |att,old|
+      next unless ext_white_list.any? { |v| v.to_s == att.to_s }
+      new = self.read_attribute(att).to_s
+      if self.class.serialized_attributes[att]
+        message = "(serialized) size(#{old.to_s.size} -> #{new.size})"
+      elsif old.to_s.size > 30 || new.size > 30
+        message = ": size(#{old.to_s.size} -> #{new.size})"
+      else
+        if att =~ /^(\w+)_id$/
+          model = Regexp.last_match[1].classify.constantize rescue nil
+          if model
+            oldobj = model.find_by_id(old) rescue nil
+            newobj = model.find_by_id(new) rescue nil
+            old = oldobj.try(:name) || oldobj.try(:login) || old
+            new = newobj.try(:name) || newobj.try(:login) || new
+          end
+        end
+        message = ": value(#{old} -> #{new})"
+      end
+      self.addlog("Updated#{by_user_mess}: #{att} #{message}", :caller_level => caller_level + 3)
+    end
+    true
+  end
+
+  # This method is just like update_attributes(), but also logs
+  # the changed attributes using addlog_changed_attributes().
+  # The method returns false if the object could not be updated
+  # or is invalid.
+  def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list = [], caller_level = 0)
+    return true  if     new_attributes.blank? && ! self.changed?
+    return false unless self.valid? && self.errors.empty?
+    self.attributes = new_attributes if new_attributes.present?
+    self.addlog_changed_attributes(by_user,white_list,caller_level+1)
+    self.save
+  end
+
   # Gets the log for the current ActiveRecord;
   # this is a single long string with embedded newlines.
   def getlog

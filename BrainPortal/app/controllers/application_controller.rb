@@ -153,7 +153,7 @@ class ApplicationController < ActionController::Base
     #Check if passwords been reset.
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
-        flash[:notice] = "Please reset your password."
+        flash[:error] = "Please reset your password."
         redirect_to user_path(current_user)
       end
     end

@@ -40,3 +40,8 @@
   <%= button_to 'Cancel', tools_path, :method  => :get %>
 </div> 
 
+<% if @tool.has_owner_access?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool.getlog, :title => 'Tool Log' } %>
+<% end %>
+

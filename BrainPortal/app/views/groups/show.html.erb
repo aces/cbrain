@@ -86,3 +86,8 @@
 
 </div>
 
+<% if @group.can_be_edited_by?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @group.getlog, :title => 'Project Log' } %>
+<% end %>
+

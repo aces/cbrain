@@ -139,10 +139,13 @@ class DataProvidersController < ApplicationController
     fields    = params[:data_provider] || {}
     subtype   = fields.delete(:type)
 
-    @provider.update_attributes(fields)
-
-    meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
-    if @provider.errors.empty?
+    if @provider.update_attributes_with_logging(fields, current_user,
+         %w(
+           remote_user remote_host remote_port remote_dir
+           not_syncable cloud_storage_client_identifier cloud_storage_client_token
+         )
+      )
+      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
