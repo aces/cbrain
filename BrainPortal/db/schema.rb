@@ -327,7 +327,6 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
     t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "role"
     t.integer  "site_id"
     t.boolean  "password_reset",                          :default => false, :null => false
     t.string   "time_zone"
@@ -335,9 +334,9 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
     t.string   "country"
     t.datetime "last_connected_at"
     t.boolean  "account_locked",                          :default => false, :null => false
+    t.string   "role"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
-  add_index "users", ["role"], :name => "index_users_on_role"
 
 end

@@ -495,7 +495,7 @@ jQuery(
        group.find(".inline_edit_field_input").hide();
      }else{
        group.find(".inline_edit_field_default_text").hide();
-        group.find(".inline_edit_field_input").show();
+       group.find(".inline_edit_field_input").show();
      }
      
      link.html(alternate_text);
