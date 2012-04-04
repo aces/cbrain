@@ -1277,6 +1277,14 @@ pre {
   text-align: right;
 }
 
+.show_table_edit{
+  font-size: 0.9em;
+}
+
+.show_table_edit_link{
+  color: blue;
+}
+
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
 /* % ######################################################### */

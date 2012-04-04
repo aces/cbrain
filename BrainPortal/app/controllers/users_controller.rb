@@ -64,7 +64,7 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show #:nodoc:
     @user = User.find(params[:id], :include => :groups)
-    
+
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
