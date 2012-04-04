@@ -28,7 +28,6 @@
   is_bourreau = @bourreau.is_a?(Bourreau)
   is_portal   = @bourreau.is_a?(BrainPortal) 
   info = @bourreau.info
-  log  = @bourreau.getlog
  %>
    
 <% if check_role(:admin) || @bourreau.user_id == current_user.id %>
@@ -367,6 +366,6 @@
 
 <% if @bourreau.has_owner_access?(current_user) %>
   <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau.getlog, :title => "Server Log" } %>
 <% end %>
 
