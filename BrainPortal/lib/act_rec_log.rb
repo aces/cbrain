@@ -184,6 +184,13 @@ module ActRecLog
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  ADDLOG_DEFAULT_ATTRIBUTES_LOGGING = %w(
+       name type time_zone online
+       user_id group_id site_id
+       read_only size
+       data_provider_id bourreau_id tool_id tool_config_id
+  )
+
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
     unless includer <= ActiveRecord::Base
@@ -305,22 +312,24 @@ module ActRecLog
 
   # This method records in the object's log a list of
   # all currenly pending changes to the object's attribute,
-  # if any.
+  # if any. +by_user+ is an optional User object indicating
+  # who made the changes. +white_list+ is a list of attributes
+  # to look for; to this list will be added a standard hardcoded
+  # set of attributes, defined in the constant
+  # ADDLOG_DEFAULT_ATTRIBUTES_LOGGING
   def addlog_changed_attributes(by_user = nil, white_list = [], caller_level=0)
     return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     return true unless self.changed?
-    ext_white_list = white_list + %w(
-       name user_id group_id site_id type time_zone online
-       read_only size data_provider_id bourreau_id tool_id tool_config_id
-    )
+    ext_white_list = white_list + ADDLOG_DEFAULT_ATTRIBUTES_LOGGING
     by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
     self.changed_attributes.each do |att,old|
       next unless ext_white_list.any? { |v| v.to_s == att.to_s }
+      old = old.to_s
       new = self.read_attribute(att).to_s
       if self.class.serialized_attributes[att]
-        message = "(serialized) size(#{old.to_s.size} -> #{new.size})"
-      elsif old.to_s.size > 30 || new.size > 30
-        message = ": size(#{old.to_s.size} -> #{new.size})"
+        message = "(serialized) size(#{old.size} -> #{new.size})"
+      elsif old.size > 30 || new.size > 30
+        message = ": size(#{old.size} -> #{new.size})"
       else
         if att =~ /^(\w+)_id$/
           model = Regexp.last_match[1].classify.constantize rescue nil
@@ -330,6 +339,10 @@ module ActRecLog
             old = oldobj.try(:name) || oldobj.try(:login) || old
             new = newobj.try(:name) || newobj.try(:login) || new
           end
+        end
+        if att.to_sym == :type
+          old = "#{old} rev. #{old.constantize.revision_info.self_update.short_commit}" rescue "#{old} rev. exception"
+          new = "#{new} rev. #{new.constantize.revision_info.self_update.short_commit}" rescue "#{new} rev. exception"
         end
         message = ": value(#{old} -> #{new})"
       end
@@ -342,6 +355,14 @@ module ActRecLog
   # the changed attributes using addlog_changed_attributes().
   # The method returns false if the object could not be updated
   # or is invalid.
+  #
+  # The method doesn't have to be the only one to change the attributes
+  # we want logged; you can change the attibutes beforehand using
+  # standard ActiveRecord assignements, and then call the method
+  # with an empty hash to get them logged and saved.
+  #
+  # The +by_user+ and +white_list+ arguments are passed to
+  # addlog_changed_attributes() and are documented there.
   def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list = [], caller_level = 0)
     return true  if     new_attributes.blank? && ! self.changed?
     return false unless self.valid? && self.errors.empty?
