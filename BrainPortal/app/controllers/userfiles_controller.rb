@@ -585,15 +585,15 @@ class UserfilesController < ApplicationController
                    when "Update Tags"
                      ['set_tags_for_user', current_user, params[:tags]]
                    when "Update Projects"
-                     ["update_attributes", {:group_id => params[:userfile][:group_id]}]
+                     ["update_attributes_with_logging", {:group_id => params[:userfile][:group_id]}, current_user]
                    when "Update Permissions" 
-                     ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
+                     ["update_attributes_with_logging", {:group_writable => params[:userfile][:group_writable]}, current_user, [ 'group_writable' ] ]
                    when "Update Owner"
                      new_filelist = filelist.select(&:allow_file_owner_change?)
                      failure_count += (filelist.size - new_filelist.size)
                      filelist = new_filelist
                      if current_user.available_users.map(&:id).include?(params[:userfile][:user_id].to_i)
-                       ["update_attributes", {:user_id => params[:userfile][:user_id]}] 
+                       ["update_attributes_with_logging", {:user_id => params[:userfile][:user_id]}, current_user] 
                      end
                    when "Update"
                      ["update_file_type", params[:file_type], current_user]
