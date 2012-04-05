@@ -425,16 +425,34 @@ jQuery(
    jQuery("body").bind("new_content", load_behaviour);
    jQuery("body").trigger("new_content");
    
-   jQuery(".filter_header").live("mouseenter", function(){
-     var header = jQuery(this);
-     var target = header.attr("data-target");
-     jQuery(target).show();
+   $(".filter_header").live("mouseenter", function(){
+     var header = $(this);
+     var target = $(header.attr("data-target"));
+     var search = target.find(".filter_search");
+     target.show();
+     search.focus();
      return false;
    }).live("mouseleave", function(){
-     var header = jQuery(this);
+     var header = $(this);
      var target = header.attr("data-target");
-     jQuery(target).hide();
+     $(target).hide();
      return false;
+   });
+   
+   $(".filter_search").live("input", function(){
+     var text_field = $(this);
+     var cur_value  = text_field.attr("value");
+     
+     var filter_list = text_field.closest(".filter_list");
+     filter_list.find(".filter_item").each(function(){
+       var filter = $(this);
+       var link   = $(filter).find("a");
+       if(link.html().match(new RegExp("^" + cur_value, "i"))){
+         filter.show();
+       }else{
+         filter.hide();
+       }
+     }); 
    });
 
    /////////////////////////////////////////////////////////////////////

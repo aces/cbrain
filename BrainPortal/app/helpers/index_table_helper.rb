@@ -203,8 +203,9 @@ module IndexTableHelper
           #html << "&nbsp;<span style=\"color: white\">&bull;</span>"
           html << "<br>\n"
           html << "<ul class=\"filter_list hover_dropdown\" id=\"filters_list_#{self.object_id}\" style=\"display:none;\">\n"
+          html << "<input type=text class=\"filter_search\">"
           filters.each do |f|
-            html << "<li>\n"
+            html << "<li class=\"filter_item\">\n"
             html << @template.instance_eval { filter_add_link f[0], f[1] }
             html << "</li>\n"
           end
