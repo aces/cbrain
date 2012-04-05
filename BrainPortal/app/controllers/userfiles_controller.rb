@@ -536,7 +536,7 @@ class UserfilesController < ApplicationController
     if @userfile.has_owner_access?(current_user)
       # IMPORTANT: File type change MUST come first as we will change the class of the object.
       if params[:file_type]
-        if @userfile.update_file_type(params[:file_type])
+        if @userfile.update_file_type(params[:file_type], current_user)
           @userfile = Userfile.find(@userfile.id)
         else
           @userfile.errors.add(:type, "could not be updated.")
@@ -596,7 +596,7 @@ class UserfilesController < ApplicationController
                        ["update_attributes", {:user_id => params[:userfile][:user_id]}] 
                      end
                    when "Update"
-                     ["update_file_type", params[:file_type]]
+                     ["update_file_type", params[:file_type], current_user]
                 end
 
     unless operation

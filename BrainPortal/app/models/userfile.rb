@@ -272,10 +272,10 @@ class Userfile < ActiveRecord::Base
   
   #Updates the class (type attribute) of this file if +type+ is 
   #valid according to valid_file_types.
-  def update_file_type(type)
+  def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
       self.type = type
-      self.save
+      self.update_attributes_with_logging( { }, by_user, [], 1 )
     else
       false
     end
