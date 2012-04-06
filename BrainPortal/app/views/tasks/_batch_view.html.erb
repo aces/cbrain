@@ -73,11 +73,13 @@
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if launch_time %></td>
     <td colspan="3" class="left_align">
-      <% if launch_time %>
-        <%= pluralize(num_tasks, "task") %>
-      <% else %>
-        <%= pluralize(num_tasks, "old task") %>
-      <% end %> :
+      <% if statuses.size > 1 %>
+        <% if launch_time %>
+          <%= pluralize(num_tasks, "task") %> :
+        <% else %>
+          <%= pluralize(num_tasks, "old task") %> :
+        <% end %>
+      <% end %>
       <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
       <%= report.html_safe %>
     </td>

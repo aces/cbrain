@@ -49,12 +49,14 @@
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && launch_time %></td>
     <td colspan="3" class="left_align">
-      <% if launch_time %>
-        <%= pluralize(num_tasks, "task") %>
-      <% else %>
-        <%= pluralize(num_tasks, "old task") %>
-      <% end %> :
       <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
+      <% if stat_cnt.size > 1 %>
+        <% if launch_time %>
+          <%= pluralize(num_tasks, "task") %> :
+        <% else %>
+          <%= pluralize(num_tasks, "old task") %> :
+        <% end %>
+      <% end %>
       <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
       <%= report.html_safe %>
     </td>
