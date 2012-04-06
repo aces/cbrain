@@ -47,6 +47,10 @@ class ToolConfig < ActiveRecord::Base
 
   validate       :presence_of_description # only when both tool_id and bourreau_id are defined
 
+  scope          :global_for_tools     , where( { :bourreau_id => nil } )
+  scope          :global_for_bourreaux , where( { :tool_id => nil } )
+  scope          :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
+
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
