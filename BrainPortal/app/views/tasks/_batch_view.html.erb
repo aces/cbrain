@@ -47,6 +47,7 @@
   <% first_task = task_info[:first_task] %>
   <% statuses   = task_info[:statuses] %>
   <% num_tasks  = task_info[:num_tasks] %>
+  <% batch_scope    = CbrainTask.where(:launch_time => launch_time) %>
 
   <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
     <td>
@@ -72,7 +73,7 @@
       <td><%= link_to_group_if_accessible(first_task.group) if launch_time %></td>
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if launch_time %></td>
-    <td colspan="3" class="left_align">
+    <td colspan="2" class="left_align">
       <% if statuses.size > 1 %>
         <% if launch_time %>
           <%= pluralize(num_tasks, "task") %> :
@@ -84,13 +85,16 @@
       <%= report.html_safe %>
     </td>
     <td>
+      <%= colored_pretty_size(batch_scope.sum(:cluster_workdir_size)) %>
+    </td>
+    <td>
       <% if launch_time %>
         <%= to_localtime(launch_time,:datetime) %>
       <% end %>
     </td>
     <td>
       <% if launch_time %>
-        <%= to_localtime(CbrainTask.where(:launch_time => launch_time).order(:updated_at.desc).first.updated_at, :datetime) %>
+        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>

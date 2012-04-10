@@ -27,6 +27,7 @@
 <% first_task     = @tasks.first %>
 <% launch_time    = first_task  ? first_task.launch_time : nil %>
 <% launch_time_id = launch_time ? launch_time.to_i       : 0 %>
+<% batch_scope    = CbrainTask.where(:launch_time => launch_time) %>
 
 <% if @tasks.empty? %>
   <tr><td colspan="<%= current_project ? "10" : "11" %>">This batch of tasks has disappeared.</td></tr>
@@ -48,7 +49,7 @@
       <td><%= link_to_group_if_accessible(first_task.group) if false && launch_time %></td>
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && launch_time %></td>
-    <td colspan="3" class="left_align">
+    <td colspan="2" class="left_align">
       <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
       <% if stat_cnt.size > 1 %>
         <% if launch_time %>
@@ -61,13 +62,16 @@
       <%= report.html_safe %>
     </td>
     <td>
+      <%= colored_pretty_size(batch_scope.sum(:cluster_workdir_size)) %>
+    </td>
+    <td>
       <% if launch_time %>
         <%= to_localtime(launch_time, :datetime) %>
       <% end %>
     </td>
     <td>
       <% if launch_time %>
-        <%= to_localtime(CbrainTask.where(:launch_time => launch_time).order(:updated_at.desc).first.updated_at, :datetime) %>
+        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>
