@@ -219,14 +219,15 @@ tr.selected_row {
 
 
 
-/* % ######################################################### */
-/* % Support for vertical text labels. */
-/* % The following styles proudly brought to you by Pierre Rioux, after MUCH trial and error! */
-/* % ######################################################### */
+/* % ############################################################ */
+/* % Support for vertical text labels.                            */
+/* % The following styles proudly brought to you by Pierre Rioux, */
+/* % after MUCH trial and error!                                  */
+/* % ############################################################ */
 
 /*
    The DIV's height is set to 20em, which is just enough for
-   and name such as "Failed PostProcess Prerequisites".
+   a name such as "Failed PostProcess Prerequisites".
    You can override the vertical size of the DIV using
      style="height: 35em"
    in the DIV element's attributes; if the container of

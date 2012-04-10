@@ -23,8 +23,11 @@
 -%>
 
 <% @tasks         = @tasks.sort { |t1,t2| t1.cmp_by_batch_rank(t2) } %>
-<% launch_time    = @tasks.first ? @tasks.first.launch_time : nil %>
-<% launch_time_id = launch_time  ? launch_time.to_i         : 0 %>
+<% num_tasks      = @tasks.size %>
+<% first_task     = @tasks.first %>
+<% launch_time    = first_task  ? first_task.launch_time : nil %>
+<% launch_time_id = launch_time ? launch_time.to_i       : 0 %>
+<% batch_scope    = CbrainTask.where(:launch_time => launch_time) %>
 
 <% if @tasks.empty? %>
   <tr><td colspan="<%= current_project ? "10" : "11" %>">This batch of tasks has disappeared.</td></tr>
@@ -35,25 +38,40 @@
     </td>
     <td class="left">
       <% if launch_time %>
-        <%= show_hide_toggle  "#{@tasks.first.pretty_name} (Batch)", ".batch_listing_#{launch_time_id}" %>
+        <%= show_hide_toggle  "#{first_task.pretty_name} (Batch)", ".batch_listing_#{launch_time_id}" %>
       <% else %>
         <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
       <% end %>
     </td>
-    <td><%= overlay_description(@tasks.first.description, :header_width => 35) %></td>
-    <td><%= link_to_user_if_accessible(@tasks.first.user) %></td>
+    <td><%= overlay_description(first_task.description, :header_width => 35) if false && launch_time %></td>
+    <td><%= link_to_user_if_accessible(first_task.user) if false && launch_time %></td>
+    <% unless current_project %>
+      <td><%= link_to_group_if_accessible(first_task.group) if false && launch_time %></td>
+    <% end %>
+    <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && launch_time %></td>
     <td colspan="2" class="left_align">
+      <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
+      <% if stat_cnt.size > 1 %>
+        <% if launch_time %>
+          <%= pluralize(num_tasks, "task") %> :
+        <% else %>
+          <%= pluralize(num_tasks, "old task") %> :
+        <% end %>
+      <% end %>
+      <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
+      <%= report.html_safe %>
+    </td>
+    <td>
+      <%= colored_pretty_size(batch_scope.sum(:cluster_workdir_size)) %>
+    </td>
+    <td>
       <% if launch_time %>
-        <%= pluralize(@tasks.size, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
-      <% else %>
-        <%= pluralize(@tasks.size, "old job") %>
+        <%= to_localtime(launch_time, :datetime) %>
       <% end %>
     </td>
-    <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
+    <td>
       <% if launch_time %>
-        <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
-        <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
-        <%= report.html_safe %>
+        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>

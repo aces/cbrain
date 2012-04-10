@@ -47,6 +47,8 @@
   <% first_task = task_info[:first_task] %>
   <% statuses   = task_info[:statuses] %>
   <% num_tasks  = task_info[:num_tasks] %>
+  <% batch_scope    = CbrainTask.where(:launch_time => launch_time) %>
+
   <tr id="batch_loader_<%= launch_time_id %>" class="batch_job_header row_highlight">
     <td>
       <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox", :name => "batch_ids[]", :value => launch_time_param || "nil" %>
@@ -65,19 +67,34 @@
         <% end %>
       <% end %>
     </td>
-    <td><%= overlay_description(first_task.description, :header_width => 35) %></td>
-    <td><%= link_to_user_if_accessible(first_task.user) %></td>
+    <td><%= overlay_description(first_task.description, :header_width => 35) if launch_time %></td>
+    <td><%= link_to_user_if_accessible(first_task.user) if launch_time %></td>
+    <% unless current_project %>
+      <td><%= link_to_group_if_accessible(first_task.group) if launch_time %></td>
+    <% end %>
+    <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if launch_time %></td>
     <td colspan="2" class="left_align">
+      <% if statuses.size > 1 %>
+        <% if launch_time %>
+          <%= pluralize(num_tasks, "task") %> :
+        <% else %>
+          <%= pluralize(num_tasks, "old task") %> :
+        <% end %>
+      <% end %>
+      <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
+      <%= report.html_safe %>
+    </td>
+    <td>
+      <%= colored_pretty_size(batch_scope.sum(:cluster_workdir_size)) %>
+    </td>
+    <td>
       <% if launch_time %>
-        <%= pluralize(num_tasks, "job") %> launched at <%= to_localtime(launch_time,:datetime) %>
-      <% else %>
-        <%= pluralize(num_tasks, "old job") %>
+        <%= to_localtime(launch_time,:datetime) %>
       <% end %>
     </td>
-    <td colspan="<%= current_project ? "4" : "5" %>" class="left_align">
+    <td>
       <% if launch_time %>
-        <% report   = statuses.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{statuses[s]} x #{colored_status(s)}" }.join(", ") %>
-        <%= report.html_safe %>
+        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>
