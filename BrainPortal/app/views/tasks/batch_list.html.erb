@@ -60,9 +60,14 @@
       <% report   = stat_cnt.keys.sort { |s1,s2| cmp_status_order(s1,s2) }.map { |s| "#{stat_cnt[s].size} x #{colored_status(s)}" }.join(", ") %>
       <%= report.html_safe %>
     </td>
-    <td colspan="2" class="left_align">
+    <td>
       <% if launch_time %>
-        <%= to_localtime(launch_time,:datetime) %>
+        <%= to_localtime(launch_time, :datetime) %>
+      <% end %>
+    </td>
+    <td>
+      <% if launch_time %>
+        <%= to_localtime(CbrainTask.where(:launch_time => launch_time).order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>
