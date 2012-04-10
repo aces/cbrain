@@ -412,12 +412,12 @@ function load_behaviour(event){
    */
 
    jQuery(".auto_window_launch").each(function(){
-					var url = jQuery(this).attr("data-url");
-					console.log(url);
-					var name =jQuery(this).attr("data-window-name");
-					console.log(name);
-					window.open(url,name,false);
-				      });
+		 var url = jQuery(this).attr("data-url");
+		 console.log(url);
+		 var name =jQuery(this).attr("data-window-name");
+		 console.log(name);
+		 window.open(url,name,false);
+	 );
 }
 
 jQuery(
@@ -425,14 +425,25 @@ jQuery(
    jQuery("body").bind("new_content", load_behaviour);
    jQuery("body").trigger("new_content");
    
+   var filter_header_timeout = null; 
    $(".filter_header").live("mouseenter", function(){
+     if(filter_header_timeout) {
+       clearTimeout(filter_header_timeout);
+       filter_header_timeout = null;
+     }
      var header = $(this);
-     var target = $(header.attr("data-target"));
-     var search = target.find(".filter_search");
-     target.show();
-     search.focus();
+     filter_header_timeout = setTimeout(function() {
+       var target = $(header.attr("data-target"));
+       var search = target.find(".filter_search");
+       target.show();
+       search.focus();
+     }, 500);
      return false;
    }).live("mouseleave", function(){
+     if(filter_header_timeout) {
+       clearTimeout(filter_header_timeout);
+       filter_header_timeout = null;
+     }
      var header = $(this);
      var target = header.attr("data-target");
      $(target).hide();
@@ -441,7 +452,7 @@ jQuery(
    
    $(".filter_search").live("input", function(){
      var text_field = $(this);
-     var cur_value  = text_field.attr("value");
+     var cur_value  = text_field.val();
      
      var filter_list = text_field.closest(".filter_list");
      filter_list.find(".filter_item").each(function(){
