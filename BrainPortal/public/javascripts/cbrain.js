@@ -417,7 +417,7 @@ function load_behaviour(event){
 		 var name =jQuery(this).attr("data-window-name");
 		 console.log(name);
 		 window.open(url,name,false);
-	 );
+	 });
 }
 
 jQuery(
