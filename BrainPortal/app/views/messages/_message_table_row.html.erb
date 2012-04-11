@@ -37,10 +37,11 @@
       <%= render :partial  => 'messages/message_details', :locals  => {:mess  => mess} %>
     </div>
   </td>
-  
-  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
-    <%= mess.user.login %>
-  </td>
+  <% unless current_user.has_role?(:user) %>
+    <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+      <%= mess.user.login %>
+    </td>
+  <% end %>
 
   <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
     <%= to_localtime(mess.last_sent, :datetime) %>

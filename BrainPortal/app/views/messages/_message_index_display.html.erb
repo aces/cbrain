@@ -55,7 +55,9 @@
       <%
         t.column(select_all_checkbox 'messlist')
         t.sort_column("Message", Message, :header)
-        t.sort_column("Recipient", User, :login)
+        unless current_user.has_role?(:user)
+          t.sort_column("Recipient", User, :login)
+        end
         t.sort_column("Last Updated", Message, :last_sent)
         t.column("Operations", :colspan => "3")
         t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
