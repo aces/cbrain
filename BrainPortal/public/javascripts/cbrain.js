@@ -425,6 +425,57 @@ jQuery(
    jQuery("body").bind("new_content", load_behaviour);
    jQuery("body").trigger("new_content");
    
+   
+   /////////////////////////////////////////////////////////////////////
+   //
+   // Ajax Pagination
+   //
+   /////////////////////////////////////////////////////////////////////
+   
+   function get_page_parameter(query_string){
+     if(!query_string) query_string = "";
+     var page = query_string.match(/(\?|\&)(page\=\d+)(\&)?/);
+     if(page) page = page[2]; 
+     if(!page) page = "";
+     
+     return page;
+   }
+   
+   $(".pagination a").live("click", function(){
+     var link = $(this);
+     var url = link.attr("href");
+     var page_param = get_page_parameter(url);
+     var pagination_div = link.closest(".pagination");
+      
+     pagination_div.html(" Loading... <BR>");
+     url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
+     
+     var title  = "";
+     if(page_param){
+       var page_num = page_param.match(/\d+/);
+       if(page_num) title = "Page: " + page_num[0];
+     }
+     
+     history.pushState(null, "", url);
+     $.ajax({
+       url: url,
+       dataType: "script"
+     });
+     
+     return false;
+   });
+   
+   $(window).bind("popstate", function() {
+     var url = location.href;
+     var page_param = get_page_parameter(url);
+
+     url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
+     $.ajax({
+        url: url,
+        dataType: "script"
+      });
+   });
+   
    var filter_header_timeout = null; 
    $(".filter_header").live("mouseenter", function(){
      if(filter_header_timeout) {
