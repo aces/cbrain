@@ -33,22 +33,22 @@ class GroupsController < ApplicationController
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @filter_params["button_view"] ||= "on"
     @header_scope = current_user.available_groups
-    scope = base_filtered_scope @header_scope.includes(:site)
-    @total_entries = scope.count
+    @filtered_scope = base_filtered_scope @header_scope.includes(:site)
+    @total_entries = @filtered_scope.count
     
     # For Pagination
     @per_page = 50 unless @filter_params["per_page"]
     offset = (@current_page - 1) * @per_page
      
     if @filter_params["button_view"] == "on"
-      pagination_list = scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
+      pagination_list = @filtered_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
       num_workgroups  = pagination_list.size
       num_missing     = @per_page - num_workgroups
       
       if num_missing > 0
-        total_workgroups = scope.where("groups.type = 'WorkGroup'").count
+        total_workgroups = @filtered_scope.where("groups.type = 'WorkGroup'").count
         sys_offset = [offset - total_workgroups, 0].max
-        pagination_list += scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
+        pagination_list += @filtered_scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
       end
       num_missing = @per_page - pagination_list.size
       if num_missing > 0 
@@ -56,7 +56,7 @@ class GroupsController < ApplicationController
       end 
       @total_entries += 1
     else
-      pagination_list  = scope.limit(@per_page).offset(offset)
+      pagination_list  = @filtered_scope.limit(@per_page).offset(offset)
     end
     
     @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|

@@ -74,27 +74,30 @@ class UserfilesController < ApplicationController
       @header_scope = @header_scope.where( :group_id  => current_project.id )
     end
     
-    tags_and_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
-    @tag_filters = tags_and_counts.map { |tc| ["#{tc.tag_name} (#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
+    
     
     #Apply filters
-    filtered_scope = base_filtered_scope(@header_scope)
-    filtered_scope = filtered_scope.where( :format_source_id => nil )
+    @filtered_scope = base_filtered_scope(@header_scope)
+    @filtered_scope = @filtered_scope.where( :format_source_id => nil )
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
-      filtered_scope = custom_filter.filter_scope(filtered_scope)
+      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
     end
     
     unless tag_filters.blank?
-      filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
+      @filtered_scope = @filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
     
     #------------------------------
     # Sorting scope
     #------------------------------
 
-    sorted_scope = filtered_scope.scoped({})
+    sorted_scope = @filtered_scope.scoped({})
+    
+    tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
+    filt_tag_counts = @filtered_scope.joins(:tags).group("tags.name").count
+    @tag_filters = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
     
     # Identify and add necessary table joins
     joins = []
@@ -128,8 +131,8 @@ class UserfilesController < ApplicationController
     # ---- NO tree sort ----
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
-      filtered_scope   = filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
-      @userfiles_total = filtered_scope.size
+      @filtered_scope   = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
+      @userfiles_total = @filtered_scope.size
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -150,7 +153,7 @@ class UserfilesController < ApplicationController
       
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
-      real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )
+      real_subset       = @filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
       page_of_userfiles.each do |simple|
