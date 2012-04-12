@@ -30,10 +30,11 @@ resource in BrainPortal are:
 
 === Some key models in the system include:
 
-User:: Represents an actual user of the system. 
-Userfile:: Models a user's files as entries in the database. 
-DataProvider:: Represents an external provider for the contents of the userfiles.
-CbrainTask:: Represents a task request to a cluster, and its evolving states. 
-Bourreau:: Represents a remote execution server for processing tasks. 
+*User*:: Represents an actual user of the system. 
+*Userfile*:: Models a user's files as entries in the database. 
+*DataProvider*:: Represents an external provider for the contents of the userfiles.
+*CbrainTask*:: Represents a task request to a cluster, and its evolving states. 
+*PortalTask*:: The subclass of CbrainTask used to model tasks as seen on the BrainPortal side.
+*Bourreau*:: Represents a remote execution server for processing tasks. 
            All CbrainTask requests are sent to one of these.
 

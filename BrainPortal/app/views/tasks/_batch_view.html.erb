@@ -94,7 +94,7 @@
     </td>
     <td>
       <% if launch_time %>
-        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
+        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) rescue nil %>
       <% end %>
     </td>
   </tr>

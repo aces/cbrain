@@ -125,13 +125,27 @@ class CbrainTask::BashScriptor < ClusterTask
 
     # Parse the output, finding the special pleading sentences.
     self.addlog("Searching standard output for magic sentence 'Please CBRAIN...'")
-    stdout.scan(/Please\s+CBRAIN,\s+save\s+(\S+)\s+to\s+([A-Z][\w]+)\s+named\s+(\S+)(?:\s+as\s+child\s+of\s+(\d+))?/).each do |m|
+    magic_regex = Regexp.new(
+        'Please\s+CBRAIN,\s+save\s+'      +     #  Please CBRAIN save
+        '(\S+)'                           +     #  [filepath]                #1
+        '\s+to\s+'                        +     #  to
+        '([A-Z][\w]+)'                    +     #  [userfile_type]           #2
+        '\s+named\s+'                     +     #  named
+        '(\S+)'                           +     #  [userfile_name]           #3
+        '(\s+and\s+then\s+delete\s+it)?'  +     #  and then delete it        #4, optional
+        '(?:\s+as\s+child\s+of\s+(\d+))?' +     #  as child of [userfile_id] #5, optional
+        '(\s+and\s+then\s+delete\s+it)?'        #  and then delete it        #6, optional again
+    )
+
+    stdout.scan(magic_regex).each do |m|
 
       # Extract significant components
       src_path  = m[0]
       out_type  = m[1]
       out_name  = m[2]
-      parent_id = m[3]
+      del_1     = m[3] # optional
+      parent_id = m[4] # optional
+      del_2     = m[5] # optional
       self.addlog("Saving: '#{src_path}' to '#{out_type}' named '#{out_name}'#{parent_id.present? ? " child of #{parent_id}" : ""}")
 
       # Create output file
@@ -143,6 +157,12 @@ class CbrainTask::BashScriptor < ClusterTask
       out_userfile.group_id = (params[:saved_files_group_id].presence || self.group_id).to_i
       out_userfile.save!
       out_userfile.cache_copy_from_local_file(src_path)
+
+      # Erase source (optional)
+      if (del_1.present? || del_2.present?) && self.path_is_in_workdir?(src_path)
+        self.addlog("Removing source file.")
+        FileUtils.rm_rf(src_path) rescue true
+      end
 
       # Record logging info
       out_ids << out_userfile.id
