@@ -32,9 +32,9 @@ class ToolsController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'tools.name'
     
-    @header_scope = current_user.available_tools
+    @header_scope   = current_user.available_tools
     @filtered_scope = base_filtered_scope(@header_scope.includes(:user, :group))
-    @tools = @filtered_scope
+    @tools          = @filtered_scope
     
     respond_to do |format|
       format.js

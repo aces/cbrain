@@ -1610,13 +1610,18 @@ img {
 /* % ######################################################### */
 
 .filter_list {
-    border: 3px solid #0471B4;
-    margin: 0;
-    padding: 1em 2em 1em 2em;
-    background-color: #05A3D6;
-    text-align: left;
-    max-height: 30em;
-    overflow: auto;
+  border: 3px solid #0471B4;
+  margin: 0;
+  padding: 1em 2em 1em 2em;
+  background-color: #05A3D6;
+  text-align: left;
+  max-height: 30em;
+  overflow: auto;
+}
+
+.filter_list li a:focus {
+  background: #FFFF99;
+  color: gray;
 }
 
 .hover_dropdown {

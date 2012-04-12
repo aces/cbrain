@@ -33,7 +33,7 @@ class FeedbacksController < ApplicationController
     @filter_params["sort_hash"]["dir"] ||= 'DESC'
     
     @filtered_scope = base_filtered_scope
-    @feedbacks = @filtered_scope.includes(:user)
+    @feedbacks      = @filtered_scope.includes(:user)
 
     respond_to do |format|
       format.js

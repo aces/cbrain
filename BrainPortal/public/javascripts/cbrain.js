@@ -515,7 +515,15 @@ jQuery(
          filter.hide();
        }
      }); 
+   }).live("keypress", function(event){
+     if(event.keyCode == 13){
+       var text_field = $(this);
+       var filter_link = text_field.closest(".filter_list").find(".filter_item a:visible").first();
+       filter_link.focus();
+       return false;
+     }
    });
+        
 
    /////////////////////////////////////////////////////////////////////
     //

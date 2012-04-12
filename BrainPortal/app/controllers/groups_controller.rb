@@ -32,9 +32,10 @@ class GroupsController < ApplicationController
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @filter_params["button_view"] ||= "on"
-    @header_scope = current_user.available_groups
+    
+    @header_scope   = current_user.available_groups
     @filtered_scope = base_filtered_scope @header_scope.includes(:site)
-    @total_entries = @filtered_scope.count
+    @total_entries  = @filtered_scope.count
     
     # For Pagination
     @per_page = 50 unless @filter_params["per_page"]
