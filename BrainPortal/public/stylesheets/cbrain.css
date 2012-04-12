@@ -755,6 +755,10 @@ pre {
   background: gray;
 }
 
+#loading_image {
+  margin: 6px;
+}
+
 #mni_logo {
     float: right;
     background-image: url(/images/mni_logo.png);
@@ -773,10 +777,6 @@ pre {
 
 .main_menu_left {
   left:6px;
-}
-
-.main_menu_right {
-  right:6px;
 }
 
 #main-menu ul {

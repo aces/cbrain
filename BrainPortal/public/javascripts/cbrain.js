@@ -119,7 +119,14 @@ function load_behaviour(event){
               dataType: data_type,
               success: function(data){
                 modify_target(data, target);     
-              }});
+              },
+              beforeSend: function(){
+                $("#loading_image").show();
+              },
+              complete: function(){
+                $("#loading_image").hide();
+              }
+            });
      var input_field = form.find(".inline_text_input");
      var text = inline_text_field.find(".current_text");
      var trigger = inline_text_field.find(inline_text_field.attr("data-trigger"));
@@ -288,6 +295,12 @@ function load_behaviour(event){
               current_element.html(error_message);
             }
           },
+          beforeSend: function(){
+            $("#loading_image").show();
+          },
+          complete: function(){
+            $("#loading_image").hide();
+          },
           timeout: 50000
         });
     }
@@ -342,7 +355,13 @@ function load_behaviour(event){
       jQuery.ajax({
         dataType: 'script',
         url: url,
-        timeout: 50000
+        timeout: 50000,
+        beforeSend: function(){
+          $("#loading_image").show();
+        },
+        complete: function(){
+          $("#loading_image").hide();
+        }
       });
     });
 
@@ -376,7 +395,11 @@ function load_behaviour(event){
           }
           current_element.html(error_message);
         },
+        beforeSend: function(){
+           $("#loading_image").show();
+        },
         complete: function(e) {
+          $("#loading_image").hide();
           staggered_loading(index+1, element_array);
         }
       });
@@ -447,7 +470,6 @@ jQuery(
      var page_param = get_page_parameter(url);
      var pagination_div = link.closest(".pagination");
       
-     pagination_div.html(" Loading... <BR>");
      url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
      
      var title  = "";
@@ -456,24 +478,39 @@ jQuery(
        if(page_num) title = "Page: " + page_num[0];
      }
      
-     history.pushState(null, "", url);
+     history.pushState({"paginating" : true}, "", url);
      $.ajax({
        url: url,
-       dataType: "script"
+       dataType: "script",
+       beforeSend: function(){
+         $("#loading_image").show();
+       },
+       complete: function(){
+         $("#loading_image").hide();
+       }
      });
      
      return false;
    });
    
-   $(window).bind("popstate", function() {
-     var url = location.href;
-     var page_param = get_page_parameter(url);
-
-     url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
-     $.ajax({
-        url: url,
-        dataType: "script"
-      });
+   $(window).bind("popstate", function(evt) {
+     var state = evt.originalEvent.state || {};
+     if(state.paginating){
+       var url = location.href;
+       var page_param = get_page_parameter(url);
+       
+       url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
+       $.ajax({
+         url: url,
+         dataType: "script",
+         beforeSend: function(){
+           $("#loading_image").show();
+         },
+         complete: function(){
+           $("#loading_image").hide();
+         }
+       }); 
+     }
    });
    
    var filter_header_timeout = null; 
@@ -524,13 +561,6 @@ jQuery(
      }
    });
         
-
-   /////////////////////////////////////////////////////////////////////
-    //
-    // Ajax Pagination
-    //
-    /////////////////////////////////////////////////////////////////////
-
    jQuery(".show_toggle").live("click", function(){
      var current_element = jQuery(this);
      var target_element = jQuery(current_element.attr("data-target"));
@@ -612,6 +642,7 @@ jQuery(
        modify_target(data, target, other_options);
      }
    }).live("ajax:beforeSend", function(event, data, status, xhr){
+     $("#loading_image").show();
      var link = jQuery(this);
      var loading_message = link.attr("data-loading-message");
      var target = link.attr("data-target");
@@ -620,6 +651,8 @@ jQuery(
        if(!loading_message_target) loading_message_target = target;
        jQuery(loading_message_target).html(loading_message);
      }
+   }).live("ajax:complete", function(){
+     $("#loading_image").hide();
    });
 
    jQuery(".select_all").live("click", function(){
@@ -667,6 +700,12 @@ jQuery(
        url : url,
        type : method,
        dataType : data_type,
+       beforeSend: function(){
+         $("#loading_image").show();
+       },
+       complete: function(){
+          $("#loading_image").hide();
+        },
        success: function(data){
          modify_target(data, target);     
         },
@@ -734,6 +773,10 @@ jQuery(
       }
       
       modify_target(data, target, {scroll_bottom : scroll_bottom});  
+    }).live("ajax:beforeSend", function(event, data, status, xhr){
+      $("#loading_image").show();
+    }).live("ajax:complete", function(){
+      $("#loading_image").hide();
     });
 
    //Allows a textfield to submit an ajax request independently of
@@ -758,6 +801,12 @@ jQuery(
          dataType: data_type,
          success: function(data){
            modify_target(data, target);     
+         },
+         beforeSend: function(){
+           $("#loading_image").show();
+         },
+         complete: function(){
+           $("#loading_image").hide();
          },
          data: parameters
        });
@@ -796,6 +845,12 @@ jQuery(
          dataType: data_type,
          success: function(data){
            modify_target(data, target, other_options);
+         },
+         beforeSend: function(){
+           $("#loading_image").show();
+         },
+         complete: function(){
+           $("#loading_image").hide();
          },
          data: { commit : commit },
          resetForm: false
@@ -837,6 +892,12 @@ jQuery(
          	  jQuery(this).remove();
          	}
          });
+       },
+       beforeSend: function(){
+         $("#loading_image").show();
+       },
+       complete: function(){
+         $("#loading_image").hide();
        }
      });
      return false;
@@ -894,7 +955,13 @@ jQuery(
          new_data.trigger("new_content");
          onclick_elem.find(".ajax_onclick_show_child").hide();
          onclick_elem.find(".ajax_onclick_hide_child").show();
- 	    },
+ 	     },
+ 	     beforeSend: function(){
+         $("#loading_image").show();
+       },
+       complete: function(){
+         $("#loading_image").hide();
+       },
        data: {},
        async: true,
        timeout: 50000
