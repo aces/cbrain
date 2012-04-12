@@ -97,7 +97,7 @@ class UserfilesController < ApplicationController
     
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
-    @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
+    @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id, :class => "#{"filter_zero" if filt_tag_counts[tc.tag_name].blank?}" }]  }
     
     # Identify and add necessary table joins
     joins = []

@@ -102,7 +102,7 @@ module BasicFilterHelpers
           group("#{table}.#{column}").
           order("#{table}.#{column}").
           reject { |obj| obj.send(column).blank? }.
-          map { |obj| ["#{formatter.call(obj.send(pretty_method))} (#{filt_counts[obj.send(column)].to_i}/#{obj.count})", :filters => {column => obj.send(column)}]}
+          map { |obj| ["#{formatter.call(obj.send(pretty_method))} (#{filt_counts[obj.send(column)].to_i}/#{obj.count})", :filters => {column => obj.send(column)}, :class => "#{"filter_zero" if filt_counts[obj.send(column)].blank?}"]}
   end
   
   #Create filtered array to be used by TableBuilder for
@@ -122,7 +122,7 @@ module BasicFilterHelpers
           order("#{assoc_table}.#{name_method}").
           group("#{table}.#{foreign_key}").
           all.
-          map { |obj| ["#{formatter.call(obj.send("#{association}_#{name_method}"))} (#{filt_counts[obj.send(foreign_key)].to_i}/#{obj.count})", :filters => {foreign_key => obj.send(foreign_key)}] }
+          map { |obj| ["#{formatter.call(obj.send("#{association}_#{name_method}"))} (#{filt_counts[obj.send(foreign_key)].to_i}/#{obj.count})", :filters => {foreign_key => obj.send(foreign_key)}, :class => "#{"filter_zero" if filt_counts[obj.send(foreign_key)].blank?}"] }
   end
   
   # Set up the current_session variable. Mainly used to set up the filter hash to be

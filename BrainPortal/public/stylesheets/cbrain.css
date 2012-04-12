@@ -1624,6 +1624,10 @@ img {
   color: gray;
 }
 
+.filter_list li a.filter_zero {
+  color: #ccc;
+}
+
 .hover_dropdown {
   position: absolute;
   z-index: 999;

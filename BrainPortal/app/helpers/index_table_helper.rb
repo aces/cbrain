@@ -175,10 +175,11 @@ module IndexTableHelper
         confirm_proc = options[:confirm] || Proc.new { |o| "Are you sure you want to delete '#{o.name}'?" }
         self.cell(options) do |object|
           num_cells = @table.num_cells
-          @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id}, :class  => "action_link",
-                                                                                   :confirm  => confirm_proc.call(object),
-                                                                                   :target  => "##{object.class.name.underscore}_#{object.id}",
-                                                                                   :loading_message  => "<td colspan='#{num_cells}' style='color:red; text-align:center'>Deleting...</td>"
+          @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id}, 
+                                                             :class  => "action_link",
+                                                             :confirm  => confirm_proc.call(object),
+                                                             :target  => "##{object.class.name.underscore}_#{object.id}",
+                                                             :loading_message  => "<td colspan='#{num_cells}' style='color:red; text-align:center'>Deleting...</td>"
           }
         end
       end
