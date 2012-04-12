@@ -79,6 +79,8 @@ class TasksController < ApplicationController
       scope = custom_filter.filter_scope(scope)
     end
 
+    @filtered_scope = scope
+
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
     @total_tasks       = scope.count    # number of TASKS

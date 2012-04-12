@@ -64,16 +64,16 @@
 <% operations_width_colspan = 3 %>
 <%= index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t| %>
   <%
-    t.sort_column("Server Type", RemoteResource, :type, :filters => basic_filters_for(@header_scope, RemoteResource, :type))
+    t.sort_column("Server Type", RemoteResource, :type, :filters => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :type))
     t.sort_column("Server Name", RemoteResource, :name)
     if @filter_params["details"] == 'on'
       t.column("Revision Numbers")
-      t.sort_column("Owner", User, :login, :filters => association_filters_for(@header_scope, RemoteResource, User, :name_method => :login))
+      t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, User, :name_method => :login))
     end
-    t.sort_column("Project", Group, :name, :filters => association_filters_for(@header_scope, RemoteResource, Group))
+    t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, Group))
     if @filter_params["details"] == 'on'
       t.column("Site")
-      t.sort_column("Time Zone", RemoteResource, :time_zone, :filters => basic_filters_for(@header_scope, RemoteResource, :time_zone))
+      t.sort_column("Time Zone", RemoteResource, :time_zone, :filters => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :time_zone))
     end
     t.sort_column("Online?", RemoteResource, :online)
     t.column("Uptime")
