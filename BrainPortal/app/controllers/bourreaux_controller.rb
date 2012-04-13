@@ -39,7 +39,7 @@ class BourreauxController < ApplicationController
     @filter_params["sort_hash"]["dir"] ||= "DESC"
     @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
-    @bourreaux      = @filtered_scope
+    @bourreaux      = base_sorted_scope @filtered_scope
 
     if current_user.has_role? :admin
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')

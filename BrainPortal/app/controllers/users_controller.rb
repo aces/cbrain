@@ -38,7 +38,7 @@ class UsersController < ApplicationController
     @header_scope = current_user.available_users
     
     @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
-    @users          = @filtered_scope
+    @users          = base_sorted_scope @filtered_scope
 
     # Precompute file and task counts.
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count

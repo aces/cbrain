@@ -33,7 +33,7 @@ class SitesController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'sites.name'
     
-    @sites = base_filtered_scope Site.includes( [:users, :groups] )
+    @sites = base_sorted_scope(base_filtered_scope Site.includes( [:users, :groups] ))
 
     respond_to do |format|
       format.js

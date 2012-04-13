@@ -35,7 +35,7 @@ class DataProvidersController < ApplicationController
     
     @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
-    @data_providers = @filtered_scope
+    @data_providers = base_sorted_scope @filtered_scope
 
     if current_user.has_role? :admin
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
