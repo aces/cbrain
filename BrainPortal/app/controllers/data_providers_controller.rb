@@ -599,6 +599,7 @@ class DataProvidersController < ApplicationController
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
                       IncomingVaultSshDataProvider 
                       S3DataProvider
+                      LorisAssemblyNativeSshDataProvider
                     }
     end
     typelist
