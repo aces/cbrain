@@ -68,11 +68,12 @@ class RemoteResource < ActiveRecord::Base
 
   serialize   :dp_ignore_patterns
 
-  validates_uniqueness_of :name
-  validates_presence_of   :name, :user_id, :group_id
-  validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
-                                 :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, !',
-                                 :allow_blank => true # handled by validates_presence_of, see above
+  validates               :name,
+                          :uniqueness => true,
+                          :presence => true,
+                          :name_format => true
+                          
+  validates_presence_of   :user_id, :group_id
 
   validate                :proper_dp_ignore_patterns
   validate                :dp_cache_path_valid

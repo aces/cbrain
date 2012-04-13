@@ -46,13 +46,15 @@ class Userfile < ActiveRecord::Base
   after_save              :update_format_group
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
-  validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
-  validates_presence_of   :name
+  validates               :name,
+                          :presence => true,
+                          :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
+                          :filename_format => true
+                          
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
   validate                :validate_associations
-  validate                :validate_filename
   validate                :validate_group_update
 
   belongs_to              :user
@@ -862,13 +864,6 @@ class Userfile < ActiveRecord::Base
     end
     unless Group.where( :id => self.group_id ).first
       errors.add(:group, "does not exist.")
-    end
-  end
-
-  # Active Record validation.
-  def validate_filename #:nodoc:
-    unless Userfile.is_legal_filename?(self.name)
-      errors.add(:name, "contains invalid characters.")
     end
   end
   

@@ -207,13 +207,13 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include NumericalSubdirTree
   
-  validates_uniqueness_of :name
-  validates_presence_of   :name, :user_id, :group_id
+  validates               :name,
+                          :uniqueness => true,
+                          :presence => true,
+                          :name_format => true
+                          
+  validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
-
-  validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
-    :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, and !',
-    :allow_blank => true
                                  
   validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
     :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
