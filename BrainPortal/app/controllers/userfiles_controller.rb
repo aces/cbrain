@@ -78,7 +78,6 @@ class UserfilesController < ApplicationController
     
     #Apply filters
     @filtered_scope = base_filtered_scope(@header_scope)
-    @filtered_scope = @filtered_scope.where( :format_source_id => nil )
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
@@ -93,7 +92,7 @@ class UserfilesController < ApplicationController
     # Sorting scope
     #------------------------------
 
-    sorted_scope = @filtered_scope.scoped({})
+    sorted_scope = base_sorted_scope @filtered_scope.where( :format_source_id => nil )
     
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count

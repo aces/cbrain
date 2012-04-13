@@ -34,7 +34,7 @@ class ToolsController < ApplicationController
     
     @header_scope   = current_user.available_tools
     @filtered_scope = base_filtered_scope(@header_scope.includes(:user, :group))
-    @tools          = @filtered_scope
+    @tools          = base_sorted_scope @filtered_scope
     
     respond_to do |format|
       format.js
