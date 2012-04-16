@@ -23,9 +23,9 @@
 require 'spec_helper'
 
 describe UserfilesController do
-	let!(:admin) {Factory.create(:user, :role => "admin", :login => "admin" )}
-  let!(:site_manager) {Factory.create(:user, :role => "site_manager")}
-  let!(:user) {Factory.create(:user, :site => site_manager.site)}
+	let!(:admin) {Factory.create(:admin_user, :login => "admin" )}
+  let!(:site_manager) {Factory.create(:site_manager)}
+  let!(:user) {Factory.create(:normal_user, :site => site_manager.site)}
   let!(:admin_userfile) {Factory.create(:userfile, :user => admin)}
   let!(:site_manager_userfile) {Factory.create(:userfile, :user => site_manager)}
   let!(:user_userfile) {Factory.create(:userfile, :user => user)}

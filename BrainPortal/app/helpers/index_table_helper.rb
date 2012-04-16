@@ -84,8 +84,8 @@
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
-#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id }) { |fb|  link_to 'Edit', {:action => :edit, :id => #{fb.id}}, :class  => 'action_link' }
-#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id }) { |fb| delete_button 'Delete', {:action => :destroy, :id => #{fb.id}} ... }
+#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id }) { |fb|  link_to 'Edit', {:action => :edit, :id => #{fb.id}}, :class  => 'action_link' }
+#         col.cell(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id }) { |fb| delete_button 'Delete', {:action => :destroy, :id => #{fb.id}} ... }
 #       end
 #     end
 #   %>
@@ -97,8 +97,8 @@
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
-#         col.edit_link(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id })    
-#         col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id })
+#         col.edit_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id })    
+#         col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id })
 #       end
 #     end
 #   %>

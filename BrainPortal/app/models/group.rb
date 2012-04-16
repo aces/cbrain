@@ -43,8 +43,9 @@ class Group < ActiveRecord::Base
   before_validation       :set_default_creator
   after_destroy           :reassign_models_to_owner_group
   
-  validates_presence_of   :name
-  validate                :validate_groupname
+  validates               :name,
+                          :presence => true,
+                          :name_format => true
   
   has_many                :tools
   has_and_belongs_to_many :users 
@@ -71,7 +72,7 @@ class Group < ActiveRecord::Base
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
     @can_be_accessed_cache       ||= {}
-    @can_be_accessed_cache[user] ||= (user.has_role?(:admin) || user.is_member_of_group(self))
+    @can_be_accessed_cache[user] ||= (user.has_role?(:admin_user) || user.is_member_of_group(self))
   end
   
   #Can this group be edited by +user+?
@@ -102,20 +103,7 @@ class Group < ActiveRecord::Base
   def self.short_pretty_type #:nodoc:
     self.to_s.demodulize.underscore.titleize.sub(/\s*group\s*/i,"")
   end
-
-  # Returns true of +name+ is a legal group name. Also called
-  # by active record validations.
-  def self.is_legal_groupname?(name)
-    return true if name && name.match(/^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/)
-    false
-  end
-
-  # ActiveRecord validation.
-  def validate_groupname #:nodoc:
-    unless Group.is_legal_groupname?(self.name)
-      errors.add(:name, "contains invalid characters.")
-    end
-  end
+  
 
   private
   

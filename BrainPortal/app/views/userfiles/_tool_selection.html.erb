@@ -22,7 +22,7 @@
 #
 -%>
 
-<% tool_list = current_user.available_tools(:conditions => "tools.category <> 'background'") %>
+<% tool_list = current_user.available_tools.where("tools.category <> 'background'") %>
 
 <% if tool_list.present? %>
   
@@ -50,7 +50,7 @@
 <% else %>
 
    <br>
-   <% if current_user.has_role? :admin %>
+   <% if current_user.has_role? :admin_user %>
        <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
    <% else %>
        <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>

@@ -62,7 +62,7 @@ module CbrainRailsPortal
     config.encoding = "utf-8"
 
     # Configure sensitive parameters which will be filtered from the log file.
-    config.filter_parameters += [:password, :login, :email, :full_name, :role ]
+    config.filter_parameters += [:password, :email, :full_name, :type ]
   end
 end
 

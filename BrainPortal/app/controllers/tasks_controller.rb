@@ -583,9 +583,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).select("id").map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").map(&:id)
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).select("id").map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -627,7 +627,7 @@ class TasksController < ApplicationController
           next
         end
 
-        if task.user_id != current_user.id && current_user.role != 'admin'
+        if task.user_id != current_user.id && current_user.type != 'AdminUser'
           sent_skipped += 1
           next 
         end

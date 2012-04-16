@@ -74,7 +74,7 @@ class SessionsController < ApplicationController
     end
 
     # Portal locked?
-    if portal.portal_locked? && !current_user.has_role?(:admin)
+    if portal.portal_locked? && !current_user.has_role?(:admin_user)
       self.current_user = nil
       flash.now[:error] = 'The system is currently locked. Please try again later.'
       respond_to do |format|
@@ -116,7 +116,7 @@ class SessionsController < ApplicationController
     current_user.addlog("Logged in from #{request.remote_ip}")
     portal.addlog("User #{current_user.login} logged in from #{request.remote_ip}")
     
-    if current_user.has_role?(:admin)
+    if current_user.has_role?(:admin_user)
       current_session[:active_group_id] = "all"
     end
     

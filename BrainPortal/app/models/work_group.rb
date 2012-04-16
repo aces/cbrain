@@ -82,7 +82,7 @@ class WorkGroup < Group
   end
   
   def can_be_edited_by?(user)
-    if user.has_role? :admin
+    if user.has_role? :admin_user
       return true
     elsif user.has_role? :site_manager
       if self.site_id == user.site.id

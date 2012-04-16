@@ -23,7 +23,7 @@
 -%>
 
 <div class="menu_bar">
-  <% if current_user.has_role?(:admin) %>
+  <% if current_user.has_role?(:admin_user) %>
     <%= new_model_button 'Create New Tool', new_tool_path %>
        
     <span title="Registers all subclasses of PortalTask as Tools">
@@ -44,7 +44,7 @@
 
 <%= index_table(@tools, :class => "resource_list") do |t| %>
   <% 
-    if current_user.has_role?(:admin)
+    if current_user.has_role?(:admin_user)
       t.sort_column("Tool Name", Tool, :name) { |tool| link_to tool.name, { :action => :edit, :id => tool.id }}
     else
       t.sort_column("Tool Name", Tool, :name, &:name)
@@ -68,7 +68,7 @@
         result.html_safe
       end
     end
-    if current_user.has_role?(:admin)
+    if current_user.has_role?(:admin_user)
       t.column("Access?") { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
     end
     t.describe_column("Help/Info") do |col|

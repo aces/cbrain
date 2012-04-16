@@ -27,7 +27,7 @@ describe ToolsController do
   
   context "with a logged in user" do
     context "user is an admin" do
-      let(:current_user) {Factory.create(:user, :role => "admin")}
+      let(:current_user) {Factory.create(:admin_user)}
       before(:each) do
         session[:user_id] = current_user.id
       end
@@ -162,7 +162,7 @@ describe ToolsController do
     end
 
     context "user is a standard user" do
-      let(:current_user) {Factory.create(:user, :role => "user")}
+      let(:current_user) {Factory.create(:normal_user)}
       before(:each) do
         session[:user_id] = current_user.id
       end
@@ -237,7 +237,7 @@ describe ToolsController do
     end
 
     context "user is a site_manager" do
-      let(:current_user) {Factory.create(:user, :role => "site_managerq")}
+      let(:current_user) {Factory.create(:site_manager)}
       before(:each) do
         session[:user_id] = current_user.id
       end

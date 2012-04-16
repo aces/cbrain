@@ -23,17 +23,17 @@
 require 'spec_helper'
 
 describe UsersController do
-  let(:admin) {Factory.create(:user, :role => "admin")}
-  let(:site_manager) {Factory.create(:user, :role => "site_manager")}
-  let(:site_user) {Factory.create(:user, :site => site_manager.site)}
-  let(:user) {Factory.create(:user)}
+  let(:admin) {Factory.create(:normal_user, :type => "AdminUser")}
+  let(:site_manager) {Factory.create(:normal_user, :type => "SiteManager")}
+  let(:site_user) {Factory.create(:normal_user, :site => site_manager.site)}
+  let(:user) {Factory.create(:normal_user)}
   let(:mock_user) {mock_model(User).as_null_object}
   
   context "collection action" do
     
     describe "index" do
       before(:each) do
-        1.upto(3) {Factory.create(:user)}
+        1.upto(3) {Factory.create(:normal_user)}
       end
       context "with admin user" do
         before(:each) do
@@ -67,7 +67,7 @@ describe UsersController do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
-          1.upto(3) { Factory.create(:user, :site => site_manager.site) }
+          1.upto(3) { Factory.create(:normal_user, :site => site_manager.site) }
         end
         it "should only show users from site" do
           get :index
@@ -100,19 +100,19 @@ describe UsersController do
           assigns[:user].login.should == "login"
         end
         
-        it "should allow role to be set to admin" do
-          post :create, :user => {:role => "admin"}
-          assigns[:user].role.should == "admin"
+        it "should allow type to be set to admin" do
+          post :create, :user => {:type => "AdminUser"}
+          assigns[:user].type.should == "AdminUser"
         end
         
-        it "should allow role to be set to site manager" do
-          post :create, :user => {:role => "site_manager"}
-          assigns[:user].role.should == "site_manager"
+        it "should allow type to be set to site manager" do
+          post :create, :user => {:type => "SiteManager"}
+          assigns[:user].type.should == "SiteManager"
         end
         
-        it "should allow role to be set to user" do
-          post :create, :user => {:role => "user"}
-          assigns[:user].role.should == "user"
+        it "should allow type to be set to user" do
+          post :create, :user => {:type => "NormalUser"}
+          assigns[:user].type.should == "NormalUser"
         end
         
         it "should allow the site to be set" do
@@ -162,19 +162,19 @@ describe UsersController do
           assigns[:user].login.should == "login"
         end
 
-        it "should not allow role to be set to admin" do
-          post :create, :user => {:role => "admin"}
-          assigns[:user].role.should_not == "admin"
+        it "should not allow type to be set to admin" do
+          post :create, :user => {:type => "AdminUser"}
+          assigns[:user].type.should_not == "AdminUser"
         end
 
-        it "should allow role to be set to site manager" do
-          post :create, :user => {:role => "site_manager"}
-          assigns[:user].role.should == "site_manager"
+        it "should allow type to be set to site manager" do
+          post :create, :user => {:type => "SiteManager"}
+          assigns[:user].type.should == "SiteManager"
         end
 
-        it "should allow role to be set to user" do
-          post :create, :user => {:role => "user"}
-          assigns[:user].role.should == "user"
+        it "should allow type to be set to user" do
+          post :create, :user => {:type => "NormalUser"}
+          assigns[:user].type.should == "NormalUser"
         end
 
         it "should automatically set site to manager's site'" do
@@ -342,19 +342,19 @@ describe UsersController do
           session[:user_id] = admin.id
         end
 
-        it "should allow role to be set to admin" do
-          put :update, :id => user.id, :user => {:role => "admin"}
-          assigns[:user].role.should == "admin"
+        it "should allow type to be set to admin" do
+          put :update, :id => user.id, :user => {:type => "AdminUser"}
+          assigns[:user].type.should == "AdminUser"
         end
 
-        it "should allow role to be set to site manager" do
-          put :update, :id => user.id, :user => {:role => "site_manager"}
-          assigns[:user].role.should == "site_manager"
+        it "should allow type to be set to site manager" do
+          put :update, :id => user.id, :user => {:type => "SiteManager"}
+          assigns[:user].type.should == "SiteManager"
         end
 
-        it "should allow role to be set to user" do
-          put :update, :id => user.id, :user => {:role => "user"}
-          assigns[:user].role.should == "user"
+        it "should allow type to be set to user" do
+          put :update, :id => user.id, :user => {:type => "NormalUser"}
+          assigns[:user].type.should == "NormalUser"
         end
 
         it "should allow the site to be set" do
@@ -393,19 +393,19 @@ describe UsersController do
           response.should redirect_to("/home")
         end
 
-        it "should not allow role to be set to admin" do
-          put :update, :id => site_user.id, :user => {:role => "admin"}
-          assigns[:user].role.should_not == "admin"
+        it "should not allow type to be set to admin" do
+          put :update, :id => site_user.id, :user => {:type => "AdminUser"}
+          assigns[:user].type.should_not == "AdminUser"
         end
 
-        it "should allow role to be set to site manager" do
-          put :update, :id => site_user.id, :user => {:role => "site_manager"}
-          assigns[:user].role.should == "site_manager"
+        it "should allow type to be set to site manager" do
+          put :update, :id => site_user.id, :user => {:type => "SiteManager"}
+          assigns[:user].type.should == "SiteManager"
         end
 
-        it "should allow role to be set to user" do
-          put :update, :id => site_user.id, :user => {:role => "user"}
-          assigns[:user].role.should == "user"
+        it "should allow type to be set to user" do
+          put :update, :id => site_user.id, :user => {:type => "NormalUser"}
+          assigns[:user].type.should == "NormalUser"
         end
 
         it "should automatically set site to manager's site'" do
@@ -439,9 +439,9 @@ describe UsersController do
           response.should redirect_to("/home")
         end
 
-        it "should not allow role to be modified" do
-          put :update, :id => user.id, :user => {:role => "site_manager"}
-          assigns[:user].role.should == user.role
+        it "should not allow type to be modified" do
+          put :update, :id => user.id, :user => {:type => "SiteManager"}
+          assigns[:user].type.should == user.type
         end
 
         it "should not allow site to be modified" do

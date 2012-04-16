@@ -41,7 +41,7 @@ class BourreauxController < ApplicationController
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @bourreaux      = base_sorted_scope @filtered_scope
 
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
     end
     

@@ -48,7 +48,7 @@
 
 
 <% if @filter_params["button_view"] == "on" %>
-  <% if !current_user.has_role?(:user) %>
+  <% if !current_user.has_role?(:normal_user) %>
     <%=
       index_table([], :class => "project_button_header") do |t|
         t.sort_column("Name", Group, "name") 
@@ -101,7 +101,7 @@
       t.column("Tasks") do |g|
         index_count_filter @group_id_2_task_counts[g.id], :tasks, {:group_id => g.id}, :show_zeros => true
       end
-      if current_user.has_role?(:admin)
+      if current_user.has_role?(:admin_user)
         t.column("Tools") do |g|
           index_count_filter @group_id_2_tool_counts[g.id], :tools, {:group_id => g.id}
         end

@@ -37,7 +37,7 @@ class DataProvidersController < ApplicationController
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @data_providers = base_sorted_scope @filtered_scope
 
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
     end
 
@@ -592,7 +592,7 @@ class DataProvidersController < ApplicationController
 
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
-    if check_role(:admin) || check_role(:site_manager)
+    if check_role(:site_manager)
       typelist += %w{ 
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
                       CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider

@@ -94,7 +94,7 @@ class GroupsController < ApplicationController
 
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     render :partial => "new"
   end
 
@@ -102,13 +102,13 @@ class GroupsController < ApplicationController
   # POST /groups.xml
   def create  #:nodoc:
 
-    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
       @group = InvisibleGroup.new(params[:group])
     else
       @group = WorkGroup.new(params[:group])
     end
     
-    unless current_user.has_role? :admin
+    unless current_user.has_role? :admin_user
       @group.site = current_user.site
     end
 
@@ -134,7 +134,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update #:nodoc:
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @group = Group.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
     else
       @group = WorkGroup.find(params[:id])
@@ -148,13 +148,13 @@ class GroupsController < ApplicationController
 
     params[:group][:user_ids] ||= []
 
-    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
       @group.type = 'InvisibleGroup'
     else
       @group.type = 'WorkGroup'
     end
     
-    unless current_user.has_role? :admin
+    unless current_user.has_role? :admin_user
       params[:group][:site_id] = current_user.site_id
     end
 

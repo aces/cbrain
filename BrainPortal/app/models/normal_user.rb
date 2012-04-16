@@ -20,34 +20,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'spec_helper'
-
-describe Site do 
-  before(:each) do 
-    @site         = Factory.create(:site)
-    @site_manager = Factory.create(:site_manager, :site => @site)
-    @site_user    = Factory.create(:normal_user, :site => @site)
-    @site.save
+class NormalUser < User
+  
+  def available_tools  #:nodoc:
+    Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
   end
   
-  it "should save with valid attributes" do
-    @site.save.should be(true)
-  end
-  
-  it "should not save without a name" do
-    @site.name = nil
-    @site.save.should  be(false)
-  end
-  
-  it "should return the array of managers whened asked" do
-    @site.managers.should == [@site_manager]
-  end
-  
-  it "should set new managers on save" do
-    @site_user.type = "SiteManager"
-    @site_user.save
-    @site.managers.include?(@site_user).should be(true)
-  end
+  def available_groups  #:nodoc:              
+    group_scope = self.groups.where("groups.name <> 'everyone'")
+    group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
     
+    group_scope
+  end
+  
+  def available_tasks  #:nodoc:
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
+  end
+  
+  def available_users  #:nodoc:
+    User.where( :id => self.id )
+  end
+  
 end
-

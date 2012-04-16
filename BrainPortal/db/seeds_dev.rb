@@ -184,7 +184,7 @@ STEP
     },
     {
       :email     => "#{login}@localhost",
-      :role      => (first == "Mr" ? :site_manager : :user),
+      :type      => (first == "Mr" ? "SiteManager" : "NormalUser"),
       :site_id   => long_site.id,
       :time_zone => 'UTC',
       :city      => 'Meryton',
@@ -209,7 +209,7 @@ end
     },
     {
       :email     => "#{login}@localhost",
-      :role      => (full == "Charles Bingley" ? :site_manager : :user),
+      :type      => (full == "Charles Bingley" ? "SiteManager" : "NormalUser"),
       :site_id   => nether_site.id,
       :time_zone => 'UTC',
       :city      => 'Meryton',
@@ -234,7 +234,7 @@ end
     },
     {
       :email     => "#{login}@localhost",
-      :role      => (full == "Mr Darcy" ? :site_manager : :user),
+      :type      => (full == "Mr Darcy" ? "SiteManager" : "NormalUser"),
       :site_id   => pember_site.id,
       :time_zone => 'UTC',
       :city      => 'Pemberley',
@@ -259,7 +259,7 @@ end
     },
     {
       :email     => "#{login}@localhost",
-      :role      => :user,
+      :type      => "NormalUser",
       :site_id   => nil,
       :time_zone => 'UTC',
       :city      => nil,
