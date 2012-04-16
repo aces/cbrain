@@ -30,8 +30,8 @@ function modify_target(data, target, options){
   var new_content = jQuery(data);
   if(target){ 
     if(target == "__OVERLAY__"){
-      var width = parseInt(options["width"]); // || 800);
-      var height = parseInt(options["height"]); // || 500);
+      var width = parseInt(options["width"], 10); // || 800);
+      var height = parseInt(options["height"], 10); // || 500);
       jQuery("<div class='overlay_content'></div>").html(new_content).appendTo(jQuery("body")).dialog({
        	show: "puff",
        	modal: true,
@@ -319,7 +319,7 @@ function load_behaviour(event){
       if(scroll_bottom == "false") scroll_bottom = false;
       
       if(interval){
-        interval = parseInt(interval) * 1000;
+        interval = parseInt(interval, 10) * 1000;
         setInterval(fetch_update, interval, current_element, method, url, error_message, replace, data, scroll_bottom);
       } else {
         fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom);
@@ -411,8 +411,8 @@ function load_behaviour(event){
       var enclosing_div = jQuery(this);
       var dialog_link = enclosing_div.children('.overlay_content_link');
       var dialog = enclosing_div.children(".overlay_content")
-      var content_width = parseInt(dialog_link.attr('data-width'));
-      var content_height = parseInt(dialog_link.attr('data-height'));
+      var content_width = parseInt(dialog_link.attr('data-width'), 10);
+      var content_height = parseInt(dialog_link.attr('data-height'), 10);
     
       dialog.dialog({ autoOpen: false,
           modal: true,
@@ -568,7 +568,7 @@ jQuery(
      var slide_effect   = current_element.attr("data-slide-effect");
      var slide_duration   = current_element.attr("data-slide-duration");  
      if(slide_duration != 'slow' && slide_duration != 'fast'){
-       slide_duration = parseInt(slide_duration);
+       slide_duration = parseInt(slide_duration, 10);
      }
      
      if(alternate_text){
@@ -739,8 +739,8 @@ jQuery(
       if ((tool_tip.css('top') == '' || tool_tip.css('top') == '0px') 
           && (tool_tip.css('left') == '' || tool_tip.css('left') == '0px'))
       {
-          x = trigger.position().left + parseInt(offset_x);
-          y = trigger.position().top  + parseInt(offset_y);
+          x = trigger.position().left + parseInt(offset_x, 10);
+          y = trigger.position().top  + parseInt(offset_y, 10);
       
           tool_tip.css('top',  y + 'px');
           tool_tip.css('left', x + 'px');
