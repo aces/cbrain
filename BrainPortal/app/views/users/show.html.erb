@@ -47,7 +47,7 @@
 
     <%
       t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.is_a?(SiteManager)) && not_admin_user(@user))) do 
-        select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type), :class => "submit_onchange"
+        select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type)
       end
     %>
 
@@ -55,7 +55,7 @@
 
     <%
       t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
-        select_tag "user[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @user.site_id), :include_blank => true, :class => "submit_onchange"
+        select_tag "user[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @user.site_id), :include_blank => true
       end
     %>
 
@@ -73,7 +73,7 @@
       t.edit_cell("meta[pref_data_provider_id]", :header => "Default data provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
         data_provider_select("meta[pref_data_provider_id]",
                                  { :selector =>  @user.meta["pref_data_provider_id"] },
-                                 { :include_blank => true, :class => "submit_onchange" } )
+                                 { :include_blank => true } )
       end
     %>
 
@@ -84,13 +84,13 @@
         bourreau_select(     "meta[pref_bourreau_id]",
                                  { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all,
                                    :selector => @user.meta["pref_bourreau_id"] },
-                                 { :include_blank => true, :class => "submit_onchange" } )
+                                 { :include_blank => true } )
       end
     %>
 
     <%
       t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do
-        select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange"
+        select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
       end
     %>
     
@@ -152,7 +152,7 @@
             Projects 
             <% if current_user.has_rights?(:site_manager) %>
               <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
-                <%= form_for @user do |f| -%>
+                <%= form_for @user, :as => :user, :url => { :action => "update" } do |f| -%>
                   <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
                   <%= submit_tag 'Update Projects' %>
                 <% end %>

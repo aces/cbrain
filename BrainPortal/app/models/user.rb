@@ -72,7 +72,6 @@ class User < ActiveRecord::Base
                             :allow_blank => true
                             
   validate                  :immutable_login,            :on => :update
-  validate                  :site_manager_check
   validate                  :password_strength_check,    :if => :password_required?
   
   before_create             :add_system_groups
@@ -339,12 +338,6 @@ class User < ActiveRecord::Base
         new_site = Site.find(self.changes["site_id"].last)
         new_site.own_group.users << self
       end
-    end
-  end
-  
-  def site_manager_check  #:nodoc:
-    if self.type == "SiteManager" && self.site_id.blank?
-      errors.add(:site_id, "manager type must be associated with a site.")
     end
   end
   

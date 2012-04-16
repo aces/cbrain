@@ -200,7 +200,7 @@ class UsersController < ApplicationController
       if @user.update_attributes_with_logging( nil, current_user, %w( full_name login email role city country account_locked ) )
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
-        format.html { redirect_to @user }
+        format.html { redirect_to :action  => :show }
         format.xml  { head :ok }
       else
         @user.reload

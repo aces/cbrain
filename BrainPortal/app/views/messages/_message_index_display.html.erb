@@ -55,7 +55,7 @@
       <%
         t.column(select_all_checkbox 'messlist')
         t.sort_column("Message", Message, :header)
-        unless current_user.has_role?(:user)
+        unless current_user.has_role?(:normal_user)
           t.sort_column("Recipient", User, :login)
         end
         t.sort_column("Last Updated", Message, :last_sent)

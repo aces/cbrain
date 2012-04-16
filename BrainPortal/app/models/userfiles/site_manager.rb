@@ -22,6 +22,8 @@
 
 class SiteManager < NormalUser
   
+  validates_presence_of :site_id, :message => "must be set for site managers"
+  
   def available_tools  #:nodoc:
     Tool.where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
   end

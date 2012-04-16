@@ -204,7 +204,7 @@ class PortalController < ApplicationController
        Tool             => [ [ :user_id, :group_id,                    :category       ], [ 'count' ] ],
        ToolConfig       => [ [           :group_id, :bourreau_id,      :tool_id        ], [ 'count' ] ],
        User             => [ [ :type, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
-    }) if current_user.has_role?(:admin_user) ||  current_user.has_role?(:site_manager)
+    }) if current_user.has_rights?(:site_manager)
 
     @model      = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
     model_brk   = allowed_breakdown[@model] || [[],[]]

@@ -566,9 +566,8 @@ describe Userfile do
     end
 
     it "should return all file test site manager case" do
-      user.role = "site_manager"
       scope = Userfile.scoped({})
-      Userfile.restrict_access_on_query(user,scope).all.should be =~ [userfile1, userfile2, userfile3]
+      Userfile.restrict_access_on_query(site_manager,scope).all.should be =~ [userfile1, userfile2, userfile3]
     end 
     
   end
