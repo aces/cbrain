@@ -80,22 +80,17 @@ module SelectBoxHelper
       selected = selector.to_s
     end
     
-    #grouped_by_classes = groups.group_by { |gr| gr.class.to_s.underscore.humanize }
+    group_labels = {}
+    WorkGroup.prepare_pretty_category_names(groups, current_user)
+    group_labels.merge!(UserGroup.prepare_pretty_labels(groups))
+    group_labels.merge!(SiteGroup.prepare_pretty_labels(groups))
     grouped_by_classes = groups.group_by { |gr| gr.pretty_category_name(current_user) }
 
     category_grouped = {}
     grouped_by_classes.each do |entry|
-      group_category_name = entry.first
+      group_category_name = entry.first.sub(/Project/,"Projects")
       group_pairs         = entry.last.sort_by(&:name).map do |group|
-        label = group.name
-        if group.is_a?(UserGroup)
-          group_user_full = group.users[0].full_name rescue nil
-          #label += " " * (12 - label.size) if label.size < 12
-          label += " (#{group_user_full})" if ! group_user_full.blank?
-        elsif group.is_a?(SiteGroup)
-          group_site_header = group.site.description.lines.first.strip rescue nil
-          label += " (#{crop_text_to(20,group_site_header)})" if ! group_site_header.blank?
-        end
+        label = group_labels[group.id] || group.name
         [label, group.id.to_s]
       end
       category_grouped[group_category_name] = group_pairs
@@ -103,11 +98,11 @@ module SelectBoxHelper
 
     ordered_category_grouped = []
     category_grouped.keys.each do |proj|
-       next unless proj =~ /Personal Work Project of/
-       ordered_category_grouped << [ proj , category_grouped.delete(proj) ]
+       next unless proj =~ /Personal Work Projects of/
+       ordered_category_grouped << [ proj, category_grouped.delete(proj) ]
     end
-    [ "My Work Project", "Shared Work Project", "Site Project", "User Project", "System Project", "Invisible Project" ].each do |proj|
-       ordered_category_grouped << [ proj , category_grouped.delete(proj) ] if category_grouped[proj]
+    [ "My Work Projects", "Shared Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects" ].each do |proj|
+       ordered_category_grouped << [ proj, category_grouped.delete(proj) ] if category_grouped[proj]
     end
     category_grouped.keys.each do |proj| # handle what remains ?
        ordered_category_grouped << [ "X-#{proj}" , category_grouped.delete(proj) ]

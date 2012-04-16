@@ -25,5 +25,23 @@
 class SiteGroup < SystemGroup
 
   Revision_info=CbrainFileRevision[__FILE__]
-  
+
+  # Returns a hash table with labels for the SiteGroups
+  # contained in argument +groups+ ; the key is the group ID,
+  # the value is a label in format "groupname (site_description_first_line)"
+  def self.prepare_pretty_labels(groups=[])
+   ugs = Array(groups).select { |g| g.is_a?(SiteGroup) }
+   g_to_desc = SiteGroup.joins(:site).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'sites.description']).all
+   gid_to_labels = {}
+   g_to_desc.each do |g|
+     label = g.name
+     group_site_header = g.description.lines.first.strip rescue ""
+     group_site_header = sprintf("%20.20s...",group_site_header) if group_site_header.size > 20
+     label += " (#{group_site_header})" if group_site_header.present?
+     gid_to_labels[g.id] = label
+   end
+   gid_to_labels
+  end
+
 end
+

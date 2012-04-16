@@ -224,6 +224,15 @@ module Kernel
     end
   end
 
+  # Times the given block and prints how long it took to execute.
+  # Useful in the console.
+  def time
+    start = Time.now
+    val = yield
+    puts sprintf("Elapsed: %.3f secs.\n",Time.now-start)
+    val
+  end
+
 end
 
 

@@ -83,16 +83,16 @@ class Group < ActiveRecord::Base
   end
 
   # Returns a 'group category name' as seen by +as_user+.
-  def pretty_category_name(as_user)
-    self.class.pretty_type
+  def pretty_category_name(as_user = nil)
+    @_pretty_category_name ||= self.class.pretty_type
   end
 
   def pretty_type #:nodoc:
-    self.class.pretty_type
+    @_pretty_type ||= self.class.pretty_type
   end
 
   def self.pretty_type #:nodoc:
-    self.to_s.demodulize.underscore.titleize.sub(/group/i,"Project")
+    @_pretty_type ||= self.to_s.demodulize.underscore.titleize.sub(/group/i,"Project")
   end
 
   def short_pretty_type #:nodoc:
