@@ -37,11 +37,11 @@ module DynamicFormHelper
   # <input type="submit" value="Move Files" class="button"/>
   #
   ###################################################################
-  def submit_button(value,html_opts={}) 
-    html_opts[:class] ||= ""
-    html_opts[:class] +=  " button"
-    atts = html_opts.to_html_attributes
-    return "<input type=\"submit\" value=\"#{h(value)}\" #{atts} />".html_safe
+  def submit_button(value, options = {}) 
+    options[:class] ||= ""
+    options[:class] +=  " button"
+   
+    submit_tag(value, options)
   end
   
   

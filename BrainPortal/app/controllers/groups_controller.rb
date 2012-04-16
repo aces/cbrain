@@ -32,23 +32,25 @@ class GroupsController < ApplicationController
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @filter_params["button_view"] ||= "on"
-    @header_scope = current_user.available_groups
-    scope = base_filtered_scope @header_scope.includes(:site)
-    @total_entries = scope.count
+    
+    @header_scope   = current_user.available_groups
+    @filtered_scope = base_filtered_scope @header_scope.includes(:site)
+    @sorted_scope   = base_sorted_scope @filtered_scope
+    @total_entries  = @sorted_scope.count
     
     # For Pagination
     @per_page = 50 unless @filter_params["per_page"]
     offset = (@current_page - 1) * @per_page
      
     if @filter_params["button_view"] == "on"
-      pagination_list = scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
+      pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
       num_workgroups  = pagination_list.size
       num_missing     = @per_page - num_workgroups
       
       if num_missing > 0
-        total_workgroups = scope.where("groups.type = 'WorkGroup'").count
+        total_workgroups = @sorted_scope.where("groups.type = 'WorkGroup'").count
         sys_offset = [offset - total_workgroups, 0].max
-        pagination_list += scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
+        pagination_list += @sorted_scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
       end
       num_missing = @per_page - pagination_list.size
       if num_missing > 0 
@@ -56,7 +58,7 @@ class GroupsController < ApplicationController
       end 
       @total_entries += 1
     else
-      pagination_list  = scope.limit(@per_page).offset(offset)
+      pagination_list  = @sorted_scope.limit(@per_page).offset(offset)
     end
     
     @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
@@ -137,8 +139,10 @@ class GroupsController < ApplicationController
     else
       @group = WorkGroup.find(params[:id])
     end
+    
+    params[:group] ||= {}
 
-    unless params[:commit] == "Update Users"
+    unless params[:update_users].present?
       params[:group][:user_ids] = @group.user_ids.map(&:to_s)
     end
 
@@ -162,7 +166,7 @@ class GroupsController < ApplicationController
 
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
-      if @group.update_attributes(params[:group])
+      if @group.update_attributes_with_logging(params[:group],current_user)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }

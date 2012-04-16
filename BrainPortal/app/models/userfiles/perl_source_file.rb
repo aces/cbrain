@@ -24,11 +24,11 @@ class PerlSourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  def self.pretty_type
+  def self.pretty_type #:nodoc:
     "Perl script"
   end
 
-  def self.file_name_pattern
+  def self.file_name_pattern #:nodoc:
     /\.(pl|pm)$/i
   end
   

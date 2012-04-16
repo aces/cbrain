@@ -24,8 +24,11 @@
 
 <% title 'Execution Server Info' %>
 
-<% is_bourreau = @bourreau.is_a?(Bourreau) %>
-<% is_portal   = @bourreau.is_a?(BrainPortal) %>
+<% 
+  is_bourreau = @bourreau.is_a?(Bourreau)
+  is_portal   = @bourreau.is_a?(BrainPortal) 
+  info = @bourreau.info
+ %>
    
 <% if check_role(:admin_user) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
@@ -49,7 +52,7 @@
 
 
 
-  <%= show_table(@bourreau, :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+  <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "bourreau[name]", @bourreau.name %><br>
@@ -69,19 +72,19 @@
     <% t.attribute_cell(:class) %>
 
     <% t.edit_cell(:online, :header => "Status", :content => (@bourreau.online ? "Online" : "Offline")) do %>
-      <%= select_tag "bourreau[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @bourreau.online), :class => "submit_onchange" %>
+      <%= select_tag "bourreau[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @bourreau.online) %>
     <% end %>
 
     <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin_user)) do %>
-      <%= user_select("bourreau[user_id]", { :selector => @bourreau }, :class => "submit_onchange" ) %>
+      <%= user_select("bourreau[user_id]", { :selector => @bourreau } ) %>
     <% end %>
 
     <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || "(Unset)") ) do %>
-      <%= select_tag "bourreau[time_zone]", time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
+      <%= select_tag "bourreau[time_zone]", time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@bourreau.group)) do %>
-      <%= group_select("bourreau[group_id]", {:selector => @bourreau}, :class => "submit_onchange" ) %>
+      <%= group_select("bourreau[group_id]", {:selector => @bourreau} ) %>
     <% end %>
 
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
@@ -95,7 +98,6 @@
         </small>
         <br>
         <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
-        <%= submit_tag "Update" %>
       <% end %>
       
       <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
@@ -111,7 +113,7 @@
 
     <% if is_bourreau %>
 
-      <%= show_table(@bourreau, :header => "Connection Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
           <%= text_field_tag "bourreau[ssh_control_host]", @bourreau.ssh_control_host %>
@@ -147,15 +149,15 @@
 
 
 
-    <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+    <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
         <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
         <small>Warning! Changing this field will result in resetting the synchronization<br>
         status of all files from all Data Providers! Also, the Rails app will have to<br>
         be restarted, and all files in that directory will be erased!</small>
       <% end %>
-      <% t.edit_cell(:dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => (@bourreau.dp_ignore_patterns || []).join(", ")) do %>
-        <%= text_field_tag "bourreau[dp_ignore_patterns]", @bourreau.dp_ignore_patterns, :size => 60 %><br/>
+      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
+        <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
         <small>Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</small>
       <% end %>
       <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
@@ -171,7 +173,7 @@
                 [ "Two months",    2.months.to_i.to_s  ],
                 [ "Three months",  3.months.to_i.to_s  ],
                 [ "Six months",    6.months.to_i.to_s  ]
-            ], :selected => @bourreau.cache_trust_expire ),:class => "submit_onchange")
+            ], :selected => @bourreau.cache_trust_expire ))
         %></br>
         <small>This means that in the execution server's cache, files that have been recorded<br/>
         as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy</br/>
@@ -183,7 +185,7 @@
 
 
     <% if is_bourreau %>
-      <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
           <%= select_tag "bourreau[cms_class]", options_for_select([
@@ -193,7 +195,7 @@
                   [ "MOAB",            "ScirMoab" ],
                   [ "Sharcnet custom", "ScirSharcnet" ],
                   [ "UNIX processes",  "ScirUnix" ]
-              ], :selected => @bourreau.cms_class), :class => "submit_onchange"
+              ], :selected => @bourreau.cms_class)
           %>
         <% end %>
 
@@ -205,7 +207,7 @@
         <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
           <%= select_tag 'meta[task_limit_total]',
               options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_total] ), :class => "submit_onchange"
+                                  @bourreau.meta[:task_limit_total] )
           %>
         <% end %>
 
@@ -219,7 +221,7 @@
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
           <%= select_tag 'meta[task_limit_user_default]',
               options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_user_default] ), :class => "submit_onchange"
+                                  @bourreau.meta[:task_limit_user_default] )
           %>
           <small>(Unless specified below)</small>
         <% end %>
@@ -259,7 +261,7 @@
           <%= submit_tag "Update" %>
         <% end %>
       <% end %>
-      <%= show_table(@bourreau, :header => "Worker Configuration", :edit_path => bourreau_path(@bourreau), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
           <%= select_tag "bourreau[workers_instances]", options_for_select([
                   [ "None (for debug)",  0 ],
@@ -270,7 +272,7 @@
                   [ "5",                 5 ],
                   [ "10",                10 ],
                   [ "20",                20 ]
-              ], :selected => @bourreau.workers_instances), :class => "submit_onchange"
+              ], :selected => @bourreau.workers_instances)
           %>
         <% end %>
         <% t.edit_cell :workers_chk_time, :header => "Check interval" do %>
@@ -283,7 +285,7 @@
                   [ "5 minutes",               300 ],
                   [ "15 minutes",              900 ],
                   [ "1 hour",                  3600 ]
-              ], :selected => @bourreau.workers_chk_time), :class => "submit_onchange"
+              ], :selected => @bourreau.workers_chk_time)
           %>
         <% end %>
         <% t.edit_cell :workers_log_to, :header => "Log destination" do %>
@@ -295,14 +297,14 @@
                   [ "RAILS stderr",                "stderr" ],
                   [ "RAILS stdout and stderr",     "stdout|stderr" ],
                   [ "No logging",                  "none" ]
-              ], :selected => @bourreau.workers_log_to), :class => "submit_onchange"
+              ], :selected => @bourreau.workers_log_to)
           %>
         <% end %>
         <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do %>
           <%= select_tag "bourreau[workers_verbose]", options_for_select([
                   [ "Normal",      1 ],
                   [ "Debug info",  2 ]
-              ], :selected => @bourreau.workers_verbose), :class => "submit_onchange"
+              ], :selected => @bourreau.workers_verbose)
           %>
         <% end %>
       <% end %>
@@ -310,57 +312,60 @@
 
 
 
-    <%= show_table(@info, :header => "Runtime Information") do |t| %>
-      <% if @info.name == "???" %>
+    <%= show_table(info, :header => "Runtime Information") do |t| %>
+      <% if info.name == "???" %>
         <% t.row do %>
           This server is currently <%= html_colorize("DOWN", "red") %>.
         <% end %>
       <% else %>
 
-        <% t.cell("Process Start Revision", :show_width => 2) { @info.starttime_revision } %>
-        <% t.cell("Process Start Last Change Author", :show_width => 2) { @info.lc_author } %>
-        <% t.cell("Process Start Last Change Revision", :show_width => 2) { @info.lc_rev } %>
-        <% t.cell("Process Start Last Change Date", :show_width => 2) { @info.lc_date } %>
-        <% t.cell("Disk Code Revision", :show_width => 2) { red_if(@info.revision != @info.starttime_revision, @info.revision) } %>
+        <% t.cell("Process Start Revision", :show_width => 2) { info.starttime_revision } %>
+        <% t.cell("Process Start Last Change Author", :show_width => 2) { info.lc_author } %>
+        <% t.cell("Process Start Last Change Revision", :show_width => 2) { info.lc_rev } %>
+        <% t.cell("Process Start Last Change Date", :show_width => 2) { info.lc_date } %>
+        <% t.cell("Disk Code Revision", :show_width => 2) { red_if(info.revision != info.starttime_revision, info.revision) } %>
 
         <% t.blank_row %>
 
-        <% t.cell("Remote Host Name", :show_width => 2) { @info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? @info.host_name : html_colorize(@info.host_name, "red") } %>
-        <% t.cell("Remote Host IP Address", :show_width => 2) { @info.host_ip } %>
-        <% t.cell("Remote Host OS Type", :show_width => 2) { @info.host_uname } %>
-        <% t.cell("Remote Host Uptime", :show_width => 2) { @info.host_uptime } %>
+        <% t.cell("Remote Host Name", :show_width => 2) { info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? info.host_name : html_colorize(info.host_name, "red") } %>
+        <% t.cell("Remote Host IP Address", :show_width => 2) { info.host_ip } %>
+        <% t.cell("Remote Host OS Type", :show_width => 2) { info.host_uname } %>
+        <% t.cell("Remote Host Uptime", :show_width => 2) { info.host_uptime } %>
         <% t.cell("Rails Server uptime", :show_width => 2) do %>
-          Up since: <%= to_localtime(@info.uptime.to_i.ago,:datetime) %>
-          (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
+          Up since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
+          (for: <%= pretty_elapsed(info.uptime.to_i) %>)
         <% end %>
 
         <% t.blank_row %>
 
         <% if is_bourreau %>
-          <% t.cell("Worker PIDs") { @info.worker_pids } %>
-          <% t.cell("Number of Tasks Running") { @info.tasks_tot + " / " + @info.tasks_max } %>
+          <% t.cell("Worker PIDs") { info.worker_pids } %>
+          <% t.cell("Number of Tasks Running") { info.tasks_tot + " / " + info.tasks_max } %>
 
-          <% t.cell("Workers Last Change Author") { @info.worker_lc_author } %>
-          <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != @info.bourreau_cms, @info.bourreau_cms) } %>
+          <% t.cell("Workers Last Change Author") { info.worker_lc_author } %>
+          <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != info.bourreau_cms, info.bourreau_cms) } %>
 
-          <% t.cell("Workers Last Change Revision") { @info.worker_lc_rev } %>
-          <% t.cell("Cluster Management System Revision") { @info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
+          <% t.cell("Workers Last Change Revision") { info.worker_lc_rev } %>
+          <% t.cell("Cluster Management System Revision") { info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
 
-          <% t.cell("Workers Last Change Date") { @info.worker_lc_date } %>
+          <% t.cell("Workers Last Change Date") { info.worker_lc_date } %>
           <% t.empty_cell %>
         <% end %>
 
         <% t.blank_row %>
 
         <% t.cell("SSH Public Key", :show_width => 2) do %>
-          <SMALL><SMALL><PRE class="ssh_key"><%= @info.ssh_public_key.strip %></PRE></SMALL></SMALL>
+          <SMALL><SMALL><PRE class="ssh_key"><%= info.ssh_public_key.strip %></PRE></SMALL></SMALL>
         <% end %>
 
       <% end %>
     <% end %>
   <% end %>
 
-  <P>
-
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => "Server Log" } %>
 </div>
+
+<% if @bourreau.has_owner_access?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau.getlog, :title => "Server Log" } %>
+<% end %>
+

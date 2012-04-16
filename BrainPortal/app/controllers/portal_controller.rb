@@ -71,11 +71,66 @@ class PortalController < ApplicationController
                    :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
   end
   
-  def portal_log
+  def portal_log #:nodoc:
+
+    # Number of lines to show
     num_lines = (params[:num_lines] || 5000).to_i
-    num_lines = 1000 if num_lines < 1000
+    num_lines = 100 if num_lines < 100
     num_lines = 20_000 if num_lines > 20_000
-    log =  IO.popen("tail -#{num_lines} #{Rails.configuration.paths.log.first}", "r").read
+
+    # Filter by user
+    user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
+
+    # Remove some less important lines; note that in production,
+    # only 'Rendered' is shown in this set.
+    remove_egrep = []
+    remove_egrep << "^Rendered"     if params[:hide_rendered].presence  == "1"
+    remove_egrep << "^ *SQL "       if params[:hide_sql].presence       == "1"
+    remove_egrep << "^ *CACHE "     if params[:hide_cache].presence     == "1"
+    remove_egrep << "^ *AREL "      if params[:hide_arel].presence      == "1"
+    remove_egrep << "^ *[^ ]* Load" if params[:hide_load].presence      == "1"
+
+    # Extract the raw data with escape sequences filtered.
+
+    # Version 1: tail first, filter after. We get less lines than expected.
+    #command  = "tail -#{num_lines} #{Rails.configuration.paths.log.first} | perl -pe 's/\\e\\[[\\d;]*\\S//g'"
+    #command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+
+    # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
+    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths.log.first}"
+    command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+    command += " | tail -#{num_lines}"
+
+    # Slurp it all
+    log = IO.popen(command, "r") { |io| io.read }
+
+    # Filter by username now.
+    if user_name
+      filtlogs = []
+      paragraph = []
+      found_user = nil
+      (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
+        paragraph << line
+        if line == ""
+          filtlogs += paragraph if found_user == user_name
+          paragraph = []
+        elsif line =~ /^User: (\S+)/
+          found_user = Regexp.last_match[1]
+        end
+      end
+      log = filtlogs.join("\n")
+    end
+
+    if log.blank?
+      render :text => <<-NO_SHOW
+        <pre><span style=\"color:yellow; font-weight:bold\">
+          (No logs entries found for user '#{user_name || "(Unknown)"}' within the last #{num_lines} lines of the #{Rails.env} log)
+        </span></pre>
+      NO_SHOW
+      return
+    end
+
+    # Render the pretty log
     render :text => "<pre>#{colorize_logs(log)}</pre>"
   end
   
@@ -221,23 +276,22 @@ class PortalController < ApplicationController
   
   def colorize_logs(data)
     data = ERB::Util.html_escape(data)
-    data.gsub!(/\e\[\d+m/, "")
-    data.gsub!(/^Started.+/) { |m| "<span style=\"color:lime\">#{m}</span>" }
-    data.gsub!(/  Parameters: .+/) { |m| "<span style=\"color:yellow; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/^Completed.* in \d{1,3}ms/) { |m| "<span style=\"color:green\">#{m}</span>" }
+
+    # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)
+
+    data.gsub!(/^Started.+/)                    { |m| "<span style=\"color:lime\">#{m}</span>" }
+    data.gsub!(/  Parameters: .+/)              { |m| "<span style=\"color:yellow; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}ms/)     { |m| "<span style=\"color:green\">#{m}</span>" }
     data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span style=\"color:yellow\">#{m}</span>" }
     data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span style=\"color:red; font-weight:bold\">#{m}</span>" }
     data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span style=\"background-color:red; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/^User: \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/ using \S+/) { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^User: \S+/)                    { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/ using \S+/)                    { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+
     pair = false
     data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
-      if pair
-        color = "coral"
-      else
-        color = "skyblue"
-      end
-      pair = !pair
+      color = pair ? "coral" : "skyblue"
+      pair  = !pair
       "<span style=\"color:#{color} \">#{m}</span>"
     end
     

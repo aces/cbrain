@@ -527,7 +527,9 @@ class SshMaster
     stdout      = bash_redirection(options,1,">",:stdout)
     stderr      = bash_redirection(options,2,">",:stderr)
 
-    ssh_command  = "ssh -x #{shared_opts} #{command} #{stderr}"
+    use_pseudo_tty = options[:force_pseudo_ttys].present? ? "-t" : ""
+
+    ssh_command  = "ssh -x #{use_pseudo_tty} #{shared_opts} #{command} #{stderr}"
     ssh_command += " #{stdin}"  if direction == 'r' # with or without block
     ssh_command += " #{stdout}" if direction == 'w' # with or without block
 

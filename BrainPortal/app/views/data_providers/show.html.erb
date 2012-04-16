@@ -43,7 +43,8 @@
 <%= error_messages_for :provider, :header_message => "Provider could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%"> 
-  <%= show_table(@provider, :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+  <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "data_provider[name]", @provider.name %>
@@ -51,7 +52,6 @@
 
     <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
       <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
-      <%= submit_tag "Update" %>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
@@ -61,23 +61,23 @@
     <% end %>
 
     <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
-      <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online), :class => "submit_onchange" %>
+      <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online) %>
     <% end %>
 
     <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>
-      <%= user_select("data_provider[user_id]", { :selector => @provider }, :class => "submit_onchange" ) %>
+      <%= user_select("data_provider[user_id]", { :selector => @provider } ) %>
     <% end %>
 
     <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
-      <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only), :class => "submit_onchange" %>
+      <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only) %>
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
-      <%= group_select("data_provider[group_id]", { :selector => @provider }, :class => "submit_onchange") %>
+      <%= group_select("data_provider[group_id]", { :selector => @provider }) %>
     <% end %>
 
     <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
-      <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable), :class => "submit_onchange" %>
+      <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable) %>
     <% end %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
@@ -89,7 +89,7 @@
     <% end %>
 
     <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
-      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange" %>
+      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
@@ -107,7 +107,7 @@
   <% end %>
 
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers", :edit_path => data_provider_path(@provider)) do |t| %>
+    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
       <% t.edit_cell(:remote_host)  do %>
         <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
       <% end %>
@@ -119,7 +119,7 @@
       <% end %>
     <% end %>
 
-    <%= show_table(@provider, :header => "Cloud Storage Configuration", :edit_path => data_provider_path(@provider)) do |t| %>
+    <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
       <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
         <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier %>
       <% end %>
@@ -130,7 +130,9 @@
 
   <% end %>
 
-  <%= show_table(@provider, :header => "Other Properties", :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+  <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
     <% if @provider.is_browsable? %>
 
       <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
@@ -151,7 +153,8 @@
   <% dps_by_category = other_dps.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
 
   <% if other_dps.size > 0 %>
-    <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers...', :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+    <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if dps_by_category[:official] %>
         <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
         <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
@@ -176,7 +179,8 @@
   <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
 
   <% if other_rrs.size > 0 %>
-    <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers...', :edit_path => data_provider_path(@provider), :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+    <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if rrs_by_category[:portal] %>
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
@@ -215,5 +219,10 @@
   </table>
 </div>
 
+<% end %>
+
+<% if @provider.has_owner_access?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
 <% end %>
 

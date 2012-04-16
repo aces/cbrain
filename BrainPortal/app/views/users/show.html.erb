@@ -41,7 +41,7 @@
 <%= error_messages_for :user, :header_message => "User could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@user, :edit_path => user_path(@user), :edit_condition => edit_permission?(@user)) do |t| %>
+  <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>
 
     <% t.attribute_cell(:login) %>
 
@@ -93,11 +93,10 @@
         select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true, :class => "submit_onchange"
       end
     %>
-
+    
     <% t.edit_cell(:password, :content => "********") do %>
-         Password<br> <%= password_field_tag "user[password]" %><br>
+         Password<br> <%= password_field_tag "user[password]", "" %><br>
          Confirm Password<br> <%= password_field_tag "user[password_confirmation]" %><br>
-         <%= submit_tag 'Change Password' %>
     <% end %>
 
     <%
@@ -185,7 +184,8 @@
 
   <% end %>
   
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
 
+<P>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 

@@ -116,7 +116,9 @@
         <td><%= to_localtime(Time.at(fi_mtime),:datetime) %></td>
     
         <% if fi_userfile %>
-          <td><%= link_to "Registered", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
+          <% to_who = "" %>
+          <% to_who = " (as user #{fi_userfile.user.login})" if (fi_userfile.user_id != @as_user.id) || (fi_userfile.user_id != current_user.id) %>
+          <td><%= link_to "Registered#{to_who}", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
         <% else %>
           <td>No</td>
         <% end %>

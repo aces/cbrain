@@ -34,7 +34,8 @@ class DataProvidersController < ApplicationController
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
     
     @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
-    @data_providers = base_filtered_scope @header_scope.includes(:user, :group)
+    @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
+    @data_providers = base_sorted_scope @filtered_scope
 
     if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
@@ -139,10 +140,13 @@ class DataProvidersController < ApplicationController
     fields    = params[:data_provider] || {}
     subtype   = fields.delete(:type)
 
-    @provider.update_attributes(fields)
-
-    meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
-    if @provider.errors.empty?
+    if @provider.update_attributes_with_logging(fields, current_user,
+         %w(
+           remote_user remote_host remote_port remote_dir
+           not_syncable cloud_storage_client_identifier cloud_storage_client_token
+         )
+      )
+      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
@@ -171,15 +175,17 @@ class DataProvidersController < ApplicationController
     flash[:notice] = "Provider successfully deleted."
     
     respond_to do |format|
-      format.js { redirect_to :action => :index, :format => :js }
-      format.xml { head :ok }  
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js } # no longer used?
+      format.xml  { head :ok }  
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "Provider not destroyed: #{e.message}"
     
     respond_to do |format|
-      format.js  { redirect_to :action => :index}
-      format.xml { head :conflict }
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js } # no longer used?
+      format.xml  { head :conflict }
     end
   end
   
@@ -261,7 +267,12 @@ class DataProvidersController < ApplicationController
        @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
     end
 
-    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
+    # NOTE: next paragraph for initializing registered_files is also in register() action
+    registered_files = Userfile.where( :data_provider_id => @provider.id )
+    # On data providers where files are stored in a per user subdir, we limit our
+    # search of what's registered to only those belonging to @as_user
+    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
+    registered_files = registered_files.all.index_by(&:name)
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
@@ -379,18 +390,23 @@ class DataProvidersController < ApplicationController
 
     legal_subtypes = Userfile.descendants.map(&:name).index_by { |x| x }
 
-    registered_files = Userfile.where( :data_provider_id => @provider.id ).index_by(&:name)
+    # NOTE: next paragraph for initializing registered_files is also in browse() action
+    registered_files = Userfile.where( :data_provider_id => @provider.id )
+    # On data providers where files are stored in a per user subdir, we limit our
+    # search of what's registered to only those belonging to @as_user
+    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
+    registered_files = registered_files.all.index_by(&:name)
 
     basenames.each do |basename|
 
       # Unregister files
 
       if do_unreg || do_erase
-        userfile = Userfile.where(:name => basename, :data_provider_id => @provider.id).first
+        userfile = registered_files[basename]
         if userfile.blank?
           num_skipped += 1 unless do_erase
         elsif ! userfile.has_owner_access?(current_user)
-          flash[:error] += "Error: file #{basename} does not belong to you. File not unregistered.\n"
+          flash[:error] += "Error: file #{basename} is not registered such that you have the necessary permissions to unregister it. File not unregistered.\n"
           num_skipped += 1
           next
         else
@@ -440,7 +456,7 @@ class DataProvidersController < ApplicationController
       end
 
       file_group_id   = params[:other_group_id].to_i unless params[:other_group_id].blank?
-      file_group_id ||= current_session[:active_group_id] || current_user.own_group.id
+      file_group_id ||= current_project.try(:id) || current_user.own_group.id
       file_group_id   = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(file_group_id)
 
       subclass = Class.const_get(subtype)
@@ -583,6 +599,7 @@ class DataProvidersController < ApplicationController
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
                       IncomingVaultSshDataProvider 
                       S3DataProvider
+                      LorisAssemblyNativeSshDataProvider
                     }
     end
     typelist

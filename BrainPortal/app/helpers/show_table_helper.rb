@@ -43,13 +43,17 @@ module ShowTableHelper
     attr_accessor :cells, :width
     
     def initialize(object, template, options = {})
-      @object         = object
-      @template       = template
-      @width          = options[:width] || 2
-      @edit_path      = options[:edit_path]
-      @edit_disabled  = false
-      @edit_disabled  = !options[:edit_condition] if options.has_key?(:edit_condition)
-      @cells          = []
+      @object          = object
+      @template        = template
+      @width           = options[:width] || 2
+      @edit_disabled   = false
+      @edit_disabled   = !options[:edit_condition] if options.has_key?(:edit_condition)
+      @cells           = []
+      @edit_cell_count = 0
+    end
+    
+    def editable?
+      !@edit_disabled && @edit_cell_count > 0
     end
     
     def cell(header = "", options = {}, &block)
@@ -68,10 +72,10 @@ module ShowTableHelper
     
     def edit_cell(field, options = {}, &block)
       header    = options.delete(:header) || field.to_s.humanize
-      edit_path = @edit_path || options.delete(:edit_path)
       object    = @object
       options[:disabled] ||= @edit_disabled
-      build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, edit_path, options, &block) }, options)
+      @edit_cell_count += 1 unless options[:disabled] 
+      build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, options, &block) }, options)
     end
 
     def boolean_edit_cell(field, cur_value, checked_value = "1", unchecked_value = "0", options = {}, &block)
@@ -79,7 +83,7 @@ module ShowTableHelper
       if block_given?
         edit_cell(field, options, &block)
       else
-        edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, cur_value == checked_value, :class => "submit_onchange") }
+        edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, cur_value == checked_value) }
       end
     end
     
@@ -123,7 +127,23 @@ module ShowTableHelper
     end
   end
   
-  def inline_edit_field(object, attribute, url, options = {}, &block)
+  def inline_edit_field(object, attribute, options = {}, &block)
+     default_text = h(options.delete(:content) || object.send(attribute))
+     return default_text if options.delete(:disabled)
+     if object.errors.include?(attribute)
+       default_text = "<span style=\"color:red\">#{default_text}</span>"
+     end
+     html = []
+     html << "<span class=\"inline_edit_field_default_text\">"
+     html << default_text
+     html << "</span>"
+     html << "<span class=\"inline_edit_field_input\" style=\"display:none\">"
+     html << capture(&block)
+     html << "</span>"
+     html.join("\n").html_safe
+   end
+  
+  def inline_edit_form(object, attribute, url, options = {}, &block)
      default_text = h(options.delete(:content) || object.send(attribute))
      return default_text if options.delete(:disabled)
      method = options.delete(:method) || :put
@@ -131,11 +151,11 @@ module ShowTableHelper
        default_text = "<span style=\"color:red\">#{default_text}</span>"
      end
      html = []
-     html << "<span class=\"inline_edit_field_default_text\">"
+     html << "<span class=\"inline_edit_form_default_text\">"
      html << default_text
-     html <<    "<a href=\"#\" class=\"inline_edit_field_link action_link\">(edit)</a>"
+     html <<    "<a href=\"#\" class=\"inline_edit_form_link action_link\">(edit)</a>"
      html << "</span>"
-     html << "<span class=\"inline_edit_field_form\" style=\"display:none\">"
+     html << "<span class=\"inline_edit_form\" style=\"display:none\">"
      html << form_tag(url, :method => method, :style => "display:inline", &block)
      html << "</span>"
      html.join("\n").html_safe
@@ -143,14 +163,41 @@ module ShowTableHelper
   
   def show_table(object, options = {})
     header = options.delete(:header) || "Info"
-    tb = TableBuilder.new(object, self, options)
+    url    = options.delete :url
+    method = options.delete :method
     
+    tb = TableBuilder.new(object, self, options)
     yield(tb)
     
-    html = []
+    if tb.editable? && object.is_a?(ActiveRecord::Base)
+      unless url
+        url = {:controller  => params[:controller]}
+        if object.new_record?
+          url[:action] = :create
+        else
+          url[:action] = :update
+          url[:id]     = object.id
+        end
+        url = url_for(url)
+      end
+
+      unless method
+        method = object.new_record? ? "post" : "put"
+      end
+    end
     
+    
+    html = []
+    html << "<div class=\"inline_edit_field_group\">"
+    if tb.editable?
+      html << form_tag(url, :method => method)
+    end
     html << "<fieldset>"
-    html << "<legend>#{header}</legend>"
+    html << "<legend>#{header}" 
+    if tb.editable?
+      html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})<span>"
+    end
+    html << "</legend>"
     html << "<table class=\"show_table\">"
     col_count = 0
     tb.cells.each do |cell|
@@ -166,8 +213,23 @@ module ShowTableHelper
     end
 
     html << "</table>"
-    html << "</fieldset>"
+   
+    if tb.editable?
+      html << "<div class=\"inline_edit_field_input\" style=\"display:none\">"
+      html << "<BR>"
+      if object.new_record?
+        html << submit_button("Create")
+      else
+        html << submit_button("Update")
+      end
+      html << "</div>"
+      html << "</fieldset>"
+      html << "</form>"
+    else
+      html << "</fieldset>"
+    end
     
+    html << "</div>"
     html.join("\n").html_safe
   end
 end

@@ -52,29 +52,34 @@
     <%=
       index_table([], :class => "project_button_header") do |t|
         t.sort_column("Name", Group, "name") 
-        t.column("Project Type", :filters => basic_filters_for(@header_scope, Group, :type)) 
-        t.sort_column("Site", Site, "name", :filters => association_filters_for(@header_scope, Group, :site))
+        t.column("Project Type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) 
+        t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site))
         t.empty("") 
       end
     %>
   <% end %>
   <div>
     <% 
-      #array_to_table(@groups, :table_class => "simple", :cols => 5) do |g, r, c| 
       @groups.each do |g|
     %>
       <% if g == "ALL" %>
-        <a style="color:black" href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button">
+        <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button">
           <h4 style="color:black">All</h4>
+          <hr>
           Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
           Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
-        </a>
+        </div>
       <% else %>
-        <a href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= g.is_a?(SystemGroup) ? "system" : "work" %>_project">
-          <h4><%= crop_text_to(13, g.name) %><br><%= "(#{g.short_pretty_type})" unless g.short_pretty_type.blank? %></h4>
-          Files: <%= @group_id_2_userfile_counts[g.id] || "(None)" %><br>
-          Tasks: <%= @group_id_2_task_counts[g.id] || "(None)" %>
-        </a>
+        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= g.is_a?(SystemGroup) ? "system" : "work" %>_project">
+            <h4 title="<%= g.name %>"><%= crop_text_to(25, g.name) %><%= "<br>(#{h(g.short_pretty_type)})".html_safe unless g.short_pretty_type.blank? %></h4>
+            <hr>
+            Files: <%= @group_id_2_userfile_counts[g.id] || "(None)" %><br>
+            Tasks: <%= @group_id_2_task_counts[g.id] || "(None)" %>
+            <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
+            <% if (g.is_a?(WorkGroup) || g.is_a?(InvisibleGroup)) && g.can_be_edited_by?(current_user) %>
+              <%= delete_button "X", group_path(g), :class => "project_delete_button project_button_bottom_link", :title => "Delete", :confirm => "Are you sure you want to delete project '#{h g.name}'?" %>
+            <% end %>
+        </div>
       <% end %>
 
     <% end %>
@@ -85,10 +90,10 @@
       t.describe_sort_column("Name", Group, "name") do |col|
         col.cell(:class => "left") { |g|  link_to_group_if_accessible g}
       end
-      t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@header_scope, Group, :type)) do |g|        
+      t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) do |g|        
         g.pretty_category_name(current_user)
       end
-      t.sort_column("Site", Site, "name", :filters => association_filters_for(@header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
+      t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
       t.column("Users") { |g| @group_id_2_user_counts[g.id] || 0 }
       t.column("Files") do |g|
         index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, {:group_id => g.id}, :show_zeros => true

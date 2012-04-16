@@ -31,15 +31,14 @@
       <div class="display_row">
         <%= f.label :name %><br/>
         <%= f.text_field :name %>
-        <P>
+        <P/>
 
         <span title="Brief description of the site.">
-          <p><%= f.label :description, "Description" %><br/>
+          <%= f.label :description, "Description" %><br/>
           <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
           <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
-          </p>
         </span>
-        <P>
+        <P/>
 
       </div>
 
@@ -74,7 +73,7 @@
       </div>
 
       <div class="display_row">
-        <P>
+        <P/>
         <%= f.submit "Create" %>
       </div>
 

@@ -3,12 +3,15 @@ Description:
     task. Pass the task name as the first argument.
 
 Usage:
-     script/generate cluster_task TaskName [--advanced]
+     script/generate cluster_task TaskName [--advanced] [--license license_file]
 
 Options:
      --advanced : will include templates for the advanced
                   PortalTask API methods in the
                   Ruby code template for the task.
+                  
+     --license  : will add the text present in license_file
+                  at the beginning of each template.
 
 Example:
 

@@ -30,8 +30,9 @@ class CbrainTask::BashScriptor < PortalTask
   def self.default_launch_args #:nodoc:
     # Example: { :my_counter => 1, :output_file => "ABC.#{Time.now.to_i}" }
     { 
-      :num_files_per_task => 1, # only used for internal serializing on portal side
-      :time_estimate_per_file => 60  # in seconds
+      :num_files_per_task     => 1, # only used for internal serializing on portal side
+      :time_estimate_per_file => 60,  # in seconds
+      :share_all_wds          => "0", # false
     }
   end
 
@@ -64,6 +65,7 @@ class CbrainTask::BashScriptor < PortalTask
     params     = self.params
     file_ids   = (params[:interface_userfile_ids] || []).dup
     ser_factor = (params[:num_files_per_task].presence || 1).to_i
+    share_wds  = ((params[:share_all_wds].presence || "0").to_s == "1")
     tot_files  = file_ids.size
 
     task_list = []
@@ -84,6 +86,7 @@ class CbrainTask::BashScriptor < PortalTask
       desc += ")\n"
       task.description = desc
       task.params.delete :num_files_per_task # keep it clean, as no longer needed.
+      task.share_wd_tid = -1 if share_wds # this tells the framework that all tasks share the same wd
       task_list << task
       offset_cnt += ser_factor
     end

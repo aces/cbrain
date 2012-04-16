@@ -219,14 +219,15 @@ tr.selected_row {
 
 
 
-/* % ######################################################### */
-/* % Support for vertical text labels. */
-/* % The following styles proudly brought to you by Pierre Rioux, after MUCH trial and error! */
-/* % ######################################################### */
+/* % ############################################################ */
+/* % Support for vertical text labels.                            */
+/* % The following styles proudly brought to you by Pierre Rioux, */
+/* % after MUCH trial and error!                                  */
+/* % ############################################################ */
 
 /*
    The DIV's height is set to 20em, which is just enough for
-   and name such as "Failed PostProcess Prerequisites".
+   a name such as "Failed PostProcess Prerequisites".
    You can override the vertical size of the DIV using
      style="height: 35em"
    in the DIV element's attributes; if the container of
@@ -754,6 +755,10 @@ pre {
   background: gray;
 }
 
+#loading_image {
+  margin: 6px;
+}
+
 #mni_logo {
     float: right;
     background-image: url(/images/mni_logo.png);
@@ -772,10 +777,6 @@ pre {
 
 .main_menu_left {
   left:6px;
-}
-
-.main_menu_right {
-  right:6px;
 }
 
 #main-menu ul {
@@ -857,11 +858,10 @@ pre {
   text-align: center;
   text-decoration: none;
   color: white;
-  font-weight: bold;
   padding: 0.4em;
   margin: 1em;
-  width: 10em;
-  height: 10em;
+  width: 20em;
+  height: 8em;
   border: 0.4em gray solid;
   border-radius: 1em;
   -moz-border-radius: 1em;
@@ -870,22 +870,32 @@ pre {
 
 .project_button h4{
   color: white;
-  font-size: 15px;
+  font-weight: bold;
+  border-bottom: none;
+  margin-bottom: 0;
+  font-family: Verdana, sans-serif;
   padding-bottom: 4px;
 }
 
-.project_button:hover {
-  -webkit-transform:        scale(1.2);
-  -moz-transform:           scale(1.2);
-  -o-transform:             scale(1.2);
-  -ms-transform:            scale(1.2);
+.project_button hr {
+  margin-top: 0;
 }
 
-.project_button:active {
-  -webkit-transform:        scale(1);
-  -moz-transform:           scale(1);
-  -o-transform:             scale(1);
-  -ms-transform:            scale(1);
+.project_button_bottom_link {
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  position: absolute;
+  bottom: 1px;
+}
+
+.project_edit_button {
+  left: 5px;
+}
+
+.project_delete_button {
+  right: 5px;
 }
 
 /* Gradients done using: http://www.colorzilla.com/gradient-editor/ */
@@ -1268,6 +1278,14 @@ pre {
   text-align: right;
 }
 
+.show_table_edit{
+  font-size: 0.9em;
+}
+
+.show_table_edit_link{
+  color: blue;
+}
+
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
 /* % ######################################################### */
@@ -1592,13 +1610,22 @@ img {
 /* % ######################################################### */
 
 .filter_list {
-    border: 3px solid #0471B4;
-    margin: 0;
-    padding: 1em 2em 1em 2em;
-    background-color: #05A3D6;
-    text-align: left;
-    max-height: 30em;
-    overflow: auto;
+  border: 3px solid #0471B4;
+  margin: 0;
+  padding: 1em 2em 1em 2em;
+  background-color: #05A3D6;
+  text-align: left;
+  max-height: 30em;
+  overflow: auto;
+}
+
+.filter_list li a:focus {
+  background: #FFFF99;
+  color: gray;
+}
+
+.filter_list li a.filter_zero {
+  color: #ccc;
 }
 
 .hover_dropdown {

@@ -207,13 +207,13 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include NumericalSubdirTree
   
-  validates_uniqueness_of :name
-  validates_presence_of   :name, :user_id, :group_id
+  validates               :name,
+                          :uniqueness => true,
+                          :presence => true,
+                          :name_format => true
+                          
+  validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
-
-  validates_format_of     :name, :with  => /^[a-zA-Z0-9][\w\-\=\.\+]*$/,
-    :message  => 'only the following characters are valid: alphanumeric characters, _, -, =, +, ., ?, and !',
-    :allow_blank => true
                                  
   validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
     :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
@@ -1239,7 +1239,7 @@ class DataProvider < ActiveRecord::Base
   #
   # This method is mostly obsolete.
   def cache_subdirs_from_name(basename)
-    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if basename.is_a?(Userfile)
+    raise "DataProvider internal API change incompatibility (string vs userfile)" if basename.is_a?(Userfile)
     s=0    # sum of bytes
     e=0    # xor of bytes
     basename.each_byte { |i| s += i; e ^= i }
@@ -1274,7 +1274,7 @@ class DataProvider < ActiveRecord::Base
   #     mkdir "/CbrainCacheDir/34/45"
   #     mkdir "/CbrainCacheDir/34/45/77"
   def mkdir_cache_subdirs(userfile) #:nodoc:
-    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     uid = userfile.id
     cache_root = self.class.cache_rootdir
     self.class.mkdir_numerical_subdir_tree_components(cache_root, uid) # from NumericalSubdirTree module
@@ -1284,7 +1284,7 @@ class DataProvider < ActiveRecord::Base
   # where a file is cached:
   #     "34/45/77"
   def cache_subdirs_path(userfile) #:nodoc:
-    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     uid  = userfile.id
     dirs = cache_subdirs_from_id(uid)
     Pathname.new(dirs[0]) + dirs[1] + dirs[2]
@@ -1293,14 +1293,14 @@ class DataProvider < ActiveRecord::Base
   # Returns the full path of the two subdirectory levels:
   #     "/CbrainCacheDir/34/45/77"
   def cache_full_dirname(userfile) #:nodoc:
-    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     self.class.cache_rootdir + cache_subdirs_path(userfile)
   end
 
   # Returns the full path of the cached file:
   #     "/CbrainCacheDir/34/45/77/basename"
   def cache_full_pathname(userfile) #:nodoc:
-    cb_error "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
+    raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     basename = userfile.name
     cache_full_dirname(userfile) + basename
   end

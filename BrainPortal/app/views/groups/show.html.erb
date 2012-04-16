@@ -37,14 +37,14 @@
 
 <div class="display_inline_block" style="min-width: 50%"> 
 
-  <%= show_table(@group, :edit_path => group_path(@group), :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
+  <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "group[name]", @group.name %>
     <% end %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
-      <%= select_tag "group[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @group.site_id), :include_blank => true, :class => "submit_onchange" %>
+      <%= select_tag "group[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @group.site_id), :include_blank => true %>
     <% end %>
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
@@ -78,11 +78,16 @@
                              :disabled => current_user.has_role?(:admin_user)) do %>
       <div class="generalbox" style="width: 100%">
         <%= render :partial => 'users_form' %><br>
-        <%= submit_tag "Update Users" %>
+        <%= hidden_field_tag :update_users, true %>
       </div> 
     <% end %>
 
   <% end %>
 
 </div>
+
+<% if @group.can_be_edited_by?(current_user) %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @group.getlog, :title => 'Project Log' } %>
+<% end %>
 

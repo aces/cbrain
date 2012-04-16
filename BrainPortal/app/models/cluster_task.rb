@@ -88,17 +88,17 @@ class ClusterTask < CbrainTask
   # Automatically register the task's version when new() is invoked.
   def initialize(arguments = {}) #:nodoc:
     res = super(arguments)
-    self.record_cbraintask_revs
+    self.record_cbraintask_revs(2)
     res
   end
 
   # Records the revision number of ClusterTask and the
   # revision number of the its specific subclass.
-  def record_cbraintask_revs #:nodoc:
+  def record_cbraintask_revs(caller_level=1) #:nodoc:
     baserev = ClusterTask::Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
-    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => caller_level + 1)
+    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}",   :caller_level => caller_level + 1)
   end
 
 
@@ -336,6 +336,24 @@ class ClusterTask < CbrainTask
     Dir.chdir(full) do  # We need to do this in case the workdir goes through symlinks...
       return false if cur_dir != Dir.getwd
     end
+    true
+  end
+
+  # Returns true if +path+ points to a file or
+  # directory that is inside the work directory
+  # of the task. +path+ can be absolute or relative.
+  # This method assumes the current directory if
+  # the task's work directory, which is usually
+  # the common case for invoking it.
+  def path_is_in_workdir?(path) #:nodoc:
+    workdir = self.full_cluster_workdir
+    return false unless workdir.present? && File.directory?(workdir)
+    return false unless File.exists?(path)
+    path = Pathname.new(path).realdirpath rescue nil
+    return false unless path
+    wdpath   = Pathname.new(workdir)
+    rel_path = path.relative_path_from(wdpath) rescue nil
+    return false if rel_path.blank? || rel_path.to_s =~ /^\.\./ # if it starts with ".." it means we go out of the workdir!
     true
   end
 
@@ -897,7 +915,7 @@ class ClusterTask < CbrainTask
     return false if self.share_wd_tid
     return true  if self.workdir_archived?
 
-    cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
+    raise "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -995,7 +1013,7 @@ class ClusterTask < CbrainTask
     return false if     self.share_wd_tid
     return true  unless self.workdir_archived?
 
-    cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
+    raise "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -1116,7 +1134,7 @@ class ClusterTask < CbrainTask
   def unarchive_work_directory_from_userfile
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
-    cb_error "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
+    raise "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     file = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
@@ -1414,7 +1432,7 @@ class ClusterTask < CbrainTask
 
   # Remove the directory created to run the job.
   def remove_cluster_workdir
-    cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
+    raise "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if ! self.share_wd_tid.blank?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir
@@ -1424,6 +1442,9 @@ class ClusterTask < CbrainTask
     self.class.rmdir_numerical_subdir_tree_components(self.cluster_shared_dir, self.id) rescue true
     self.cluster_workdir      = nil
     self.cluster_workdir_size = nil
+    if self.workdir_archived? && self.workdir_archive_userfile_id.blank?
+      self.workdir_archived = false # no longer archived on cluster!
+    end
     self.save
     true
   end

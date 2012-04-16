@@ -150,7 +150,7 @@ class CbrainTask < ActiveRecord::Base
   def initialize(arguments = {}) #:nodoc:
     super(arguments)
     baserev = Revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => 3)
   end
 
   # Same as the standard ActiveRecord's to_xml, except that

@@ -28,7 +28,7 @@ class ActiveRecordLog < ActiveRecord::Base
 
   def active_record_object #:nodoc:
     ar_id = self.ar_id
-    klass = self.ar_class.constantize rescue nil
+    klass = self.ar_table_name.classify.constantize rescue nil
     return nil unless klass && ar_id && klass < ActiveRecord::Base
     klass.find_by_id(ar_id)
   end

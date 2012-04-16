@@ -35,6 +35,8 @@ class PortalTask < CbrainTask
   # simply setting the task's status to the value modifies the
   # task's state). This is used in the tasks controller
   # for issuing 'alter_tasks' remote commands.
+  #
+  # Really, this should not be in the model, but in the controller somewhere.
   OperationToNewStatus = {
     # HTML page keyword   =>  New status
     #------------------   -----------------
@@ -51,6 +53,7 @@ class PortalTask < CbrainTask
     "archive"             => "ArchiveWorkdir",
     "archive_file"        => "ArchiveWorkdirAsFile",
     "unarchive"           => "UnarchiveWorkdir",
+    "zap_wd"              => "RemoveWorkdir",
   }
 
   # In order to optimize the set of state transitions
@@ -59,6 +62,8 @@ class PortalTask < CbrainTask
   # used by the tasks controller so as not to send
   # messages to Bourreaux to do stuff on tasks that
   # are not ready for it anyway.
+  #
+  # Really, this should not be in the model, but in the controller somewhere.
   AllowedOperations = { # 'Destroy' is handled differently and separately
 
     #===============================================================================
@@ -79,13 +84,13 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Failed To Setup"                  => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Failed On Cluster"                => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Failed To PostProcess"            => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Terminated"                       => [ "Duplicated", "Restart Setup", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
-    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir" ],
+    "Failed To Setup"                  => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Failed On Cluster"                => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Failed To PostProcess"            => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Terminated"                       => [ "Duplicated", "Restart Setup", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
     "Duplicated"                       => [ "Restart Setup" ],
 
     #===============================================================================
@@ -128,8 +133,8 @@ class PortalTask < CbrainTask
     super(arguments)
     baserev = Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}")
-    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}")
+    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => 2)
+    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}",   :caller_level => 2)
   end
 
   # Backwards compatibility auto adaptation:

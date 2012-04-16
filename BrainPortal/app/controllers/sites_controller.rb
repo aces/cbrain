@@ -33,7 +33,7 @@ class SitesController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'sites.name'
     
-    @sites = base_filtered_scope Site.includes( [:users, :groups] )
+    @sites = base_sorted_scope(base_filtered_scope Site.includes( [:users, :groups] ))
 
     respond_to do |format|
       format.js
@@ -101,7 +101,7 @@ class SitesController < ApplicationController
     @site.unset_managers
 
     respond_to do |format|
-      if @site.update_attributes(params[:site])
+      if @site.update_attributes_with_logging(params[:site], current_user)
         flash[:notice] = 'Site was successfully updated.'
         format.html { redirect_to(@site) }
         format.xml  { head :ok }

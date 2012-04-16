@@ -27,7 +27,7 @@
 <br>
 <%= error_messages_for :userfile, :header_message => "#{@userfile.name} could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@userfile, :edit_path => userfile_path(@userfile)) do |t| %>
+  <%= show_table(@userfile) do |t| %>
 
     <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do %>
       <%= text_field_tag "userfile[name]", @userfile.name %>
@@ -39,9 +39,9 @@
     <% end %>
 
     <% t.cell("Type") do %>
-      <%= inline_edit_field(@userfile, :type, userfile_path(@userfile), :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
+      <%= inline_edit_field(@userfile, :type, :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
         <% u_type = @userfile.is_a?(SingleFile) ? ["SingleFile"] : ["FileCollection"] %>
-        <%= userfile_type_select(:file_type, {:userfile_types => u_type, :selector => @userfile.class.name}, :class => "submit_onchange") %>
+        <%= userfile_type_select(:file_type, {:userfile_types => u_type, :selector => @userfile.class.name}) %>
       <% end %>
       <% if @userfile.class.to_s =~ /^(SingleFile|FileCollection)$/ && @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
         (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>.</span>)
@@ -70,11 +70,11 @@
     <% end %>
 
     <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => "Owner") do %>
-      <%= user_select("userfile[user_id]", { :selector => @userfile }, :class => "submit_onchange") %>
+      <%= user_select("userfile[user_id]", { :selector => @userfile }) %>
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user) || @userfile.format_source_id)) do %>
-      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s }, :class => "submit_onchange" %>
+      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s } %>
     <% end  %>
 
     <% t.cell("Tags") do %>
@@ -95,7 +95,7 @@
     <% end %>
 
     <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
-      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]]), :class => "submit_onchange") %>
+      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
     <% end %>
 
     <% t.cell("Parent", :show_width => 2) { link_to_userfile_if_accessible(@userfile.parent) } %>
@@ -196,9 +196,8 @@
     <% end %>
   </fieldset>
 
-  <P>
-
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
-
 </div>
+
+<P>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
 

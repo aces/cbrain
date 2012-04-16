@@ -24,7 +24,7 @@
 
 <% tool_list = current_user.available_tools.where("tools.category <> 'background'") %>
 
-<% unless tool_list.blank? %>
+<% if tool_list.present? %>
   
   <% grouped_tools = tool_list.group_by(&:category) %>
   <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.sort { |t1,t2| t1.name <=> t2.name }.map { |t| [t.select_menu_text, t.id] }] }.sort_by(&:first) %>
@@ -35,25 +35,26 @@
           url_for(:controller  => :tools, :action => :bourreau_select), 
           "<option value=\"\">Select an Operation</option>".html_safe + grouped_options_for_select(grouped_tools),
           :target  => "#bourreau_select_convert", 
-          :loading_message  => "<span class='warning'>Loading...</span>"
+          :loading_message  => "<span class='warning'>Checking availability...</span>"
       ) 
     %>
-    <%= hijacker_submit_button("Launch Tool",     :url         => url_for(:controller  => :tasks, :action  => :new),
-                                                  :method      => :post,
-                                                  :class  => "button", 
-                                                  :ajax_submit => false) %>
    </div> 
+
+   <br>
+
    <div class="userfiles_bourreau_selector" id="bourreau_select_convert">
    </div>
+
    <br>
     
 <% else %>
-    <br>
+
+   <br>
    <% if current_user.has_role? :admin_user %>
-       <h1 class="warning">No conversion tools available. New tools may be registered from the Tools index.</h1>
+       <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
    <% else %>
-       <h1 class="warning">No conversion tools available. Contact your admin to have them registered.</h1>
+       <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
    <% end %>
    <br>
-<% end %>
 
+<% end %>

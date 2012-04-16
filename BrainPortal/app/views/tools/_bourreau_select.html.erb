@@ -26,25 +26,39 @@
 # uniq_id needed because there can be several load_info DIVs in the page
 uniq_id = rand(100000).to_s 
 %>
-<% select_attributes = {
+<% 
+   num_online = @bourreaux.count { |b| b.online? }
+   select_attributes = {
      "class"            => 'request_on_change',
      "data-loading-message" => "&nbsp;",
      "data-target"      => "#load_info_#{uniq_id}",
      "data-url"         => '/bourreaux/load_info'
    }
-   select_attributes[:include_blank] = "Random Execution Server" if @bourreaux.size > 1
+   select_attributes[:include_blank] = "Random Execution Server"         if num_online > 1
+   select_attributes[:include_blank] = "No online server for this tool!" if num_online == 0
    selected_by_default = current_user.meta["pref_bourreau_id"]
-   @bourreau = selected_by_default.blank? ? nil : Bourreau.find_by_id(selected_by_default)
-   @bourreau = @bourreaux[0] if @bourreaux.size == 1
+   @bourreau   = selected_by_default.blank? ? nil : Bourreau.find_by_id(selected_by_default)
+   @bourreau ||= @bourreaux.detect { |b| b.online? } if num_online == 1
 %>
 
-<%= bourreau_select("bourreau_id",
-                    { :selector  => @bourreau,
-                      :bourreaux => @bourreaux
-                    },
-                    select_attributes
-                   )
-%>
+<div>
+
+  On execution server:
+  <%= bourreau_select("bourreau_id",
+                      { :selector  => @bourreau,
+                        :bourreaux => @bourreaux
+                      },
+                      select_attributes
+                     )
+  %>
+
+  <% if num_online > 0 %>
+    <%= hijacker_submit_button("Launch Tool", :url         => url_for(:controller  => :tasks, :action  => :new),
+                                              :method      => :post,
+                                              :class       => "button",
+                                              :ajax_submit => false)
+    %>
+  <% end %>
 
   <br/>
   <br/>
@@ -54,4 +68,6 @@ uniq_id = rand(100000).to_s
     <%= render :partial => 'bourreaux/load_info', :locals => { :bourreau => @bourreau } %>
   <% end %>
   </div>
+
+</div>
 

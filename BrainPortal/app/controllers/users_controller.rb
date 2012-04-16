@@ -37,7 +37,8 @@ class UsersController < ApplicationController
     
     @header_scope = current_user.available_users
     
-    @users = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
+    @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
+    @users          = base_sorted_scope @filtered_scope
 
     # Precompute file and task counts.
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
@@ -64,7 +65,7 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   def show #:nodoc:
     @user = User.find(params[:id], :include => :groups)
-    
+
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
@@ -97,7 +98,7 @@ class UsersController < ApplicationController
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
 
-    no_password_reset_needed = params.delete(:no_password_reset_needed) == "1"
+    no_password_reset_needed = params[:no_password_reset_needed] == "1"
  
     @user = User.new(params[:user])
 
@@ -196,7 +197,7 @@ class UsersController < ApplicationController
     end
     
     respond_to do |format|
-      if @user.save
+      if @user.update_attributes_with_logging( nil, current_user, %w( full_name login email role city country account_locked ) )
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to @user }

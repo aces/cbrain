@@ -46,13 +46,15 @@ class Userfile < ActiveRecord::Base
   after_save              :update_format_group
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
   
-  validates_uniqueness_of :name, :scope => [ :user_id, :data_provider_id ]
-  validates_presence_of   :name
+  validates               :name,
+                          :presence => true,
+                          :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
+                          :filename_format => true
+                          
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
   validate                :validate_associations
-  validate                :validate_filename
   validate                :validate_group_update
 
   belongs_to              :user
@@ -272,10 +274,10 @@ class Userfile < ActiveRecord::Base
   
   #Updates the class (type attribute) of this file if +type+ is 
   #valid according to valid_file_types.
-  def update_file_type(type)
+  def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
       self.type = type
-      self.save
+      self.update_attributes_with_logging( { }, by_user, [], 1 )
     else
       false
     end
@@ -817,24 +819,29 @@ class Userfile < ActiveRecord::Base
     end
     @ancestor_viewers ||= []
     @class_viewers    ||= []
-    class_v    = (@class_viewers).clone
-    ancestor_v = (@ancestor_viewers).clone
-    
-    class_v + ancestor_v
+    @class_viewers + @ancestor_viewers
   end
   
   # Add a content loader to the calling class.
   def self.has_content(options = {})
     new_content = ContentLoader.new(options)
-    @@content_loaders ||= []
-    if @@content_loaders.include?(new_content) 
+    @class_loaders ||= []
+    if @class_loaders.include?(new_content) 
       cb_error "Redefinition of content loader in class #{self.name}."
     end 
-    @@content_loaders << new_content
+    @class_loaders << new_content
   end
+  
   # List content loaders for the calling class.
   def self.content_loaders
-    @@content_loaders ||= []
+    unless @ancestor_loaders
+      if self.superclass.respond_to? :content_loaders
+        @ancestor_loaders = self.superclass.content_loaders
+      end
+    end
+    @ancestor_loaders ||= []
+    @class_loaders    ||= []
+    @class_loaders + @ancestor_loaders
   end
   
   #Find a content loader for this model. Priority is given
@@ -857,13 +864,6 @@ class Userfile < ActiveRecord::Base
     end
     unless Group.where( :id => self.group_id ).first
       errors.add(:group, "does not exist.")
-    end
-  end
-
-  # Active Record validation.
-  def validate_filename #:nodoc:
-    unless Userfile.is_legal_filename?(self.name)
-      errors.add(:name, "contains invalid characters.")
     end
   end
   

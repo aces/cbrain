@@ -22,9 +22,10 @@ framework based on Ruby.
 
 === Some key models in the system include:
 
-User:: Represents an actual user of the system. 
-Userfile:: Models a user's files as entries in the database. 
-DataProvider:: Represents an external provider for the contents of the userfiles.
-CbrainTask:: Represents a task being run on a cluster, and its evolving states. 
-Bourreau:: Represents a Bourreau.
+*User*:: Represents an actual user of the system. 
+*Userfile*:: Models a user's files as entries in the database. 
+*DataProvider*:: Represents an external provider for the contents of the userfiles.
+*CbrainTask*:: Represents a task being run on a cluster, and its evolving states. 
+*ClusterTask*:: The subclass of CbrainTask used to modelize tasks on the Bourreau side.
+*Bourreau*:: Represents a Bourreau.
 

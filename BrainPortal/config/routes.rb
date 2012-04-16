@@ -38,12 +38,8 @@ CbrainRailsPortal::Application.routes.draw do
 
   # Standard CRUD resources, with extra methods
 
-  resources :feedbacks do
-    collection do
-      delete 'delete_feedback'
-    end
-  end
-
+  resources :feedbacks
+  
   resources :messages do
     collection do
       delete 'delete_messages'

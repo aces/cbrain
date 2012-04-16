@@ -74,27 +74,29 @@ class UserfilesController < ApplicationController
       @header_scope = @header_scope.where( :group_id  => current_project.id )
     end
     
-    tags_and_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
-    @tag_filters = tags_and_counts.map { |tc| ["#{tc.tag_name} (#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id }]  }
+    
     
     #Apply filters
-    filtered_scope = base_filtered_scope(@header_scope)
-    filtered_scope = filtered_scope.where( :format_source_id => nil )
+    @filtered_scope = base_filtered_scope(@header_scope)
     
     @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
       custom_filter = UserfileCustomFilter.find(custom_filter_id)
-      filtered_scope = custom_filter.filter_scope(filtered_scope)
+      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
     end
     
     unless tag_filters.blank?
-      filtered_scope = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
+      @filtered_scope = @filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
     
     #------------------------------
     # Sorting scope
     #------------------------------
 
-    sorted_scope = filtered_scope.scoped({})
+    sorted_scope = base_sorted_scope @filtered_scope.where( :format_source_id => nil )
+    
+    tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
+    filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
+    @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id, :class => "#{"filter_zero" if filt_tag_counts[tc.tag_name].blank?}" }]  }
     
     # Identify and add necessary table joins
     joins = []
@@ -128,8 +130,8 @@ class UserfilesController < ApplicationController
     # ---- NO tree sort ----
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
-      filtered_scope   = filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
-      @userfiles_total = filtered_scope.size
+      @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
+      @userfiles_total = @filtered_scope.size
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -150,7 +152,7 @@ class UserfilesController < ApplicationController
       
       # Fetch the real objects and collect them in the same order
       userfile_ids      = page_of_userfiles.collect { |u| u.id }
-      real_subset       = filtered_scope.includes( includes ).where( :id => userfile_ids )
+      real_subset       = @filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
       page_of_userfiles.each do |simple|
@@ -536,7 +538,7 @@ class UserfilesController < ApplicationController
     if @userfile.has_owner_access?(current_user)
       # IMPORTANT: File type change MUST come first as we will change the class of the object.
       if params[:file_type]
-        if @userfile.update_file_type(params[:file_type])
+        if @userfile.update_file_type(params[:file_type], current_user)
           @userfile = Userfile.find(@userfile.id)
         else
           @userfile.errors.add(:type, "could not be updated.")
@@ -549,9 +551,10 @@ class UserfilesController < ApplicationController
       @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
       
-      if @userfile.update_attributes(attributes)
+      if @userfile.update_attributes_with_logging(attributes, current_user, %w( group_writable num_files format_source_id parent_id ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
+          @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
         end
       end
     end
@@ -584,18 +587,18 @@ class UserfilesController < ApplicationController
                    when "Update Tags"
                      ['set_tags_for_user', current_user, params[:tags]]
                    when "Update Projects"
-                     ["update_attributes", {:group_id => params[:userfile][:group_id]}]
+                     ["update_attributes_with_logging", {:group_id => params[:userfile][:group_id]}, current_user]
                    when "Update Permissions" 
-                     ["update_attributes", {:group_writable => params[:userfile][:group_writable]}]
+                     ["update_attributes_with_logging", {:group_writable => params[:userfile][:group_writable]}, current_user, [ 'group_writable' ] ]
                    when "Update Owner"
                      new_filelist = filelist.select(&:allow_file_owner_change?)
                      failure_count += (filelist.size - new_filelist.size)
                      filelist = new_filelist
                      if current_user.available_users.map(&:id).include?(params[:userfile][:user_id].to_i)
-                       ["update_attributes", {:user_id => params[:userfile][:user_id]}] 
+                       ["update_attributes_with_logging", {:user_id => params[:userfile][:user_id]}, current_user] 
                      end
                    when "Update"
-                     ["update_file_type", params[:file_type]]
+                     ["update_file_type", params[:file_type], current_user]
                 end
 
     unless operation

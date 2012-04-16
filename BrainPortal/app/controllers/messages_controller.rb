@@ -35,6 +35,9 @@ class MessagesController < ApplicationController
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
     
     scope = base_filtered_scope
+
+    scope = base_sorted_scope(scope)
+    scope = scope.includes(:user)
     unless current_user.has_role?(:admin_user)
       scope = scope.where(:user_id => current_user.available_users.map(&:id))
     end                             

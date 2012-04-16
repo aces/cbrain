@@ -37,14 +37,14 @@
 <%= 
   index_table(@paginated_list, :class => "resource_list", :id => "tasks_table") do |t|
     t.column(select_all_checkbox "task_checkbox")
-    t.sort_column("Task Type", 'CbrainTask', 'type', :filters => basic_filters_for(@header_scope, CbrainTask, :type)) { |t| t.pretty_name }
+    t.sort_column("Task Type", 'CbrainTask', 'type', :filters => basic_filters_for(@filtered_scope, @header_scope, CbrainTask, :type)) { |t| t.pretty_name }
     t.sort_column("Description", 'CbrainTask', 'description')
-    t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@header_scope, CbrainTask, :user, :name_method => :login))
+    t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@filtered_scope, @header_scope, CbrainTask, :user, :name_method => :login))
     unless current_project
-      t.sort_column("Project", 'Group', 'name', :filters => association_filters_for(@header_scope, CbrainTask, :group))
+      t.sort_column("Project", 'Group', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, CbrainTask, :group))
     end
-    t.sort_column("Execution Server", 'RemoteResource', 'name', :filters => association_filters_for(@header_scope, CbrainTask, :bourreau, :association_table => :remote_resources))
-    t.sort_column("Current Status", 'CbrainTask', 'status', :filters => basic_filters_for(@header_scope, CbrainTask, :status))
+    t.sort_column("Execution Server", 'RemoteResource', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, CbrainTask, :bourreau, :association_table => :remote_resources))
+    t.sort_column("Current Status", 'CbrainTask', 'status', :filters => basic_filters_for(@filtered_scope, @header_scope, CbrainTask, :status))
     t.column("Run Number")
     t.sort_column("Workdir Size", 'CbrainTask', 'cluster_workdir_size')
     t.sort_column("Time Submitted", 'CbrainTask', 'created_at')

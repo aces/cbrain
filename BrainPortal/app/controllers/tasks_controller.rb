@@ -41,13 +41,23 @@ class TasksController < ApplicationController
     end
     
     @header_scope = @header_scope.real_tasks
-    scope = base_filtered_scope(@header_scope)
-    
     @header_scope = @header_scope.where( :bourreau_id => bourreau_ids )
     
+    @filtered_scope = base_filtered_scope(@header_scope)
+    
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.where( :bourreau_id => bourreau_ids )
+      @filtered_scope = @filtered_scope.where( :bourreau_id => bourreau_ids )
     end
+    
+    # Handle custom filters
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
+    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter = TaskCustomFilter.find(custom_filter_id)
+      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
+    end
+    
+    scope = @filtered_scope
 
     if request.format.to_sym == :xml
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
@@ -71,13 +81,6 @@ class TasksController < ApplicationController
       end
     end
 
-    # Handle custom filters
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = TaskCustomFilter.find(custom_filter_id)
-      scope = custom_filter.filter_scope(scope)
-    end
 
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
@@ -148,7 +151,7 @@ class TasksController < ApplicationController
       scope = current_user.available_tasks
     end
     
-    scope = base_filtered_scope(scope)
+    scope = base_sorted_scope base_filtered_scope(scope)
     
     scope = scope.where( :launch_time => params[:launch_time] )
     
@@ -212,7 +215,7 @@ class TasksController < ApplicationController
     @task.params      = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id = params[:bourreau_id] # may or may not be there
     @task.user        = current_user
-    @task.group_id    = current_session[:active_group_id] || current_user.own_group.id
+    @task.group_id    = current_project.try(:id) || current_user.own_group.id
     @task.status      = "New"
 
     # Offer latest accessible tool config as default
@@ -324,7 +327,7 @@ class TasksController < ApplicationController
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
-    @task.group_id  ||= current_session[:active_group_id] || current_user.own_group.id
+    @task.group_id  ||= current_project.try(:id) || current_user.own_group.id
     @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig
@@ -414,6 +417,8 @@ class TasksController < ApplicationController
 
       spawn_messages = ""
 
+      share_wd_Nid_to_tid = {} # a negative number -> task_id
+
       tasklist.each do |task|
         begin
           if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
@@ -424,7 +429,14 @@ class TasksController < ApplicationController
           else
             task.status = "New" if task.status.blank?
           end
-          task.save!
+          share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
+          if share_wd_Nid.present? && share_wd_Nid <= 0
+            task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
+            task.save!
+            share_wd_Nid_to_tid[share_wd_Nid] = task.id
+          else
+            task.save!
+          end
         rescue => ex
           spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
         end
@@ -489,6 +501,7 @@ class TasksController < ApplicationController
     # the form's content.
     old_params   = @task.params.clone
     new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
+    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
     old_tool_config = @task.tool_config
     old_bourreau    = @task.bourreau
     @task.attributes = new_att # just updates without saving
@@ -544,11 +557,14 @@ class TasksController < ApplicationController
     # Log revision number of portal.
     @task.addlog_current_resource_revision
 
+    # Log task params changes
     @task.log_params_changes(old_params,@task.params)
-    @task.save!
+
+    # Log and save normal attributes of the task
+    @task.update_attributes_with_logging( nil , current_user, %w( results_data_provider_id ) )
 
     flash[:notice] += messages + "\n" unless messages.blank?
-    flash[:notice] += "New task parameters saved. See the log for changes, if any.\n"
+    flash[:notice] += "New task parameters saved. See the logs for changes, if any.\n"
     redirect_to :action => :show, :id => @task.id
   end
 
@@ -567,9 +583,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").map(&:id)
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -599,7 +615,7 @@ class TasksController < ApplicationController
 
     # This block will either run in background or not depending
     # on do_in_spawn
-    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to a list of tasks") do
+    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
       tasks = []
       tasklist.each do |task_id|

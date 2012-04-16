@@ -38,7 +38,8 @@ class BourreauxController < ApplicationController
     @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
     @filter_params["sort_hash"]["dir"] ||= "DESC"
     @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
-    @bourreaux    = base_filtered_scope @header_scope.includes(:user, :group)
+    @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
+    @bourreaux      = base_sorted_scope @filtered_scope
 
     if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
@@ -56,9 +57,6 @@ class BourreauxController < ApplicationController
     @bourreau = RemoteResource.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-
-    @info = @bourreau.info
-    @log  = @bourreau.getlog
     
     respond_to do |format|
       format.html # show.html.erb
@@ -103,23 +101,24 @@ class BourreauxController < ApplicationController
   def update #:nodoc:
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
-    
-    cb_notice "This #{@bourreau.class.to_s} not accessible by current user." unless @bourreau.has_owner_access?(current_user)
+
+    cb_notice "This #{@bourreau.class.to_s} is not accessible by you." unless @bourreau.has_owner_access?(current_user)
+
+    @users    = current_user.available_users
+    @groups   = current_user.available_groups
 
     fields    = params[:bourreau]
     fields ||= {}
     
-    subtype = fields.delete(:type)
-  
+    subtype          = fields.delete(:type)
     old_dp_cache_dir = @bourreau.dp_cache_dir
-    @bourreau.update_attributes(fields)
 
-    @users  = current_user.available_users
-    @groups = current_user.available_groups
-    unless @bourreau.errors.empty?
+    if ! @bourreau.update_attributes_with_logging(fields, current_user,
+        RemoteResource.columns_hash.keys.grep(/actres|ssh|tunnel|url|dp_|cmw|worker|rr_timeout|proxied_host/)
+      )
       @bourreau.reload
       respond_to do |format|
-        format.html { redirect_to :action => 'show' }
+        format.html { render :action => 'show' }
         format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
       end
       return

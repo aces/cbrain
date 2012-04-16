@@ -51,18 +51,26 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name, :login
-  validates_length_of       :login,    :within => 3..40
+  validates_presence_of     :full_name
+  
+  validates                 :login,    
+                            :length => { :within => 3..40 },
+                            :uniqueness => {:case_sensitive => false},
+                            :presence => true,
+                            :filename_format => true
+                            
   validates                 :password,
                             :length => { :minimum => 8 },
                             :confirmation => true,
                             :presence => true,
                             :if => :password_required?
+                            
   validates_presence_of     :password_confirmation,      :if => :password_required?
+  
   validates                 :email,    
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
-  validates_uniqueness_of   :login, :case_sensitive => false
+                            
   validate                  :immutable_login,            :on => :update
   validate                  :site_manager_check
   validate                  :password_strength_check,    :if => :password_required?
@@ -279,7 +287,7 @@ class User < ActiveRecord::Base
   end
     
   def password_required? #:nodoc:
-    crypted_password.blank? || !password.nil?
+    crypted_password.blank? || !password.blank?
   end
 
   private
@@ -350,7 +358,7 @@ class User < ActiveRecord::Base
       score += 1 if self.password.length > 14
     end
     if score < 3
-      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length.")
+      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
     end
   end
   
@@ -360,20 +368,22 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    userGroup = UserGroup.new(:name => self.login, :site  => self.site)
-    unless userGroup.save
-      self.errors.add(:base, "User Group: #{userGroup.errors.full_messages.join(", ")}")
+    user_group = UserGroup.new(:name => self.login, :site  => self.site)
+    unless user_group.save
+      self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
+      return false
     end
     
-    everyoneGroup = Group.everyone
+    everyone_group = Group.everyone
     group_ids = self.group_ids
-    group_ids << userGroup.id
-    group_ids << everyoneGroup.id
+    group_ids << user_group.id
+    group_ids << everyone_group.id
     if self.site
       site_group = SiteGroup.find_by_name(self.site.name)
       group_ids << site_group.id
     end
     self.group_ids = group_ids
+    true
   end
 
 end

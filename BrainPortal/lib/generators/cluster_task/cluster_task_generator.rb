@@ -28,17 +28,24 @@ class ClusterTaskGenerator < Rails::Generators::Base
 
   argument     :file_or_class, :type => :string,  :default => "application"  
   class_option :advanced,      :type => :boolean, :default => false
+  class_option :license,       :type => :string,  :required => false, :default => ""
 
   def create_task
+    license = options[:license]
+    @_license_text = ""
+    if license.present?
+      raise "Error: can't find license file: #{license}" if !File.exist?(license)
+      @_license_text = File.read(license)      
+    end
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}"
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}/portal"
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}/bourreau"
     empty_directory "cbrain_plugins/cbrain_task/#{file_name}/views"
     template "portal_task_model.rb",  "cbrain_plugins/cbrain_task/#{file_name}/portal/#{file_name}.rb"
     template "cluster_task_model.rb", "cbrain_plugins/cbrain_task/#{file_name}/bourreau/#{file_name}.rb"
-    template "partial.html.erb",      "cbrain_plugins/cbrain_task/#{file_name}/views/_task_params.html.erb"
+    template "task_params.html.erb",      "cbrain_plugins/cbrain_task/#{file_name}/views/_task_params.html.erb"
     template "show_params.html.erb",  "cbrain_plugins/cbrain_task/#{file_name}/views/_show_params.html.erb"
-    template "task_options.html",     "public/doc/tasks/#{file_name}_options.html"
+    template "task_options.html.erb", "public/doc/tasks/#{file_name}_options.html"
     if File.exists?("cbrain_plugins/cbrain_task/#{file_name}.rb")
       #logger.exists "cbrain_plugins/cbrain_task/#{file_name}.rb"
     else

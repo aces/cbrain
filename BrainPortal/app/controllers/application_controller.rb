@@ -38,9 +38,8 @@ class ApplicationController < ActionController::Base
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers
+  include ExceptionHelpers
   
-  rescue_from Exception, :with => :log_exception_handler
-
   helper        :all # include all helpers, all the time
   helper_method :start_page_path
 
@@ -49,15 +48,15 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :check_account_validity
   before_filter :adjust_system_time_zone
-  around_filter :handle_cbrain_errors, :activate_user_time_zone
+  around_filter :activate_user_time_zone
   after_filter  :log_user_info
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
+
+
   
-
-
   ########################################################################
   # Controller Filters
   ########################################################################
@@ -153,7 +152,7 @@ class ApplicationController < ActionController::Base
     #Check if passwords been reset.
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
-        flash[:notice] = "Please reset your password."
+        flash[:error] = "Please reset your password."
         redirect_to user_path(current_user)
       end
     end
@@ -188,83 +187,6 @@ class ApplicationController < ActionController::Base
     Rails.logger.info mess
   rescue
     true
-  end
-
-
-  
-  ########################################################################
-  # CBRAIN Exception Handling (Filters)
-  ########################################################################
-
-  #Handle common exceptions
-  def handle_cbrain_errors
-    begin
-      yield # try to execute the controller/action stuff
-
-    # Record not accessible
-    rescue ActiveRecord::RecordNotFound => e
-      raise if Rails.env == 'development' #Want to see stack trace in dev.
-      flash[:error] = "The object you requested does not exist or is not accessible to you."
-      respond_to do |format|
-        format.html { redirect_to default_redirect }
-        format.js   { render :partial  => "shared/flash_update", :status  => 404 } 
-        format.xml  { render :xml => {:error  => e.message}, :status => 404 }
-      end
-
-    # Action not accessible
-    rescue ActionController::UnknownAction => e
-      raise if Rails.env == 'development' #Want to see stack trace in dev.
-      flash[:error] = "The page you requested does not exist."
-      respond_to do |format|
-        format.html { redirect_to default_redirect }
-        format.js   { render :partial  => "shared/flash_update", :status  => 400 } 
-        format.xml  { render :xml => {:error  => e.message}, :status => 400 }
-      end
-
-    # Internal CBRAIN errors
-    rescue CbrainException => cbm
-      if cbm.is_a? CbrainNotice
-         flash[:notice] = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
-      else
-         flash[:error]  = cbm.message    # + "\n" + cbm.backtrace[0..5].join("\n")
-      end
-      logger.error "CbrainException for controller #{params[:controller]}, action #{params[:action]}: #{cbm.class} #{cbm.message}"
-      respond_to do |format|
-        format.html { redirect_to cbm.redirect || default_redirect }
-        format.js   { render :partial  => "shared/flash_update", :status  => cbm.status } 
-        format.xml  { render :xml => {:error  => cbm.message}, :status => cbm.status }
-      end
-
-    # Anything else is serious
-    rescue => ex
-      raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
-
-      # Note that send_internal_error_message will also censure :password from the params hash
-      Message.send_internal_error_message(current_user, "Exception Caught", ex, params) rescue true
-      log_exception(ex) # explicit logging in exception logger, since we won't re-raise it now.
-      flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
-      logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{ex.class} #{ex.message}"
-      respond_to do |format|
-        format.html { redirect_to default_redirect }
-        format.js   { render :partial  => "shared/flash_update", :status  => 500 } 
-        format.xml  { render :xml => {:error  => e.message}, :status => 500 }
-      end
-
-    end
-
-  end
-  
-  # Redirect to the index page if available and wasn't the source of
-  # the exception, otherwise to welcome page.
-  def default_redirect
-    final_resting_place = { :controller => "portal", :action => "welcome" }
-    if self.respond_to?(:index) && params[:action] != "index"
-      { :action => :index }
-    elsif final_resting_place.keys.all? { |k| params[k] == final_resting_place[k] }
-      "/500.html" # in case there's an error in the welcome page itself
-    else
-      url_for(final_resting_place)
-    end
   end
   
   ########################################################################

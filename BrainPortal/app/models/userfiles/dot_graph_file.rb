@@ -20,27 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+class DotGraphFile < TextFile
 
-###################################################################
-# WillPaginate extensions
-###################################################################
+  Revision_info=CbrainFileRevision[__FILE__]
+  
+  def self.pretty_type #:nodoc:
+    "DOT graph file"
+  end
 
-module WillPaginate
-  if const_defined?(:ViewHelpers) # For will_paginate 3.0.pre2
-    class ViewHelpers::LinkRenderer
-      protected
-      def base_url_params
-        default_url_params
-      end
-    end
+  def self.file_name_pattern #:nodoc:
+    /\.dot$/i
   end
   
-  if const_defined?(:ActionView) # For will_paginate 3.0.3
-    class ActionView::LinkRenderer
-      protected
-      def merge_get_params(url_params)
-        url_params
-      end
-    end
-  end
 end
+

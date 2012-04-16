@@ -27,16 +27,22 @@
 <br>
 <%= error_messages_for :feedback, :header_message => "Feedback could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@feedback, :width => 1, :edit_path => feedback_path(@feedback)) do |t| %>
+  <%= show_table(@feedback, :width => 1) do |t| %>
     <% t.edit_cell(:summary, :disabled => (!current_user.has_role?(:admin_user) && current_user.id != @feedback.user_id)) do %>
       <%= text_field_tag "feedback[summary]", @feedback.summary %>
     <% end %>
     <% t.cell("Author") { link_to_user_with_tooltip(@feedback.user) } %>
     <% t.cell("Date Submitted") { to_localtime(@feedback.created_at,:datetime) }  %>
     <% t.edit_cell(:details, :content => h(@feedback.details).gsub("\n", "<br>"), :disabled => (!current_user.has_role?(:admin_user) && current_user.id != @feedback.user_id)) do %>
-      <%= text_area_tag "feedback[details]", @feedback.details, :rows => 20, :cols => 80 %><br>
-      <%= submit_tag "Update" %>
+      <%= text_area_tag "feedback[details]", @feedback.details, :rows => 20, :cols => 80 %>
     <% end %>
   <% end %>
 </div>
+
+<P>
+
+<% if current_user.available_users.include? @feedback.user %>
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @feedback.getlog, :title => 'Feedback Log' } %>
+<% end %>
 
