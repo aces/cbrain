@@ -38,7 +38,7 @@ class SiteGroup < SystemGroup
      group_site_header = g.description.lines.first.strip rescue ""
      group_site_header = sprintf("%20.20s...",group_site_header) if group_site_header.size > 20
      label += " (#{group_site_header})" if group_site_header.present?
-     gid_to_labels[g.id] = label
+     gid_to_labels[g.id] = label.force_encoding('UTF-8')
    end
    gid_to_labels
   end

@@ -36,6 +36,7 @@ class WorkGroup < Group
 
     wg_ucnt = WorkGroup.joins(:users).where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
     by_one_or_many = wgs.hashed_partition { |wg| wg_ucnt[wg.id] == 1 ? :one : :many }
+    by_one_or_many.reverse_merge!( { :one => [], :many => [] } )
 
     # Process workgroups with more than 1 user
     by_one_or_many[:many].each do |wg|

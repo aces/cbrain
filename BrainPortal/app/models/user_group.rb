@@ -33,7 +33,7 @@ class UserGroup < SystemGroup
    g_to_full_names = UserGroup.joins(:users).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'users.full_name']).all
    gid_to_labels = {}
    g_to_full_names.each do |g|
-     gid_to_labels[g.id] = "#{g.name}" + (g.full_name.present? ? " (#{g.full_name})" : "")
+     gid_to_labels[g.id] = ("#{g.name}" + (g.full_name.present? ? " (#{g.full_name})" : "")).force_encoding('UTF-8')
    end
    gid_to_labels
   end
