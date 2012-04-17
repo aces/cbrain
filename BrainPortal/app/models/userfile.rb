@@ -339,63 +339,6 @@ class Userfile < ActiveRecord::Base
     self.tag_ids = new_tag_set
   end
 
-
-  # Sort a list of files in "tree order" where
-  # parents are listed just before their children.
-  # It also keeps the original list's ordering
-  # at each level. The method will set the :level
-  # pseudo attribute too, with 0 for the top level.
-  def self.tree_sort(userfiles = [])
-    top         = Userfile.new( :name => "DUMMY_TOP", :parent_id => -999_999_999 ) # Dummy, to collect top level; ID is NIL!
-    userfiles   = userfiles.to_a + [ top ] # Note: so that by_id[nil] returns 'top'
-
-    by_id       = {}        # id => userfile
-    userfiles.each_with_index do |u,idx|
-      u.tree_children = nil
-      by_id[u.id]     = u   # WE NEED TO USE THIS INSTEAD OF .parent !!!
-      u.rank_order    = idx # original order in array
-    end
-
-    # Construct tree
-    seen      = {}
-    userfiles.each do |file|
-      current  = file # probably not necessary
-      track_id = file.id # to detect loops
-      while ! seen[current]
-        break if current == top
-        seen[current] = track_id
-        parent_id     = current.parent_id # Can be nil! by_id[nil] will return 'top' 
-        parent        = by_id[parent_id] # Cannot use current.parent, as this would destroy its :tree_children
-        parent      ||= top
-        break if seen[parent] && seen[parent] == track_id # loop
-        parent.tree_children ||= []
-        parent.tree_children << current
-        current = parent
-      end
-    end
-
-    # Flatten tree
-    top.all_tree_children(0) # sets top children's levels to '0'
-  end
-
-  # Returns an array will all children or subchildren
-  # of the userfile, as contructed by tree_sort.
-  # Optionally, sets the :level pseudo attribute
-  # to all current children, increasing it down
-  # the tree.
-  def all_tree_children(level = nil) #:nodoc:
-    return [] if self.tree_children.blank?
-    result = []
-    self.tree_children.sort { |a,b| a.rank_order <=> b.rank_order }.each do |child|
-      child.level = level if level
-      result << child
-      if child.tree_children # the 'if' optimizes one recursion out
-        child.all_tree_children(level ? level+1 : nil).each { |c| result << c } # amazing! faster than += for arrays!
-      end
-    end
-    result
-  end
-
   # Return the level of the calling userfile in 
   # the parentage tree.
   def level

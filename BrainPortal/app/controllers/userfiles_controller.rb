@@ -119,7 +119,7 @@ class UserfilesController < ApplicationController
     unless [:html, :js].include?(request.format.to_sym)
       @per_page = 999_999_999
     end
-    offset        = (@current_page - 1) * @per_page
+    offset = (@current_page - 1) * @per_page
 
     #------------------------------
     # Final paginated array of objects
@@ -132,33 +132,36 @@ class UserfilesController < ApplicationController
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       @userfiles_total = @filtered_scope.size
-      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
+      ordered_real  = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
-      # We first get a list of 'simple' objects
-      simple_userfiles  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").all # low cost of construction
-      simple_userfiles  = Userfile.tree_sort(simple_userfiles)
-      @userfiles_total  = simple_userfiles.size
+      # We first get a list of 'simple' objects [ id, parent_id ]
+      simple_pairs_sql  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").to_sql
+      simple_pairs      = Userfile.connection.select_rows(simple_pairs_sql).each { |x| x[0] = x[0].to_i; x[1] = x[1].to_i if x[1] }
+      simple_pairs      = tree_sort_by_pairs(simple_pairs) # private method in this controller
+      # At this point, each simple_pair is [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
+      @userfiles_total  = simple_pairs.size
       if params[:find_file_id]
         find_file_id    = params[:find_file_id].to_i
-        find_file_index = simple_userfiles.index{ |u| u.id == find_file_id }
+        find_file_index = simple_pairs.index { |u| u[0] == find_file_id }
         if find_file_index
-          current_page = (find_file_index / @per_page) + 1
+          @current_page = (find_file_index / @per_page) + 1
+          offset = (@current_page - 1) * @per_page
         end
       end
 
       # Paginate the list of simple objects
-      page_of_userfiles = simple_userfiles[offset, @per_page] || []
+      page_of_userfiles = simple_pairs[offset, @per_page] || []
       
       # Fetch the real objects and collect them in the same order
-      userfile_ids      = page_of_userfiles.collect { |u| u.id }
+      userfile_ids      = page_of_userfiles.collect { |u| u[0] }
       real_subset       = @filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
       page_of_userfiles.each do |simple|
-        full = real_subset_index[simple.id]
+        full = real_subset_index[simple[0]]
         next unless full # this can happen when the userfile list change between fetching the simple and real lists
-        full.level = simple.level
+        full.level = simple[4]
         ordered_real << full
       end
       
@@ -1259,6 +1262,74 @@ class UserfilesController < ApplicationController
   ensure
     FileUtils.remove_entry(tmpdir, true)
     return tarfilename
+  end
+
+  private
+
+  # Sort a list of files in "tree order" where
+  # parents are listed just before their children.
+  # It also keeps the original list's ordering
+  # at each level. The method will set the level
+  # of the files too, with 0 for the top level.
+  #
+  # The records processed here are not userfiles,
+  # instead they are small arrays, originally with two
+  # entries:
+  #
+  #   [ userfile_id, parent_id ]
+  #
+  # At the end, they get extended to five entries each:
+  #
+  #   [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
+  def tree_sort_by_pairs(pairs = [])  # array of pairs: [ [ id, parent_id ], [ id, parent_id ] ... ]
+    top         = [ nil, 999_999_999 ] # Dummy, to collect top level; ID is NIL!
+    userfiles   = Array(pairs) + [ top ] # Note: so that by_id[nil] returns 'top'
+
+    by_id       = {}        # id => userfile
+    userfiles.each_with_index do |u,idx|
+      u[2]        = nil
+      by_id[u[0]] = u   # WE NEED TO USE THIS INSTEAD OF .parent !!!
+      u[3]        = idx # original order in array
+    end
+
+    # Construct tree
+    seen      = {}
+    userfiles.each do |file|
+      current  = file # probably not necessary
+      track_id = file[0] # to detect loops
+      while ! seen[current[0]]
+        break if current == top
+        seen[current[0]] = track_id
+        parent_id     = current[1] # Can be nil! by_id[nil] will return 'top' 
+        parent        = by_id[parent_id] # Cannot use current.parent, as this would destroy its :tree_children
+        parent      ||= top
+        break if seen[parent[0]] && seen[parent[0]] == track_id # loop
+        parent[2] ||= []
+        parent[2] << current
+        current = parent
+      end
+    end
+
+    # Flatten tree
+    all_tree_children_by_pairs(top,0) # sets top children's levels to '0'
+  end
+
+  # Returns an array will all children or subchildren
+  # of the userfile, as contructed by tree_sort.
+  # Optionally, sets the :level pseudo attribute
+  # to all current children, increasing it down
+  # the tree.
+  def all_tree_children_by_pairs(top,level = nil) #:nodoc:
+    return [] if top[2].blank?
+    result = []
+    top[2].sort { |a,b| a[3] <=> b[3] }.each do |child|
+      child[4] = level if level
+      result << child
+      if child[2] # the 'if' optimizes one recursion out
+        all_tree_children_by_pairs(child, level ? level+1 : nil).each { |c| result << c } # amazing! faster than += for arrays!
+      end
+    end
+    result
   end
 
 end
