@@ -65,7 +65,9 @@ class ToolConfig < ActiveRecord::Base
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
   def can_be_accessed_by?(user)
-    self.group.can_be_accessed_by?(user)
+    return false unless self.group.can_be_accessed_by?(user)
+    return false unless self.bourreau_and_tool_can_be_accessed_by?(user) 
+    true
   end
 
   # Returns true if both the bourreau and the tool associated
