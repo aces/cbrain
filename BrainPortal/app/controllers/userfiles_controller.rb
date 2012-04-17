@@ -615,10 +615,10 @@ class UserfilesController < ApplicationController
     end
     
     if success_count > 0
-      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{view_pluralize(success_count, "files")}."
+      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{view_pluralize(success_count, "file")}."
     end
     if failure_count > 0
-      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{view_pluralize(failure_count, "files")}."
+      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}."
     end
     
     redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
@@ -848,27 +848,52 @@ class UserfilesController < ApplicationController
   #Delete the selected files.
   def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
-    
-    deleted_count      = 0
-    unregistered_count = 0
-  
-    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-      basename = userfile.name
-      if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
-        unregistered_count += 1
-      else
-        deleted_count += 1
+
+    # Delete in background
+    CBRAIN.spawn_with_active_records(current_user, "Delete files.") do
+      first_error        = nil
+      deleted_count      = 0
+      unregistered_count = 0
+      error_count        = 0
+      
+      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+        begin
+          basename = userfile.name
+          if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
+            unregistered_count += 1
+          else
+            deleted_count += 1
+          end
+          userfile.destroy
+        rescue => e
+          error_count += 1
+          first_error ||= "for '#{userfile.name}': #{e.message}.\n"
+        end
       end
-      userfile.destroy
-    end
-  
-    if deleted_count > 0
-      flash[:notice] = "#{view_pluralize(deleted_count, "files")} deleted.\n"
-    end
-    if unregistered_count > 0
-      flash[:notice] = "#{view_pluralize(unregistered_count, "files")} unregistered.\n"
-    end
-    
+
+      variable_text  = ""
+      error_messages = ""
+      if deleted_count > 0
+        variable_text += "#{view_pluralize(deleted_count, "file")} deleted.\n"
+      end
+      if unregistered_count > 0
+        variable_text += "#{view_pluralize(unregistered_count, "file")} unregistered.\n"
+      end
+      if error_count > 0
+        error_messages += "#{view_pluralize(error_count, "internal error")} when deleting/unregistering file(s).\n"
+        error_messages += "The first error was #{first_error}.\n"
+      end
+
+      variable_text = "No file has been deleted or unregistered.\n" if variable_text.blank?
+      
+      Message.send_message(current_user,
+                     :message_type => 'notice',
+                     :header       => "Finished deleting/unregistering files." + (error_messages.blank? ? "" : " (with some errors)"),
+                     :variable_text => "#{variable_text}#{error_messages}" 
+                    )
+    end # spawn
+
+    flash[:notice] = "Your files are being deleted in background."
     redirect_to :action => :index, :format => request.format.to_sym
   end
   
@@ -1048,10 +1073,10 @@ class UserfilesController < ApplicationController
   
     info_message = ""
     if to_compress.size > 0
-      info_message += "#{view_pluralize(to_compress.size, "files")} being compressed in background.\n"
+      info_message += "#{view_pluralize(to_compress.size, "file")} being compressed in background.\n"
     end
     if to_uncompress.size > 0
-      info_message += "#{view_pluralize(to_uncompress.size, "files")} being uncompressed in background.\n"
+      info_message += "#{view_pluralize(to_uncompress.size, "file")} being uncompressed in background.\n"
     end
     skipped_messages.each do |mess,userfiles|
       info_message += "Warning: some files were skipped; Reason: #{mess}; Files: "
