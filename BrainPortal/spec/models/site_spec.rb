@@ -25,8 +25,8 @@ require 'spec_helper'
 describe Site do 
   before(:each) do 
     @site         = Factory.create(:site)
-    @site_manager = Factory.create(:user, :site => @site, :role => "site_manager")
-    @site_user    = Factory.create(:user, :site => @site, :role => "user")
+    @site_manager = Factory.create(:site_manager, :site => @site)
+    @site_user    = Factory.create(:normal_user, :site => @site)
     @site.save
   end
   
@@ -44,7 +44,7 @@ describe Site do
   end
   
   it "should set new managers on save" do
-    @site_user.role = "site_manager"
+    @site_user.type = "SiteManager"
     @site_user.save
     @site.managers.include?(@site_user).should be(true)
   end

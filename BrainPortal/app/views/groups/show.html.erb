@@ -43,7 +43,7 @@
       <%= text_field_tag "group[name]", @group.name %>
     <% end %>
 
-    <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin)) do %>
+    <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
       <%= select_tag "group[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @group.site_id), :include_blank => true %>
     <% end %>
 
@@ -59,7 +59,7 @@
 
     <% t.cell("Tasks") { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
 
-    <% if current_user.has_role?(:admin) %>
+    <% if current_user.has_role?(:admin_user) %>
       <% t.cell("Tools") { index_count_filter @group.tools.count, :tools, {:group_id => @group.id} }%>
       <% t.cell("Data Providers") { index_count_filter @group.data_providers.count, :data_providers, {:group_id => @group.id} } %>
       <% t.cell("Portal") { index_count_filter BrainPortal.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "BrainPortal"} } %>
@@ -75,7 +75,7 @@
     <% t.edit_cell(:user_id, :show_width => 2,
                              :header  => 'Members',
                              :content => default_text, :show_width => 2,
-                             :disabled => current_user.has_role?(:user)) do %>
+                             :disabled => current_user.has_role?(:admin_user)) do %>
       <div class="generalbox" style="width: 100%">
         <%= render :partial => 'users_form' %><br>
         <%= hidden_field_tag :update_users, true %>

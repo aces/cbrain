@@ -339,6 +339,24 @@ class ClusterTask < CbrainTask
     true
   end
 
+  # Returns true if +path+ points to a file or
+  # directory that is inside the work directory
+  # of the task. +path+ can be absolute or relative.
+  # This method assumes the current directory if
+  # the task's work directory, which is usually
+  # the common case for invoking it.
+  def path_is_in_workdir?(path) #:nodoc:
+    workdir = self.full_cluster_workdir
+    return false unless workdir.present? && File.directory?(workdir)
+    return false unless File.exists?(path)
+    path = Pathname.new(path).realdirpath rescue nil
+    return false unless path
+    wdpath   = Pathname.new(workdir)
+    rel_path = path.relative_path_from(wdpath) rescue nil
+    return false if rel_path.blank? || rel_path.to_s =~ /^\.\./ # if it starts with ".." it means we go out of the workdir!
+    true
+  end
+
   # This method takes an array of +userfiles+ (or a single one)
   # and add a log entry to each userfile identifying that
   # it was processed by the current task. An optional

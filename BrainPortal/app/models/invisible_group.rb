@@ -26,11 +26,11 @@ class InvisibleGroup < SystemGroup
   Revision_info=CbrainFileRevision[__FILE__]
 
   #def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-  #  user.has_role? :admin
+  #  user.has_role? :admin_user
   #end
 
   def can_be_edited_by?(user) #:nodoc:
-    user.has_role? :admin
+    user.has_role? :admin_user
   end
   
 end

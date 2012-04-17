@@ -27,7 +27,7 @@ describe User do
   fixtures :groups
   
   before(:each) do 
-    @user = Factory.create(:user)
+    @user = Factory.create(:normal_user)
   end
 
   describe "#validate" do 
@@ -43,16 +43,6 @@ describe User do
   
     it "should not save without a full_name" do
       @user.full_name = nil
-      @user.save.should == false
-    end
-  
-    it "should not save without a role" do 
-      @user.role = nil
-      @user.save.should == false
-    end
-  
-    it "should not save with blank password" do
-      @user.password = ""
       @user.save.should == false
     end
   
@@ -91,13 +81,13 @@ describe User do
     end
 
     it "should check that login is unique" do
-      Factory.create(:user, :login => "Abcdef")
+      Factory.create(:normal_user, :login => "Abcdef")
       bad_login=Factory.build(:user, :login => "Abcdef")
       bad_login.save.should be(false)
     end
   
     it "should check that login is unique even case wise" do
-      Factory.create(:user, :login => "Abcdef")
+      Factory.create(:normal_user, :login => "Abcdef")
       bad_login=Factory.build(:user, :login => "abcdef")
       bad_login.save.should be(false)
     end
@@ -135,7 +125,6 @@ describe User do
   
   
   describe "#self.admin" do
-    let!(:admin) {Factory.create(:user, :role => "admin", :login => "admin")}
     
     it "should return user with login admin" do
       User.admin.should be == User.where(:login => "admin").first
@@ -146,11 +135,11 @@ describe User do
 
   
   describe "#self.all_admins" do
-    let!(:admin) {Factory.create(:user, :role => "admin", :login => "admin")}
-    let!(:admin_user) {Factory.create(:user, :role => "admin", :login => "admin_user")}
+    let!(:admin) {Factory.create(:admin_user, :login => "admin_user2")}
+    let!(:admin_user) {Factory.create(:admin_user, :login => "admin_user")}
     
     it "should return all users with role admin" do
-      User.all_admins.should be == User.where(:role => "admin")
+      User.all_admins.should be == AdminUser.all
     end
     
   end
@@ -343,12 +332,12 @@ describe User do
 
   describe "has_role?" do
     
-    it "should return true if role is equal self.role" do
-      @user.has_role?(@user.role).should be(true)
+    it "should return true if role is equal self.type" do
+      @user.has_role?(@user.type).should be(true)
     end
 
-    it "should return fals if role isn't equal self.role" do
-      @user.has_role?(@user.role + "other").should be(false)
+    it "should raise exception if role isn't equal self.type" do
+      lambda { @user.has_role?(@user.type + "other") }.should raise_error
     end
 
   end
@@ -356,12 +345,12 @@ describe User do
 
   
   describe "#availability" do
-    let!(:admin)        {Factory.create(:user,  :role => "admin")}
-    let!(:group)        {Factory.create(:group, :id => "2" ) }
-    let!(:site_manager) {Factory.create(:user,  :role => "site_manager", :group_ids => ["2"])}
+    let!(:admin)        {Factory.create(:admin_user)}
+    let!(:group)        {Factory.create(:group) }
+    let!(:site_manager) {Factory.create(:site_manager, :group_ids => [group.id])}
     
     describe "#tool" do
-      let!(:tool1)        {Factory.create(:tool, :group_id => "2")}
+      let!(:tool1)        {Factory.create(:tool, :group_id => group.id)}
       let!(:tool2)        {Factory.create(:tool, :category => "conversion tool")}
 
       describe "#available_tools" do
@@ -446,8 +435,8 @@ describe User do
 
   
     describe "#available_tags" do
-      let!(:my_tag)     {Factory.create(:tag,  :user_id => @user.id, :group_id => "2" )}
-      let!(:other_user) {Factory.create(:user, :group_ids => ["2"])}
+      let!(:my_tag)     {Factory.create(:tag,  :user_id => @user.id, :group_id => group.id )}
+      let!(:other_user) {Factory.create(:normal_user, :group_ids => [group.id])}
       
       it "should return tag if it's mine" do
         @user.available_tags.should include(my_tag) 
@@ -463,7 +452,7 @@ describe User do
 
     describe "#available_tasks" do
       let!(:my_task)      {Factory.create(:cbrain_task, :user_id => @user.id)}
-      let!(:user_of_site) {Factory.create(:user, :site => site_manager.site)}
+      let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
       
       it "should return all taskss if called with an admin" do
         admin.available_tasks.should be =~ CbrainTask.all 
@@ -487,7 +476,7 @@ describe User do
   
   
     describe "#available_users" do
-      let!(:user_of_site) {Factory.create(:user, :site => site_manager.site)}
+      let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
       
       it "should return all tasks if called with an admin" do
         admin.available_users.should be =~ User.all
@@ -509,10 +498,10 @@ describe User do
 
   
     describe "#can_be_accessed_by?" do
-      let!(:user_of_site) {Factory.create(:user, :site => site_manager.site)}
+      let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
       
       it "should always return true if admin" do
-        @user.can_be_accessed_by?(admin).should be(true)
+        @user.can_be_accessed_by?(admin).should be_true
       end
 
       it "shoulda user can be accessible by a site manager if in same site" do
@@ -554,15 +543,15 @@ describe User do
 
   
   describe "#is_member_of_group" do
-    let!(:group) {Factory.create(:group, :id => "2")}
-    let!(:user_of_group_2) {Factory.create(:user, :group_ids => ["2"])}
+    let!(:group) {Factory.create(:group)}
+    let!(:user_of_group_2) {Factory.create(:normal_user, :group_ids => [group.id])}
     
     it "should returns true if the user belongs to the +group_id+" do
       user_of_group_2.is_member_of_group(group).should be_true
     end
 
     it "should returns false if the user not belongs to the +group_id+" do
-      @user.is_member_of_group("2").should be_false
+      @user.is_member_of_group(group.id).should be_false
     end
     
   end
@@ -601,9 +590,9 @@ describe User do
 
   
   describe "#admin_check" do
-    let!(:admin) {Factory.create(:user, :role => "admin", :login => "admin")}
     
     it "should raise error if when try to destroy admin" do
+      admin = User.admin
       lambda{ admin.destroy }.should raise_error
     end
     
@@ -633,9 +622,9 @@ describe User do
   describe "#site_manager_check" do
     
     it "should not save a site manager without a site_id" do
-      @user.role    = "site_manager"
+      @user.type    = "SiteManager"
       @user.site_id = nil
-      @user.save.should be(false)
+      @user.save.should be_false
     end
     
   end
@@ -672,22 +661,23 @@ describe User do
   
 
   it "should check that a user is a site_manager on save" do
-    @user.role = "site_manager"
+    @user.type = "SiteManager"
     @user.save
-    @user.site.managers.include?(@user).should be(true)
+    @user = User.find(@user.id)
+    @user.site.managers.include?(@user).should be_true
   end
 
 
   
   it "should create a new UserGroup with my login on create" do
     user_group=UserGroup.find_by_name(@user.login)
-    user_group.instance_of?(UserGroup).should be(true)
+    user_group.instance_of?(UserGroup).should be_true
   end
 
   
   
   it "should add me to the everyone group" do
-    @user.groups.include?(Group.everyone).should be(true)
+    @user.groups.include?(Group.everyone).should be_true
   end
 
   

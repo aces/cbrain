@@ -38,11 +38,11 @@ class PortalController < ApplicationController
     end
     
     @num_files              = current_user.userfiles.count
-    @groups                 = current_user.has_role?(:admin) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
+    @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])     
         
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @active_users = CbrainSession.active_users
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
@@ -203,8 +203,8 @@ class PortalController < ApplicationController
        Group            => [ [                                         :type, :site_id ], [ 'count' ] ],
        Tool             => [ [ :user_id, :group_id,                    :category       ], [ 'count' ] ],
        ToolConfig       => [ [           :group_id, :bourreau_id,      :tool_id        ], [ 'count' ] ],
-       User             => [ [ :role, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
-    }) if current_user.has_role?(:admin) ||  current_user.has_role?(:site_admin)
+       User             => [ [ :type, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
+    }) if current_user.has_rights?(:site_manager)
 
     @model      = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
     model_brk   = allowed_breakdown[@model] || [[],[]]
@@ -232,7 +232,7 @@ class PortalController < ApplicationController
        @table_content = @model.find_all_accessible_by_user(current_user)  # no .all here yet! We need to compute more later on
     else
        @table_content = @model.where({})
-       if ! current_user.has_role?(:admin)
+       if ! current_user.has_role?(:admin_user)
          @table_content = @table_content.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
          @table_content = @table_content.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
        end

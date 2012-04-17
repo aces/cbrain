@@ -32,23 +32,25 @@ class GroupsController < ApplicationController
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
     @filter_params["button_view"] ||= "on"
-    @header_scope = current_user.available_groups
-    scope = base_filtered_scope @header_scope.includes(:site)
-    @total_entries = scope.count
+    
+    @header_scope   = current_user.available_groups
+    @filtered_scope = base_filtered_scope @header_scope.includes(:site)
+    @sorted_scope   = base_sorted_scope @filtered_scope
+    @total_entries  = @sorted_scope.count
     
     # For Pagination
     @per_page = 50 unless @filter_params["per_page"]
     offset = (@current_page - 1) * @per_page
      
     if @filter_params["button_view"] == "on"
-      pagination_list = scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
+      pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
       num_workgroups  = pagination_list.size
       num_missing     = @per_page - num_workgroups
       
       if num_missing > 0
-        total_workgroups = scope.where("groups.type = 'WorkGroup'").count
+        total_workgroups = @sorted_scope.where("groups.type = 'WorkGroup'").count
         sys_offset = [offset - total_workgroups, 0].max
-        pagination_list += scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
+        pagination_list += @sorted_scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
       end
       num_missing = @per_page - pagination_list.size
       if num_missing > 0 
@@ -56,7 +58,7 @@ class GroupsController < ApplicationController
       end 
       @total_entries += 1
     else
-      pagination_list  = scope.limit(@per_page).offset(offset)
+      pagination_list  = @sorted_scope.limit(@per_page).offset(offset)
     end
     
     @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
@@ -92,7 +94,7 @@ class GroupsController < ApplicationController
 
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = current_user.available_users( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     render :partial => "new"
   end
 
@@ -100,13 +102,13 @@ class GroupsController < ApplicationController
   # POST /groups.xml
   def create  #:nodoc:
 
-    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
       @group = InvisibleGroup.new(params[:group])
     else
       @group = WorkGroup.new(params[:group])
     end
     
-    unless current_user.has_role? :admin
+    unless current_user.has_role? :admin_user
       @group.site = current_user.site
     end
 
@@ -132,7 +134,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update #:nodoc:
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @group = Group.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
     else
       @group = WorkGroup.find(params[:id])
@@ -146,13 +148,13 @@ class GroupsController < ApplicationController
 
     params[:group][:user_ids] ||= []
 
-    if current_user.has_role?(:admin) && params[:invisible_group] == "1"
+    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
       @group.type = 'InvisibleGroup'
     else
       @group.type = 'WorkGroup'
     end
     
-    unless current_user.has_role? :admin
+    unless current_user.has_role? :admin_user
       params[:group][:site_id] = current_user.site_id
     end
 

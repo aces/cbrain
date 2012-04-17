@@ -33,16 +33,14 @@
   <span>
 </div>
                  
-<%= form_tag({:controller => :feedbacks, :action => :delete_feedback}, :method => :delete) do %>
-  <%= index_table(@feedbacks, :class => "resource_list") do |t| %>
-    <% 
-      t.sort_column("Summary", 'Feedback', 'summary') { |fb| link_to fb.summary, fb }
-      t.sort_column("Author", 'User', 'login', :filters => association_filters_for(Feedback.scoped, "feedback", "user", :name_method => "login")) { |fb| link_to_user_with_tooltip(fb.user) }
-      t.sort_column("Posted at", 'Feedback', 'created_at') { |fb| to_localtime(fb.created_at,:datetime) }
-      t.describe_column("Operations") do |col|
-        col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin) || current_user.id == fb.user_id}, :confirm => Proc.new { |f| "Are you sure you want to delete this feedback?" }) 
-      end 
-    %>
-  <% end %>
+<%= index_table(@feedbacks, :class => "resource_list") do |t| %>
+  <% 
+    t.sort_column("Summary", 'Feedback', 'summary') { |fb| link_to fb.summary, fb }
+    t.sort_column("Author", 'User', 'login', :filters => association_filters_for(@filtered_scope, Feedback.scoped, "feedback", "user", :name_method => "login")) { |fb| link_to_user_with_tooltip(fb.user) }
+    t.sort_column("Posted at", 'Feedback', 'created_at') { |fb| to_localtime(fb.created_at,:datetime) }
+    t.describe_column("Operations") do |col|
+      col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id}, :confirm => Proc.new { |f| "Are you sure you want to delete this feedback?" }) 
+    end 
+  %>
 <% end %>
 

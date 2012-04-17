@@ -24,12 +24,14 @@ class Site < ActiveRecord::Base
   
   Revision_info=CbrainFileRevision[__FILE__]
                                                                
-  validates_presence_of     :name
-  validates_uniqueness_of   :name
-  validate                  :prevent_group_collision, :on => :create
-  validate                  :validate_sitename
-  
-  after_create           :create_system_group
+  validates              :name, 
+                         :presence => true,
+                         :uniqueness => true,
+                         :name_format => true
+                         
+  validate               :prevent_group_collision, :on => :create
+                         
+  before_create          :create_system_group
   
   before_save            :save_old_manager_ids,
                          :save_old_user_ids   
@@ -51,23 +53,10 @@ class Site < ActiveRecord::Base
   
   attr_accessor           :manager_ids
 
-  # Returns true of +name+ is a legal site name. Also called
-  # by active record validations.
-  def self.is_legal_sitename?(name)
-    return true if Group.is_legal_groupname?(name) # because sites and groups are related
-    false
-  end
-
-  # ActiveRecord validation.
-  def validate_sitename #:nodoc:
-    unless Site.is_legal_sitename?(self.name)
-      errors.add(:name, "contains invalid characters.")
-    end
-  end
 
   #Returns users that have manager access to this site (site managers or admins).
   def managers
-    self.users.where( ["(users.role IN (?))", ["admin", "site_manager"]]) || []
+    self.users.where(:type => "SiteManager") || []
   end
   
   #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
@@ -140,7 +129,7 @@ class Site < ActiveRecord::Base
     self.managers.each do |user|
       if user.has_role? :site_manager # could be :admin too, which we leave alone
         @old_managers << user
-        user.update_attribute(:role, "user")
+        user.update_attribute(:type, "NormalUser")
       end
     end
   end
@@ -148,19 +137,23 @@ class Site < ActiveRecord::Base
   def restore_managers #:nodoc:
     @old_managers ||= []
     @old_managers.each do |user|
-      user.update_attribute(:role, "site_manager")
+      user.update_attribute(:type, "SiteManager")
     end
   end
   
   private
   
   def create_system_group #:nodoc:
-    SiteGroup.create!(:name => self.name, :site_id  => self.id)
+    site_group = SiteGroup.new(:name => self.name, :site_id  => self.id)
+    unless site_group.save
+      self.errors.add(:base, "Site Group: #{site_group.errors.full_messages.join(", ")}")
+      return false
+    end
   end
   
   def user_system_group_remove(user) #:nodoc:
     if user.has_role? :site_manager
-      user.update_attributes!(:role  => "user")
+      user.update_attribute(:type, "NormalUser")
     end
     user.own_group.update_attributes!(:site => nil)
   end
@@ -185,11 +178,11 @@ class Site < ActiveRecord::Base
     User.find(current_user_ids | current_manager_ids).each do |user|
       user.site_id = self.id
       if current_manager_ids.include?(user.id)
-        if user.has_role? :user
-          user.role = "site_manager"
+        if user.has_role? :normal_user
+          user.type = "SiteManager"
         end                
       elsif user.has_role? :site_manager
-        user.role = "user"
+        user.type = "NormalUser"
       end
       user.save(:validate => false)
     end
@@ -201,13 +194,13 @@ class Site < ActiveRecord::Base
     @unset_user_ids = @old_user_ids - current_user_ids
     site_group = self.own_group
     
-    unless self.groups.exists? site_group
+    unless site_group.blank? || self.groups.exists?(site_group)
       self.groups << site_group
     end
     
     User.find(@new_user_ids).each do |user|
       user.own_group.update_attributes!(:site => self)
-      unless user.groups.exists? site_group
+      unless site_group.blank? || self.groups.exists?(site_group)
         user.groups << site_group
       end
     end

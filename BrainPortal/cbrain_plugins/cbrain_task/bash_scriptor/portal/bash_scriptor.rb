@@ -45,7 +45,7 @@ class CbrainTask::BashScriptor < PortalTask
   def before_form
     params   = self.params
     ids      = params[:interface_userfile_ids]
-    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin
+    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin_user
     ""
   end
 
@@ -54,7 +54,7 @@ class CbrainTask::BashScriptor < PortalTask
   def after_form #:nodoc:
     params = self.params
     #cb_error "Some error occurred."
-    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin
+    cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin_user
     if self.new_record? && (params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1)
       params_errors.add(:num_files_per_task, "must be a number greater than 1.")
     end

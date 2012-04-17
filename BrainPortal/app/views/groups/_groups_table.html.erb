@@ -48,12 +48,12 @@
 
 
 <% if @filter_params["button_view"] == "on" %>
-  <% if !current_user.has_role?(:user) %>
+  <% if !current_user.has_role?(:normal_user) %>
     <%=
       index_table([], :class => "project_button_header") do |t|
         t.sort_column("Name", Group, "name") 
-        t.column("Project Type", :filters => basic_filters_for(@header_scope, Group, :type)) 
-        t.sort_column("Site", Site, "name", :filters => association_filters_for(@header_scope, Group, :site))
+        t.column("Project Type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) 
+        t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site))
         t.empty("") 
       end
     %>
@@ -90,10 +90,10 @@
       t.describe_sort_column("Name", Group, "name") do |col|
         col.cell(:class => "left") { |g|  link_to_group_if_accessible g}
       end
-      t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@header_scope, Group, :type)) do |g|        
+      t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) do |g|        
         g.pretty_category_name(current_user)
       end
-      t.sort_column("Site", Site, "name", :filters => association_filters_for(@header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
+      t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
       t.column("Users") { |g| @group_id_2_user_counts[g.id] || 0 }
       t.column("Files") do |g|
         index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, {:group_id => g.id}, :show_zeros => true
@@ -101,7 +101,7 @@
       t.column("Tasks") do |g|
         index_count_filter @group_id_2_task_counts[g.id], :tasks, {:group_id => g.id}, :show_zeros => true
       end
-      if current_user.has_role?(:admin)
+      if current_user.has_role?(:admin_user)
         t.column("Tools") do |g|
           index_count_filter @group_id_2_tool_counts[g.id], :tools, {:group_id => g.id}
         end

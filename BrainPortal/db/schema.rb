@@ -321,13 +321,13 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
     t.string   "full_name"
     t.string   "login"
     t.string   "email"
+    t.string   "type"
     t.string   "crypted_password",          :limit => 40
     t.string   "salt",                      :limit => 40
     t.string   "remember_token"
     t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "role"
     t.integer  "site_id"
     t.boolean  "password_reset",                          :default => false, :null => false
     t.string   "time_zone"
@@ -338,6 +338,6 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
-  add_index "users", ["role"], :name => "index_users_on_role"
+  add_index "users", ["type"], :name => "index_users_on_type"
 
 end

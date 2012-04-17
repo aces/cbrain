@@ -32,12 +32,12 @@
         <%= f.label :name, "Name" %><br />
         <%= f.text_field :name %>
       </p>
-      <% if current_user.has_role?(:admin) %>
+      <% if current_user.has_role?(:admin_user) %>
         <p><%= f.label :site_id, "Site" %><br/>
          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
       <% end %>
 
-      <% if current_user.has_role?(:user) %>
+      <% if current_user.has_role?(:normal_user) %>
         <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
       <% else %>
         <%= render :partial => 'users_form' %>

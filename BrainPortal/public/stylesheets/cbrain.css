@@ -755,6 +755,10 @@ pre {
   background: gray;
 }
 
+#loading_image {
+  margin: 6px;
+}
+
 #mni_logo {
     float: right;
     background-image: url(/images/mni_logo.png);
@@ -773,10 +777,6 @@ pre {
 
 .main_menu_left {
   left:6px;
-}
-
-.main_menu_right {
-  right:6px;
 }
 
 #main-menu ul {
@@ -1610,13 +1610,22 @@ img {
 /* % ######################################################### */
 
 .filter_list {
-    border: 3px solid #0471B4;
-    margin: 0;
-    padding: 1em 2em 1em 2em;
-    background-color: #05A3D6;
-    text-align: left;
-    max-height: 30em;
-    overflow: auto;
+  border: 3px solid #0471B4;
+  margin: 0;
+  padding: 1em 2em 1em 2em;
+  background-color: #05A3D6;
+  text-align: left;
+  max-height: 30em;
+  overflow: auto;
+}
+
+.filter_list li a:focus {
+  background: #FFFF99;
+  color: gray;
+}
+
+.filter_list li a.filter_zero {
+  color: #ccc;
 }
 
 .hover_dropdown {

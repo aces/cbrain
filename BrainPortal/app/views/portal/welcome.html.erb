@@ -26,7 +26,7 @@
 
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
 
-<% if current_user.has_role?(:admin) %>
+<% if current_user.has_role?(:admin_user) %>
 
     <div class="generalbox no_wrap">
     
@@ -194,7 +194,7 @@
     </div>
   
   <% end %>
-<% if current_user.has_role?(:admin) %>
+<% if current_user.has_role?(:admin_user) %>
   <fieldset>
     <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
     <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>

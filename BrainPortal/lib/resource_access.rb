@@ -50,7 +50,7 @@ module ResourceAccess
   # Returns true if +user+ can access this resource.
   # The +access_requested+ params is not used right now (reserved for future extension).
   def can_be_accessed_by?(user, access_requested = :read)
-    return true if self.user_id == user.id || user.has_role?(:admin)
+    return true if self.user_id == user.id || user.has_role?(:admin_user)
     return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id
     user.is_member_of_group(group_id)
   end
@@ -58,7 +58,7 @@ module ResourceAccess
   #Returns whether or not +user+ has owner access to this
   #resource.
   def has_owner_access?(user)
-    if user.has_role? :admin
+    if user.has_role? :admin_user
       return true
     end
     if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
@@ -80,7 +80,7 @@ module ResourceAccess
     def find_accessible_by_user(id, user, options = {})
       scope = self.scoped(options)
     
-      unless user.has_role? :admin
+      unless user.has_role? :admin_user
         scope = scope.scoped(:joins  => :user, :readonly  => false)
       
         if user.has_role? :site_manager
@@ -101,7 +101,7 @@ module ResourceAccess
     def find_all_accessible_by_user(user, options = {})
       scope = self.scoped(options)
     
-      unless user.has_role? :admin
+      unless user.has_role? :admin_user
         scope = scope.scoped(:joins  => :user, :readonly  => false)
       
         if user.has_role? :site_manager

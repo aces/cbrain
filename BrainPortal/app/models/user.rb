@@ -24,13 +24,12 @@ require 'digest/sha1'
 
 #Model representing CBrain users. 
 #All authentication of user access to the system is handle by the User model.
-#User level access to pages are handled through a given user's +role+ (either *admin* or *user*).
+#User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
 #
 #=Attributes:
 #[*full_name*] The full name of the user.
 #[*login*] The user's login ID.
 #[*email*] The user's e-mail address.
-#[*role*]  The user's role.
 #= Associations:
 #*Has* *many*:
 #* Userfile
@@ -52,21 +51,27 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name, :login, :role
-  validates_length_of       :login,    :within => 3..40
-  validates_format_of       :login,    :with => /^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/
+  validates_presence_of     :full_name
+  
+  validates                 :login,    
+                            :length => { :within => 3..40 },
+                            :uniqueness => {:case_sensitive => false},
+                            :presence => true,
+                            :filename_format => true
+                            
   validates                 :password,
                             :length => { :minimum => 8 },
                             :confirmation => true,
                             :presence => true,
                             :if => :password_required?
+                            
   validates_presence_of     :password_confirmation,      :if => :password_required?
+  
   validates                 :email,    
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
-  validates_uniqueness_of   :login, :case_sensitive => false
+                            
   validate                  :immutable_login,            :on => :update
-  validate                  :site_manager_check
   validate                  :password_strength_check,    :if => :password_required?
   
   before_create             :add_system_groups
@@ -103,12 +108,12 @@ class User < ActiveRecord::Base
     
   #Return the admin user
   def self.admin
-    @admin ||= self.find_by_login("admin")
+    @@admin ||= self.find_by_login("admin")
   end
   
-  #Return all users with role 'admin'
+  #Return all users with admin users.
   def self.all_admins
-    @all_admins ||= self.find_all_by_role("admin")
+    @@all_admins ||= AdminUser.all
   end
   
   # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
@@ -179,79 +184,57 @@ class User < ActiveRecord::Base
     save(:validate => false)
   end
   
+  ###############################################
+  #
+  # Permission methods
+  #
+  ###############################################
+  
   #Does this user's role match +role+?
   def has_role?(role)
-    return self.role == role.to_s
+    return self.class == role.to_s.classify.constantize
+  end
+  
+  #Does this user have +role+ rights?
+  def has_rights?(role)
+    return self.is_a? role.to_s.classify.constantize
   end
   
   #Find the tools that this user has access to.
-  def available_tools(options = {})
-    if self.has_role? :admin
-      Tool.scoped(options)
-    elsif self.has_role? :site_manager
-      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?) OR tools.user_id IN (?)", self.id, self.group_ids, self.site.user_ids])
-    else
-      Tool.scoped(options).where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
-    end
+  def available_tools
+    cb_error "#available_tools called from User base class! Method must be implement in a subclass."
   end
   
   #Find the scientific tools that this user has access to.
-  def available_scientific_tools(options = {})
-    self.available_tools(options).where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
+  def available_scientific_tools
+    self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
   
   #Find the conversion tools that this user has access to.
-  def available_conversion_tools(options = {})
-    self.available_tools(options).where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
+  def available_conversion_tools
+    self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
   
   #Return the list of groups available to this user based on role.
-  def available_groups(options = {})
-    if self.has_role? :admin
-      group_scope = Group.where(options)
-    elsif self.has_role? :site_manager
-      group_scope = Group.where(options)
-      group_scope = group_scope.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-      group_scope = group_scope.where("groups.name <> 'everyone'")
-      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
-    else                  
-      group_scope = self.groups.where(options)
-      group_scope = group_scope.where("groups.name <> 'everyone'")
-      group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
-    end
-    
-    group_scope
+  def available_groups
+    cb_error "#available_groups called from User base class! Method must be implement in a subclass."
   end
   
-  def available_tags(options = {})
-    Tag.where(options).where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
+  def available_tags
+    Tag.where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
   
-  def available_tasks(options = {})
-    if self.has_role? :admin
-      CbrainTask.where(options)
-    elsif self.has_role? :site_manager
-      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.id, self.group_ids, self.site.user_ids] )
-    else
-      CbrainTask.where(options).where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
-    end
+  def available_tasks
+    cb_error "#available_tasks called from User base class! Method must be implement in a subclass."
   end
   
   #Return the list of users under this user's control based on role.
-  def available_users(options = {})
-    if self.has_role? :admin
-      user_scope = User.where(options)
-    elsif self.has_role? :site_manager
-      user_scope = self.site.users.where(options)
-    else
-      user_scope = User.where( :id => self.id ).where(options)
-    end
-    
-    user_scope
+  def available_users
+    cb_error "#available_users called from User base class! Method must be implement in a subclass."
   end
 
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
-    return true if user.has_role? :admin
+    return true if user.has_role? :admin_user
     return true if user.has_role?(:site_manager) && self.site_id == user.site_id
     self.id == user.id
   end
@@ -323,6 +306,12 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
+   
+  def prevent_group_collision #:nodoc:
+    if self.login && SystemGroup.find_by_name(self.login)
+      errors.add(:login, "already in use by an existing project.")
+    end
+  end
   
   def immutable_login #:nodoc:
     if self.changed.include? "login"
@@ -352,12 +341,6 @@ class User < ActiveRecord::Base
     end
   end
   
-  def site_manager_check  #:nodoc:
-    if self.role == "site_manager" && self.site_id.blank?
-      errors.add(:site_id, "manager role must be associated with a site.")
-    end
-  end
-  
   def password_strength_check #:nodoc:
     score = 0
     unless self.password.blank?
@@ -368,7 +351,7 @@ class User < ActiveRecord::Base
       score += 1 if self.password.length > 14
     end
     if score < 3
-      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length.")
+      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
     end
   end
   
@@ -378,16 +361,16 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    userGroup = UserGroup.new(:name => self.login, :site  => self.site)
-    unless userGroup.save
-      self.errors.add(:base, "User Group: #{userGroup.errors.full_messages.join(", ")}")
+    user_group = UserGroup.new(:name => self.login, :site  => self.site)
+    unless user_group.save
+      self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
       return false
     end
     
-    everyoneGroup = Group.everyone
+    everyone_group = Group.everyone
     group_ids = self.group_ids
-    group_ids << userGroup.id
-    group_ids << everyoneGroup.id
+    group_ids << user_group.id
+    group_ids << everyone_group.id
     if self.site
       site_group = SiteGroup.find_by_name(self.site.name)
       group_ids << site_group.id

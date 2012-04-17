@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe ActRecMetaData do
-  let(:current_user) {Factory.create(:user)}
+  let(:current_user) {Factory.create(:normal_user)}
   before(:each) do
     current_user.meta.attributes = {"key1" => "val1", "key2" => "val2"}
   end
@@ -124,7 +124,7 @@ describe ActRecMetaData do
   end
 
   describe "#find_all_by_meta_data" do # possible de le tester en faisant appel a la methode 
-    let(:other_user) {Factory.create(:user)}
+    let(:other_user) {Factory.create(:normal_user)}
       before(:each) do
         other_user.meta.attributes = {"key1" => "new_val1"}
     end

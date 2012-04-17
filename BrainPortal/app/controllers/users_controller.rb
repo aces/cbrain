@@ -37,7 +37,8 @@ class UsersController < ApplicationController
     
     @header_scope = current_user.available_users
     
-    @users = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
+    @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
+    @users          = base_sorted_scope @filtered_scope
 
     # Precompute file and task counts.
     @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
@@ -90,9 +91,9 @@ class UsersController < ApplicationController
     # reset_session
     params[:user] ||= {}
 
-    # These atributes must be set explicitely
+    # These attributes must be set explicitely
     login          = params[:user].delete :login
-    role           = params[:user].delete :role
+    type           = params[:user].delete :type
     group_ids      = params[:user].delete :group_ids
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
@@ -101,9 +102,9 @@ class UsersController < ApplicationController
  
     @user = User.new(params[:user])
 
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @user.login          = login     if login
-      @user.role           = role      if role
+      @user.type           = type      if type
       @user.group_ids      = group_ids if group_ids
       @user.site_id        = site_id   if site_id
       @user.account_locked = (account_locked == "1")
@@ -113,11 +114,11 @@ class UsersController < ApplicationController
       @user.login          = login     if login
       @user.group_ids      = group_ids if group_ids
       @user.account_locked = (account_locked == "1")
-      if role 
-        if role == 'site_manager'
-          @user.role = 'site_manager'
+      if type 
+        if type == 'SiteManager'
+          @user.type = 'SiteManager'
         else
-          @user.role = 'user'
+          @user.type = 'NormalUser'
         end
       end
       @user.site = current_user.site
@@ -167,16 +168,16 @@ class UsersController < ApplicationController
       params[:user][:time_zone] = nil # change "" to nil
     end
     
-    # These atributes must be set explicitely
-    role           = params[:user].delete :role
+    # These attributes must be set explicitely
+    type           = params[:user].delete :type
     group_ids      = params[:user].delete :group_ids
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
     
     @user.attributes = params[:user]
     
-    if current_user.has_role? :admin
-      @user.role           = role             if role
+    if current_user.has_role? :admin_user
+      @user.type           = type             if type
       @user.group_ids      = group_ids        if group_ids
       @user.site_id        = site_id          if site_id
       @user.account_locked = (account_locked == "1")
@@ -185,11 +186,11 @@ class UsersController < ApplicationController
     
     if current_user.has_role? :site_manager
       @user.group_ids = group_ids if group_ids
-      if role 
-        if role == 'site_manager'
-          @user.role = 'site_manager'
+      if type 
+        if type == 'SiteManager'
+          @user.type = 'SiteManager'
         else
-          @user.role = 'user'
+          @user.type = 'NormalUser'
         end
       end
       @user.site = current_user.site
@@ -199,7 +200,7 @@ class UsersController < ApplicationController
       if @user.update_attributes_with_logging( nil, current_user, %w( full_name login email role city country account_locked ) )
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
-        format.html { redirect_to @user }
+        format.html { redirect_to :action  => :show }
         format.xml  { head :ok }
       else
         @user.reload
@@ -210,7 +211,7 @@ class UsersController < ApplicationController
   end
 
   def destroy #:nodoc:
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @user = User.find(params[:id])
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
@@ -236,7 +237,7 @@ class UsersController < ApplicationController
   end
 
   def switch #:nodoc:
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @user = User.find(params[:id])
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])

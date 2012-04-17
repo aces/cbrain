@@ -41,13 +41,23 @@ class TasksController < ApplicationController
     end
     
     @header_scope = @header_scope.real_tasks
-    scope = base_filtered_scope(@header_scope)
-    
     @header_scope = @header_scope.where( :bourreau_id => bourreau_ids )
     
+    @filtered_scope = base_filtered_scope(@header_scope)
+    
     if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.where( :bourreau_id => bourreau_ids )
+      @filtered_scope = @filtered_scope.where( :bourreau_id => bourreau_ids )
     end
+    
+    # Handle custom filters
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
+    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter = TaskCustomFilter.find(custom_filter_id)
+      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
+    end
+    
+    scope = @filtered_scope
 
     if request.format.to_sym == :xml
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
@@ -71,13 +81,6 @@ class TasksController < ApplicationController
       end
     end
 
-    # Handle custom filters
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = TaskCustomFilter.find(custom_filter_id)
-      scope = custom_filter.filter_scope(scope)
-    end
 
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
@@ -148,7 +151,7 @@ class TasksController < ApplicationController
       scope = current_user.available_tasks
     end
     
-    scope = base_filtered_scope(scope)
+    scope = base_sorted_scope base_filtered_scope(scope)
     
     scope = scope.where( :launch_time => params[:launch_time] )
     
@@ -711,9 +714,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil ), false).select("id").map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").map(&:id)
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids ), false).select("id").map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").map(&:id)
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -755,7 +758,7 @@ class TasksController < ApplicationController
           next
         end
 
-        if task.user_id != current_user.id && current_user.role != 'admin'
+        if task.user_id != current_user.id && current_user.type != 'AdminUser'
           sent_skipped += 1
           next 
         end

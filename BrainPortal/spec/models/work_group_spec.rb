@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe WorkGroup do
-  let(:current_user) {Factory.create(:user)}
+  let(:current_user) {Factory.create(:normal_user)}
   
   describe "#pretty_category_name" do
     it "should give pretty name 'My Work Project' if it belongs to the current user" do
@@ -31,7 +31,7 @@ describe WorkGroup do
     end
     
     it "should give pretty name 'Personal Work Project of...' if it's a personal project belonging to someone other than the current user" do
-      user  = Factory.create(:user)
+      user  = Factory.create(:normal_user)
       Factory.create(:work_group, :users => [user]).pretty_category_name(current_user).should == "Personal Work Project of #{user.login}"
     end
     
@@ -43,21 +43,21 @@ describe WorkGroup do
   describe "#can_be_edited_by?" do
     it "should allow edit access to admin user" do
       group = Factory.create(:work_group)
-      user  = Factory.create(:user, :role => "admin")
+      user  = Factory.create(:admin_user)
       group.can_be_edited_by?(user).should be_true
     end
     
     it "should allow edit access to site manager if group belongs to site" do
       site  = Factory.create(:site)
       group = Factory.create(:work_group, :site_id => site.id)
-      user  = Factory.create(:user, :role => "site_manager", :site_id => site.id)
+      user  = Factory.create(:site_manager, :site_id => site.id)
       group.can_be_edited_by?(user).should be_true
     end
     
     it "should not allow edit access to site manager if group does belong to site" do
       site  = Factory.create(:site)
       group = Factory.create(:work_group)
-      user  = Factory.create(:user, :role => "site_manager", :site_id => site.id)
+      user  = Factory.create(:site_manager, :site_id => site.id)
       group.can_be_edited_by?(user).should be_false
     end
     
@@ -72,7 +72,7 @@ describe WorkGroup do
     end
     
     it "should not allow edit access to user if not only user in group" do
-      user  = Factory.create(:user)
+      user  = Factory.create(:normal_user)
       group = Factory.create(:work_group, :users => [current_user, user])
       group.can_be_edited_by?(current_user).should be_false
     end 

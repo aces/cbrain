@@ -24,7 +24,7 @@ require 'spec_helper'
 
 describe IncomingVaultSshDataProvider do
   let(:incoming_vault_ssh_data_provider) {Factory.create(:incoming_vault_ssh_data_provider)}
-  let(:user) {Factory.create(:user)}
+  let(:user) {Factory.create(:normal_user)}
   
   describe "#is_browsable?" do
     

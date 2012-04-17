@@ -138,10 +138,10 @@ class ApplicationController < ActionController::Base
     unsigned_agreements = current_user.unsigned_license_agreements
     unless unsigned_agreements.empty?
       return if params[:controller] == "portal" && params[:action] =~ /license$/
-      return if current_user.has_role?(:admin) && params[:controller] == "bourreaux"
+      return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
         redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-      elsif current_user.has_role?(:admin)
+      elsif current_user.has_role?(:admin_user)
         flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
         flash[:error] += "Please place the license file in /public/licenses or remove it from below."
         redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
@@ -276,7 +276,7 @@ class ApplicationController < ActionController::Base
   def start_page_path
     return "#" unless current_user
     
-    if current_user.has_role?(:user)
+    if current_user.has_role?(:normal_user)
       url_for(:controller => :groups, :action => :index)
     else   
       url_for(:controller => :portal, :action => :welcome)

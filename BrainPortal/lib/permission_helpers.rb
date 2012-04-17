@@ -29,9 +29,10 @@ module PermissionHelpers
     end
   end
   
-  #Checks that the current user's role matches +role+.
+  #Checks that the current user's has at least the rights associated
+  #with +role+.
   def check_role(role)
-    current_user && current_user.role.to_sym == role.to_sym
+    current_user && current_user.has_rights?(role)
   end
   
   #Checks that the current user is not the default *admin* user.
@@ -42,7 +43,7 @@ module PermissionHelpers
   #Checks that the current user is the same as +user+. Used to ensure permission
   #for changing account information.
   def edit_permission?(user)
-    result = current_user && user && (current_user == user || current_user.role == 'admin' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
+    result = current_user && user && (current_user == user || current_user.type == 'AdminUser' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
   end
   
   #Helper method to render and error page. Will render public/<+status+>.html
@@ -61,7 +62,7 @@ module PermissionHelpers
       flash.now[:error] += "This portal is currently locked for maintenance."
       message = BrainPortal.current_resource.meta[:portal_lock_message]
       flash.now[:error] += "\n#{message}" unless message.blank?
-      unless current_user && current_user.has_role?(:admin)
+      unless current_user && current_user.has_role?(:admin_user)
         respond_to do |format|
           format.html {redirect_to logout_path unless params[:controller] == "sessions"}
           format.xml  {render :xml => {:message => message}, :status => 503}

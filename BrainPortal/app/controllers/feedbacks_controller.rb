@@ -32,8 +32,8 @@ class FeedbacksController < ApplicationController
     @filter_params["sort_hash"]["order"] ||= 'feedbacks.created_at'
     @filter_params["sort_hash"]["dir"] ||= 'DESC'
     
-    @feedbacks = base_filtered_scope
-    @feedbacks = @feedbacks.includes(:user)
+    @filtered_scope = base_filtered_scope
+    @feedbacks      = base_sorted_scope @filtered_scope.includes(:user)
 
     respond_to do |format|
       format.js

@@ -30,13 +30,13 @@
 
   <span class="home_credits">
     <% if current_user %>
-      <% if current_user.try(:has_role?, :admin) %>
+      <% if current_user.try(:has_role?, :admin_user) %>
         <%= link_to "Dashboard", home_path %>
       <% end %>
-      <%= link_to 'My Account', current_user %>
+      <%= link_to 'My Account', user_path(current_user) %>
       <%= link_to 'Projects', groups_path %>
       <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
-      <% if current_user.has_role?(:user) %>
+      <% if current_user.has_role?(:normal_user) %>
         <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
           <%= link_to 'Data Providers', data_providers_path %><BR>
           <%= link_to 'Servers', bourreaux_path %><BR>

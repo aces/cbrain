@@ -35,8 +35,10 @@ class MessagesController < ApplicationController
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
     
     scope = base_filtered_scope
+
+    scope = base_sorted_scope(scope)
     scope = scope.includes(:user)
-    unless current_user.has_role?(:admin)
+    unless current_user.has_role?(:admin_user)
       scope = scope.where(:user_id => current_user.available_users.map(&:id))
     end                             
     @total_entries = scope.count
@@ -111,7 +113,7 @@ class MessagesController < ApplicationController
   # PUT /messages/1
   # PUT /messages/1.xml
   def update #:nodoc:
-    if current_user.has_role? :admin
+    if current_user.has_role? :admin_user
       @message = Message.find(params[:id])
     else
       @message = current_user.messages.find(params[:id])
@@ -133,7 +135,7 @@ class MessagesController < ApplicationController
   # Delete multiple messages.
   def delete_messages #:nodoc:
     id_list = params[:message_ids] || []
-    if current_user.has_role?(:admin)
+    if current_user.has_role?(:admin_user)
       message_list = Message.find(id_list)
     else
       message_list = current_user.messages.find(id_list)
@@ -152,7 +154,7 @@ class MessagesController < ApplicationController
   # DELETE /messages/1
   # DELETE /messages/1.xml
   def destroy #:nodoc:
-    if current_user.has_role?(:admin)
+    if current_user.has_role?(:admin_user)
       @message = Message.find(params[:id])
     else
       @message = current_user.messages.find(params[:id])
