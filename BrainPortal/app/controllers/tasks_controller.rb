@@ -514,8 +514,8 @@ class TasksController < ApplicationController
     end
 
     # Security checks
-    @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.user     = @task.changed_attributes['user_id']  || @task.user_id   unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group    = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
     commit_button = params[:commit] || "Start" # default
@@ -566,6 +566,137 @@ class TasksController < ApplicationController
     flash[:notice] += messages + "\n" unless messages.blank?
     flash[:notice] += "New task parameters saved. See the logs for changes, if any.\n"
     redirect_to :action => :show, :id => @task.id
+  end
+
+  def update_multiple #:nodoc:
+    
+    # Construct task_ids and batch_ids
+    task_ids    = Array(params[:tasklist]  || [])
+    batch_ids   = Array(params[:batch_ids] || [])
+    
+    if batch_ids.delete "nil"
+      task_ids += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").all.map(&:id)
+    end
+    task_ids   += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").all.map(&:id)
+    task_ids    = task_ids.map(&:to_i).uniq
+    
+    # If params[:commit] not present
+    commit_value = params[:commit]
+    unless commit_value.present?
+      flash[:error] = "No operation to perform."
+      redirect_to :action => :index, :format  => request.format.to_sym
+      return
+    end
+
+    unable_to_update = ""
+    field_to_update  =
+      case commit_value
+        when "Update Owner"
+          new_user_id = params[:task][:user_id].to_i
+          unable_to_update = "user"   if 
+          ! current_user.available_users.where(:id => new_user_id).exists?
+          :user
+        when "Update Projects"
+          new_group_id = params[:task][:group_id].to_i
+          unable_to_update = "project" if 
+          ! current_user.available_groups.where(:id => new_group_id).exists?
+          :group
+        when "Update Data Provider"
+          new_dp_id = params[:task][:results_data_provider_id].to_i
+          unable_to_update = "data provider" if 
+          ! DataProvider.find_all_accessible_by_user(current_user).where(:id => new_dp_id).exists?
+          :results_data_provider
+        when "Update Tool Version"
+          new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)  
+          unable_to_update = "tool version" if 
+            ! tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
+          :tool_config
+        else
+        :unknown   
+      end
+
+    if unable_to_update.present?
+      flash[:error] = "You do not have access to this #{unable_to_update}."
+      redirect_to :action => :index, :format  => request.format.to_sym
+      return
+    end
+
+    # For unknown field
+    if field_to_update == :unknown
+      flash[:error] = "Unknown field to update."
+      redirect_to :action => :index, :format  => request.format.to_sym
+      return
+    end
+    
+    do_in_spawn   = task_ids.size > 5
+    success_count = 0
+
+    CBRAIN.spawn_with_active_records_if(false,current_user,"Sending update to tasks") do
+      accessible_bourreau = Bourreau.find_all_accessible_by_user(current_user)
+      tasklist            = CbrainTask.where(:id => task_ids, :bourreau_id => accessible_bourreau).all
+
+      # Remove tasks who aren't accessible by current_user
+      tasklist.reject! { |task| ! task.has_owner_access?(current_user) }
+
+      operation = 
+        case field_to_update
+          when :user
+            ["update_attributes", {:user_id => new_user_id}]
+          when :group
+            user_to_avail_group_ids = {}
+            tasklist.reject! do |task|
+              t_uid = task.user_id
+              # Task user need to have access to new group
+              user_to_avail_group_ids[t_uid] ||= User.find(t_uid).available_groups.map(&:id).index_by { |id| id }
+              (! user_to_avail_group_ids[t_uid][new_group_id])
+            end
+            ["update_attributes", {:group_id => new_group_id}]
+          when :results_data_provider
+            user_to_avail_dp_ids = {}
+            tasklist.reject! do |task|
+              t_uid = task.user_id
+              # Task user need to have access to new data provider
+              user_to_avail_dp_ids[t_uid] ||= DataProvider.find_all_accessible_by_user(User.find(t_uid)).index_by { |dp| dp.id }
+              (! user_to_avail_dp_ids[t_uid][new_dp_id])
+            end
+            ["update_attributes", {:results_data_provider_id => new_dp_id}]
+          when :tool_config
+            user_to_avail_new_tool_config = {}
+            old_tcid_to_tool_id           = {}
+            tasklist.reject! do |task|
+              t_uid    = task.user_id
+              old_tcid = task.tool_config_id
+              old_bid  = task.bourreau_id
+              # Task user need to have access to bourreau and tool linked to tool_config
+              user_to_avail_new_tool_config[t_uid] ||= new_tool_config.bourreau_and_tool_can_be_accessed_by?(User.find(t_uid)) ? 1 : 0
+              # old tool_config and new tool_config need to concern same tool
+              old_tcid_to_tool_id[old_tcid] ||= ToolConfig.find(old_tcid).tool_id
+              # (user has access to new tc)                     (new tc is same tool as old tc)                         (new tc has same bourreau as old tc)
+              (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
+            end
+            ["update_attributes", {:tool_config_id => new_tool_config.id}]
+        end
+
+      tasklist.each { |task| success_count += 1 if task.send(*operation) }  
+
+      if do_in_spawn
+        Message.send_message(current_user, {
+          :header        => "Finished sending update to your tasks.",
+          :message_type  => :notice,
+          :variable_text => "#{view_pluralize(success_count, "task")} updated."
+          }
+        )
+      end
+
+    end # End of spawn_if block
+
+    if do_in_spawn
+      flash[:notice] = "The tasks are being updated in background."
+    else
+      flash[:notice] = "#{view_pluralize(success_count, "task")} updated"
+    end
+    
+    redirect_to :action => :index, :format  => request.format.to_sym
   end
 
   #This action handles requests to modify the status of a given task.

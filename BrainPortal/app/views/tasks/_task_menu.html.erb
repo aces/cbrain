@@ -24,189 +24,197 @@
 
 <div class="menu_bar">
 
-
-        <%= button_with_dropdown_menu("For Queued Tasks") do %>
-          <p class="dropmenu_info">
-            This panel allows you to affect tasks that are still in the Execution Server's queue and not
-            yet on CPU. Not all Execution Servers support these operations.
-          </p>
-          <p class="centered">
-            <%= hijacker_submit_button("Hold Queued Tasks",  :url => url_for(:action  => :operation, :operation => 'hold'), :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("Release Held Tasks", :url => url_for(:action  => :operation, :operation => 'release'), :method  => :post, :datatype => :script, :class => "button") %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("For Running Tasks") do %>
-          <p class="dropmenu_info">
-            This panel allows you to affect tasks that are running on their Execution Servers.
-            Not all Execution Servers support these operations.
-          </p>
-          <p class="centered">
-            <%= hijacker_submit_button("Suspend Running Tasks",  :url => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("Resume Suspended Tasks", :url => url_for(:action  => :operation, :operation => 'resume'), :method  => :post, :datatype => :script, :class => "button") %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("For Failed Tasks") do %>
-          <p class="dropmenu_info">
-            This panel allows you to affect tasks that have failed, one way or another.
-            Trying to recover from errors will trigger cleanup code and a restart at
-            the closest successful processing stage before it failed. It doesn't always
-            work but it's often useful to try at least once!
-          </p>
-          <p class="centered">
-            <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("For Completed Tasks") do %>
-          <p class="dropmenu_info">
-            This panel allows you to affect tasks that have completed successfully.
-            You can try to restart them at three different stages in their lifecycle:
-          </p>
-          <p class="dropmenu_info">
-            <ul>
-               <li>At <strong>Setup</strong>, when input data files<br/>
-                   are synchronized on the Execution server and the<br/>
-                   processing scripts are created.</li>
-               <li>At <strong>Cluster</strong>, when the scientific scripts<br/>
-                   are actually run on the Execution Server's nodes.</li>
-               <li>At <strong>Post Processing</strong>, when the resulting output<br/>
-                   files are sent back to the CBRAIN Data Providers.</li>
-            </ul>
-          </p>
-          <p class="centered">
-            <strong>Restart at:</strong><br/>
-            <%= hijacker_submit_button("\"Setup\" stage", :url => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("\"Cluster\" stage",             :url => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("\"Post Processing\" stage",     :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post, :datatype => :script, :class => "button") %>
-          <p/>
-          <p class="dropmenu_info">
-            You can also duplicate tasks and recreate them on a different
-            Execution Server. Before restarting them, make sure to adjust
-            their tool version, though.
-          </p>
-          <p class="centered">
-            <%= hijacker_submit_button("Duplicate Tasks", :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post, :datatype => :script, :class => "button") %>
-            on Execution Server: <%= bourreau_select :dup_bourreau_id %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("Terminating And Cleaning Up") do %>
-          <p class="dropmenu_info">
-            This panel allows you to affect tasks that you no longer need.
-            You can terminate tasks that are at any point in their lifecycle, even
-            failed tasks. Tasks marked <strong>Terminated</strong> can be restarted
-            later on.
-          </p>
-          <p class="centered">
-            <%= 
-              hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'), 
-                                                        :method  => :post, 
-                                                        :datatype => :script, 
-                                                        :class => "button",
-                                                        :confirm => "Are you sure you want to terminate the selected tasks?"
-                                                        ) 
-            %>
-          </p>
-          <p class="dropmenu_info">
-            It's also possible to remove the tasks' work directories
-            on the Execution Server while leaving the rest of the tasks'
-            information intact. This is useful to free space on the Server
-            or when the tasks have processed confidential information that
-            you'd rather not leave over there. The panel <em>Archiving</em>
-            on the left provides you with other options for disposing of
-            the tasks' work directories.
-          <p/>
-          <p class="centered">
-            <%= 
-              hijacker_submit_button("Remove Work Directories", :url => url_for(:action  => :operation, :operation => 'zap_wd'),    
-                                                        :method  => :post, 
-                                                        :datatype => :script, 
-                                                        :class => "button", 
-                                                        :confirm =>
-                        "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
-                                                        ) 
-            %>
-          <p/>
-          <p class="dropmenu_info">
-            Finally, you can remove tasks completely. This will erase the task's work directory
-            on the Execution Server, including temporary data files, but will not erase
-            a successful task's output files. This is useful if you have
-            confidential data, for instance. Removing a task <strong>will</strong> delete any
-            archives of the task's work directory, if any (as indicated by
-            the symbols <%= colored_archived_status(:workdir) %> and
-            <%= colored_archived_status(:userfile) %> in the 'Workdir Size' column).
-          </p>
-          <p class="centered">
-            <%= 
-              hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),    
-                                                        :method  => :post, 
-                                                        :datatype => :script, 
-                                                        :class => "button", 
-                                                        :confirm =>
-                        "Are you sure you want to remove the selected tasks?\n\n" +
-                        "IMPORTANT NOTE: This will also remove their archived work directories, if any."
-                                                        ) 
-            %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("Archiving") do %>
-          <p class="dropmenu_info">
-            This panel allows you to archive the content of the work directory
-            of your tasks. This can only be done on tasks that are in a final
-            state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.
-          </p>
-          <p class="dropmenu_info">
-            The process can take a very long time for each task being archived or restored, so
-            be patient and do not request this action multiple times in parallel.
-          </p>
-          <p class="dropmenu_info">
-            There are two different 'levels' of archiving:<br/>
-            <ul>
-              <li class="dropmenu_info">
-                Archiving <em>On Cluster</em> means that the task's files will be compressed
-                and archived but will stay on the cluster's side. Such tasks are shown
-                with the symbol <%= colored_archived_status(:workdir) %> in the index table.
-              </li>
-              <li class="dropmenu_info">
-                Archiving <em>As File</em> means that the archive will
-                be brought back to your file manager as a '<%= TaskWorkdirArchive.pretty_type %>' file
-                and no data at all will be left on the cluster side. Such tasks are shown
-                with the symbol <%= colored_archived_status(:userfile) %> in the index table.
-              </li>
-            </ul>
-          </p>
-          <p class="dropmenu_info">
-            The rest of the information about the tasks will not be affected in any way
-            when they are archived. No operation can be performed on archived task, except
-            of course unarchiving them.
-          </p>
-          <p class="centered">
-            <%= hijacker_submit_button("Archive On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("Archive As File",    :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "button") %>
-            <%= hijacker_submit_button("Unarchive Tasks",    :url => url_for(:action  => :operation, :operation => 'unarchive'),    :method  => :post, :datatype => :script, :class => "button") %>
-            <br/>
-            <br/>
-            Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br/>
-            <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
-          <p/>
-        <% end %>
-
-
-        <%= button_with_dropdown_menu("Filters") do %>
-          <%= render :partial => 'tasks/filters' %>
-        <% end %>
-
-        <span id="view_option_button">
-          <%= render :partial => 'view_option_button' %>
-        </span>
+  <%= button_with_dropdown_menu("Update Attributes") do %>
+    <% if !current_user.has_role?(:user) %>
+      Change Owner:
+      <%= user_select('task[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
+      <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+      <hr>
+    <% end %>
+    Change Project:
+    <%= group_select('task[group_id]', {}, { :include_blank => "(select another project)" } ) %>
+    <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <hr>
+    Change Data Provider For Results:
+    <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(select another data provider)" } ) %>
+    <%= hijacker_submit_button("Update Data Provider", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <hr>
+    Change Tool Version:
+    <%= tool_config_select('task[tool_config_id]', {:tool_configs => ToolConfig.specific_versions.select { |tc| tc.can_be_accessed_by?(current_user) } , :include_blank => "(select another tool config)" } ) %>
+    <%= hijacker_submit_button("Update Tool Version", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("For Running Tasks") do %>
+    <p class="dropmenu_info">
+      This panel allows you to affect tasks that are running on their Execution Servers.
+      Not all Execution Servers support these operations.
+    </p>
+    <p class="centered">
+      <%= hijacker_submit_button("Suspend Running Tasks",  :url => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("Resume Suspended Tasks", :url => url_for(:action  => :operation, :operation => 'resume'), :method  => :post, :datatype => :script, :class => "button") %>
+    <p/>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("For Failed Tasks") do %>
+    <p class="dropmenu_info">
+      This panel allows you to affect tasks that have failed, one way or another.
+      Trying to recover from errors will trigger cleanup code and a restart at
+      the closest successful processing stage before it failed. It doesn't always
+      work but it's often useful to try at least once!
+    </p>
+    <p class="centered">
+      <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
+    <p/>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("For Completed Tasks") do %>
+    <p class="dropmenu_info">
+      This panel allows you to affect tasks that have completed successfully.
+      You can try to restart them at three different stages in their lifecycle:
+    </p>
+    <p class="dropmenu_info">
+      <ul>
+         <li>At <strong>Setup</strong>, when input data files<br/>
+             are synchronized on the Execution server and the<br/>
+             processing scripts are created.</li>
+         <li>At <strong>Cluster</strong>, when the scientific scripts<br/>
+             are actually run on the Execution Server's nodes.</li>
+         <li>At <strong>Post Processing</strong>, when the resulting output<br/>
+             files are sent back to the CBRAIN Data Providers.</li>
+      </ul>
+    </p>
+    <p class="centered">
+      <strong>Restart at:</strong><br/>
+      <%= hijacker_submit_button("\"Setup\" stage", :url => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("\"Cluster\" stage",             :url => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("\"Post Processing\" stage",     :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post, :datatype => :script, :class => "button") %>
+    <p/>
+    <p class="dropmenu_info">
+      You can also duplicate tasks and recreate them on a different
+      Execution Server. Before restarting them, make sure to adjust
+      their tool version, though.
+    </p>
+    <p class="centered">
+      <%= hijacker_submit_button("Duplicate Tasks", :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post, :datatype => :script, :class => "button") %>
+      on Execution Server: <%= bourreau_select :dup_bourreau_id %>
+    <p/>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("Terminating And Cleaning Up") do %>
+    <p class="dropmenu_info">
+      This panel allows you to affect tasks that you no longer need.
+      You can terminate tasks that are at any point in their lifecycle, even
+      failed tasks. Tasks marked <strong>Terminated</strong> can be restarted
+      later on.
+    </p>
+    <p class="centered">
+      <%= 
+        hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'), 
+                                                  :method  => :post, 
+                                                  :datatype => :script, 
+                                                  :class => "button",
+                                                  :confirm => "Are you sure you want to terminate the selected tasks?"
+                                                  ) 
+      %>
+    </p>
+    <p class="dropmenu_info">
+      It's also possible to remove the tasks' work directories
+      on the Execution Server while leaving the rest of the tasks'
+      information intact. This is useful to free space on the Server
+      or when the tasks have processed confidential information that
+      you'd rather not leave over there. The panel <em>Archiving</em>
+      on the left provides you with other options for disposing of
+      the tasks' work directories.
+    <p/>
+    <p class="centered">
+      <%= 
+        hijacker_submit_button("Remove Work Directories", :url => url_for(:action  => :operation, :operation => 'zap_wd'),    
+                                                  :method  => :post, 
+                                                  :datatype => :script, 
+                                                  :class => "button", 
+                                                  :confirm =>
+                  "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
+                                                  ) 
+      %>
+    <p/>
+    <p class="dropmenu_info">
+      Finally, you can remove tasks completely. This will erase the task's work directory
+      on the Execution Server, including temporary data files, but will not erase
+      a successful task's output files. This is useful if you have
+      confidential data, for instance. Removing a task <strong>will</strong> delete any
+      archives of the task's work directory, if any (as indicated by
+      the symbols <%= colored_archived_status(:workdir) %> and
+      <%= colored_archived_status(:userfile) %> in the 'Workdir Size' column).
+    </p>
+    <p class="centered">
+      <%= 
+        hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),    
+                                                  :method  => :post, 
+                                                  :datatype => :script, 
+                                                  :class => "button", 
+                                                  :confirm =>
+                  "Are you sure you want to remove the selected tasks?\n\n" +
+                  "IMPORTANT NOTE: This will also remove their archived work directories, if any."
+                                                  ) 
+      %>
+    <p/>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("Archiving") do %>
+    <p class="dropmenu_info">
+      This panel allows you to archive the content of the work directory
+      of your tasks. This can only be done on tasks that are in a final
+      state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.
+    </p>
+    <p class="dropmenu_info">
+      The process can take a very long time for each task being archived or restored, so
+      be patient and do not request this action multiple times in parallel.
+    </p>
+    <p class="dropmenu_info">
+      There are two different 'levels' of archiving:<br/>
+      <ul>
+        <li class="dropmenu_info">
+          Archiving <em>On Cluster</em> means that the task's files will be compressed
+          and archived but will stay on the cluster's side. Such tasks are shown
+          with the symbol <%= colored_archived_status(:workdir) %> in the index table.
+        </li>
+        <li class="dropmenu_info">
+          Archiving <em>As File</em> means that the archive will
+          be brought back to your file manager as a '<%= TaskWorkdirArchive.pretty_type %>' file
+          and no data at all will be left on the cluster side. Such tasks are shown
+          with the symbol <%= colored_archived_status(:userfile) %> in the index table.
+        </li>
+      </ul>
+    </p>
+    <p class="dropmenu_info">
+      The rest of the information about the tasks will not be affected in any way
+      when they are archived. No operation can be performed on archived task, except
+      of course unarchiving them.
+    </p>
+    <p class="centered">
+      <%= hijacker_submit_button("Archive On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("Archive As File",    :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("Unarchive Tasks",    :url => url_for(:action  => :operation, :operation => 'unarchive'),    :method  => :post, :datatype => :script, :class => "button") %>
+      <br/>
+      <br/>
+      Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br/>
+      <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
+    <p/>
+  <% end %>
+  
+  
+  <%= button_with_dropdown_menu("Filters") do %>
+    <%= render :partial => 'tasks/filters' %>
+  <% end %>
+  
+  <span id="view_option_button">
+    <%= render :partial => 'view_option_button' %>
+  </span>
 
 </div>
 

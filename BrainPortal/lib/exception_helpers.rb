@@ -69,6 +69,7 @@ module ExceptionHelpers
     end
   end
 
+  # Anything else is serious
   def generic_exception(exception)
     raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
 
