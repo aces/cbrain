@@ -30,13 +30,12 @@ class UserGroup < SystemGroup
   # the value is a label in format "groupname (user_full_name)"
   def self.prepare_pretty_labels(groups=[])
    ugs = Array(groups).select { |g| g.is_a?(UserGroup) }
-   #g_to_full_names = UserGroup.joins(:users).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'users.full_name']).all
-   g_to_full_names = UserGroup.joins(:users).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'users.login']).all
+   g_to_full_names = UserGroup.joins(:users).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'users.full_name']).all
+   #g_to_full_names = UserGroup.joins(:users).where('groups.id' => ugs.map(&:id)).select(['groups.id', 'groups.name', 'users.login']).all
    gid_to_labels = {}
    g_to_full_names.each do |g|
-     #gid_to_labels[g.id] = "#{g.name}" + (g.full_name.present? ? " (#{g.full_name})" : "")
-     #gid_to_labels[g.id] = "#{g.name}" + (g.full_name.present? ? " (#{g.full_name.force_encoding('UTF-8')})" : "")
-     gid_to_labels[g.id] = "#{g.name}" + (g.login.present? ? " (#{g.login})" : "")
+     gid_to_labels[g.id] = "#{g.name}" + (g.full_name.present? ? " (#{g.full_name})" : "")
+     #gid_to_labels[g.id] = "#{g.name}" + (g.login.present? ? " (#{g.login})" : "")
    end
    gid_to_labels
   end
