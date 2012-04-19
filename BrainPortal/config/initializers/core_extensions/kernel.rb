@@ -1,0 +1,95 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+
+###################################################################
+# CBRAIN Kernel extensions
+###################################################################
+module Kernel
+
+  private
+
+  # Raises a CbrainNotice exception, with a default redirect to
+  # the current controller's index action.
+  def cb_notify(message = "Something may have gone awry.", options = {} )
+    options[:status]       ||= :ok
+    options[:shift_caller]   = 2
+    raise CbrainNotice.new(message, options)
+  end
+  alias cb_notice cb_notify
+
+  # Raises a CbrainError exception, with a default redirect to
+  # the current controller's index action.
+  def cb_error(message = "Some error occured.",  options = {} )
+    options[:status]       ||= :bad_request
+    options[:shift_caller]   = 2
+    raise CbrainError.new(message, options)
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_red(message)
+    puts "\e[31m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_green(message)
+    puts "\e[32m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_blue(message)
+    puts "\e[34m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_yellow(message)
+    puts "\e[33m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_magenta(message)
+    puts "\e[35m#{message}\e[0m"
+  end
+
+  # Debugging tools; this is a 'puts' where the string is colorized.
+  def puts_cyan(message)
+    puts "\e[36m#{message}\e[0m"
+  end
+  
+  def puts_timer(message, colour = nil, reset = false)
+    @@__DEBUG_TIMER__ ||= nil
+    if reset
+      @@__DEBUG_TIMER__ = nil
+    end
+    if @@__DEBUG_TIMER__
+      @@__DEBUG_TIMER__.timed_puts(message, colour)
+    else
+      @@__DEBUG_TIMER__ = DebugTimer.new
+      method = "puts"
+      if colour
+        method = "puts_#{colour}"
+      end
+      send method, message
+    end
+  end
+
+end
+
