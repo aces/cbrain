@@ -24,7 +24,7 @@ module PermissionHelpers
   
   def self.included(includer)
     includer.class_eval do
-      helper_method :check_role, :not_admin_user, :edit_permission?
+      helper_method :check_role, :not_admin_user, :edit_permission?, :delete_permission?
       before_filter :check_if_locked
     end
   end
@@ -43,7 +43,12 @@ module PermissionHelpers
   #Checks that the current user is the same as +user+. Used to ensure permission
   #for changing account information.
   def edit_permission?(user)
-    result = current_user && user && (current_user == user || current_user.type == 'AdminUser' || (current_user.has_role?(:site_manager) && current_user.site == user.site))
+    current_user && user && (current_user == user || current_user.has_role?(:admin_user) || (current_user.has_role?(:site_manager) && current_user.site == user.site))
+  end
+
+  def delete_permission?(user)
+    current_user && user && user != User.admin && current_user != user &&
+    current_user.has_rights?(:site_manager) && current_user.available_users.include?(user)
   end
   
   #Helper method to render and error page. Will render public/<+status+>.html

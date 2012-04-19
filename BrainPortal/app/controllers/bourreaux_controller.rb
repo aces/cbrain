@@ -405,7 +405,15 @@ class BourreauxController < ApplicationController
     # Keys and arrays into statistics tables, for HTML output
     @report_rrs         = @report_stats['!rrs!']
     @report_users       = @report_stats['!users!'] # does not include the 'all' column, if any
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
+
+    # Filter out users for which there are no stats
+    @report_users.reject! { |u| (! @report_stats[u]) || (! @report_rrs.any? { |rr| @report_stats[u][rr] }) }
+    @report_users_all   = @report_users + (@report_users.size > 1 ? [ 'TOTAL' ] : [])  # users + 'all'?
+
+    # Filter out rrs for which there are no stats
+    @report_rrs.reject! { |rr| ! (@report_users_all.any? { |u| @report_stats[u] && @report_stats[u][rr] }) }
+
+    true
   end
 
   # Provides the interface to trigger cache cleanup operations

@@ -105,8 +105,13 @@ class ModelsReport
       end
     end
 
-    users_final = users_index.values.sort { |a,b| a.login <=> b.login }
-    dps_final   =    dp_index.values.sort { |a,b| a.name  <=> b.name  }
+    # Remove users or DPs for which there is no data in the total columns
+    users_final = users_index.values.reject { |u|  (!stats[u])                   || stats[u][all_dps_label][:num_entries] == 0 }
+    dps_final   =    dp_index.values.reject { |dp| (!stats[all_users_label][dp]) || stats[all_users_label][dp][:num_entries] == 0 }
+
+    # Sort them
+    users_final.sort! { |a,b| a.login <=> b.login }
+    dps_final.sort! { |a,b| a.name  <=> b.name  }
 
     stats['!users+all?!']  = users_final
     stats['!users+all?!'] += [ all_users_label ] if users_final.size > 1
@@ -219,9 +224,6 @@ end
     rrs_final   =    rr_index.values.sort { |a,b| a.name  <=> b.name  }
 
     stats['!users!']       = users_final
-    stats['!users+all?!']  = users_final 
-    stats['!users+all?!'] += [ all_users_label ] if users_final.size > 1
-
     stats['!rrs!']         = rrs_final
 
     stats
