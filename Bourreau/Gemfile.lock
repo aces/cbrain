@@ -54,7 +54,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.16)
-    mysql (2.8.1)
+    mysql2 (0.2.7)
     net-sftp (2.0.5)
       net-ssh (>= 2.0.9)
     net-ssh (2.1.4)
@@ -98,7 +98,7 @@ DEPENDENCIES
   hirb
   log4r
   looksee
-  mysql
+  mysql2 (< 0.3)
   net-sftp
   net-ssh
   rails (= 3.0.7)
