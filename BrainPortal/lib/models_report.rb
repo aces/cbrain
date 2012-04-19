@@ -219,9 +219,6 @@ end
     rrs_final   =    rr_index.values.sort { |a,b| a.name  <=> b.name  }
 
     stats['!users!']       = users_final
-    stats['!users+all?!']  = users_final 
-    stats['!users+all?!'] += [ all_users_label ] if users_final.size > 1
-
     stats['!rrs!']         = rrs_final
 
     stats
