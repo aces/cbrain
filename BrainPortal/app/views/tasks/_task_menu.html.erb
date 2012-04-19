@@ -40,7 +40,7 @@
     <%= hijacker_submit_button("Update Data Provider", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Tool Version:
-    <%= tool_config_select('task[tool_config_id]', {:tool_configs => ToolConfig.specific_versions.select { |tc| tc.can_be_accessed_by?(current_user) } , :include_blank => "(select another tool config)" } ) %>
+    <%= tool_config_select('task[tool_config_id]', {:tool_configs => ToolConfig.specific_versions.select { |tc| tc.can_be_accessed_by?(current_user) } } , :include_blank => "(select another tool config)"  ) %>
     <%= hijacker_submit_button("Update Tool Version", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
   
