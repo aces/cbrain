@@ -43,22 +43,21 @@
   task_space_known_by_user_and_bourreau = tasklist.group( [ :user_id, :bourreau_id ] ).sum(:cluster_workdir_size)
   task_space_unk_by_user_and_bourreau   = t_nosize.group( [ :user_id, :bourreau_id ] ).count
   
-  task_space_known_by_user_and_bourreau[[2,3]] = 600_000_000_000
+  # Total Tasks by user 
+  task_count_by_user                  = tasklist.group( :user_id ).count
+  task_space_known_by_user            = tasklist.group( :user_id ).sum(:cluster_workdir_size)
+  task_space_unk_by_user              = t_nosize.group( :user_id ).count
   
-  
-  if @bourreaux.count > 1
-    # Total Tasks by user 
-    task_count_by_user                  = tasklist.group( :user_id ).count
-    task_space_known_by_user            = tasklist.group( :user_id ).sum(:cluster_workdir_size)
-    task_space_unk_by_user              = t_nosize.group( :user_id ).count
-  end 
-  
-  if @users.count > 1
-    # Total Tasks by bourreau
-    task_count_by_bourreau              = tasklist.group( :bourreau_id ).count
-    task_space_known_by_bourreau        = tasklist.group( :bourreau_id ).sum(:cluster_workdir_size)
-    task_space_unk_by_bourreau          = t_nosize.group( :bourreau_id ).count
-  end
+  # Total Tasks by bourreau
+  task_count_by_bourreau              = tasklist.group( :bourreau_id ).count
+  task_space_known_by_bourreau        = tasklist.group( :bourreau_id ).sum(:cluster_workdir_size)
+  task_space_unk_by_bourreau          = t_nosize.group( :bourreau_id ).count
+
+  # Remove users with no task info
+  @users.reject! { |u| (! task_count_by_user[u.id]) || task_count_by_user[u.id] == 0 }
+
+  # Remove bourreaux with no task info
+  @bourreaux.reject! { |b| (! task_count_by_bourreau[b.id]) || task_count_by_bourreau[b.id] == 0 }
 %>
 
       
@@ -160,3 +159,4 @@
   </span>
 
 <% end %>
+
