@@ -29,12 +29,16 @@
 <span class="display_cell">
   <table>
   
-    <tr>
-      <th class="blank"></th>
-      <% @report_dps_all.each do |dp| %>
-        <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user) %></th>
-      <% end %>
-    </tr>
+      <tr>
+        <% if @report_dps_all.present? %>
+          <th class="blank"></th>
+          <% @report_dps_all.each do |dp| %>
+            <th><%= dp.is_a?(String) ? dp.capitalize : link_to_data_provider_if_accessible(dp, current_user) %></th>
+          <% end %>
+        <% else %>
+          <th>(There are no entries in this report)</th>
+        <% end %>
+      </tr>
     
     
     <% @report_users_all.each do |user| %>
