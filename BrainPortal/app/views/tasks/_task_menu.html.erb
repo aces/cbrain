@@ -25,7 +25,7 @@
 <div class="menu_bar">
 
   <%= button_with_dropdown_menu("Update Attributes") do %>
-    <% if !current_user.has_role?(:user) %>
+    <% if !current_user.has_role?(:normal_user) %>
       Change Owner:
       <%= user_select('task[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
       <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
