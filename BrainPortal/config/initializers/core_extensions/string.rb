@@ -25,6 +25,22 @@
 ###################################################################
 class String
 
+  # This method is mostly used on text file content;
+  # it attempts to detect and validate different original
+  # encodings then record it in UTF8. The returned value
+  # is the UTF version of the string. Returns nil if
+  # no valid encoding was found for the original string.
+  def text_file_content_to_utf8
+    orig_encoding = self.encoding
+    [ 'UTF-8', 'ISO-8859-1', 'US-ASCII', 'ASCII-8BIT', orig_encoding ].each do |en|
+      return self.encode('UTF-8') if self.valid_encoding?
+      self.force_encoding(en)
+    end
+    nil
+  ensure
+    self.force_encoding(orig_encoding)
+  end
+
   # Used by views for CbrainTasks to transform a
   # string such as "abc" or "abc[def]" into a path to a
   # variable inside the params[] hash, as in
