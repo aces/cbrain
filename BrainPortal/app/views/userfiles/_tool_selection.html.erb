@@ -28,12 +28,27 @@
   
   <% grouped_tools = tool_list.group_by(&:category) %>
   <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.sort { |t1,t2| t1.name <=> t2.name }.map { |t| [t.select_menu_text, t.id] }] }.sort_by(&:first) %>
+
+   <p class="medium_paragraphs">
+   This panel allows you to launch the scientific tasks that have been made available
+   to you. First, select the files you want to process in the table below using
+   their checkboxes. Then select one of the tasks here. You will be presented
+   with a new selection box allowing you to choose which Execution Server
+   will process your task.
+   </p>
+
+   <p class="medium_paragraphs">
+   Each task has its own preferences as to how many files it needs and what type
+   they should be. Once the task has validated that you've selected the proper
+   files to process, you'll be presented with a form where you can customize
+   its scientific parameters.
+   </p>
   
    <div class="userfiles_tool_selector">
     <%= ajax_onchange_select(
           "tool_id", 
           url_for(:controller  => :tools, :action => :bourreau_select), 
-          "<option value=\"\">Select an Operation</option>".html_safe + grouped_options_for_select(grouped_tools),
+          "<option value=\"\">Select a task to launch</option>".html_safe + grouped_options_for_select(grouped_tools),
           :target  => "#bourreau_select_convert", 
           :loading_message  => "<span class='warning'>Checking availability...</span>"
       ) 
@@ -45,8 +60,6 @@
    <div class="userfiles_bourreau_selector" id="bourreau_select_convert">
    </div>
 
-   <br>
-    
 <% else %>
 
    <br>
