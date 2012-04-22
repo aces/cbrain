@@ -136,8 +136,7 @@ class UserfilesController < ApplicationController
     # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects [ id, parent_id ]
-      simple_pairs_sql  = sorted_scope.scoped(:select => "userfiles.id, userfiles.parent_id").to_sql
-      simple_pairs      = Userfile.connection.select_rows(simple_pairs_sql).each { |x| x[0] = x[0].to_i; x[1] = x[1].to_i if x[1] }
+      simple_pairs      = sorted_scope.raw_rows( [ "userfiles.id", "userfiles.parent_id" ] )
       simple_pairs      = tree_sort_by_pairs(simple_pairs) # private method in this controller
       # At this point, each simple_pair is [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
       @userfiles_total  = simple_pairs.size

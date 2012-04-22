@@ -34,14 +34,8 @@ class TasksController < ApplicationController
     bourreau_ids = bourreaux.map &:id
     
     # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
-    if current_project
-      @header_scope = CbrainTask.where( :group_id => current_project.id )
-    else
-      @header_scope = current_user.available_tasks
-    end
-    
-    @header_scope = @header_scope.real_tasks
-    @header_scope = @header_scope.where( :bourreau_id => bourreau_ids )
+    @header_scope = current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
+    @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
     
     @filtered_scope = base_filtered_scope(@header_scope)
     
@@ -66,21 +60,23 @@ class TasksController < ApplicationController
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
     end
     
+    # Set sort order and make it persistent.
     @sort_order = @filter_params["sort_hash"]["order"]
     @sort_dir   = @filter_params["sort_hash"]["dir"]
-    # Set sort order and make it persistent.
+
     @showing_batch = false #i.e. don't show levels for individual entries.
+
+    # In batch view...
     if @sort_order == "cbrain_tasks.batch"
-      if @filter_params["filter_hash"]["launch_time"]
-        @sort_order = "cbrain_tasks.updated_at"
-        @sort_dir   = "DESC"
+      if @filter_params["filter_hash"]["batch_id"]  # we show a specific batch
+        @sort_order      = "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id"
+        @sort_dir        = ""
         @showing_batch   = true
-      else
-        @sort_order = 'cbrain_tasks.launch_time DESC, cbrain_tasks.created_at'
+      else # batch view with several batches visible
+        @sort_order = "cbrain_tasks.batch_id"
         @sort_dir   = 'DESC'
       end
     end
-
 
     scope = scope.includes( [:bourreau, :user, :group] ).readonly
 
@@ -92,15 +88,15 @@ class TasksController < ApplicationController
     # For Pagination
     offset = (@current_page - 1) * @per_page
 
-    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["launch_time"] && request.format.to_sym != :xml
-      @total_entries = scope.select( "distinct cbrain_tasks.launch_time" ).count
-      launch_times   = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).group( :launch_time ).map(&:launch_time)
+    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml
+      @total_entries = scope.count(:batch_id)
+      batch_ids      = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
 
-      @tasks = {} # hash lt => task_info
-      launch_times.each do |lt|
-         first_task     = scope.where(:launch_time => lt).order( [ :rank, :level, :id ] ).first
+      @tasks = {} # hash batch_id => task_info
+      batch_ids.each do |batch_id|
+         first_task     = scope.where(:batch_id => batch_id).order( [ :rank, :level, :id ] ).first
          next unless first_task.present? # in rare case a delete operation happens in background
-         tasks_in_batch = scope.where(:launch_time => lt).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
+         tasks_in_batch = scope.where(:batch_id => batch_id).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
          next unless tasks_in_batch.present? # in rare case a delete operation happens in background
          statuses = {}
          tot_tasks = 0
@@ -111,18 +107,14 @@ class TasksController < ApplicationController
            statuses[the_stat] += the_cnt
            tot_tasks          += the_cnt
          end
-         @tasks[lt] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
+         @tasks[batch_id] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
       end
-      pagination_list = launch_times
+      pagination_list = batch_ids
     else
       
-      if @showing_batch
-        task_list = scope.order( "cbrain_tasks.rank, cbrain_tasks.level" ).offset( offset ).limit( @per_page )
-      else
-        task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page )
-      end
+      task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).all
       
-      @tasks = {}
+      @tasks = {} # hash task_id -> task_info for a single task
       task_list.each do |t|
         @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
       end
@@ -145,22 +137,16 @@ class TasksController < ApplicationController
   end
   
   def batch_list #:nodoc:
-    if current_project
-      scope = CbrainTask.where( :group_id  => current_project.id )
-    else
-      scope = current_user.available_tasks
-    end
-    
+    scope = current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
+    scope = scope.where( :group_id => current_project.id ) if current_project
     scope = base_sorted_scope base_filtered_scope(scope)
-    
-    scope = scope.where( :launch_time => params[:launch_time] )
     
     bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       scope = scope.where( :bourreau_id => bourreaux.map(&:id) )
     end
 
-    scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank" ).readonly(false)
+    scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
         
     @tasks = scope                     
     @bourreau_status = {}
@@ -419,6 +405,7 @@ class TasksController < ApplicationController
 
       share_wd_Nid_to_tid = {} # a negative number -> task_id
 
+      batch_id = nil # all tasks will get the same batch_id ONCE the first task is saved.
       tasklist.each do |task|
         begin
           if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
@@ -430,13 +417,16 @@ class TasksController < ApplicationController
             task.status = "New" if task.status.blank?
           end
           share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
+          task.batch_id ||= batch_id # will be nil for the first task, but we'll reset it a bit later to a real ID
           if share_wd_Nid.present? && share_wd_Nid <= 0
             task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
-            task.save!
+            task.save! # this sets batch_id if it's still nil, in an after_save callback
             share_wd_Nid_to_tid[share_wd_Nid] = task.id
           else
-            task.save!
+            task.save! # this sets batch_id if it's still nil, in an after_save callback
           end
+          # First task in the batch is the one to determine the batch_id for the other tasks
+          batch_id ||= task.batch_id
         rescue => ex
           spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
         end
@@ -501,7 +491,7 @@ class TasksController < ApplicationController
     # the form's content.
     old_params   = @task.params.clone
     new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
+    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
     old_tool_config = @task.tool_config
     old_bourreau    = @task.bourreau
     @task.attributes = new_att # just updates without saving
@@ -575,9 +565,9 @@ class TasksController < ApplicationController
     batch_ids   = Array(params[:batch_ids] || [])
     
     if batch_ids.delete "nil"
-      task_ids += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").all.map(&:id)
+      task_ids += base_filtered_scope(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
     end
-    task_ids   += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").all.map(&:id)
+    task_ids   += base_filtered_scope(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
     task_ids    = task_ids.map(&:to_i).uniq
     
     # If params[:commit] not present
@@ -714,9 +704,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :launch_time => nil )).select("id").map(&:id)
+      tasklist += base_filtered_scope(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :launch_time => batch_ids )).select("id").map(&:id)
+    tasklist += base_filtered_scope(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -836,7 +826,7 @@ class TasksController < ApplicationController
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
-    bourreau_ids = tool.bourreaux.map &:id
+    bourreau_ids = tool.bourreaux.raw_first_column(:id)
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
@@ -927,6 +917,7 @@ class TasksController < ApplicationController
       preset.status               = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
       preset.bourreau             = nil # convention: presets have bourreau id set to 0
       preset.bourreau_id          = 0 # convention: presets have bourreau id set to 0
+      preset.batch_id             = nil
       preset.cluster_jobid        = nil
       preset.cluster_workdir      = nil
       preset.cluster_workdir_size = nil
@@ -936,6 +927,8 @@ class TasksController < ApplicationController
       preset.level                = 0
       preset.run_number           = nil
       preset.share_wd_tid         = nil
+      preset.workdir_archived     = nil
+      preset.workdir_archive_userfile_id = nil
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?
       end

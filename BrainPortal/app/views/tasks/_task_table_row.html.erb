@@ -28,14 +28,14 @@
  #   :task_available   => boolean, to color the row red if false
  #   :is_child         => boolean, makes the row initially invisible if true, and adds an arrow
 %>
-<% launch_time    = task.launch_time %>
-<% launch_time_id = launch_time ? launch_time.to_i : 0 %>
+<% batch_id         = task.batch_id %>
+<% batch_id_or_zero = batch_id || 0 %>
 
 <% if task_available %>
-  <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight batch_listing_<%= launch_time_id %>">
-    <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox task_checkbox_#{launch_time_id}") %></td>
+  <tr class="<%= cycle('list-odd', 'list-even') %> row_highlight batch_listing_<%= batch_id_or_zero %>">
+    <td><%= check_box_tag("tasklist[]", task.id, false, :class => "task_checkbox task_checkbox_#{batch_id_or_zero}") %></td>
 <% else %>
-  <tr class="list-unavailable row_highlight batch_listing_<%= launch_time_id %>" title="This task is on an Execution Server that is OFFLINE.">
+  <tr class="list-unavailable row_highlight batch_listing_<%= batch_id_or_zero %>" title="This task is on an Execution Server that is OFFLINE.">
     <td></td>
 <% end %>
     <td class="left"><%= tree_view_icon(task.level) if is_child %><%= link_to_task_if_accessible(task, nil, :name => task.pretty_name) %></td>

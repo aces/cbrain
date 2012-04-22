@@ -49,8 +49,8 @@
     t.sort_column("Workdir Size", 'CbrainTask', 'cluster_workdir_size')
     t.sort_column("Time Submitted", 'CbrainTask', 'created_at')
     t.sort_column("Last Updated", 'CbrainTask', 'updated_at')
-    t.row_override do |launch_time|
-      render :partial => 'tasks/batch_view', :locals => {:launch_time => launch_time}
+    t.row_override do |batch_id|
+      render :partial => 'tasks/batch_view', :locals => {:batch_id => batch_id}
     end
   end 
 %>
