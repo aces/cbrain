@@ -242,7 +242,7 @@ class PortalController < ApplicationController
     @model_atts.each do |att|
       val = params[att]
       next unless val.present?
-      @table_content = @table_content.where(att => val)
+      @table_content = @table_content.where("#{table_name}.#{att}" => val)
     end
 
     # Add date filtration
@@ -254,7 +254,7 @@ class PortalController < ApplicationController
     # Compute content
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]
     #@table_content = @table_content.where(:user_id => 999) # for debug -> no entries
-    @table_content = @table_content.group( [ row_type, col_type ] ).send(*table_ops)
+    @table_content = @table_content.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] ).send(*table_ops)
 
     # Present content for view
     table_keys = @table_content.keys
