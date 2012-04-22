@@ -184,12 +184,12 @@ class UserfilesController < ApplicationController
 
   def new_parent_child #:nodoc:
 
-    if params[:file_ids].blank?
-      render :text  => "<span class=\"warning\">You must select at least one file to which you have write access.</span>"
+    file_ids   = params[:file_ids]
+    @userfiles = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all
+    if @userfiles.size < 2 
+      render :text  => "<span class=\"warning\">You must select at least two files to which you have write access.</span>"
       return
     end
-    
-    @userfiles = Userfile.find_accessible_by_user(params[:file_ids], current_user)
     
     render :action  => :new_parent_child, :layout  => false
   end
@@ -579,57 +579,106 @@ class UserfilesController < ApplicationController
   # Updated tags, groups or group-writability flags for several
   # userfiles.
   def update_multiple #:nodoc:
-    access_requested = params[:commit] == "Update Tags" ? :read : :write
-    filelist    = Userfile.find_accessible_by_user(params[:file_ids] || [], current_user, :access_requested => access_requested)
+    file_ids         = params[:file_ids]
+    commit_value     = params[:commit]
+    
+    # First selection no need to be in spawn
+    invalid_tags     = 0
+    unable_to_update = nil
 
-    success_count = 0
-    failure_count = 0
+    operation = 
+      case commit_value
+        when "Update Tags"
+          new_tags         = params[:tags]
+          new_tags.reject! { |tag| !current_user.available_tags.where(:id => tag.to_i).exists? && invalid_tags += 1 }
+          unable_to_update = "tag"     if new_tags.empty?
+          ['set_tags_for_user', current_user, new_tags]
+        when "Update Projects"
+          new_group_id     = params[:userfile][:group_id].to_i
+          unable_to_update = "project" if !current_user.available_groups.where(:id => new_group_id).exists?
+          ["update_attributes_with_logging", {:group_id => new_group_id}, current_user]
+        when "Update Permissions"
+          ["update_attributes_with_logging", {:group_writable => params[:userfile][:group_writable]}, current_user, [ 'group_writable' ] ]
+        when "Update Owner"
+          new_user_id      = params[:userfile][:user_id].to_i
+          unable_to_update = "owner"   if !current_user.available_users.where(:id => new_user_id).exists?
+          ["update_attributes_with_logging", {:user_id => new_user_id}, current_user]
+        when "Update"
+          ["update_file_type", params[:file_type], current_user]
+        else
+          nil
+      end
 
-    operation = case params[:commit].to_s
-                   # Critical! Case values must match labels of submit buttons!
-                   when "Update Tags"
-                     ['set_tags_for_user', current_user, params[:tags]]
-                   when "Update Projects"
-                     ["update_attributes_with_logging", {:group_id => params[:userfile][:group_id]}, current_user]
-                   when "Update Permissions" 
-                     ["update_attributes_with_logging", {:group_writable => params[:userfile][:group_writable]}, current_user, [ 'group_writable' ] ]
-                   when "Update Owner"
-                     new_filelist = filelist.select(&:allow_file_owner_change?)
-                     failure_count += (filelist.size - new_filelist.size)
-                     filelist = new_filelist
-                     if current_user.available_users.map(&:id).include?(params[:userfile][:user_id].to_i)
-                       ["update_attributes_with_logging", {:user_id => params[:userfile][:user_id]}, current_user] 
-                     end
-                   when "Update"
-                     ["update_file_type", params[:file_type], current_user]
-                end
-
-    unless operation
-      flash[:error] = "No operation to perform."
+    if unable_to_update.present? || !operation.present?
+      flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
+      flash[:error]   = "Unknown operation for the update files."             if !operation.present?
       redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
       redirect_to redirect_action
       return
     end
-    
-    filelist.each do |userfile|
-      if userfile.send(*operation)
-        success_count += 1
-      else
-        failure_count +=1
+
+    flash[:error] = "You do not have access to all tags you want to update." unless invalid_tags == 0
+
+    do_in_spawn      = file_ids.size > 5
+    success_count    = 0
+    failure_count    = 0
+    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to files") do
+      access_requested = commit_value == "Update Tags" ? :read : :write
+      filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all 
+      failure_count   += file_ids.size - filelist.size   
+
+      # Filter file list
+      case commit_value
+        # Critical! Case values must match labels of submit buttons!
+        when "Update Projects"
+          user_to_avail_group_ids = {}
+          filelist.reject! do |file|
+            f_uid = file.user_id
+            # File's owner need to have access to new group
+            user_to_avail_group_ids[f_uid] ||= User.find(f_uid).available_groups.map(&:id).index_by { |id| id }
+            (! user_to_avail_group_ids[f_uid][new_group_id]) && failure_count += 1
+          end
+        when "Update Owner"
+          new_filelist = filelist.select(&:allow_file_owner_change?)
+          failure_count += (filelist.size - new_filelist.size)
+          filelist = new_filelist
       end
+
+      # Update the attribute for each file
+      filelist.each do |userfile|
+        if userfile.send(*operation)
+          success_count += 1
+        else
+          failure_count +=1
+        end
+      end
+      
+      # Async Notification
+      if do_in_spawn
+       variable_text  = success_count > 0 ? "#{commit_value.humanize} successful for #{view_pluralize(success_count, "file")}.\n" : ""
+       variable_text += "#{commit_value.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
+       Message.send_message(current_user, {
+          :header        => "Finished sending update to your files.\n",
+          :message_type  => :notice,
+          :variable_text => variable_text
+          }
+        )
+      end
+      
+    end # spawn end
+
+    # Sync notification
+    if do_in_spawn
+      flash[:notice] = "The file are being updated in background."
+    else
+      flash[:notice] = "#{commit_value.humanize} successful for #{view_pluralize(success_count, "file")}."   if success_count > 0
+      flash[:error]  = "#{commit_value.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
     end
     
-    if success_count > 0
-      flash[:notice] = "#{params[:commit].to_s.humanize} successful for #{view_pluralize(success_count, "file")}."
-    end
-    if failure_count > 0
-      flash[:error] =  "#{params[:commit].to_s.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}."
-    end
-    
-    redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+    redirect_action  = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
     redirect_to redirect_action
   end
-  
+
   def quality_control #:nodoc:
     @filelist = params[:file_ids] || []
   end
