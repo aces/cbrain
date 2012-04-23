@@ -96,16 +96,15 @@ class TasksController < ApplicationController
       batch_ids.each do |batch_id|
          first_task     = scope.where(:batch_id => batch_id).order( [ :rank, :level, :id ] ).first
          next unless first_task.present? # in rare case a delete operation happens in background
-         tasks_in_batch = scope.where(:batch_id => batch_id).select( "user_id, group_id, bourreau_id, status, count(status) as status_count" ).group(:status).all
-         next unless tasks_in_batch.present? # in rare case a delete operation happens in background
+         tasks_stats_in_batch = scope.where(:batch_id => batch_id).group(:status).count
+         next if tasks_stats_in_batch.empty? # in rare case a delete operation happens in background
          statuses = {}
          tot_tasks = 0
-         tasks_in_batch.each do |stat_info|
-           the_stat = stat_info.status =~ /Fail/ ? "Failed" : stat_info.status
-           the_cnt  = stat_info.status_count.to_i
+         tasks_stats_in_batch.each do |stat,cnt|
+           the_stat = stat =~ /Fail/ ? "Failed" : stat
            statuses[the_stat] ||= 0
-           statuses[the_stat] += the_cnt
-           tot_tasks          += the_cnt
+           statuses[the_stat] += cnt
+           tot_tasks          += cnt
          end
          @tasks[batch_id] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
       end
