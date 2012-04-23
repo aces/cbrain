@@ -51,12 +51,14 @@ class PortalController < ApplicationController
         end
         if params[:lock_portal] == "lock"
           BrainPortal.current_resource.lock!
+          BrainPortal.current_resource.addlog("User #{current_user.login} locked this portal.")
           message = params[:message] || ""
           message = "" if message =~ /\(lock message\)/ # the default string
           BrainPortal.current_resource.meta[:portal_lock_message] = message
           flash.now[:notice] = "This portal has been locked."
         elsif params[:lock_portal] == "unlock"
           BrainPortal.current_resource.unlock!
+          BrainPortal.current_resource.addlog("User #{current_user.login} unlocked this portal.")
           flash.now[:notice] = "This portal has been unlocked."
           flash.now[:error] = ""        
         end
