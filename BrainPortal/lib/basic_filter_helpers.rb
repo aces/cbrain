@@ -23,7 +23,9 @@
 # Helpers to create filter lists for index tables 
 # (see index_table_helper.rb).
 module BasicFilterHelpers
-  
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def self.included(includer) #:nodoc:
     includer.class_eval do
       helper_method :current_session,   :current_project
@@ -95,40 +97,61 @@ module BasicFilterHelpers
   
   #Create filtered array to be used by TableBuilder for
   #basic attribute filters.
-  def basic_filters_for(filtered_scope, header_scope, tab, col, &block)
+  def basic_filters_for(filtered_scope, header_scope, tab, col, &formatter)
     table         = tab.to_s.underscore.pluralize
     column        = col.to_sym
-    pretty_method = (column == :type) ? :pretty_type : column
-    formatter     = block || Proc.new { |text| text }
+    table_column  = "#{table}.#{column}"
 
-    filt_counts = filtered_scope.group("#{table}.#{column}").count
+    filt_counts = filtered_scope.group("#{table_column}").count
 
-    header_scope.select( "#{table}.#{column}, COUNT(#{table}.#{column}) as count" ).
-          where( "#{table}.#{column} IS NOT NULL" ).
-          group("#{table}.#{column}").
-          order("#{table}.#{column}").
-          reject { |obj| obj.send(column).blank? }.
-          map { |obj| ["#{formatter.call(obj.send(pretty_method))} (#{filt_counts[obj.send(column)].to_i}/#{obj.count})", :filters => {column => obj.send(column)}, :class => "#{"filter_zero" if filt_counts[obj.send(column)].blank?}"]}
+    header_scope.
+      where( "#{table_column} IS NOT NULL" ).
+      group( table_column ).
+      order( table_column ).
+      raw_rows( [ table_column, "COUNT(#{table_column})" ] ).
+      reject { |pair| pair[0].blank? }.
+      map do |pair|
+        name, count = pair
+        pretty_name    = column == :type ? name.constantize.pretty_type : name
+        formatted_name = formatter ? formatter.call(pretty_name) : pretty_name
+        filt_count     = filt_counts[name].to_i
+
+        [ "#{formatted_name} (#{filt_count}/#{count})", 
+            :filters => { column => name },
+            :class   => filt_count == 0 ? "filter_zero" : nil
+        ]
+      end
   end
   
   #Create filtered array to be used by TableBuilder for
   #basic association filters.
-  def association_filters_for(filtered_scope, header_scope, tab, assoc, options = {}, &block)
+  def association_filters_for(filtered_scope, header_scope, tab, assoc, options = {}, &formatter)
     table       = tab.to_s.underscore.pluralize
     association = assoc.to_s.underscore.singularize
     assoc_table = options[:association_table] || association.pluralize
     name_method = options[:name_method] || "name"
     foreign_key = options[:foreign_key] || "#{association}_id"
-    formatter   = block || Proc.new { |text| text }
+
+    table_fkey  = "#{table}.#{foreign_key}"
+    assoc_name  = "#{assoc_table}.#{name_method}"
     
-    filt_counts = filtered_scope.joins(association.to_sym).group("#{table}.#{foreign_key}").count
+    filt_counts = filtered_scope.joins(association.to_sym).group(table_fkey).count
     
-    header_scope.select( "#{table}.#{foreign_key}, #{assoc_table}.#{name_method} as #{association}_#{name_method}, COUNT(#{table}.#{foreign_key}) as count" ).
-          joins(association.to_sym).
-          order("#{assoc_table}.#{name_method}").
-          group("#{table}.#{foreign_key}").
-          all.
-          map { |obj| ["#{formatter.call(obj.send("#{association}_#{name_method}"))} (#{filt_counts[obj.send(foreign_key)].to_i}/#{obj.count})", :filters => {foreign_key => obj.send(foreign_key)}, :class => "#{"filter_zero" if filt_counts[obj.send(foreign_key)].blank?}"] }
+    header_scope.
+      joins(association.to_sym).
+      order(assoc_name).
+      group(table_fkey).
+      raw_rows( [ table_fkey, assoc_name, "COUNT(#{table_fkey})" ] ).
+      map do |triplet|
+        fkey, name, count = triplet
+        filt_count        = filt_counts[fkey].to_i
+        formatted_name    = formatter ? formatter.call(name) : name
+
+        [ "#{formatted_name} (#{filt_count}/#{count})",
+            :filters => { foreign_key => fkey },
+            :class   => filt_count == 0 ? "filter_zero" : nil
+        ]
+      end
   end
   
   # Set up the current_session variable. Mainly used to set up the filter hash to be

@@ -119,6 +119,8 @@
 
 module IndexTableHelper
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   #Class that actually builds the table.
   class TableBuilder
     

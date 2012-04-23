@@ -22,6 +22,8 @@
 
 module PermissionHelpers
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def self.included(includer)
     includer.class_eval do
       helper_method :check_role, :not_admin_user, :edit_permission?, :delete_permission?

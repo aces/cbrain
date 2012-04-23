@@ -27,20 +27,20 @@
   <%= button_with_dropdown_menu("Update Attributes") do %>
     <% if !current_user.has_role?(:normal_user) %>
       Change Owner:
-      <%= user_select('task[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
+      <%= user_select('task[user_id]', {}, { :include_blank => "(Select another Owner)" } ) %>
       <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
       <hr>
     <% end %>
     Change Project:
-    <%= group_select('task[group_id]', {}, { :include_blank => "(select another project)" } ) %>
+    <%= group_select('task[group_id]', {}, { :include_blank => "(Select another Project)" } ) %>
     <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Data Provider For Results:
-    <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(select another data provider)" } ) %>
+    <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(Select another Data Provider)" } ) %>
     <%= hijacker_submit_button("Update Data Provider", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Tool Version:
-    <%= tool_config_select('task[tool_config_id]', {:tool_configs => ToolConfig.specific_versions.select { |tc| tc.can_be_accessed_by?(current_user) } } , :include_blank => "(select another tool config)"  ) %>
+    <%= tool_config_select('task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
     <%= hijacker_submit_button("Update Tool Version", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
   

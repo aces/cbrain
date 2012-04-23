@@ -24,5 +24,7 @@
 # of problems within CBRAIN code.
 class CbrainNotice < CbrainException
 
+  Revision_info=CbrainFileRevision[__FILE__]
+
 end
 

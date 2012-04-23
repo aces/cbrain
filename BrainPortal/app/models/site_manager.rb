@@ -21,6 +21,8 @@
 #
 
 class SiteManager < NormalUser
+
+  Revision_info=CbrainFileRevision[__FILE__]
   
   validates_presence_of :site_id, :message => "must be set for site managers"
   

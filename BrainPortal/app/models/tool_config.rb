@@ -70,6 +70,17 @@ class ToolConfig < ActiveRecord::Base
     true
   end
 
+  def self.find_all_accessible_by_user(user)
+    if user.has_role?(:admin_user)
+      ToolConfig.specific_versions
+    else
+      gids = user.group_ids
+      bids = Bourreau.find_all_accessible_by_user(user).raw_first_column("remote_resources.id")
+      tids = Tool.find_all_accessible_by_user(user).raw_first_column("tools.id")
+      ToolConfig.specific_versions.where(:group_id => gids, :bourreau_id => bids, :tool_id => tids)
+    end
+  end
+
   # Returns true if both the bourreau and the tool associated
   # with the tool_config are defined and can be accessed by the user.
   def bourreau_and_tool_can_be_accessed_by?(user)

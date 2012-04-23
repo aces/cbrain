@@ -22,6 +22,8 @@
 
 module ExceptionHelpers
 
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def self.included(includer)
     includer.class_eval do 
       rescue_from Exception,                       :with => :generic_exception

@@ -22,6 +22,8 @@
 
 class ModelsReport
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   # Creates and returns a table with statistics for disk usage on a
   # set of Data Providers.
   #

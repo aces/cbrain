@@ -39,6 +39,9 @@
 #
 
 module ShowTableHelper
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
   class TableBuilder
     attr_accessor :cells, :width
     
