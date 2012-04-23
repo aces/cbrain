@@ -826,7 +826,7 @@ class TasksController < ApplicationController
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
-    bourreau_ids = tool.bourreaux.raw_first_column(:id)
+    bourreau_ids = tool.bourreaux.map &:id
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
