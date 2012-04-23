@@ -30,14 +30,16 @@
   else
     path = @userfile.cache_full_path
   end
+  content = File.read(path) rescue nil
+  content = content.text_file_content_to_utf8 if content
 %>
 
-<% if path %>
+<% if content %>
   <% if params[:content_viewer] == "off" %>
-    <PRE><%= File.read(path) %></PRE>
+    <PRE><%= content %></PRE>
   <% else %>
     <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
-      <PRE><%= File.read(path) %></PRE>
+      <PRE><%= content %></PRE>
     <% end %>
   <% end %>
 <% else %>

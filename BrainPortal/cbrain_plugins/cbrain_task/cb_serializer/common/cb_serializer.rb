@@ -160,6 +160,7 @@ class CbrainTask::CbSerializer
         :status         => serial_start_state,
         :params         => { :task_ids_enabled => tasks_ids_enabled, :ordered_subtask_ids => ordered_subtask_ids },
         :launch_time    => first.launch_time,
+        :batch_id       => first.batch_id,
         :rank           => rank,
         :level          => level_serial,
         :tool_config_id => tc.id

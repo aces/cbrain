@@ -148,5 +148,52 @@ class ActiveRecord::Base
     true
   end
 
+  class ActiveRecord::Relation
+
+    ###################################################################
+    # ActiveRecord::Relation Added Behavior Unstructured Data Fetches
+    ###################################################################
+
+    # Returns an array with just the first column of the
+    # current relation. If an argument is given in +selected+,
+    # then the relation is first modified with .select(selected)
+    #
+    #    User.where('login like "a%"').select(:login).raw_first_column
+    #    => ["annie", "ahmed", "albator"]
+    #
+    #    User.where('login like "a%"').select(:id).raw_first_column
+    #    => [3,4,7]
+    #
+    #    User.where('login like "a%"').raw_first_column(:id)
+    #    => [3,4,7]
+    #
+    # This is basically a wrapper around the connection's
+    # select_values() method (not to be confused with the
+    # same method defined in ActiveRecord::Relation, which
+    # does something compeltely different).
+    def raw_first_column(selected = nil)
+      modif = selected.present? ? self.select(selected) : self
+      self.klass.connection.select_values(modif.to_sql)
+    end
+
+    # Returns an array of small arrays containing each record selected
+    # by the current relation. If an argument is given in +selected+,
+    # then the relation is first modified with .select(selected)
+    #
+    #    User.where('login like "a%"').select([:id,:login]).raw_rows
+    #    => [[3, "annie"], [4, "ahmed"], [7, "albator"]]
+    #
+    #    User.where('login like "a%"').raw_rows([:id,:login])
+    #    => [[3, "annie"], [4, "ahmed"], [7, "albator"]]
+    #
+    # This is basically a wrapper around the connection's
+    # select_rows() method.
+    def raw_rows(selected = nil)
+      modif = selected.present? ? self.select(selected) : self
+      self.klass.connection.select_rows(modif.to_sql)
+    end
+
+  end
+
 end
 

@@ -22,37 +22,36 @@
 #
 -%>
 
-<% @tasks         = @tasks.sort { |t1,t2| t1.cmp_by_batch_rank(t2) } %>
-<% num_tasks      = @tasks.size %>
-<% first_task     = @tasks.first %>
-<% launch_time    = first_task  ? first_task.launch_time : nil %>
-<% launch_time_id = launch_time ? launch_time.to_i       : 0 %>
-<% batch_scope    = CbrainTask.where(:launch_time => launch_time) %>
+<% num_tasks        = @tasks.size %>
+<% first_task       = @tasks.first %>
+<% batch_id         = first_task ? first_task.batch_id : nil %>
+<% batch_id_or_zero = batch_id || 0 %>
+<% batch_scope      = CbrainTask.real_tasks.where(:batch_id => batch_id) %>
 
 <% if @tasks.empty? %>
   <tr><td colspan="<%= current_project ? "10" : "11" %>">This batch of tasks has disappeared.</td></tr>
 <% else %>
   <tr class="batch_job_header row_highlight">
     <td>
-      <%= select_all_checkbox "task_checkbox_#{launch_time_id}", :id  => "task_header_checkbox_#{launch_time_id}", :class  => "task_checkbox" %>
+      <%= select_all_checkbox "task_checkbox_#{batch_id_or_zero}", :id  => "task_header_checkbox_#{batch_id_or_zero}", :class  => "task_checkbox" %>
     </td>
     <td class="left">
-      <% if launch_time %>
-        <%= show_hide_toggle  "#{first_task.pretty_name} (Batch)", ".batch_listing_#{launch_time_id}" %>
+      <% if batch_id %>
+        <%= show_hide_toggle  "#{first_task.pretty_name} (Batch)", ".batch_listing_#{batch_id_or_zero}" %>
       <% else %>
-        <%= show_hide_toggle  "(Various)", ".batch_listing_#{launch_time_id}" %>
+        <%= show_hide_toggle  "(Various)", ".batch_listing_#{batch_id_or_zero}" %>
       <% end %>
     </td>
-    <td><%= overlay_description(first_task.description, :header_width => 35) if false && launch_time %></td>
-    <td><%= link_to_user_if_accessible(first_task.user) if false && launch_time %></td>
+    <td><%= overlay_description(first_task.description, :header_width => 35) if false && batch_id %></td>
+    <td><%= link_to_user_if_accessible(first_task.user) if false && batch_id %></td>
     <% unless current_project %>
-      <td><%= link_to_group_if_accessible(first_task.group) if false && launch_time %></td>
+      <td><%= link_to_group_if_accessible(first_task.group) if false && batch_id %></td>
     <% end %>
-    <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && launch_time %></td>
+    <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && batch_id %></td>
     <td colspan="2" class="left_align">
       <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
       <% if stat_cnt.size > 1 %>
-        <% if launch_time %>
+        <% if batch_id %>
           <%= pluralize(num_tasks, "task") %> :
         <% else %>
           <%= pluralize(num_tasks, "old task") %> :
@@ -65,12 +64,12 @@
       <%= colored_pretty_size(batch_scope.sum(:cluster_workdir_size)) %>
     </td>
     <td>
-      <% if launch_time %>
-        <%= to_localtime(launch_time, :datetime) %>
+      <% if batch_id %>
+        <%= to_localtime(first_task.launch_time, :datetime) %>
       <% end %>
     </td>
     <td>
-      <% if launch_time %>
+      <% if batch_id %>
         <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
       <% end %>
     </td>

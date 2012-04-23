@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120402205014) do
+ActiveRecord::Schema.define(:version => 20120422160456) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
 
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"
+    t.integer  "batch_id"
     t.string   "cluster_jobid"
     t.string   "cluster_workdir"
     t.text     "params"
@@ -47,6 +48,7 @@ ActiveRecord::Schema.define(:version => 20120402205014) do
     t.integer  "workdir_archive_userfile_id"
   end
 
+  add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
   add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
   add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
