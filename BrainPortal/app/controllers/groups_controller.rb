@@ -135,9 +135,18 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   def update #:nodoc:
     if current_user.has_role? :admin_user
-      @group = Group.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
+      @group = current_user.available_groups.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
     else
-      @group = WorkGroup.find(params[:id])
+      @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    end
+    
+    unless @group.can_be_edited_by?(current_user)
+       flash[:error] = "You don't have permission to edit this project."
+       respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head :forbidden }
+       end
+       return
     end
     
     params[:group] ||= {}
