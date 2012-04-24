@@ -921,7 +921,7 @@ class TasksController < ApplicationController
       preset.level                = 0
       preset.run_number           = nil
       preset.share_wd_tid         = nil
-      preset.workdir_archived     = nil
+      preset.workdir_archived     = false
       preset.workdir_archive_userfile_id = nil
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?
