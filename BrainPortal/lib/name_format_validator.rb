@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class NameFormatValidator < ActiveModel::EachValidator
+class NameFormatValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__]
 

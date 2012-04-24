@@ -51,7 +51,8 @@ class User < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password #:nodoc:
 
-  validates_presence_of     :full_name
+  validates                 :full_name,
+                            :presence => true
   
   validates                 :login,    
                             :length => { :within => 3..40 },
@@ -104,7 +105,7 @@ class User < ActiveRecord::Base
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
     
-  scope                   :name_like, lambda { |n| {:conditions => ["users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%"]} }
+  scope                   :name_like, lambda { |n| where("users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%") }
     
   #Return the admin user
   def self.admin
