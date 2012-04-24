@@ -24,6 +24,8 @@ require 'aws/s3'
 
 class S3Connection
 
+  Revision_info=CbrainFileRevision[__FILE__]
+
   include AWS::S3
 
   def initialize(access_key, secret_key)

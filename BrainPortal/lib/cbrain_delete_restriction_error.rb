@@ -22,6 +22,9 @@
 
 # ActiveRecord-specific CBRAIN exceptions
 class CbrainDeleteRestrictionError < ActiveRecord::DeleteRestrictionError
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
   attr_reader :message
   
   def initialize(message)

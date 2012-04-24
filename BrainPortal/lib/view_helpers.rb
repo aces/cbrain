@@ -22,6 +22,8 @@
 
 module ViewHelpers
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def self.included(includer) #:nodoc:
     includer.send(:helper_method, *self.instance_methods)
   end

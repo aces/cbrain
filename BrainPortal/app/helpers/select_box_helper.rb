@@ -251,7 +251,7 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    tool_configs  = options[:tool_configs] || ToolConfig.all.select { |tc| tc.can_be_accessed_by?(current_user) }
+    tool_configs  = options[:tool_configs] || ToolConfig.find_all_accessible_by_user(current_user)
 
     tool_config_options = []   # [ [ grouplabel, [ [pair], [pair] ] ], [ grouplabel, [ [pair], [pair] ] ] ]
 

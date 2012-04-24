@@ -21,6 +21,8 @@
 #
 
 class AdminUser < SiteManager
+
+  Revision_info=CbrainFileRevision[__FILE__]
   
   def available_tools  #:nodoc:
     Tool.where({})

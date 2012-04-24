@@ -21,6 +21,9 @@
 #
 
 module JavascriptOptionSetup
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
   private
   
   def options_setup(element_class, options)

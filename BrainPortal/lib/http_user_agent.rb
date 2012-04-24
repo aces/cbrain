@@ -48,6 +48,8 @@
 #
 class HttpUserAgent
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   attr_accessor :browser_name, :browser_version,
                 :os_name, :os_version, :os_arch
 

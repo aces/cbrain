@@ -22,6 +22,8 @@
 
 module ApiHelpers
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def self.included(includer)
     includer.class_eval do
       before_filter :api_validity_check

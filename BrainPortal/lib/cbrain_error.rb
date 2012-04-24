@@ -24,5 +24,7 @@
 # of serious errors within CBRAIN code.
 class CbrainError < CbrainException
 
+  Revision_info=CbrainFileRevision[__FILE__]
+
 end
 

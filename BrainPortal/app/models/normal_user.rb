@@ -22,6 +22,8 @@
 
 class NormalUser < User
   
+  Revision_info=CbrainFileRevision[__FILE__]
+
   def available_tools  #:nodoc:
     Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
   end
