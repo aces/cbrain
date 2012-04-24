@@ -24,6 +24,7 @@
 # CBRAIN ActiveRecord extensions
 ###################################################################
 module ActiveRecord
+
   class Base
 
     ############################################################################
@@ -52,8 +53,11 @@ module ActiveRecord
 
     include ActRecLog # module in lib/act_rec_log.rb
 
-    include CBRAINExtensions::ActiveRecord::SingleTableInheritance
+    ###################################################################
+    # ActiveRecord Added Behavior For Single Table Inheritance
+    ###################################################################
 
+    include CBRAINExtensions::ActiveRecord::SingleTableInheritance
 
     ###################################################################
     # ActiveRecord Added Behavior For Data Typing
@@ -150,13 +154,16 @@ module ActiveRecord
 
       true
     end
-  end
+
+  end # class Base of ActiveRecord
   
+
+
   class Relation
 
-    ###################################################################
-    # ActiveRecord::Relation Added Behavior Unstructured Data Fetches
-    ###################################################################
+    #####################################################################
+    # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
+    #####################################################################
 
     # Returns an array with just the first column of the
     # current relation. If an argument is given in +selected+,
@@ -198,5 +205,6 @@ module ActiveRecord
     end
 
   end
+
 end
 
