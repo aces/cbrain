@@ -75,7 +75,7 @@
     <% t.edit_cell(:user_id, :show_width => 2,
                              :header  => 'Members',
                              :content => default_text, :show_width => 2,
-                             :disabled => current_user.has_role?(:admin_user)) do %>
+                             :disabled => current_user.has_role?(:normal_user)) do %>
       <div class="generalbox" style="width: 100%">
         <%= render :partial => 'users_form' %><br>
         <%= hidden_field_tag :update_users, true %>
