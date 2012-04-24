@@ -62,7 +62,7 @@ class SitesController < ApplicationController
   # POST /sites.xml
   def create #:nodoc:
     @site = Site.new(params[:site])
-
+    
     respond_to do |format|
       if @site.save
         flash[:notice] = 'Site was successfully created.'

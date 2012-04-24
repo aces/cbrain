@@ -148,7 +148,7 @@ class Site < ActiveRecord::Base
     unless site_group.save
       self.errors.add(:base, "Site Group: #{site_group.errors.full_messages.join(", ")}")
       return false
-    end
+    end   
   end
   
   def user_system_group_remove(user) #:nodoc:
