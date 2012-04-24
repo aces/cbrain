@@ -39,11 +39,12 @@ class CbrainSystemChecks < CbrainChecker
     myshorttype  = Rails.root.to_s =~ /BrainPortal$/ ? "portal"      : "bourreau"
     if myname.blank?
       puts "C> \t- No name given to this #{mytype} Rails application."
+      puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
+      puts "C> \t  give it a name by setting the value of 'CBRAIN_RAILS_APP_NAME'."
       if mytype == "BrainPortal"
-        puts "C> \t  Please run this command: 'rake db:seed RAILS_ENV=#{Rails.env}'."
-      else
-        puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
-        puts "C> \t  give it a name by setting the value of 'CBRAIN_RAILS_APP_NAME'."
+        puts "C> \t- If this is a new CBRAIN installation, you might want to consider instead"
+        puts "C> \t  running this command: 'rake db:seed RAILS_ENV=#{Rails.env}'."
+        puts "C> \t  IMPORTANT NOTE: this rake task will also destroy any existing database, if any!"
       end
       show_portals_list(mytype)
       Kernel.exit(10)
@@ -55,7 +56,8 @@ class CbrainSystemChecks < CbrainChecker
     if rr
       # The most important global assignment in the CBRAIN system!
       CBRAIN.const_set("SelfRemoteResourceId",rr.id)
-      rr.update_attributes( :online    => true )
+      rr.update_attributes( :online => true ) unless rr.online?
+      puts "C> \t- This CBRAIN app is named '#{rr.name}' and is registered."
       return true # everything OK
     end
 

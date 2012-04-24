@@ -42,6 +42,14 @@ class CBRAIN
   System_Uname       = `uname -a`.chomp
   ENV['PATH']        = "#{Rails.root.to_s}/vendor/cbrain/bin:#{ENV['PATH']}"
 
+  # Instance name. An explicit name can be given by setting the environment variable
+  # 'CBRAIN_INSTANCE_NAME' before starting the process. Otherwise, we look at the
+  # current command line arguments and if we find '-p port', the name is set to
+  # 'port'. If all else fails, a string is built like "PID-#{pid}" with the process' PID.
+  Instance_Name      = ENV['CBRAIN_INSTANCE_NAME'].presence ||
+                       (ARGV.rindex('-p') && ARGV[ARGV.rindex('-p')+1]) ||
+                      "PID-#{Process.pid}"
+
   # CBRAIN plugins locations
   Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
   TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
