@@ -92,21 +92,16 @@ class TasksController < ApplicationController
       @total_entries = scope.count(:batch_id)
       batch_ids      = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
 
+      task_counts_in_batch = scope.where(:batch_id => batch_ids).group(:batch_id).count
+
       @tasks = {} # hash batch_id => task_info
       batch_ids.each do |batch_id|
-         first_task     = scope.where(:batch_id => batch_id).order( [ :rank, :level, :id ] ).first
+         num_tasks  = task_counts_in_batch[batch_id] || 0
+         first_task = num_tasks == 1 ?
+            scope.where(:batch_id => batch_id).first :
+            scope.where(:batch_id => batch_id).order( [ :rank, :level, :id ] ).first
          next unless first_task.present? # in rare case a delete operation happens in background
-         tasks_stats_in_batch = scope.where(:batch_id => batch_id).group(:status).count
-         next if tasks_stats_in_batch.empty? # in rare case a delete operation happens in background
-         statuses = {}
-         tot_tasks = 0
-         tasks_stats_in_batch.each do |stat,cnt|
-           the_stat = stat =~ /Fail/ ? "Failed" : stat
-           statuses[the_stat] ||= 0
-           statuses[the_stat] += cnt
-           tot_tasks          += cnt
-         end
-         @tasks[batch_id] = { :first_task => first_task, :statuses => statuses, :num_tasks => tot_tasks }
+         @tasks[batch_id] = { :first_task => first_task, :num_tasks => num_tasks }
       end
       pagination_list = batch_ids
     else
@@ -926,7 +921,7 @@ class TasksController < ApplicationController
       preset.level                = 0
       preset.run_number           = nil
       preset.share_wd_tid         = nil
-      preset.workdir_archived     = nil
+      preset.workdir_archived     = false
       preset.workdir_archive_userfile_id = nil
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?

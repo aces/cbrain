@@ -44,7 +44,6 @@
 
   <% batch_id_or_zero = batch_id || 0 %>
   <% first_task       = task_info[:first_task] %>
-  <% statuses         = task_info[:statuses] %>
   <% num_tasks        = task_info[:num_tasks] %>
   <% batch_scope      = CbrainTask.real_tasks.where(:batch_id => batch_id) %>
 
@@ -73,6 +72,8 @@
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if batch_id %></td>
     <td colspan="2" class="left_align">
+      <% statuses         = {} %>
+      <% batch_scope.group(:status).count.each { |stat,cnt| stat = 'Failed' if stat =~ /Fail/i; statuses[stat] ||= 0; statuses[stat] += cnt } %>
       <% if statuses.size > 1 %>
         <% if batch_id %>
           <%= pluralize(num_tasks, "task") %> :

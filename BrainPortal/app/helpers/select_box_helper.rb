@@ -251,16 +251,22 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    tool_configs  = options[:tool_configs] || ToolConfig.find_all_accessible_by_user(current_user)
+    tool_configs  = Array(options[:tool_configs] || ToolConfig.find_all_accessible_by_user(current_user).all)
 
     tool_config_options = []   # [ [ grouplabel, [ [pair], [pair] ] ], [ grouplabel, [ [pair], [pair] ] ] ]
+
+    bourreaux_by_ids = Bourreau.where(:id => tool_configs.map(&:bourreau_id).uniq.compact).all.index_by &:id
+    tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by &:id
 
     # Globals for Execution Servers
     bourreau_globals = tool_configs.select { |tc| tc.tool_id.blank? }
     if bourreau_globals.size > 0
       pairlist = []
-      bourreau_globals.sort! { |tc1,tc2| tc1.bourreau.name <=> tc2.bourreau.name }.each do |tc|
-        pairlist << [ tc.bourreau.name, tc.id.to_s ]
+      sorted_tcs = bourreau_globals.sort do |tc1,tc2|
+        bourreaux_by_ids[tc1.bourreau_id].name <=> bourreaux_by_ids[tc2.bourreau_id].name
+      end
+      sorted_tcs.each do |tc|
+        pairlist << [ bourreaux_by_ids[tc.bourreau_id].name, tc.id.to_s ]
       end
       tool_config_options << [ "For Execution Servers (any Tool):", pairlist ]
     end
@@ -269,34 +275,38 @@ module SelectBoxHelper
     tool_globals = tool_configs.select { |tc| tc.bourreau_id.blank? }
     if tool_globals.size > 0
       pairlist = []
-      tool_globals.sort { |tc1,tc2| tc1.tool.name <=> tc2.tool.name }.each do |tc|
-        pairlist << [ tc.tool.name, tc.id.to_s ]
+      sorted_tcs = tool_globals.sort do |tc1,tc2|
+        tools_by_ids[tc1.tool_id].name <=> tools_by_ids[tc2.tool_id].name
+      end
+      sorted_tcs.each do |tc|
+        pairlist << [ tools_by_ids[tc.tool_id].name, tc.id.to_s ]
       end
       tool_config_options << [ "For Tools (any Execution Server):", pairlist ]
     end
 
     # Other Tool Configs with both Tool and Bourreau in it
-    spec_tool_configs  = tool_configs - bourreau_globals - tool_globals
-    same_tool          = tool_configs.all? { |tc| tc.tool_id     == tool_configs[0].tool_id }
-    same_bourreau      = tool_configs.all? { |tc| tc.bourreau_id == tool_configs[0].bourreau_id }
+    spec_tool_configs  = tool_configs.select { |tc| tc.tool_id.present? && tc.bourreau_id.present? }
+    same_tool          = tool_configs.all?   { |tc| tc.tool_id     == tool_configs[0].tool_id }
+    same_bourreau      = tool_configs.all?   { |tc| tc.bourreau_id == tool_configs[0].bourreau_id }
 
-    by_bourreaux = spec_tool_configs.group_by { |tc| tc.bourreau }
-    ordered_bourreaux = by_bourreaux.keys.sort { |bourreau1,bourreau2| bourreau1.name <=> bourreau2.name }
-    ordered_bourreaux.each do |bourreau|
-      bourreau_tool_configs = by_bourreaux[bourreau]
-      by_tool               = bourreau_tool_configs.group_by { |tc| tc.tool }
-      ordered_tools         = by_tool.keys.sort { |tool1,tool2| tool1.name <=> tool2.name }
-      ordered_tools.each do |tool|
-        tool_tool_configs = by_tool[tool].sort do |tc1,tc2|
-          cmp = (tc1.tool.name <=> tc2.tool.name)
-          cmp != 0 ? cmp : (tc1.created_at <=> tc2.created_at)
+    tcs_by_bourreau_id   = spec_tool_configs.group_by { |tc| tc.bourreau_id }
+    ordered_bourreau_ids = tcs_by_bourreau_id.keys.sort { |bid1,bid2| bourreaux_by_ids[bid1].name <=> bourreaux_by_ids[bid2].name }
+    ordered_bourreau_ids.each do |bid|
+      bourreau              = bourreaux_by_ids[bid]
+      bourreau_tool_configs = tcs_by_bourreau_id[bid]
+      tcs_by_tool_id        = bourreau_tool_configs.group_by { |tc| tc.tool_id }
+      ordered_tool_ids      = tcs_by_tool_id.keys.sort { |tid1,tid2| tools_by_ids[tid1].name <=> tools_by_ids[tid2].name }
+      ordered_tool_ids.each do |tid|
+        tool = tools_by_ids[tid]
+        tool_tool_configs = tcs_by_tool_id[tid].sort do |tc1,tc2|
+          tc1.created_at <=> tc2.created_at # creation date usually sorts by 'most recent version'
         end
         pairlist = []
         tool_tool_configs.each do |tc|
           desc = tc.short_description
           pairlist << [ desc, tc.id.to_s ]
         end
-        if same_tool && (! same_bourreau || ordered_bourreaux.size == 1)
+        if same_tool && (! same_bourreau || ordered_bourreau_ids.size == 1)
           label = "On #{bourreau.name}:"
         elsif same_bourreau && ! same_tool
           label = "For tool #{tool.name}:"
