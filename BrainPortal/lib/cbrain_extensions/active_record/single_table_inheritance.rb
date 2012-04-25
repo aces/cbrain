@@ -111,7 +111,7 @@ module CBRAINExtensions
         # which considers the sti_root_class to be among the 
         # valid types.
         def sti_new(params = {}, options = {})
-          prepare_sti_object(params, options)
+          prepare_sti_object(nil, params, options)
         end
         
         # Fetch a record from the database, set its
@@ -129,17 +129,7 @@ module CBRAINExtensions
         private
         # Can be used to intantiate or retrieve an object in the proper class
         # and set its attributes to prepare for saving for saving.
-        def prepare_sti_object(id_or_params = {}, params_or_options = {}, options_if_update = {})
-          if id_or_params.is_a? Hash # For a new record
-            id = nil
-            params = id_or_params
-            options = params_or_options
-          else
-            id = id_or_params
-            params = params_or_options
-            options = options_if_update
-          end
-  
+        def prepare_sti_object(id, params = {}, options = {})
           superklass = self.sti_root_class 
           valid_types = superklass.descendants.map(&:to_s)
           type_update = false
