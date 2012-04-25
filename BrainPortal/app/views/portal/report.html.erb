@@ -140,7 +140,7 @@ in a tabular layout. Proceed as follow:
         <tr>
         <th class="blank"></th>
           <% @table_col_values.each do |col_key| %>
-            <th class="vertical_text_container"><div class="vertical_text"><%= col_proc.call(col_key) %></div></th>
+            <th class="vertical_text_container"><div class="vertical_text"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
           <% end %>
         <th class="vertical_text_container"><div class="vertical_text">Total</div></th>
         </tr>
@@ -150,7 +150,7 @@ in a tabular layout. Proceed as follow:
         <% @table_row_values.each do |row_key| %>
           <% total_of_row = 0 %>
           <tr>
-          <th><%= row_proc.call(row_key) %></th>
+          <th><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
           <% @table_col_values.each do |col_key| %>
             <%
                total_of_col[col_key] ||= 0
