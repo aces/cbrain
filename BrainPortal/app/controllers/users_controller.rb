@@ -159,9 +159,12 @@ class UsersController < ApplicationController
     params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
     params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
     
-    if params[:user][:password]
+    if params[:user][:password].present?
       params[:user].delete :password_reset
       @user.password_reset = current_user.id == @user.id ? false : true
+    else
+      params[:user].delete(:password)
+      params[:user].delete(:password_confirmation)
     end
 
     if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
