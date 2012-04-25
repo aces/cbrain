@@ -181,12 +181,12 @@ class ApplicationController < ActionController::Base
     brow  = ua.browser_name    || "(unknown browser)"
     b_ver = ua.browser_version
 
-    # Find out the port number of the instance
-    port  = request.port rescue "(?)"
+    # Find out the instance name
+    instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Create final message
     from  = (host.presence && host != ip) ? "#{host} (#{ip})" : ip
-    mess  = "User: #{login} on instance #{port} from #{from} using #{brow} #{b_ver.presence}"
+    mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver.presence}"
     Rails.logger.info mess
   rescue
     true

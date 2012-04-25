@@ -81,8 +81,8 @@ class PortalController < ApplicationController
     num_lines = 20_000 if num_lines > 20_000
 
     # Filter by user and/or port
-    user_name   = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
-    port_number = params[:log_port].presence && params[:log_port].to_i
+    user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
+    inst_name = params[:log_inst].to_s.presence
 
     # Remove some less important lines; note that in production,
     # only 'Rendered' is shown in this set.
@@ -107,21 +107,21 @@ class PortalController < ApplicationController
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
-    # Filter by username and/or port now.
-    if user_name || port_number
+    # Filter by username and/or instance name
+    if user_name || inst_name
       filtlogs = []
       paragraph = []
       found_user = nil
-      found_port = nil
+      found_inst = nil
       (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
         paragraph << line
         if line == ""
-          filtlogs += paragraph if (!user_name || found_user == user_name) && (!port_number || found_port == port_number)
+          filtlogs += paragraph if (!user_name || found_user == user_name) && (!inst_name || found_inst == inst_name)
           paragraph = []
         elsif line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
-          if line =~ /on instance (\d+)/
-            found_port = Regexp.last_match[1].to_i
+          if line =~ /on instance (\S+)/
+            found_inst = Regexp.last_match[1]
           end
         end
       end
@@ -131,7 +131,7 @@ class PortalController < ApplicationController
     if log.blank?
       render :text => <<-NO_SHOW
         <pre><span style=\"color:yellow; font-weight:bold\">
-          (No logs entries found for user '#{user_name || "(any)"}' on instance '#{port_number || "(any)"}' within the last #{num_lines} lines of the #{Rails.env} log)
+          (No logs entries found for user '#{user_name || "(any)"}' on instance '#{inst_name || "(any)"}' within the last #{num_lines} lines of the #{Rails.env} log)
         </span></pre>
       NO_SHOW
       return
