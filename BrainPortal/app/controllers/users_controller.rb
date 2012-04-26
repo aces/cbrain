@@ -177,6 +177,10 @@ class UsersController < ApplicationController
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
     
+    # For logging
+    original_group_ids = @user.group_ids
+
+    # Update everything else!
     @user.attributes = params[:user]
     
     if current_user.has_role? :admin_user
@@ -201,6 +205,8 @@ class UsersController < ApplicationController
     
     respond_to do |format|
       if @user.update_attributes_with_logging( nil, current_user, %w( full_name login email role city country account_locked ) )
+        @user.reload
+        @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to :action  => :show }
