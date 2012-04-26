@@ -345,10 +345,10 @@ module ActRecLog
           old = "#{old} rev. #{old.constantize.revision_info.self_update.short_commit}" rescue "#{old} rev. exception"
           new = "#{new} rev. #{new.constantize.revision_info.self_update.short_commit}" rescue "#{new} rev. exception"
         end
-        old = '(nil)' if old.nil?
-        new = '(nil)' if new.nil?
-        old = '""' if old eq ''
-        new = '""' if new eq ''
+        old = '(nil)'   if old.nil?
+        new = '(nil)'   if new.nil?
+        old = '""'      if old == ''
+        new = '""'      if new == ''
         old = '(blank)' if old.blank?
         new = '(blank)' if new.blank?
         message = ": value(#{old} -> #{new})"
@@ -370,12 +370,20 @@ module ActRecLog
   #
   # The +by_user+ and +white_list+ arguments are passed to
   # addlog_changed_attributes() and are documented there.
-  def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list = [], caller_level = 0)
+  def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list=[], caller_level=0)
     return true  if     new_attributes.blank? && ! self.changed?
     return false unless self.valid? && self.errors.empty?
     self.attributes = new_attributes if new_attributes.present?
     self.addlog_changed_attributes(by_user,white_list,caller_level+1)
     self.save
+  end
+
+  # This method is a bit like update_attriutes_with_logging, but
+  # no new attributes are expected as argument. It is often used
+  # as a replacement for save() when the attributes have already been
+  # been changed.
+  def save_with_logging(by_user=nil, white_list=[], caller_level=0)
+    self.update_attributes_with_logging({}, by_user, white_list, caller_level + 1)
   end
 
   # This method takes two lists +oldlist and +newlist+ of ActiveRecord object
