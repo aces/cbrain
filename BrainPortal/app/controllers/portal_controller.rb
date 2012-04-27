@@ -80,9 +80,13 @@ class PortalController < ApplicationController
     num_lines = 100 if num_lines < 100
     num_lines = 20_000 if num_lines > 20_000
 
-    # Filter by user and/or port
+    # Filters
     user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
     inst_name = params[:log_inst].to_s.presence
+    meth_name = params[:log_meth].to_s.presence
+    ctrl_name = params[:log_ctrl].to_s.presence
+    ms_min    = params[:ms_min].presence.try(:to_i)
+   
 
     # Remove some less important lines; note that in production,
     # only 'Rendered' is shown in this set.
@@ -107,22 +111,33 @@ class PortalController < ApplicationController
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
-    # Filter by username and/or instance name
-    if user_name || inst_name
-      filtlogs = []
-      paragraph = []
+    # Filter by username, instance name, method, controller or min milliseconds
+    if user_name || inst_name || meth_name || ctrl_name || ms_min
+      filtlogs   = []
+      paragraph  = []
       found_user = nil
       found_inst = nil
+      found_meth = nil
+      found_ctrl = nil
+      found_ms   = 0
       (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
         paragraph << line
         if line == ""
-          filtlogs += paragraph if (!user_name || found_user == user_name) && (!inst_name || found_inst == inst_name)
+          filtlogs += paragraph if (!user_name || found_user == user_name) &&
+                                   (!inst_name || found_inst == inst_name) &&
+                                   (!meth_name || found_meth == meth_name) &&
+                                   (!ctrl_name || found_ctrl == ctrl_name) &&
+                                   (!ms_min    || found_ms   >= ms_min)
           paragraph = []
         elsif line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
           if line =~ /on instance (\S+)/
             found_inst = Regexp.last_match[1]
           end
+        elsif line =~ /^Started (\S+) "\/(\w+)/
+          found_meth, found_ctrl = Regexp.last_match[1,2]
+        elsif line =~ /^Completed.*in (\d+)ms/
+          found_ms = Regexp.last_match[1].to_i
         end
       end
       log = filtlogs.join("\n")
