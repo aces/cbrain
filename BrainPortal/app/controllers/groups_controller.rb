@@ -149,6 +149,8 @@ class GroupsController < ApplicationController
        return
     end
     
+    original_user_ids = @group.user_ids
+
     params[:group] ||= {}
 
     unless params[:update_users].present?
@@ -176,6 +178,8 @@ class GroupsController < ApplicationController
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
+        @group.reload
+        @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
