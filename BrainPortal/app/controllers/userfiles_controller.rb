@@ -421,8 +421,7 @@ class UserfilesController < ApplicationController
           userfile.cache_copy_from_local_file(tmpcontentfile)
           userfile.size = rack_tempfile_size
           userfile.save
-          userfile.addlog_context(self,"Uploaded by #{current_user.login}")
-          current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
+          userfile.addlog("Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type  => 'notice', 
                                :header  => "SingleFile Uploaded", 

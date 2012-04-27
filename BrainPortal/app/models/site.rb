@@ -56,7 +56,7 @@ class Site < ActiveRecord::Base
 
   #Returns users that have manager access to this site (site managers or admins).
   def managers
-    self.users.where(:type => "SiteManager") || []
+    self.users.where(:type => "SiteManager")
   end
   
   #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
@@ -148,7 +148,7 @@ class Site < ActiveRecord::Base
     unless site_group.save
       self.errors.add(:base, "Site Group: #{site_group.errors.full_messages.join(", ")}")
       return false
-    end
+    end   
   end
   
   def user_system_group_remove(user) #:nodoc:

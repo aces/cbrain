@@ -29,7 +29,7 @@
 <div id="header">
   <h1>
     <%= link_to_if(current_user, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
-    <% if current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
+    <% if current_user && current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
       - 
       <%= hover_dropdown(link_to(current_project.name, group_path(current_project)), :dropdown_class => "project_select_dropdown") do %>
         <div style="margin-right:0.2em">

@@ -189,6 +189,7 @@ module ActRecLog
        user_id group_id site_id
        read_only size
        data_provider_id bourreau_id tool_id tool_config_id
+       description
   )
 
   # Check that the the class this module is being included into is a valid one.
@@ -344,6 +345,12 @@ module ActRecLog
           old = "#{old} rev. #{old.constantize.revision_info.self_update.short_commit}" rescue "#{old} rev. exception"
           new = "#{new} rev. #{new.constantize.revision_info.self_update.short_commit}" rescue "#{new} rev. exception"
         end
+        old = '(nil)'   if old.nil?
+        new = '(nil)'   if new.nil?
+        old = '""'      if old == ''
+        new = '""'      if new == ''
+        old = '(blank)' if old.blank?
+        new = '(blank)' if new.blank?
         message = ": value(#{old} -> #{new})"
       end
       self.addlog("Updated#{by_user_mess}: #{att} #{message}", :caller_level => caller_level + 3)
@@ -363,12 +370,55 @@ module ActRecLog
   #
   # The +by_user+ and +white_list+ arguments are passed to
   # addlog_changed_attributes() and are documented there.
-  def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list = [], caller_level = 0)
+  def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list=[], caller_level=0)
     return true  if     new_attributes.blank? && ! self.changed?
     return false unless self.valid? && self.errors.empty?
     self.attributes = new_attributes if new_attributes.present?
     self.addlog_changed_attributes(by_user,white_list,caller_level+1)
     self.save
+  end
+
+  # This method is a bit like update_attriutes_with_logging, but
+  # no new attributes are expected as argument. It is often used
+  # as a replacement for save() when the attributes have already been
+  # been changed.
+  def save_with_logging(by_user=nil, white_list=[], caller_level=0)
+    self.update_attributes_with_logging({}, by_user, white_list, caller_level + 1)
+  end
+
+  # This method takes two lists +oldlist and +newlist+ of ActiveRecord object
+  # of type +model+ (or just their IDs) and compare them, logging
+  # he changes in the lists. +message+ should be a description of the
+  # meaning of these lists. Example:
+  #
+  #   mysite.addlog_object_list_updated("Managers", User, :login, [1,2,3], [2,3,4,5], adminuser)
+  #
+  # will add a log entry like this
+  #
+  #   Managers updated by adminuser: Removed: login1
+  #   Managers uddated by adminuser: Added: login4, login5
+  def addlog_object_list_updated(message, model, oldlist, newlist, by_user=nil, name_method=:name, caller_level = 0)
+    klass = model < ActiveRecord::Base ? model : model.constantize
+    oldlist = Array(oldlist)
+    newlist = Array(newlist)
+    # this method handles mixed arrays of IDs or objects
+    oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
+    newlist_part = newlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
+    oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.find_all_by_id(oldlist_part[:id]) : [])).uniq
+    newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.find_all_by_id(newlist_part[:id]) : [])).uniq
+    added     = newlist - oldlist
+    removed   = oldlist - newlist
+    by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
+    mess = "#{message} updated#{by_user_mess}:"
+    if removed.present?
+      self.addlog("#{mess} Removed: #{removed.map(&name_method).join(", ")}")
+    end
+    if added.present?
+      self.addlog("#{mess} Added: #{added.map(&name_method).join(", ")}")
+    end
+    true
+  rescue => ex
+    puts_red "Exception in addlog_object_list_updated: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
   end
 
   # Gets the log for the current ActiveRecord;

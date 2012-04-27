@@ -35,7 +35,7 @@
     end
     work_groups  = work_groups.sort  { |a,b| a.name <=> b.name }
     invis_groups = invis_groups.sort { |a,b| a.name <=> b.name }
-    class_name   = model.class.to_s.underscore
+    class_name   = model.class.sti_root_class.to_s.underscore
 %>
 
 
