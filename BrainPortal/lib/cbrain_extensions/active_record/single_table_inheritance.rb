@@ -51,14 +51,44 @@ module CBRAINExtensions
   
       # Subsequent +saves+ or +updates+ WILL NOT
       # include type conditions. 
-      def no_type_condition_on_save!
+      def no_type_condition!
         @__no_type_condition__ = true
       end
   
       # Subsequent +saves+ or +updates+ WILL
       # include type conditions.
-      def type_condition_on_save!
+      def type_condition!
         @__no_type_condition__ = false
+      end
+      
+      # Change class to the variable set in type.
+      def class_update(options = {})
+        old_class = self.class.to_s
+        new_class = self.type.to_s
+        return self if old_class == new_class
+        
+        if self.class.valid_sti_change?(new_class, options)
+          new_object = self.becomes(new_class.constantize)
+          new_object.no_type_condition!
+        else
+          new_object = self
+        end
+        
+        new_object
+      end
+  
+      # Redifine persistance methods to check if 
+      # type condition should be applied.
+      [:reload, :destroy, :delete].each do |m|
+        define_method(m) do |*args|
+          if @__no_type_condition__
+            without_type_condition do
+              super(*args)
+            end
+          else
+            super(*args)
+          end
+        end
       end
   
       private
@@ -88,6 +118,36 @@ module CBRAINExtensions
           root_class.class_variable_set("@@__sti_root_class__", root_class)
   
           root_class  
+        end
+        
+        # Returns true if changing the class of an object from
+        # +self+ to +klass+ would be valid.
+        #
+        # By default, a valid change is to another subclass of
+        # of the same sti_root_class. However, if the +root_class+
+        # option is defined, the given class will be used as the
+        # root of a valid tree.
+        def valid_sti_change?(klass, options ={})
+          new_class = klass.to_s
+          
+          if respond_to?(:valid_sti_types)
+            valid_types = valid_sti_types
+          else          
+            superklass = self.sti_root_class 
+            root_class = superklass
+          
+            if options[:root_class] && Class.const_defined?(options[:root_class].to_s)
+              option_root_class = options[:root_class].to_s.constantize
+              root_class = option_root_class if option_root_class <= superklass
+            end
+            valid_types = root_class.descendants.map(&:to_s)
+  
+            if options[:include_root_class]
+              valid_types << root_class.to_s
+            end
+          end
+          
+          valid_types.include?(new_class) 
         end
   
         # Perform operations in the block provided
@@ -127,20 +187,16 @@ module CBRAINExtensions
         end
         
         private
+        
         # Can be used to intantiate or retrieve an object in the proper class
         # and set its attributes to prepare for saving for saving.
         def prepare_sti_object(id, params = {}, options = {})
           superklass = self.sti_root_class 
-          valid_types = superklass.descendants.map(&:to_s)
           type_update = false
-  
-          if options[:include_root_class]
-            valid_types << klass.to_s
-          end
   
           type = params.delete :type 
   
-          if type && valid_types.include?(type) 
+          if type && valid_sti_change?(type, options)
             type_update = true
           end
   
@@ -153,12 +209,8 @@ module CBRAINExtensions
           if id 
             object = superklass.find(id)
             if type_update # Make new model a copy of the old
-              old_object = object
-              object = klass.new
-              old_object.attributes.each do |k, v|
-                object.send("write_attribute", k, v)
-              end
-              object.instance_variable_set("@new_record", false)
+              object = object.becomes(klass)
+              object.type = type
             end
           else
             object = klass.new
@@ -169,7 +221,7 @@ module CBRAINExtensions
           end
   
           object.attributes = params
-          object.no_type_condition_on_save!
+          object.no_type_condition!
           
           object
         end

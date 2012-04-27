@@ -34,7 +34,7 @@ module PermissionHelpers
   #Checks that the current user's has at least the rights associated
   #with +role+.
   def check_role(role)
-    current_user && current_user.has_rights?(role)
+    current_user && current_user.has_role?(role)
   end
   
   #Checks that the current user is not the default *admin* user.
@@ -50,7 +50,7 @@ module PermissionHelpers
 
   def delete_permission?(user)
     current_user && user && user != User.admin && current_user != user &&
-    current_user.has_rights?(:site_manager) && current_user.available_users.include?(user)
+    (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && current_user.available_users.include?(user)
   end
   
   #Helper method to render and error page. Will render public/<+status+>.html

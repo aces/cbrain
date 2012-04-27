@@ -134,7 +134,7 @@ module ShowTableHelper
      default_text = h(options.delete(:content) || object.send(attribute))
      return default_text if options.delete(:disabled)
      if object.errors.include?(attribute)
-       default_text = "<span style=\"color:red\">#{default_text}</span>"
+       default_text = "<span class=\"show_table_error\">#{default_text}</span>"
      end
      html = []
      html << "<span class=\"inline_edit_field_default_text\">"

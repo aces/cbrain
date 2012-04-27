@@ -78,32 +78,12 @@ class DataProvidersController < ApplicationController
     render :partial => "new"
   end
 
-  def create #:nodoc:
-    fields    = params[:data_provider] || {}
-    subtype   = fields.delete(:type)
-
-    errors = {}
-  
-    if subtype.blank?
-      errors[:type] = "must be specified."
-      subclass = DataProvider
-    else
-      subclass  = Class.const_get(subtype) rescue NilClass
-      if subtype == "DataProvider" || ! (subclass < DataProvider)
-        errors[:base] = "Type is not a valid Data Provider class"
-        subclass = DataProvider
-      end
-    end
-    
-    @provider = subclass.new(fields)
+  def create #:nodoc:    
+    @provider = DataProvider.sti_new(params[:data_provider])
     @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
     
-    if errors.empty? && @provider.save
+    if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
-    else
-      errors.each do |attr, msg|
-        @provider.errors.add(attr, msg)
-      end
     end
     
     @typelist = get_type_list
@@ -138,7 +118,7 @@ class DataProvidersController < ApplicationController
     end
 
     fields    = params[:data_provider] || {}
-    subtype   = fields.delete(:type)
+    fields.delete(:type)
 
     if @provider.update_attributes_with_logging(fields, current_user,
          %w(
@@ -592,7 +572,7 @@ class DataProvidersController < ApplicationController
 
   def get_type_list #:nodoc:
     typelist = %w{ SshDataProvider } 
-    if check_role(:site_manager)
+    if check_role(:site_manager) || check_role(:admin_user)
       typelist += %w{ 
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
                       CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider

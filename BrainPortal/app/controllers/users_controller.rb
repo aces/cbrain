@@ -93,18 +93,29 @@ class UsersController < ApplicationController
 
     # These attributes must be set explicitely
     login          = params[:user].delete :login
-    type           = params[:user].delete :type
+    type_param     = params[:user].delete :type
     group_ids      = params[:user].delete :group_ids
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
  
-    @user = User.new(params[:user])
+    if current_user.has_role? :admin_user
+      type = type_param
+    elsif current_user.has_role? :site_manager
+      if type_param == 'SiteManager'
+        type = 'SiteManager'
+      else
+        type = 'NormalUser'
+      end
+    end
+    
+    params[:user][:type] = type
+ 
+    @user = User.sti_new(params[:user])
 
     if current_user.has_role? :admin_user
       @user.login          = login     if login
-      @user.type           = type      if type
       @user.group_ids      = group_ids if group_ids
       @user.site_id        = site_id   if site_id
       @user.account_locked = (account_locked == "1")
@@ -114,13 +125,6 @@ class UsersController < ApplicationController
       @user.login          = login     if login
       @user.group_ids      = group_ids if group_ids
       @user.account_locked = (account_locked == "1")
-      if type 
-        if type == 'SiteManager'
-          @user.type = 'SiteManager'
-        else
-          @user.type = 'NormalUser'
-        end
-      end
       @user.site = current_user.site
     end
 
@@ -152,32 +156,46 @@ class UsersController < ApplicationController
   # PUT /users/1
   # PUT /users/1.xml
   def update #:nodoc:
-    @user = User.find(params[:id], :include => :groups)
     params[:user] ||= {}
+    
+    # Prepare type for sti load
+    type_param     = params[:user].delete :type
+    type = nil
+    
+    if current_user.has_role? :admin_user
+      type = type_param
+    elsif current_user.has_role? :site_manager
+      if type_param == 'SiteManager'
+        type = 'SiteManager'
+      elsif type_param == 'NormalUser'
+        type = 'NormalUser'
+      end
+    end
+    
+    params[:user][:type] = type
+    
+    if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
+       params[:user][:time_zone] = nil # change "" to nil
+     end
+
+    @user = User.sti_load(params[:id], params[:user])
+        
     cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
     
-    params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
-    params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
+    # Attributes must be set explicitly
+    group_ids      = params[:user].delete :group_ids
+    site_id        = params[:user].delete :site_id
+    account_locked = params[:user].delete :account_locked
     
     if params[:user][:password]
       params[:user].delete :password_reset
       @user.password_reset = current_user.id == @user.id ? false : true
     end
 
-    if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
-      params[:user][:time_zone] = nil # change "" to nil
-    end
-    
-    # These attributes must be set explicitely
-    type           = params[:user].delete :type
-    group_ids      = params[:user].delete :group_ids
-    site_id        = params[:user].delete :site_id
-    account_locked = params[:user].delete :account_locked
-    
-    @user.attributes = params[:user]
+    group_ids ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
+    group_ids  |= SystemGroup.all(:joins  =>  :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
     
     if current_user.has_role? :admin_user
-      @user.type           = type             if type
       @user.group_ids      = group_ids        if group_ids
       @user.site_id        = site_id          if site_id
       @user.account_locked = (account_locked == "1")
@@ -186,13 +204,6 @@ class UsersController < ApplicationController
     
     if current_user.has_role? :site_manager
       @user.group_ids = group_ids if group_ids
-      if type 
-        if type == 'SiteManager'
-          @user.type = 'SiteManager'
-        else
-          @user.type = 'NormalUser'
-        end
-      end
       @user.site = current_user.site
     end
     

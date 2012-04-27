@@ -20,28 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'fileutils'
+class SubclassValidator < ActiveModel::EachValidator #:nodoc:
 
-#Represents a single file uploaded to the system (as opposed to a FileCollection).
-class SingleFile < Userfile
-  
   Revision_info=CbrainFileRevision[__FILE__]
-  
-  validates :type, :subclass => { :root_class => SingleFile, :include_root_class => true }
-  
-  
-  def self.valid_file_classes #:nodoc:
-    return @valid_file_classes if @valid_file_classes
-    
-    @valid_file_classes = [SingleFile] + SingleFile.descendants
-  end
-  
-  # Forces calculation and setting of the size attribute.
-  def set_size!
-    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
-    self.save!
 
-    true
+  def validate_each(object, attribute, value)
+    superklass = object.class.sti_root_class 
+    root_class = superklass
+    
+    if options[:root_class] && Class.const_defined?(options[:root_class].to_s)
+      option_root_class = options[:root_class].to_s.constantize
+      root_class = option_root_class if option_root_class <= superklass
+    end
+    valid_types = root_class.descendants.map(&:to_s)
+
+    if options[:include_root_class]
+      valid_types << root_class.to_s
+    end
+    
+    unless valid_types.include?(value)
+      object.errors[attribute] << (options[:message] || "is not a valid subtype of #{root_class}") 
+    end
   end
 
 end
+

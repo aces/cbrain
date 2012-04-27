@@ -47,7 +47,7 @@
     <% t.attribute_cell(:login) %>
 
     <%
-      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.is_a?(SiteManager)) && not_admin_user(@user))) do 
+      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do 
         select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type)
       end
     %>
@@ -151,7 +151,7 @@
         <tr>
           <th colspan="3">
             Projects 
-            <% if current_user.has_rights?(:site_manager) %>
+            <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
               <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
                 <%= form_for @user, :as => :user, :url => { :action => "update" } do |f| -%>
                   <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>

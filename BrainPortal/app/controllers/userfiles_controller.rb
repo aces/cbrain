@@ -532,28 +532,22 @@ class UserfilesController < ApplicationController
     flash[:notice] = ""
     flash[:error]  = ""
 
-    attributes    = params[:userfile] || {}
-    new_user_id   = attributes.delete :user_id
-    new_group_id  = attributes.delete :group_id
-    old_name      = new_name = @userfile.name 
-
     if @userfile.has_owner_access?(current_user)
-      # IMPORTANT: File type change MUST come first as we will change the class of the object.
-      if params[:file_type]
-        if @userfile.update_file_type(params[:file_type], current_user)
-          @userfile = Userfile.find(@userfile.id)
-        else
-          @userfile.errors.add(:type, "could not be updated.")
-        end
-      end
+      attributes    = params[:userfile] || {}
+      new_user_id   = attributes.delete :user_id
+      new_group_id  = attributes.delete :group_id
+      type          = attributes.delete :type
       
       old_name = @userfile.name
       new_name = attributes.delete(:name) || old_name
 
+      @userfile.attributes = attributes
+      @userfile.type     = type         if type
       @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile = @userfile.class_update
       
-      if @userfile.update_attributes_with_logging(attributes, current_user, %w( group_writable num_files format_source_id parent_id ) )
+      if @userfile.update_attributes_with_logging(nil, current_user, %w( group_writable num_files format_source_id parent_id ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
           @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
