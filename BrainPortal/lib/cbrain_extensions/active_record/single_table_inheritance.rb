@@ -68,7 +68,10 @@ module CBRAINExtensions
         return self if old_class == new_class
         
         if self.class.valid_sti_change?(new_class, options)
-          new_object = self.becomes(new_class.constantize)
+          new_object = new_class.constantize.new
+          instance_variables.each do |var|
+            new_object.instance_variable_set(var, instance_variable_get(var))
+          end
           new_object.no_type_condition!
         else
           new_object = self

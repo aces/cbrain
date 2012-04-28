@@ -80,9 +80,13 @@ class PortalController < ApplicationController
     num_lines = 100 if num_lines < 100
     num_lines = 20_000 if num_lines > 20_000
 
-    # Filter by user and/or port
+    # Filters
     user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
     inst_name = params[:log_inst].to_s.presence
+    meth_name = params[:log_meth].to_s.presence
+    ctrl_name = params[:log_ctrl].to_s.presence
+    ms_min    = params[:ms_min].presence.try(:to_i)
+   
 
     # Remove some less important lines; note that in production,
     # only 'Rendered' is shown in this set.
@@ -107,22 +111,33 @@ class PortalController < ApplicationController
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
-    # Filter by username and/or instance name
-    if user_name || inst_name
-      filtlogs = []
-      paragraph = []
+    # Filter by username, instance name, method, controller or min milliseconds
+    if user_name || inst_name || meth_name || ctrl_name || ms_min
+      filtlogs   = []
+      paragraph  = []
       found_user = nil
       found_inst = nil
+      found_meth = nil
+      found_ctrl = nil
+      found_ms   = 0
       (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
         paragraph << line
         if line == ""
-          filtlogs += paragraph if (!user_name || found_user == user_name) && (!inst_name || found_inst == inst_name)
+          filtlogs += paragraph if (!user_name || found_user == user_name) &&
+                                   (!inst_name || found_inst == inst_name) &&
+                                   (!meth_name || found_meth == meth_name) &&
+                                   (!ctrl_name || found_ctrl == ctrl_name) &&
+                                   (!ms_min    || found_ms   >= ms_min)
           paragraph = []
         elsif line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
           if line =~ /on instance (\S+)/
             found_inst = Regexp.last_match[1]
           end
+        elsif line =~ /^Started (\S+) "\/(\w+)/
+          found_meth, found_ctrl = Regexp.last_match[1,2]
+        elsif line =~ /^Completed.*in (\d+)ms/
+          found_ms = Regexp.last_match[1].to_i
         end
       end
       log = filtlogs.join("\n")
@@ -191,7 +206,7 @@ class PortalController < ApplicationController
     row_type        = params[:row_type]   || ""
     col_type        = params[:col_type]   || ""
     submit          = params[:commit]     || "look"
-    date_filtration = params[:date_range]       || {}
+    date_filtration = params[:date_range] || {}
 
     if table_name =~ /^(\w+)\.(\S+)$/
       table_name = Regexp.last_match[1]
@@ -236,12 +251,12 @@ class PortalController < ApplicationController
 
     # Compute access restriction to content
     if @model.respond_to?(:find_all_accessible_by_user)
-       @table_content = @model.find_all_accessible_by_user(current_user)  # no .all here yet! We need to compute more later on
+       table_content_scope = @model.find_all_accessible_by_user(current_user)  # no .all here yet! We need to compute more later on
     else
-       @table_content = @model.where({})
+       table_content_scope = @model.where({})
        if ! current_user.has_role?(:admin_user)
-         @table_content = @table_content.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
-         @table_content = @table_content.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
+         table_content_scope = table_content_scope.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
+         table_content_scope = table_content_scope.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
        end
     end
 
@@ -249,27 +264,41 @@ class PortalController < ApplicationController
     @model_atts.each do |att|
       val = params[att]
       next unless val.present?
-      @table_content = @table_content.where("#{table_name}.#{att}" => val)
+      table_content_scope = table_content_scope.where("#{table_name}.#{att}" => val)
     end
 
     # Add date filtration
     mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute" ? true : false
     mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute" ? true : false
-    @table_content = add_condition_to_scope(@table_content, table_name, mode_is_absolute_from , mode_is_absolute_to,
+    table_content_scope = add_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
         date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"], date_filtration["date_attribute"])
 
     # Compute content
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]
-    #@table_content = @table_content.where(:user_id => 999) # for debug -> no entries
-    @table_content = @table_content.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] ).send(*table_ops)
+    #table_content_scope = table_content_scope.where(:id => -999) # for debug -> no entries
+    raw_table_content = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] ).send(*table_ops)
+
+    # Collapse entries with blanks and/or nils
+    @table_content = {}
+    raw_table_content.each do |pair,val|
+      newpair = [ pair[0].presence, pair[1].presence ]
+      if @table_content[newpair]
+        @table_content[newpair] += val
+      else
+        @table_content[newpair]  = val
+      end
+    end
 
     # Present content for view
     table_keys = @table_content.keys
-    @table_row_values = table_keys.collect { |pair| pair[0] }.compact.sort.uniq
-    @table_col_values = table_keys.collect { |pair| pair[1] }.compact.sort.uniq
-    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id$/
-    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id$/
-    # TODO: sort values better?
+    raw_table_row_values = table_keys.collect { |pair| pair[0] }.map { |x| x.presence }.uniq
+    raw_table_col_values = table_keys.collect { |pair| pair[1] }.map { |x| x.presence }.uniq
+    @table_row_values = raw_table_row_values.compact.sort # sorted non-nil values ; TODO: sort values better?
+    @table_col_values = raw_table_col_values.compact.sort # sorted non-nil values ; TODO: sort values better?
+    @table_row_values.unshift(nil) if raw_table_row_values.size > @table_row_values.size # reinsert nil if needed
+    @table_col_values.unshift(nil) if raw_table_col_values.size > @table_col_values.size # reinsert nil if needed
+    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id$/ # remove 0 values for IDs
+    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id$/ # remove 0 values for IDs
 
     # For making filter links inside the table
     @filter_model      = @model.to_s.pluralize.underscore

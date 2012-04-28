@@ -573,6 +573,19 @@ a {
   color: white;
 }
 
+.log_refresh {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 1em;
+  border-right: 1px solid gray;
+}
+
+.log_filters {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 1em;
+}
+
 
 /* % #################################################################### */
 /* % Preformated Plain Text Styles */

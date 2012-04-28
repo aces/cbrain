@@ -65,6 +65,7 @@ class SitesController < ApplicationController
     
     respond_to do |format|
       if @site.save
+        @site.addlog("Created by #{current_user.login}")
         flash[:notice] = 'Site was successfully created.'
         format.js  { redirect_to :action => :index, :format => :js }
         format.xml { render :xml => @site, :status => :created, :location => @site }
@@ -81,27 +82,35 @@ class SitesController < ApplicationController
     @site = Site.find(params[:id])
     
     params[:site] ||= {}
+
+    original_user_ids    = @site.user_ids
+    original_manager_ids = @site.managers.raw_first_column(&:id)
+    original_group_ids   = @site.group_ids
     
     unless params[:commit] == "Update Users"
-      params[:site][:user_ids] = @site.user_ids
-      params[:site][:manager_ids] = @site.managers.map(&:id)
+      params[:site][:user_ids]    = original_user_ids    # we need to make sure they stay the same
+      params[:site][:manager_ids] = original_manager_ids # we need to make sure they stay the same
     end
     
     unless params[:commit] == "Update Projects"
-      params[:site][:group_ids] = @site.group_ids
+      params[:site][:group_ids] = original_group_ids    # we need to make sure they stay the same
     end
 
-    params[:site][:user_ids]    ||= []
-    params[:site][:manager_ids] ||= []
-    params[:site][:group_ids]   ||= [ @site.own_group.id ]
-    params[:site][:user_ids]    = params[:site][:user_ids].reject(&:blank?).map(&:to_i)
-    params[:site][:manager_ids] = params[:site][:manager_ids].reject(&:blank?).map(&:to_i)
-    params[:site][:group_ids]   = params[:site][:group_ids].reject(&:blank?).map(&:to_i)
+    params[:site][:user_ids]      = [] if params[:site][:user_ids].blank?
+    params[:site][:manager_ids]   = [] if params[:site][:manager_ids].blank?
+    params[:site][:group_ids]     = [ @site.own_group.id ] if params[:site][:group_ids].blank?
+    params[:site][:user_ids]      = params[:site][:user_ids].reject(&:blank?).map(&:to_i)
+    params[:site][:manager_ids]   = params[:site][:manager_ids].reject(&:blank?).map(&:to_i)
+    params[:site][:group_ids]     = params[:site][:group_ids].reject(&:blank?).map(&:to_i)
 
     @site.unset_managers
 
     respond_to do |format|
       if @site.update_attributes_with_logging(params[:site], current_user)
+        @site.reload
+        @site.addlog_object_list_updated("Users",    User,  original_user_ids,    @site.user_ids,                        current_user, :login)
+        @site.addlog_object_list_updated("Managers", User,  original_manager_ids, @site.managers.raw_first_column(&:id), current_user, :login)
+        @site.addlog_object_list_updated("Groups",   Group, original_group_ids,   @site.group_ids,                       current_user)
         flash[:notice] = 'Site was successfully updated.'
         format.html { redirect_to(@site) }
         format.xml  { head :ok }

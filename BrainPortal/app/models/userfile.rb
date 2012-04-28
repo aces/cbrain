@@ -279,7 +279,7 @@ class Userfile < ActiveRecord::Base
   def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
       self.type = type
-      self.update_attributes_with_logging( { }, by_user, [], 1 )
+      self.save_with_logging(by_user, [], 1 )
     else
       false
     end

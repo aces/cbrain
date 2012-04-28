@@ -157,8 +157,9 @@ class UserfilesController < ApplicationController
       real_subset       = @filtered_scope.includes( includes ).where( :id => userfile_ids )
       real_subset_index = real_subset.index_by { |u| u.id }
       ordered_real      = []
+      
       page_of_userfiles.each do |simple|
-        full = real_subset_index[simple[0]]
+        full = real_subset_index[simple[0].to_i]
         next unless full # this can happen when the userfile list change between fetching the simple and real lists
         full.level = simple[4]
         ordered_real << full
@@ -172,7 +173,7 @@ class UserfilesController < ApplicationController
       pager.total_entries = @userfiles_total
       pager
     end
-
+    
     respond_to do |format|
       format.html
       format.js
@@ -421,8 +422,7 @@ class UserfilesController < ApplicationController
           userfile.cache_copy_from_local_file(tmpcontentfile)
           userfile.size = rack_tempfile_size
           userfile.save
-          userfile.addlog_context(self,"Uploaded by #{current_user.login}")
-          current_user.addlog_context(self,"Uploaded SingleFile '#{userfile.name}', #{userfile.size} bytes")
+          userfile.addlog("Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type  => 'notice', 
                                :header  => "SingleFile Uploaded", 
@@ -547,7 +547,7 @@ class UserfilesController < ApplicationController
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
       @userfile = @userfile.class_update
       
-      if @userfile.update_attributes_with_logging(nil, current_user, %w( group_writable num_files format_source_id parent_id ) )
+      if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
           @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
