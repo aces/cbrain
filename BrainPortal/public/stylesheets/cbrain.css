@@ -1299,6 +1299,14 @@ pre {
   color: blue;
 }
 
+.show_table_error {
+  color: red;
+}
+
+.show_table_error a {
+  color: red;
+}
+
 /* % ######################################################### */
 /* % File Menu Edit Tags table formatting */
 /* % ######################################################### */

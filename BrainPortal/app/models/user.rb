@@ -65,6 +65,9 @@ class User < ActiveRecord::Base
                             :confirmation => true,
                             :presence => true,
                             :if => :password_required?
+  
+  validates                 :type, 
+                            :subclass => true
                             
   validates_presence_of     :password_confirmation,      :if => :password_required?
   
@@ -194,11 +197,6 @@ class User < ActiveRecord::Base
   #Does this user's role match +role+?
   def has_role?(role)
     return self.class == role.to_s.classify.constantize
-  end
-  
-  #Does this user have +role+ rights?
-  def has_rights?(role)
-    return self.is_a? role.to_s.classify.constantize
   end
   
   #Find the tools that this user has access to.

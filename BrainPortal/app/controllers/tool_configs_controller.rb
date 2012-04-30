@@ -189,7 +189,7 @@ class ToolConfigsController < ApplicationController
     end
 
     respond_to do |format|
-      if @tool_config.update_attributes_with_logging(nil, current_user, %w( env_array script_prologue ncpus ) )
+      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
         flash[:notice] = "Tool configuration was successfully updated."
         format.html {
                     if @tool_config.tool_id

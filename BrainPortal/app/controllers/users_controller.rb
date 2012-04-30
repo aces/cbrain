@@ -93,18 +93,29 @@ class UsersController < ApplicationController
 
     # These attributes must be set explicitely
     login          = params[:user].delete :login
-    type           = params[:user].delete :type
+    type_param     = params[:user].delete :type
     group_ids      = params[:user].delete :group_ids
     site_id        = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
  
-    @user = User.new(params[:user])
+    if current_user.has_role? :admin_user
+      type = type_param
+    elsif current_user.has_role? :site_manager
+      if type_param == 'SiteManager'
+        type = 'SiteManager'
+      else
+        type = 'NormalUser'
+      end
+    end
+    
+    params[:user][:type] = type
+ 
+    @user = User.sti_new(params[:user])
 
     if current_user.has_role? :admin_user
       @user.login          = login     if login
-      @user.type           = type      if type
       @user.group_ids      = group_ids if group_ids
       @user.site_id        = site_id   if site_id
       @user.account_locked = (account_locked == "1")
@@ -114,13 +125,6 @@ class UsersController < ApplicationController
       @user.login          = login     if login
       @user.group_ids      = group_ids if group_ids
       @user.account_locked = (account_locked == "1")
-      if type 
-        if type == 'SiteManager'
-          @user.type = 'SiteManager'
-        else
-          @user.type = 'NormalUser'
-        end
-      end
       @user.site = current_user.site
     end
 
@@ -154,11 +158,11 @@ class UsersController < ApplicationController
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     params[:user] ||= {}
-    cb_error "You don't have permission to view this page.", :redirect  => home_path unless edit_permission?(@user)
-    
-    params[:user][:group_ids] ||=   WorkGroup.all(:joins  =>  :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
-    params[:user][:group_ids]  |= SystemGroup.all(:joins  =>  :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
-    
+    cb_error "You don't have permission to view this page.", :redirect => home_path unless edit_permission?(@user)
+  
+    params[:user][:group_ids] ||= WorkGroup.all(:joins => :users, :conditions => {"users.id" => @user.id}).map { |g| g.id.to_s }
+    params[:user][:group_ids] |= SystemGroup.all(:joins => :users, :conditions => [ "users.id = ? AND groups.type <> \"InvisibleGroup\"", @user.id ] ).map { |g| g.id.to_s }
+  
     if params[:user][:password].present?
       params[:user].delete :password_reset
       @user.password_reset = current_user.id == @user.id ? false : true
@@ -166,34 +170,34 @@ class UsersController < ApplicationController
       params[:user].delete(:password)
       params[:user].delete(:password_confirmation)
     end
-
+  
     if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
       params[:user][:time_zone] = nil # change "" to nil
     end
-    
+  
     # These attributes must be set explicitely
-    type           = params[:user].delete :type
-    group_ids      = params[:user].delete :group_ids
-    site_id        = params[:user].delete :site_id
+    type = params[:user].delete :type
+    group_ids = params[:user].delete :group_ids
+    site_id = params[:user].delete :site_id
     account_locked = params[:user].delete :account_locked
-    
+  
     # For logging
     original_group_ids = @user.group_ids
-
+  
     # Update everything else!
     @user.attributes = params[:user]
-    
+  
     if current_user.has_role? :admin_user
-      @user.type           = type             if type
-      @user.group_ids      = group_ids        if group_ids
-      @user.site_id        = site_id          if site_id
+      @user.type = type if type
+      @user.group_ids = group_ids if group_ids
+      @user.site_id = site_id if site_id
       @user.account_locked = (account_locked == "1")
-      @user.destroy_user_sessions if @user.account_locked 
+      @user.destroy_user_sessions if @user.account_locked
     end
-    
+  
     if current_user.has_role? :site_manager
       @user.group_ids = group_ids if group_ids
-      if type 
+      if type
         if type == 'SiteManager'
           @user.type = 'SiteManager'
         else
@@ -201,20 +205,21 @@ class UsersController < ApplicationController
         end
       end
       @user.site = current_user.site
-    end
-    
+    end 
+    @user = @user.class_update
+
     respond_to do |format|
-      if @user.update_attributes_with_logging( nil, current_user, %w( full_name login email role city country account_locked ) )
+      if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
         @user.reload
         @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
         flash[:notice] = "User #{@user.login} was successfully updated."
-        format.html { redirect_to :action  => :show }
-        format.xml  { head :ok }
+        format.html { redirect_to :action => :show }
+        format.xml { head :ok }
       else
         @user.reload
         format.html { render :action => "show" }
-        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+        format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
       end
     end
   end

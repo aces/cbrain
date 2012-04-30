@@ -50,7 +50,7 @@ class Userfile < ActiveRecord::Base
                           :presence => true,
                           :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
                           :filename_format => true
-                          
+                                                  
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
@@ -86,12 +86,12 @@ class Userfile < ActiveRecord::Base
                                           format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
                                           format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
                                           format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-                                          {:conditions  => "userfiles.type='#{format_filter}'#{format_ids}"}
+                                          where("userfiles.type='#{format_filter}'#{format_ids}")
                                         }
   scope                   :has_no_parent, :conditions => {:parent_id => nil}
   scope                   :has_no_child,  lambda { |ignored|
                                             all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
-                                            { :conditions => "userfiles.id NOT IN (#{all_parents})" }
+                                            where("userfiles.id NOT IN (#{all_parents})")
                                           }
 
   class Viewer
@@ -238,11 +238,13 @@ class Userfile < ActiveRecord::Base
   def self.valid_file_classes
     return @valid_file_classes if @valid_file_classes
 
-    base_class = self
-    base_class = SingleFile     if self <= SingleFile
-    base_class = FileCollection if self <= FileCollection
-    
-    @valid_file_classes = base_class.descendants.unshift(base_class)
+    @valid_file_classes = [Userfile] + Userfile.descendants
+  end
+  
+  # Valid classes for conversion as strings 
+  # (used by SingleTableInheritance module).
+  def self.valid_sti_types
+    @valid_sti_types ||= valid_file_classes.map(&:to_s)
   end
 
   # Instance version of the class method.
@@ -277,7 +279,7 @@ class Userfile < ActiveRecord::Base
   def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
       self.type = type
-      self.update_attributes_with_logging( { }, by_user, [], 1 )
+      self.save_with_logging(by_user, [], 1 )
     else
       false
     end

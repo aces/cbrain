@@ -545,7 +545,7 @@ class TasksController < ApplicationController
     @task.log_params_changes(old_params,@task.params)
 
     # Log and save normal attributes of the task
-    @task.update_attributes_with_logging( nil , current_user, %w( results_data_provider_id ) )
+    @task.save_with_logging(current_user, %w( results_data_provider_id ))
 
     flash[:notice] += messages + "\n" unless messages.blank?
     flash[:notice] += "New task parameters saved. See the logs for changes, if any.\n"

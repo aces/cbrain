@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class SiteManager < NormalUser
+class SiteManager < User
 
   Revision_info=CbrainFileRevision[__FILE__]
   

@@ -30,8 +30,16 @@ class FileCollection < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]
   
+  validates :type, :subclass => { :root_class => FileCollection, :include_root_class => true }
+  
   has_viewer  :partial => 'file_collection', :if => :is_locally_synced?
   has_content :collection_file
+
+  def self.valid_file_classes  #:nodoc:
+    return @valid_file_classes if @valid_file_classes
+    
+    @valid_file_classes = [FileCollection] + FileCollection.descendants
+  end
 
   # Extract a collection from an archive.
   # The user_id, provider_id and name attributes must already be

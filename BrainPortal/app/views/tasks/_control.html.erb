@@ -49,7 +49,7 @@
   <tr>
     <td>
       <strong>Owner:</strong><br>
-      <%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_rights?(:site_manager)) } %>
+      <%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) } %>
     </td>
 
     <td>

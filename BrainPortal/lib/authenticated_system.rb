@@ -62,12 +62,12 @@ module AuthenticatedSystem
 
     #Before filter to ensure that logged in User is an admin user.
     def admin_role_required
-      current_user.has_rights?(:admin_user) || access_error(401)
+      current_user.has_role?(:admin_user) || access_error(401)
     end
 
     #Before filter to ensure that logged in User is a site manager (or admin).
     def manager_role_required
-      current_user.has_rights?(:site_manager) || access_error(401)
+      current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) || access_error(401)
     end
     
     ##########################################################
