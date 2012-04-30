@@ -275,15 +275,20 @@ class ApplicationController < ActionController::Base
     old_redirect_to(options, response_status)
   end
   
+  #Home pages in hash form.
+  def start_page_params
+    if current_user.nil?
+      { :controller => :sessions, :action => :new }
+    elsif current_user.has_role?(:normal_user)
+      { :controller => :groups, :action => :index }
+    else   
+      { :controller => :portal, :action => :welcome }
+    end
+  end
+  
   #Different home pages for admins and other users.
   def start_page_path
-    return "#" unless current_user
-    
-    if current_user.has_role?(:normal_user)
-      url_for(:controller => :groups, :action => :index)
-    else   
-      url_for(:controller => :portal, :action => :welcome)
-    end
+    url_for(start_page_params)
   end
 
 end
