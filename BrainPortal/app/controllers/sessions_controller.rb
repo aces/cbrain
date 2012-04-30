@@ -29,10 +29,11 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__]
   
+  before_filter :no_logged_in_user, :only => [:new, :create]
+  
   api_available
 
   def new #:nodoc:
-
     reqenv   = request.env
     rawua    = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
     ua       = HttpUserAgent.new(rawua)
@@ -45,7 +46,7 @@ class SessionsController < ApplicationController
     end
   end
 
-  def create #:nodoc:
+  def create #:nodoc:    
     portal = BrainPortal.current_resource
 
     self.current_user = User.authenticate(params[:login], params[:password])
@@ -136,6 +137,11 @@ class SessionsController < ApplicationController
   end
 
   def destroy #:nodoc:
+    unless current_user
+      redirect_to new_session_path
+      return
+    end
+    
     portal = BrainPortal.current_resource
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
@@ -149,6 +155,14 @@ class SessionsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to new_session_path }
       format.xml  { render :nothing => true, :status  => 200 }
+    end
+  end
+
+  private
+  
+  def no_logged_in_user
+    if current_user
+      redirect_to start_page_path
     end
   end
 
