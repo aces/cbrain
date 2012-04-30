@@ -78,7 +78,10 @@ class CbrainTask::Diagnostics < PortalTask
 
     :inptest                 => { :deep => 'So deep.' },
 
-    :inptest_select          => '3'
+    :inptest_select          => '3',
+
+    :no_cluster_job          => '0',
+    :erase_report            => '0',
     
     }
   end

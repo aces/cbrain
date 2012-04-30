@@ -130,6 +130,13 @@ class CbrainTask::Diagnostics < ClusterTask
   def cluster_commands #:nodoc:
     params       = self.params || {}
 
+    if mybool(params[:no_cluster_job])
+      self.addlog("No cluster job script to prepare.")
+      File.open("self.stdout_cluster_filename","w") { |fh| fh.write "Fake STDOUT output (because no cluster script)" }
+      File.open("self.stderr_cluster_filename","w") { |fh| fh.write "Fake STDERR output (because no cluster script)" }
+      return nil
+    end
+
     file_ids      = params[:interface_userfile_ids] || []
 
     # Note: 'commands' is an ARRAY of strings.
@@ -230,10 +237,12 @@ class CbrainTask::Diagnostics < ClusterTask
        self.addlog("Environment check: #{var}=#{ENV[var] || "(Unset)"}")
     end
 
-    if stdout_text.nil? || stdout_text !~ /Diagnostics Script Ending/ # see end of cluster_commands()
-      self.addlog "Error: cluster script did not produce expected output."
-      self.addlog "Post Processing might have been triggered too soon."
-      return false # -> "Failed On Cluster"
+    if ! mybool(params[:no_cluster_job])
+      if stdout_text.nil? || stdout_text !~ /Diagnostics Script Ending/ # see end of cluster_commands()
+        self.addlog "Error: cluster script did not produce expected output."
+        self.addlog "Post Processing might have been triggered too soon."
+        return false # -> "Failed On Cluster"
+      end
     end
 
     if mybool(params[:cluster_crash])
@@ -276,6 +285,11 @@ class CbrainTask::Diagnostics < ClusterTask
       end
       params[:report_id] = report.id
       self.addlog_to_userfiles_created(report)
+
+      if mybool(params[:erase_report])
+        self.addlog("Erasing report, as specified.")
+        report.destroy
+      end
     else
       self.addlog("Could not save report?!?")
       params.delete(:report_id)
