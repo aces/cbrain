@@ -71,8 +71,8 @@
         <p><%= f.label :password_confirmation, "Confirm Password" %><br/>
         <%= f.password_field :password_confirmation %></p>
 
-        <p><label for="no_pwd_reset">No need to reset initial password:</label>
-        <%= check_box_tag :no_pwd_reset, "1", params[:no_password_reset_needed] == "1" %>
+        <p><label for="no_password_reset_needed">No need to reset initial password:</label>
+        <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>
 
         <p><%= submit_tag 'Create User' %></p>
       </div>
