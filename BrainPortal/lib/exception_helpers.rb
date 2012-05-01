@@ -90,10 +90,10 @@ module ExceptionHelpers
   # Redirect to the index page if available and wasn't the source of
   # the exception, otherwise to welcome page.
   def default_redirect
-    final_resting_place = { :controller => "portal", :action => "welcome" }
+    final_resting_place = start_page_params
     if self.respond_to?(:index) && params[:action] != "index"
       { :action => :index }
-    elsif final_resting_place.keys.all? { |k| params[k] == final_resting_place[k] }
+    elsif final_resting_place.keys.all? { |k| params[k].to_s == final_resting_place[k].to_s }
       "/500.html" # in case there's an error in the welcome page itself
     else
       url_for(final_resting_place)
