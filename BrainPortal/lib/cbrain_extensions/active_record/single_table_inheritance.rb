@@ -156,14 +156,31 @@ module CBRAINExtensions
         # Perform operations in the block provided
         # without adding type information to queries.
         def without_type_condition
-          old_finder_needs_type_condition = nil
-          class_eval do 
-            old_finder_needs_type_condition = @finder_needs_type_condition
-            @finder_needs_type_condition = :false 
-          end
+          old_finder_needs_type_condition = @finder_needs_type_condition
+          @finder_needs_type_condition = :false 
           yield
         ensure
-          class_eval { @finder_needs_type_condition = old_finder_needs_type_condition }
+          @finder_needs_type_condition = old_finder_needs_type_condition
+        end
+        
+        # Make it so no_type_condition affects finders.
+        def no_type_condition_affects_finders!
+          @no_type_condition_affects_finders = true
+        end
+        
+        # Make it so no_type_condition does not affect finders
+        # (this is the default).
+        def no_type_condition_does_not_affect_finders!
+          @no_type_condition_affects_finders = false
+        end
+        
+        # Does no_type_condition affect finders? 
+        def no_type_condition_affects_finders?
+          if @no_type_condition_affects_finders
+            true
+          else
+            false
+          end
         end
         
         # Create a new object with attributes set by +params+.
