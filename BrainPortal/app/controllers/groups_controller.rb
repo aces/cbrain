@@ -165,6 +165,8 @@ class GroupsController < ApplicationController
       @group.type = 'WorkGroup'
     end
     
+    @group = @group.class_update
+    
     unless current_user.has_role? :admin_user
       params[:group][:site_id] = current_user.site_id
     end
