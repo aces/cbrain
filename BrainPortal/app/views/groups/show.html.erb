@@ -48,7 +48,13 @@
     <% end %>
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
-
+    
+    <% if current_user.has_role?(:admin_user) %>
+      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.is_a?(InvisibleGroup), :disabled => true),  :disabled => !current_user.has_role?(:admin_user)) do %>
+        <%= check_box_tag("invisible_group", "1", @group.is_a?(InvisibleGroup)) %>
+      <% end %>
+    <% end %>
+    
     <% t.empty_cell %>
 
   <% end %>
