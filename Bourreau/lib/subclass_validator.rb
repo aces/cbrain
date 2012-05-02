@@ -1,0 +1,1 @@
+../../BrainPortal/lib/subclass_validator.rb

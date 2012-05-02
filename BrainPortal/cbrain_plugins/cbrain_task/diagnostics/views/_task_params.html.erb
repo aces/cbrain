@@ -39,6 +39,8 @@
 
 <div id="life_cycle" style="display:none;">
 
+<strong>Do not actually submit job script on cluster:</strong> <%= form.params_check_box :no_cluster_job %><br>
+
 <table>
 
 <tr>
@@ -212,6 +214,16 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 
 </div>
 
+</fieldset>
+
+
+
+<fieldset>
+  <legend>
+    Other Options
+  </legend>
+
+  <strong>Erase report after it is created: </strong>            <%= form.params_check_box :erase_report %><br>
 </fieldset>
 
 
