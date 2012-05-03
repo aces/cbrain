@@ -111,7 +111,7 @@
     <% end %>
 
     <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
-    <%= button_with_dropdown_menu(select_label, :class => 'centered') do %>
+    <%= button_with_dropdown_menu(select_label) do %>
       <p class="left_align">
       This panel manages your list of <em>persistently</em> selected files.<br/>
       This list is maintained even when you switch from page to page.<br/>
