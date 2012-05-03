@@ -43,6 +43,7 @@ class TaskCustomFilter < CustomFilter
     scope = scope_date(scope)         unless self.data["date_attribute"].blank?
     scope = scope_status(scope)       unless self.data["status"].blank?
     scope = scope_archive(scope)      unless self.data["archiving_status"].blank?
+    scope = scope_wd_status(scope)    unless self.data["wd_status"].blank?
     scope
   end
 
@@ -109,13 +110,22 @@ class TaskCustomFilter < CustomFilter
     keyword = self.data["archiving_status"] || ""
     case keyword
     when "none"
-      return scope.scoped(:conditions => "( cbrain_tasks.workdir_archived = 0 or cbrain_tasks.workdir_archived is null )")
+      return scope.not_archived
     when "cluster"
-      return scope.scoped(:conditions => { :workdir_archived => true, :workdir_archive_userfile_id => nil })
+      return scope.archived_on_cluster
     when "file"
-      return scope.scoped(:conditions => { :workdir_archived => true }).scoped( :conditions => "cbrain_tasks.workdir_archive_userfile_id is not null" )
+      return scope.archived_as_file
     end
     return scope # anything else, no operation.
+  end
+
+  def scope_wd_status(scope)
+    keyword = self.data["wd_status"] || ""
+    return scope.shared_wd      if keyword == 'shared'
+    return scope.not_shared_wd  if keyword == 'not_shared'
+    return scope.wd_present     if keyword == 'exists'
+    return scope.wd_not_present if keyword == 'none'
+    scope
   end
   
 end
