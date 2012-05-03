@@ -77,21 +77,10 @@
       <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s } %>
     <% end  %>
 
-    <% t.cell("Tags") do %>
-      <%= @userfile.get_tags_for_user(current_user).map(&:name).join(", ") %>
-      <%= overlay_content_link "(Update)", :class => "action_link", :enclosing_element => "span" do %>
-        <% if current_user.available_tags.count > 0 %>
-          <%= form_for @userfile, :as => :userfile, :url => { :controller => :userfiles, :action => :update_multiple }, :html => { :method => :put } do |f| %>
-            <%= hidden_field_tag "file_ids[]", @userfile.id %>
-            <%= hidden_field_tag "redirect_action", userfile_path(@userfile) %>
-            <select name="tags[]" multiple="multiple" style="width:150px" >
-            <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
-            </select>
-            <br>
-            <%= submit_tag "Update Tags" %>
-          <% end %>
-        <% end %>
-      <% end %>
+    <% t.edit_cell(:tag_ids, :header => "Tags", :content => @userfile.get_tags_for_user(current_user).map(&:name).join(", ")) do %>
+      <select name="tag_ids[]" multiple="multiple" style="width:150px" >
+        <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
+      </select>
     <% end %>
 
     <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
