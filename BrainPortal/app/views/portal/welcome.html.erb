@@ -214,12 +214,18 @@
            [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'portal', 'sessions', 'sites', 'tag', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]) %>
       <br>
       <strong>Hide lines:</strong>
-        'Rendered': <%= check_box_tag :hide_rendered, "1", params[:hide_rendered] == "1" %>
+          'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
+        | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
+        | 'Parameters': <%= check_box_tag :hide_parameters, "1", params[:hide_parameters] == "1" %>
+        | 'Rendered':   <%= check_box_tag :hide_rendered,   "1", params[:hide_rendered]   == "1" %>
+        | 'Redirected': <%= check_box_tag :hide_redirected, "1", params[:hide_redirected] == "1" %>
+        | 'User':       <%= check_box_tag :hide_user,       "1", params[:hide_user]       == "1" %>
+        | 'Completed':  <%= check_box_tag :hide_completed,  "1", params[:hide_completed]  == "1" %>
       <% if Rails.env == 'development' %>
-        | 'SQL':      <%= check_box_tag :hide_sql,      "1", params[:hide_sql]      == "1" %>
-        | 'Load':     <%= check_box_tag :hide_load,     "1", params[:hide_load]     == "1" %>
-        | 'CACHE':    <%= check_box_tag :hide_cache,    "1", params[:hide_cache]    == "1" %>
-        | 'AREL':     <%= check_box_tag :hide_arel,     "1", params[:hide_arel]     == "1" %>
+        | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
+        | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
+        | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
+        | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
       <% end %>
       </div>
     <% end %>
