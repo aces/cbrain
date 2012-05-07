@@ -168,8 +168,8 @@ function load_behaviour(event){
    });
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e){ 
-											                 loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();		
-												     });
+	   loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();		
+	 });
 
 
    loaded_element.find(".button_with_drop_down").children(".button_menu").button({
@@ -177,14 +177,13 @@ function load_behaviour(event){
        secondary: 'ui-icon-triangle-1-s'
      }
    }).click(function(event){
-             var menu = jQuery(this).siblings(".drop_down_menu");
-             if(menu.is(":visible")){
-      	       menu.hide();
-             } else {
-               loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
-     	         menu.show();
-             }
-     	         
+     var menu = jQuery(this).siblings(".drop_down_menu");
+     if(menu.is(":visible")){
+       menu.hide();
+     } else {
+       loaded_element.find(".drop_down_menu:visible").hide();
+       menu.show();
+     }  
    });
    
    

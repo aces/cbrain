@@ -108,7 +108,7 @@ module BasicFilterHelpers
       where( "#{table_column} IS NOT NULL" ).
       group( table_column ).
       order( table_column ).
-      raw_rows( [ table_column, "COUNT(#{table_column})" ] ).
+      raw_rows(table_column, "COUNT(#{table_column})").
       reject { |pair| pair[0].blank? }.
       map do |pair|
         name, count = pair
@@ -141,7 +141,7 @@ module BasicFilterHelpers
       joins(association.to_sym).
       order(assoc_name).
       group(table_fkey).
-      raw_rows( [ table_fkey, assoc_name, "COUNT(#{table_fkey})" ] ).
+      raw_rows( table_fkey, assoc_name, "COUNT(#{table_fkey})").
       map do |triplet|
         fkey, name, count = triplet
         filt_count        = filt_counts[fkey].to_i
