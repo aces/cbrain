@@ -60,9 +60,9 @@ class UserfilesController < ApplicationController
     tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
     
     @header_scope = Userfile.scoped
+
     # Restrict by 'view all' or not
-    
-    @filter_params["view_all"] ||= 'on'
+    @filter_params["view_all"] ||= current_user.has_role?(:admin_user) ? 'off' : 'on'
     if @filter_params["view_all"] == 'on'
       @header_scope = Userfile.restrict_access_on_query(current_user, @header_scope, :access_requested => :read)
     else

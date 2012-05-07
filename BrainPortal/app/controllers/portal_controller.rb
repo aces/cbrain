@@ -87,15 +87,27 @@ class PortalController < ApplicationController
     ctrl_name = params[:log_ctrl].to_s.presence
     ms_min    = params[:ms_min].presence.try(:to_i)
    
-
-    # Remove some less important lines; note that in production,
-    # only 'Rendered' is shown in this set.
+    # Hide some less important lines
     remove_egrep = []
-    remove_egrep << "^Rendered"     if params[:hide_rendered].presence  == "1"
-    remove_egrep << "^ *SQL "       if params[:hide_sql].presence       == "1"
-    remove_egrep << "^ *CACHE "     if params[:hide_cache].presence     == "1"
-    remove_egrep << "^ *AREL "      if params[:hide_arel].presence      == "1"
-    remove_egrep << "^ *[^ ]* Load" if params[:hide_load].presence      == "1"
+    remove_egrep << "^Started "       if params[:hide_started].presence    == "1"
+    remove_egrep << "^ *Processing "  if params[:hide_processing].presence == "1"
+    remove_egrep << "^ *Parameters: " if params[:hide_parameters].presence == "1"
+    remove_egrep << "^Rendered"       if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^Redirected"     if params[:hide_redirected].presence == "1"
+    remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
+    remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
+    # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
+    remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
+    remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
+    remove_egrep << "^ *AREL "        if params[:hide_arel].presence       == "1"
+    remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
+
+    # Hiding some lines disable some filters, because we hide before we filter. :-(
+    meth_name = nil if params[:hide_started].presence   == "1"
+    ctrl_name = nil if params[:hide_started].presence   == "1"
+    user_name = nil if params[:hide_user].presence      == "1"
+    inst_name = nil if params[:hide_user].presence      == "1"
+    ms_min    = nil if params[:hide_completed].presence == "1"
 
     # Extract the raw data with escape sequences filtered.
 
@@ -146,7 +158,7 @@ class PortalController < ApplicationController
     if log.blank?
       render :text => <<-NO_SHOW
         <pre><span style=\"color:yellow; font-weight:bold\">
-          (No logs entries found for user '#{user_name || "(any)"}' on instance '#{inst_name || "(any)"}' within the last #{num_lines} lines of the #{Rails.env} log)
+          (No logs entries found using your filters within the last #{num_lines} lines of the #{Rails.env} log)
         </span></pre>
       NO_SHOW
       return

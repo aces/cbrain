@@ -88,7 +88,9 @@ class GroupsController < ApplicationController
   end
   
   def show #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    #@group = current_user.available_groups.find(params[:id])
+    @group = Group.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
   end
 

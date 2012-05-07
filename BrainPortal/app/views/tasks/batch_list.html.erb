@@ -70,7 +70,7 @@
     </td>
     <td>
       <% if batch_id %>
-        <%= to_localtime(batch_scope.order(:updated_at.desc).first.updated_at, :datetime) %>
+        <%= to_localtime(batch_scope.order("cbrain_tasks.updated_at DESC").first.updated_at, :datetime) %>
       <% end %>
     </td>
   </tr>
