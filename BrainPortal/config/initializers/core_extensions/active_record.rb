@@ -201,7 +201,8 @@ module ActiveRecord
     #
     # This is basically a wrapper around the connection's
     # select_rows() method.
-    def raw_rows(selected = nil)
+    def raw_rows(*args)
+      selected = args.flatten
       modif = selected.present? ? self.select(selected) : self
       self.klass.connection.select_rows(modif.to_sql)
     end
