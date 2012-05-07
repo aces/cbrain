@@ -31,7 +31,7 @@
 
   <%= ajax_form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
     <%= hidden_field_tag :filter_class, filter_type %>
-    <%= f.error_messages %>
+    <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
 
     <p>
       <%= f.label :name, "Filter name:" %><br>

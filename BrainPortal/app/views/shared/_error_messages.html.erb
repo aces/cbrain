@@ -1,0 +1,17 @@
+<% if object.errors.any? %>
+  <% 
+    object_name    ||= object.class.to_s.underscore.humanize.downcase
+    header_message ||= "#{pluralize(object.errors.count, "error")} prohibited this #{object_name} from being saved:"
+    message        ||= "There were problems with the following fields:"
+  %>
+  <div id="errorExplanation" class="errorExplanation">
+    <h2><%= header_message %></h2>
+    <p><%= message %></p>
+    <ul>
+    <% object.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+    <% end %>
+    </ul>
+  </div>
+<% end %>
+

@@ -25,7 +25,7 @@
 <% title 'Feedback' %>
 
 <br>
-<%= error_messages_for :feedback, :header_message => "Feedback could not be updated." %>
+<%= error_messages_for @feedback, :header_message => "Feedback could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@feedback, :width => 1) do |t| %>
     <% t.edit_cell(:summary, :disabled => (!current_user.has_role?(:admin_user) && current_user.id != @feedback.user_id)) do %>

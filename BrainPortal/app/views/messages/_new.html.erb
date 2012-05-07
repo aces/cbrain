@@ -26,7 +26,7 @@
   <%= button_with_dropdown_menu("Leave Message", :open => true) do %>
     <%= ajax_form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| %>
 
-      <%= f.error_messages %>
+      <%= error_messages_for(@message) %>
 
       <p>
         To users of project: <%= group_select(:group_id,

@@ -25,9 +25,8 @@
 <h2>New Tag</h2>
 
 <div class="generalbox">
-
   <%= ajax_form_for @tag, :as => :tag, :url => {:controller  => "tags", :action => "create" }, :datatype  => "script" do |f| %>
-    <%= f.error_messages %>
+     <%= error_messages_for(@tag) %>
 
     <p>
       <%= f.label :name, "Tag name:" %><br>

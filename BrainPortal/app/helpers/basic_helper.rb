@@ -30,6 +30,13 @@ module BasicHelper
     content_for(:title)  { ' - ' + page_title }
   end
   
+  #Replacement for old rails helper.
+  def error_messages_for(object, options = {})
+    return "" unless object.present?
+    options[:object] = object
+    render :partial => "shared/error_messages", :locals => options
+  end
+  
   # Add a tooltip to a block of html
   def add_tool_tip(message, element='span', &block)
     content = capture(&block)

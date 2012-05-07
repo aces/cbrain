@@ -24,7 +24,7 @@
 
 <span id="new_model">
   <%= button_with_dropdown_menu("Create New Data Provider", :open => true) do %>
-    <%= error_messages_for :provider %>
+    <%= error_messages_for @provider %>
 
     <div class="display_cell">
       <%= ajax_form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script" do |f| -%>

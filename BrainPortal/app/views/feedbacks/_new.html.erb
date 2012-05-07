@@ -36,7 +36,7 @@
 
     <%= ajax_form_for @feedback, :as => :feedback, :url => { :action => "create" }, :datatype => "script"  do |f| -%>
 
-      <%= f.error_messages %>
+      <%= error_messages_for(@feedback) %>
       <p>
         <%= f.label :summary %><br/>
         <%= f.text_field :summary, :size => 80 %>

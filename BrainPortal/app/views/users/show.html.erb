@@ -39,7 +39,7 @@
 
 <br>
 
-<%= error_messages_for :user, :header_message => "User could not be updated." %>
+<%= error_messages_for @user, :header_message => "User could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>

@@ -30,7 +30,7 @@
 <div class="generalbox">
 
   <%= ajax_form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "update", :id  => custom_filter.id }, :method  => :put, :datatype  => "script" do |f| %>
-    <%= f.error_messages %>
+    <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
 
     <p>
       <%= f.label :name, "Filter name:" %><br>

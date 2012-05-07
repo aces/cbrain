@@ -31,7 +31,7 @@
 
 <br>
 
-<%= error_messages_for :site, :header_message => "site could not be updated." %>
+<%= error_messages_for @site, :header_message => "site could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>

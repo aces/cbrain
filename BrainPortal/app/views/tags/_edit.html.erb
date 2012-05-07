@@ -25,9 +25,8 @@
 <h2>Edit Tag</h2>
 
 <div class="generalbox">
-
-  <%= ajax_form_for tag, :as => :tag, :url => tag_path(tag), :method => :put, :datatype  => "script" do |f| %>
-    <%= f.error_messages %>
+  <%= ajax_form_for @tag, :as => :tag, :url => tag_path(@tag), :method => :put, :datatype  => "script" do |f| %>
+    <%= error_messages_for(@tag) %>
 
     <p>
       <%= f.label :name, "Tag name:" %><br>
@@ -36,7 +35,7 @@
 
     <p>
       <%= f.label :group_id, "Project:" %><br/>
-      <%= group_select("tag[group_id]", :selector => tag) %>
+      <%= group_select("tag[group_id]", :selector => @tag) %>
     </p>
     <p>
 

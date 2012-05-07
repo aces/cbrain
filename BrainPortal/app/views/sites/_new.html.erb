@@ -26,7 +26,7 @@
   <%= button_with_dropdown_menu('Create New Site', :open => true) do %>
     <%= ajax_form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-      <%= f.error_messages %>
+      <%= error_messages_for(@site) %>
 
       <div class="display_row">
         <%= f.label :name %><br/>

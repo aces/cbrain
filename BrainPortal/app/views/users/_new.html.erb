@@ -24,7 +24,7 @@
 
 <span id="new_model">
   <%= button_with_dropdown_menu('Create User', :open => true) do %>
-    <%= error_messages_for :user %>
+    <%= error_messages_for @user %>
 
     <%= ajax_form_for @user, :as => :user, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 

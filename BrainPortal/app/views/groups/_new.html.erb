@@ -26,7 +26,7 @@
   <%= button_with_dropdown_menu("Create Project", :open => true) do %>
     <%= ajax_form_for @group, :as => :group, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-      <%= f.error_messages %>
+      <%= error_messages_for(@group) %>
 
       <p>
         <%= f.label :name, "Name" %><br />

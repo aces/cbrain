@@ -26,7 +26,7 @@
   <%= button_with_dropdown_menu("Create New Server", :open => true) do %>
     <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-       <%= f.error_messages %>
+       <%= error_messages_for(@bourreau, :object_name => "server") %>
 
        <%= render :partial => 'form_fields', :locals => { :f => f }  %>
 

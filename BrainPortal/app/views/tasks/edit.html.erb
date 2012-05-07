@@ -55,7 +55,7 @@
 </h2>
 
 <div class="generalbox">
-<%= form.error_messages %>
+<%= error_messages_for(@task) %>
 <%= render :partial => task_partial('task_params'),
            :locals  => { :params  => @task.params, :form => form }
  %>
