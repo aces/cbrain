@@ -75,7 +75,6 @@ class ToolsController < ApplicationController
   # GET /tools/1/edit
   def edit #:nodoc:
     @tool      = current_user.available_tools.find(params[:id])
-    @bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
   end
 
   # POST /tools

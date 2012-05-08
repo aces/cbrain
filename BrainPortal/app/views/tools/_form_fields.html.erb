@@ -69,7 +69,7 @@
 <p>
   Versions installed on the following execution servers:<br/>
   <table class="simple" width="100%">
-    <% for bourreau in @bourreaux %>
+    <% for bourreau in Bourreau.find_all_accessible_by_user(current_user).all %>
       <tr>
           <th colspan="6" class="centered">
             <%= link_to_bourreau_if_accessible(bourreau) %>
