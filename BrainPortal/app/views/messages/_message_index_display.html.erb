@@ -46,7 +46,7 @@
 <div class="pagination">
   <span class="page_links">
     <%= will_paginate @messages, :container => false %>
-    (<%= pluralize @total_entries, "message" %>)
+    (<%= pluralize @messages.total_entries, "message" %>)
   </span>
 </div>
 

@@ -33,7 +33,6 @@ class ApplicationController < ActionController::Base
   Revision_info=CbrainFileRevision[__FILE__]
 
   include AuthenticatedSystem
-  include ExceptionLogger::ExceptionLoggable
   include BasicFilterHelpers
   include ViewHelpers
   include ApiHelpers

@@ -24,6 +24,10 @@
 
 CbrainRailsPortal::Application.routes.draw do
   
+  resources :exception_logs, :only => [:index, :show] do
+    delete :destroy, :on => :collection
+  end
+
   # Session
   resource  :session
 
@@ -154,9 +158,6 @@ CbrainRailsPortal::Application.routes.draw do
   
   # Portal log
   match '/portal_log', :controller => :portal, :action => :portal_log
-
-  # ExceptionLogger Routes
-  match "logged_exceptions/:action/:id", :controller => "logged_exceptions" 
 
 end
 

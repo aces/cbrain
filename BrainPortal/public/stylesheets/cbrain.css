@@ -378,6 +378,26 @@ table.resource_list tr.subtitle_bordered {
     margin: 2px;
 }
 
+/* % ######################################################### */
+/* % Styles for exception logs */
+/* % ######################################################### */
+
+.exception_description{
+  color: black;
+}
+
+.exception_header {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.exception_message {
+  font-size: 1.5em;
+}
+
+.exception_spaced {
+  margin: 0.5em;
+}
 
 
 /* % ######################################################### */

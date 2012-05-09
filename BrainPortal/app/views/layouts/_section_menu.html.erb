@@ -72,7 +72,10 @@
              <% if current_user.has_role?(:admin_user) %>
                <li <%= set_selected(params[:controller], :sites) %>>
                  <%= link_to 'Sites', sites_path %>
-               </li>  
+               </li> 
+               <li <%= set_selected(params[:controller], :sites) %>>
+                 <%= link_to 'Exceptions', exception_logs_path %>
+               </li> 
              <% end %>
            </ul>
       </div>  <!-- End id="main_menu_left" -->

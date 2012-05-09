@@ -221,7 +221,7 @@ class Message < ActiveRecord::Base
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
       :description   => "An internal error occured inside the CBRAIN code.\n"     +
-                        "The last 30 caller entries are in attachment ([[View full log][/logged_exceptions]]).\n",
+                        "The last 30 caller entries are in attachment ([[View full log][/exception_logs]]).\n",
 
       :variable_text => "=======================================================\n" +
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
