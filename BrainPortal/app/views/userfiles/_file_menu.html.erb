@@ -93,7 +93,7 @@
         %>
         <hr>
         Update File Type:
-        <%= userfile_type_select %>
+        <%= userfile_type_select(:file_type, {}, { :include_blank => "(select another file type)" } ) %>
         <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Start QC: <%= 

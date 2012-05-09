@@ -506,15 +506,15 @@ module SelectBoxHelper
 
     ordered_type_grouped = []
     final.each do |k|
+       #next if k.cbrain_abstract_model?
        lev = klass_lev[k]
-       ordered_type_grouped << ["#{("&nbsp;&nbsp;" * lev)}#{k.pretty_type}".html_safe,k.name]
+       entry = [ "#{("&nbsp;&nbsp;" * lev)}#{k.pretty_type}".html_safe, k.name ]
+       entry << { :disabled => "true" } if k.cbrain_abstract_model?
+       ordered_type_grouped << entry
     end
     
     options_for_select ordered_type_grouped, selected
   end
   
 end
-
-
-  
 
