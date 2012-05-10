@@ -164,8 +164,11 @@ class UsersController < ApplicationController
     params[:user][:group_ids]  |= SystemGroup.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
   
     if params[:user][:password].present?
-      params[:user].delete :password_reset
-      @user.password_reset = current_user.id == @user.id ? false : true
+      if current_user.id == @user.id
+        @user.password_reset = false
+      else
+        @user.password_reset = params[:force_password_reset] != '0'
+      end
     else
       params[:user].delete(:password)
       params[:user].delete(:password_confirmation)

@@ -30,7 +30,7 @@ class FileCollection < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  validates :type, :subclass => { :root_class => FileCollection, :include_root_class => true }
+  validates :type, :subclass => { :root_class => FileCollection }
   
   has_viewer  :partial => 'file_collection', :if => :is_locally_synced?
   has_content :collection_file
