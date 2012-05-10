@@ -291,6 +291,17 @@ class ApplicationController < ActionController::Base
     url_for(start_page_params)
   end
 
+  ####################################################
+  #
+  # General params handler helper
+  #
+  ####################################################
+  
+  #Use in order to return param key if it's present in params
+  def extract_params_key (list=[], default=nil)
+    list.detect { |x| params.has_key?(x) && x } || default
+  end
+
 end
 
 # Patch: Load all models so single-table inheritance works properly.

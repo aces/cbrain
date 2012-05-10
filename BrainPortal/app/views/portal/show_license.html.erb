@@ -34,8 +34,8 @@
   <p>
   <hr>
   <% if ! is_signed %>
-      <%= submit_tag "I Agree" %>
-      <%= submit_tag "I Do Not Agree" %>
+      <%= submit_tag "I Agree", :name => :agree %>
+      <%= submit_tag "I Do Not Agree", :name => :not_agree %>
     </form>
   <% else %>
     <strong>You have already signed this agreement.</strong>

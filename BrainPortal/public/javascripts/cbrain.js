@@ -818,7 +818,8 @@ jQuery(
    //target, http method as needed.
    jQuery(".hijacker_submit_button").live("click", function(){
      var button = jQuery(this);
-     var commit = button.attr("value");
+     var submit_name   = button.attr("name");
+     var submit_value  = button.attr("value");
      var data_type = button.attr("data-type");
      var url = button.attr("data-url");
      var method = button.attr("data-method");
@@ -837,6 +838,9 @@ jQuery(
      if(!method) method = enclosing_form.attr("data-method");
      if(!method) method = "POST";
      
+     var data = {};
+     data[submit_name] = submit_value;          
+ 
      if(ajax_submit != "false"){
        enclosing_form.ajaxSubmit({
          url: url,
@@ -849,9 +853,9 @@ jQuery(
            $("#loading_image").show();
          },
          complete: function(){
-           $("#loading_image").hide();
+           $("#loading_image").hide(); 
          },
-         data: { commit : commit },
+         data: data,
          resetForm: false
          }
        );
@@ -864,12 +868,13 @@ jQuery(
    });
 
    jQuery('.external_submit_button').live('click', function(e) {
-     var button = jQuery(this);
-     var commit = button.attr("value");
+     var button = jQuery(this)
+     var submit_name   = button.attr("name");
+     var submit_value  = button.attr("value");
      var form=document.getElementById(jQuery(this).attr('data-associated-form'));
      var confirm_message = jQuery(this).attr('data-confirm');
-
-     $(form).append("<input type=\'hidden\' name=\'commit\' value=\'"+commit+"\'>");
+     
+     $(form).append("<input type=\'hidden\' name=\'commit\' value=\'"+submit_value+"\'>");
      form.submit();
      
      return false;

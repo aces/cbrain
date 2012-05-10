@@ -42,8 +42,8 @@
       <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
       Overwrite destination, if it exists:
       <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
-      <%= hijacker_submit_button("Move Files", :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
-      <%= hijacker_submit_button("Copy Files", :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <%= hijacker_submit_button("Move Files", :name => :move, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <%= hijacker_submit_button("Copy Files", :name => :copy, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
       <hr>
       <h4>Other</h4>
       <%= hijacker_submit_button("(Un)compress",  :url  => url_for(:action  => :compress ),
@@ -72,16 +72,16 @@
         <h4>Projects</h4>
         Change Project: 
         <%= group_select('userfile[group_id]', {}, { :include_blank => "(select another project)" } ) %>
-        <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
+        <%= hijacker_submit_button("Update", :name => :update_projects, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <P>
         Project Permission Update: 
         <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-        <%= hijacker_submit_button("Update Permissions", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_permissions, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <% if !current_user.has_role?(:normal_user) %>
           <hr>
           Change Owner:
           <%= user_select('userfile[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
-          <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>   
+          <%= hijacker_submit_button("Update", :name => :update_owner, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>   
         <% end %>
         <hr>
         Update Parent-Child Relationships:
@@ -94,7 +94,7 @@
         <hr>
         Update File Type:
         <%= userfile_type_select %>
-        <%= hijacker_submit_button("Update", :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_file_type, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Start QC: <%= 
                       hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), 

@@ -332,8 +332,8 @@ class DataProvidersController < ApplicationController
     filetypes = params[:filetypes] || []
     basenames = [basenames] unless basenames.is_a? Array
     filetypes = [filetypes] unless filetypes.is_a? Array
-    do_unreg  = params[:commit] =~ /unregister/i
-    do_erase  = params[:commit] =~ /delete/i
+    do_unreg  = params.has_key?(:unregister)
+    do_erase  = params.has_key?(:delete)
 
     # Automatic MOVE or COPY operation?
     move_or_copy = params[:auto_do]                || ""
