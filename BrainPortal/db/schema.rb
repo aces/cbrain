@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120422160456) do
+ActiveRecord::Schema.define(:version => 20120509221514) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -93,6 +93,24 @@ ActiveRecord::Schema.define(:version => 20120422160456) do
   add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
   add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
 
+  create_table "exception_logs", :force => true do |t|
+    t.string   "exception_class"
+    t.string   "controller"
+    t.string   "action"
+    t.string   "method"
+    t.string   "format"
+    t.integer  "user_id"
+    t.text     "message"
+    t.text     "backtrace"
+    t.text     "request"
+    t.text     "session"
+    t.text     "headers"
+    t.string   "instance_name"
+    t.string   "revision_no"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "feedbacks", :force => true do |t|
     t.string   "summary"
     t.text     "details"
@@ -120,17 +138,6 @@ ActiveRecord::Schema.define(:version => 20120422160456) do
 
   add_index "groups_users", ["group_id"], :name => "index_groups_users_on_group_id"
   add_index "groups_users", ["user_id"], :name => "index_groups_users_on_user_id"
-
-  create_table "logged_exceptions", :force => true do |t|
-    t.string   "exception_class"
-    t.string   "controller_name"
-    t.string   "action_name"
-    t.text     "message"
-    t.text     "backtrace"
-    t.text     "environment"
-    t.text     "request"
-    t.datetime "created_at"
-  end
 
   create_table "messages", :force => true do |t|
     t.string   "header"

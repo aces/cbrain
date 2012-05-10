@@ -867,15 +867,22 @@ jQuery(
      return false;
    });
 
-   jQuery('.external_submit_button').live('click', function(e) {
-     var button = jQuery(this)
+   $('.external_submit_button').live('click', function(e) {
+     var button = jQuery(this);
      var submit_name   = button.attr("name");
      var submit_value  = button.attr("value");
-     var form=document.getElementById(jQuery(this).attr('data-associated-form'));
-     var confirm_message = jQuery(this).attr('data-confirm');
+     var form=$("#" + button.attr('data-associated-form'));
+     var confirm_message = button.attr('data-confirm');
      
-     $(form).append("<input type=\'hidden\' name=\'commit\' value=\'"+submit_value+"\'>");
-     form.submit();
+     $(form).append("<input type=\'hidden\' name=\'"+submit_name+"\' value=\'"+submit_value+"\'>");
+     var submit_button = $("<input type=\'submit\'>");
+     form.append(hidden_field);
+     form.append(submit_button)
+     
+     submit_button.click();
+     
+     hidden_field.remove();
+     submit_button.remove();
      
      return false;
    });

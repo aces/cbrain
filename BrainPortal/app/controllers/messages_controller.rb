@@ -41,17 +41,8 @@ class MessagesController < ApplicationController
     unless current_user.has_role?(:admin_user)
       scope = scope.where(:user_id => current_user.available_users.map(&:id))
     end                             
-    @total_entries = scope.count
-    
-    # For Pagination
-    offset = (@current_page - 1) * @per_page
-    pagination_list  = scope.limit(@per_page).offset(offset)
-    
-    @messages = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
-      pager.replace(pagination_list)
-      pager.total_entries = @total_entries
-      pager
-    end
+   
+    @messages = scope.paginate(:page => @current_page, :per_page => @per_page)
     
     respond_to do |format|
       format.html # index.html.erb

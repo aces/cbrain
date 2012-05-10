@@ -1,0 +1,65 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<div class="index_block">
+  
+  <%= form_tag(url_for(:action => :destroy), :method => :delete) do %>
+    <%= hidden_field_tag "exception_log_ids[]", @exception_log.id %>
+    <%= submit_tag "Delete", :class => "button" %>
+  <% end %>
+
+  <div class="exception_spaced exception_description">
+    <span class="exception_header"><%= @exception_log.exception_class %>: </span><span class="exception_message"><%= @exception_log.message %></span>
+    <div class="exception_spaced exception_message">in <strong><%= @exception_log.controller %>/<%= @exception_log.action %></strong></div>
+  </div>
+  <%= show_table(@exception_log, :width => 1, :header => "Request") do |t| %>
+    <% t.cell("URL") { @exception_log.request[:url] } %>
+    <% t.cell("Method") { @exception_log.method } %>
+    <% t.cell("Parameters") { @exception_log.request[:parameters] } %>
+    <% t.cell("Format") {  @exception_log.request[:format] } %>
+    <% t.cell("User") {@exception_log.user.try(:login) || "(Not signed in)"} %>
+    <% t.cell("Received by instance") {@exception_log.instance_name} %>
+  <% end %>
+  
+  <fieldset>
+    <legend>Backtrace</legend>
+    <div class="exception_description">
+      <pre><%= @exception_log.backtrace.join("\n") %></pre>
+    </div>
+  </fieldset>
+  <%= show_table(@exception_log, :width => 2, :header => "Session") do |t| %>
+    <% @exception_log.session.keys.sort.each do |k| %>
+      <% t.cell(k) {@exception_log.session[k]} %>
+    <% end %>
+  <% end %>
+  
+  <%= show_table(@exception_log, :width => 2, :header => "Headers") do |t| %>
+    <% @exception_log.headers.keys.sort.each do |k| %>
+      <% t.cell(k) {@exception_log.headers[k]} %>
+    <% end %>
+  <% end %>
+  
+</div>
+
+

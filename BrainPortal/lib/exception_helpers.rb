@@ -77,7 +77,7 @@ module ExceptionHelpers
 
     # Note that send_internal_error_message will also censure :password from the params hash
     Message.send_internal_error_message(current_user, "Exception Caught", exception, params) rescue true
-    log_exception(exception) # explicit logging in exception logger, since we won't re-raise it now.
+    ExceptionLog.log_exception(exception, current_user, request) # explicit logging in exception logger, since we won't re-raise it now.
     flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
     logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{exception.class} #{exception.message}"
     respond_to do |format|
