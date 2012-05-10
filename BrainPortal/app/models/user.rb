@@ -97,7 +97,6 @@ class User < ActiveRecord::Base
   has_many                :remote_resources,  :dependent => :restrict
   has_many                :cbrain_tasks,      :dependent => :restrict
   
-  
   has_and_belongs_to_many :groups   
   belongs_to              :site
 
@@ -107,6 +106,7 @@ class User < ActiveRecord::Base
   has_many                :tags,            :dependent => :destroy
   has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
+  has_many                :exception_logs,  :dependent => :destroy
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
     

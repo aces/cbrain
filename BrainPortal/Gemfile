@@ -54,7 +54,7 @@ gem 'aws-s3', :require => 'aws/s3'
 
 gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp'
-gem "will_paginate"
+gem "will_paginate", "3.0.pre2"
 gem "log4r"
 gem "nokogiri"
 #gem "mysql"
@@ -62,7 +62,6 @@ gem "mysql2", "< 0.3"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 #gem "sys-proctable", "~> 0.7.6"
 gem "thin"
-gem "exception_logger", "~> 0.1.10"
 
 group :development do
   gem "wirble"
