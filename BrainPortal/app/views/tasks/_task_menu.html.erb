@@ -28,20 +28,20 @@
     <% if !current_user.has_role?(:normal_user) %>
       Change Owner:
       <%= user_select('task[user_id]', {}, { :include_blank => "(Select another Owner)" } ) %>
-      <%= hijacker_submit_button("Update Owner", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button("Update", :name => :update_user_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
       <hr>
     <% end %>
     Change Project:
     <%= group_select('task[group_id]', {}, { :include_blank => "(Select another Project)" } ) %>
-    <%= hijacker_submit_button("Update Projects", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= hijacker_submit_button("Update", :name => :update_group_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Data Provider For Results:
     <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(Select another Data Provider)" } ) %>
-    <%= hijacker_submit_button("Update Data Provider", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= hijacker_submit_button("Update", :name => :update_results_data_provider_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Tool Version:
     <%= tool_config_select('task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
-    <%= hijacker_submit_button("Update Tool Version", :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= hijacker_submit_button("Update", :name => :update_tool_config_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
   
   

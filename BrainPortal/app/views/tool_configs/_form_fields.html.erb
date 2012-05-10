@@ -76,7 +76,7 @@
   <p>
   Option: Merge configuration from another existing entry:
   <%= tool_config_select :merge_from_tc_id, {}, { :include_blank => 'Merge from...' } %>
-  <%= submit_tag 'Merge Configuration' %><br/>
+  <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
   <small>
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
     The description, environment variables and prologue script will be appended to whatever

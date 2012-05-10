@@ -174,7 +174,7 @@ class PortalController < ApplicationController
    
   def sign_license
     @license = params[:license]
-    unless params[:commit] == "I Agree"
+    unless params.has_key?(:agree)
       flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
       redirect_to "/logout"
       return
@@ -217,7 +217,7 @@ class PortalController < ApplicationController
     table_op        = 'count'
     row_type        = params[:row_type]   || ""
     col_type        = params[:col_type]   || ""
-    submit          = params[:commit]     || "look"
+    submit          = extract_params_key([ :generate, :refresh ], "look")
     date_filtration = params[:date_range] || {}
 
     if table_name =~ /^(\w+)\.(\S+)$/
@@ -257,7 +257,7 @@ class PortalController < ApplicationController
       return
     end
     
-    return unless submit =~ /generate|refresh/i
+    return unless submit == :generate || submit == :refresh
 
     @table_ok = true
 

@@ -166,7 +166,7 @@ class ToolConfigsController < ApplicationController
     @tool_config.group = Group.everyone if @tool_config.group_id.blank?
 
     # Merge with an existing tool config
-    if (params[:commit] || "") =~ /Merge/i 
+    if params.has_key?(:merge)
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
          if @tool_config.tool_id &&  @tool_config.bourreau_id
