@@ -329,7 +329,7 @@ module ActRecLog
       new = self.read_attribute(att).to_s
       if self.class.serialized_attributes[att]
         message = "(serialized) size(#{old.size} -> #{new.size})"
-      elsif old.size > 30 || new.size > 30
+      elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
       else
         if att =~ /^(\w+)_id$/

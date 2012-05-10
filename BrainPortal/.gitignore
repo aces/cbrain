@@ -4,4 +4,3 @@ config/initializers/config_portal.rb
 *~
 *.DS_Store
 coverage/
-vendor/cache/

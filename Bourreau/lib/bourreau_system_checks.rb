@@ -193,19 +193,20 @@ class BourreauSystemChecks < CbrainChecker
       [ "updated_at < ?", 1.day.ago ], # just to be safe...
     ).where(
       "cluster_workdir IS NOT NULL"
-    ).all
+    )
 
-    if local_tasks_not_sized.empty?
+    how_many = local_tasks_not_sized.count
+    if how_many == 0
       puts "C> \t- No tasks need to be adjusted."
       return
     end
 
-    puts "C> \t- Refreshing sizes for #{local_tasks_not_sized.size} tasks (in background)..."
+    puts "C> \t- Refreshing sizes for #{how_many} tasks (in background)..."
 
     CBRAIN.spawn_with_active_records(User.admin, "TaskSizes") do
       totsize = 0
       totnils = 0
-      local_tasks_not_sized.each do |task|
+      local_tasks_not_sized.all.each do |task|
         size     = task.send(:update_size_of_cluster_workdir) # it's a protected method
         totsize += size if size
         totnils += 1    if size.nil?
