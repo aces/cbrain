@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120509221514) do
+ActiveRecord::Schema.define(:version => 20120511180826) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -95,16 +95,16 @@ ActiveRecord::Schema.define(:version => 20120509221514) do
 
   create_table "exception_logs", :force => true do |t|
     t.string   "exception_class"
-    t.string   "controller"
-    t.string   "action"
-    t.string   "method"
-    t.string   "format"
+    t.string   "request_controller"
+    t.string   "request_action"
+    t.string   "request_method"
+    t.string   "request_format"
     t.integer  "user_id"
     t.text     "message"
     t.text     "backtrace"
     t.text     "request"
     t.text     "session"
-    t.text     "headers"
+    t.text     "request_headers"
     t.string   "instance_name"
     t.string   "revision_no"
     t.datetime "created_at"
