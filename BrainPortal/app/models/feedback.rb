@@ -35,6 +35,8 @@ class Feedback < ActiveRecord::Base
   belongs_to :user
   validates_presence_of     :details, :summary
   
+  attr_accessible :summary, :details, :user_id
+  
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :summary
   force_text_attribute_encoding 'UTF-8', :details

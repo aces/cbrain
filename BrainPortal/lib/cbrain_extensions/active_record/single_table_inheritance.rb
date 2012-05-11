@@ -26,6 +26,8 @@
 module CBRAINExtensions
   module ActiveRecord
     module SingleTableInheritance
+      
+      Revision_info=CbrainFileRevision[__FILE__]
   
       def self.included(includer)
         includer.class_eval do

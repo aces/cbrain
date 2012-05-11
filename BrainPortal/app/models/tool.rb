@@ -54,6 +54,9 @@ class Tool < ActiveRecord::Base
   has_many                :tool_configs, :dependent => :destroy
   has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
+  attr_accessible         :name, :user_id, :group_id, :category, 
+                          :cbrain_task_class, :select_menu_text, :description
+
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 

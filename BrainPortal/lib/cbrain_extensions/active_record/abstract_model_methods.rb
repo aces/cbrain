@@ -27,6 +27,8 @@ module CBRAINExtensions
     # ActiveRecord extensions to tag some ActiveRecord single table
     # inheritance models as 'abstract'.
     module AbstractModelMethods
+      
+      Revision_info=CbrainFileRevision[__FILE__]
   
       def self.included(includer) #:nodoc:
         includer.class_eval do

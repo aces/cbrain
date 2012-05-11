@@ -51,6 +51,8 @@ class ToolConfig < ActiveRecord::Base
   scope          :global_for_bourreaux , where( { :tool_id => nil } )
   scope          :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
+  attr_accessible :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :group_id, :ncpus
+
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 

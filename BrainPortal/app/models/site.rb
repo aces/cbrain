@@ -52,6 +52,8 @@ class Site < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description
   
   attr_accessor           :manager_ids
+  
+  attr_accessible :name, :description, :user_ids, :manager_ids, :group_ids
 
 
   #Returns users that have manager access to this site (site managers or admins).
@@ -173,8 +175,8 @@ class Site < ActiveRecord::Base
   def set_managers #:nodoc:
     self.manager_ids ||= []
     self.user_ids    ||= []
-    current_manager_ids = self.manager_ids || []
-    current_user_ids    = self.user_ids
+    current_manager_ids = (self.manager_ids || []).map(&:to_i)
+    current_user_ids    = self.user_ids.map(&:to_i)
     User.find(current_user_ids | current_manager_ids).each do |user|
       user.site_id = self.id
       if current_manager_ids.include?(user.id)
