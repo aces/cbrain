@@ -874,7 +874,7 @@ jQuery(
      var form=$("#" + button.attr('data-associated-form'));
      var confirm_message = button.attr('data-confirm');
      
-     $(form).append("<input type=\'hidden\' name=\'"+submit_name+"\' value=\'"+submit_value+"\'>");
+     var hidden_field  = $("<input type=\'hidden\' name=\'"+submit_name+"\' value=\'"+submit_value+"\'>");
      var submit_button = $("<input type=\'submit\'>");
      form.append(hidden_field);
      form.append(submit_button)
