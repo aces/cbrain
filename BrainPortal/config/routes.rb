@@ -24,10 +24,6 @@
 
 CbrainRailsPortal::Application.routes.draw do
   
-  resources :exception_logs, :only => [:index, :show] do
-    delete :destroy, :on => :collection
-  end
-
   # Session
   resource  :session
 
@@ -134,6 +130,10 @@ CbrainRailsPortal::Application.routes.draw do
       get    'bourreau_select'
       post   'assign_tools'
     end
+  end
+
+  resources :exception_logs, :only => [:index, :show] do
+    delete :destroy, :on => :collection
   end
 
   # Special named routes
