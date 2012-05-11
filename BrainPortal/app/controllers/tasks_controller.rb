@@ -322,8 +322,8 @@ class TasksController < ApplicationController
     @task.addlog_current_resource_revision
 
     # Give a task the ability to do a refresh of its form
-    commit_button = params[:commit] || "Start" # default
-    if commit_button =~ /Refresh/i
+    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
+    if commit_name == :refresh
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
       @task.valid? if @task.errors.empty?
@@ -333,7 +333,7 @@ class TasksController < ApplicationController
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      if commit_button =~ /(load|delete|save) preset/i
+      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset 
         handle_preset_actions
         initialize_common_form_values
         render :action => :new
@@ -471,7 +471,7 @@ class TasksController < ApplicationController
   end
 
   def update #:nodoc:
-
+    
     flash[:notice]     = ""
     flash[:error]      = ""
     flash.now[:notice] = ""
@@ -502,8 +502,8 @@ class TasksController < ApplicationController
     @task.group    = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
-    commit_button = params[:commit] || "Start" # default
-    if commit_button =~ /Refresh/i
+    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
+    if commit_name == :refresh
       initialize_common_form_values
       flash[:notice] += @task.wrapper_refresh_form
       @task.valid? if @task.errors.empty?
@@ -513,7 +513,7 @@ class TasksController < ApplicationController
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      if commit_button =~ /(load|delete|save) preset/i
+      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset 
         handle_preset_actions
         initialize_common_form_values
         @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
@@ -564,9 +564,10 @@ class TasksController < ApplicationController
     task_ids   += base_filtered_scope(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
     task_ids    = task_ids.map(&:to_i).uniq
     
-    # If params[:commit] not present
-    commit_value = params[:commit]
-    unless commit_value.present?
+    commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
+    
+    # If commit_name undef
+    unless commit_name.present?
       flash[:error] = "No operation to perform."
       redirect_to :action => :index, :format  => request.format.to_sym
       return
@@ -574,23 +575,23 @@ class TasksController < ApplicationController
 
     unable_to_update = ""
     field_to_update  =
-      case commit_value
-        when "Update Owner"
+      case commit_name
+        when :update_user_id
           new_user_id = params[:task][:user_id].to_i
           unable_to_update = "user"   if 
           ! current_user.available_users.where(:id => new_user_id).exists?
           :user
-        when "Update Projects"
+        when :update_group_id
           new_group_id = params[:task][:group_id].to_i
           unable_to_update = "project" if 
           ! current_user.available_groups.where(:id => new_group_id).exists?
           :group
-        when "Update Data Provider"
+        when :update_results_data_provider_id
           new_dp_id = params[:task][:results_data_provider_id].to_i
           unable_to_update = "data provider" if 
           ! DataProvider.find_all_accessible_by_user(current_user).where(:id => new_dp_id).exists?
           :results_data_provider
-        when "Update Tool Version"
+        when :update_tool_config_id
           new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)  
           unable_to_update = "tool version" if 
             ! tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
@@ -855,9 +856,9 @@ class TasksController < ApplicationController
 
   # This method handle the logic of loading and saving presets.
   def handle_preset_actions #:nodoc:
-    commit_button = params[:commit] || "Whatever"
+    commit_name  = extract_params_key([ :load_preset, :delete_preset, :save_preset ], :whatewer)
 
-    if commit_button =~ /load preset/i
+    if commit_name == :load_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         old_params = @task.params.clone
@@ -876,7 +877,7 @@ class TasksController < ApplicationController
       end
     end
 
-    if commit_button =~ /delete preset/i
+    if commit_name == :delete_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         if preset.user_id == current_user.id
@@ -890,7 +891,7 @@ class TasksController < ApplicationController
       end
     end
 
-    if commit_button =~ /save preset/i
+    if commit_name == :save_preset
       preset_name = params[:save_preset_name]
       preset = nil
       if ! preset_name.blank?

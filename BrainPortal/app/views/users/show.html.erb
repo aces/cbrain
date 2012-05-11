@@ -98,6 +98,11 @@
     <% t.edit_cell(:password, :content => "********") do %>
          Password<br> <%= password_field_tag "user[password]", "" %><br>
          Confirm Password<br> <%= password_field_tag "user[password_confirmation]" %><br>
+         <% if @user.id != current_user.id %>
+           <label for="force_password_reset">User WILL need to reset own password:</label>
+           <%= hidden_field_tag :force_password_reset, "0", :id => 'hidden_force_password_reset' %>
+           <%= check_box_tag    :force_password_reset, "1", params[:force_password_reset] != '0' %>
+         <% end %>
     <% end %>
 
     <%

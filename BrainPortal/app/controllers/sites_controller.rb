@@ -86,13 +86,15 @@ class SitesController < ApplicationController
     original_user_ids    = @site.user_ids
     original_manager_ids = @site.managers.raw_first_column(&:id)
     original_group_ids   = @site.group_ids
+
+    commit_name = extract_params_key([ :update_users, :update_groups ])
     
-    unless params[:commit] == "Update Users"
+    unless commit_name == :update_users
       params[:site][:user_ids]    = original_user_ids    # we need to make sure they stay the same
       params[:site][:manager_ids] = original_manager_ids # we need to make sure they stay the same
     end
     
-    unless params[:commit] == "Update Projects"
+    unless commit_name == :update_groups
       params[:site][:group_ids] = original_group_ids    # we need to make sure they stay the same
     end
 

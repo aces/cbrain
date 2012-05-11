@@ -35,7 +35,7 @@
     grouped_options_for_select(@all_presets)
       %>
   </td>
-  <td><%= submit_tag "Load Preset" %><%= submit_tag "Delete Preset" %></td>
+  <td><%= submit_tag "Load Preset", :name => :load_preset %><%= submit_tag "Delete Preset", :name => :delete_preset %></td>
 </tr>
 
 <tr>
@@ -49,7 +49,7 @@
         (Save as site preset: <%= check_box_tag :save_as_site_preset, 1 %>)
       <% end %>
   </td>
-  <td><%= submit_tag "Save Preset" %></td>
+  <td><%= submit_tag "Save Preset", :name => :save_preset %></td>
 </tr>
 
 </table>

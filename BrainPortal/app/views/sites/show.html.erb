@@ -84,7 +84,7 @@
 
               <div class="display_row">
                 <P>
-                <%= f.submit "Update Users" %>
+                <%= f.submit "Update Users", :name => :update_users %>
               </div>
 
             <% end %>
@@ -97,7 +97,7 @@
           <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
             <%= form_for(@site) do |f| %>
               <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
-              <%= submit_tag 'Update Projects' %>
+              <%= f.submit 'Update Projects', :name => :update_groups %>
             <% end %>
           <% end %>
         <% end %>

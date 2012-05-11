@@ -1,0 +1,6 @@
+
+#
+# CBRAIN project. This file is simply a placeholder so that the
+# empty directory vendor/cache gets created.
+#
+

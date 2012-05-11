@@ -256,9 +256,9 @@ in a tabular layout. Proceed as follow:
   <% end %>
 
   <% if @table_ok %>
-    <%= submit_tag('Refresh Report') %>
+    <%= submit_tag('Refresh Report', :name => :refresh) %>
   <% else %>
-    <%= submit_tag('Generate Report') if att_ok %>
+    <%= submit_tag('Generate Report', :name => :generate) if att_ok %>
   <% end %>
 
 </div>

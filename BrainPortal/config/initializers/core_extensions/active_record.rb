@@ -60,6 +60,12 @@ module ActiveRecord
     include CBRAINExtensions::ActiveRecord::SingleTableInheritance
 
     ###################################################################
+    # ActiveRecord Added Behavior For Single Table Inheritance
+    ###################################################################
+
+    include CBRAINExtensions::ActiveRecord::AbstractModelMethods
+
+    ###################################################################
     # ActiveRecord Added Behavior For Data Typing
     ###################################################################
 

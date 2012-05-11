@@ -572,31 +572,30 @@ class UserfilesController < ApplicationController
   # Updated tags, groups or group-writability flags for several
   # userfiles.
   def update_multiple #:nodoc:
-    file_ids         = params[:file_ids]
-    commit_value     = params[:commit]
+    file_ids        = params[:file_ids]
+    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type ], "")
+    commit_humanize = commit_name.to_s.humanize
     
     # First selection no need to be in spawn
     invalid_tags     = 0
     unable_to_update = nil
-
-    operation = 
-      case commit_value
-        when "Update Tags"
-          new_tags         = params[:tags]
+    operation        = 
+      case commit_name
+        when :update_tags
+          new_tags         = params[:tags] || []
           new_tags.reject! { |tag| !current_user.available_tags.where(:id => tag.to_i).exists? && invalid_tags += 1 }
-          unable_to_update = "tag"     if new_tags.empty?
           ['set_tags_for_user', current_user, new_tags]
-        when "Update Projects"
+        when :update_projects
           new_group_id     = params[:userfile][:group_id].to_i
           unable_to_update = "project" if !current_user.available_groups.where(:id => new_group_id).exists?
           ["update_attributes_with_logging", {:group_id => new_group_id}, current_user]
-        when "Update Permissions"
+        when :update_permissions
           ["update_attributes_with_logging", {:group_writable => params[:userfile][:group_writable]}, current_user, [ 'group_writable' ] ]
-        when "Update Owner"
+        when :update_owner
           new_user_id      = params[:userfile][:user_id].to_i
           unable_to_update = "owner"   if !current_user.available_users.where(:id => new_user_id).exists?
           ["update_attributes_with_logging", {:user_id => new_user_id}, current_user]
-        when "Update"
+        when :update_file_type
           ["update_file_type", params[:file_type], current_user]
         else
           nil
@@ -616,14 +615,14 @@ class UserfilesController < ApplicationController
     success_count    = 0
     failure_count    = 0
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to files") do
-      access_requested = commit_value == "Update Tags" ? :read : :write
+      access_requested = commit_name == :update_tags ? :read : :write
       filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all 
       failure_count   += file_ids.size - filelist.size   
 
       # Filter file list
-      case commit_value
+      case commit_name
         # Critical! Case values must match labels of submit buttons!
-        when "Update Projects"
+        when :update_projects
           user_to_avail_group_ids = {}
           filelist.reject! do |file|
             f_uid = file.user_id
@@ -631,7 +630,7 @@ class UserfilesController < ApplicationController
             user_to_avail_group_ids[f_uid] ||= User.find(f_uid).available_groups.map(&:id).index_by { |id| id }
             (! user_to_avail_group_ids[f_uid][new_group_id]) && failure_count += 1
           end
-        when "Update Owner"
+        when :update_owner
           new_filelist = filelist.select(&:allow_file_owner_change?)
           failure_count += (filelist.size - new_filelist.size)
           filelist = new_filelist
@@ -648,8 +647,8 @@ class UserfilesController < ApplicationController
       
       # Async Notification
       if do_in_spawn
-       variable_text  = success_count > 0 ? "#{commit_value.humanize} successful for #{view_pluralize(success_count, "file")}.\n" : ""
-       variable_text += "#{commit_value.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
+       variable_text  = success_count > 0 ? "#{commit_humanize} successful for #{view_pluralize(success_count, "file")}.\n" : ""
+       variable_text += "#{commit_humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
        Message.send_message(current_user, {
           :header        => "Finished sending update to your files.\n",
           :message_type  => :notice,
@@ -664,8 +663,8 @@ class UserfilesController < ApplicationController
     if do_in_spawn
       flash[:notice] = "The file are being updated in background."
     else
-      flash[:notice] = "#{commit_value.humanize} successful for #{view_pluralize(success_count, "file")}."   if success_count > 0
-      flash[:error]  = "#{commit_value.humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
+      flash[:notice] = "#{commit_humanize} successful for #{view_pluralize(success_count, "file")}."   if success_count > 0
+      flash[:error]  = "#{commit_humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
     end
     
     redirect_action  = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
@@ -688,22 +687,23 @@ class UserfilesController < ApplicationController
     pass_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
     fail_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
     unknown_tag = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
-    
-    if @current_index >=  0 && params[:commit] && params[:commit] != "Next" && params[:commit] != "Previous"
+
+    commit_name     = extract_params_key([ :next, :previous, :pass, :fail, :unknown ])
+    if @current_index >=  0 && commit_name && commit_name != :next && commit_name != :previous
       @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
       tag_ids = params[:tag_ids] || []
-      case params[:commit]
-      when "Pass"
+      case commit_name
+      when :pass
         tag_ids |= [pass_tag.id.to_s]
-      when "Fail"
+      when :fail
         tag_ids |= [fail_tag.id.to_s]
-      when "Unknown"
+      when :unknown
         tag_ids |= [unknown_tag.id.to_s]
       end
       @current_userfile.set_tags_for_user(current_user, tag_ids)
     end
     
-    if params[:commit] == "Previous" && @current_index > 0
+    if commit_name == :previous && @current_index > 0
       @current_index -= 1
     elsif @current_index < @filelist.size-1
       @current_index += 1
@@ -761,9 +761,11 @@ class UserfilesController < ApplicationController
   def change_provider #:nodoc:
 
     # Operaton to perform
-    if params[:commit] =~ /move/i
+    commit_name     = extract_params_key([ :move, :copy ], "")
+
+    if commit_name == :move
       task      = 'move'
-    elsif params[:commit] =~ /copy/i
+    elsif commit_name == :copy
       task      = 'copy'
     end
 
@@ -1150,9 +1152,6 @@ class UserfilesController < ApplicationController
       flash[:error] = "No files selected? Selection cleared.\n"
       redirect_to :action => :index, :format => request.format.to_sym
       return
-    end
-    if action_name == "update_multiple"
-      action_name = params[:commit].to_s + " on"
     end
     
     yield

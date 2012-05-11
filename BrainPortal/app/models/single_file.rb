@@ -27,7 +27,7 @@ class SingleFile < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  validates :type, :subclass => { :root_class => SingleFile, :include_root_class => true }
+  validates :type, :subclass => { :root_class => SingleFile }
   
   
   def self.valid_file_classes #:nodoc:
