@@ -203,9 +203,11 @@ require 'digest/md5'
 class DataProvider < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
-  
+
   include ResourceAccess
   include NumericalSubdirTree
+  
+  cbrain_abstract_model! # objects of this class are not to be instanciated
   
   validates               :name,
                           :uniqueness => true,

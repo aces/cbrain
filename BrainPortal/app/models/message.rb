@@ -35,7 +35,7 @@ class Message < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
-  
+    
   scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
                                   aft = e.to_i
@@ -221,7 +221,7 @@ class Message < ActiveRecord::Base
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
       :description   => "An internal error occured inside the CBRAIN code.\n"     +
-                        "The last 30 caller entries are in attachment ([[View full log][/exception_logs]]).\n",
+                        "The last 30 caller entries are in attachment.\n",
 
       :variable_text => "=======================================================\n" +
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +

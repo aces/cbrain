@@ -63,8 +63,10 @@ require 'socket'
 class RemoteResource < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
-  
+
   include ResourceAccess
+
+  cbrain_abstract_model! # objects of this class are not to be instanciated
 
   serialize   :dp_ignore_patterns
 

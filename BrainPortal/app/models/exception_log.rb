@@ -29,8 +29,9 @@ class ExceptionLog < ActiveRecord::Base
   
   serialize :backtrace 
   serialize :request
-  serialize :headers
+  serialize :request_headers
   serialize :session
+  
   
   #Create an exception record based on exception, user, current request.
   def self.log_exception(exception, user, request)
@@ -40,10 +41,10 @@ class ExceptionLog < ActiveRecord::Base
     
     e = self.new
     e.exception_class = exception.class.to_s
-    e.controller      = params[:controller]
-    e.action          = params[:action]
-    e.method          = request.method.to_s.upcase
-    e.format          = request.format.to_sym.to_s
+    e.request_controller      = params[:controller]
+    e.request_action          = params[:action]
+    e.request_method          = request.method.to_s.upcase
+    e.request_format          = request.format.to_sym.to_s
     e.user_id         = user.try(:id)
     e.message         = exception.message
     e.backtrace       = exception.backtrace
@@ -53,10 +54,12 @@ class ExceptionLog < ActiveRecord::Base
                           :format      => request.format.to_s
                         }
     e.session         = session
-    e.headers         = hdrs
+    e.request_headers = hdrs
     e.instance_name   = CBRAIN::Instance_Name rescue "(?)"
     e.revision_no     = $CBRAIN_StartTime_Revision
     e.save
+    
+    e
   end
   
 end

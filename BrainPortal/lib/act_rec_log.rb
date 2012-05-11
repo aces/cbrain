@@ -329,7 +329,7 @@ module ActRecLog
       new = self.read_attribute(att).to_s
       if self.class.serialized_attributes[att]
         message = "(serialized) size(#{old.size} -> #{new.size})"
-      elsif old.size > 30 || new.size > 30
+      elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
       else
         if att =~ /^(\w+)_id$/
@@ -371,11 +371,10 @@ module ActRecLog
   # The +by_user+ and +white_list+ arguments are passed to
   # addlog_changed_attributes() and are documented there.
   def update_attributes_with_logging(new_attributes={}, by_user=nil, white_list=[], caller_level=0)
-    return true  if     new_attributes.blank? && ! self.changed?
-    return false unless self.valid? && self.errors.empty?
     self.attributes = new_attributes if new_attributes.present?
+    return false unless self.errors.empty? && self.valid?
     self.addlog_changed_attributes(by_user,white_list,caller_level+1)
-    self.save
+    self.save(:validate => false)
   end
 
   # This method is a bit like update_attriutes_with_logging, but

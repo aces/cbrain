@@ -32,12 +32,10 @@ class SubclassValidator < ActiveModel::EachValidator #:nodoc:
       option_root_class = options[:root_class].to_s.constantize
       root_class = option_root_class if option_root_class <= superklass
     end
-    valid_types = root_class.descendants.map(&:to_s)
+    valid_types  = root_class.descendants
+    valid_types << root_class
+    valid_types  = valid_types.reject(&:cbrain_abstract_model?).map &:to_s
 
-    if options[:include_root_class]
-      valid_types << root_class.to_s
-    end
-    
     unless valid_types.include?(value)
       object.errors[attribute] << (options[:message] || "is not a valid subtype of #{root_class}") 
     end

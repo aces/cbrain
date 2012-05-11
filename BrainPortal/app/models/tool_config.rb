@@ -98,6 +98,12 @@ class ToolConfig < ActiveRecord::Base
     header
   end
 
+  # A synonym for short_description, but unlike it, doesn't raise
+  # any exception.
+  def name
+    self.short_description rescue "Tool version ##{self.id}"
+  end
+
   # Sets in the current Ruby process all the environment variables
   # defined in the object. If +use_extended+ is true, the
   # set of variables provided by +extended_environement+ will be

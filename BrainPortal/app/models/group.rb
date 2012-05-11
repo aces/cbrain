@@ -40,6 +40,8 @@ class Group < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
 
+  cbrain_abstract_model! # objects of this class are not to be instanciated
+
   before_validation       :set_default_creator
   after_destroy           :reassign_models_to_owner_group
   
