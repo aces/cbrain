@@ -35,7 +35,7 @@ class Message < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
-  
+    
   scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
                                   aft = e.to_i
@@ -188,7 +188,7 @@ class Message < ActiveRecord::Base
 
   # Sends an internal error message where the main context
   # is an exception object.
-  def self.send_internal_error_message(destination, header, exception_log, request_params = {})
+  def self.send_internal_error_message(destination, header, exception, request_params = {})
 
     # Params cleanup
     userstruct = request_params['user'] || request_params[:user]
@@ -218,10 +218,10 @@ class Message < ActiveRecord::Base
     # Message for developers/admin
     Message.send_message(User.all_admins,
       :message_type  => :error,
-      :header        => "Internal error: #{header}; Exception: #{exception_log.exception_class}\n",
+      :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
       :description   => "An internal error occured inside the CBRAIN code.\n"     +
-                        "The last 10 caller entries are in attachment ([[View full log][/exception_logs/#{exception_log.id}]]).\n",
+                        "The last 30 caller entries are in attachment.\n",
 
       :variable_text => "=======================================================\n" +
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
@@ -229,9 +229,9 @@ class Message < ActiveRecord::Base
                         "Process ID: #{Process.pid}\n" +
                         "Process Name: #{$0}\n" +
                         "Params: #{request_params.inspect}\n" +
-                        "Exception: #{exception_log.exception_class}: #{exception_log.message}\n" +
+                        "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +
-                        exception_log.backtrace[0..10].join("\n") +
+                        exception.backtrace[0..30].join("\n") +
                         "\n",
                        
       :send_email    => true
