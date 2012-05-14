@@ -58,6 +58,8 @@ class Group < ActiveRecord::Base
   has_many                :tags
   belongs_to              :site
   
+  attr_accessible         :name, :site_id, :creator_id, :user_ids
+  
   scope                   :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
 
   # Returns the unique and special group 'everyone'

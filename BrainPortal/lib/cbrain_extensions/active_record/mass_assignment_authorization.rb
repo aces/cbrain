@@ -29,7 +29,7 @@
 # on the original class.
 module CBRAINExtensions
   module ActiveRecord
-    module SingleTableInheritanceFinders
+    module MassAssignmentAuthorization
       
       Revision_info=CbrainFileRevision[__FILE__]
     
@@ -37,22 +37,21 @@ module CBRAINExtensions
       # through to_a.
       def self.included(includer) #:nodoc:
         includer.class_eval do
-          unless method_defined? :__old_to_a__
-            
-            alias :__old_to_a__ :to_a
-            
-            def to_a
-              if klass.descends_from_active_record? || klass.finder_needs_type_condition? || klass.no_type_condition_affects_finders?
-                __old_to_a__
-              else
-                where(klass.send(:type_condition)).send(:__old_to_a__)
-              end
-            end
-            
-          end
+          attr_accessible
+          attr_accessor :accessible
         end    
       end
       
+      private
+
+      def mass_assignment_authorizer
+        if accessible == :all
+          ActiveModel::MassAssignmentSecurity::BlackList.new(["id"])
+        else
+          super + (accessible || [])
+        end
+      end
+       
     end
   end
 end

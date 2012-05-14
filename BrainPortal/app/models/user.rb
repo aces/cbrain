@@ -86,10 +86,6 @@ class User < ActiveRecord::Base
   before_destroy            :admin_check
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
-    
-  # prevents a user from submitting a crafted form that bypasses activation
-  # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
   has_many                :userfiles,         :dependent => :restrict
@@ -107,6 +103,10 @@ class User < ActiveRecord::Base
   has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
+  
+  # prevents a user from submitting a crafted form that bypasses activation
+  # anything else you want your user to change should be added here.
+  attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
     
@@ -362,7 +362,7 @@ class User < ActiveRecord::Base
   end
   
   def add_system_groups #:nodoc:
-    user_group = UserGroup.new(:name => self.login, :site  => self.site)
+    user_group = UserGroup.new(:name => self.login, :site_id  => self.site_id)
     unless user_group.save
       self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
       return false

@@ -23,6 +23,8 @@
 class ActiveRecordLog < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
+  
+  attr_accessible :ar_id, :ar_table_name, :log
 
   force_text_attribute_encoding 'UTF-8', :log
 

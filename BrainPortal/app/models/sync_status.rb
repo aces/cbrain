@@ -78,6 +78,7 @@ class SyncStatus < ActiveRecord::Base
   # an exception in get_or_create_status().
   validates_uniqueness_of :remote_resource_id, :scope => :userfile_id
 
+  attr_accessible :userfile_id, :remote_resource_id, :status, :accessed_at, :synced_at
 
 
   #################################################

@@ -35,7 +35,9 @@ class Message < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
-    
+  
+  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email
+  
   scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
                                   aft = e.to_i

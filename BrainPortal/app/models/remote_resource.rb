@@ -89,6 +89,15 @@ class RemoteResource < ActiveRecord::Base
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
+  attr_accessible  :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port, 
+                   :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host, 
+                   :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port, 
+                   :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death, :ssh_public_key, 
+                   :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
+                   :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
+                   :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
+                   :spaced_dp_ignore_patterns, :license_agreements
+  
 
 
   ############################################################################

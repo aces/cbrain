@@ -25,6 +25,8 @@ class SanityCheck < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__]
 
   validates_presence_of :revision_info
+  
+  attr_accessible :revision_info
 
 end
 
