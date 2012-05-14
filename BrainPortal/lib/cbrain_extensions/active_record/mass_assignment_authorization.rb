@@ -32,23 +32,23 @@ module CBRAINExtensions
     module MassAssignmentAuthorization
       
       Revision_info=CbrainFileRevision[__FILE__]
-    
-      # Redefine to_a because all finder methods go
-      # through to_a.
-      def self.included(includer) #:nodoc:
-        includer.class_eval do
-          attr_accessible
-          attr_accessor :accessible
-        end    
+      
+      def make_accessible(*args)
+        @accessible_attributes = [] unless @accessible_attributes.is_a?(Array)
+        @accessible_attributes += args
+      end
+      
+      def make_all_accessible
+        @accessible_attributes = :all
       end
       
       private
 
       def mass_assignment_authorizer
-        if accessible == :all
+        if @accessible_attributes == :all
           ActiveModel::MassAssignmentSecurity::BlackList.new(["id"])
         else
-          super + (accessible || [])
+          super + (@accessible_attributes || [])
         end
       end
        
