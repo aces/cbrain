@@ -28,7 +28,8 @@ class ExceptionLogsController < ApplicationController
   before_filter :admin_role_required
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= 'exception_logs.raised_at'
+    @filter_params["sort_hash"]["order"] ||= 'exception_logs.created_at'
+    @filter_params["sort_hash"]["dir"]   ||= 'DESC'
     
     @filtered_scope = base_filtered_scope
     @exception_logs = base_sorted_scope(@filtered_scope).paginate(:page => @current_page, :per_page => @per_page)

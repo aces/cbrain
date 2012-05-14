@@ -192,17 +192,6 @@ class Message < ActiveRecord::Base
   # is an exception object.
   def self.send_internal_error_message(destination, header, exception, request_params = {})
 
-    # Params cleanup
-    userstruct = request_params['user'] || request_params[:user]
-    [ :password, :password_confirmation ].each do |key|
-      request_params[key]      = "********" if request_params.has_key?(key)
-      request_params[key.to_s] = "********" if request_params.has_key?(key.to_s)
-      if userstruct && userstruct.is_a?(Hash)
-        userstruct[key]      = "********" if userstruct.has_key?(key)
-        userstruct[key.to_s] = "********" if userstruct.has_key?(key.to_s)
-      end
-    end
-
     # Message for normal users
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin_user))
       Message.send_message(destination,
@@ -230,7 +219,7 @@ class Message < ActiveRecord::Base
                         "Hostname: #{Socket.gethostname}\n" +
                         "Process ID: #{Process.pid}\n" +
                         "Process Name: #{$0}\n" +
-                        "Params: #{request_params.inspect}\n" +
+                        "Params: #{request_params.hide_filtered.inspect}\n" +
                         "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +
                         exception.backtrace[0..30].join("\n") +
