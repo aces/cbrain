@@ -174,8 +174,6 @@ module ActiveRecord
 
   class Relation
 
-    include CBRAINExtensions::ActiveRecord::SingleTableInheritanceFinders
-
     #####################################################################
     # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
     #####################################################################
