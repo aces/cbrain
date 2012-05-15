@@ -30,19 +30,21 @@
   else
     path = @userfile.cache_full_path
   end
-  content = File.read(path) rescue nil
-  content = content.text_file_content_to_utf8 if content
 %>
 
-<% if content %>
-  <% if params[:content_viewer] == "off" %>
-    <PRE><%= content %></PRE>
-  <% else %>
-    <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
-      <PRE><%= content %></PRE>
-    <% end %>
-  <% end %>
-<% else %>
-  <%= html_colorize("Could not load file contents.") %>
-<% end %>
+<% if @userfile.is_locally_synced? %>
 
+  <% if params[:content_viewer] == "off" || @userfile.size < 1000 %>
+    <% content = File.read(path) rescue nil %>
+    <% content = content.text_file_content_to_utf8 if content %>                    
+    <% if content %> 
+      <PRE><%= content %></PRE>
+    <% else %>
+      <%= html_colorize("Could not load file contents.") %>
+    <% end %>
+    <%= link_to h("(Show in a separate page)"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => "text_file", :content_viewer => "off"), :target => "_blank" if params[:action] == "show" %>
+  <% else %>
+    <%= link_to h("Show Displayable Content"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => "text_file", :content_viewer => "off"), :target => "_blank"%>
+  <% end %>
+  
+<% end%>
