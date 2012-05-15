@@ -137,11 +137,14 @@ if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
   exit 0
 end
 
-# Check usage
-usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
-
 # To help diagnose problems, print Ruby's version.
 puts "You are using Ruby #{RUBY_VERSION}"
+if RUBY_VERSION =~ /^1\.[0-8]/
+  puts "Warning! This Ruby version seems to be way too old. Maybe your environment wasn't initialized properly?"
+end
+
+# Check usage
+usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
 
 #############################################################
 # Stop
