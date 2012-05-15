@@ -48,8 +48,8 @@ module SmartDataProviderInterface
     # behavior we want (the other one could be useful too, in provider_full_path() below, for instance)
     @local_provider   = localclass.new
     @network_provider = networkclass.new
-    @local_provider.make_all_accessible
-    @network_provider.make_all_accessible
+    @local_provider.make_all_accessible!
+    @network_provider.make_all_accessible!
     @local_provider.attributes     = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! localclass.columns_hash[k] }
     @network_provider.attributes   = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! networkclass.columns_hash[k] }
     @local_provider.id   = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
