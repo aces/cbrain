@@ -51,18 +51,15 @@ module SmartDataProviderInterface
     @local_provider.id   = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
     @network_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
 
-    # These four 'defs' are used to intercept and prevent calls to 'save' on the two internal providers objects
-    def @local_provider.save
-      cb_error "Internal error: attempt to save() local provider object for SmartDataProvider '#{self.name}'."
-    end
-    def @local_provider.save!
-      cb_error "Internal error: attempt to save!() local provider object for SmartDataProvider '#{self.name}'."
-    end
-    def @network_provider.save
-      cb_error "Internal error: attempt to save() network provider object for SmartDataProvider '#{self.name}'."
-    end
-    def @network_provider.save!
-      cb_error "Internal error: attempt to save!() network provider object for SmartDataProvider '#{self.name}'."
+    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects
+    [ :save, :save!, :update_attribute, :update_attributes ].each do |bad_method|
+      [ @local_provider, @network_provider ].each do |internal_prov|
+        internal_prov.class_eval do
+          define_method(bad_method) do |*args|
+            cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{internal_prov.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{internal_prov.name}'"
+          end
+        end
+      end
     end
 
     # Now select the real provider for all intercepts defined below.
@@ -87,23 +84,9 @@ module SmartDataProviderInterface
     @provider
   end
 
-  # This method is a utility method allowing access to
-  # the remote path of userfiles as known by the network
-  # class, even when the current smart provider is actually
-  # configured to be local. This is not an official DataProvider
-  # API method, but you can often find it implemented in
-  # SSH-based Data Providers.
-  def provider_full_path(userfile)
-    if @network_provider.respond_to?(:provider_full_path) # this is not an official API method
-      @network_provider.provider_full_path(userfile)
-    else
-      "(unknown remote path)"
-    end
-  end
-
-  ###################################
-  # ALL OFFICIAL API METHODS
-  ###################################
+  ####################################
+  # ALL OFFICIAL API METHODS ARE BELOW
+  ####################################
 
   def is_alive? #:nodoc:
     @provider && @provider.is_alive?
@@ -191,6 +174,18 @@ module SmartDataProviderInterface
 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     @provider.provider_collection_index(userfile, directory, allowed_types)
+  end
+
+  # This method is a utility method allowing access to
+  # the remote path of userfiles as known by the network
+  # class, even when the current smart provider is actually
+  # configured to be local.
+  def provider_full_path(userfile) #:nodoc:
+    if @network_provider.respond_to?(:provider_full_path) # this is not an official API method
+      @network_provider.provider_full_path(userfile)
+    else
+      "(unknown remote path)"
+    end
   end
 
 end
