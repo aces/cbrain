@@ -137,11 +137,14 @@ if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
   exit 0
 end
 
-# Check usage
-usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
-
 # To help diagnose problems, print Ruby's version.
 puts "You are using Ruby #{RUBY_VERSION}"
+if RUBY_VERSION =~ /^1\.[0-8]/
+  puts "Warning! This Ruby version seems to be way too old. Maybe your environment wasn't initialized properly?"
+end
+
+# Check usage
+usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
 
 #############################################################
 # Stop
@@ -229,14 +232,12 @@ Dir.chdir(rails_home) do
           "-e", "#{environment}",
           "-b", "127.0.0.1",
           "-P", "#{pidfile}"
-        ]
-     :
+        ] :
         [
           "script/rails", "console", "#{environment}",
         ]
   raw_system_cmd = (mode == "start") ?
-      "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'"
-    :
+      "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'" :
       rails_cmd_ar.join(" ")
   start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
 end
