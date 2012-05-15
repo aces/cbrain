@@ -229,14 +229,12 @@ Dir.chdir(rails_home) do
           "-e", "#{environment}",
           "-b", "127.0.0.1",
           "-P", "#{pidfile}"
-        ]
-     :
+        ] :
         [
           "script/rails", "console", "#{environment}",
         ]
   raw_system_cmd = (mode == "start") ?
-      "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'"
-    :
+      "set -o pipefail ; " + rails_cmd_ar.join(" ") + " 2>&1 | tee -a '#{start_log_file}'" :
       rails_cmd_ar.join(" ")
   start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
 end
