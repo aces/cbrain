@@ -32,35 +32,51 @@ module CBRAINExtensions
       def self.included(includer)
         includer.class_eval do
           extend ClassMethods
+          
+          class << self
+            unless method_defined? :__old_unscoped__
+
+              alias :__old_unscoped__ :unscoped
+
+              # The +unscoped+ method will remove type conditions as well if 
+              # instructed to do so.
+              def unscoped(*args, &block)
+                old_finder_needs_type_condition = @finder_needs_type_condition
+                @finder_needs_type_condition = :false if @__unscope_type_condition__
+                __old_unscoped__(*args, &block)
+              ensure
+                @finder_needs_type_condition = old_finder_needs_type_condition
+              end
+
+            end
+          end
         end
       end
   
-      # Perform operations in the block provided
-      # without adding type information to queries.
-      # The receiver is passed to the block provided
-      # to allow for the following usage:
+      # Within the block given, the +unscoped+ 
+      # method will remove type conditions as well.
       #
       #    minc = MincFile.first
-      #    minc.without_type_condition do |m|
+      #    minc.unscope_type_condition do |m|
       #      m.name = "I am minc"
       #      m.save
       #    end
-      def without_type_condition
-        self.class.without_type_condition do
+      def unscope_type_condition
+        self.class.unscope_type_condition do
           yield(self)
         end
       end
   
-      # Subsequent +saves+ or +updates+ WILL NOT
-      # include type conditions. 
-      def no_type_condition!
-        @__no_type_condition__ = true
+      # Subsequent calls to +unscoped+ with this object 
+      # WILL NOT include type conditions. 
+      def unscope_type_condition!
+        @__unscope_type_condition__ = true
       end
   
-      # Subsequent +saves+ or +updates+ WILL
-      # include type conditions.
-      def type_condition!
-        @__no_type_condition__ = false
+      # Subsequent calls to +unscoped+ with this object 
+      # NOT include type conditions.
+      def scope_type_condition!
+        @__unscope_type_condition__ = false
       end
       
       # Change class to the variable set in type.
@@ -74,7 +90,7 @@ module CBRAINExtensions
           instance_variables.each do |var|
             new_object.instance_variable_set(var, instance_variable_get(var))
           end
-          new_object.no_type_condition!
+          new_object.unscope_type_condition!
         else
           new_object = self
         end
@@ -86,8 +102,8 @@ module CBRAINExtensions
       # type condition should be applied.
       [:reload, :destroy, :delete].each do |m|
         define_method(m) do |*args|
-          if @__no_type_condition__
-            without_type_condition do
+          if @__unscope_type_condition__
+            unscope_type_condition do
               super(*args)
             end
           else
@@ -99,8 +115,8 @@ module CBRAINExtensions
       private
       
       def create_or_update #:nodoc:
-        if @__no_type_condition__
-          without_type_condition do
+        if @__unscope_type_condition__
+          unscope_type_condition do
             super
           end
         else
@@ -157,32 +173,11 @@ module CBRAINExtensions
   
         # Perform operations in the block provided
         # without adding type information to queries.
-        def without_type_condition
-          old_finder_needs_type_condition = @finder_needs_type_condition
-          @finder_needs_type_condition = :false 
+        def unscope_type_condition
+          @__unscope_type_condition__ = true
           yield
         ensure
-          @finder_needs_type_condition = old_finder_needs_type_condition
-        end
-        
-        # Make it so no_type_condition affects finders.
-        def no_type_condition_affects_finders!
-          @no_type_condition_affects_finders = true
-        end
-        
-        # Make it so no_type_condition does not affect finders
-        # (this is the default).
-        def no_type_condition_does_not_affect_finders!
-          @no_type_condition_affects_finders = false
-        end
-        
-        # Does no_type_condition affect finders? 
-        def no_type_condition_affects_finders?
-          if @no_type_condition_affects_finders
-            true
-          else
-            false
-          end
+          @__unscope_type_condition__ = false
         end
         
         # Create a new object with attributes set by +params+.
@@ -243,7 +238,7 @@ module CBRAINExtensions
           end
   
           object.attributes = params
-          object.no_type_condition!
+          object.unscope_type_condition!
           
           object
         end

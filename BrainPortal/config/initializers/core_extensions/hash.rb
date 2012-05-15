@@ -59,6 +59,21 @@ class Hash
       result
     end
   end
+  
+  if defined?(Rails)
+    # Remove sensitive parameters.
+    def hide_filtered!
+      keys.each do |k| 
+        self[k] =  "[FILTERED]" if  Rails.configuration.filter_parameters.any? {|f| k =~ /#{f}/ }
+        self[k] = self[k].hide_filtered if self[k].respond_to?(:hide_filtered)
+      end
+      self
+    end
+  
+    def hide_filtered
+      clone.hide_filtered!
+    end
+  end
 
 end
 

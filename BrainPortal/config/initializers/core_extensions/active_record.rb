@@ -64,6 +64,13 @@ module ActiveRecord
     ###################################################################
 
     include CBRAINExtensions::ActiveRecord::AbstractModelMethods
+    
+    ###################################################################
+    # Helpers to manage mass-assignable attributes.
+    ###################################################################
+
+    include CBRAINExtensions::ActiveRecord::MassAssignmentAuthorization
+
 
     ###################################################################
     # ActiveRecord Added Behavior For Data Typing
@@ -166,8 +173,6 @@ module ActiveRecord
 
 
   class Relation
-
-    include CBRAINExtensions::ActiveRecord::SingleTableInheritanceFinders
 
     #####################################################################
     # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches

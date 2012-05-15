@@ -207,7 +207,7 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include NumericalSubdirTree
   
-  cbrain_abstract_model! # objects of this class are not to be instanciated
+  cbrain_abstract_model! # objects of this class are not to be instantiated
   
   validates               :name,
                           :uniqueness => true,

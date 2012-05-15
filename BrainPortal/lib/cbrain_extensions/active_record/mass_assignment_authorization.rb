@@ -20,35 +20,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# To be included in ActiveRecord::Relation
-#
-# Makes it so finder methods always use +type_condition+, even if 
-# class is set to not use type conditions.
-#
-# Can be overridden by calling +no_type_condition_affects_finders!+ 
-# on the original class.
+# Allows for the adjustment of mass-assignable attributes on an object by
+# object basis.
 module CBRAINExtensions
   module ActiveRecord
     module MassAssignmentAuthorization
       
       Revision_info=CbrainFileRevision[__FILE__]
-    
-      # Redefine to_a because all finder methods go
-      # through to_a.
-      def self.included(includer) #:nodoc:
-        includer.class_eval do
-          attr_accessible
-          attr_accessor :accessible
-        end    
+      
+      # Makes the list of attributes given available to mass-assignement.
+      def make_accessible(*args)
+        @accessible_attributes = [] unless @accessible_attributes.is_a?(Array)
+        @accessible_attributes += args
+      end
+      
+      # Makes all attributes (except +id+) available to mass-assignement.
+      def make_all_accessible
+        @accessible_attributes = :all
       end
       
       private
 
-      def mass_assignment_authorizer
-        if accessible == :all
+      def mass_assignment_authorizer #:nodoc:
+        if @accessible_attributes == :all
           ActiveModel::MassAssignmentSecurity::BlackList.new(["id"])
         else
-          super + (accessible || [])
+          super + (@accessible_attributes || [])
         end
       end
        
