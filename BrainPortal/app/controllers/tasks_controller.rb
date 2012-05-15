@@ -322,7 +322,8 @@ class TasksController < ApplicationController
     @task.addlog_current_resource_revision
 
     # Give a task the ability to do a refresh of its form
-    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
+    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
+    commit_name  ||= params[:commit] =~ /refresh/i ? :refresh : :whatever
     if commit_name == :refresh
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
