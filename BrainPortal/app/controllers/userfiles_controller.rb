@@ -113,7 +113,7 @@ class UserfilesController < ApplicationController
     sorted_scope = sorted_scope.joins(joins) unless joins.empty?
 
     # Add a secondary sorting column (name)
-    sorted_scope = sorted_scope.order(:name) unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
+    sorted_scope = sorted_scope.order('userfiles.name') unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
 
     # For Pagination
     unless [:html, :js].include?(request.format.to_sym)
