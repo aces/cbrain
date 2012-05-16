@@ -322,7 +322,7 @@ module ActRecMetaData
   # will actually delete the meta key :zut as if its value in the
   # hash table had been set to nil.
   #
-  # If the options :delete_on_absence is true, then keys specified
+  # If the option :delete_on_absence is true, then keys specified
   # in meta_keys that are not present in meta_params will cause the
   # meta key to also be deleted.
   def update_meta_data(meta_params = {}, meta_keys = :all, options = {})
