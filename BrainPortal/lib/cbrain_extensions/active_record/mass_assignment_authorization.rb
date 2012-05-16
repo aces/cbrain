@@ -29,13 +29,13 @@ module CBRAINExtensions
       Revision_info=CbrainFileRevision[__FILE__]
       
       # Makes the list of attributes given available to mass-assignement.
-      def make_accessible(*args)
+      def make_accessible!(*args)
         @accessible_attributes = [] unless @accessible_attributes.is_a?(Array)
         @accessible_attributes += args
       end
       
       # Makes all attributes (except +id+) available to mass-assignement.
-      def make_all_accessible
+      def make_all_accessible!
         @accessible_attributes = :all
       end
       
