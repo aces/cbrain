@@ -120,9 +120,9 @@
         <div class="exception_report">
           There are internal exceptions logged:<br/>
           <ul>
-            <li><%= pluralize(one_day_ex,"exception") %> in the past day;<br/></li>
-            <li><%= pluralize(three_day_ex,"exception")%> in the past three days;<br/></li>
-            <li><%= pluralize(one_week_ex,"exception") %> in the past week;<br/></li>
+            <li><%= pluralize(one_day_ex,"exception") %> in the past day.<br/></li>
+            <li><%= pluralize(three_day_ex,"exception")%> in the past three days.<br/></li>
+            <li><%= pluralize(one_week_ex,"exception") %> in the past week.<br/></li>
             <li><%= pluralize(all_ex,"exception") %>in total.<br/></li>
           </ul>
           <div class="centered"><%= link_to "Show Exceptions", :controller => :exception_logs, :action => :index %></div>

@@ -91,44 +91,30 @@ class UsersController < ApplicationController
     # reset_session
     params[:user] ||= {}
 
-    # These attributes must be set explicitely
-    login          = params[:user].delete :login
-    type_param     = params[:user].delete :type
-    group_ids      = params[:user].delete :group_ids
-    site_id        = params[:user].delete :site_id
-    account_locked = params[:user].delete :account_locked
-
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
  
-    if current_user.has_role? :admin_user
-      type = type_param
-    elsif current_user.has_role? :site_manager
-      if type_param == 'SiteManager'
-        type = 'SiteManager'
+    if current_user.has_role? :site_manager
+      if params[:user][:type] == 'SiteManager'
+        params[:user][:type] = 'SiteManager'
       else
-        type = 'NormalUser'
+        params[:user][:type] = 'NormalUser'
       end
     end
-    
-    params[:user][:type] = type
- 
-    @user = User.sti_new(params[:user])
+     
+    @user = User.new
 
-    if current_user.has_role? :admin_user
-      @user.login          = login     if login
-      @user.group_ids      = group_ids if group_ids
-      @user.site_id        = site_id   if site_id
-      @user.account_locked = (account_locked == "1")
+    @user.make_all_accessible! if current_user.has_role?(:admin_user)
+    if current_user.has_role?(:site_manager)
+      @user.make_accessible!(:login, :type, :group_ids, :account_locked)
+      @user.site = current_user.site  
     end
 
-    if current_user.has_role? :site_manager
-      @user.login          = login     if login
-      @user.group_ids      = group_ids if group_ids
-      @user.account_locked = (account_locked == "1")
-      @user.site = current_user.site
-    end
+    @user.attributes = params[:user]
+
+    @user = @user.class_update
 
     @user.password_reset = no_password_reset_needed ? false : true
+    
     @user.save
     
     if @user.errors.empty?
@@ -160,8 +146,13 @@ class UsersController < ApplicationController
     params[:user] ||= {}
     cb_error "You don't have permission to view this page.", :redirect => home_path unless edit_permission?(@user)
   
-    params[:user][:group_ids] ||= WorkGroup.joins(  :users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
-    params[:user][:group_ids]  |= SystemGroup.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
+    if params[:user][:group_ids]
+      system_group_scope = SystemGroup.scoped
+      if current_user.has_role?(:admin_user)
+        system_group_scope = system_group_scope.where("groups.type<>'InvisibleGroup'")
+      end
+      params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
+    end
   
     if params[:user][:password].present?
       if current_user.id == @user.id
@@ -178,37 +169,22 @@ class UsersController < ApplicationController
       params[:user][:time_zone] = nil # change "" to nil
     end
   
-    # These attributes must be set explicitely
-    type = params[:user].delete :type
-    group_ids = params[:user].delete :group_ids
-    site_id = params[:user].delete :site_id
-    account_locked = params[:user].delete :account_locked
-  
     # For logging
-    original_group_ids = @user.group_ids
+    original_group_ids = @user.group_ids    
   
-    # Update everything else!
-    @user.attributes = params[:user]
-  
-    if current_user.has_role? :admin_user
-      @user.type = type if type
-      @user.group_ids = group_ids if group_ids
-      @user.site_id = site_id if site_id
-      @user.account_locked = (account_locked == "1")
-      @user.destroy_user_sessions if @user.account_locked
-    end
-  
+    @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
-      @user.group_ids = group_ids if group_ids
-      if type
-        if type == 'SiteManager'
-          @user.type = 'SiteManager'
-        else
-          @user.type = 'NormalUser'
-        end
+      @user.make_accessible!(:group_ids, :type, :account_locked)
+      if params[:user][:type] == 'SiteManager'
+        params[:user][:type] = 'SiteManager'
+      else
+        params[:user][:type] = 'NormalUser'
       end
       @user.site = current_user.site
     end 
+    
+    @user.attributes = params[:user]
+    
     @user = @user.class_update
 
     respond_to do |format|
