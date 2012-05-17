@@ -735,15 +735,11 @@ jQuery(
       var offset_x = trigger.attr("data-offset-x") || '30';
       var offset_y = trigger.attr("data-offset-y") || '0';
       
-      if ((tool_tip.css('top') == '' || tool_tip.css('top') == '0px') 
-          && (tool_tip.css('left') == '' || tool_tip.css('left') == '0px'))
-      {
-          x = trigger.position().left + parseInt(offset_x, 10);
-          y = trigger.position().top  + parseInt(offset_y, 10);
+      var x = trigger.position().left + parseInt(offset_x, 10);
+      var y = trigger.position().top  + parseInt(offset_y, 10);
       
-          tool_tip.css('top',  y + 'px');
-          tool_tip.css('left', x + 'px');
-      }
+      tool_tip.css('top',  y + 'px');
+      tool_tip.css('left', x + 'px');
       
       tool_tip.show();
    }).live("mouseleave", function(event){
