@@ -631,8 +631,9 @@ class PortalTask < CbrainTask
 
   # Returns true only if
   def task_is_proper_subclass #:nodoc:
-    self.errors.add(:base, "is not a proper subclass of CbrainTask.") unless PortalTask.descendants.include? self.class
-    true
+    return true if PortalTask.descendants.include? self.class
+    self.errors.add(:base, "is not a proper subclass of PortalTask.")
+    false
   end
 
 end
