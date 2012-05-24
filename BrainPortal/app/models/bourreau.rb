@@ -387,7 +387,7 @@ class Bourreau < RemoteResource
 
     tasks_affected = 0
 
-    CBRAIN::spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
+    CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
 
     taskids.each do |task_id|
       begin

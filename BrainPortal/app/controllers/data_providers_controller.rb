@@ -603,7 +603,7 @@ class DataProvidersController < ApplicationController
     cache_file = browse_provider_local_cache_file(as_user, @provider)
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
-       fileinfolist = YAML::load(filelisttext)
+       fileinfolist = YAML.load(filelisttext)
        return fileinfolist
     end
 
@@ -612,7 +612,7 @@ class DataProvidersController < ApplicationController
 
     # Write a new cached copy
     File.open(cache_file + ".tmp","w") do |fh|
-       fh.write(YAML::dump(fileinfolist))
+       fh.write(YAML.dump(fileinfolist))
     end
     File.rename(cache_file + ".tmp",cache_file)  # crush it
 

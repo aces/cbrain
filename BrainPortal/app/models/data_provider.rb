@@ -991,7 +991,7 @@ class DataProvider < ActiveRecord::Base
     # Try to write it back. If the file suddenly has appeared,
     # we ignore our own key and use THAT one instead (race condition).
     begin
-      fd = IO::sysopen(key_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fd = IO.sysopen(key_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       fh = IO.open(fd)
       fh.syswrite("#{@@key}\n")
       fh.close
@@ -1039,9 +1039,9 @@ class DataProvider < ActiveRecord::Base
     # we ignore our own rev and use THAT one instead (race condition).
     begin
       if force
-        fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_CREAT)
+        fd = IO.sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_CREAT)
       else
-        fd = IO::sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+        fd = IO.sysopen(rev_file, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       end
       fh = IO.open(fd)
       fh.syswrite(@@cache_rev + "\n")
