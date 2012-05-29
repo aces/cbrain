@@ -56,8 +56,9 @@ module SmartDataProviderInterface
     @network_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
 
     # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects
-    [ :save, :save!, :update_attribute, :update_attributes ].each do |bad_method|
+    [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
       [ @local_provider, @network_provider ].each do |internal_prov|
+        internal_prov.readonly!
         internal_prov.class_eval do
           define_method(bad_method) do |*args|
             cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{internal_prov.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{internal_prov.name}'"

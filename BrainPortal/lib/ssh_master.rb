@@ -594,7 +594,7 @@ class SshMaster
     # Action is :check, it means we must fail if the file exists
     return false if File.exist?(pidfile)
     begin
-      fd = IO::sysopen(pidfile, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
+      fd = IO.sysopen(pidfile, Fcntl::O_WRONLY | Fcntl::O_EXCL | Fcntl::O_CREAT)
       f = IO.open(fd)
       f.syswrite(pid.to_s)
       f.close

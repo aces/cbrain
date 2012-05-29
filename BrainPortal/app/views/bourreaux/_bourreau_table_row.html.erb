@@ -43,11 +43,13 @@
   <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
-        <% report = "Code:&nbsp;#{diskrev}&nbsp;Live:&nbsp;#{runrev}".html_safe %>
-        <% if diskrev.to_s != runrev.to_s %>
-          <%= red_if(true, report) %>
+        <% creport = " Code: #{diskrev} " %>
+        <% lreport = " Live: #{runrev} " %>
+        <% if diskrev.first == "(" %>
+          <%= html_colorize(creport + lreport, 'purple') %>
         <% else %>
-          <%= red_if(diskrev.first == "(", report, nil, :color2 => 'purple') %>
+          <%= red_if(diskrev != '???' && diskrev != $CBRAIN_StartTime_Revision, creport, nil, :color2 => 'orange') %>
+          <%= red_if(runrev  != '???' && runrev  != diskrev                   , lreport, nil, :color2 => 'red') %>
         <% end %>
     </td>
     <td><%= link_to_user_with_tooltip(bourreau.user) %></td>

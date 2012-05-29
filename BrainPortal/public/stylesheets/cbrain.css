@@ -501,6 +501,20 @@ h1.warning {
 
 
 /* % ######################################################### */
+/* % General styles for definition lists */
+/* % ######################################################### */
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  width: 60em;
+}
+
+
+
+/* % ######################################################### */
 /* % General Links formatting */
 /* % ######################################################### */
 
@@ -1682,6 +1696,7 @@ img {
 .message_display_table {
     clear: both;
     border: 0;
+    width: 100%;
 }
 
 .message_display_table th {
@@ -1690,14 +1705,12 @@ img {
     font-size: 1.2em;
     padding-bottom: 0.4em;
     border: 0;
-    width: 20%;
     margin: 0px;
 }
 
 .message_display_table td {
     font-size: 1em;
     padding: 0.2em 0.4em;
-    width: 20%;
 }
 
 .message_display_table tr {

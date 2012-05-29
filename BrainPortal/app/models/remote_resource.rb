@@ -803,7 +803,7 @@ class RemoteResource < ActiveRecord::Base
     rr = RemoteResource.current_resource()
     last_update = rr.meta[:data_provider_statuses_last_update]
     return true if last_update && last_update > 30.seconds.ago
-    CBRAIN::spawn_with_active_records(:admin, "DP Check") do
+    CBRAIN.spawn_with_active_records(:admin, "DP Check") do
       dp_stats = {}
       dp_ids.each do |dp_id|
         dp  = DataProvider.find_by_id(dp_id)
@@ -843,7 +843,7 @@ class RemoteResource < ActiveRecord::Base
     userlist.compact!
     userlist.uniq!
 
-    CBRAIN::spawn_with_active_records(:admin, "Cache Cleanup") do
+    CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
       targetfiles = Userfile.where( :user_id => userlist )
       targetfiles.each do |userfile|
         syncstatus = userfile.local_sync_status rescue nil
