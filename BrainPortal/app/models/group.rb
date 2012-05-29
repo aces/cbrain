@@ -57,6 +57,8 @@ class Group < ActiveRecord::Base
   has_many                :cbrain_tasks
   has_many                :tags
   belongs_to              :site
+  belongs_to              :creator,
+                          :class_name   => "User"
   
   attr_accessible         :name, :site_id, :creator_id, :user_ids
   

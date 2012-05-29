@@ -1,4 +1,6 @@
 
+
+<%-
 #
 # CBRAIN Project
 #
@@ -19,29 +21,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
+-%>
 
-class AdminUser < User
-
-  Revision_info=CbrainFileRevision[__FILE__]
+<%= form_tag invitations_path do -%>
+  <%= hidden_field_tag :group_id, @group.id %>
+  <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids"} %>
   
-  def available_tools  #:nodoc:
-    Tool.scoped
-  end
-  
-  def available_groups  #:nodoc:
-    Group.scoped
-  end
-  
-  def available_tasks  #:nodoc:
-    CbrainTask.scoped
-  end
-  
-  def available_users  #:nodoc:
-    User.scoped
-  end
-  
-  def visible_users #:nodoc:
-    User.scoped
-  end
-  
-end
+  <p>
+    <%= submit_tag "Create" %>
+  </p>
+<% end %>

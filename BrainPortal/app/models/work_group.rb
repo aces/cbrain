@@ -90,7 +90,7 @@ class WorkGroup < Group
         return true
       end
     end
-    return self.users.count == 1 && self.users.first == user
+    return self.creator_id == user.id
   end
 
 end

@@ -33,8 +33,14 @@
         <%= f.text_field :name %>
       </p>
       <% if current_user.has_role?(:admin_user) %>
-        <p><%= f.label :site_id, "Site" %><br/>
-         <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+        <p>
+          <%= f.label :site_id, "Site" %><br/>
+          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %>
+        </p>
+        <p>
+        Make this a system group invisible to normal users:
+        <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
+        <p/>
       <% end %>
 
       <% if current_user.has_role?(:normal_user) %>
