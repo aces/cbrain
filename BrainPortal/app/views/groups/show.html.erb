@@ -79,16 +79,21 @@
 
   <% end %>
 
-  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
+  <% 
+    group_members  = @group.users
+    open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
+  %>
 
-    <% default_text = array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (group_members.count > 1 || open_invites.present?)) do |t| %>
+
+    <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
     <% t.edit_cell(:user_id, :show_width => 2,
                              :header  => 'Members',
-                             :content => default_text, :show_width => 2) do %>
+                             :content => default_text) do %>
       <% if current_user.has_role? :normal_user %>
-        <% @group.users.each do |u| %>
-          <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), "data-method" => :put, :class => "action_link") unless u == current_user %>
+        <% group_members.each do |u| %>
+          <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
           <br>
         <% end %>
       <% else %>
@@ -98,7 +103,18 @@
         </div> 
       <% end %>
     <% end %>
-
+    <% if open_invites.present? %>
+      <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
+    
+      <% t.edit_cell(:invites, :show_width => 2,
+                               :header  => 'Pending Invitations',
+                               :content => default_text) do %>
+        <% open_invites.each do |i| %>
+          <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
+          <br>
+        <% end %>
+      <% end %>
+    <% end %>
   <% end %>
 
 </div>

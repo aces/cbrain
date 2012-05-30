@@ -23,11 +23,15 @@
 #
 -%>
 
-<%= form_tag invitations_path do -%>
-  <%= hidden_field_tag :group_id, @group.id %>
-  <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids"} %>
+<% if @users.present? %>
+  <%= form_tag invitations_path do -%>
+    <%= hidden_field_tag :group_id, @group.id %>
+    <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids"} %>
   
-  <p>
-    <%= submit_tag "Create" %>
-  </p>
+    <p>
+      <%= submit_tag "Create" %>
+    </p>
+  <% end %>
+<% else %>
+  <strong style="color:red">No users available to invite.</strong>
 <% end %>

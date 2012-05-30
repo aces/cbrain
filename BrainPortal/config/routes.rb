@@ -63,7 +63,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
   
-  resources :invitations, :only => [:new, :create, :update]
+  resources :invitations, :only => [:new, :create, :update, :destroy]
 
   resources :bourreaux do
     member do

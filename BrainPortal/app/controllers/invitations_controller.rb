@@ -40,31 +40,46 @@ class InvitationsController < ApplicationController
        return
     end
     
-    @users = current_user.visible_users.where("users.id NOT IN (?)", @group.users.map(&:id))
+    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, group_id: @group.id).all.map(&:user_id)
+    @users = current_user.visible_users.where("users.id NOT IN (?)", @group.users.map(&:id) | already_sent_to)
     render :partial => "new"
   end
   
   #Send an invitation
   def create #:nodoc:
     @group = Group.find(params[:group_id])
-    @users = User.find(params[:user_ids].map(&:to_i) & current_user.visible_users.map(&:id))
-    
-    unless @group.can_be_edited_by?(current_user) && @users.present?
-       flash[:error] = "You don't have the necessary permissions to send these invitations."
-       respond_to do |format|
-        format.html { redirect_to group_path(@group) }
-        format.xml  { head :forbidden }
-       end
-       return
+    user_ids = params[:user_ids].map(&:to_i)
+    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, group_id: @group.id).all.map(&:user_id)
+    rejected_ids = user_ids & already_sent_to
+    if rejected_ids.present?
+      flash_message = "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
     
-   
-    Invitation.send_out(current_user, @group, @users)
-    flash[:notice] = "You invitations were successfully sent."
+    @users = User.find((user_ids - already_sent_to) & current_user.visible_users.map(&:id))
+    
+    unless @group.can_be_edited_by?(current_user) && @users.present?
+      flash[:error] = "Could not send the requested invitations."
+      flash[:error] += flash_message if rejected_ids.present?
+      respond_to do |format|
+       format.html { redirect_to group_path(@group) }
+       format.xml  { head :forbidden }
+      end
+      return
+    end
+    
+    if @users.present?
+      Invitation.send_out(current_user, @group, @users)
+      flash[:notice] = "You invitations were successfully sent."
+    else
+      flash[:notice] = "No new users were found to invite."
+    end
+    
+    flash[:notice] += flash_message if rejected_ids.present?
+      
     respond_to do |format|
-      format.html { redirect_to group_path(@group) }
-      format.xml  { head :ok }
-     end  
+     format.html { redirect_to group_path(@group) }
+     format.xml  { head :ok }
+    end  
   end
   
   #Accept an invitation
@@ -92,6 +107,20 @@ class InvitationsController < ApplicationController
     flash[:notice] = "You have been added to project #{@group.name}."
     respond_to do |format|
       format.html { redirect_to groups_path }
+      format.xml  { head :ok }
+     end
+  end
+  
+  def destroy #:nodoc:
+    @invitation = Invitation.where(sender_id: current_user.id, active: true).find(params[:id])
+    @user  = @invitation.user
+    @group = @invitation.group
+    
+    @invitation.destroy
+    
+    flash[:notice] = "Invitation to #{@user.login} has been canceled."
+    respond_to do |format|
+      format.html { redirect_to group_path(@group) }
       format.xml  { head :ok }
      end
   end
