@@ -30,13 +30,15 @@ class Message < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__]
 
   belongs_to :user
+  belongs_to :sender,
+             :class_name => "User"
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
   
-  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id
+  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
   
   scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
@@ -83,6 +85,7 @@ class Message < ActiveRecord::Base
     critical     = options[:critical]      || options["critical"]      || false
     send_email   = options[:send_email]    || options["send_email"]    || false
     group_id     = options[:group_id]      || options["group_id"]
+    sender_id    = options[:sender_id]     || options["sender_id"]
 
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
@@ -116,7 +119,8 @@ class Message < ActiveRecord::Base
                :expiry       => expiry,
                :read         => false,
                :critical     => critical,
-               :group_id     => group_id 
+               :group_id     => group_id,
+               :sender_id    => sender_id 
              )
       
       # If the message is a pure repeat of an existing message,
@@ -159,6 +163,11 @@ class Message < ActiveRecord::Base
   #then send it to +destination+.
   def send_me_to(destination)
     self.class.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
+  end
+  
+  # Define sort orders that don't refer to actual columns in the table.
+  def self.pseudo_sort_columns
+    ["sender"]
   end
 
   # Given an existing message, send it to other users/group.

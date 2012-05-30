@@ -31,12 +31,13 @@ class Invitation < Message
   after_create  :add_description  #Need to put the id in there.
   
   
-  def self.send_out(group, users)
+  def self.send_out(sender, group, users)
     self.send_message(users,
       message_type: "notice",
       header:       "You've been invited to join project #{group.name}",
       group_id:     group.id,
-      send_email:   true
+      send_email:   true,
+      sender_id:    sender.id
     )
   end
   

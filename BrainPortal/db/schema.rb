@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120518181249) do
+ActiveRecord::Schema.define(:version => 20120530164358) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -155,6 +155,7 @@ ActiveRecord::Schema.define(:version => 20120518181249) do
     t.integer  "group_id"
     t.string   "type"
     t.boolean  "active"
+    t.integer  "sender_id"
   end
 
   add_index "messages", ["user_id"], :name => "index_messages_on_user_id"

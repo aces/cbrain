@@ -59,7 +59,7 @@ class InvitationsController < ApplicationController
     end
     
    
-    Invitation.send_out(@group, @users)
+    Invitation.send_out(current_user, @group, @users)
     flash[:notice] = "You invitations were successfully sent."
     respond_to do |format|
       format.html { redirect_to group_path(@group) }
