@@ -633,21 +633,8 @@ class ClusterTask < CbrainTask
     end
 
     # Stuck or lost jobs executing Ruby code
-    if self.updated_at < 8.hours.ago && cur_status.match(/^(Setting Up|Post Processing|Recovering|Restarting)/)
-      case cur_status
-        when "Setting Up"
-          self.status_transition(self.status, "Failed To Setup")
-        when "Post Processing"
-          self.status_transition(self.status, "Failed To PostProcess")
-        when /(Recovering|Restarting) (\S+)/
-          fromwhat = Regexp.last_match[2]
-          self.status_transition(self.status, "Failed To Setup")       if fromwhat == 'Setup'
-          self.status_transition(self.status, "Failed On Cluster")     if fromwhat == 'Cluster'
-          self.status_transition(self.status, "Failed To PostProcess") if fromwhat == 'PostProcess'
-        else
-          self.status_transition(self.status, "Terminated")
-      end
-      self.addlog("Terminating a task that is too old and stuck at '#{cur_status}'; now at '#{self.status}'")
+    if self.mark_as_failed_in_ruby
+      self.addlog("Task is too old and stuck at '#{cur_status}'; status reset to '#{self.status}'")
       return self.save
     end
 
@@ -705,6 +692,28 @@ class ClusterTask < CbrainTask
     end
   end
 
+  # Updates the task's status to one of the 'Failed' states if it has
+  # been updated more than +timeout+ ago and seems to be stuck
+  # in a 'Ruby' stage. Returns true if the task's status was changed to a
+  # 'Failed' state, false or nil if the status is left unchanged.
+  def mark_as_failed_in_ruby(timeout = 8.hours)
+    return false unless self.updated_at < timeout.ago && CbrainTask::RUBY_STATUS.include?(self.status)
+    case self.status
+      when "Setting Up"
+        self.status_transition(self.status, "Failed To Setup")
+      when "Post Processing"
+        self.status_transition(self.status, "Failed To PostProcess")
+      when /(Recovering|Restarting) (\S+)/
+        fromwhat = Regexp.last_match[2]
+        if    fromwhat == 'Setup'
+          self.status_transition(self.status, "Failed To Setup")
+        elsif fromwhat == 'Cluster'
+          self.status_transition(self.status, "Failed On Cluster")
+        elsif fromwhat == 'PostProcess'
+          self.status_transition(self.status, "Failed To PostProcess")
+        end
+    end
+  end
 
 
   ##################################################################

@@ -154,17 +154,28 @@ class CbrainTask < ActiveRecord::Base
   ##################################################################
 
   COMPLETED_STATUS  = [ "Completed" ]
+
   QUEUED_STATUS     = [ "New", "Standby", "Configured", "Queued", "On Hold", "Suspended", "Data Ready" ] # waiting for something
+
   PROCESSING_STATUS = [ "Setting Up", "On CPU", "Post Processing" ] # actually running code
+
   RUNNING_STATUS    = [ "New", "Setting Up", "Queued", "On CPU", "Data Ready", "Post Processing"] # main path
+
   FAILED_STATUS     = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
                         "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
                         "Terminated" ]
+
   RECOVER_STATUS    = [ "Recover Setup",    "Recover Cluster",    "Recover PostProcess",
                         "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
+
   RESTART_STATUS    = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
                         "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
+
   OTHER_STATUS      = [ "Preset", "Duplicated" ]
+
+  RUBY_STATUS       = [ "Setting Up", "Post Processing",
+                        "Recovering Setup", "Recovering Cluster", "Recovering PostProcess",
+                        "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
 
   ACTIVE_STATUS    = QUEUED_STATUS | PROCESSING_STATUS | RECOVER_STATUS | RESTART_STATUS
 
