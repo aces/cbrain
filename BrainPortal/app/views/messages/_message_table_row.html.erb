@@ -37,6 +37,9 @@
       <%= render :partial  => 'messages/message_details', :locals  => {:mess  => mess} %>
     </div>
   </td>
+  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+    <%= mess.sender.try(:login) || "System" %>
+  </td>
   <% unless current_user.has_role?(:normal_user) %>
     <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
       <%= mess.user.login %>

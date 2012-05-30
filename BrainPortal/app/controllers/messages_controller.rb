@@ -35,8 +35,12 @@ class MessagesController < ApplicationController
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
     
     scope = base_filtered_scope
-
-    scope = base_sorted_scope(scope)
+    if @filter_params["sort_hash"]["order"] == "messages.sender"
+      scope = scope.joins("LEFT JOIN users as senders ON senders.id = messages.sender_id").
+                      order("senders.login #{@filter_params["sort_hash"]["dir"]}")
+    else
+      scope = base_sorted_scope(scope)
+    end
     scope = scope.includes(:user)
     unless current_user.has_role?(:admin_user)
       scope = scope.where(:user_id => current_user.available_users.map(&:id))

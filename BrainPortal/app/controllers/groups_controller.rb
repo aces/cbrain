@@ -155,12 +155,6 @@ class GroupsController < ApplicationController
 
     params[:group] ||= {}
 
-    unless params[:update_users].present?
-      params[:group][:user_ids] = @group.user_ids.map(&:to_s)
-    end
-
-    params[:group][:user_ids] ||= []
-
     if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
       @group.type = 'InvisibleGroup'
     else
@@ -173,12 +167,22 @@ class GroupsController < ApplicationController
       params[:group][:site_id] = current_user.site_id
     end
 
+    unless params[:update_users].present?
+      params[:group][:user_ids] = @group.user_ids.map(&:to_s)
+    end
+
+    params[:group][:user_ids] ||= []
+
     unless params[:group][:user_ids].blank?
-      params[:group][:user_ids] &= current_user.available_users.map{ |u| u.id.to_s  }
+      if current_user.has_role? :normal_user
+        params[:group][:user_ids] &= @group.user_ids.map(&:to_s)
+      else
+        params[:group][:user_ids] &= current_user.visible_users.map{ |u| u.id.to_s  }
+      end
     end
 
     params[:group].delete :creator_id #creator_id is immutable
-
+    
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
@@ -194,7 +198,6 @@ class GroupsController < ApplicationController
       end
     end
   end
-
  
   # DELETE /groups/1
   # DELETE /groups/1.xml

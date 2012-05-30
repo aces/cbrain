@@ -23,8 +23,8 @@
 -%>
 
 <span class="page_links">
-  <%= will_paginate @paginated_list, :container => false %>
-  (<%= pluralize @total_users, "users" %>)
+  <%= will_paginate @users, :container => false %>
+  (<%= pluralize @users.total_entries, "users" %>)
 </span>
 <span class="pagination_right_side">
   Search by name:

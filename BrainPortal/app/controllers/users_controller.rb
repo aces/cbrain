@@ -49,8 +49,6 @@ class UsersController < ApplicationController
       @per_page = 999_999_999
     end
     
-    @total_users  = @users.count
-
     # Turn the array ordered_real into the final paginated collection
     @users = @users.paginate(:page => @current_page, :per_page => @per_page)
     

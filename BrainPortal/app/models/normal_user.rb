@@ -43,4 +43,12 @@ class NormalUser < User
     User.where( :id => self.id )
   end
   
+  def visible_users #:nodoc:
+    if site
+      site.users.where("users.type <> 'AdminUser'")
+    else
+      []
+    end
+  end
+  
 end
