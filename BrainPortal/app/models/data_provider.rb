@@ -215,7 +215,8 @@ class DataProvider < ActiveRecord::Base
                           :name_format => true
                           
   validates               :type,
-                          :subclass => true
+                          subclass: { allow_blank: true },
+                          presence: true
                           
   validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]

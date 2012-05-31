@@ -24,20 +24,27 @@ class SubclassValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  def validate_each(object, attribute, value)
+  def validate_each(object, attribute, value)    
     superklass = object.class.sti_root_class 
     root_class = superklass
     
-    if options[:root_class] && Class.const_defined?(options[:root_class].to_s)
-      option_root_class = options[:root_class].to_s.constantize
-      root_class = option_root_class if option_root_class <= superklass
+    model_class = value.constantize rescue nil
+    valid_types = []
+    
+    if model_class
+      if options[:root_class] && Class.const_defined?(options[:root_class].to_s)
+        option_root_class = options[:root_class].to_s.constantize
+        root_class = option_root_class if option_root_class <= superklass
+      end
+      valid_types  = root_class.descendants
+      valid_types << root_class
+      unless options[:include_abstract_models]
+        valid_types  = valid_types.reject(&:cbrain_abstract_model?).map &:to_s
+      end
     end
-    valid_types  = root_class.descendants
-    valid_types << root_class
-    valid_types  = valid_types.reject(&:cbrain_abstract_model?).map &:to_s
 
     unless valid_types.include?(value)
-      object.errors[attribute] << (options[:message] || "is not a valid subtype of #{root_class}") 
+      object.errors[attribute] << (options[:message] || " '#{value}' is not a valid subtype of #{root_class}") 
     end
   end
 
