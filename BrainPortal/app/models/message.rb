@@ -200,7 +200,7 @@ class Message < ActiveRecord::Base
 
   # Sends an internal error message where the main context
   # is an exception object.
-  def self.send_internal_error_message(destination, header, exception, request_params = {})
+  def self.send_internal_error_message(destination, header, exception, request_params = {}, options = {})
 
     # Message for normal users
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin_user))
@@ -216,13 +216,19 @@ class Message < ActiveRecord::Base
       ) 
     end
     
+    
+    error_description = "An internal error occured inside the CBRAIN code.\n" +
+                        "The last 30 caller entries are in attachment.\n"                   
+    if options[:exception_log]
+      error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"
+    end
+    
     # Message for developers/admin
     Message.send_message(User.all_admins,
       :message_type  => :error,
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
-      :description   => "An internal error occured inside the CBRAIN code.\n"     +
-                        "The last 30 caller entries are in attachment.\n",
+      :description   => error_description,
 
       :variable_text => "=======================================================\n" +
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
