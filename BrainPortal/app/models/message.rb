@@ -30,13 +30,15 @@ class Message < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__]
 
   belongs_to :user
+  belongs_to :sender,
+             :class_name => "User"
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
   
-  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email
+  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
   
   scope :time_interval, lambda { |s, e|
                                   bef = s.to_i
@@ -77,12 +79,13 @@ class Message < ActiveRecord::Base
     type         = options[:message_type]  || options["message_type"]  ||
                    options[:type]          || options["type"]          || :notice
     header       = options[:header]        || options["header"]        || "No subject"
-    description  = options[:description]   || options["description"]   || nil
-    var_text     = options[:variable_text] || options["variable_text"] || nil
-    expiry       = options[:expiry]        || options["expiry"]        || nil
+    description  = options[:description]   || options["description"]
+    var_text     = options[:variable_text] || options["variable_text"]
+    expiry       = options[:expiry]        || options["expiry"]
     critical     = options[:critical]      || options["critical"]      || false
     send_email   = options[:send_email]    || options["send_email"]    || false
-    
+    group_id     = options[:group_id]      || options["group_id"]
+    sender_id    = options[:sender_id]     || options["sender_id"]
 
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
@@ -108,14 +111,16 @@ class Message < ActiveRecord::Base
                :read         => false,
                :critical     => critical 
              ).first || 
-             Message.new(
+             self.new(
                :user_id      => user.id,
                :message_type => type,
                :header       => header,
                :description  => description,
                :expiry       => expiry,
                :read         => false,
-               :critical     => critical 
+               :critical     => critical,
+               :group_id     => group_id,
+               :sender_id    => sender_id 
              )
       
       # If the message is a pure repeat of an existing message,
@@ -157,7 +162,12 @@ class Message < ActiveRecord::Base
   #Allows one to create an object and set its attributes,
   #then send it to +destination+.
   def send_me_to(destination)
-    Message.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
+    self.class.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
+  end
+  
+  # Define sort orders that don't refer to actual columns in the table.
+  def self.pseudo_sort_columns
+    ["sender"]
   end
 
   # Given an existing message, send it to other users/group.
@@ -190,7 +200,7 @@ class Message < ActiveRecord::Base
 
   # Sends an internal error message where the main context
   # is an exception object.
-  def self.send_internal_error_message(destination, header, exception, request_params = {})
+  def self.send_internal_error_message(destination, header, exception, request_params = {}, options = {})
 
     # Message for normal users
     if destination && !(destination.is_a?(User) && destination.has_role?(:admin_user))
@@ -206,13 +216,19 @@ class Message < ActiveRecord::Base
       ) 
     end
     
+    
+    error_description = "An internal error occured inside the CBRAIN code.\n" +
+                        "The last 30 caller entries are in attachment.\n"                   
+    if options[:exception_log]
+      error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"
+    end
+    
     # Message for developers/admin
     Message.send_message(User.all_admins,
       :message_type  => :error,
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 
-      :description   => "An internal error occured inside the CBRAIN code.\n"     +
-                        "The last 30 caller entries are in attachment.\n",
+      :description   => error_description,
 
       :variable_text => "=======================================================\n" +
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
@@ -308,11 +324,12 @@ class Message < ActiveRecord::Base
     arr = ERB::Util.html_escape(string).split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context
-      next unless arr[i] =~ /\[\[(.+?)\]\[(.+?)\]\]/
-      name = Regexp.last_match[1]
-      link = Regexp.last_match[2]
+      next unless arr[i] =~ /\[\[(.+?)\]\[(.+?)\](?:\[(.+?)\])?\]/
+      name   = Regexp.last_match[1]
+      link   = Regexp.last_match[2]
+      method = Regexp.last_match[3] || "get"
       link.sub!("/tasks/show/","/tasks/")  # adjustment to old URL API for tasks
-      arr[i] = "<a href=\"#{link}\" class=\"action_link\">#{name}</a>"
+      arr[i] = "<a href=\"#{link}\" data-method=\"#{method.downcase}\" class=\"action_link\">#{name}</a>"
     end
     arr.join.html_safe
   end

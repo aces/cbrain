@@ -20,28 +20,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class AdminUser < User
+class Invitation < Message
 
   Revision_info=CbrainFileRevision[__FILE__]
   
-  def available_tools  #:nodoc:
-    Tool.scoped
+  belongs_to    :group
+  
+  before_create :make_active
+  
+  after_create  :add_description  #Need to put the id in there.
+  
+  
+  def self.send_out(sender, group, users)
+    self.send_message(users,
+      message_type: "notice",
+      header:       "You've been invited to join project #{group.name}",
+      group_id:     group.id,
+      send_email:   true,
+      sender_id:    sender.id
+    )
   end
   
-  def available_groups  #:nodoc:
-    Group.scoped
+  private
+  
+  def make_active
+    self.active = true
   end
   
-  def available_tasks  #:nodoc:
-    CbrainTask.scoped
-  end
-  
-  def available_users  #:nodoc:
-    User.scoped
-  end
-  
-  def visible_users #:nodoc:
-    User.scoped
+  def add_description
+    self.description = "You've been invited to join project #{group.name}.\n\n"+
+                       "[[Accept][/invitations/#{self.id}}][put]]"
+    self.save!
   end
   
 end

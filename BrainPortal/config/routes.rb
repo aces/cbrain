@@ -62,6 +62,8 @@ CbrainRailsPortal::Application.routes.draw do
       post 'switch'
     end
   end
+  
+  resources :invitations, :only => [:new, :create, :update, :destroy]
 
   resources :bourreaux do
     member do

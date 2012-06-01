@@ -212,7 +212,7 @@ module CBRAINExtensions
           type_update = false
   
           type = params.delete :type 
-  
+          
           if type && valid_sti_change?(type, options)
             type_update = true
           end
@@ -222,22 +222,17 @@ module CBRAINExtensions
           else
             klass = superklass
           end
-  
+          
           if id 
             object = superklass.find(id)
             if type_update # Make new model a copy of the old
-              object = object.becomes(klass)
-              object.type = type
+              object = object.class_update(klass)
             end
           else
             object = klass.new
           end
-  
-          if type_update
-            object.type = type
-          end
-  
           object.attributes = params
+          object.type = type
           object.unscope_type_condition!
           
           object

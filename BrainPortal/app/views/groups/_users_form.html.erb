@@ -51,6 +51,8 @@
         @users_multi_select_classes[u]  += "sitegroup_#{group.id}"
       end
     end
+    
+    parameter_name ||= "group[user_ids]"
 %>
 
 
@@ -61,21 +63,14 @@
 #######################################
 %>
 
-  <% if current_user.has_role? :admin_user %>
-    <p>
-    Make this a system group invisible to normal users:
-    <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
-    <p/>
-  <% end %>
-
-  <label>Users in project:</label>
+  <label>Members:</label>
   <%= array_to_table(@users,
       :cols        => 5,
       :table_class => 'button_table',
       :td_class    => 'left_align no_wrap',
       :fill_by_columns => true
       ) do |user,r,c| %>
-        <%= check_box_tag("group[user_ids][]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
+        <%= check_box_tag("#{parameter_name}[]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
         <%= link_to_user_with_tooltip(user) %>
   <% end %>
 

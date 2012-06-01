@@ -70,19 +70,22 @@ class BourreauWorker < Worker
     tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id )
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
-    # Detects and turns on sleep mode.
+    # Detects and turns on sleep mode. We enter sleep mode once we
+    # find no task to process for three normal scan cycles in a row.
+    #
     # This sleep mode is triggered when there is nothing to do; it
     # lets our process be responsive to signals while not querying
     # the database all the time for nothing.
+    #
     # This mode is reset to normal 'scan' mode when receiving a USR1 signal.
+    #
     # After one hour a normal scan is performed again so that there is at least
     # some kind of DB activity; some DB servers close their socket otherwise.
-    # We enter sleep mode once we find no task to process for three normal
-    # scan cycles in a row.
     if tasks_todo.empty?
       @zero_task_found += 1 # count the normal scan cycles with no tasks
       if @zero_task_found >= 3 # three in a row?
         worker_log.info "No tasks need handling, going to sleep for one hour."
+        self.check_for_tasks_stuck_in_ruby
         request_sleep_mode(1.hour + rand(15).seconds)
       end
       return
@@ -435,6 +438,20 @@ class BourreauWorker < Worker
   rescue Exception => e
     worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e
+  end
+
+  # As a side effect of the regular checks, detect some
+  # tasks stuck in Ruby code and mark them as failed.
+  def check_for_tasks_stuck_in_ruby
+    stucked = CbrainTask.where(:status => CbrainTask::RUBY_STATUS, :bourreau_id => @rr_id).where("updated_at < ?",8.hours.ago)
+    stucked.each do |task|
+      orig_status = task.status
+      task.mark_as_failed_in_ruby rescue nil
+      if task.status != orig_status
+        task.addlog("Worker detects that task is too old and stuck at '#{orig_status}'; status reset to '#{task.status}'")
+        worker_log.info "Stuck: #{task.bname_tid} from #{orig_status} to state #{task.status}"
+      end
+    end
   end
 
 end

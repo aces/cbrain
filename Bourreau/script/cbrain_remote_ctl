@@ -98,6 +98,7 @@ end
 # Establish a SSH tunnel to a secondary host
 # where this script will be effectively run.
 def tunnel_to_secondary_host(host, http_port, db_port, args)
+  puts "Establishing tunnel from login host '#{`hostname`.strip}' to backend '#{host}'."
   myuid   = Process.uid
   mylogin = Etc.getpwuid(myuid).name
   proxymaster = SshMaster.find_or_create(mylogin,host,22)

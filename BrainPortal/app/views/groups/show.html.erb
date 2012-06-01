@@ -27,7 +27,10 @@
 <% if (@group.is_a?(WorkGroup) || @group.is_a?(InvisibleGroup)) && @group.can_be_edited_by?(current_user) %>
   <div class="menu_bar">
     <%= link_to 'Switch', {:action => :switch, :id => @group.id}, :class => "button", :method  => :post %>
-    <%= link_to 'Delete', group_path(@group), { :confirm => "Are you sure you want to delete '#{@group.name}' ?", :method => :delete, :class => "button" } %>
+    <% if current_user.has_role?(:normal_user) && @group.can_be_edited_by?(current_user) && current_user.visible_users.present? %>
+      <%= overlay_ajax_link "Invite Other Users", new_invitation_path(group_id: @group.id), class: "button" %>
+    <% end %>
+    <%= link_to 'Delete', group_path(@group), { :confirm => "Are you sure you want to delete '#{@group.name}'?", :method => :delete, :class => "button" } %>
   </div>
 <% end %>
 
@@ -42,6 +45,8 @@
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "group[name]", @group.name %>
     <% end %>
+
+    <% t.cell("Creator") { @group.creator.try(:login)} %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
       <%= select_tag "group[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @group.site_id), :include_blank => true %>
@@ -74,20 +79,42 @@
 
   <% end %>
 
-  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
+  <% 
+    group_members  = @group.users
+    open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
+  %>
 
-    <% default_text = array_to_table(@group.users.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (group_members.count > 1 || open_invites.present?)) do |t| %>
+
+    <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
     <% t.edit_cell(:user_id, :show_width => 2,
                              :header  => 'Members',
-                             :content => default_text, :show_width => 2,
-                             :disabled => current_user.has_role?(:normal_user)) do %>
-      <div class="generalbox" style="width: 100%">
-        <%= render :partial => 'users_form' %><br>
-        <%= hidden_field_tag :update_users, true %>
-      </div> 
+                             :content => default_text) do %>
+      <% if current_user.has_role? :normal_user %>
+        <% group_members.each do |u| %>
+          <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
+          <br>
+        <% end %>
+      <% else %>
+        <div class="generalbox" style="width: 100%">
+          <%= render :partial => 'users_form' %><br>
+          <%= hidden_field_tag :update_users, true %>
+        </div> 
+      <% end %>
     <% end %>
-
+    <% if open_invites.present? %>
+      <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
+    
+      <% t.edit_cell(:invites, :show_width => 2,
+                               :header  => 'Pending Invitations',
+                               :content => default_text) do %>
+        <% open_invites.each do |i| %>
+          <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
+          <br>
+        <% end %>
+      <% end %>
+    <% end %>
   <% end %>
 
 </div>
