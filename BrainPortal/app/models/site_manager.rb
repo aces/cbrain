@@ -32,9 +32,7 @@ class SiteManager < User
   
   def available_groups  #:nodoc:
     group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-    group_scope = group_scope.where("groups.name <> 'everyone'")
-    group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])      
-  
+    group_scope = group_scope.where("groups.name <> 'everyone'").where(invisible: false)      
     
     group_scope
   end

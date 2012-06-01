@@ -291,11 +291,11 @@ dancers             = WorkGroup.seed_record!({ :name => 'dancers' })
 dancers.user_ids    = User.where( :login => [ 'mbennet', 'lbennet', 'cbennet' ]).map &:id
 dancers.save!
 
-gentlemen           = InvisibleGroup.seed_record!({ :name => 'gentlemen' })
+gentlemen           = WorkGroup.seed_record!({ :name => 'gentlemen', :invisible => true })
 gentlemen.user_ids  = User.where( :login => [ 'mrbennet', 'mrdarcy', 'chbingley', 'mrgardiner' ] ).map &:id
 gentlemen.save!
 
-ladies              = InvisibleGroup.seed_record!({ :name => 'ladies' })
+ladies              = WorkGroup.seed_record!({ :name => 'ladies', :invisible => true })
 ladies.user_ids     = User.where( :login => [ 'jbennet', 'ebennet', 'cabingley', 'gedarcy', 'chlucas' ] ).map &:id
 ladies.save!
 

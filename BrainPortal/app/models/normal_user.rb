@@ -29,10 +29,7 @@ class NormalUser < User
   end
   
   def available_groups  #:nodoc:              
-    group_scope = self.groups.where("groups.name <> 'everyone'")
-    group_scope = group_scope.where(["groups.type NOT IN (?)", InvisibleGroup.descendants.map(&:to_s).push("InvisibleGroup") ])
-    
-    group_scope
+    self.groups.where("groups.name <> 'everyone'").where(invisible: false)
   end
   
   def available_tasks  #:nodoc:
