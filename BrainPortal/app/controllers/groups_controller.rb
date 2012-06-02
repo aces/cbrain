@@ -103,12 +103,9 @@ class GroupsController < ApplicationController
   # POST /groups
   # POST /groups.xml
   def create  #:nodoc:
-
-    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
-      @group = InvisibleGroup.new(params[:group])
-    else
-      @group = WorkGroup.new(params[:group])
-    end
+    @group = WorkGroup.new(params[:group])
+    @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
+    @group.attributes = params[:group]
     
     unless current_user.has_role? :admin_user
       @group.site = current_user.site
@@ -136,11 +133,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1
   # PUT /groups/1.xml
   def update #:nodoc:
-    if current_user.has_role? :admin_user
-      @group = current_user.available_groups.where( :type => [ "WorkGroup", "InvisibleGroup" ] ).find(params[:id])
-    else
-      @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
-    end
+    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
     
     unless @group.can_be_edited_by?(current_user)
        flash[:error] = "You don't have permission to edit this project."
@@ -154,14 +147,6 @@ class GroupsController < ApplicationController
     original_user_ids = @group.user_ids
 
     params[:group] ||= {}
-
-    if current_user.has_role?(:admin_user) && params[:invisible_group] == "1"
-      @group.type = 'InvisibleGroup'
-    else
-      @group.type = 'WorkGroup'
-    end
-    
-    @group = @group.class_update
     
     unless current_user.has_role? :admin_user
       params[:group][:site_id] = current_user.site_id
@@ -181,6 +166,7 @@ class GroupsController < ApplicationController
       end
     end
 
+    @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
     params[:group].delete :creator_id #creator_id is immutable
     
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)

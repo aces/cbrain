@@ -39,7 +39,7 @@
         </p>
         <p>
         Make this a system group invisible to normal users:
-        <%= check_box_tag :invisible_group, "1", @group.is_a?(InvisibleGroup) %>
+        <%= f.check_box :invisible %>
         <p/>
       <% end %>
 

@@ -36,7 +36,7 @@
   </legend>
 
   <strong>Member Of Editable Projects:</strong><p/>
-  <% user_projs = user.groups.select { |g| g.is_a?(WorkGroup) || g.is_a?(InvisibleGroup) }.sort { |a,b| a.name <=> b.name } %>
+  <% user_projs = user.groups.where(type: "WorkGroup").order(:name).all %>
   <% user_projs_links = user_projs.map { |g| link_to_group_if_editable(g) } %>
   <%= array_to_table(user_projs_links, :rows => 1) { |link,r,c| link } %>
 

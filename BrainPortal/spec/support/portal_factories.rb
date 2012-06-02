@@ -70,8 +70,8 @@ Factory.define :user_group do |user_group|
   user_group.name { Factory.next :group_name }
 end
 
-Factory.define :invisible_group do |invisible_group| 
-  invisible_group.name { Factory.next :group_name }
+Factory.define :invisible_group, :parent => :work_group do |invisible_group| 
+  invisible_group.invisible true
 end
 
 Factory.define :site  do |site|

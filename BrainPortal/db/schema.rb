@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120530164358) do
+ActiveRecord::Schema.define(:version => 20120601172852) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -126,8 +126,10 @@ ActiveRecord::Schema.define(:version => 20120530164358) do
     t.string   "type"
     t.integer  "site_id"
     t.integer  "creator_id"
+    t.boolean  "invisible",  :default => false
   end
 
+  add_index "groups", ["invisible"], :name => "index_groups_on_invisible"
   add_index "groups", ["name"], :name => "index_groups_on_name"
   add_index "groups", ["type"], :name => "index_groups_on_type"
 

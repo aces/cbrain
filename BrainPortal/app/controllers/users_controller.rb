@@ -146,10 +146,11 @@ class UsersController < ApplicationController
   
     if params[:user][:group_ids]
       system_group_scope = SystemGroup.scoped
-      if current_user.has_role?(:admin_user)
-        system_group_scope = system_group_scope.where("groups.type<>'InvisibleGroup'")
-      end
       params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
+      
+      unless current_user.has_role?(:admin_user)
+        params[:user][:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map &:to_s
+      end
     end
   
     if params[:user][:password].present?

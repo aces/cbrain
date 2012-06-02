@@ -31,7 +31,7 @@ class WorkGroup < Group
   # This method optimizes the DB lookups necessary to 
   # create the pretty_category_name of a set of WorkGroups
   def self.prepare_pretty_category_names(groups = [], as_user = nil)
-    wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) }
+    wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) && !g.invisible? }
     wg_ids  = wgs.map &:id
 
     wg_ucnt = WorkGroup.joins(:users).where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
@@ -64,7 +64,9 @@ class WorkGroup < Group
     
   def pretty_category_name(as_user)
     return @_pretty_category_name if @_pretty_category_name
-    if self.users.count != 1
+    if self.invisible?
+      @_pretty_category_name = 'Invisible Project'
+    elsif self.users.count != 1
       @_pretty_category_name = 'Shared Work Project'
     elsif as_user.present? && (self.creator_id == as_user.id || self.users.first.id == as_user.id)
       @_pretty_category_name = 'My Work Project'
@@ -85,12 +87,14 @@ class WorkGroup < Group
   def can_be_edited_by?(user)
     if user.has_role? :admin_user
       return true
-    elsif user.has_role? :site_manager
-      if self.site_id == user.site.id
+    elsif !self.invisible? 
+      if user.has_role?(:site_manager) && self.site_id == user.site.id
         return true
       end
+      return self.creator_id == user.id
     end
-    return self.creator_id == user.id
+    
+    false
   end
 
 end
