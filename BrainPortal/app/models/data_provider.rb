@@ -1118,7 +1118,8 @@ class DataProvider < ActiveRecord::Base
   # +do_id+ is true, no files are actually erased.
   # Always returns an array of strings for the subpaths that
   # are/were superfluous, each like "01/23/45".
-  # This whole process can take some time.
+  # This whole process can take some time, and is mostly used
+  # only once, at boot time.
   def self.cleanup_leftover_cache_files(do_it=false)
     rr_id = RemoteResource.current_resource.id
     Dir.chdir(self.cache_rootdir) do
@@ -1134,7 +1135,7 @@ class DataProvider < ActiveRecord::Base
         ids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
       end
       return [] if ids2path.empty?
-      Userfile.select("id as id").all.each { |u| ids2path.delete(u.id) }
+      Userfile.where({}).raw_first_column(:id).each { |id| ids2path.delete(id) }
       return [] if ids2path.empty?
       if do_it
         maybe_spurious_parents={}

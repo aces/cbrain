@@ -69,8 +69,8 @@ class PortalController < ApplicationController
     end
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).all.collect(&:id)
-    @tasks       = CbrainTask.where( :user_id => current_user.id, :bourreau_id => bourreau_ids,
-                   :status => CbrainTask::FAILED_STATUS + CbrainTask::COMPLETED_STATUS + CbrainTask::RUNNING_STATUS).order( "updated_at DESC" ).limit(15).all
+    user_ids     = current_user.available_users.map(&:id)
+    @tasks       = CbrainTask.real_tasks.where( :user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(15).all
   end
   
   def portal_log #:nodoc:

@@ -179,10 +179,7 @@ class CbrainSystemChecks < CbrainChecker
         end
       end
       puts "C> \t- Synchronization objects are being wiped..."
-      synclist = SyncStatus.where( :remote_resource_id => myself.id )
-      synclist.each do |ss|
-        ss.destroy rescue true
-      end
+      SyncStatus.where( :remote_resource_id => myself.id ).destroy_all
       puts "C> \t- Re-recording DataProvider 'code' DateTime in cache."
       DataProvider.cache_revision_of_last_init(:force)
 

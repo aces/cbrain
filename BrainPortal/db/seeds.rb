@@ -187,10 +187,9 @@ everyone = SystemGroup.seed_record!(
 )
 
 # Create admin user.
-admin = User.seed_record!(
+admin = AdminUser.seed_record!(
   {
     :login     => 'admin',
-    :type      => 'AdminUser'
   },
   {
     :full_name             => "CBRAIN Administrator",

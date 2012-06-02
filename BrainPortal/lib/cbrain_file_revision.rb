@@ -182,11 +182,13 @@ class CbrainFileRevision
     test = `bash -c "which git 2>/dev/null"`
     @_git_available = (test.blank? ? :no : :yes)
     if @_git_available == :yes
-      test2 = `cd '#{Rails.root}'; git rev-parse --show-toplevel 2>/dev/null`
-      @_git_available = :no if test2.blank?
-      if @_git_available == :yes
-        test3 = `cd '#{Rails.root}'; git log -n 1 . 2>/dev/null`
-        @_git_available = :no if test3.blank?
+      Dir.chdir(Rails.root) do
+        test2 = `git rev-parse --show-toplevel 2>/dev/null`
+        @_git_available = :no if test2.blank?
+        if @_git_available == :yes
+          test3 = `git log -n 1 . 2>/dev/null`
+          @_git_available = :no if test3.blank?
+        end
       end
     end
     @_git_available == :yes

@@ -178,7 +178,8 @@
         <table class="task_summary_table">
           <% for task in @tasks %>
             <tr>
-              <td><%= link_to_task_if_accessible(task,nil,:name_method => :name_and_bourreau) %></td>
+              <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
+              <td><%= link_to_user_if_accessible(task.user) %></td>
               <td><%= colored_status(task.status) %></td>
               <td><%= to_localtime(task.updated_at,:datetime) %></td>
             </tr>

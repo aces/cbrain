@@ -109,7 +109,7 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
             <% elsif dp_stats[dp.id] == "down" %>
               <%= times_icon %>
             <% elsif dp_stats[dp.id] == "offline" %>
-              -
+              <%= html_colorize('?','purple') %>
             <% else %>
               <%= html_colorize('?','purple') %>
             <% end %>
