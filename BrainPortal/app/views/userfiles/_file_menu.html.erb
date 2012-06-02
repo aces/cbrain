@@ -38,9 +38,9 @@
       <hr>
       <h4>Move/Copy</h4>
       To Data Provider:
-      <%= data_provider_select("data_provider_id") %>
+      <%= data_provider_select(:data_provider_id, nil, :include_blank => "(Select Destination)") %>
       <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
-      Overwrite destination, if it exists:
+      Overwrite files on Destination, if they exist:
       <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
       <%= hijacker_submit_button("Move Files", :name => :move, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
       <%= hijacker_submit_button("Copy Files", :name => :copy, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>

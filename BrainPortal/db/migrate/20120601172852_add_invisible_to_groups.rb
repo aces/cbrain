@@ -2,6 +2,9 @@ class RawGroup < ActiveRecord::Base
    self.table_name = "groups"
 end
 
+class InvisibleGroup < RawGroup
+end
+
 class AddInvisibleToGroups < ActiveRecord::Migration
   def self.up
     add_column :groups, :invisible, :boolean, :default => false
