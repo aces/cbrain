@@ -429,7 +429,7 @@ class TasksController < ApplicationController
 
       spawn_messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
 
-      # Create parallelizer, if needed
+      # Create parallelizers, if needed
       if parallel_size
         paral_tasklist = tasklist.select { |t| t.class == @task.class }
         paral_info = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist, :group_size => parallel_size)

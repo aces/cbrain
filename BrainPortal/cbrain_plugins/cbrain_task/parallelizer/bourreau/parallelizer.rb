@@ -175,7 +175,7 @@ class CbrainTask::Parallelizer < ClusterTask
     false
   end
 
-  # If a serializer fails its setup prerequisites, then we need
+  # If a parallelizer fails its setup prerequisites, then we need
   # to mark its subtasks that are New or Configured the same way.
   def trigger_cascade_prepreq_failures(from_state) #:nodoc
     self.enabled_subtasks.where(:status => [ 'New', 'Configured' ] ).each do |otask|

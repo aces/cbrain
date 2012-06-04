@@ -36,7 +36,7 @@ class CbrainTask::Parallelizer
     all_task_ids     = task_ids_enabled.keys.sort { |i1,i2| i1.to_i <=> i2.to_i }
     task_ids         = all_task_ids.collect do |tid|
       if task_ids_enabled[tid].to_s == "1"
-        self.add_prerequisites_for_setup(tid)
+        self.add_prerequisites_for_setup(tid, 'Configured')
         tid.to_i
       else
         self.remove_prerequisites_for_setup(tid)

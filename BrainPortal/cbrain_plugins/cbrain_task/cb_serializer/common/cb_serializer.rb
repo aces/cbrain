@@ -36,7 +36,7 @@ class CbrainTask::CbSerializer
     task_ids_enabled    = params[:task_ids_enabled]    || {}
     task_ids            = ordered_subtask_ids.collect do |tid|
       if task_ids_enabled[tid.to_s].to_s == "1"
-        self.add_prerequisites_for_setup(tid)
+        self.add_prerequisites_for_setup(tid, 'Configured')
         tid.to_i
       else
         self.remove_prerequisites_for_setup(tid)
