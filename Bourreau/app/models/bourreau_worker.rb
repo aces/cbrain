@@ -52,6 +52,7 @@ class BourreauWorker < Worker
     @rr = RemoteResource.current_resource
     worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.svn_id_rev} start rev. #{@rr.info.starttime_revision}"
     @rr_id = @rr.id
+    @last_ruby_stuck_check = 20.minutes.ago
   end
 
   # Calls process_task() regularly on any task that is ready.
@@ -62,6 +63,12 @@ class BourreauWorker < Worker
       worker_log.info "Bourreau has exited, so I'm quitting too. So long!"
       self.stop_me
       return false
+    end
+
+    # Check for tasks stuck in Ruby, at most once per 20 minutes
+    if @last_ruby_stuck_check < (20.minutes + rand(3.minutes)).ago
+      self.check_for_tasks_stuck_in_ruby
+      @last_ruby_stuck_check = Time.now
     end
 
     # Asks the DB for the list of tasks that need handling.
@@ -85,7 +92,6 @@ class BourreauWorker < Worker
       @zero_task_found += 1 # count the normal scan cycles with no tasks
       if @zero_task_found >= 3 # three in a row?
         worker_log.info "No tasks need handling, going to sleep for one hour."
-        self.check_for_tasks_stuck_in_ruby
         request_sleep_mode(1.hour + rand(15).seconds)
       end
       return
