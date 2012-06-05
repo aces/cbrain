@@ -146,7 +146,7 @@ class PortalController < ApplicationController
           if line =~ /on instance (\S+)/
             found_inst = Regexp.last_match[1]
           end
-        elsif line =~ /^Started (\S+) "\/(\w+)/
+        elsif line =~ /^Started (\S+) "\/(\w*)/
           found_meth, found_ctrl = Regexp.last_match[1,2]
         elsif line =~ /^Completed.*in (\d+)ms/
           found_ms = Regexp.last_match[1].to_i

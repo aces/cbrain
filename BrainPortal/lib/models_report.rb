@@ -55,7 +55,7 @@ class ModelsReport
                end
 
     # All files that belong to these users on these data providers
-    filelist = Userfile.where( {} )
+    filelist = Userfile.select([ :size, :num_files, :user_id, :data_provider_id ])
     filelist = filelist.where( :user_id          => userlist.map(&:id) ) if ! users.nil?
     filelist = filelist.where( :data_provider_id => dplist.map(&:id)   ) if ! providers.nil?
     filelist = filelist.all
@@ -75,7 +75,6 @@ class ModelsReport
     tt_cell = stats[all_users_label][all_dps_label] = { :size => 0, :num_entries => 0, :num_files => 0, :unknowns => 0 }
 
     filelist.each do |userfile|
-      filetype          = userfile.class.to_s
       size              = userfile.size
       num_files         = userfile.num_files || 1
 
