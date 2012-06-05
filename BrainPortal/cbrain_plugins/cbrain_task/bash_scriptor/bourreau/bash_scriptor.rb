@@ -66,7 +66,7 @@ class CbrainTask::BashScriptor < ClusterTask
 
     phase_1_text = raw_text.dup.pattern_substitute(
       {
-        'cbrain_task_cluster_workdir' => self.bash_escape_path(self.full_cluster_workdir),
+        'cbrain_task_cluster_workdir' => self.full_cluster_workdir.to_s.bash_escape,
         'cbrain_task_id'              => self.id,
         'cbrain_task_run_number'      => self.run_number,
         'cbrain_task_run_id'          => self.run_id,
@@ -86,8 +86,8 @@ class CbrainTask::BashScriptor < ClusterTask
         {
           'cbrain_userfile_id'              => id,
           'cbrain_userfile_name'            => file.name,
-          'cbrain_userfile_cache_full_path' => self.bash_escape_path(file.cache_full_path),
-          'cbrain_touch_when_completed'     => self.bash_escape_path(full_touch_file),
+          'cbrain_userfile_cache_full_path' => file.cache_full_path.to_s.bash_escape,
+          'cbrain_touch_when_completed'     => full_touch_file.to_s.bash_escape,
           'cbrain_userfile_list_counter'    => cnt+1
         },
         :leave_unset => true
@@ -96,7 +96,7 @@ class CbrainTask::BashScriptor < ClusterTask
       final_script <<   "# Script for file ID #{id} named #{file.name}\n"
       final_script <<   "# ===============================================================\n"
       final_script << "\n"
-      final_script << "cd #{self.bash_escape_path(self.full_cluster_workdir)}\n"
+      final_script << "cd #{self.full_cluster_workdir.to_s.bash_escape}\n"
       final_script << "\n"
       final_script << txt # multi line scripts are OK in array.
       final_script << "\n\n"
@@ -179,11 +179,6 @@ class CbrainTask::BashScriptor < ClusterTask
     params[:output_userfile_ids] = out_ids
 
     true
-  end
-
-  def bash_escape_path(path) #:nodoc:
-    newpath = path.to_s.gsub("'","'\\''")
-    "'#{newpath}'"
   end
 
 end

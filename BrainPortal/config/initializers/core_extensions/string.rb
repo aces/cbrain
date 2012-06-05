@@ -25,6 +25,27 @@
 ###################################################################
 class String
 
+  # This utility method escapes properly any string such that
+  # it becomes a literal in a bash command; the string returned
+  # will include some surrounding single quotes if necessary.
+  #
+  #   puts "".bash_escape                     => ''
+  #   puts "abcd".bash_escape                 => abcd
+  #   puts "Mike O'Connor".bash_escape        => 'Mike O'\'Connor
+  #   puts "abcd".bash_escape(true)           => 'abcd'
+  #   puts "Mike O'Connor".bash_escape(true)  => 'Mike O'\''Connor'
+  #
+  def bash_escape(always_quote = false, no_empty = false)
+    return (no_empty ? "" : "''") if     self == ''
+    return self                   if     !always_quote && self =~ %r{\A[0-9a-zA-Z.,:/=@+-]+\z}
+    return "'#{self}'"            unless self.index("'")
+    comps = self.split(/('+)/)
+    comps.each_with_index do |comp,idx|
+      comps[idx] = idx % 2 == 0 ? comp.bash_escape(always_quote, true) : ("\\'" * comp.size)
+    end
+    comps.join
+  end
+
   # This method is mostly used on text file content;
   # it attempts to detect and validate different original
   # encodings then record it in UTF8. The returned value

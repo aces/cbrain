@@ -1359,7 +1359,7 @@ class DataProvider < ActiveRecord::Base
   #
   #   'Mike O'\''Connor'
   def shell_escape(s)
-    "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
+    s.bash_escape(true)  # in config/initializers/core_extentions/string.rb
   end
 
   # This method is used to escape properly any string such that
