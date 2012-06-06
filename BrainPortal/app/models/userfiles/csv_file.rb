@@ -27,7 +27,7 @@ class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  has_viewer :partial  => "csv_file", :if  => :is_locally_synced?
+  has_viewer :partial  => "csv_file", :name => 'CSV Viewer', :if  => :is_locally_synced?
 
   def self.pretty_type #:nodoc:
     "CSV File"
@@ -44,15 +44,32 @@ class CSVFile < TextFile
     col_sep_list     = [",",";",":","#","\t"," "]
     poss_combination = {}
 
-    cache_path = self.cache_full_path
+    cache_path        = self.cache_full_path.to_s
+    escape_cache_path = cache_path.bash_escape
+
+    # Extract line delimiter. Sample output of 'file' command:
+    # dos:  ASCII text, with CRLF line terminators
+    # mac:  ASCII text, with CR line terminators
+    # unix: ASCII text
+    line_delim = ""
+    IO.popen("file #{escape_cache_path}","r") do |fh| 
+      if fh.gets.index("with CR line")
+        line_delim = "015" # octal for perl's -0 option
+      else
+        line_delim = "012" # octal for perl's -0 option
+      end
+    end
+
+    # Get first 10 lines of the CSV document.
+    csv_content  = line_delim.blank? ? "" : IO.popen("perl -0#{line_delim} -pe 'exit 0 if $. > 10' #{escape_cache_path}","r") { |fh| fh.read }
+
     quote_char_list.each do |qc|
       col_sep_list.each  do |cs|
         combinaison_key = [qc,cs]
         double_qc    = qc == "\"" ? "''" : "\"\""
         poss_combination[combinaison_key] = []
         begin
-          cnt = 0
-          CSV.foreach(cache_path, :quote_char => qc, :col_sep => cs, :row_sep =>:auto) do |row|
+          CSV.parse(csv_content, :quote_char => qc, :col_sep => cs, :row_sep =>:auto) do |row|
             if row.size == 1
               poss_combination.delete(combinaison_key)
               break
@@ -68,8 +85,6 @@ class CSVFile < TextFile
             end
             break if need_to_quit
             poss_combination[combinaison_key] << row.size
-            cnt +=1
-            break if cnt > 10
           end
         rescue
           poss_combination.delete(combinaison_key)
@@ -102,12 +117,10 @@ class CSVFile < TextFile
   end
 
   #Create an array of array for csv file,
-  #You need to provide an array [quote, separator]
-  def create_csv_array(csv_quote_sep)
+  def create_csv_array(quote,separator)
     cache_path = self.cache_full_path
-    file     = File.open(cache_path)
-    contents = file.read
-    array_of_array = CSV.parse(contents, :quote_char => csv_quote_sep[0], :col_sep => csv_quote_sep[1], :row_sep =>:auto) 
+    file       = File.read(cache_path)
+    array_of_array = CSV.parse(file, :quote_char => quote, :col_sep => separator, :row_sep =>:auto) 
     return array_of_array
   end
   

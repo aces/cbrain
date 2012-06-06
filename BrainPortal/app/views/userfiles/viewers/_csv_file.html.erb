@@ -23,12 +23,13 @@
 -%>
 
 <% if @userfile.is_locally_synced? %>
-  <% csv_quote_sep = @userfile.guess_csv_quote_sep %>
-  <% if csv_quote_sep %>
-    <% csv_array     = @userfile.create_csv_array(csv_quote_sep) %>
+  <% quote,separator = @userfile.guess_csv_quote_sep %>
+  <% if quote && separator %>
+    <% csv_array     = @userfile.create_csv_array(quote,separator) %>
     <% nb_col = csv_array[0].size %>
     
-    <%= array_to_table(csv_array.flatten , :table_class => 'task_table', :cols => nb_col) %>
+    <%= array_to_table(csv_array.flatten , :cols => nb_col) %>
+
   <% else %>
     Can't identified CSV quote character and separator character. 
   <%end%>

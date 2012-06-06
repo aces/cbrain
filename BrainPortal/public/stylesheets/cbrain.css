@@ -1556,30 +1556,6 @@ img {
     width: 100%;
 }
 
-.taskstable th {
-    border: 0px;
-    background-color: #05A3D6;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    padding: 2px;
-}
-
-.taskstable td {
-    border: 0px;
-    text-align: left;
-    text-indent: 5px;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;
-    padding: 2px;
-}
-
 .batch_job_header {
     background-color: #C9E6F6;
 }
