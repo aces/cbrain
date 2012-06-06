@@ -22,6 +22,8 @@
 #
 -%>
 
+<% title 'Exception Info' %>
+
 <div class="index_block">
   
   <%= form_tag(url_for(:action => :destroy), :method => :delete) do %>
@@ -33,13 +35,14 @@
     <span class="exception_header"><%= @exception_log.exception_class %>: </span><span class="exception_message"><%= @exception_log.message %></span>
     <div class="exception_spaced exception_message">in <strong><%= @exception_log.request_controller %>/<%= @exception_log.request_action %></strong></div>
   </div>
+
   <%= show_table(@exception_log, :width => 1, :header => "Request") do |t| %>
-    <% t.cell("URL") { @exception_log.request[:url] } %>
-    <% t.cell("Method") { @exception_log.request_method } %>
-    <% t.cell("Parameters") { @exception_log.request[:parameters] } %>
-    <% t.cell("Format") {  @exception_log.request[:format] } %>
-    <% t.cell("User") {@exception_log.user.try(:login) || "(Not signed in)"} %>
-    <% t.cell("Received by instance") {@exception_log.instance_name} %>
+    <% t.cell("URL")                  { @exception_log.request[:url] } %>
+    <% t.cell("Method")               { @exception_log.request_method } %>
+    <% t.cell("Parameters", :td_options => { :class => "wrap" }) { @exception_log.request[:parameters] } %>
+    <% t.cell("Format")               { @exception_log.request[:format] } %>
+    <% t.cell("User")                 { @exception_log.user.try(:login) || "(Not signed in)" } %>
+    <% t.cell("Received by instance") { @exception_log.instance_name } %>
   <% end %>
   
   <fieldset>
@@ -48,15 +51,16 @@
       <pre><%= @exception_log.backtrace.join("\n") %></pre>
     </div>
   </fieldset>
+
   <%= show_table(@exception_log, :width => 2, :header => "Session") do |t| %>
     <% @exception_log.session.keys.sort.each do |k| %>
-      <% t.cell(k) {@exception_log.session[k]} %>
+      <% t.cell(k, :td_options => { :class => "wrap" }) { @exception_log.session[k] } %>
     <% end %>
   <% end %>
   
   <%= show_table(@exception_log, :width => 2, :header => "Headers") do |t| %>
     <% @exception_log.request_headers.keys.sort.each do |k| %>
-      <% t.cell(k) {@exception_log.request_headers[k]} %>
+      <% t.cell(k, :td_options => { :class => "wrap" }) { @exception_log.request_headers[k] } %>
     <% end %>
   <% end %>
   

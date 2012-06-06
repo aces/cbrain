@@ -44,18 +44,18 @@ class WorkGroup < Group
     end
 
     # A list of the first username of the workgroups with a single user
-    wg_names_cache = Proc.new { 
+    wg_names_cache = Proc.new do
       @_wg_names ||= WorkGroup.joins(:users).where(
                      'groups.id' => by_one_or_many[:one].map(&:id)).select(
                      [ 'groups.id', 'users.full_name', 'users.login' ]).all.index_by &:id # first user of each group
-    }
+    end
 
     # Process workgroups with a single user
-    wgs.select { |wg| wg_ucnt[wg.id] == 1 }.each do |wg|
-      if as_user.present? && (wg.creator_id == as_user.id || wg_names_cache.call[wg.id].login == as_user.login)
+    by_one_or_many[:one].each do |wg|
+      if as_user.present? && (wg.creator_id == as_user.id || wg_names_cache.call[wg.id].try(:login) == as_user.login)
         wg.instance_eval { @_pretty_category_name = "My Work Project" }
       else
-        wg.instance_eval { @_pretty_category_name = "Personal Work Project of #{wg_names_cache.call[wg.id].full_name}" }
+        wg.instance_eval { @_pretty_category_name = "Personal Work Project of #{wg_names_cache.call[wg.id].try(:full_name) || '(Someone)'}" }
       end
     end
 
@@ -71,7 +71,7 @@ class WorkGroup < Group
     elsif as_user.present? && (self.creator_id == as_user.id || self.users.first.id == as_user.id)
       @_pretty_category_name = 'My Work Project'
     else
-      @_pretty_category_name = "Personal Work Project of #{self.users.first.login}"
+      @_pretty_category_name = "Personal Work Project of #{self.users.first.full_name}"
     end
     @_pretty_category_name
   end

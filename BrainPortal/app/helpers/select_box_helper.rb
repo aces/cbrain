@@ -80,34 +80,51 @@ module SelectBoxHelper
       selected = selector.to_s
     end
     
+    # Optimize the labels for UserGroups and SiteGroups, by extracting in a hash
     group_labels = {}
-    WorkGroup.prepare_pretty_category_names(groups, current_user)
     group_labels.merge!(UserGroup.prepare_pretty_labels(groups))
     group_labels.merge!(SiteGroup.prepare_pretty_labels(groups))
-    grouped_by_classes = groups.group_by { |gr| gr.pretty_category_name(current_user) }
 
-    category_grouped = {}
-    grouped_by_classes.each do |entry|
+    # Optimize the category names for WorkGroup (the names will be cached in each group object)
+    WorkGroup.prepare_pretty_category_names(groups, current_user)
+
+    # Split all groups into sublists by category name
+    grouped_by_categories = groups.group_by { |gr| gr.pretty_category_name(current_user) }
+
+    # Prepare the categories, each getting a list of pairs [ [label, gid], [label, gid] ]
+    category_grouped_pairs = {}
+    grouped_by_categories.each do |entry|
       group_category_name = entry.first.sub(/Project/,"Projects")
       group_pairs         = entry.last.sort_by(&:name).map do |group|
         label = group_labels[group.id] || group.name
         [label, group.id.to_s]
       end
-      category_grouped[group_category_name] = group_pairs
+      category_grouped_pairs[group_category_name] = group_pairs
     end
 
+    # Order the categories and their list of pairs... (4 steps)
     ordered_category_grouped = []
-    category_grouped.keys.each do |proj|
-       next unless proj =~ /Personal Work Projects of/
-       ordered_category_grouped << [ proj, category_grouped.delete(proj) ]
-    end
-    [ "My Work Projects", "Shared Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects" ].each do |proj|
-       ordered_category_grouped << [ proj, category_grouped.delete(proj) ] if category_grouped[proj]
-    end
-    category_grouped.keys.each do |proj| # handle what remains ?
-       ordered_category_grouped << [ "X-#{proj}" , category_grouped.delete(proj) ]
+
+    # Step 1: My Work Projects first
+    ordered_category_grouped << [ "My Work Projects", category_grouped_pairs.delete("My Work Projects") ] if category_grouped_pairs["My Work Projects"]
+
+    # Step 2: All personal work projects first
+    category_grouped_pairs.keys.each do |proj|
+       next unless proj =~ /Personal Work Projects/i
+       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ]
     end
 
+    # Step 3: Other project categories, in that order
+    [ "Shared Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects" ].each do |proj|
+       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+    end
+
+    # Step 4: Other mysterious categories ?!?
+    category_grouped_pairs.keys.each do |proj|
+       ordered_category_grouped << [ "X-#{proj}" , category_grouped_pairs.delete(proj) ]
+    end
+
+    # Final HTML rendering of the options for select
     grouped_options = grouped_options_for_select ordered_category_grouped, selected || current_user.own_group.id.to_s
 
     blank_label = select_tag_options.delete(:include_blank)
