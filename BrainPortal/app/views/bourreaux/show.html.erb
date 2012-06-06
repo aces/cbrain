@@ -34,9 +34,9 @@
   <div class="menu_bar">
     <% if is_bourreau %>    
 
-      <%= link_to 'Task Statistics By Status', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :commit => "Generate" }, :class => "button" %>
+      <%= link_to 'Task Statistics By Status', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :generate => "ok" }, :class => "button" %>
 
-      <%= link_to 'Task Statistics By Type', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :commit => "Generate" }, :class => "button" %>
+      <%= link_to 'Task Statistics By Type', {:controller => :portal, :action => :report, :table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :generate => "ok" }, :class => "button" %>
     
     <%end%>
     
