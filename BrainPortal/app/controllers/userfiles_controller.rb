@@ -297,7 +297,6 @@ class UserfilesController < ApplicationController
     @user_tags      = current_user.available_tags
     @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
     @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
-    render :partial => "new"
   end
 
   # Triggers the mass synchronization of several userfiles
