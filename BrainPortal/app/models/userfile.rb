@@ -240,9 +240,7 @@ class Userfile < ActiveRecord::Base
   # Classes this type of file can be converted to.
   # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
   def self.valid_file_classes
-    return @valid_file_classes if @valid_file_classes
-
-    @valid_file_classes = [Userfile] + Userfile.descendants
+    @valid_file_classes ||= [self] + self.descendants
   end
   
   # Valid classes for conversion as strings 
@@ -276,6 +274,12 @@ class Userfile < ActiveRecord::Base
   
   def suggested_file_type
     @suggested_file_type ||= self.valid_file_classes.find{|ft| self.name =~ ft.file_name_pattern}
+  end
+
+  # Suggest a subtype of the current class based on
+  # the filename +name+ .
+  def self.suggested_file_type(name)
+    self.valid_file_classes.find {|ft| name =~ ft.file_name_pattern }
   end
   
   #Updates the class (type attribute) of this file if +type+ is 

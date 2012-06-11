@@ -364,10 +364,6 @@ class UserfilesController < ApplicationController
     flash[:notice]    ||= ""
     params[:userfile] ||= {}
     
-    file_type_name      = params[:file_type].presence || 'SingleFile'
-    file_type           = file_type_name.constantize rescue SingleFile
-    file_type           = SingleFile unless file_type < Userfile
-
     redirect_path = params[:redirect_to] || {:action  => :index}
 
     # Get the upload stream object
@@ -380,6 +376,11 @@ class UserfilesController < ApplicationController
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
     basename               = File.basename(upload_stream.original_filename)
+
+    # Identify the file type
+    file_type   = params[:file_type].presence.try(:constantize) rescue nil
+    file_type ||= Userfile.suggested_file_type(basename) || 'SingleFile'
+    file_type   = SingleFile unless file_type < Userfile
 
     # Temp file where the data is saved by rack
     rack_tempfile_path = upload_stream.tempfile.path
