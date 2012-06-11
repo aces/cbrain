@@ -205,6 +205,7 @@ class Bourreau < RemoteResource
     # host, add the "-R host -H http_port -D db_port" special options to the command
     proxy_args = ""
     if ! self.proxied_host.blank?
+      port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
       proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
     end
   

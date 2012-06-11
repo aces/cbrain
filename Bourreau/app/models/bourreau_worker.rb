@@ -292,8 +292,8 @@ class BourreauWorker < Worker
           clusterstatus = task.send :cluster_status  # this is normally a protected method
           if clusterstatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
             task.addlog_context(self,"Woh there Nelly! While attempting recovery from #{fromwhat} failure we found a cluster task still running! Resetting to #{clusterstatus}")
-            task.save
             task.status_transition!(task.status,clusterstatus) # try to update; ignore errors.
+            task.save
             return
           end
         end

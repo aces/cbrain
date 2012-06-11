@@ -191,6 +191,7 @@
 <% if current_user.has_role?(:admin_user) %>
   <fieldset>
     <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
+    <% log_defaults = { :hide_rendered => '1' } %>
     <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>
       <div class="log_refresh">
       <%= submit_tag "Refresh", :class => "button" %>
@@ -207,6 +208,11 @@
         By controller:    <%= select_tag :log_ctrl, options_for_select(
            [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'session', 'sites', 'tags', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]) %>
       <br>
+      <%
+         # For the moment, since the FORM itself is not regenerated between log requests, this will work.
+         # All the tests for params == "1" below are meant to be one day used if the form HTML is updated.
+         params.reverse_merge! log_defaults # won't work if params key is unset, as it will reset it to log_defaults
+      %>
       <strong>Hide lines:</strong>
           'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
         | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
@@ -224,6 +230,7 @@
       </div>
     <% end %>
     <br>
-    <%= ajax_element("/portal_log", :id => "portal_log", :scroll_bottom => true) %>
+    <% log_url = url_for(params.slice(*log_defaults.keys).merge(:action => :portal_log)) %>
+    <%= ajax_element(log_url, :id => "portal_log", :scroll_bottom => true) %>
   </fieldset>
 <% end %>
