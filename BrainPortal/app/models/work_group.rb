@@ -34,9 +34,24 @@ class WorkGroup < Group
     wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) && !g.invisible? }
     wg_ids  = wgs.map &:id
 
-    wg_ucnt = WorkGroup.joins(:users).where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
-    by_one_or_many = wgs.hashed_partition { |wg| wg_ucnt[wg.id] == 1 ? :one : :many }
-    by_one_or_many.reverse_merge!( { :one => [], :many => [] } )
+    wg_ucnt = WorkGroup.joins("LEFT JOIN groups_users ON groups_users.group_id=groups.id LEFT JOIN users ON users.id=groups_users.user_id").where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
+    by_one_or_many = wgs.hashed_partition do |wg| 
+      ucnt = wg_ucnt[wg.id]
+      case ucnt
+      when 0
+        :none
+      when 1
+        :one
+      else
+        :many
+      end
+    end
+    by_one_or_many.reverse_merge!( { :one => [], :many => [], :none => [] } )
+
+    # Process workgroups with no users
+    by_one_or_many[:none].each do |wg|
+      wg.instance_eval { @_pretty_category_name = 'Empty Work Project' }
+    end
 
     # Process workgroups with more than 1 user
     by_one_or_many[:many].each do |wg|
@@ -66,7 +81,9 @@ class WorkGroup < Group
     return @_pretty_category_name if @_pretty_category_name
     if self.invisible?
       @_pretty_category_name = 'Invisible Project'
-    elsif self.users.count != 1
+    elsif self.users.count == 0
+      @_pretty_category_name = 'Empty Work Project'
+    elsif self.users.count > 1
       @_pretty_category_name = 'Shared Work Project'
     elsif as_user.present? && (self.creator_id == as_user.id || self.users.first.id == as_user.id)
       @_pretty_category_name = 'My Work Project'

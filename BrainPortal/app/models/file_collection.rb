@@ -35,6 +35,10 @@ class FileCollection < Userfile
   has_viewer  :partial => 'file_collection', :if => :is_locally_synced?
   has_content :collection_file
 
+  def self.valid_file_classes #:nodoc:
+    @valid_file_classes ||= [FileCollection] + FileCollection.descendants
+  end
+
   # Extract a collection from an archive.
   # The user_id, provider_id and name attributes must already be
   # set at this point.
