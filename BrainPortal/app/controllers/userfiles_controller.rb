@@ -379,7 +379,7 @@ class UserfilesController < ApplicationController
 
     # Identify the file type
     file_type   = params[:file_type].presence.try(:constantize) rescue nil
-    file_type ||= Userfile.suggested_file_type(basename) || 'SingleFile'
+    file_type ||= Userfile.suggested_file_type(basename) || SingleFile
     file_type   = SingleFile unless file_type < Userfile
 
     # Temp file where the data is saved by rack
