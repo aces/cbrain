@@ -240,7 +240,7 @@ class Userfile < ActiveRecord::Base
   # Classes this type of file can be converted to.
   # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
   def self.valid_file_classes
-    @valid_file_classes ||= [self] + self.descendants
+    @valid_file_classes ||= Userfile.descendants
   end
   
   # Valid classes for conversion as strings 

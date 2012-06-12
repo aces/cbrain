@@ -29,6 +29,10 @@ class SingleFile < Userfile
   
   validates :type, :subclass => { :root_class => SingleFile }
   
+  def self.valid_file_classes #:nodoc:
+    @valid_file_classes ||= [SingleFile] + SingleFile.descendants
+  end
+  
   # Forces calculation and setting of the size attribute.
   def set_size!
     self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
