@@ -157,7 +157,7 @@ module IndexTableHelper
       # done manually. See TableBuilder#sort_column or 
       # TableBuilder#describe_sort_column)
       def sort_header(text, klass, attribute, options = {})
-        @header_text = @template.instance_eval { ajax_sort_link text, klass, attribute }
+        @header_text = @template.instance_eval { table_header_sort_link text, klass, attribute }
         @header_options = options
       end
 
@@ -352,15 +352,29 @@ module IndexTableHelper
   #Sort links meant specifically for sorting tables.
   #Controller and action for the request can be defined in the options hash, or
   #they default to the current page.
-  def ajax_sort_link(name, sort_table, sort_column, options = {})
+  def table_header_sort_link(name, sort_table, sort_column, options = {})
     sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
-    controller = options.delete(:controller) || params[:controller]
-    action = options.delete(:action) || params[:actions]
-    url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => set_dir(sort_order, @filter_params["sort_hash"])}} }
-    link_options = options.reverse_merge(:datatype  => 'script')
     text = "<span class=\"sort_header\">" + h(name) + "</span>"
     header = text.html_safe + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
-    ajax_link( header, url, link_options )
+    sort_link(header, sort_table, sort_column, options)
+  end
+  
+  def sort_link(name, sort_table, sort_column, options = {})
+    sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
+    sort_dir = options.delete(:dir) || set_dir(sort_order, @filter_params["sort_hash"])
+    controller = options.delete(:controller) || params[:controller]
+    action = options.delete(:action) || params[:actions]
+    ajax_request = true
+    if options.has_key?(:ajax) && !options.delete(:ajax)
+      ajax_request = false
+    end  
+    url_params = options.delete(:url_params) || {}
+    url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => sort_dir}} }.merge(url_params)
+    if ajax_request
+      ajax_link(name, url, options.reverse_merge(:datatype  => 'script'))
+    else
+      link_to(name, url, options)
+    end
   end
 
   #Alternate toggle for session attributes that switch between values 'on' and 'off'.

@@ -25,7 +25,7 @@
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
     <% unless @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
-       <%= ajax_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
+       <%= table_header_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
        <br>
      <% end %>
      Number of tasks per page:
