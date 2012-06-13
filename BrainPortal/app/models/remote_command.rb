@@ -75,6 +75,8 @@ class RemoteCommand < RestrictedHash
     # -------- GET TASK OUTPUTS PARAMETERS --------
     # Uses :task_ids with a single ID expected in it
     :run_number,      # supplied by queryier
+    :stdout_lim,      # number of lines to return
+    :stderr_lim,      # number of lines to return
     :cluster_stdout,  # filled by receiver
     :cluster_stderr,  # filled by receiver
     :script_text,     # filled by receiver

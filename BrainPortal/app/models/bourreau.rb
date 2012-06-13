@@ -289,11 +289,13 @@ class Bourreau < RemoteResource
 
   # Utility method to send a +get_task_outputs+ command to a
   # Bourreau RemoteResource, whether local or not.
-  def send_command_get_task_outputs(task_id,run_number=nil)
+  def send_command_get_task_outputs(task_id,run_number=nil,stdout_lim=nil,stderr_lim=nil)
     command = RemoteCommand.new(
       :command     => 'get_task_outputs',
       :task_ids    => task_id.to_s,
-      :run_number  => run_number
+      :run_number  => run_number,
+      :stdout_lim  => stdout_lim,
+      :stderr_lim  => stderr_lim,
     )
     send_command(command) # will return a command object with stdout and stderr
   end
@@ -489,7 +491,9 @@ class Bourreau < RemoteResource
     task_id    = command.task_ids.to_i # expects only one
     task = CbrainTask.find(task_id)
     run_number = command.run_number || task.run_number
-    task.capture_job_out_err(run_number)
+    stdout_lim = command.stdout_lim
+    stderr_lim = command.stderr_lim 
+    task.capture_job_out_err(run_number,stdout_lim,stderr_lim)
     command.cluster_stdout = task.cluster_stdout
     command.cluster_stderr = task.cluster_stderr
     command.script_text    = task.script_text
