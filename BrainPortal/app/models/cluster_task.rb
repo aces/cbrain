@@ -877,21 +877,30 @@ class ClusterTask < CbrainTask
   # otherise it's too expensive to do it every time. The
   # pseudo attributes :cluster_stdout and :cluster_stderr
   # are not really part of the task's ActiveRecord model.
-  def capture_job_out_err(run_number=nil)
+  def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
      self.cluster_stdout = nil
      self.cluster_stderr = nil
      self.script_text    = nil
+     
+     stdout_lim        ||= 2000
+     stdout_lim          = stdout_lim.to_i
+     stdout_lim          = 2000 if stdout_lim <= 100 || stdout_lim > 999999
+
+     stderr_lim        ||= 2000
+     stderr_lim          = stderr_lim.to_i
+     stderr_lim          = 2000 if stderr_lim <= 100 || stderr_lim > 999999
+     
      return if self.new_record? || self.workdir_archived?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
-        io = IO.popen("tail -2000 #{stdoutfile}","r")
+       io = IO.popen("tail -#{stdout_lim} #{stdoutfile}","r")
         self.cluster_stdout = io.read
         io.close
      end
      if stderrfile && File.exist?(stderrfile)
-        io = IO.popen("tail -2000 #{stderrfile}","r")
+       io = IO.popen("tail -#{stderr_lim} #{stderrfile}","r")
         self.cluster_stderr = io.read
         io.close
      end

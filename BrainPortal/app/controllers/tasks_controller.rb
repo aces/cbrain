@@ -158,10 +158,16 @@ class TasksController < ApplicationController
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
+    @stdout_lim        = params[:stdout_lim].to_i
+    @stdout_lim        = 2000 if @stdout_lim <= 100 || @stdout_lim > 999999
+
+    @stderr_lim        = params[:stderr_lim].to_i
+    @stderr_lim        = 2000 if @stderr_lim <= 100 || @stderr_lim > 999999
+
     if ((request.format.to_sym != :xml) || params[:get_task_outputs]) && ! @task.workdir_archived?
       begin
-        bourreau           = @task.bourreau
-        control            = bourreau.send_command_get_task_outputs(task_id,@run_number)
+        bourreau             = @task.bourreau
+        control              = bourreau.send_command_get_task_outputs(task_id,@run_number,@stdout_lim,@stderr_lim)
         @task.cluster_stdout = control.cluster_stdout
         @task.cluster_stderr = control.cluster_stderr
         @task.script_text    = control.script_text
