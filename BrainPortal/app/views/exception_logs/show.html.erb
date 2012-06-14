@@ -37,6 +37,7 @@
   </div>
 
   <%= show_table(@exception_log, :width => 1, :header => "Request") do |t| %>
+    <% t.cell("Raised at")            { to_localtime(@exception_log.created_at,:datetime) } %>
     <% t.cell("URL")                  { @exception_log.request[:url] } %>
     <% t.cell("Method")               { @exception_log.request_method } %>
     <% t.cell("Parameters", :td_options => { :class => "wrap" }) { @exception_log.request[:parameters] } %>
