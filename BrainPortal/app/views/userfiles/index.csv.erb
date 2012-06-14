@@ -1,4 +1,3 @@
-
 <%-
 #
 # CBRAIN Project
@@ -21,9 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 -%>
-
-<% delimeter = params[:delimeter] || "," -%>
+<% delimeter    = params[:delimeter] || "," -%>
+<% quote_marker = params[:quote] || "\"" -%>
 <% @userfiles.each do |u| -%>
-<%= ([u.name] + u.tags.map(&:name)).join(delimeter) %>
+<%= [u.name, u.type, u.data_provider.try(:name), u.user.try(:login), u.group.try(:name), quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker ].join(delimeter).html_safe %>
 <% end -%>
-

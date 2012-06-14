@@ -25,8 +25,21 @@
 <% if @userfile.is_locally_synced? %>
   <% quote,separator = @userfile.guess_csv_quote_sep %>
   <% if quote && separator %>
-    <% csv_array     = @userfile.create_csv_array(quote,separator) %>
-    <% nb_col = csv_array[0].size %>
+    <% 
+      csv_array     = @userfile.create_csv_array(quote,separator)
+      nb_col = csv_array[0].size
+      page = (params[:page] || 1).to_i
+      page = 1 if page < 1
+      per_page = 50
+      csv_array = csv_array.paginate(page: page, per_page: per_page)
+    %>
+     
+    <div class="no_ajax_pagination">
+      <span class="page_links">
+        <%= will_paginate csv_array, :container => false %>
+        (<%= pluralize csv_array.total_entries, "rows" %>)
+      </span>
+    </div>
     
     <%= array_to_table(csv_array.flatten , :cols => nb_col) %>
 
