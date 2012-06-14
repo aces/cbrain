@@ -586,7 +586,6 @@ class RemoteResource < ActiveRecord::Base
   def info
     return self.class.remote_resource_info if self.id == CBRAIN::SelfRemoteResourceId # no caching for local
     return @info if @info # caching within Rails action
-    last_meta_cached = self.meta[:info_cache_last_update] || 1.year.ago
     @info = self.info_cached? # caching between Rails actions, in meta data store
     return @info if @info
     running = self.is_alive? # this updates @info as a side-effect
