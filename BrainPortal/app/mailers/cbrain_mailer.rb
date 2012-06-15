@@ -56,7 +56,7 @@ class CbrainMailer < ActionMailer::Base
 
     @subject = content[:subject] || "No subject"
     @cb_body = content[:body]    || ""  # NOTE: @body is used by Rails!
-    @cb_body.gsub!(/\s+\(\[\[.*?\]\]\)/, "")
+    @cb_body.gsub!(/\s+\(?\[\[.*?\]\]\)?/, "")
     
     return true if @users.blank? || @users.empty?
 
