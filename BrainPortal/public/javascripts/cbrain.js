@@ -33,8 +33,6 @@ function modify_target(data, target, options){
       var width = parseInt(options["width"], 10); // || 800);
       var height = parseInt(options["height"], 10); // || 500);
       jQuery("<div class='overlay_content'></div>").html(new_content).appendTo(jQuery("body")).dialog({
-       	show: "puff",
-       	modal: true,
         position: 'center',
        	width: width,
        	height: height,
@@ -414,9 +412,7 @@ function load_behaviour(event){
       var content_height = parseInt(dialog_link.attr('data-height'), 10);
     
       dialog.dialog({ autoOpen: false,
-          modal: true,
           position: "center",
-          resizable: false,
           width: content_width,
           height: content_height
       });
