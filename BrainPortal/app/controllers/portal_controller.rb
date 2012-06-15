@@ -81,7 +81,7 @@ class PortalController < ApplicationController
     num_lines = 20_000 if num_lines > 20_000
 
     # Filters
-    user_name = params[:log_user_id].presence && User.find_by_id(params[:log_user_id]).try(:login)
+    user_name = params[:user_login].presence
     inst_name = params[:log_inst].to_s.presence
     meth_name = params[:log_meth].to_s.presence
     ctrl_name = params[:log_ctrl].to_s.presence
@@ -123,6 +123,8 @@ class PortalController < ApplicationController
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
+     @user_counts = Hash.new(0) # For select box.
+
     # Filter by username, instance name, method, controller or min milliseconds
     if user_name || inst_name || meth_name || ctrl_name || ms_min
       filtlogs   = []
@@ -132,6 +134,7 @@ class PortalController < ApplicationController
       found_meth = nil
       found_ctrl = nil
       found_ms   = 0
+    
       (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
         paragraph << line
         if line == ""
@@ -143,6 +146,7 @@ class PortalController < ApplicationController
           paragraph = []
         elsif line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
+          @user_counts[found_user] += 1
           if line =~ /on instance (\S+)/
             found_inst = Regexp.last_match[1]
           end
@@ -153,19 +157,28 @@ class PortalController < ApplicationController
         end
       end
       log = filtlogs.join("\n")
+    else
+      log.split("\n",num_lines+10).each do |line|
+        if line =~ /^User: (\S+)/
+          found_user = Regexp.last_match[1]
+          @user_counts[found_user] += 1
+        end
+      end
     end
 
-    if log.blank?
-      render :text => <<-NO_SHOW
-        <pre><span style=\"color:yellow; font-weight:bold\">
+    if log.present?
+      log = colorize_logs(log)
+    else
+      log = <<-NO_SHOW
+        <span style=\"color:yellow; font-weight:bold\">
           (No logs entries found using your filters within the last #{num_lines} lines of the #{Rails.env} log)
-        </span></pre>
+        </span>
       NO_SHOW
-      return
     end
 
+    @portal_log = "<div id=\"log_contents\" class=\"scroll_bottom\"><pre>#{log}</pre></div>".html_safe
     # Render the pretty log
-    render :text => "<pre>#{colorize_logs(log)}</pre>"
+    render :partial => "portal_log"
   end
   
   def show_license

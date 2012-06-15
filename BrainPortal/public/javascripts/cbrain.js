@@ -71,6 +71,10 @@ function load_behaviour(event){
    //
    /////////////////////////////////////////////////////////////////////
 
+   loaded_element.find(".scroll_bottom").each(function(){
+    $(this).scrollTop(this.scrollHeight); 
+   });
+
    //All elements with the accordion class will be changed to accordions.
    loaded_element.find(".accordion").accordion({
      active: false,
