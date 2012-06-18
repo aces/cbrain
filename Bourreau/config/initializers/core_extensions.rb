@@ -20,7 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#Dir.glob(Pathname.new(__FILE__).parent + "core_extensions" + '*.rb') do |extfile|
-#  require extfile
-#end
+# Needed to load files on the bourreau through the symbolic link
+# named "core_extensions".
+Dir.glob(Pathname.new(__FILE__).parent + "core_extensions" + '*.rb') do |extfile|
+  require extfile
+end
 

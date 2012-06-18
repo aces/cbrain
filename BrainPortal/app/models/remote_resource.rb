@@ -862,7 +862,7 @@ class RemoteResource < ActiveRecord::Base
   # RAILS root directory. Normally it's empty.
   def prepend_source_cbrain_bashrc(shell_command)
     cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
-    return "source #{cbrain_bashrc_path}; #{shell_command}"
+    return "source #{cbrain_bashrc_path.to_s.bash_escape}; #{shell_command}"
   end
 
 end
