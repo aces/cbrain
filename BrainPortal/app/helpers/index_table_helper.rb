@@ -199,7 +199,7 @@ module IndexTableHelper
         atts = @header_options.to_html_attributes
         html = [ "<th #{atts}>" ]
         unless filters.blank?
-          html << "<span style=\"color: white\">&bull;</span>&nbsp;"
+          html << "<span class=\"show_toggle\" data-target=\"#filters_list_#{self.object_id}\" style=\"color: white\">&bull;</span>&nbsp;"
         end
         html << @header_text
         unless filters.blank?
