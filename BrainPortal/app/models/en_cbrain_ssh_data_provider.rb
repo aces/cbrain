@@ -52,8 +52,8 @@ class EnCbrainSshDataProvider < SshDataProvider
     level1  = userdir                  + threelevels[0]
     level2  = level1                   + threelevels[1]
     level3  = level2                   + threelevels[2]
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c 'mkdir #{level1} #{level2} #{level3} >/dev/null 2>&1'\"")
+    mkdir_command = "mkdir #{level1.to_s.bash_escape} #{level2.to_s.bash_escape} #{level3.to_s.bash_escape} >/dev/null 2>&1"
+    remote_bash_this(mkdir_command)
     super(userfile)
   end
 
@@ -64,8 +64,8 @@ class EnCbrainSshDataProvider < SshDataProvider
     level1  = userdir                  + threelevels[0]
     level2  = level1                   + threelevels[1]
     level3  = level2                   + threelevels[2]
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c '( rm -rf #{level3} ; rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
+    erase_command = "( rm -rf #{level3.to_s.bash_escape} ; rmdir #{level2.to_s.bash_escape} #{level1.to_s.bash_escape} ) >/dev/null 2>&1"
+    remote_bash_this(erase_command)
     true
   end
 

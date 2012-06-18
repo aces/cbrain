@@ -222,15 +222,15 @@ class DataProvider < ActiveRecord::Base
   validates_inclusion_of  :read_only, :in => [true, false]
                                  
   validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
-    :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
+    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
     :allow_blank => true
 
   validates_format_of     :remote_host, :with => /^\w[\w\-\.]*$/,
-    :message  => 'only the following characters are valid: alphanumeric characters, _, -, and .',
+    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
     :allow_blank => true
 
   validates_format_of     :remote_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
     :allow_blank => true
 
   belongs_to  :user
@@ -496,16 +496,16 @@ class DataProvider < ActiveRecord::Base
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
     cb_error "Error: incompatible normal file '#{localpath}' given for a FileCollection." if
         userfile.is_a?(FileCollection) && File.file?(localpath)
-    dest = cache_full_path(userfile)
+    dest = cache_full_path(userfile).to_s
     cache_prepare(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
       needslash=""
       if File.directory?(localpath)
-        FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && ! File.directory?(dest.to_s)
-        Dir.mkdir(dest.to_s) unless File.directory?(dest.to_s)
+        FileUtils.remove_entry(dest, true) if File.exists?(dest) && ! File.directory?(dest)
+        Dir.mkdir(dest) unless File.directory?(dest)
         needslash="/"
       else
-        FileUtils.remove_entry(dest.to_s, true) if File.exists?(dest.to_s) && File.directory?(dest.to_s)
+        FileUtils.remove_entry(dest, true) if File.exists?(dest) && File.directory?(dest)
       end
       rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
       cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
@@ -528,15 +528,16 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     sync_to_cache(userfile)
-    source = cache_full_path(userfile)
-    return true if source.to_s == localpath.to_s
+    source    = cache_full_path(userfile).to_s
+    localpath = localpath.to_s
+    return true if source == localpath
     needslash=""
-    if File.directory?(source.to_s)
-      FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && ! File.directory?(localpath.to_s)
-      Dir.mkdir(localpath.to_s) unless File.directory?(localpath.to_s)
+    if File.directory?(source)
+      FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && ! File.directory?(localpath)
+      Dir.mkdir(localpath) unless File.directory?(localpath)
       needslash="/"
     else
-      FileUtils.remove_entry(localpath.to_s, true) if File.exists?(localpath.to_s) && File.directory?(localpath.to_s)
+      FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && File.directory?(localpath)
     end
     rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
     cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
@@ -1368,11 +1369,11 @@ class DataProvider < ActiveRecord::Base
   # a file called "abcd()" on a remote server and you want
   # to cat it:
   #
-  #   system("ssh remoteserver cat #{double_escape("abcd()")}
+  #   system("ssh remoteserver cat #{remote_shell_escape("abcd()")}
   #
   # will run locally
   #
-  #   ssh remote server cat ''\''abcd()'\'''
+  #   ssh remote server cat \''abcd()'\'
   #
   # which will run on the remoteserver
   #
@@ -1382,10 +1383,11 @@ class DataProvider < ActiveRecord::Base
     shell_escape(shell_escape(s))
   end
 
-  # This utility method runs a bash command, intercepts the output
-  # and returns it.
+  # This utility method runs a bash +command+ , captures the output
+  # and returns it. The user of this method is expected to have already
+  # properly escaped any special characters in the arguments to the
+  # command.
   def bash_this(command)
-    #puts_cyan "BASH: #{command}"
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close

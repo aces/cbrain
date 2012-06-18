@@ -47,8 +47,8 @@ class VaultSshDataProvider < SshDataProvider
   def impl_sync_to_provider(userfile) #:nodoc:
     username = userfile.user.login
     userdir = Pathname.new(remote_dir) + username
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c 'mkdir #{userdir} >/dev/null 2>&1'\"")
+    mkdir_command = "mkdir #{userdir.to_s.bash_escape} >/dev/null 2>&1"
+    remote_bash_this(mkdir_command)
     super(userfile)
   end
 

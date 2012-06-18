@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-Dir.glob(Pathname.new(__FILE__).parent + "core_extensions" + '*.rb') do |extfile|
-  require extfile
-end
+#Dir.glob(Pathname.new(__FILE__).parent + "core_extensions" + '*.rb') do |extfile|
+#  require extfile
+#end
 

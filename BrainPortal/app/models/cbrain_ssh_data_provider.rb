@@ -53,8 +53,8 @@ class CbrainSshDataProvider < SshDataProvider
     userdir = Pathname.new(remote_dir) + username
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c 'mkdir #{userdir} #{level1} #{level2} >/dev/null 2>&1'\"")
+    mkdir_command = "mkdir #{userdir.to_s.bash_escape} #{level1.to_s.bash_escape} #{level2.to_s.bash_escape} >/dev/null 2>&1"
+    remote_bash_this(mkdir_command)
     super(userfile)
   end
 
@@ -66,8 +66,8 @@ class CbrainSshDataProvider < SshDataProvider
     level1  = userdir                  + twolevels[0]
     level2  = level1                   + twolevels[1]
     full    = level2                   + basename
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c '( rm -rf #{full};rmdir #{level2} #{level1} ) >/dev/null 2>&1'\"")
+    erase_command = "( rm -rf #{full.to_s.bash_escape};rmdir #{level2.to_s.bash_escape} #{level1.to_s.bash_escape} ) >/dev/null 2>&1"
+    remote_bash_this(erase_command)
     true
   end
 
