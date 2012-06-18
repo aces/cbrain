@@ -23,7 +23,6 @@
 require 'stringio'
 require 'base64'
 require 'fileutils'
-require 'cbrain_exception'
 
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
@@ -467,7 +466,7 @@ class ClusterTask < CbrainTask
   def supplemental_cbrain_tool_config_init #:nodoc:
     "\n" +
     "# CBRAIN Bourreau-side initializations\n" +
-    "export PATH=\"#{Rails.root.to_s + "/vendor/cbrain/bin"}:$PATH\"\n"
+    "export PATH=#{(Rails.root.to_s + "/vendor/cbrain/bin").to_s.bash_escape}:\"$PATH\"\n"
   end
 
 

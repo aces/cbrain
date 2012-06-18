@@ -80,6 +80,26 @@ class RemoteResource < ActiveRecord::Base
   validate                :proper_dp_ignore_patterns
   validate                :dp_cache_path_valid
 
+  validates_format_of     :cms_shared_dir, :with => /^[\w\-\.\=\+\/]*$/,
+    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+    :allow_blank => true
+
+  validates_format_of     :dp_cache_dir, :with => /^[\w\-\.\=\+\/]*$/,
+    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+    :allow_blank => true
+
+  validates_format_of     :ssh_control_user, :with => /^\w[\w\-\.]*$/,
+    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+    :allow_blank => true
+
+  validates_format_of     :ssh_control_host, :with => /^\w[\w\-\.]*$/,
+    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+    :allow_blank => true
+
+  validates_format_of     :ssh_control_rails_dir, :with => /^[\w\-\.\=\+\/]*$/,
+    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+    :allow_blank => true
+
   belongs_to  :user
   belongs_to  :group
   has_many    :sync_status
