@@ -1,4 +1,4 @@
-<%-
+
 #
 # CBRAIN Project
 #
@@ -19,9 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
--%>
-<% delimeter    = params[:delimeter] || "," -%>
-<% quote_marker = params[:quote] || "\"" -%>
-<% @userfiles.each do |u| -%>
-<%= [u.name, u.type, u.data_provider.try(:name), u.user.try(:login), u.group.try(:name), quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker ].join(delimeter).html_safe %>
-<% end -%>
+
+class TsvFile < CSVFile
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
+  def self.pretty_type #:nodoc:
+    "TSV File"
+  end
+  
+  def self.file_name_pattern #:nodoc:
+    /\.(tsv|tab)$/i
+  end
+
+end

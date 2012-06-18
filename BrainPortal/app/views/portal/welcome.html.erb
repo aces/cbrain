@@ -189,48 +189,7 @@
   
   <% end %>
 <% if current_user.has_role?(:admin_user) %>
-  <fieldset>
-    <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
-    <% log_defaults = { :hide_rendered => '1' } %>
-    <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get, :scroll_bottom => true) do %>
-      <div class="log_refresh">
-      <%= submit_tag "Refresh", :class => "button" %>
-      </div>
-      <div class="log_filters">
-      Number of lines to show: <%= select_tag :num_lines, options_for_select([100, 500, 1000, 5000, 10_000, 20_000], :selected => 5000) %>
-      Minimum request time: <%= select_tag :ms_min, options_for_select([ '', 200, 500, 1000, 1500, 2000, 5000, 10000], params[:ms_min]) %> ms
-      <br>
-      <strong>Filter:</strong>
-        By user:          <%= user_select :log_user_id, params[:log_user_id], :include_blank => "(All users)" %>
-        By instance name: <%= text_field_tag :log_inst, params[:log_inst], :size => 8 %>
-        By method:        <%= select_tag :log_meth, options_for_select(
-           [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]) %>
-        By controller:    <%= select_tag :log_ctrl, options_for_select(
-           [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'session', 'sites', 'tags', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]) %>
-      <br>
-      <%
-         # For the moment, since the FORM itself is not regenerated between log requests, this will work.
-         # All the tests for params == "1" below are meant to be one day used if the form HTML is updated.
-         params.reverse_merge! log_defaults # won't work if params key is unset, as it will reset it to log_defaults
-      %>
-      <strong>Hide lines:</strong>
-          'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
-        | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
-        | 'Parameters': <%= check_box_tag :hide_parameters, "1", params[:hide_parameters] == "1" %>
-        | 'Rendered':   <%= check_box_tag :hide_rendered,   "1", params[:hide_rendered]   == "1" %>
-        | 'Redirected': <%= check_box_tag :hide_redirected, "1", params[:hide_redirected] == "1" %>
-        | 'User':       <%= check_box_tag :hide_user,       "1", params[:hide_user]       == "1" %>
-        | 'Completed':  <%= check_box_tag :hide_completed,  "1", params[:hide_completed]  == "1" %>
-      <% if Rails.env == 'development' %>
-        | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
-        | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
-        | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
-        | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
-      <% end %>
-      </div>
-    <% end %>
-    <br>
-    <% log_url = url_for(params.slice(*log_defaults.keys).merge(:action => :portal_log)) %>
-    <%= ajax_element(log_url, :id => "portal_log", :scroll_bottom => true) %>
-  </fieldset>
+  <% log_defaults = { :hide_rendered => '1' } %>
+  <% log_url = url_for(params.slice(*log_defaults.keys).merge(:action => :portal_log)) %>
+  <%= ajax_element(log_url, :id => "portal_log") %>
 <% end %>

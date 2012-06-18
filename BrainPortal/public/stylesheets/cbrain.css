@@ -600,7 +600,7 @@ a {
     line-height: 1.5em;
 }
 
-#portal_log {
+#log_contents {
   max-height: 40em;
   overflow: auto;
   background-color: black;
