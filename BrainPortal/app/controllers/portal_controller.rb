@@ -123,7 +123,7 @@ class PortalController < ApplicationController
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
-     @user_counts = Hash.new(0) # For select box.
+    @user_counts = Hash.new(0) # For select box.
 
     # Filter by username, instance name, method, controller or min milliseconds
     if user_name || inst_name || meth_name || ctrl_name || ms_min
@@ -176,7 +176,8 @@ class PortalController < ApplicationController
       NO_SHOW
     end
 
-    @portal_log = "<div id=\"log_contents\" class=\"scroll_bottom\"><pre>#{log}</pre></div>".html_safe
+    @portal_log = log.html_safe
+
     # Render the pretty log
     render :partial => "portal_log"
   end
