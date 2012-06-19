@@ -40,10 +40,9 @@ class SshDataProvider < DataProvider
   Revision_info=CbrainFileRevision[__FILE__]
 
   def impl_is_alive? #:nodoc:
-    ssh_opts = self.ssh_shared_options
-    return false unless @master.is_alive?
-    dir  = remote_shell_escape(self.remote_dir)
-    text = bash_this("ssh -x -n #{ssh_opts} test -d #{dir} '||' echo Fail-Dir 2>&1")
+    return false unless self.master.is_alive?
+    remote_cmd = "test -d #{self.remote_dir.bash_escape} || echo Fail-Dir 2>&1"
+    text = self.remote_bash_this(remote_cmd)
     return(text.blank? ? true : false)
   rescue
     false
@@ -93,20 +92,20 @@ class SshDataProvider < DataProvider
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
-    ssh_opts = self.ssh_shared_options
-    text = bash_this("ssh -x -n #{ssh_opts} \"test -e \"#{remote_shell_escape(remotefull)}\" && echo DestIsOk\"")
+    check_cmd = "test -e #{remotefull.to_s.bash_escape} && echo DestIsOk"
+    text = self.remote_bash_this(check_cmd)
     unless text =~ /DestIsOk/
       cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!\n"                               +
-               "Test for #{shell_escape(remotefull)} returned: '#{text}'"
+               "Test for #{remotefull.to_s.bash_escape} returned: '#{text}'"
     end
     true
   end
 
   def impl_provider_erase(userfile) #:nodoc:
     full     = provider_full_path(userfile)
-    ssh_opts = self.ssh_shared_options
-    bash_this("ssh -x -n #{ssh_opts} \"bash -c '/bin/rm -rf #{full} >/dev/null 2>&1'\"")
+    erase_cmd = "/bin/rm -rf #{full.to_s.bash_escape} >/dev/null 2>&1"
+    remote_bash_this(erase_cmd)
     true
   end
 
@@ -273,7 +272,7 @@ class SshDataProvider < DataProvider
   #   rsync -e 'ssh_options_here user_host'  :/remote/file  local/file
   def rsync_over_ssh_prefix
     ssh_opts = self.ssh_shared_options
-    ssh      = "ssh -x #{ssh_opts}"
+    ssh      = "ssh -q -x #{ssh_opts}"
     rsync    = "rsync -e #{shell_escape(ssh)}"
     rsync
   end
@@ -282,9 +281,24 @@ class SshDataProvider < DataProvider
   # command running in the background (which will be started if
   # necessary).
   def ssh_shared_options
+    self.master.ssh_shared_options("auto") # ControlMaster=auto
+  end
+
+  # Returns the SshMaster object handling the tunnel to the Provider side.
+  def master
     @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
-    @master.ssh_shared_options("auto") # ControlMaster=auto
+    @master
+  end
+
+  # Returns the stdout of 'command' as executed on the Provider side
+  # through the ssh tunnel. stdin is redirected from /dev/null.
+  def remote_bash_this(command)
+    text = ""
+    self.master.remote_shell_command_reader(command, :stdin => '/dev/null') do |fh|
+      text = fh.read
+    end
+    text
   end
 
 end

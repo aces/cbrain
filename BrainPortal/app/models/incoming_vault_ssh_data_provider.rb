@@ -49,9 +49,9 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
     rescue Net::SFTP::StatusException
       raise if tried_mkdir
       tried_mkdir = true
-      ssh_opts = self.ssh_shared_options
-      dir  = remote_shell_escape(self.browse_remote_dir(user))
-      bash_this("ssh -x -n #{ssh_opts} mkdir #{dir} >/dev/null 2>&1")
+      dir         = self.browse_remote_dir(user)
+      mkdir_command = "mkdir #{dir.to_s.bash_escape} >/dev/null 2>&1"
+      remote_bash_this(mkdir_command)
       retry
     end
   end

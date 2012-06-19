@@ -123,13 +123,13 @@ class Bourreau < RemoteResource
     # host, add the "-R host -H http_port -D db_port" special options to the command
     proxy_args = ""
     if ! self.proxied_host.blank?
-      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+      proxy_args = "-R #{self.proxied_host.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
   
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv} -p #{port} 2>&1'"
+    start_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
@@ -161,10 +161,10 @@ class Bourreau < RemoteResource
     proxy_args = ""
     if ! self.proxied_host.blank?
       port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
-      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+      proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 
-    stop_command = "ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} stop"
+    stop_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
     confirm=""
     self.read_from_remote_shell_command(stop_command) {|io| confirm = io.read}   
     self.stop_tunnels
@@ -206,16 +206,16 @@ class Bourreau < RemoteResource
     proxy_args = ""
     if ! self.proxied_host.blank?
       port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
-      proxy_args = "-R #{self.proxied_host} -H #{port} -D #{self.tunnel_mysql_port}"
+      proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
   
     # Copy the database.yml file
     # Note: the database.yml file will be removed automatically by the cbrain_remote_ctl script when it exits.
-    copy_command = "cat > #{self.ssh_control_rails_dir}/config/database.yml"
+    copy_command = "cat > #{self.ssh_control_rails_dir.to_s.bash_escape}/config/database.yml"
     self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
 
     # SSH command to start the console.
-    start_command = "bash -c 'ruby #{self.ssh_control_rails_dir}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv}'"
+    start_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
   end
 

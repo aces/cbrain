@@ -186,10 +186,10 @@
           <% end %>
         </table>
     </div>
-  
   <% end %>
+
 <% if current_user.has_role?(:admin_user) %>
-  <% log_defaults = { :hide_rendered => '1' } %>
-  <% log_url = url_for(params.slice(*log_defaults.keys).merge(:action => :portal_log)) %>
+  <% log_url = url_for(:action => :portal_log, :hide_rendered => "1") %>
   <%= ajax_element(log_url, :id => "portal_log") %>
 <% end %>
+

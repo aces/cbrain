@@ -116,14 +116,14 @@ class PortalController < ApplicationController
     #command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
 
     # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
-    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths.log.first}"
+    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths.log.first.to_s.bash_escape}"
     command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
     command += " | tail -#{num_lines}"
 
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
 
-     @user_counts = Hash.new(0) # For select box.
+    @user_counts = Hash.new(0) # For select box.
 
     # Filter by username, instance name, method, controller or min milliseconds
     if user_name || inst_name || meth_name || ctrl_name || ms_min
@@ -176,7 +176,8 @@ class PortalController < ApplicationController
       NO_SHOW
     end
 
-    @portal_log = "<div id=\"log_contents\" class=\"scroll_bottom\"><pre>#{log}</pre></div>".html_safe
+    @portal_log = log.html_safe
+
     # Render the pretty log
     render :partial => "portal_log"
   end

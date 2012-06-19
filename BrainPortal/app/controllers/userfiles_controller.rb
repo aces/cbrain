@@ -416,7 +416,7 @@ class UserfilesController < ApplicationController
 
       flash[:notice] += "File '#{basename}' being added in background."
 
-      system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
+      system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
       CBRAIN.spawn_with_active_records(current_user,"Upload of SingleFile") do
         begin
           userfile.cache_copy_from_local_file(tmpcontentfile)
@@ -471,7 +471,7 @@ class UserfilesController < ApplicationController
       
       if collection.save
 
-        system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
+        system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
         CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
             collection.extract_collection_from_archive_file(tmpcontentfile)
@@ -511,7 +511,7 @@ class UserfilesController < ApplicationController
     })
 
     # Do it in background.
-    system("cp '#{rack_tempfile_path}' '#{tmpcontentfile}'") # fast, hopefully; maybe 'mv' would work?
+    system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
         extract_from_archive(tmpcontentfile, file_type, attributes) # generates its own Messages
@@ -996,7 +996,7 @@ class UserfilesController < ApplicationController
     tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
     send_file tarfile, :stream  => true, :filename => "#{specified_filename}.tar.gz"
     CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
-      sleep 300
+      sleep 3000
       File.unlink(tarfile)
     end
   end
@@ -1103,7 +1103,7 @@ class UserfilesController < ApplicationController
               full_after = userfile.cache_full_path.to_s
               full_tmp   = "#{full_after}+#{$$}+#{Time.now.to_i}"
               command = (do_what == :compress) ? "gzip" : "gunzip"
-              system("#{command} -c < '#{full_after}' > '#{full_tmp}'")
+              system("#{command} -c < #{full_after.bash_escape} > #{full_tmp.bash_escape}")
               File.rename(full_tmp,full_after) # crush it
             end
             userfile.sync_to_provider
@@ -1170,7 +1170,7 @@ class UserfilesController < ApplicationController
   def extract_from_archive(archive_file_name, file_type = SingleFile, attributes = {}) #:nodoc:
 
     file_type = SingleFile unless file_type <= SingleFile
-    escaped_archivefile = archive_file_name.gsub("'", "'\\\\''") # bash escaping
+    escaped_archivefile = archive_file_name.to_s.bash_escape # bash escaping
 
     # Check for required attributes
     data_provider_id    = attributes["data_provider_id"] ||
@@ -1184,11 +1184,11 @@ class UserfilesController < ApplicationController
     # Create content list
     all_files        = []
     if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-      all_files = IO.popen("tar -tzf '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
+      all_files = IO.popen("tar -tzf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.tar$/i
-      all_files = IO.popen("tar -tf '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp) }
+      all_files = IO.popen("tar -tf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.zip/i
-      all_files = IO.popen("unzip -l '#{escaped_archivefile}'") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
+      all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
       cb_error "Cannot process file with unknown extension: #{archive_file_name}"
     end
@@ -1202,11 +1202,11 @@ class UserfilesController < ApplicationController
     Dir.mkdir(workdir)
     Dir.chdir(workdir) do
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-        system("tar -xzf '#{escaped_archivefile}'")
+        system("tar -xzf #{escaped_archivefile}")
       elsif archive_file_name =~ /\.tar$/i
-        system("tar -xf '#{escaped_archivefile}'")
+        system("tar -xf #{escaped_archivefile}")
       elsif archive_file_name =~ /\.zip/i
-        system("unzip '#{escaped_archivefile}'")
+        system("unzip #{escaped_archivefile}")
       else
         FileUtils.remove_dir(workdir, true)
         cb_error "Cannot process file with unknown extension: #{archive_file_name}"
@@ -1320,7 +1320,7 @@ class UserfilesController < ApplicationController
         fh.write "\n"
       end
 
-      system("tar -chf - -T #{filelistname} | gzip -c >#{tarfilename}")
+      system("tar -chf - -T #{filelistname.bash_escape} | gzip -c >#{tarfilename.to_s.bash_escape}")
 
     end # chdir tmpdir
 

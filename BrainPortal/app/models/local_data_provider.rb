@@ -65,8 +65,8 @@ class LocalDataProvider < DataProvider
   end
   
   # Redirects the call to cache_readhandle()
-  def provider_readhandle(userfile, *args) #:nodoc:
-    self.cache_readhandle(userfile, *args)
+  def provider_readhandle(userfile, *args, &block) #:nodoc:
+    self.cache_readhandle(userfile, *args, &block)
   end
 
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:

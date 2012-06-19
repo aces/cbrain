@@ -34,7 +34,7 @@ class ScirSharcnet < Scir
     def update_job_info_cache
       @job_info_cache = {}
       jid = 'Dummy'
-      IO.popen("sqjobs -u #{CBRAIN::Rails_UserName} 2>/dev/null;sqjobs -n","r") do |fh|
+      IO.popen("sqjobs -u #{CBRAIN::Rails_UserName.to_s.bash_escape} 2>/dev/null;sqjobs -n","r") do |fh|
         fh.readlines.each do |line|
 
   # jobid queue state ncpus prio  nodes time command

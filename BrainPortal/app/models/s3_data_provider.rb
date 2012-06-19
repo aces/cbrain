@@ -109,7 +109,7 @@ class S3DataProvider < DataProvider
         # Amazon does NOT provide chunked streaming.
         # This means that IO.popen and File.popen both fail
         # because they cannot provide a size for the content.
-        #src_fh = IO.popen("tar -czf - '#{userfile.name}'","r:BINARY")
+        #src_fh = IO.popen("tar -czf - #{userfile.name.bash_escape}","r:BINARY")
         # So, we have to make a local tarball instead. Hurgh.
         system("tar", "-czf", tmp_tar_file, userfile.name)
         src_fh = File.new(tmp_tar_file, "r:BINARY")

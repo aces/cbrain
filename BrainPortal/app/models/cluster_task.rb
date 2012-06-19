@@ -23,7 +23,6 @@
 require 'stringio'
 require 'base64'
 require 'fileutils'
-require 'cbrain_exception'
 
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
@@ -448,7 +447,7 @@ class ClusterTask < CbrainTask
     File.open(scriptfile,"w") { |fh| fh.write(script) }
 
     # Execute and capture
-    system("/bin/bash '#{scriptfile}' </dev/null >'#{outfile}' 2>'#{errfile}'")
+    system("/bin/bash #{scriptfile.bash_escape} </dev/null >#{outfile.bash_escape} 2>#{errfile.bash_escape}")
     out = File.read(outfile) rescue ""
     err = File.read(errfile) rescue ""
     return [ out, err ]
@@ -467,7 +466,7 @@ class ClusterTask < CbrainTask
   def supplemental_cbrain_tool_config_init #:nodoc:
     "\n" +
     "# CBRAIN Bourreau-side initializations\n" +
-    "export PATH=\"#{Rails.root.to_s + "/vendor/cbrain/bin"}:$PATH\"\n"
+    "export PATH=#{(Rails.root.to_s + "/vendor/cbrain/bin").to_s.bash_escape}:\"$PATH\"\n"
   end
 
 
@@ -895,12 +894,12 @@ class ClusterTask < CbrainTask
      stderrfile = self.stderr_cluster_filename(run_number)
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
-       io = IO.popen("tail -#{stdout_lim} #{stdoutfile}","r")
+       io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
         self.cluster_stdout = io.read
         io.close
      end
      if stderrfile && File.exist?(stderrfile)
-       io = IO.popen("tail -#{stderr_lim} #{stderrfile}","r")
+       io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
         self.cluster_stderr = io.read
         io.close
      end
@@ -1479,7 +1478,7 @@ class ClusterTask < CbrainTask
     full=self.full_cluster_workdir
     self.cluster_workdir_size = nil
     if ( ! full.blank? ) && Dir.exists?(full)
-      sizeline = IO.popen("du -s -k '#{full}'","r") { |fh| fh.readline rescue "" }
+      sizeline = IO.popen("du -s -k #{full.to_s.bash_escape}","r") { |fh| fh.readline rescue "" }
       if mat = sizeline.match(/^\s*(\d+)/) # in Ks
         self.update_attribute(:cluster_workdir_size, mat[1].to_i.kilobytes)
         self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")

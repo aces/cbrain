@@ -53,13 +53,13 @@ class FileCollection < Userfile
     end
     
     Dir.chdir(directory) do
-      escaped_tmparchivefile = archive_file_name.gsub("'", "'\\\\''")
+      escaped_tmparchivefile = archive_file_name.to_s.bash_escape
       if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
-        system("gunzip < '#{escaped_tmparchivefile}' | tar xf -")
+        system("gunzip < #{escaped_tmparchivefile} | tar xf -")
       elsif archive_file_name =~ /\.tar$/i
-        system("tar -xf '#{escaped_tmparchivefile}'")
+        system("tar -xf #{escaped_tmparchivefile}")
       elsif archive_file_name =~ /\.zip/i
-        system("unzip '#{escaped_tmparchivefile}'") 
+        system("unzip #{escaped_tmparchivefile}") 
       else
         cb_error "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
       end
@@ -139,8 +139,7 @@ class FileCollection < Userfile
   def list_first_level_dirs
     return @dir_list if @dir_list
     Dir.chdir(self.cache_full_path.parent) do
-      escaped_name = self.name.gsub("'", "'\\\\''")
-      IO.popen("find '#{escaped_name}' -type d -mindepth 1 -maxdepth 1 -print") do |fh|
+      IO.popen("find #{self.name.bash_escape} -type d -mindepth 1 -maxdepth 1 -print") do |fh|
         @dir_list = fh.readlines.map(&:chomp)
       end
       @dir_list.sort! { |a,b| a <=> b }

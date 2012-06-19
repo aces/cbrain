@@ -293,7 +293,7 @@ class SshMaster
     self.properly_registered?
     return true if self.read_pidfile
 
-    sshcmd = "ssh -n -N -x -M "
+    sshcmd = "ssh -q -n -N -x -M "
 
     if ! label.blank? && label.to_s =~ /^[\w\-\.\+]+$/
       sshcmd += "-o SendEnv=#{label.to_s} "
@@ -393,7 +393,7 @@ class SshMaster
     return false unless self.read_pidfile
     
     shared_options = self.ssh_shared_options
-    sshcmd = "ssh -x -n #{shared_options} " +
+    sshcmd = "ssh -q -x -n #{shared_options} " +
              "echo OK-#{Process.pid}"
 
     # Prepare a subprocess that will tell us
@@ -430,7 +430,7 @@ class SshMaster
       debugTrace("Master checking is_alive for #{@key} with alarm: #{alarm_pid}")
       okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
-      return true if okout =~ /OK-#{Process.pid}/ && ! @pid.blank?
+      return true if okout.index("OK-#{Process.pid}") && ! @pid.blank?
       return false
     rescue
       return false
@@ -527,9 +527,10 @@ class SshMaster
     stdout      = bash_redirection(options,1,">",:stdout)
     stderr      = bash_redirection(options,2,">",:stderr)
 
+    no_stdin       = options[:stdin] == '/dev/null'       ? "-n" : ""
     use_pseudo_tty = options[:force_pseudo_ttys].present? ? "-t" : ""
 
-    ssh_command  = "ssh -x #{use_pseudo_tty} #{shared_opts} #{command} #{stderr}"
+    ssh_command  = "ssh -q -x #{no_stdin} #{use_pseudo_tty} #{shared_opts} #{command} #{stderr}"
     ssh_command += " #{stdin}"  if direction == 'r' # with or without block
     ssh_command += " #{stdout}" if direction == 'w' # with or without block
 

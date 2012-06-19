@@ -54,14 +54,14 @@ class CSVFile < TextFile
     line_delim = ""
     IO.popen("file #{escape_cache_path}","r") do |fh| 
       if fh.gets.index("with CR line")
-        line_delim = "015" # octal for perl's -0 option
+        line_delim = "015" # octal for perl's -0 option : 015 is CR
       else
-        line_delim = "012" # octal for perl's -0 option
+        line_delim = "012" # octal for perl's -0 option : 012 is LF
       end
     end
 
     # Get first 10 lines of the CSV document.
-    csv_content  = line_delim.blank? ? "" : IO.popen("perl -0#{line_delim} -pe 'exit 0 if $. > 10' #{escape_cache_path}","r") { |fh| fh.read }
+    csv_content = IO.popen("perl -0#{line_delim} -pe 'exit 0 if $. > 10' #{escape_cache_path}","r") { |fh| fh.read }
 
     quote_char_list.each do |qc|
       col_sep_list.each  do |cs|
