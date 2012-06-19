@@ -33,25 +33,7 @@ class TasksController < ApplicationController
     bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     bourreau_ids = bourreaux.map &:id
     
-    # NOTE: 'scope' is no longer a scope, it's an ActiveRecord 3.0 'relation'
-    @header_scope = current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
-    @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
-    
-    @filtered_scope = base_filtered_scope(@header_scope)
-    
-    if @filter_params["filter_hash"]["bourreau_id"].blank?
-      @filtered_scope = @filtered_scope.where( :bourreau_id => bourreau_ids )
-    end
-    
-    # Handle custom filters
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = TaskCustomFilter.find(custom_filter_id)
-      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
-    end
-    
-    scope = @filtered_scope
+    scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
 
     if request.format.to_sym == :xml
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
@@ -131,20 +113,13 @@ class TasksController < ApplicationController
   end
   
   def batch_list #:nodoc:
-    scope = current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
-    scope = scope.where( :group_id => current_project.id ) if current_project
-    scope = base_sorted_scope base_filtered_scope(scope)
-    
-    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
-    if @filter_params["filter_hash"]["bourreau_id"].blank?
-      scope = scope.where( :bourreau_id => bourreaux.map(&:id) )
-    end
+    scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
 
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
         
     @tasks = scope                     
     @bourreau_status = {}
-    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online?}    
+    Bourreau.find_all_accessible_by_user(current_user).all.each { |bo| @bourreau_status[bo.id] = bo.online?}    
     
     render :layout => false
   end
@@ -566,9 +541,9 @@ class TasksController < ApplicationController
     batch_ids   = Array(params[:batch_ids] || [])
     
     if batch_ids.delete "nil"
-      task_ids += base_filtered_scope(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
+      task_ids += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
     end
-    task_ids   += base_filtered_scope(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
+    task_ids   += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
     task_ids    = task_ids.map(&:to_i).uniq
     
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
@@ -706,9 +681,9 @@ class TasksController < ApplicationController
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
     if batch_ids.delete "nil"
-      tasklist += base_filtered_scope(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
+      tasklist += filter_variable_setup(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
     end
-    tasklist += base_filtered_scope(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
+    tasklist += filter_variable_setup(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
 
     tasklist = tasklist.map(&:to_i).uniq
 
@@ -942,6 +917,27 @@ class TasksController < ApplicationController
 
   def resource_class #:nodoc:
     CbrainTask
+  end
+
+  def filter_variable_setup(starting_scope)
+    @header_scope = starting_scope
+    @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
+    
+    @filtered_scope = base_filtered_scope(@header_scope)
+    
+    if @filter_params["filter_hash"]["bourreau_id"].blank?
+      @filtered_scope = @filtered_scope.where( :bourreau_id => Bourreau.find_all_accessible_by_user(current_user).all.map(&:id) )
+    end
+    
+    # Handle custom filters
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
+    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter = TaskCustomFilter.find(custom_filter_id)
+      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
+    end
+    
+    @filtered_scope
   end
 
   # Warning: private context in effect here.
