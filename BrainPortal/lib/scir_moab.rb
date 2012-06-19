@@ -51,7 +51,7 @@ class ScirMoab < Scir
         # </job>
         jobid = 'Dummy'
         state = 'Running'
-        if jobxml =~ /\bJobID="(\w+)"/i
+        if jobxml =~ /\bJobID="(\S+?)"/i
            jobid = Regexp.last_match[1]
         end
         if jobxml =~ /\bState="(\S+?)"/i

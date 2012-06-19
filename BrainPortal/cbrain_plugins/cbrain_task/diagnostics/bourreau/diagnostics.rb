@@ -188,19 +188,19 @@ class CbrainTask::Diagnostics < ClusterTask
     file_ids.each do |id|
       u = Userfile.find(id) rescue nil
       next unless u
-      full   = u.cache_full_path
+      full   = u.cache_full_path.to_s
       mysize = u.size || 0.0
       mytype = u.class.to_s
       commands << "\n"
       commands << "echo \"============================================================\""
-      commands << "echo \"File=#{full}\""
+      commands << "echo File=\\\"#{full.bash_escape}\\\""
       commands << "echo \"Size=#{mysize}\""
       commands << "echo \"Type=#{mytype}\""
       commands << "echo \"Start=`date`\""
       if u.is_a?(SingleFile)
-        commands << "wc -c '#{full}' 2>&1"
+        commands << "wc -c #{full.bash_escape} 2>&1"
       else
-        commands << "du -s '#{full}' 2>&1"
+        commands << "du -s #{full.bash_escape} 2>&1"
       end
       commands << "echo \"End=`date`\""
     end
