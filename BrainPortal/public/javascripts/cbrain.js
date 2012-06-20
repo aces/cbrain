@@ -106,6 +106,18 @@ function load_behaviour(event){
    // See TabBar class
    loaded_element.find(".tabs").tabs();
    
+   
+   //Prevent forms where submit buttons decide behaviour
+   //from submitting on 'enter'.
+   loaded_element.find("form").each(function(){
+     var form = $(this);
+     if(form.find("input[type=submit]").length > 1){
+       form.keypress(function(event){
+         if(event.keyCode == 13) event.preventDefault();
+       });
+     }
+   });
+   
    loaded_element.find(".inline_text_field").each(function() {
      var inline_text_field = jQuery(this);
      var data_type = inline_text_field.attr("data-type");
@@ -808,8 +820,10 @@ jQuery(
        return false;
      }
    });
-
-   //Allows for the creation of form submit buttons that can highjack
+   
+   //Disable 
+   
+   //Allows for the creation of form submit buttons that can hijack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
    jQuery(".hijacker_submit_button").live("click", function(){
