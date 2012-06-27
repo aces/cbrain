@@ -90,6 +90,7 @@ module FilterHelper
   
   def build_filter_link(name, params_hash, options = {}) #:nodoc:
     controller   = options.delete(:controller) || params[:controller]
+    action       = options.delete(:action)     || :index
     if options.has_key?(:ajax) 
       ajax         = options.delete(:ajax)
     else
@@ -98,7 +99,7 @@ module FilterHelper
     unless options.delete(:pretty)
       params_hash = {controller.to_sym  => params_hash}
     end
-    url = {:controller => controller, :action => :index}.merge params_hash
+    url = {:controller => controller, :action => action}.merge params_hash
     if ajax
       options[:datatype] ||= :script
       ajax_link name, url, options

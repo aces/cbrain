@@ -122,6 +122,7 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       post 'new', :path => 'new', :as => 'new'
       post 'operation'
+      get  'redirect_to_index'
       get  'batch_list'
       post 'update_multiple'
     end

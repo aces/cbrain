@@ -124,6 +124,12 @@ class TasksController < ApplicationController
     render :layout => false
   end
   
+  # Used to go to index with parameters
+  # stripped out of URL.
+  def redirect_to_index
+    redirect_to :action => :index
+  end
+  
   # GET /tasks/1
   # GET /tasks/1.xml
   def show #:nodoc:
