@@ -157,7 +157,7 @@ module BasicFilterHelpers
   # Set up the current_session variable. Mainly used to set up the filter hash to be
   # used by index actions.
   def update_filters
-    current_controller = params[:controller]
+    current_controller = params[:proxy_destination_controller] || params[:controller]
     params[current_controller] ||= {}
     clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
     clear_param_key    = clear_params.first
@@ -170,6 +170,8 @@ module BasicFilterHelpers
       update_filter      = params[:update_filter].to_s
       parameters = request.query_parameters.clone
       parameters.delete "update_filter"
+      parameters.delete "proxy_destination_controller"
+      parameters.delete "proxy_destination_action"
       if update_filter =~ /_hash$/
         params[current_controller][update_filter] = parameters
       else
@@ -180,7 +182,7 @@ module BasicFilterHelpers
     end
     current_session.update(params)
 
-    @filter_params = current_session.params_for(params[:controller])
+    @filter_params = current_session.params_for(params[:proxy_destination_controller] || params[:controller])
     validate_pagination_values
   end
 

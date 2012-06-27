@@ -122,7 +122,6 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       post 'new', :path => 'new', :as => 'new'
       post 'operation'
-      get  'redirect_to_index'
       get  'batch_list'
       post 'update_multiple'
     end
@@ -147,6 +146,7 @@ CbrainRailsPortal::Application.routes.draw do
   match '/login'                  => 'sessions#new'
   match '/session_status'         => 'sessions#show'
   match '/logout'                 => 'sessions#destroy'
+  match '/filter_proxy'           => 'application#filter_proxy'
 
   # JIV java applet ; TODO remove and make part of a multi-file viewer framework (TBI)
   match '/jiv'                    => 'jiv#index'

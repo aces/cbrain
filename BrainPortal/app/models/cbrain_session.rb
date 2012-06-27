@@ -47,7 +47,7 @@ class CbrainSession
     
     @session[:persistent_userfile_ids] ||= {}
 
-    controller = params[:controller]
+    controller = params[:proxy_destination_controller] || params[:controller]
     @session[controller.to_sym] ||= {}
     @session[controller.to_sym]["filter_hash"] ||= {}
     @session[controller.to_sym]["sort_hash"] ||= {}
@@ -137,7 +137,7 @@ class CbrainSession
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)
-    controller = params[:controller]
+    controller = params[:proxy_destination_controller] || params[:controller]
     if params[controller]
       params[controller].each do |k, v|
         if @session[controller.to_sym][k].nil?

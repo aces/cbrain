@@ -49,12 +49,16 @@ class ApplicationController < ActionController::Base
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
   after_filter  :log_user_info
+  before_filter :login_required, :only => :filter_proxy
     
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
 
 
+  def filter_proxy
+    redirect_to(:controller  => params[:proxy_destination_controller], :action  =>  params[:proxy_destination_action] || "index")
+  end
   
   ########################################################################
   # Controller Filters

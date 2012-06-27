@@ -99,7 +99,8 @@ module FilterHelper
     unless options.delete(:pretty)
       params_hash = {controller.to_sym  => params_hash}
     end
-    url = {:controller => controller, :action => action}.merge params_hash
+    url_hash = {:proxy_destination_controller => controller, :proxy_destination_action => action}.merge params_hash
+    url = filter_proxy_path(url_hash)
     if ajax
       options[:datatype] ||= :script
       ajax_link name, url, options
