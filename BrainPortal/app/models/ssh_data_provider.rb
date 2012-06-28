@@ -92,14 +92,26 @@ class SshDataProvider < DataProvider
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
-    check_cmd = "test -e #{remotefull.to_s.bash_escape} && echo DestIsOk"
-    text = self.remote_bash_this(check_cmd)
-    unless text =~ /DestIsOk/
+    unless self.provider_file_exists?(userfile)
       cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!\n"                               +
                "Test for #{remotefull.to_s.bash_escape} returned: '#{text}'"
     end
     true
+  end
+
+  # Not an official API method; returns :file or :dir if on
+  # the userfile's content exists on the provider side.
+  # Careful! This returns nil if there is a DP connection error
+  # even if the file exists!
+  def provider_file_exists?(userfile) #:nodoc:
+    remotefull  = provider_full_path(userfile).to_s
+    check_cmd = "test -d #{remotefull.bash_escape} && echo dirIsOk; test -f #{remotefull.bash_escape} && echo fileIsOk"
+    text = self.remote_bash_this(check_cmd)
+    if text.present? && text =~ /(dir|file)IsOk/
+      return Regexp.last_match[1].to_sym
+    end
+    nil
   end
 
   def impl_provider_erase(userfile) #:nodoc:

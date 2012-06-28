@@ -305,6 +305,7 @@ class Message < ActiveRecord::Base
 
     # Get a unique list of all users from all these groups
     allusers = groups.inject([]) { |flat,group| flat |= group.users }
+    allusers.reject! { |u| u.account_locked? }
 
     # Select the list of users in list of groups; a special case is made
     # when a single group contains only one user along with 'admin', in that case

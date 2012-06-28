@@ -33,3 +33,8 @@
   All rights reserved.
   See licence details in the files.
 
+- tablesorter.js 2.0.5
+  Christan Bach
+  http://tablesorter.com/docs/index.html
+  Distributed under the MIT and GPL license.
+

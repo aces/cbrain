@@ -44,6 +44,10 @@
    date_filtration     = params[:date_range] || {}
 %>
 
+<%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
+<%= javascript_include_tag 'jquery.tablesorter.min' %>
+<%= javascript_include_tag 'jquery.metadata' %>
+
 <h2>Automatic Tabular Report Maker</h2>
 
 <p class="medium_paragraphs">
@@ -136,21 +140,24 @@ in a tabular layout. Proceed as follow:
          end
       %>
 
-      <table>
+      <table id="report_table" class="tablesorter">
+        <thead>
         <tr>
-        <th class="blank"></th>
+        <th style="background-position: 50% 5%"></th>
           <% @table_col_values.each do |col_key| %>
-            <th class="vertical_text_container"><div class="vertical_text"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+            <th class="vertical_text_container" style="background-position: 50% 5%"><div class="vertical_text"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
           <% end %>
-        <th class="vertical_text_container"><div class="vertical_text">Total</div></th>
+        <th class="vertical_text_container" style="background-position: 50% 5%"><div class="vertical_text">Total</div></th>
         </tr>
+        </thead>
 
+        <tbody>
         <% total_total  = 0 %>
         <% total_of_col = {} %>
         <% @table_row_values.each do |row_key| %>
           <% total_of_row = 0 %>
           <tr>
-          <th><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
+          <th data-sortvalue="<%= row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
           <% @table_col_values.each do |col_key| %>
             <%
                total_of_col[col_key] ||= 0
@@ -162,25 +169,41 @@ in a tabular layout. Proceed as follow:
                end
             %>
             <% pretty_cell_value = @filter_show_proc ? @filter_show_proc.call(cell_value) : cell_value %>
-            <td><%= index_count_filter(cell_value, @filter_model, { @filter_row_key => row_key, @filter_col_key => col_key }, :name => pretty_cell_value) %></td>
+            <td data-sortvalue="<%= cell_value.presence || 0 %>"><%= index_count_filter(cell_value, @filter_model, @filter_fixed.merge({ @filter_row_key => row_key, @filter_col_key => col_key }), :name => pretty_cell_value) %></td>
           <% end %>
           <% pretty_row_tot = @filter_show_proc ? @filter_show_proc.call(total_of_row) : total_of_row %>
-          <td><%= index_count_filter(total_of_row, @filter_model, { @filter_row_key => row_key }, :name => pretty_row_tot) %></td>
+          <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= index_count_filter(total_of_row, @filter_model, @filter_fixed.merge({ @filter_row_key => row_key }), :name => pretty_row_tot) %></td>
           </tr>
         <% end %>
+
+        </tbody>
 
         <tr>
           <th>Total</th>
           <% @table_col_values.each do |col_key| %>
             <% col_tot = total_of_col[col_key] %>
             <% pretty_col_tot = @filter_show_proc ? @filter_show_proc.call(col_tot) : col_tot %>
-            <td><%= index_count_filter(col_tot, @filter_model, { @filter_col_key => col_key }, :name => pretty_col_tot) %></td>
+            <td><%= index_count_filter(col_tot, @filter_model, @filter_fixed.merge({ @filter_col_key => col_key }), :name => pretty_col_tot) %></td>
           <% end %>
           <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
-          <td><%= index_count_filter(total_total, @filter_model, {}, :name => pretty_tot_tot) %></td>
+          <td><%= index_count_filter(total_total, @filter_model, @filter_fixed, :name => pretty_tot_tot) %></td>
         </tr>
 
       </table>
+
+      <script type="text/javascript">
+        $(document).ready(function() { 
+            $("#report_table").tablesorter({
+              // define a custom text extraction function 
+              textExtraction: function(node) { 
+                // extract data from markup and return it  
+                var sortvalue = $(node).data('sortvalue');
+                return sortvalue;
+              },
+              sortList: [ [0,0] ]
+            }); 
+        }); 
+      </script>
 
     <% elsif @table_ok %>
       <p class="groupentry">
@@ -201,56 +224,74 @@ in a tabular layout. Proceed as follow:
   <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
     <div class="notesbox" style="width: auto">
 
-      <strong>Optional:</strong> fix some attributes:<p>
-
       <table class="simple">
-      <tr><td>
-      <% if @model_atts.include?(:user_id) %>
-        <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %><br>
-      <% end %>
-      <% if @model_atts.include?(:group_id) %>
-        <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %><br>
-      <% end %>
-      <% if @model_atts.include?(:data_provider_id) %>
-        <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %><br>
-      <% end %>
-      <% if @model_atts.include?(:bourreau_id) %>
-        <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %><br>
-      <% end %>
-      <% if @model_atts.include?(:type) %>
-        <% if @model <= Userfile %>
-          <%= userfile_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
-        <% elsif @model <= CbrainTask %>
-          <%= task_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
-        <% elsif @model <= Group %>
-          <%= group_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
-        <% else %>
-          <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
-        <% end%>
-      <% end %>
-      <% if @model_atts.include?(:status) %>
-        <% if @model <= CbrainTask %>
-          <%= task_status_select(:status, {:selector => params[:status]}, :include_blank => '(Any Status)') %><br>
-        <% else %>
-          <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
-        <% end %>
-      <% end %>
+
+      <tr>
+        <td class="centered"><strong>Optional:</strong> fix some attributes:</td>
+        <td class="centered"><strong>Optional:</strong> select a date range:</td>
+      </tr>
+
+      <tr>
+        <td>
+
+          <% if @model_atts.include?(:user_id) %>
+            <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %><br>
+          <% end %>
+
+          <% if @model_atts.include?(:group_id) %>
+            <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %><br>
+          <% end %>
+
+          <% if @model_atts.include?(:data_provider_id) %>
+            <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %><br>
+          <% end %>
+
+          <% if @model_atts.include?(:bourreau_id) %>
+            <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %><br>
+          <% end %>
+
+          <% if @model_atts.include?(:type) %>
+            <% if @model <= Userfile %>
+              <%= userfile_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+            <% elsif @model <= CbrainTask %>
+              <%= task_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+            <% elsif @model <= Group %>
+              <%= group_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+            <% else %>
+              <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
+            <% end%>
+          <% end %>
+
+          <% if @model_atts.include?(:status) %>
+            <% if @model <= CbrainTask %>
+              <%= task_status_select(:status, {:selector => params[:status]}, :include_blank => '(Any Status)') %><br>
+            <% else %>
+              <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
+            <% end %>
+          <% end %>
+
+        </td>
+
+        <td>
+
+          <%= render :partial => '/shared/date_range', :locals  => {
+            :date_attribute            => ['date_range[date_attribute]',            date_filtration["date_attribute"]], 
+            :absolute_or_relative_from => ['date_range[absolute_or_relative_from]', date_filtration['absolute_or_relative_from']],
+            :absolute_or_relative_to   => ['date_range[absolute_or_relative_to]',   date_filtration['absolute_or_relative_to']],
+            :relative_from             => ['date_range[relative_from]',             date_filtration['relative_from']],
+            :relative_to               => ['date_range[relative_to]',               date_filtration['relative_to']],
+            :absolute_from             => ['date_range[absolute_from]',             date_filtration['absolute_from']],
+            :absolute_to               => ['date_range[absolute_to]',               date_filtration['absolute_to']]
+            }
+          %>
+          (Note: the links in the report will NOT include the date restrictions)
       
-      </td>
-      <td>
-      <%= 
-      render :partial => '/shared/date_range', :locals  => {:date_attribute            => ['date_range[date_attribute]',            date_filtration["date_attribute"]], 
-                                                            :absolute_or_relative_from => ['date_range[absolute_or_relative_from]', date_filtration['absolute_or_relative_from']],
-                                                            :absolute_or_relative_to   => ['date_range[absolute_or_relative_to]',   date_filtration['absolute_or_relative_to']],
-                                                            :relative_from             => ['date_range[relative_from]',             date_filtration['relative_from']],
-                                                            :relative_to               => ['date_range[relative_to]',               date_filtration['relative_to']],
-                                                            :absolute_from             => ['date_range[absolute_from]',             date_filtration['absolute_from']],
-                                                            :absolute_to               => ['date_range[absolute_to]',               date_filtration['absolute_to']]
-                                                            }
-      %>
-      </td></tr>
+        </td>
+
+      </tr>
       </table>
-      </div>
+
+    </div>
       
     <br>
   <% end %>

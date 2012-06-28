@@ -287,10 +287,12 @@ class PortalController < ApplicationController
     end
 
     # Add fixed values
+    @filter_fixed = {}
     @model_atts.each do |att|
       val = params[att]
       next unless val.present?
       table_content_scope = table_content_scope.where("#{table_name}.#{att}" => val)
+      @filter_fixed[att.to_s] = val
     end
 
     # Add date filtration
