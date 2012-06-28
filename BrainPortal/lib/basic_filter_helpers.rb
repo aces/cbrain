@@ -100,6 +100,7 @@ module BasicFilterHelpers
   def basic_filters_for(filtered_scope, header_scope, tab, col, &formatter)
     table         = tab.to_s.underscore.pluralize
     column        = col.to_sym
+    column_object = ActiveRecord::Base.connection.columns(table).find { |c| c.name == column.to_s }
     table_column  = "#{table}.#{column}"
 
     filt_counts = filtered_scope.group("#{table_column}").count
@@ -111,13 +112,14 @@ module BasicFilterHelpers
       raw_rows(table_column, "COUNT(#{table_column})").
       reject { |pair| pair[0].blank? }.
       map do |pair|
-        name, count = pair
-        pretty_name    = column == :type ? name.constantize.pretty_type : name
-        formatted_name = formatter ? formatter.call(pretty_name) : pretty_name
-        filt_count     = filt_counts[name].to_i
+        raw_name, count = pair
+        name            = column_object.type_cast(raw_name)
+        pretty_name     = column == :type ? name.constantize.pretty_type : name
+        formatted_name  = formatter ? formatter.call(pretty_name) : pretty_name
+        filt_count      = filt_counts[name].to_i
 
         [ "#{formatted_name} (#{filt_count}/#{count})", 
-            :filters => { column => name },
+            :filters => { column => raw_name },
             :class   => filt_count == 0 ? "filter_zero" : nil
         ]
       end

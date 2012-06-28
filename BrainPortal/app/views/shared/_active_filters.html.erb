@@ -47,6 +47,9 @@
       "<span class=\"current_filters_item\">#{text}</span>"
     elsif att == "type"
       "<span class=\"current_filters_item\">#{crop_text_to(30, val.constantize.pretty_type)}</span>"
+    elsif att == "account_locked"
+      text = val == '1' ? "Locked" : "Unlocked"
+      "<span class=\"current_filters_item\">#{text}</span>"
     else
       "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(model, att, val, {:user  => :login}))}</span>"
     end
