@@ -161,11 +161,11 @@ module ViewHelpers
     if size.blank?
       options[:blank] || "unknown"
     elsif size >= 1_000_000_000
-      sprintf("%6.1f Gb", size/(1_000_000_000.0)).strip
+      sprintf("%6.1f Gb", size/1_000_000_000.0).strip
     elsif size >=     1_000_000
-      sprintf("%6.1f Mb", size/(    1_000_000.0)).strip
+      sprintf("%6.1f Mb", size/    1_000_000.0).strip
     elsif size >=         1_000
-      sprintf("%6.1f Kb", size/(        1_000.0)).strip
+      sprintf("%6.1f Kb", size/        1_000.0).strip
     else
       sprintf("%d bytes", size).strip
     end 
@@ -173,19 +173,12 @@ module ViewHelpers
 
   # This method returns the same thing as pretty_size,
   # except that the different size orders are colored
-  # distinctly. Colors can be overriden in +options+, with
-  # the default looking like:
-  #   { :gb => 'red', :mb => 'purple', :kb => 'blue', :bytes => nil }
+  # distinctly.
   def colored_pretty_size(size, options = {})
     pretty = pretty_size(size, options)
-    if pretty =~ / (Gb|Mb|Kb|bytes)$/
-      suffix = Regexp.last_match[1].downcase.to_sym
-      return html_colorize(pretty, options[:gb].presence || 'red')    if suffix == :gb
-      return html_colorize(pretty, options[:mb].presence || 'purple') if suffix == :mb
-      return html_colorize(pretty, options[:kb].presence || 'blue')   if suffix == :kb
-      return html_colorize(pretty, options[:bytes]) if options[:bytes].present?
-    end
-    pretty # default
+    return pretty if size.blank? || size.to_i == 0 # black for zero
+    color  = colorwheel_edge_crawl(size, 50_000_000_000, 1_000_000, { :start => 240, :length => 150, :dir => :counterclockwise, :sat_max_sum => 255 })
+    return html_colorize(pretty,color)
   end
 
   # Returns one of two things depending on +condition+:
@@ -252,5 +245,93 @@ module ViewHelpers
     with_quotes = "'#{with_substititions}'"
     with_quotes.html_safe
   end
+
+  # Returns a RGB color code '#000000' to '#ffffff'
+  # along the edge of the colorwheel. The colors are
+  # all thus fully saturated. The color selected
+  # will be the one corresponding to where +value+
+  # falls along the range between 0 and +max+ .
+  #
+  # The colorwheel is colored with this orientation:
+  #
+  # Red axis   = angle   0 degrees
+  # Green axis = angle 120 degrees
+  # Blue axis  = angle 240 degrees
+  #
+  # The +options+ control where the values for 0
+  # and max will lie on the circle; the default
+  # options are:
+  #
+  #   {
+  #     :start  => 240,    # where the value 0 maps to
+  #     :length => 240,    # how many degrees along the edge until we reach 'max'
+  #     :dir    => :clockwise, # in which direction 'length' degrees goes towards 'max'
+  #     :scale  => :log    # whether to scale value logarithmically or linearly
+  #   }
+  #
+  # So this means that by default, a +value+ between 0 and +max+ will
+  # select logarithmically a color along the edge from angle 240 down
+  # towards angle 0, that is between pure blue and pure red. Purple
+  # is thus not available with these defaults.
+  #
+  # The +unit+ argument is interpreted differently depending on the
+  # +scale+ option. When +scale+ is :linear, +value+ will simply
+  # be multiplied by +unit+ before being compared to +max+ . When
+  # +scale+ is :log, both +value+ and +max+ will be divided by
+  # +unit+ before their logs are compared, which is useful when
+  # the distribution of values spans large ranges and lots of
+  # low values all need to be more or less considered the same.
+  def colorwheel_edge_crawl(value, max=100, unit=1, options = {})
+    max      = 100 if max.blank?
+    unit     = 1   if unit.blank?
+    value    = 0   if value < 0
+    value    = max if value > max
+
+    start    = options[:start].presence  || 240
+    length   = options[:length].presence || 240
+    dir      = options[:dir].presence    || :clockwise
+    scale    = options[:scale].presence  || :log
+    desat    = options[:sat_max_sum].presence # maximum sum of R, G and B chanels (0..765)
+
+    if scale == :log
+      percent  = Math.log(1+(value.to_f) / (unit.to_f)) / Math.log((max.to_f) / (unit.to_f))
+    else
+      percent  = (value.to_f * unit.to_f) / max.to_f
+      percent  = 1.0 if percent > 1.0
+    end
+
+    if dir == :clockwise
+      angle    = start-length*percent # degrees. 0 degrees is along X axis
+    else
+      angle    = start+length*percent # degrees. 0 degrees is along X axis
+    end
+    angle += 360 if angle < 0
+    angle -= 360 if angle > 360
+
+    r_adist = (angle -   0.0).abs ; r_adist = 360.0 - r_adist if r_adist > 180.0
+    g_adist = (angle - 120.0).abs ; g_adist = 360.0 - g_adist if g_adist > 180.0
+    b_adist = (angle - 240.0).abs ; b_adist = 360.0 - b_adist if b_adist > 180.0
+
+    r_pdist = r_adist < 60.0 ? 1.0 : r_adist > 120.0 ? 0.0 : 1.0 - (r_adist - 60.0) / 60.0
+    g_pdist = g_adist < 60.0 ? 1.0 : g_adist > 120.0 ? 0.0 : 1.0 - (g_adist - 60.0) / 60.0
+    b_pdist = b_adist < 60.0 ? 1.0 : b_adist > 120.0 ? 0.0 : 1.0 - (b_adist - 60.0) / 60.0
+
+    red   = r_pdist * 255 # float
+    green = g_pdist * 255 # float
+    blue  = b_pdist * 255 # float
+
+    if desat.present?
+      sum = red + green + blue
+      if sum > desat
+        div   = desat / sum
+        red   =   red * div
+        green = green * div
+        blue  =  blue * div
+      end
+    end
+
+    sprintf "#%2.2x%2.2x%2.2x",red,green,blue
+  end
+
 end
 

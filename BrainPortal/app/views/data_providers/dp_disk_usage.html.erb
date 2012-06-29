@@ -66,7 +66,7 @@
           
           <td>
           
-            <%= disk_space_info_display(cell[:size] || 0, nil, 1_000_000) do %>
+            <%= disk_space_info_display(cell[:size] || 0) do %>
               <%= pretty_size(cell[:size]) %></br>
               <%= 
                 filter_reset_link (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe,

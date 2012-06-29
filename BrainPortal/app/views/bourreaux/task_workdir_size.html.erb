@@ -86,7 +86,7 @@
           <% cell_key = [ user.id, b.id ] %>
             <td> 
               <% if accessible_rr[b.id] && task_count_by_user_and_bourreau[cell_key].to_i > 0 %>         
-                <%= disk_space_info_display((task_space_known_by_user_and_bourreau[cell_key] || 0), nil, 1_000_000) do %>
+                <%= disk_space_info_display(task_space_known_by_user_and_bourreau[cell_key] || 0) do %>
                    <%= format_task_size_unk(
                          index_count_filter(task_count_by_user_and_bourreau[cell_key], :tasks, { :user_id => user.id, :bourreau_id => b.id }, :show_zeros => 1 ),
                          task_space_known_by_user_and_bourreau[cell_key] || 0,
@@ -102,7 +102,7 @@
           <% if @bourreaux.count > 1%>
             <td>
               <% if task_count_by_user[user.id].to_i > 0 %>
-                <%= disk_space_info_display((task_space_known_by_user[user.id] || 0), nil, 1_000_000) do %>
+                <%= disk_space_info_display(task_space_known_by_user[user.id] || 0) do %>
                   <%= format_task_size_unk(
                         index_count_filter(task_count_by_user[user.id], :tasks, { :user_id => user.id, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
                         task_space_known_by_user[user.id] || 0,
@@ -124,7 +124,7 @@
               <td>
                 <strong><%= b.name %></strong><br>
                 <% if task_count_by_bourreau[b.id].to_i > 0 %>
-                  <%= disk_space_info_display((task_space_known_by_bourreau[b.id] || 0) , nil, 1_000_000) do %>
+                  <%= disk_space_info_display(task_space_known_by_bourreau[b.id] || 0) do %>
                     <%= format_task_size_unk(
                           index_count_filter(task_count_by_bourreau[b.id], :tasks, { :user_id => user_ids, :bourreau_id => b.id }, :show_zeros => 1 ),
                           task_space_known_by_bourreau[b.id] || 0,
@@ -140,7 +140,7 @@
           <% if @bourreaux.count > 1 && @users.count > 1 %>
             <td>
               <strong>Overall Total</strong><br>
-              <%= disk_space_info_display((tasklist.sum( :cluster_workdir_size) || 0), nil, 1_000_000) do %>
+              <%= disk_space_info_display(tasklist.sum( :cluster_workdir_size) || 0) do %>
                 <%= format_task_size_unk(
                       index_count_filter(tasklist.count, :tasks, { :user_id => user_ids, :bourreau_id => bourreau_ids }, :show_zeros => 1 ),
                       tasklist.sum(:cluster_workdir_size) || 0,
