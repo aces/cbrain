@@ -181,11 +181,11 @@ module ViewHelpers
     if pretty =~ /(\S+) (Gb|Mb|Kb|bytes)$/
       val    = Regexp.last_match[1].to_f
       suffix = Regexp.last_match[2].downcase.to_sym
-      return html_colorize(pretty, options[:gb100].presence || 'green')   if suffix == :gb && val > 100
-      return html_colorize(pretty, options[:gb10].presence  || 'orange')  if suffix == :gb && val > 10
-      return html_colorize(pretty, options[:gb].presence    || 'red')     if suffix == :gb
-      return html_colorize(pretty, options[:mb].presence    || 'purple')  if suffix == :mb
-      return html_colorize(pretty, options[:kb].presence    || 'blue')    if suffix == :kb
+      return html_colorize(pretty, options[:gb100].presence || 'purple') if suffix == :gb && val > 100
+      return html_colorize(pretty, options[:gb10].presence  || 'red')    if suffix == :gb && val > 10
+      return html_colorize(pretty, options[:gb].presence    || 'orange') if suffix == :gb
+      return html_colorize(pretty, options[:mb].presence    || 'green')  if suffix == :mb
+      return html_colorize(pretty, options[:kb].presence    || 'blue')   if suffix == :kb
       return html_colorize(pretty, options[:bytes]) if options[:bytes].present?
     end
     pretty # default
