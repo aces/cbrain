@@ -173,12 +173,22 @@ module ViewHelpers
 
   # This method returns the same thing as pretty_size,
   # except that the different size orders are colored
-  # distinctly.
+  # distinctly. Colors can be overriden in +options+, with
+  # the default looking like:
+  #   { :gb => 'red', :mb => 'purple', :kb => 'blue', :bytes => nil }
   def colored_pretty_size(size, options = {})
     pretty = pretty_size(size, options)
-    return pretty if size.blank? || size.to_i == 0 # black for zero
-    color  = colorwheel_edge_crawl(size, 50_000_000_000, 1_000_000, { :start => 240, :length => 150, :dir => :counterclockwise, :sat_max_sum => 255 })
-    return html_colorize(pretty,color)
+    if pretty =~ /(\S+) (Gb|Mb|Kb|bytes)$/
+      val    = Regexp.last_match[1].to_f
+      suffix = Regexp.last_match[2].downcase.to_sym
+      return html_colorize(pretty, options[:gb100].presence || 'green')   if suffix == :gb && val > 100
+      return html_colorize(pretty, options[:gb10].presence  || 'orange')  if suffix == :gb && val > 10
+      return html_colorize(pretty, options[:gb].presence    || 'red')     if suffix == :gb
+      return html_colorize(pretty, options[:mb].presence    || 'purple')  if suffix == :mb
+      return html_colorize(pretty, options[:kb].presence    || 'blue')    if suffix == :kb
+      return html_colorize(pretty, options[:bytes]) if options[:bytes].present?
+    end
+    pretty # default
   end
 
   # Returns one of two things depending on +condition+:
