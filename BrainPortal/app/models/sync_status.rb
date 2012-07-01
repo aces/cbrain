@@ -37,9 +37,8 @@
 #
 # The possible status keywords are:
 #
-# ProvNewer::    No known content on cache side, or content
-#                on DP side known to be newer (default when
-#                there are no SyncStatus object at all)
+# ProvNewer::    It is known that content exist on cache side,
+#                but content on DP side is known to be newer.
 # CacheNewer::   Content on cache side known to be newer than on DP
 # InSync::       Cache contains a sync'ed version of DP's content
 # ToCache::      DP content is being copied to cache 
@@ -271,7 +270,10 @@ class SyncStatus < ActiveRecord::Base
       puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
       return implstatus
     rescue => implerror
-      state.update_attributes( :status => "Corrupted" ) # provider is no good
+      # Provider side is no good as far as we know
+      others = self.get_status_of_other_caches(userfile_id) rescue []
+      others.each { |o| o.update_attributes( :status => "Corrupted" ) rescue nil }
+      state.update_attributes( :status => "Corrupted" )
       puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
       raise implerror
     end
@@ -328,7 +330,7 @@ class SyncStatus < ActiveRecord::Base
     begin
       puts "SYNC: ModCache: #{state.pretty} YIELD" if DebugMessages
       implstatus = yield
-      if final_status == "ProvNewer"
+      if final_status == :destroy
         state.destroy
       else
         state.update_attributes( :status => final_status )
@@ -408,9 +410,9 @@ class SyncStatus < ActiveRecord::Base
       puts "SYNC: ModProv: #{state.pretty} YIELD" if DebugMessages
       implstatus = yield
       others = self.get_status_of_other_caches(userfile_id)
-      others.each { |o| o.destroy } # Zap all other status fields...
-      state.destroy                 # ... then zap ours. A bit like ProvNewer.
-      puts "SYNC: ModProv: Destroyed ALL" if DebugMessages
+      others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # Mark all other status fields...
+      state.update_attributes( :status => "ProvNewer" )                 # ... then mark ours.
+      puts "SYNC: ModProv: ProvNewer ALL" if DebugMessages
       return implstatus
     rescue => implerror
       state.update_attributes( :status => "Corrupted" ) # dp is no longer good
