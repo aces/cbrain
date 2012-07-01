@@ -236,14 +236,14 @@ class PortalController < ApplicationController
 
     if table_name =~ /^(\w+)\.(\S+)$/
       table_name = Regexp.last_match[1]
-      table_op   = Regexp.last_match[2]   # e.g. "sum(size)"
+      table_op   = Regexp.last_match[2]   # e.g. "sum(size)" or "combined_file_rep"
     end
 
     allowed_breakdown = {
        # Table content  => [ [ row or column attributes ],                                [ content_op ] ]
        #--------------     -----------------------------------------------------------
-       Userfile         => [ [ :user_id, :group_id, :data_provider_id, :type           ], [ 'count', 'sum(size)', 'sum(num_files)' ] ],
-       CbrainTask       => [ [ :user_id, :group_id, :bourreau_id,      :type, :status  ], [ 'count', 'sum(cluster_workdir_size)'   ] ],
+       Userfile         => [ [ :user_id, :group_id, :data_provider_id, :type           ], [ 'count', 'sum(size)', 'sum(num_files)', 'combined_file_rep' ] ],
+       CbrainTask       => [ [ :user_id, :group_id, :bourreau_id,      :type, :status  ], [ 'count', 'sum(cluster_workdir_size)',   'combined_task_rep' ] ],
     }
     allowed_breakdown.merge!( {
        RemoteResource   => [ [ :user_id, :group_id,                    :type           ], [ 'count' ] ],
@@ -303,18 +303,23 @@ class PortalController < ApplicationController
 
     # Compute content
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]
-    #table_content_scope = table_content_scope.where(:id => -999) # for debug -> no entries
-    raw_table_content = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] ).send(*table_ops)
-
-    # Collapse entries with blanks and/or nils
-    @table_content = {}
-    raw_table_content.each do |pair,val|
-      newpair = [ pair[0].presence, pair[1].presence ]
-      if @table_content[newpair]
-        @table_content[newpair] += val
-      else
-        @table_content[newpair]  = val
-      end
+    #table_content_scope = table_content_scope.where(:id => -999) # for debugging interface appearance -> no entries
+    table_content_grouped = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] )
+    if    table_ops[0] == :combined_file_rep # special fetch of multiple values for file report
+      file_sum_size      = table_content_grouped.sum(:size)
+      file_counts        = table_content_grouped.count
+      file_sum_num_files = table_content_grouped.sum(:num_files)
+      file_sum_num_unk   = table_content_grouped.where(:size => nil).count
+      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_sum_num_unk) # create quadruplets as values
+    elsif table_ops[0] == :combined_task_rep # special fetch of multiple values for task report
+      table_content_grouped = table_content_grouped.real_tasks
+      task_sum_size      = table_content_grouped.sum(:cluster_workdir_size)
+      task_counts        = table_content_grouped.count
+      task_no_size       = table_content_grouped.where( :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count
+      @table_content     = merge_vals_as_array(task_sum_size, task_counts, task_no_size) # create triplets
+    else
+      generic_count  = table_content_grouped.send(*table_ops)
+      @table_content = merge_vals_as_array(generic_count) # create singletons
     end
 
     # Present content for view
@@ -333,10 +338,26 @@ class PortalController < ApplicationController
     @filter_model      = "tasks" if @filter_model == 'cbrain_tasks'
     @filter_row_key    = row_type
     @filter_col_key    = col_type
-    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |x| colored_pretty_size(x) }) : nil
+    @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |vector| colored_pretty_size(vector[0]) }) : nil
   end
   
   private
+
+  def merge_vals_as_array(*sub_reports) #:nodoc:
+    merged_report = {}
+    all_keys = []
+    sub_reports.each { |rep| all_keys += rep.keys }
+    all_keys.each do |key| # key is always a pair for a 2D table
+      newkey = [ key[0].presence, key[1].presence ] # simplify key space so that blanks in any component of key become nils
+      newval = Array.new(sub_reports.size,0) #  [ 0, 0, 0 ... ] for n reports
+      sub_reports.each_with_index do |subrep,i|
+        next unless subrep.has_key?(key)
+        newval[i] += subrep[key] # should always be a adding a count, which can be zero
+      end
+      merged_report[newkey] = newval  # the key is cleaned of blanks, the newval is a sum of counts in each report
+    end
+    merged_report
+  end
   
   def colorize_logs(data)
     data = ERB::Util.html_escape(data)
