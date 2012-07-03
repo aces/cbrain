@@ -70,7 +70,9 @@ module DiskUsageReportHelper
       <span class="display_cell">
         #{disk_space_info_display(              0,500_000_000_000,1_000_000) {     "None" }}
         #{disk_space_info_display(     10_000_000,500_000_000_000,1_000_000) {    "10 Mb" }}
+        #{disk_space_info_display(    100_000_000,500_000_000_000,1_000_000) {   "100 Mb" }}
         #{disk_space_info_display(  1_000_000_000,500_000_000_000,1_000_000) {     "1 Gb" }}
+        #{disk_space_info_display( 10_000_000_000,500_000_000_000,1_000_000) {    "10 Gb" }}
         #{disk_space_info_display(100_000_000_000,500_000_000_000,1_000_000) {   "100 Gb" }}
         #{disk_space_info_display(500_000_000_000,500_000_000_000,1_000_000) { "> 500 Gb" }}
       </span>

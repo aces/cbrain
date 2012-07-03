@@ -29,10 +29,11 @@
    runrev      = info.starttime_revision
    worker_pids = info.worker_pids
    worker_pids = nil if worker_pids == "???"
+   num_workers = worker_pids ? worker_pids.count(',')+1 : 0
    tasks_tot   = info.tasks_tot
    tasks_max   = info.tasks_max
    tasks_max   = 'unlimited' if tasks_max.to_s == '0'
-   isbourreau  = bourreau.is_a?(Bourreau)
+   isbourreau  = bourreau.is_a?(Bourreau).presence # make sure it's 'nil' if false so substition -> empty string
    num_running = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
    task_space_known = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)                                               : ""
    task_space_unkn  = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count : ""
@@ -71,36 +72,29 @@
       <% end %>
   </td>
 
-  <% if isbourreau %>
-    <td>
-        <% if bourreau.online? %>
-         <%= red_if( worker_pids.blank? , "Running (x #{worker_pids.to_s.split(",").size})" , "Stopped" ) %>
-        <% else %>
-          -
-        <% end %>
-    </td>
-    <td><%= "#{tasks_tot}/#{tasks_max}" %></td>
-    <td>
-        <%= html_tool_tip(
-           index_count_filter(num_running, :tasks, { :bourreau_id => bourreau.id, :status => :active }, :show_zeros => true),
-           :tooltip_div_class => 'white_bg html_tool_tip'
-           ) do %>
-             <%= render :partial => 'load_info', :locals => { :bourreau => bourreau } %>
-        <% end %>
-    </td>
-    <% if @filter_params["details"] == 'on' %>
-      <td>
-        <%= colored_pretty_size(task_space_known) %>
-        <%= "(#{task_space_unkn} unkn)" if task_space_unkn > 0 %>
-      </td>
+  <td>
+    <% if (! isbourreau) || (! bourreau.online?) %>
+      -
+    <% elsif worker_pids.blank? %>
+      <%= html_colorize("Stopped", "red") %>
+    <% else %>
+      <%= red_if(num_workers != bourreau.workers_instances, "Running (x #{num_workers})", nil, :color2 => "orange") %>
     <% end %>
-  <% else %>
-    <td>-</td>
-    <td>-</td>
-    <td>-</td>
-    <% if @filter_params["details"] == 'on' %>
-      <td>-</td>
-    <% end %>
+  </td>
+  <td><%= "#{tasks_tot}/#{tasks_max}" if isbourreau %></td>
+  <td>
+      <%= isbourreau && html_tool_tip(
+         index_count_filter(num_running, :tasks, { :bourreau_id => bourreau.id, :status => :active }, :show_zeros => true),
+         :tooltip_div_class => 'white_bg html_tool_tip'
+         ) do %>
+           <%= render :partial => 'load_info', :locals => { :bourreau => bourreau } %>
+      <% end %>
+  </td>
+  <% if @filter_params["details"] == 'on' %>
+    <td>
+      <%= colored_pretty_size(task_space_known) if isbourreau %>
+      <%= "(#{task_space_unkn} unkn)" if isbourreau && task_space_unkn > 0 %>
+    </td>
   <% end %>
 
   <% if @filter_params["details"] == 'on' %>
@@ -109,13 +103,13 @@
 
   <% if bourreau.has_owner_access?(current_user) %>
     <% if ! isbourreau %>
-      <td colspan="2" />
+      <td colspan="2"></td>
     <% elsif ! bourreau.has_remote_control_info? %>
-      <td><%= html_colorize("(Missing SSH control info)") %></td><td></td>
+      <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
     <% elsif ! bourreau.has_actres_tunnelling_info? %>
-      <td><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td><td></td>
+      <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
     <% elsif ! bourreau.has_db_tunnelling_info? %>
-      <td><%= html_colorize("(Missing database SSH tunnel info)") %></td><td></td>
+      <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
     <% else %>
       <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
       <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
@@ -128,6 +122,7 @@
     <% end %>
 
   <% else %>
-    <td colspan="5"></td>
+    <td colspan="3"></td>
   <% end %>
+
 </tr>

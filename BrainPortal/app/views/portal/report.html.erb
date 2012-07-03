@@ -211,14 +211,22 @@ in a tabular layout. Proceed as follow:
 
       <table id="report_table" class="tablesorter">
 
+        <%
+           th_att = "" ; th_div_att = " style=\"margin-right: 1.5em\"".html_safe
+           if params[:table_name] !~ /\.combined_(file|task)_rep$/ 
+             v_height   = "22em"
+             th_att     = " class=\"vertical_text_container\" style=\"background-position: 50% 5%; height: #{v_height}\"".html_safe
+             th_div_att = " class=\"vertical_text\"".html_safe
+           end
+        %>
+
         <thead>
         <tr>
-        <th style="background-position: 50% 5%"></th>
+        <th<%= th_att %>></th>
           <% @table_col_values.each do |col_key| %>
-            <th class="vertical_text_container" style="background-position: 50% 5%"><div class="vertical_text"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+            <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
           <% end %>
-        <% v_height='22em' # note: the height of the 'Total' heading fixes the height of all other headings too %>
-        <th class="vertical_text_container" style="height: <%= v_height %>; background-position: 50% 5%"><div class="vertical_text">Total</div></th>
+        <th<%= th_att %>><div<%= th_div_att %>>Total</div></th>
         </tr>
         </thead>
 
