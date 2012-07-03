@@ -250,14 +250,16 @@ div.vertical_text {
     height: 20em;
     margin: auto;
     text-align: left;
-    -webkit-transform:        rotate(-90deg) translate(0.5em, 100%);
-    -webkit-transform-origin: 0 100%;
-    -moz-transform:           rotate(-90deg) translate(0.5em, 100%);
-    -moz-transform-origin:    0 100%;
-    -o-transform:             rotate(-90deg) translate(0.5em, 100%);
-    -o-transform-origin:      0 100%;
-    -ms-transform:            rotate(-90deg) translate(0.5em, 100%);
-    -ms-transform-origin:     0 100%;
+    transform:                rotate(-90deg) translate(0.3em, 100%);
+    transform-origin:         -0.1em 100%;
+    -webkit-transform:        rotate(-90deg) translate(0.3em, 100%);
+    -webkit-transform-origin: -0.1em 100%;
+    -moz-transform:           rotate(-90deg) translate(0.3em, 100%);
+    -moz-transform-origin:    -0.1em 100%;
+    -o-transform:             rotate(-90deg) translate(0.3em, 100%);
+    -o-transform-origin:      -0.1em 100%;
+    -ms-transform:            rotate(-90deg) translate(0.3em, 100%);
+    -ms-transform-origin:     -0.1em 100%;
 }
 
 th.center_align_heading {
