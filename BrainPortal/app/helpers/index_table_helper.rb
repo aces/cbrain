@@ -190,16 +190,17 @@ module IndexTableHelper
         @header_options[:colspan] ||= @cells.size
         filters = @header_options.delete :filters
         
-        unless filters.blank?
-          @header_options[:class] ||= ""
-          @header_options[:class]  += " filter_header"
-          @header_options["data-target"] = "#filters_list_#{self.object_id}"
-        end
+        # unless filters.blank?
+        #   @header_options[:class] ||= ""
+        #   @header_options[:class]  += " filter_header"
+        #   @header_options["data-target"] = "#filters_list_#{self.object_id}"
+        # end
         
         atts = @header_options.to_html_attributes
         html = [ "<th #{atts}>" ]
         unless filters.blank?
           html << "<span class=\"show_toggle\" data-target=\"#filters_list_#{self.object_id}\" style=\"color: white\">&bull;</span>&nbsp;"
+          @header_text = "<span class=\"filter_header\" data-target=\"#filters_list_#{self.object_id}\">#{@header_text}</span>"
         end
         html << @header_text
         unless filters.blank?
