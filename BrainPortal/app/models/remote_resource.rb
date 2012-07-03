@@ -846,7 +846,7 @@ class RemoteResource < ActiveRecord::Base
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
-    user_ids     = command.user_ids
+    user_ids    = command.user_ids
     before_date = command.before_date || 1.year.ago
     after_date  = command.after_date  || Time.now
     
@@ -854,7 +854,7 @@ class RemoteResource < ActiveRecord::Base
     user_ids.split(/,/).uniq.each do |idstring|
       if idstring == 'all'
         userlist |= User.all
-        next
+        break
       end
       uid = idstring.to_i
       userlist << User.find(uid)

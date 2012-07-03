@@ -59,7 +59,7 @@ class VaultLocalDataProvider < LocalDataProvider
   end
 
   def cache_erase(userfile) #:nodoc:
-    SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
+    SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       true
     end
   end

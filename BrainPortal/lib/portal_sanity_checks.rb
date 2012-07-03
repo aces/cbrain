@@ -281,32 +281,6 @@ class PortalSanityChecks < CbrainChecker
    end
 
 
-  
-  #cleans up old syncstatus that are left in the database 
-  def self.ensure_syncstatus_is_clean
-
-    #-----------------------------------------------------------------------------
-    puts "C> Cleaning up old SyncStatus objects..."
-    #-----------------------------------------------------------------------------
-
-    rr_ids = RemoteResource.all.index_by { |rr| rr.id }
-    ss_deleted = 0
-    SyncStatus.all.each do |ss|
-      ss_rr_id = ss.remote_resource_id
-      if ss_rr_id.blank? || ! rr_ids[ss_rr_id]
-        if (ss.destroy rescue false)
-          ss_deleted += 1
-        end
-      end
-    end
-    if ss_deleted > 0
-      puts "C> \t- Removed #{ss_deleted} old SyncStatus objects."
-    else
-      puts "C> \t- No old SyncStatus objects to delete."
-    end
-  end
-  
-
 
   #Custom filters must have a type or be of type UserfileCustomFilter
   def self.ensure_custom_filters_have_a_type

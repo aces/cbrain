@@ -104,6 +104,8 @@ class CbrainSystemChecks < CbrainChecker
 
   end
   
+
+
   def self.a040_ensure_file_revision_system_is_active
 
     #-----------------------------------------------------------------------------
@@ -120,6 +122,39 @@ class CbrainSystemChecks < CbrainChecker
     end
     
   end
+
+
+
+  # Cleans up old syncstatus that are left in the database 
+  def self.a045_ensure_syncstatus_is_clean
+
+    #-----------------------------------------------------------------------------
+    puts "C> Cleaning up old SyncStatus objects..."
+    #-----------------------------------------------------------------------------
+
+    rr_ids = RemoteResource.where({}).raw_first_column(:id)
+    bad_ss = SyncStatus.where([ "remote_resource_id NOT IN (?)", rr_ids ])
+    ss_deleted = bad_ss.count
+    if ss_deleted > 0
+      bad_ss.destroy_all rescue true
+      puts "C> \t- Removed #{ss_deleted} old SyncStatus objects associated with obsolete resources."
+    else
+      puts "C> \t- No SyncStatus objects are associated with obsolete resources."
+    end
+    ss_uids = SyncStatus.where({}).raw_first_column(:userfile_id) || []
+    uids    = Userfile.where({}).raw_first_column(:id)            || []
+    bad_ids = (ss_uids - uids).uniq
+    if bad_ids.size > 0
+      SyncStatus.where(:userfile_id => nil).destroy_all rescue true
+      SyncStatus.where(:userfile_id => bad_ids.compact).destroy_all rescue true
+      puts "C> \t- Removed #{bad_ids.size} old SyncStatus objects associated with obsolete files."
+    else
+      puts "C> \t- No SyncStatus objects are associated with obsolete files."
+    end
+
+  end
+
+
 
   def self.a050_check_data_provider_cache_wipe
 
@@ -168,15 +203,17 @@ class CbrainSystemChecks < CbrainChecker
       puts "C> \t- WARNING: This could take a long time so you should not"
       puts "C> \t  start another instance of this Rails application."
       Dir.chdir(cache_root) do
+        dir_to_remove  = ".OLD_being_wiped.#{Process.pid}"
         Dir.foreach(".") do |entry|
           next unless File.directory?(entry) && entry =~ /^\d\d+$/ # only subdirectories named '00', '123' etc
-          newname = ".#{entry}_being_deleted.#{Process.pid}"
+          Dir.mkdir(dir_to_remove,0700) unless File.directory?(dir_to_remove)
+          newname    = "#{dir_to_remove}/#{entry}"
           renamed_ok = File.rename(entry,newname) rescue false
           if renamed_ok
             puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
-            system("{ /bin/rm -rf #{newname.bash_escape} </dev/null >/dev/null 2>/dev/null & } &")
           end
         end
+        system("{ /bin/rm -rf #{dir_to_remove.bash_escape} </dev/null >/dev/null 2>&1 & } &") if File.directory?(dir_to_remove)
       end
       puts "C> \t- Synchronization objects are being wiped..."
       SyncStatus.where( :remote_resource_id => myself.id ).destroy_all
@@ -189,7 +226,7 @@ class CbrainSystemChecks < CbrainChecker
       puts "C> \t- Wiping old files in Data Provider cache (in background)..."
 
       CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
-        wiped = DataProvider.cleanup_leftover_cache_files(true) rescue []
+        wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!") rescue []
         unless wiped.empty?
           Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
           Message.send_message(User.admin,

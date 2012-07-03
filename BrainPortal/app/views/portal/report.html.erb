@@ -88,8 +88,10 @@ in a tabular layout. Proceed as follow:
               [ 'Files - count',                               Userfile.table_name                                  ],
               [ 'Files - sum of sizes',                        Userfile.table_name + ".sum(size)"                   ],
               [ 'Files - total files in collections',          Userfile.table_name + ".sum(num_files)"              ],
+              [ 'Files - combined report',                     Userfile.table_name + ".combined_file_rep"           ],
               [ 'Tasks - count',                               CbrainTask.table_name                                ],
               [ 'Tasks - sum of workdir space',                CbrainTask.table_name + ".sum(cluster_workdir_size)" ],
+              [ 'Tasks - combined report',                     CbrainTask.table_name + ".combined_task_rep"         ],
             ] + ((current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) ? [
               [ 'Servers - count',                             RemoteResource.table_name                            ],
               [ 'Data Providers - count',                      DataProvider.table_name                              ],
@@ -126,53 +128,123 @@ in a tabular layout. Proceed as follow:
     </div>
 
     <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
+
+
       <%
+         # Generic TO_S proc for row and column headers
          to_s_proc = Proc.new { |x| x.to_s.demodulize }
          col_proc = to_s_proc
          row_proc = to_s_proc
+
+         # Special proc for columns which are IDs to models
          if @filter_col_key =~ /^(\w+)_id$/
            col_model = Regexp.last_match[1].classify.constantize
            col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
          end
+
+         # Special proc for rows which are IDs to models
          if @filter_row_key =~ /^(\w+)_id$/
            row_model = Regexp.last_match[1].classify.constantize
            row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
          end
+
+         vector_size = @table_content[@table_content.keys.first].size
+
+         # Standard proc for TD content (and totals too).
+         td_content_proc = Proc.new do |vector,td_filters|
+           pretty_cell_value = @filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s
+           index_count_filter(vector[0], @filter_model, @filter_fixed.merge( td_filters || {} ), :name => pretty_cell_value)
+         end
       %>
 
+
+
+      <%
+         # Special proc for combined file report
+         if params[:table_name] =~ /\.combined_file_rep$/
+           td_content_proc = Proc.new do |vector,td_filters|
+             size,num_entries,num_files,num_unk = vector
+             capture do
+      %>
+               <%= disk_space_info_display(size || 0) do %>
+                 <%= pretty_size(size) %></br>
+                 <%= 
+                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(num_files,"file")).gsub(/ / ,"&nbsp;").html_safe,
+                                     :controller => :userfiles,
+                                     :filters => @filter_fixed.merge(td_filters || {}),
+                                     :ajax => false
+                 %>
+                 <% if num_unk > 0 %>
+                   </br><%= pluralize(num_unk,"unknown").gsub(/ / ,"&nbsp;").html_safe %>
+                 <% end %>
+               <% end %>
+      <%
+             end # capture
+           end # proc
+         end # if
+      %>
+
+
+
+      <%
+         # Special proc for combined task report
+         if params[:table_name] =~ /\.combined_task_rep$/
+           td_content_proc = Proc.new do |vector,td_filters|
+             size,num_entries,num_unk = vector
+             capture do
+      %>
+                <%= disk_space_info_display(size || 0) do %>
+                   <%= format_task_size_unk(
+                         index_count_filter(num_entries, :tasks, @filter_fixed.merge(td_filters || {}), :show_zeros => 1 ),
+                         size || 0,
+                         num_unk
+                       )
+                   %>
+                <% end %>
+      <%
+             end # capture
+           end # proc
+         end # if
+      %>
+
+
+
       <table id="report_table" class="tablesorter">
+
         <thead>
         <tr>
         <th style="background-position: 50% 5%"></th>
           <% @table_col_values.each do |col_key| %>
             <th class="vertical_text_container" style="background-position: 50% 5%"><div class="vertical_text"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
           <% end %>
-        <th class="vertical_text_container" style="background-position: 50% 5%"><div class="vertical_text">Total</div></th>
+        <% v_height='22em' # note: the height of the 'Total' heading fixes the height of all other headings too %>
+        <th class="vertical_text_container" style="height: <%= v_height %>; background-position: 50% 5%"><div class="vertical_text">Total</div></th>
         </tr>
         </thead>
 
         <tbody>
-        <% total_total  = 0 %>
+
+        <% total_total  = Array.new(vector_size,0) %>
         <% total_of_col = {} %>
         <% @table_row_values.each do |row_key| %>
-          <% total_of_row = 0 %>
+          <% total_of_row = Array.new(vector_size,0) %>
           <tr>
           <th data-sortvalue="<%= row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
           <% @table_col_values.each do |col_key| %>
             <%
-               total_of_col[col_key] ||= 0
-               cell_value = @table_content[ [ row_key, col_key ] ]
+               total_of_col[col_key] ||= Array.new(vector_size,0)
+               cell_value = @table_content[ [ row_key, col_key ] ] # this is always an array, with 1, 2, ... n counts in it as elements
                if cell_value.present?
-                 total_of_row          += cell_value
-                 total_of_col[col_key] += cell_value
-                 total_total           += cell_value
+                 0.upto(vector_size-1) do |i|
+                   total_of_row[i]           += cell_value[i]
+                   total_of_col[col_key][i]  += cell_value[i]
+                   total_total[i]            += cell_value[i]
+                 end
                end
             %>
-            <% pretty_cell_value = @filter_show_proc ? @filter_show_proc.call(cell_value) : cell_value %>
-            <td data-sortvalue="<%= cell_value.presence || 0 %>"><%= index_count_filter(cell_value, @filter_model, @filter_fixed.merge({ @filter_row_key => row_key, @filter_col_key => col_key }), :name => pretty_cell_value) %></td>
+            <td data-sortvalue="<%= (cell_value.presence && cell_value[0].presence) || 0 %>"><%= cell_value and td_content_proc.call(cell_value, { @filter_row_key => row_key, @filter_col_key => col_key }) %></td>
           <% end %>
-          <% pretty_row_tot = @filter_show_proc ? @filter_show_proc.call(total_of_row) : total_of_row %>
-          <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= index_count_filter(total_of_row, @filter_model, @filter_fixed.merge({ @filter_row_key => row_key }), :name => pretty_row_tot) %></td>
+          <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= td_content_proc.call(total_of_row, { @filter_row_key => row_key }) %></td>
           </tr>
         <% end %>
 
@@ -182,14 +254,16 @@ in a tabular layout. Proceed as follow:
           <th>Total</th>
           <% @table_col_values.each do |col_key| %>
             <% col_tot = total_of_col[col_key] %>
-            <% pretty_col_tot = @filter_show_proc ? @filter_show_proc.call(col_tot) : col_tot %>
-            <td><%= index_count_filter(col_tot, @filter_model, @filter_fixed.merge({ @filter_col_key => col_key }), :name => pretty_col_tot) %></td>
+            <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
           <% end %>
-          <% pretty_tot_tot = @filter_show_proc ? @filter_show_proc.call(total_total) : total_total %>
-          <td><%= index_count_filter(total_total, @filter_model, @filter_fixed, :name => pretty_tot_tot) %></td>
+          <td><%= td_content_proc.call(total_total, {}) %></td>
         </tr>
 
       </table>
+
+      <% if params[:table_name] =~ /\.combined_(file|task)_rep$/ %>
+        <p><%= disk_usage_legend %>
+      <% end %>
 
       <script type="text/javascript">
         $(document).ready(function() { 

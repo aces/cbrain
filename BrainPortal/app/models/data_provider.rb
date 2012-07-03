@@ -286,7 +286,7 @@ class DataProvider < ActiveRecord::Base
   # This value is used to trigger DP cache wipes
   # in the validation code (see CbrainSystemChecks)
   # Instructions: when the caching system changes,
-  # put a legal DateTime value here that is
+  # put a legal DateTime value here that is just
   # BEFORE the commit that implements the change,
   # then commit this file with the new caching system.
   # It's important that this value always be BEFORE
@@ -549,7 +549,7 @@ class DataProvider < ActiveRecord::Base
   def cache_erase(userfile)
     uid = userfile.id
     cache_root = self.class.cache_rootdir
-    SyncStatus.ready_to_modify_cache(userfile,'ProvNewer') do
+    SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/01/23/45/basename"
       begin
@@ -1125,30 +1125,49 @@ class DataProvider < ActiveRecord::Base
     rr_id = RemoteResource.current_resource.id
     Dir.chdir(self.cache_rootdir) do
       dirlist = []
+
       # The find command below has been tested on Linux and Mac OS X
       # It MUST generate exactly three levels deep so it can properly
       # infer the original file ID !
       IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
-      ids2path = {}
+      uids2path = {} # this is the main list of what to delete (preliminary)
       dirlist.each do |path|  # path should be  "./01/23/45\n"
         next unless path =~ /^\.\/(\d+)\/(\d+)\/(\d+)\s*$/ # make sure
         idstring = Regexp.last_match[1..3].join("")
-        ids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
+        uids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
       end
-      return [] if ids2path.empty?
-      Userfile.where({}).raw_first_column(:id).each { |id| ids2path.delete(id) }
-      return [] if ids2path.empty?
+
+      # Might as well clean spurious SyncStatus entries too.
+      # These are the ones that say something's in the cache,
+      # yet we couldn't find any files on disk.
+      supposedly_in_cache      = SyncStatus.where( :remote_resource_id => rr_id, :status => [ 'InSync', 'CacheNewer' ] )
+      supposedly_in_cache_uids = supposedly_in_cache.raw_first_column(:userfile_id)
+      not_in_cache_uids        = supposedly_in_cache_uids - uids2path.keys
+      supposedly_in_cache.where( :userfile_id => not_in_cache_uids ).destroy_all
+
+      return [] if uids2path.empty?
+
+      # We wipe from the cache some dirs for which the no
+      # userfile exists, or dirs for which the userfile exist
+      # but has no known synchronization status.
+      all_uids        = Userfile.where({}).raw_first_column(:id)
+      all_synced_uids = SyncStatus.where( :remote_resource_id => rr_id ).raw_first_column(:userfile_id)
+      keep_cache_uids = all_uids & all_synced_uids & uids2path.keys
+      keep_cache_uids.each { |id| uids2path.delete(id) } # prune the list: leave only the paths to delete!
+
+      return [] if uids2path.empty?
+
+      # Erase entries on disk!
       if do_it
         maybe_spurious_parents={}
-        ids2path.each do |id,path| # 12345, "01/23/45"
+        uids2path.each do |id,path| # 12345, "01/23/45"
           FileUtils.remove_entry(path, true) rescue true
-          SyncStatus.where(:userfile_id => id).destroy_all rescue true
           maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
           maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"
         end
         maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
       end
-      return ids2path.values
+      return uids2path.values
     end
   end
   
