@@ -304,7 +304,9 @@ in a tabular layout. Proceed as follow:
             <% col_tot = total_of_col[col_key] %>
             <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
           <% end %>
-          <td><%= td_content_proc.call(total_total, {}) %></td>
+          <% if @table_col_values.size > 1 %>
+            <td><%= td_content_proc.call(total_total, {}) %></td>
+          <% end %>
           <% if left_header_column %>
             <th>Total</th>
           <% end %>
@@ -332,7 +334,9 @@ in a tabular layout. Proceed as follow:
             <% @table_col_values.each do |col_key| %>
               <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
             <% end %>
-            <th<%= bot_th_att %>><div<%= bot_th_div_att %>>Total</div></th>
+            <% if @table_col_values.size > 1 %>
+              <th<%= bot_th_att %>><div<%= bot_th_div_att %>>Total</div></th>
+            <% end %>
             <% if left_header_column %>
               <th></th>
             <% end %>
