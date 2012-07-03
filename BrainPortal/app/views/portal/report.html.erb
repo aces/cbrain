@@ -318,16 +318,26 @@ in a tabular layout. Proceed as follow:
         %>
 
         <% if bottom_header_row %>
+
+          <%
+             # HTML attribute modifications for vertical headers (default) or wider headers
+             if vertical_headers
+               bot_th_att     = " class=\"down_vertical_text_container\"".html_safe
+               bot_th_div_att = " class=\"down_vertical_text2\"".html_safe
+             end
+          %>
+
           <tr>
             <th></th>
             <% @table_col_values.each do |col_key| %>
-              <th class="down_vertical_text_container"><div class="down_vertical_text2"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+              <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
             <% end %>
-            <th class="down_vertical_text_container"><div class="down_vertical_text2">Total</div></th>
+            <th<%= bot_th_att %>><div<%= bot_th_div_att %>>Total</div></th>
             <% if left_header_column %>
               <th></th>
             <% end %>
           </tr>
+
         <% end %>
 
       </table>
