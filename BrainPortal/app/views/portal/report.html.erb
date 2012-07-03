@@ -163,19 +163,20 @@ in a tabular layout. Proceed as follow:
          # Special proc for combined file report
          if params[:table_name] =~ /\.combined_file_rep$/
            td_content_proc = Proc.new do |vector,td_filters|
-             size,num_entries,num_files,num_unk = vector
+             size,num_entries,sum_files,num_size_unk,num_nf_unk = vector
+             sum_files += num_nf_unk
              capture do
       %>
                <%= disk_space_info_display(size || 0) do %>
                  <%= pretty_size(size) %></br>
                  <%= 
-                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(num_files,"file")),
+                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(sum_files,"file")),
                                      :controller => :userfiles,
                                      :filters => @filter_fixed.merge(td_filters || {}),
                                      :ajax => false
                  %>
-                 <% if num_unk > 0 %>
-                   </br><%= pluralize(num_unk,"unknown") %>
+                 <% if num_size_unk > 0 %>
+                   </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
                  <% end %>
                <% end %>
       <%
@@ -212,23 +213,49 @@ in a tabular layout. Proceed as follow:
       <table id="report_table" class="tablesorter">
 
         <%
-           th_att = "" ; th_div_att = " style=\"margin-right: 1.5em\"".html_safe
-           if params[:table_name] !~ /\.combined_(file|task)_rep$/ 
+           # HTML attribute modifications for vertical headers (default) or wider headers
+           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep$/)
+           th_att     = ""
+           th_div_att = " style=\"margin-right: 1.5em\"".html_safe
+           if vertical_headers
              v_height   = "22em"
              th_att     = " class=\"vertical_text_container\" style=\"background-position: 50% 5%; height: #{v_height}\"".html_safe
              th_div_att = " class=\"vertical_text\"".html_safe
            end
         %>
 
+        <%
+           # Determine if we add an extra row or column to repeat the headers
+           left_header_column = vertical_headers ? (@table_col_values.size > 15) : (@table_col_values.size > 10)
+           bottom_header_row  =                    (@table_row_values.size > 15)
+        %>
+
+        <%
+          ################################
+          # Top headers of table
+          ################################
+        %>
+
         <thead>
-        <tr>
-        <th<%= th_att %>></th>
-          <% @table_col_values.each do |col_key| %>
-            <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
-          <% end %>
-        <th<%= th_att %>><div<%= th_div_att %>>Total</div></th>
-        </tr>
+          <tr>
+            <th<%= th_att %>></th>
+            <% @table_col_values.each do |col_key| %>
+              <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+            <% end %>
+            <% if @table_col_values.size > 1 %>
+              <th<%= th_att %>><div<%= th_div_att %>>Total</div></th>
+            <% end %>
+            <% if left_header_column %>
+              <th<%= th_att %>></th>
+            <% end %>
+          </tr>
         </thead>
+
+        <%
+          ################################
+          # Main body of table
+          ################################
+        %>
 
         <tbody>
 
@@ -237,7 +264,8 @@ in a tabular layout. Proceed as follow:
         <% @table_row_values.each do |row_key| %>
           <% total_of_row = Array.new(vector_size,0) %>
           <tr>
-          <th data-sortvalue="<%= row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
+          <% row_sort_value = row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>
+          <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
           <% @table_col_values.each do |col_key| %>
             <%
                total_of_col[col_key] ||= Array.new(vector_size,0)
@@ -252,12 +280,24 @@ in a tabular layout. Proceed as follow:
             %>
             <td data-sortvalue="<%= (cell_value.presence && cell_value[0].presence) || 0 %>"><%= cell_value and td_content_proc.call(cell_value, { @filter_row_key => row_key, @filter_col_key => col_key }) %></td>
           <% end %>
-          <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= td_content_proc.call(total_of_row, { @filter_row_key => row_key }) %></td>
+          <% if @table_col_values.size > 1 %>
+            <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= td_content_proc.call(total_of_row, { @filter_row_key => row_key }) %></td>
+          <% end %>
+          <% if left_header_column %>
+          <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
+          <% end %>
           </tr>
         <% end %>
 
         </tbody>
 
+        <%
+          ################################
+          # 'Total' final row of table
+          ################################
+        %>
+
+        <% if @table_row_values.size > 1 %>
         <tr>
           <th>Total</th>
           <% @table_col_values.each do |col_key| %>
@@ -265,9 +305,38 @@ in a tabular layout. Proceed as follow:
             <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
           <% end %>
           <td><%= td_content_proc.call(total_total, {}) %></td>
+          <% if left_header_column %>
+            <th>Total</th>
+          <% end %>
         </tr>
+        <% end %>
+
+        <%
+          ################################
+          # Repeat column headers
+          ################################
+        %>
+
+        <% if bottom_header_row %>
+          <tr>
+            <th></th>
+            <% @table_col_values.each do |col_key| %>
+              <th class="down_vertical_text_container"><div class="down_vertical_text2"><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+            <% end %>
+            <th class="down_vertical_text_container"><div class="down_vertical_text2">Total</div></th>
+            <% if left_header_column %>
+              <th></th>
+            <% end %>
+          </tr>
+        <% end %>
 
       </table>
+
+      <%
+        ################################
+        # Legend (if necessary)
+        ################################
+      %>
 
       <% if params[:table_name] =~ /\.combined_(file|task)_rep$/ %>
         <p><%= disk_usage_legend %>
@@ -379,7 +448,8 @@ in a tabular layout. Proceed as follow:
   <% end %>
 
   <% if @table_ok %>
-    <%= submit_tag('Refresh Report', :name => :refresh) %>
+    <%= submit_tag('Refresh Report',    :name => :refresh) %>
+    <%= submit_tag('Flip Rows/Columns', :name => :flip) %>
   <% else %>
     <%= submit_tag('Generate Report', :name => :generate) if att_ok %>
   <% end %>
