@@ -169,13 +169,13 @@ in a tabular layout. Proceed as follow:
                <%= disk_space_info_display(size || 0) do %>
                  <%= pretty_size(size) %></br>
                  <%= 
-                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(num_files,"file")).gsub(/ / ,"&nbsp;").html_safe,
+                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(num_files,"file")),
                                      :controller => :userfiles,
                                      :filters => @filter_fixed.merge(td_filters || {}),
                                      :ajax => false
                  %>
                  <% if num_unk > 0 %>
-                   </br><%= pluralize(num_unk,"unknown").gsub(/ / ,"&nbsp;").html_safe %>
+                   </br><%= pluralize(num_unk,"unknown") %>
                  <% end %>
                <% end %>
       <%

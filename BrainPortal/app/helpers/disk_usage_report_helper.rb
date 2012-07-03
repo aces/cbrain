@@ -56,7 +56,7 @@ module DiskUsageReportHelper
     contain   = "<span class=\"display_cell dp_disk_usage_color_span\">"
     contain  += "<div class=\"dp_disk_usage_color_block\" style=\"background: #{cellcolor}\"></div>"
     contain  += "</span>"
-    contain  += "<span class=\"display_cell\">"
+    contain  += "<span class=\"display_cell no_wrap\">"
     contain  += "#{text}"
     contain  += "</span>"
 
