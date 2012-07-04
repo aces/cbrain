@@ -179,12 +179,23 @@ class DataProvidersController < ApplicationController
   end
 
   def dp_access #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
-    @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
+                   (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
+                   (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
+                   (a.name               <=> b.name)
+                 end
+    @users     = current_user.available_users.all.sort do |a,b|
+                   (a.account_locked?.to_s <=> b.account_locked?.to_s) ||
+                   (a.login                <=> b.login)
+                 end
   end
 
   def dp_transfers #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+    @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
+                   (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
+                   (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
+                   (a.name               <=> b.name)
+                 end
   end
 
   #Browse the files of a data provider.

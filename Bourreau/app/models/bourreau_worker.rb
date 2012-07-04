@@ -213,6 +213,7 @@ class BourreauWorker < Worker
 
       # Record bourreau delay time for Queued -> On CPU
       if initial_status == 'Queued' && new_status =~ /On CPU|Data Ready/
+        task.addlog("State updated to #{new_status}")
         @rr.meta.reload
         n2q = task.meta[:last_delay_new_to_queued] || 0 # task-specific
         q2r = Time.now - initial_change_time

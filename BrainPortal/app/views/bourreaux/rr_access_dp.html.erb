@@ -40,7 +40,7 @@ If you want to launch tasks on a particular Execution Server, make sure they are
 configured to access files on Data Providers marked by green circles (&nbsp;<%= o_icon %>&nbsp;).
 </p>
 <p class="medium_paragraphs">
-Data Provider identified below their name with <%= html_colorize("(Not Syncable)", 'purple') %>
+Data Provider identified below their name with <%= html_colorize("(not syncable)", 'purple') %>
 indicate their files can still be accessed through streaming APIs, but can never be fully
 synchronized on any server.
 </p>
@@ -51,8 +51,6 @@ at all, in any way (streaming or synchronized), even if the Data Provider seems 
 </p>
 
 <%
-dps_online    = DataProvider.select { |d| d.online? }
-dps_offline   = @dps - dps_online
 # We can refresh all online and accessible bourreaux,
 # and the single BrainPortal that corresponds to the current server.
 rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user) && ! (b.is_a?(BrainPortal) && b.id != RemoteResource.current_resource.id)}
@@ -64,10 +62,10 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
     
     <tr>
       <th colspan="3">Servers</th>
-      <th colspan="<%= dps_online.count %>">Data Providers</th>
+      <th colspan="<%= @dps.count %>">Data Providers</th>
     </tr>
 
-    <tr>
+    <tr class="no_wrap">
       <th>Name</th>
       <th>Type</th>
       <th>
@@ -76,19 +74,27 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
           (<%= link_to "Refresh all", { :refresh => 'all' } %>)
         <% end %>
       </th>
-      <% dps_online.each do |dp| %>
+      <% @dps.each do |dp| %>
         <th>
+        <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
         <%= link_to_data_provider_if_accessible(dp, current_user) %>
-        <%= html_colorize("<br>(Not Syncable)".html_safe, 'purple') if dp.not_syncable? %>
+        <br>
+        <%= html_colorize("(offline)")                          if ! dp.online? %>
+        <%= html_colorize("(not syncable)".html_safe, 'purple') if dp.not_syncable? %>
+        <%= html_colorize("(read only)".html_safe, 'purple')    if dp.read_only? %>
         </th>
       <% end %>
     </tr>
     
     <% @rrs.each do |rr| %>
-      <tr>
-        <td class="left_align no_wrap"><%= link_to_bourreau_if_accessible(rr, current_user, :html_options => { :class => rr.online? ? nil : 'error_link' }) %><%= " (offline)" unless rr.online? %></td>
+      <tr class="no_wrap">
+        <th class="left_align">
+          <%= nil and link_to_bourreau_if_accessible(rr, current_user, :html_options => { :class => rr.online? ? nil : 'error_link' }) %>
+          <%= link_to_bourreau_if_accessible(rr, current_user) %>
+          <%= html_colorize("(offline)") unless rr.online? %>
+        </th>
         <td><%= rr.is_a?(Bourreau) ? "Execution" : "Portal" %></td>
-        <td class="left_align no_wrap">
+        <td class="left_align">
           <% last_update = rr.meta[:data_provider_statuses_last_update] %>
           <% if last_update.blank? %>
             (Unknown)
@@ -100,7 +106,7 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
           <% end %>
         </td>
         <% dp_stats = rr.meta[:data_provider_statuses] %>
-        <% dps_online.each do |dp| %>
+        <% @dps.each do |dp| %>
           <td>
             <% if dp_stats.blank? || dp_stats.empty? %>
               <%= html_colorize('?','purple') %>
@@ -123,7 +129,8 @@ rr_can_refresh = @rrs.select { |b| b.online? && b.has_owner_access?(current_user
   
   <%= center_legend("Data Provider Status:", [ [o_icon, "alive"], [times_icon, "down"], [html_colorize('?','purple'), "no information"] ] ) %>
  
-  <% if !dps_offline.empty? %>
+  <% if false && !dps_offline.empty? %>
+    <% # commented out %>
     </p>    
     <strong>Data Providers offline:</strong> 
     <%= array_to_table(dps_offline, :ratio => "1:10", :min_data => 10) do |dp| %>
