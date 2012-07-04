@@ -65,8 +65,8 @@ there are three other factors to take into account:
 
 <p class="medium_paragraphs">
 In such cases, Data Providers will be annotated with
-<%= html_colorize("(offline)") %>, <%= html_colorize("(read only)") %> and/or
-<%= html_colorize("(portal has no access)") %>.
+<%= html_colorize("(offline)") %>, <%= html_colorize("(read only)", "purple") %> and/or
+<%= html_colorize("(portal has no access)", "purple") %>.
 If all three properties allow the file transfers, the second
 symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 </p>
@@ -88,10 +88,10 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
            <%= link_to_data_provider_if_accessible(dp, current_user) %>
            <br>
-           <%= html_colorize("(offline)")   if ! dp.online? %>
-           <%= html_colorize("(read only)") if   dp.read_only? %>
+           <%= html_colorize("(offline)")             if ! dp.online? %>
+           <%= html_colorize("(read only)", "purple") if   dp.read_only? %>
            <% if ! dp.rr_allowed_syncing? %>
-             <%= html_colorize("(portal has no access)") %>
+             <%= html_colorize("(portal has no access)", "purple") %>
            <% end %>
         </th>
       <% end %>
@@ -107,7 +107,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <%= link_to_data_provider_if_accessible(dp_row, current_user) %>
            <%= html_colorize("(offline)")   if ! dp_row.online? %>
            <% if ! dp_row.rr_allowed_syncing? %>
-             <br><%= html_colorize("(portal has no access)") %>
+             <br><%= html_colorize("(portal has no access)", "purple") %>
            <% end %>
         </th>
         <% @providers.each do |dp_col| %>
