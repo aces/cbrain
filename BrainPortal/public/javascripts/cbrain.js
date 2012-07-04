@@ -536,16 +536,15 @@ jQuery(
        var search = target.find(".filter_search");
        target.show();
        search.focus();
+       header.closest("th").mouseleave(function(){
+         if(filter_header_timeout) {
+           clearTimeout(filter_header_timeout);
+           filter_header_timeout = null;
+         }
+         $(target).hide();
+         return false;
+       });
      }, 500);
-     return false;
-   }).live("mouseleave", function(){
-     if(filter_header_timeout) {
-       clearTimeout(filter_header_timeout);
-       filter_header_timeout = null;
-     }
-     var header = $(this);
-     var target = header.attr("data-target");
-     $(target).hide();
      return false;
    });
    
