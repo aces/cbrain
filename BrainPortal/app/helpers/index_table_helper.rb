@@ -190,12 +190,6 @@ module IndexTableHelper
         @header_options[:colspan] ||= @cells.size
         filters = @header_options.delete :filters
         
-        # unless filters.blank?
-        #   @header_options[:class] ||= ""
-        #   @header_options[:class]  += " filter_header"
-        #   @header_options["data-target"] = "#filters_list_#{self.object_id}"
-        # end
-        
         atts = @header_options.to_html_attributes
         html = [ "<th #{atts}>" ]
         unless filters.blank?

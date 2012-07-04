@@ -76,7 +76,6 @@ CbrainRailsPortal::Application.routes.draw do
       get  'load_info'
       get  'rr_disk_usage'
       get  'rr_access'
-      get  'task_workdir_size'
       post 'cleanup_caches'
       get  'rr_access_dp'
     end
@@ -89,7 +88,6 @@ CbrainRailsPortal::Application.routes.draw do
       get  'is_alive'
     end
     collection do
-      get  'dp_disk_usage'
       get  'dp_access'
       get  'dp_transfers'
     end
