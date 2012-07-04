@@ -231,8 +231,15 @@ class PortalController < ApplicationController
     table_op        = 'count'
     row_type        = params[:row_type]   || ""
     col_type        = params[:col_type]   || ""
-    submit          = extract_params_key([ :generate, :refresh ], "look")
+    submit          = extract_params_key([ :generate, :refresh, :flip ], "look")
     date_filtration = params[:date_range] || {}
+
+    if submit == :flip
+      params[:row_type] = col_type
+      params[:col_type] = row_type
+      row_type, col_type = col_type, row_type
+      submit = :refresh
+    end
 
     if table_name =~ /^(\w+)\.(\S+)$/
       table_name = Regexp.last_match[1]
@@ -301,24 +308,27 @@ class PortalController < ApplicationController
     table_content_scope = add_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
         date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"], date_filtration["date_attribute"])
 
-    # Compute content
+    # Compute content fetcher
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]
     #table_content_scope = table_content_scope.where(:id => -999) # for debugging interface appearance -> no entries
-    table_content_grouped = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] )
+    table_content_fetcher = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] )
+    table_content_fetcher = table_content_fetcher.real_tasks if table_name == 'cbrain_tasks'
+
+    # Fetch one or several reports using the fetcher
     if    table_ops[0] == :combined_file_rep # special fetch of multiple values for file report
-      file_sum_size      = table_content_grouped.sum(:size)
-      file_counts        = table_content_grouped.count
-      file_sum_num_files = table_content_grouped.sum(:num_files)
-      file_sum_num_unk   = table_content_grouped.where(:size => nil).count
-      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_sum_num_unk) # create quadruplets as values
+      file_sum_size      = table_content_fetcher.sum(:size)
+      file_counts        = table_content_fetcher.count
+      file_sum_num_files = table_content_fetcher.sum(:num_files)
+      file_cnt_size_unk  = table_content_fetcher.where(:size      => nil).count
+      file_cnt_nf_unk    = table_content_fetcher.where(:num_files => nil).count
+      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_cnt_size_unk, file_cnt_nf_unk) # create quintuplets as values
     elsif table_ops[0] == :combined_task_rep # special fetch of multiple values for task report
-      table_content_grouped = table_content_grouped.real_tasks
-      task_sum_size      = table_content_grouped.sum(:cluster_workdir_size)
-      task_counts        = table_content_grouped.count
-      task_no_size       = table_content_grouped.where( :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count
+      task_sum_size      = table_content_fetcher.sum(:cluster_workdir_size)
+      task_counts        = table_content_fetcher.count
+      task_no_size       = table_content_fetcher.where( :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count
       @table_content     = merge_vals_as_array(task_sum_size, task_counts, task_no_size) # create triplets
     else
-      generic_count  = table_content_grouped.send(*table_ops)
+      generic_count  = table_content_fetcher.send(*table_ops)
       @table_content = merge_vals_as_array(generic_count) # create singletons
     end
 
