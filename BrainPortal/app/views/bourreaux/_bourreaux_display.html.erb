@@ -43,8 +43,8 @@
   %>
   
   <%= link_to "Task Workdir Size Report",
-              {:controller  => :bourreaux, :action  => :task_workdir_size},
-              :datatype  => 'script', :class  => "button"
+             {:controller  => :portal, :action  => :report, :table_name => "cbrain_tasks.combined_task_rep", 
+             :row_type => :user_id, :col_type => :bourreau_id, :generate => "ok" }, :class  => "button"
   %>
   
   <%= link_to "Access to Data Providers",

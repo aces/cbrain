@@ -46,12 +46,12 @@
   <%= link_to "Transfer Restrictions Report",
              {:controller  => :data_providers, :action  => :dp_transfers},
               :datatype  => 'script', :class  => "button"
-  %>   
+  %>
   
   <%= link_to "Disk Usage Report",
-              {:controller  => :data_providers, :action  => :dp_disk_usage},
-              :datatype  => 'script', :class  => "button"
-  %>   
+             {:controller  => :portal, :action  => :report, :table_name => "userfiles.combined_file_rep", 
+             :row_type => :user_id, :col_type => :data_provider_id, :generate => "ok" }, :class  => "button"
+  %>  
   
   <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
 </div>

@@ -178,23 +178,6 @@ class DataProvidersController < ApplicationController
     end  
   end
 
-  def dp_disk_usage #:nodoc:
-    @providers = DataProvider.find_all_accessible_by_user(current_user).all
-
-    # Users in statistics table
-    userlist         = current_user.available_users.all
-
-    # Create disk usage statistics table
-    stats_options = { :users            => userlist,
-                      :providers        => @providers,
-                    }
-    @report_stats    = ModelsReport.dp_usage_statistics(stats_options)
-
-    # Keys and arrays into statistics tables, for HTML output
-    @report_dps_all     = @report_stats['!dps+all?!']      # DPs   + 'all'?
-    @report_users_all   = @report_stats['!users+all?!']    # users + 'all'?
-  end
-
   def dp_access #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
     @users     = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
