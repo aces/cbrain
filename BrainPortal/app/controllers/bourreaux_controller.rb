@@ -503,8 +503,16 @@ class BourreauxController < ApplicationController
   end
 
   def rr_access_dp
-    @rrs = RemoteResource.find_all_accessible_by_user(current_user).all.sort { |a,b| (b.type <=> a.type).nonzero? || (a.name <=> b.name) }
-    @dps = DataProvider.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
+    @rrs = RemoteResource.find_all_accessible_by_user(current_user).all.sort do |a,b|
+           (b.online?.to_s <=> a.online?.to_s).nonzero? ||
+           (b.type         <=> a.type).nonzero?         ||
+           (a.name         <=> b.name)
+    end
+    @dps = DataProvider.find_all_accessible_by_user(current_user).all.sort   do |a,b|
+           (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
+           (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
+           (a.name               <=> b.name)
+    end
 
     refresh    = params[:refresh]
     refresh_bs = []
