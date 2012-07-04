@@ -36,10 +36,16 @@
                         :value     => set_toggle(@filter_params["tree_sort"])
     %>
     <br>
-    <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show your files ": "Show all available files", 
+    <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show only your own files": "Show all available files", 
                         :parameter => :view_all,
                         :value     => set_toggle(@filter_params["view_all"]) 
     %>
+    <br>
+    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Hide hidden files": "Show hidden files", 
+                        :parameter => :view_hidden,
+                        :value     => set_toggle(@filter_params["view_hidden"]) 
+    %>
+    (<%= hidden_icon %>)
     <br>
     Number of files per page:
     <%= ajax_onchange_select( :per_page, userfiles_path(:update_filter => true), options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :datatype => "script") %>

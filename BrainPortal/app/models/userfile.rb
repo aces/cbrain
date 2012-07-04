@@ -83,7 +83,7 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :tree_children
   attr_accessor           :rank_order
   
-  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :format_source_id, :tag_ids
+  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :format_source_id, :tag_ids, :hidden
   
   scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   scope                   :file_format, lambda { |f|

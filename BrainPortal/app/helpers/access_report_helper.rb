@@ -34,6 +34,11 @@ module AccessReportHelper
     "<span style=\"color:#{color}\" class=\"bold_icon\">&#927;</span>".html_safe
   end
 
+  # Produces a pretty symbol for hidden resources
+  def hidden_icon(color="purple")
+    "<span style=\"color:#{color}\" class=\"bold_icon\">H</span>".html_safe
+  end
+
   # Produces a centered legend 
   def center_legend(title, legend_a)
     legend  = "<center>"

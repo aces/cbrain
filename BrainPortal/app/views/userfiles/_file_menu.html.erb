@@ -84,6 +84,10 @@
           <%= hijacker_submit_button("Update", :name => :update_owner, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>   
         <% end %>
         <hr>
+        Mark Or Unmark As Hidden (<%= hidden_icon %>):
+        <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
+        <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
                                                      :datatype => 'html',

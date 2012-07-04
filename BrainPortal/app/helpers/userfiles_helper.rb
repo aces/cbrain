@@ -39,6 +39,10 @@ module UserfilesHelper
     html << ajax_link(file_icon, {:action => :index, :clear_filter => true, :find_file_id => userfile.id}, :datatype => "script", :title => "Show in Unfiltered File List")
     html << " "
     html << link_to_userfile_if_accessible(userfile, nil, link_options)
+    if userfile.hidden?
+      html << " "
+      html << hidden_icon
+    end
     userfile.sync_status.each do |syncstat| 
       html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
     end 

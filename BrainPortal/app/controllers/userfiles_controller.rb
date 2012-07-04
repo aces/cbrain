@@ -73,6 +73,11 @@ class UserfilesController < ApplicationController
     if current_project
       @header_scope = @header_scope.where( :group_id  => current_project.id )
     end
+
+    # Filter by 'view hidden' or not
+    unless @filter_params["view_hidden"] == 'on'
+      @header_scope = @header_scope.where( :hidden => false ) # show only the non-hidden files
+    end
     
     
     
@@ -547,7 +552,7 @@ class UserfilesController < ApplicationController
       @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
       @userfile = @userfile.class_update
       
-      if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id ) )
+      if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id hidden ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
           @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
@@ -573,9 +578,9 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids        = params[:file_ids]
-    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type ], "")
+    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden ], "")
     commit_humanize = commit_name.to_s.humanize
-    
+
     # First selection no need to be in spawn
     invalid_tags     = 0
     unable_to_update = nil
@@ -597,6 +602,8 @@ class UserfilesController < ApplicationController
           ["update_attributes_with_logging", {:user_id => new_user_id}, current_user]
         when :update_file_type
           ["update_file_type", params[:file_type], current_user]
+        when :update_hidden
+          ["update_attributes_with_logging", {:hidden => params[:userfile][:hidden]}, current_user, [ 'hidden' ] ]
         else
           nil
       end

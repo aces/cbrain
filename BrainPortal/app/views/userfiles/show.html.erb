@@ -96,7 +96,13 @@
       <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
     <% end %>
 
-    <% t.cell("Parent", :show_width => 2) { link_to_userfile_if_accessible(@userfile.parent) } %>
+    <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
+
+    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon) do %>
+        <%= hidden_field_tag "userfile[hidden]", "0" %>
+        <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
+        <%= hidden_icon %>
+    <% end %>
 
     <% t.cell("Children", :show_width => 2) do %>
       <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
