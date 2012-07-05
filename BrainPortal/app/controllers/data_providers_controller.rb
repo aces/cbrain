@@ -204,21 +204,22 @@ class DataProvidersController < ApplicationController
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    @filter_params["browse_hash"] ||= {}
-    @per_page = @filter_params["browse_hash"]["per_page"]
-    validate_pagination_values # validates @per_page and @current_page
-    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
-    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
-    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
-
-    unless @provider.is_browsable?
-      flash[:error] = "You cannot browse this provider."
+    unless @provider.is_browsable? && @provider.online?
+      flash[:error]  = "You cannot browse Data Provider '#{@provider.name}'.\n"
+      flash[:error] += "It is currently marked as 'offline'." if ! @provider.online.
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }
       end
       return
     end
+
+    @filter_params["browse_hash"] ||= {}
+    @per_page = @filter_params["browse_hash"]["per_page"]
+    validate_pagination_values # validates @per_page and @current_page
+    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
+    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
 
     begin
       # [ base, size, type, mtime ]
