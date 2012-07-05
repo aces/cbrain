@@ -136,7 +136,7 @@ class UserfilesController < ApplicationController
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
-      @userfiles_total = @filtered_scope.size
+      @userfiles_total = @filtered_scope.count
       ordered_real  = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -177,6 +177,14 @@ class UserfilesController < ApplicationController
       pager.replace(ordered_real || [])
       pager.total_entries = @userfiles_total
       pager
+    end
+
+    # Count the number of hidden files, only if the current view option is not showing them.
+    @hidden_total = 0
+    if @filter_params["view_hidden"] != 'on'
+      hidden_count_scope = @filtered_scope.scoped # duplicate it to avoid changing it
+      hidden_count_scope.where_values.any? { |arv| ((arv.try(:left).try(:name) == :hidden) && (arv.right=true)) rescue nil }
+      @hidden_total = hidden_count_scope.count
     end
     
     respond_to do |format|

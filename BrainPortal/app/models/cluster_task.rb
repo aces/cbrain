@@ -1124,7 +1124,8 @@ class ClusterTask < CbrainTask
                    :name             => tar_file,
                    :data_provider_id => dp_dest,
                    :user_id          => self.user_id,
-                   :group_id         => self.group_id
+                   :group_id         => self.group_id,
+                   :hidden           => true
                  )
       file.save!
       file.cache_copy_from_local_file(tar_file)
