@@ -180,11 +180,19 @@ class UserfilesController < ApplicationController
     end
 
     # Count the number of hidden files, only if the current view option is not showing them.
-    @hidden_total = 0
+    # This code depends on AREL's 'where_values' method, which is not official ?
+    @hidden_total = nil
     if @filter_params["view_hidden"] != 'on'
-      hidden_count_scope = @filtered_scope.scoped # duplicate it to avoid changing it
-      hidden_count_scope.where_values.any? { |arv| ((arv.try(:left).try(:name) == :hidden) && (arv.right=true)) rescue nil }
-      @hidden_total = hidden_count_scope.count
+      begin
+        hidden_clause = @filtered_scope.where_values.detect { |arv| (arv.left.name == :hidden && arv.right == false) rescue nil }
+        if hidden_clause
+          @filtered_scope.where_values.reject! { |arv| arv == hidden_clause }
+          @hidden_total = @filtered_scope.where(:hidden => true).count
+          @filtered_scope.where_values << hidden_clause
+        end
+      rescue  # means we got a problem with where_values() I suppose... check Rails
+        @hidden_total = '???'
+      end
     end
     
     respond_to do |format|
