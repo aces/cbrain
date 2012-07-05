@@ -41,24 +41,11 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
+    
     #------------------------------
-    # Filtered scope
+    # Header scope
     #------------------------------
 
-    # Prepare filters
-    @filter_params["filter_hash"]                 ||= {}
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
-    @filter_params["filter_tags_array"]           ||= [] 
-    @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
-   
-    # Prepare custom filters
-    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
-        
-    # Prepare tag filters
-    tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
-    
     @header_scope = Userfile.scoped
 
     # Restrict by 'view all' or not
@@ -79,8 +66,28 @@ class UserfilesController < ApplicationController
       @header_scope = @header_scope.where( :hidden => false ) # show only the non-hidden files
     end
     
-    
-    
+    # The userfile index only show and count the main files, not their subformats.
+    @header_scope = @header_scope.where( :format_source_id => nil )
+
+
+
+    #------------------------------
+    # Filtered scope
+    #------------------------------
+
+    # Prepare filters
+    @filter_params["filter_hash"]                 ||= {}
+    @filter_params["filter_custom_filters_array"] ||= []
+    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
+    @filter_params["filter_tags_array"]           ||= [] 
+    @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
+   
+    # Prepare custom filters
+    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
+        
+    # Prepare tag filters
+    tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
     #Apply filters
     @filtered_scope = base_filtered_scope(@header_scope)
     
@@ -93,11 +100,13 @@ class UserfilesController < ApplicationController
       @filtered_scope = @filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
     
+
+
     #------------------------------
     # Sorting scope
     #------------------------------
 
-    sorted_scope = base_sorted_scope @filtered_scope.where( :format_source_id => nil )
+    sorted_scope = base_sorted_scope @filtered_scope
     
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
@@ -120,11 +129,18 @@ class UserfilesController < ApplicationController
     # Add a secondary sorting column (name)
     sorted_scope = sorted_scope.order('userfiles.name') unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
 
+
+
+    #------------------------------
+    # Pagination preparation
+    #------------------------------
+
     # For Pagination
     unless [:html, :js].include?(request.format.to_sym)
       @per_page = 999_999_999
     end
     offset = (@current_page - 1) * @per_page
+
 
     #------------------------------
     # Final paginated array of objects
@@ -171,6 +187,12 @@ class UserfilesController < ApplicationController
       end
       
     end
+
+
+
+    #------------------------------
+    # Real page of userfile objects
+    #------------------------------
 
     # Turn the array ordered_real into the final paginated collection
     @userfiles = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
