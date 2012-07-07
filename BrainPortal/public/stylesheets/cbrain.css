@@ -1454,6 +1454,7 @@ pre {
     font-weight: bold;
     line-height: 1.7em;
     padding: 0 1em 0 1em;
+    white-space: nowrap;
 }
 
 #userfiles_search_by_filename {
@@ -1469,11 +1470,8 @@ pre {
 /* % Sidebar Filter Content (Tasks or Userfiles) */
 /* % ########################################################  */
 
-.filter_sidebar {
-    background-color: #f6f6f6;
-    color: #505050;
-    padding: 0 1em 0 1em;
-    border: 1px solid #dddddd;
+#userfiles_filters_dropdown_menu {
+  white-space: nowrap;
 }
 
 .filter_menu {

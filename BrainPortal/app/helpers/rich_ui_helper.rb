@@ -287,7 +287,7 @@ module RichUiHelper
     atts = options.to_html_attributes
     safe_concat("<span #{atts}>")
     safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    safe_concat("<div #{content_id} ABCD=1 #{display_style}class=\"drop_down_menu\">")
+    safe_concat("<div #{content_id} #{display_style} class=\"drop_down_menu\">")
     safe_concat(content)
     safe_concat("</div>")
     safe_concat("</span>")
