@@ -234,11 +234,8 @@ module ActiveRecord
     # as soon as somewhere inside we can detect that at least one
     # subclause contained one of the attributes given in argument.
     #
-    #
     #   r = Author.where([ "(id not in (?) or type = ?)", [2,3,4], 'AdminUser' ])
     #   r.undo_where(:type)   # => also rejects the restriction on :id !
-    #
-    # 
     def undo_where(*args)
       mymodel    = self.model_name.classify.constantize
       mytable    = mymodel.table_name
@@ -252,8 +249,8 @@ module ActiveRecord
         col = Regexp.last_match[3]
         to_reject["#{tab}.#{col}"] = true
       end
-
       #puts_yellow "TO REJ=#{to_reject.inspect}"
+
       return without if to_reject.empty? && ! block_given?
 
       where_vals.reject! do |node|

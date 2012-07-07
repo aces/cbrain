@@ -205,16 +205,7 @@ class UserfilesController < ApplicationController
     # This code depends on AREL's 'where_values' method, which is not official ?
     @hidden_total = nil
     if @filter_params["view_hidden"] != 'on'
-      begin
-        hidden_clause = @filtered_scope.where_values.detect { |arv| (arv.left.name == :hidden && arv.right == false) rescue nil }
-        if hidden_clause
-          @filtered_scope.where_values.reject! { |arv| arv == hidden_clause }
-          @hidden_total = @filtered_scope.where(:hidden => true).count
-          @filtered_scope.where_values << hidden_clause
-        end
-      rescue  # means we got a problem with where_values() I suppose... check Rails
-        @hidden_total = '???'
-      end
+      @hidden_total = @filtered_scope.undo_where(:hidden).where(:hidden => true).count
     end
     
     respond_to do |format|
