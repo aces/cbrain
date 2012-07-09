@@ -623,6 +623,26 @@ class PortalTask < CbrainTask
     true
   end
 
+
+
+  ##################################################################
+  # Bourreau-side Connection Methods
+  ##################################################################
+
+  # Contacts the Bourreau side and request a copy of the tasks's
+  # STDOUT, STDERR and job script.
+  def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
+    cb_error "Cannot get task's stdout and stderr: this task is archived." if self.workdir_archived?
+    bourreau             = self.bourreau
+    control              = bourreau.send_command_get_task_outputs(self.id,run_number,stdout_lim,stderr_lim)
+    self.cluster_stdout = control.cluster_stdout
+    self.cluster_stderr = control.cluster_stderr
+    self.script_text    = control.script_text
+    true
+  end
+
+
+
   ##################################################################
   # Lifecycle hooks
   ##################################################################

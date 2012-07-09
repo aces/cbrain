@@ -245,7 +245,7 @@
         <%= tb.tab("Standard Out") do %>
           <% if @stdout_lim <= prettystdout.count("\n") && @stdout_lim != all_lim %>
             <% new_lim = @stdout_lim * 2 %>
-            <strong>Only the last <%= @stdout_lim %> lines are show here. See more lines of Standard Output:</strong>
+            <strong>Only the last <%= @stdout_lim %> lines are shown here. See more lines of Standard Output:</strong>
             <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => new_lim, :stderr_lim => @stderr_lim %>
             <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => all_lim, :stderr_lim => @stderr_lim %>
           <% end %>
@@ -255,7 +255,7 @@
         <%= tb.tab("Standard Error") do %>
           <% if @stderr_lim <= prettystderr.count("\n") &&  @stderr_lim != all_lim %>
             <% new_lim = @stderr_lim * 2 %>
-            <strong>Only the last <%= @stderr_lim %> lines are show here. See more lines of Standard Error:</strong>
+            <strong>Only the last <%= @stderr_lim %> lines are shown here. See more lines of Standard Error:</strong>
             <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => new_lim %>
             <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => all_lim %>
           <% end %>

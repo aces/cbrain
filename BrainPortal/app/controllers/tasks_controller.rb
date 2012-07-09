@@ -142,11 +142,7 @@ class TasksController < ApplicationController
 
     if ((request.format.to_sym != :xml) || params[:get_task_outputs]) && ! @task.workdir_archived?
       begin
-        bourreau             = @task.bourreau
-        control              = bourreau.send_command_get_task_outputs(task_id,@run_number,@stdout_lim,@stderr_lim)
-        @task.cluster_stdout = control.cluster_stdout
-        @task.cluster_stderr = control.cluster_stderr
-        @task.script_text    = control.script_text
+        @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
       rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
         flash.now[:notice] = "Warning: the Execution Server '#{bourreau.name}' for this task is not available right now."
         @task.cluster_stdout = "Execution Server is DOWN!"
