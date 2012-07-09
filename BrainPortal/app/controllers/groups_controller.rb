@@ -43,7 +43,7 @@ class GroupsController < ApplicationController
     offset = (@current_page - 1) * @per_page
      
     if @filter_params["button_view"] == "on"
-      pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all
+      pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all.sort_by(&:short_pretty_type)
       num_workgroups  = pagination_list.size
       num_missing     = @per_page - num_workgroups
       

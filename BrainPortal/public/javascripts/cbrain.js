@@ -542,11 +542,22 @@ jQuery(
          clearTimeout(filter_header_timeout);
          filter_header_timeout = null;
        }
-       $(target).hide();
+       target.hide();
        return false;
      });
      return false;
    });
+   
+   $(document).delegate(".hover_open", "mouseenter", function(){
+      var header = $(this);
+      var target = $(header.attr("data-target"));
+      target.show();
+      header.mouseleave(function(){
+        target.hide();
+        return false;
+      });
+      return false;
+    });
    
    $(document).delegate(".filter_search", "input", function(){
      var text_field = $(this);

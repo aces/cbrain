@@ -53,7 +53,7 @@ module RichUiHelper
     options[:style] = "display:inline-block"
     dropdown_class = "hover_dropdown "
     dropdown_class += options.delete(:dropdown_class).to_s
-    options_setup("filter_header", options)
+    options_setup("hover_open", options)
     atts = options.to_html_attributes
     html = ["<span #{atts}>\n"]
     html << link_to(h(header), "#")

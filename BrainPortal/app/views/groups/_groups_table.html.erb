@@ -59,9 +59,17 @@
     %>
   <% end %>
   <div>
-    <% 
-      @groups.each do |g|
+    <%= 
+      center_legend(nil, [
+                           ["<span style=\"color:blue;font-weight:bold\">&bull;</span>", "Personal Project"], 
+                           ["<span style=\"color:green;font-weight:bold\">&bull;</span>", "Shared Project"], 
+                           ["<span style=\"color:red;font-weight:bold\">&bull;</span>", "System Project"]
+                         ]
+                    ) 
     %>
+  </div>
+  <div>
+    <% @groups.each do |g| %>
       <% if g == "ALL" %>
         <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button">
           <h4 style="color:black">All</h4>
@@ -70,7 +78,16 @@
           Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
         </div>
       <% else %>
-        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= g.is_a?(SystemGroup) ? "system" : "work" %>_project">
+        <% 
+          if g.is_a?(SystemGroup)
+            css_project_type = "system"
+          elsif g.short_pretty_type == "Shared"
+            css_project_type = "shared"
+          else
+            css_project_type = "personal"
+          end
+         %>
+        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_project_type %>_project">
             <h4 title="<%= g.name %>"><%= crop_text_to(25, g.name) %><%= "<br>(#{h(g.short_pretty_type)})".html_safe unless g.short_pretty_type.blank? %></h4>
             <hr>
             Files: <%= @group_id_2_userfile_counts[g.id] || "(None)" %><br>
@@ -83,6 +100,7 @@
       <% end %>
 
     <% end %>
+    
   </div>
 <% else %>
   <%=
