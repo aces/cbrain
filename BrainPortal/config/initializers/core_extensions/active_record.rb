@@ -267,7 +267,7 @@ module ActiveRecord
           to_reject["#{tab}.#{col}"]
         elsif node.is_a?(String)   #     ((`table`.`col`) = 3) and col = 5
           #puts_red "STR #{node}"
-          node.scan(/([\`\'\"]*(\w+)[\`\'\"]*\.)?[\`\'\"]*(\w+)[\`\'\"]*\s*(=|<|>|\sis\s|\snot\s)/).any? do |submatch|
+          node.scan(/([\`\'\"]*(\w+)[\`\'\"]*\.)?[\`\'\"]*(\w+)[\`\'\"]*\s*(=|<|>|\sis\s|\snot\s|\sin\s|\slike\s)/i).any? do |submatch|
             tab = submatch[1] || mytable   # note: numbering in submatch array is not like in Regexp.last_match !
             col = submatch[2]
             #puts_red "--> MATCH #{tab}.#{col}"
