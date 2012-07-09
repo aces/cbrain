@@ -27,8 +27,8 @@ var brainbrowser;
 
 function modify_target(data, target, options){
   if(!options) options = {};
-  var new_content = jQuery(data);
   if(target){ 
+    var new_content = $(data);
     if(target == "__OVERLAY__"){
       var width = parseInt(options["width"], 10); // || 800);
       var height = parseInt(options["height"], 10); // || 500);
@@ -475,7 +475,7 @@ jQuery(
      return page;
    }
    
-   $(".pagination a").live("click", function(){
+   $(document).delegate(".pagination a", "click", function(){
      var link = $(this);
      var url = link.attr("href");
      var page_param = get_page_parameter(url);
@@ -525,7 +525,7 @@ jQuery(
    });
    
    var filter_header_timeout = null; 
-   $(".filter_header").live("mouseenter", function(){
+   $(document).delegate(".filter_header", "mouseenter", function(){
      if(filter_header_timeout) {
        clearTimeout(filter_header_timeout);
        filter_header_timeout = null;
@@ -548,7 +548,7 @@ jQuery(
      return false;
    });
    
-   $(".filter_search").live("input", function(){
+   $(document).delegate(".filter_search", "input", function(){
      var text_field = $(this);
      var cur_value  = text_field.val();
      
@@ -562,7 +562,7 @@ jQuery(
          filter.hide();
        }
      }); 
-   }).live("keypress", function(event){
+   }).delegate(".filter_search", "keypress", function(event){
      if(event.keyCode == 13){
        var text_field = $(this);
        var filter_link = text_field.closest(".filter_list").find(".filter_item a:visible").first();
@@ -571,7 +571,7 @@ jQuery(
      }
    });
         
-   jQuery(".show_toggle").live("click", function(){
+   $(document).delegate(".show_toggle", "click", function(){
      var current_element = jQuery(this);
      var target_element = jQuery(current_element.attr("data-target"));
      var alternate_text = current_element.attr("data-alternate-text");
@@ -602,7 +602,7 @@ jQuery(
      return false;  
    });
 
-   jQuery(".inline_edit_form_link").live("click", function(){
+   $(document).delegate(".inline_edit_form_link", "click", function(){
      var link = jQuery(this);
      var default_text = link.closest(".inline_edit_form_default_text");
      var form = default_text.siblings(".inline_edit_form");
@@ -610,7 +610,7 @@ jQuery(
      form.show();
    });
    
-   $(".inline_edit_field_link").live("click", function(){
+   $(document).delegate(".inline_edit_field_link", "click", function(){
      var link = $(this);
      var visible = link.data("visible");
      var current_text = link.html();
@@ -633,10 +633,10 @@ jQuery(
    });
 
    //Highlighting on ressource list tables.
-   jQuery("table.resource_list").live("mouseout", function() {highlightTableRowVersionA(0); });
-   jQuery(".row_highlight").live("hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
+   $(document).delegate("table.resource_list", "mouseout", function() {highlightTableRowVersionA(0); });
+   $(document).delegate(".row_highlight", "hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
 
-   jQuery(".ajax_link").live("ajax:success", function(event, data, status, xhr){
+   $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr){
      var link     = jQuery(this);
      var target   = link.attr("data-target");
      var datatype = link.attr("data-type"); 
@@ -651,7 +651,7 @@ jQuery(
       }else if(datatype != "script"){
        modify_target(data, target, other_options);
      }
-   }).live("ajax:beforeSend", function(event, data, status, xhr){
+   }).delegate(".ajax_link", "ajax:beforeSend", function(event, data, status, xhr){
      $("#loading_image").show();
      var link = jQuery(this);
      var loading_message = link.attr("data-loading-message");
@@ -661,34 +661,34 @@ jQuery(
        if(!loading_message_target) loading_message_target = target;
        jQuery(loading_message_target).html(loading_message);
      }
-   }).live("ajax:complete", function(){
+   }).delegate(".ajax_link", "ajax:complete", function(){
      $("#loading_image").hide();
    });
 
-   jQuery(".select_all").live("click", function(){
-     var header_box = jQuery(this);
+   $(document).delegate(".select_all", "click", function(){
+     var header_box = $(this);
      var checkbox_class = header_box.attr("data-checkbox-class");
 
-     jQuery('.' + checkbox_class).each(function(index, element) {
+     $('.' + checkbox_class).each(function(index, element) {
         element.checked = header_box.attr("checked");
       });
    });
    
-   jQuery(".select_master").live("change", function(){
+   $(document).delegate(".select_master", "change", function(){
      var master_select = jQuery(this);
      var select_class = master_select.attr("data-select-class");
      var selection = master_select.find(":selected").text();
 
-     jQuery('.' + select_class).each(function(index, elem){
-       jQuery(elem).find("option").attr("selected", false).each(function(index, elem){
-         var element = jQuery(elem);
+     $('.' + select_class).each(function(index, elem){
+       $(elem).find("option").attr("selected", false).each(function(index, elem){
+         var element = $(elem);
          if(element.html() == selection) element.attr("selected", "selected");
        });
      });
    });
    
-   jQuery(".request_on_change").live("change", function(){
-     var input_element = jQuery(this);
+   $(document).delegate(".request_on_change", "change", function(){
+     var input_element = $(this);
      var param_name = input_element.attr("name");
      var current_value = input_element.attr("value");
      var url = input_element.attr("data-url");
@@ -700,13 +700,13 @@ jQuery(
      if(!data_type) data_type = "html";
      
      if(target && update_text){
-       jQuery(target).html(update_text);
+       $(target).html(update_text);
      }
      
      var parameters = {};
      parameters[param_name] = current_value;
       
-     jQuery.ajax({
+     $.ajax({
        url : url,
        type : method,
        dataType : data_type,
@@ -725,12 +725,12 @@ jQuery(
      return false;
    });
 
-   jQuery(".submit_onchange").live("change", function() {
-       var select = jQuery(this);
+   $(document).delegate(".submit_onchange", "change", function() {
+       var select = $(this);
        var commit_value = select.attr("data-commit");
        var form   = select.closest("form");
        if(commit_value){
-        jQuery("<input name=\"commit\" type=\"hidden\" value=\"" + commit_value +  "\">").appendTo(form);
+        $("<input name=\"commit\" type=\"hidden\" value=\"" + commit_value +  "\">").appendTo(form);
        }
        form.submit();
    });
@@ -738,7 +738,7 @@ jQuery(
    
    //html_tool_tip_code based on xstooltip provided by
    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-   jQuery(".html_tool_tip_trigger").live("mouseenter", function(event){
+   $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
@@ -753,7 +753,7 @@ jQuery(
       tool_tip.css('left', x + 'px');
       
       tool_tip.show();
-   }).live("mouseleave", function(event){
+   }).delegate(".html_tool_tip_trigger", "mouseleave", function(event){
       var trigger = jQuery(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = jQuery("#" + tool_tip_id);
@@ -769,8 +769,8 @@ jQuery(
 
    //Forms with the class "ajax_form" will be submitted as ajax requests.
    //Datatype and target can be set with appropriate "data" attributes.
-   jQuery(".ajax_form").live("ajax:success", function(event, data, status, xhr){
-      var current_form =  jQuery(this);
+   $(document).delegate(".ajax_form", "ajax:success", function(event, data, status, xhr){
+      var current_form =  $(this);
       var target = current_form.attr("data-target");
       var reset_form = current_form.attr("data-reset-form");
       var scroll_bottom = current_form.attr("data-scroll-bottom")
@@ -779,18 +779,19 @@ jQuery(
       }
       
       modify_target(data, target, {scroll_bottom : scroll_bottom});  
-    }).live("ajax:beforeSend", function(event, data, status, xhr){
+      
+    }).delegate(".ajax_form", "ajax:beforeSend", function(event, data, status, xhr){
       $("#loading_image").show();
-    }).live("ajax:complete", function(){
+    }).delegate(".ajax_form", "ajax:complete", function(){
       $("#loading_image").hide();
     });
 
    //Allows a textfield to submit an ajax request independently of
    //the surrounding form. Submission is triggered when the ENTER
    //key is pressed.
-   jQuery(".search_box").live("keypress", function(event){
+   $(document).delegate(".search_box", "keypress", function(event){
      if(event.keyCode == 13){
-       var text_field = jQuery(this);
+       var text_field = $(this);
        var data_type = text_field.attr("data-type");
        if(!data_type) data_type = "script";
        var url = text_field.attr("data-url");
@@ -806,7 +807,7 @@ jQuery(
          url: url,
          dataType: data_type,
          success: function(data){
-           modify_target(data, target);     
+           modify_target(data, target);
          },
          beforeSend: function(){
            $("#loading_image").show();
@@ -825,8 +826,8 @@ jQuery(
    //Allows for the creation of form submit buttons that can hijack
    //the form and send its contents elsewhere, changing the datatype,
    //target, http method as needed.
-   jQuery(".hijacker_submit_button").live("click", function(){
-     var button = jQuery(this);
+   $(document).delegate(".hijacker_submit_button", "click", function(){
+     var button = $(this);
      var submit_name   = button.attr("name");
      var submit_value  = button.attr("value");
      var data_type = button.attr("data-type");
@@ -876,8 +877,8 @@ jQuery(
      return false;
    });
 
-   $('.external_submit_button').live('click', function(e) {
-     var button = jQuery(this);
+   $(document).delegate('.external_submit_button', 'click', function(e) {
+     var button = $(this);
      var submit_name   = button.attr("name");
      var submit_value  = button.attr("value");
      var form=$("#" + button.attr('data-associated-form'));
@@ -897,19 +898,17 @@ jQuery(
    });
 
    //Only used for jiv. Used to submit parameters and create an overlay with the response.
-   jQuery("#jiv_submit").live("click", function(){
-     var data_type = jQuery(this).attr("data-type");
-     jQuery(this).closest("form").ajaxSubmit({
+   $(document).delegate("#jiv_submit", "click", function(){
+     var data_type = $(this).attr("data-type");
+     $(this).closest("form").ajaxSubmit({
        url: "/jiv",
        type: "GET",
        resetForm: false,
        success: function(data){
          jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
-         	show: "puff",
-         	modal: true,
-   	        position: 'center',
+   	      position: 'center',
          	close: function(){
-         	  jQuery(this).remove();
+         	  $(this).remove();
          	}
          });
        },
@@ -926,7 +925,7 @@ jQuery(
    //For loading content into an element after it is clicked.
    //See on_click_ajax_replace() in application_helper.rb
    function ajax_onclick_show(event) {
-     var onclick_elem = jQuery(this);
+     var onclick_elem = $(this);
      var before_content = onclick_elem.attr("data-before");
      var replace_selector = onclick_elem.attr("data-replace");
      var replace_position = onclick_elem.attr("data-position");
@@ -955,7 +954,7 @@ jQuery(
      onclick_elem.removeClass("ajax_onclick_show_element");
      onclick_elem.unbind('click');
      onclick_elem.addClass("ajax_onclick_hide_element");
-     jQuery.ajax({ type: 'GET',
+     $.ajax({ type: 'GET',
        url: jQuery(onclick_elem).attr("data-url"),
        dataType: 'html',
        success: function(data){
@@ -992,7 +991,7 @@ jQuery(
    //For loading content into an element after it is clicked.
    //See on_click_ajax_replace() in application_helper.rb
    function ajax_onclick_hide(event){
-     var onclick_elem = jQuery(this);
+     var onclick_elem = $(this);
      var parental_id = "__cbrain_parent_" + onclick_elem.attr("id");
      jQuery("." + parental_id).remove();
      onclick_elem.removeClass("ajax_onclick_hide_element");
@@ -1002,8 +1001,8 @@ jQuery(
      onclick_elem.find(".ajax_onclick_show_child").show();
    };
 
-   jQuery(".ajax_onclick_show_element").live("click", ajax_onclick_show);
-   jQuery(".ajax_onclick_hide_element").live("click", ajax_onclick_hide);
+   $(document).delegate(".ajax_onclick_show_element", "click", ajax_onclick_show);
+   $(document).delegate(".ajax_onclick_hide_element", "click", ajax_onclick_hide);
 
 
    /////////////////////////////////////////////////////////////////////
@@ -1016,7 +1015,7 @@ jQuery(
    // Allows to submit an interval of two dates, uses 
    // datepicker of jquery-ui, see:  
    // http://jqueryui.com/demos/datepicker/#date-range
-   $('.daterangepicker').live('click', function (event) {
+   $(document).delegate('.daterangepicker', 'click', function (event) {
      var datepicker = event.target;
      $(".daterangepicker").not(".hasDatepicker").datepicker({
        defaultDate: "+1w",
@@ -1047,7 +1046,7 @@ jQuery(
    $(datepicker).focus();
    });
    
-   $('.datepicker').live('click', function (event) {
+   $(document).delegate('.datepicker', 'click', function (event) {
      var datepicker = event.target;
      $(".datepicker").not(".hasDatepicker").datepicker({
        defaultDate: "+1w",
