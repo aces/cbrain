@@ -1323,7 +1323,7 @@ class ClusterTask < CbrainTask
     # Create a bash command script out of the text
     # lines supplied by the subclass
     script = <<-QSUB_SCRIPT
-#!/bin/sh
+#!/bin/bash
 
 # Script created automatically by #{self.class.to_s}
 # #{Revision_info}
