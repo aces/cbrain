@@ -184,6 +184,26 @@ class GroupsController < ApplicationController
       end
     end
   end
+  
+  def unregister
+    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    
+    respond_to do |format|
+      if current_user.id == @group.creator_id
+        flash[:error] = "You cannot be unregistered from a project you created."
+        format.html { redirect_to group_path(@group) }
+        format.xml  { head :unprocessable_entity }
+      else
+        original_user_ids = @group.user_ids
+        @group.user_ids = @group.user_ids - [current_user.id]
+        @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
+        
+        flash[:notice] = "You have been unregistered from project #{@group.name}."
+        format.html { redirect_to :action => "index" }
+        format.xml  { head :ok }
+      end
+    end
+  end
  
   # DELETE /groups/1
   # DELETE /groups/1.xml
