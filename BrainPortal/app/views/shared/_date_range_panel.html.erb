@@ -47,7 +47,6 @@ offset_times = [
   [ "1 week ago",    1.week.to_i.to_s    ],
   [ "2 weeks ago",   2.week.to_i.to_s    ],
   [ "3 weeks ago",   3.week.to_i.to_s    ],
-  [ "4 weeks ago",   4.week.to_i.to_s    ],
   ]],
   [ "Months", [
   [ "1 month ago",   1.month.to_i.to_s   ],
@@ -68,17 +67,20 @@ offset_times = [
   ]]
 ]
 
+date_attributes ||= [ [:created_at => "By creation date"], [:updated_at => "By update date"] ]
+with_date_attributes = date_attributes.empty? ? false : true
+
 %>                                           
 
 
 <div class="date_range_display_table" >
 
   <!-- First line -->
-  <% if !without_date_type %>
+  <% if with_date_attributes %>
     <div class="left_align">
-      <%= radio_button_tag date_type[0], "", !date_type[1] || date_type[1] == ""       %> Do not filter
-      <%= radio_button_tag date_type[0], "created_at", date_type[1] == "created_at"    %> By creation date
-      <%= radio_button_tag date_type[0], "updated_at", date_type[1] == "updated_at"    %> By update date
+      <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
+      <%= radio_button_tag date_attribute[0], "created_at", date_attribute[1] == "created_at"    %> By creation date
+      <%= radio_button_tag date_attribute[0], "updated_at", date_attribute[1] == "updated_at"    %> By update date
     </div>
   <% end %>
   
