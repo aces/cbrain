@@ -41,7 +41,7 @@
                         :value     => set_toggle(@filter_params["view_all"]) 
     %>
     <br>
-    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Hide hidden files": "Show hidden files", 
+    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Do not show hidden files": "Show hidden files", 
                         :parameter => :view_hidden,
                         :value     => set_toggle(@filter_params["view_hidden"]) 
     %>

@@ -1124,7 +1124,8 @@ class ClusterTask < CbrainTask
                    :name             => tar_file,
                    :data_provider_id => dp_dest,
                    :user_id          => self.user_id,
-                   :group_id         => self.group_id
+                   :group_id         => self.group_id,
+                   :hidden           => true
                  )
       file.save!
       file.cache_copy_from_local_file(tar_file)
@@ -1383,7 +1384,7 @@ class ClusterTask < CbrainTask
     else
       # Queue the job on the cluster and return true, at this point
       # it's not our 'job' to figure out if it worked or not.
-      self.addlog("Cluster command: #{job.qsub_command}") if self.user.login == 'admin'
+      self.addlog("Cluster command: #{job.qsub_command}") if self.user.has_role? :admin_user
       jobid              = scir_session.run(job)
       self.cluster_jobid = jobid
       self.status_transition(self.status, "Queued")

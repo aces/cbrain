@@ -53,7 +53,7 @@ module RichUiHelper
     options[:style] = "display:inline-block"
     dropdown_class = "hover_dropdown "
     dropdown_class += options.delete(:dropdown_class).to_s
-    options_setup("filter_header", options)
+    options_setup("hover_open", options)
     atts = options.to_html_attributes
     html = ["<span #{atts}>\n"]
     html << link_to(h(header), "#")
@@ -287,7 +287,7 @@ module RichUiHelper
     atts = options.to_html_attributes
     safe_concat("<span #{atts}>")
     safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    safe_concat("<div #{content_id} ABCD=1 #{display_style}class=\"drop_down_menu\">")
+    safe_concat("<div #{content_id} #{display_style} class=\"drop_down_menu\">")
     safe_concat(content)
     safe_concat("</div>")
     safe_concat("</span>")

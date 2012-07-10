@@ -335,6 +335,17 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
+  # Returns the SSH address of the bourreau in
+  # "user@hostname" format. If options[:port] is true
+  # it will return it in "user@hostname:port" format.
+  # Raises an exception if the information is not available.
+  def ssh_address_string(options={})
+    cb_error "No SSH control information available." unless self.has_ssh_control_info?
+    base  = "#{self.ssh_control_user}@#{self.ssh_control_host}"
+    base += ":#{self.ssh_control_port.presence || 22}" if options[:port]
+    base
+  end
+
   # Check that the remote resource has enough info configured
   # to establish as SSH master connection to it and
   # control the remote rails application.

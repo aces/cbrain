@@ -103,7 +103,7 @@ module BasicFilterHelpers
     column_object = ActiveRecord::Base.connection.columns(table).find { |c| c.name == column.to_s }
     table_column  = "#{table}.#{column}"
 
-    filt_counts = filtered_scope.group("#{table_column}").count
+    filt_counts = filtered_scope.undo_where(table_column).group(table_column).count
 
     header_scope.
       where( "#{table_column} IS NOT NULL" ).
@@ -137,7 +137,7 @@ module BasicFilterHelpers
     table_fkey  = "#{table}.#{foreign_key}"
     assoc_name  = "#{assoc_table}.#{name_method}"
     
-    filt_counts = filtered_scope.joins(association.to_sym).group(table_fkey).count
+    filt_counts = filtered_scope.undo_where(table_fkey).joins(association.to_sym).group(table_fkey).count
     
     header_scope.
       joins(association.to_sym).

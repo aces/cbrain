@@ -68,9 +68,9 @@ class PortalController < ApplicationController
     #  @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
     
-    bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).all.collect(&:id)
-    user_ids     = current_user.available_users.map(&:id)
-    @tasks       = CbrainTask.real_tasks.where( :user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(15).all
+    bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
+    user_ids     = current_user.available_users.raw_first_column(:id)
+    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(15).all
   end
   
   def portal_log #:nodoc:
@@ -205,7 +205,7 @@ class PortalController < ApplicationController
     signed_agreements = current_user.meta[:signed_license_agreements] || []
     signed_agreements << @license
     current_user.meta[:signed_license_agreements] = signed_agreements
-    redirect_to home_path
+    redirect_to start_page_path
   end
   
   #Display general information about the CBRAIN project.
