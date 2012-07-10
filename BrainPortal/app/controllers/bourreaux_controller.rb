@@ -26,6 +26,8 @@
 # All actions except +index+ and +show+ require *admin* privileges.
 class BourreauxController < ApplicationController
 
+  include DateRangeRestriction
+
   Revision_info=CbrainFileRevision[__FILE__]
   
   api_available :except  => :row_data
@@ -329,25 +331,7 @@ class BourreauxController < ApplicationController
 
   def rr_disk_usage #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).all
-
-    # List of cache update offsets we support
-    big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
-    @offset_times = [
-      [ "Now",               0.seconds.to_i ],
-      [ "One hour ago",      1.hour.to_i    ],
-      [ "Six hours ago",     6.hour.to_i    ],
-      [ "One day ago",       1.day.to_i     ],
-      [ "One week ago",      1.week.to_i    ],
-      [ "Two weeks ago",     2.week.to_i    ],
-      [ "One month ago",     1.month.to_i   ],
-      [ "Two months ago",    2.months.to_i  ],
-      [ "Three months ago",  3.months.to_i  ],
-      [ "Four months ago",   4.months.to_i  ],
-      [ "Six months ago",    6.months.to_i  ],
-      [ "Nine months ago",   9.months.to_i  ],
-      [ "One year ago",      1.year.to_i    ],
-      [ "The Big Bang",      big_bang       ]
-    ]
+    date_filtration = params[:date_range] || {}
 
     # Time:     Present ............................................................ Past
     # In Words: now .......... older_limit ..... younger_limit ................. long ago
@@ -356,36 +340,29 @@ class BourreauxController < ApplicationController
     #
     #                          |---- files to be deleted ----|
 
-    @cache_older   = params[:cache_older]   || 1.months.to_i
-    @cache_younger = params[:cache_younger] || big_bang
-    @cache_older   = @cache_older.to_s   =~ /^\d+/ ? @cache_older.to_i   : 1.months.to_i
-    @cache_younger = @cache_younger.to_s =~ /^\d+/ ? @cache_younger.to_i : big_bang
-    @cache_older   = big_bang if @cache_older   > big_bang
-    @cache_younger = big_bang if @cache_younger > big_bang
-    if (@cache_younger < @cache_older) # the interface allows the user to reverse them
-      @cache_younger, @cache_older = @cache_older, @cache_younger
-    end
+    date_filtration["relative_from"] ||= 50.years.to_i.to_s
+    date_filtration["relative_to"]   ||= 1.months.to_i.to_s
+    date_filtration["absolute_or_relative_from"] ||= "relative"
+    date_filtration["absolute_or_relative_to"]   ||= "relative"
+    accessed_after  = date_filtration["relative_from"].to_i.ago
+    accessed_before = date_filtration["relative_to"].to_i.ago
 
-    # Normalize to one of the values in the table above
-    @offset_times.reverse_each do |pair|
-      if @cache_older >= pair[1]
-        @cache_older   = pair[1]
-        break
-      end
-    end
+    #date_filtration verification
+    error_mess = check_filter_date("accessed_at", date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
+                                   date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
 
-    # Normalize to one of the values in the table above
-    @offset_times.each do |pair|
-      if @cache_younger <= pair[1]
-        @cache_younger   = pair[1]
-        break
-      end
+    if error_mess.present?
+      flash[:error]       = "#{error_mess}.\n"
+      flash[:error]      += "This report currently shows the sizes based on relative dates."
+      date_filtration["absolute_or_relative_from"] = "relative"
+      date_filtration["absolute_or_relative_to"]   = "relative"
+    else
+      # Restrict cache info stats to files within a certain range of oldness.
+      mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute"
+      mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute"
+      (accessed_after,accessed_before) = determine_date_range_start_end(mode_is_absolute_from , mode_is_absolute_to, 
+                              date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
     end
-
-    # Restrict cache info stats to files within
-    # a certain range of oldness.
-    accessed_before = @cache_older.seconds.ago # this is a Time
-    accessed_after  = @cache_younger.seconds.ago # this is a Time
 
     # Users in statistics table
     userlist         = current_user.available_users.all

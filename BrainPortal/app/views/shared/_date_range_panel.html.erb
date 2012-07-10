@@ -74,11 +74,13 @@ offset_times = [
 <div class="date_range_display_table" >
 
   <!-- First line -->
-  <div class="left_align">
-    <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
-    <%= radio_button_tag date_attribute[0], "created_at", date_attribute[1] == "created_at"    %> By creation date
-    <%= radio_button_tag date_attribute[0], "updated_at", date_attribute[1] == "updated_at"    %> By update date
-  </div>
+  <% if !without_date_type %>
+    <div class="left_align">
+      <%= radio_button_tag date_type[0], "", !date_type[1] || date_type[1] == ""       %> Do not filter
+      <%= radio_button_tag date_type[0], "created_at", date_type[1] == "created_at"    %> By creation date
+      <%= radio_button_tag date_type[0], "updated_at", date_type[1] == "updated_at"    %> By update date
+    </div>
+  <% end %>
   
   <div>
     <!-- from column-->
