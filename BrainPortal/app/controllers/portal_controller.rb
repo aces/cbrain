@@ -320,8 +320,7 @@ class PortalController < ApplicationController
       file_counts        = table_content_fetcher.count
       file_sum_num_files = table_content_fetcher.sum(:num_files)
       file_cnt_size_unk  = table_content_fetcher.where(:size      => nil).count
-      file_cnt_nf_unk    = table_content_fetcher.where(:num_files => nil).count
-      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_cnt_size_unk, file_cnt_nf_unk) # create quintuplets as values
+      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_cnt_size_unk) # create quadruplets as values
     elsif table_ops[0] == :combined_task_rep # special fetch of multiple values for task report
       task_sum_size      = table_content_fetcher.sum(:cluster_workdir_size)
       task_counts        = table_content_fetcher.count

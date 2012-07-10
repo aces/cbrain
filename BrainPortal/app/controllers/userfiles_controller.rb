@@ -459,8 +459,8 @@ class UserfilesController < ApplicationController
           userfile.addlog("Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type  => 'notice', 
-                               :header  => "SingleFile Uploaded", 
-                               :variable_text  => "#{userfile.name} [[View][/userfiles/#{userfile.id}]]"
+                               :header  => "File Uploaded", 
+                               :variable_text  => "#{userfile.class} '#{userfile.name}' [[View][/userfiles/#{userfile.id}]]"
                                )
         ensure
           File.delete(tmpcontentfile) rescue true
@@ -512,7 +512,7 @@ class UserfilesController < ApplicationController
             Message.send_message(current_user,
                                   :message_type  => 'notice', 
                                   :header  => "Collection Uploaded", 
-                                  :variable_text  => collection.name
+                                  :variable_text  => "#{collection.class} '#{collection.name}' [[View][/userfiles/#{collection.id}]]"
                                   )
           ensure
             File.delete(tmpcontentfile) rescue true
@@ -520,7 +520,7 @@ class UserfilesController < ApplicationController
         end # spawn
       
         flash[:notice] = "Collection '#{collection_name}' created."
-        current_user.addlog_context(self,"Uploaded FileCollection '#{collection_name}'")
+        current_user.addlog_context(self,"Uploaded #{collection.class} '#{collection_name}'")
         redirect_to redirect_path
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"

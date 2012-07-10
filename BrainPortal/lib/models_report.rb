@@ -73,7 +73,6 @@ class ModelsReport
     size_tot_hash    = base_rel.sum(:size)
     num_files_hash   = base_rel.sum(:num_files)
     num_unk_hash     = base_rel.where("size is null").count
-    singles_hash     = base_rel.where([ "userfiles.type in (?)", SingleFile.descendants.map(&:name) + [ 'SingleFile' ]]).where("num_files is null").count
 
     # Arrays and hashes used to record the names of the
     # rows and columns of the report
@@ -87,13 +86,12 @@ class ModelsReport
     # the stats for one users on all data providers.
     stats = { all_users_label => {} }
 
-    all_uid_rrid_pairs = num_entries_hash.keys | size_tot_hash.keys | num_files_hash.keys | num_unk_hash.keys | singles_hash.keys
+    all_uid_rrid_pairs = num_entries_hash.keys | size_tot_hash.keys | num_files_hash.keys | num_unk_hash.keys
     all_uid_rrid_pairs.each do |uid_rrid|
       num_entries = num_entries_hash[uid_rrid] || 0
       size_tot    = size_tot_hash[uid_rrid]    || 0
       num_files   = num_files_hash[uid_rrid]   || 0
       num_unk     = num_unk_hash[uid_rrid]     || 0
-      num_singles = singles_hash[uid_rrid]     || 0
 
       user_id = uid_rrid[0].to_i  # might be a string as a consequence of join
       user    = users_index[user_id]
@@ -117,7 +115,7 @@ class ModelsReport
       cells.each do |cell|
         cell[:size]        += size_tot.to_i
         cell[:num_entries] += num_entries.to_i
-        cell[:num_files]   += num_files.to_i + num_singles.to_i
+        cell[:num_files]   += num_files.to_i
         cell[:unknowns]    += num_unk.to_i
       end
     end

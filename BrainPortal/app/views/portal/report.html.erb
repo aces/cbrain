@@ -163,8 +163,7 @@ in a tabular layout. Proceed as follow:
          # Special proc for combined file report
          if params[:table_name] =~ /\.combined_file_rep$/
            td_content_proc = Proc.new do |vector,td_filters|
-             size,num_entries,sum_files,num_size_unk,num_nf_unk = vector
-             sum_files += num_nf_unk
+             size,num_entries,sum_files,num_size_unk = vector
              capture do
       %>
                <%= disk_space_info_display(size || 0) do %>
