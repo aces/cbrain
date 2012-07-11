@@ -59,6 +59,7 @@ CbrainRailsPortal::Application.routes.draw do
   resources :groups do
     collection do
       get  'switch_panel'
+      post 'unregister'
       post 'switch'
     end
   end
