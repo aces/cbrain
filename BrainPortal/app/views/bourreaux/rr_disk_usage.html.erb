@@ -132,8 +132,9 @@
   <% params[:date_range] ||= {} %>
   <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
   <% params[:date_range]["relative_to"]   ||= 1.months.to_i.to_s %>
-  <%= date_range_panel(params[:date_range], "date_range", []) %>
+  <%= date_range_panel(params[:date_range], "date_range", :date_attributes => [], :without_abs => true) %>
   </div>
+  </p>
   <%= submit_tag 'Refresh' %>
 <% end %>
 

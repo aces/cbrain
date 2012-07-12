@@ -342,27 +342,11 @@ class BourreauxController < ApplicationController
 
     date_filtration["relative_from"] ||= 50.years.to_i.to_s
     date_filtration["relative_to"]   ||= 1.months.to_i.to_s
-    date_filtration["absolute_or_relative_from"] ||= "relative"
-    date_filtration["absolute_or_relative_to"]   ||= "relative"
     accessed_after  = date_filtration["relative_from"].to_i.ago
     accessed_before = date_filtration["relative_to"].to_i.ago
 
-    #date_filtration verification
-    error_mess = check_filter_date("accessed_at", date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
-                                   date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
-
-    if error_mess.present?
-      flash.now[:error]       = "#{error_mess}.\n"
-      flash.now[:error]      += "This report currently shows the sizes based on relative dates."
-      date_filtration["absolute_or_relative_from"] = "relative"
-      date_filtration["absolute_or_relative_to"]   = "relative"
-    else
-      # Restrict cache info stats to files within a certain range of oldness.
-      mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute"
-      mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute"
-      (accessed_after,accessed_before) = determine_date_range_start_end(mode_is_absolute_from , mode_is_absolute_to, 
-                              date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
-    end
+    # Used only relative value for determine_date_range_start_end --> harcode the 4 first values.
+    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtration["relative_from"], date_filtration["relative_to"], false)
 
     # For the interface
     @cache_younger = Time.now.to_i - accessed_after.to_i  # partial will adjust to closest value in selection box
@@ -400,7 +384,7 @@ class BourreauxController < ApplicationController
   # Provides the interface to trigger cache cleanup operations
   def cleanup_caches #:nodoc:
     flash[:notice] ||= ""
-
+    
     # First param is cleanup_older, which is the number
     # of second before NOW at which point files OLDER than
     # that become eligible for elimination
@@ -469,7 +453,11 @@ class BourreauxController < ApplicationController
       end
     end
 
-    redirect_to :action => :rr_disk_usage, :cache_older => cleanup_older, :cache_younger => cleanup_younger
+    date_filtration                              = {}
+    date_filtration["relative_from"]             = cleanup_younger
+    date_filtration["relative_to"]               = cleanup_older
+    
+    redirect_to :action => :rr_disk_usage, :date_range => date_filtration
     
   end
 

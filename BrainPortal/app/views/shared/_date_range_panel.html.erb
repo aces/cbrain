@@ -68,8 +68,7 @@ offset_times = [
 
 # Fix the relative values so that they match the closest entries
 # in the offset table above.
-
-adjusted_relative_from = relative_from[1].to_i
+adjusted_relative_from = relative_from[1].present? ? relative_from[1].to_i : 1.weeks.to_i
 adjusted_relative_to   = relative_to[1].to_i
 
 all_vals   = offset_times.inject([]) { |flat,group| flat += (group[1].map { |e| e[1] }) }
@@ -101,29 +100,43 @@ adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
     <!-- from column-->
     <span class="display_cell">
       <div class="centered">From</div>
+      <!-- relative-->
       <div class="date_range_with_size">
-        <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
+        <% if !without_abs %>
+          <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
+        <% else %>
+          <%= hidden_field_tag absolute_or_relative_from[0], "relative" %>
+        <% end %>
         <%= select_tag relative_from[0], grouped_options_for_select(offset_times, adjusted_relative_from ) %>
       </div>
-        
-      <div class="date_range_with_size">
-        <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %> 
-        <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "from" %>
-      </div>                                                              
+      <!-- absolute-->
+      <% if !without_abs %>
+        <div class="date_range_with_size">
+          <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %> 
+          <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "from" %>
+        </div>                     
+      <% end %>
     </span>
     
     <!-- to column -->
     <span class="display_cell">
       <div class="centered">To</div>
+      <!-- relative-->
       <div class="date_range_with_size">
-        <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
+        <% if !without_abs %>
+          <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
+        <% else %>
+          <%= hidden_field_tag absolute_or_relative_to[0], "relative" %>
+        <% end %>
         <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ) %>
       </div>
-        
-      <div class="date_range_with_size">
-        <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %> 
-        <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "to" %>
-      </div>
+      <!-- absolute-->  
+      <% if !without_abs %>
+        <div class="date_range_with_size">
+          <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %> 
+          <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "to" %>
+        </div>
+      <% end %>
     </span>
   </div>
   
