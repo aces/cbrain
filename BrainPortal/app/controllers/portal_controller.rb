@@ -274,7 +274,7 @@ class PortalController < ApplicationController
     error_mess = check_filter_date(date_filtration["date_attribute"], date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
                                    date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
     if error_mess.present?
-      flash[:error] = "#{error_mess}"
+      flash.now[:error] = "#{error_mess}"
       return
     end
     

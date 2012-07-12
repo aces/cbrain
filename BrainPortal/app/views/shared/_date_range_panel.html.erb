@@ -32,7 +32,7 @@ offset_times = [
   [ "1 hour ago",    1.hour.to_i.to_s    ],
   [ "3 hours ago",   3.hour.to_i.to_s    ],
   [ "6 hours ago",   6.hour.to_i.to_s    ],
-  [ "12 hours ago", 12.hour.to_i.to_s   ],
+  [ "12 hours ago", 12.hour.to_i.to_s    ],
   ]],
   [ "Days", [
   [ "1 day ago",     1.day.to_i.to_s     ],
@@ -65,6 +65,21 @@ offset_times = [
   [ "The Big Bang",   big_bang.to_s       ]
   ]]
 ]
+
+# Fix the relative values so that they match the closest entries
+# in the offset table above.
+
+adjusted_relative_from = relative_from[1].to_i
+adjusted_relative_to   = relative_to[1].to_i
+
+all_vals   = offset_times.inject([]) { |flat,group| flat += (group[1].map { |e| e[1] }) }
+
+from_diffs = all_vals.index_by { |v| (v.to_i - adjusted_relative_from).abs }
+adjusted_relative_from = from_diffs[from_diffs.keys.sort { |a,b| a <=> b }.first]
+
+to_diffs = all_vals.index_by { |v| (v.to_i - adjusted_relative_to).abs }
+adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
+
 %>                                           
 
 
@@ -88,7 +103,7 @@ offset_times = [
       <div class="centered">From</div>
       <div class="date_range_with_size">
         <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
-        <%= select_tag relative_from[0], grouped_options_for_select(offset_times, (relative_from[1] || 1.week).to_i ) %>
+        <%= select_tag relative_from[0], grouped_options_for_select(offset_times, adjusted_relative_from ) %>
       </div>
         
       <div class="date_range_with_size">
@@ -102,7 +117,7 @@ offset_times = [
       <div class="centered">To</div>
       <div class="date_range_with_size">
         <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
-        <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, (relative_to[1] || 0).to_i) %>
+        <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ) %>
       </div>
         
       <div class="date_range_with_size">

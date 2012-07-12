@@ -352,8 +352,8 @@ class BourreauxController < ApplicationController
                                    date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
 
     if error_mess.present?
-      flash[:error]       = "#{error_mess}.\n"
-      flash[:error]      += "This report currently shows the sizes based on relative dates."
+      flash.now[:error]       = "#{error_mess}.\n"
+      flash.now[:error]      += "This report currently shows the sizes based on relative dates."
       date_filtration["absolute_or_relative_from"] = "relative"
       date_filtration["absolute_or_relative_to"]   = "relative"
     else
@@ -363,6 +363,10 @@ class BourreauxController < ApplicationController
       (accessed_after,accessed_before) = determine_date_range_start_end(mode_is_absolute_from , mode_is_absolute_to, 
                               date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
     end
+
+    # For the interface
+    @cache_younger = Time.now.to_i - accessed_after.to_i  # partial will adjust to closest value in selection box
+    @cache_older   = Time.now.to_i - accessed_before.to_i # partial will adjust to closest value in selection box
 
     # Users in statistics table
     userlist         = current_user.available_users.all
