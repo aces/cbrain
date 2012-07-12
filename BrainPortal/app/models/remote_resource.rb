@@ -857,29 +857,20 @@ class RemoteResource < ActiveRecord::Base
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
-    user_ids    = command.user_ids
-    before_date = command.before_date || 1.year.ago
-    after_date  = command.after_date  || Time.now
+    user_ids    = command.user_ids    || 'all'
+    before_date = command.before_date
+    after_date  = command.after_date
     
-    userlist = []
-    user_ids.split(/,/).uniq.each do |idstring|
-      if idstring == 'all'
-        userlist |= User.all
-        break
-      end
-      uid = idstring.to_i
-      userlist << User.find(uid)
-    end
-    userlist.compact!
-    userlist.uniq!
+    user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
-      targetfiles = Userfile.where( :user_id => userlist )
-      targetfiles.each do |userfile|
-        syncstatus = userfile.local_sync_status rescue nil
-        next unless syncstatus
-        next if syncstatus.accessed_at >= before_date
-        next if syncstatus.accessed_at <= after_date
+      syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
+      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date.present?
+      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date.present?
+      syncs = syncs.joins(:userfile).where( 'userfiles.user_id' => user_id_list ) if user_id_list
+
+      syncs.all.each do |ss|
+        userfile = ss.userfile
         userfile.cache_erase rescue nil
       end
     end
