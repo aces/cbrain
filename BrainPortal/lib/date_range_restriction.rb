@@ -25,6 +25,7 @@ module DateRangeRestriction
   Revision_info=CbrainFileRevision[__FILE__]
 
   #Checks consistence of values for filtration by date.
+  #The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.
   #For exemple if filtration by absolute_date_from will be process 
   #then the absolute date 'from' is required. 
   #Returns an empty string if everything is good, 
@@ -34,11 +35,11 @@ module DateRangeRestriction
     return "" if date_attribute.blank?
     
     if (absolute_or_relative_from == "absolute") && absolute_from.blank?
-      return "You should enter an absolute 'from' date or de-select radio button"
+      return "You should enter an absolute 'from' date or de-select the radio button"
     end
 	  
     if (absolute_or_relative_to == "absolute") && absolute_to.blank?
-      return "You should enter an absolute 'to' date or de-select radio button"
+      return "You should enter an absolute 'to' date or de-select the radio button"
     end
 
     if (absolute_or_relative_to == "relative") && (absolute_or_relative_from == "relative") && (relative_from == relative_to)
@@ -56,10 +57,23 @@ module DateRangeRestriction
   #relative date from and relative date to (in second), 
   #and finally a string 'updated_at' or 'created_at' to know
   #if filtration need to be perform on created_at or updated_at
-  def add_condition_to_scope(scope, table_name, mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to, date_at)
+  def add_time_condition_to_scope(scope, table_name, mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to, date_attribute)
     
-    return scope if date_at !~ /^(updated_at|created_at)$/
+    return scope if date_attribute.blank?
+    raise "You can't filter on #{date_attribute}, is not a datetime attribute." if scope.model_name.constantize.columns_hash[date_attribute.to_s].type != :datetime
+    
+    (start_time,end_time) = determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
 
+    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} >= ?", start_time])
+    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} <= ?", end_time])
+    
+    scope
+
+  end
+
+  #Define start time and end time for futur filtration
+  def determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
+    
     offset = Time.now.in_time_zone.utc_offset.seconds
 
     if mode_is_absolute_from.present?
@@ -78,11 +92,10 @@ module DateRangeRestriction
     user_start,user_end = user_end,user_start if need_switching
     user_end            = user_end + 1.day    if ( !need_switching && mode_is_absolute_to ) || (need_switching && mode_is_absolute_from)
 
-    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_at} >= ?", user_start - offset])
-    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_at} <= ?", user_end   - offset])
-    
-    scope
+    start_time = user_start - offset
+    end_time   = user_end   - offset
 
+    return [start_time, end_time]
   end
 
   

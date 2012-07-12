@@ -438,17 +438,8 @@ in a tabular layout. Proceed as follow:
 
         <td>
 
-          <%= render :partial => '/shared/date_range', :locals  => {
-            :date_attribute            => ['date_range[date_attribute]',            date_filtration["date_attribute"]], 
-            :absolute_or_relative_from => ['date_range[absolute_or_relative_from]', date_filtration['absolute_or_relative_from']],
-            :absolute_or_relative_to   => ['date_range[absolute_or_relative_to]',   date_filtration['absolute_or_relative_to']],
-            :relative_from             => ['date_range[relative_from]',             date_filtration['relative_from']],
-            :relative_to               => ['date_range[relative_to]',               date_filtration['relative_to']],
-            :absolute_from             => ['date_range[absolute_from]',             date_filtration['absolute_from']],
-            :absolute_to               => ['date_range[absolute_to]',               date_filtration['absolute_to']]
-            }
-          %>
-          (Note: the links in the report will NOT include the date restrictions)
+        <%= date_range_panel(date_filtration) %>
+        (Note: the links in the report will NOT include the date restrictions)
       
         </td>
 

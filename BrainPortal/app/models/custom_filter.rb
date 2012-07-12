@@ -71,9 +71,9 @@ class CustomFilter < ActiveRecord::Base
   def validate_date
     error_mess = check_filter_date(self.data["date_attribute"],  self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
                                    self.data["absolute_from"], self.data["absolute_to"], self.data["relative_from"], self.data["relative_to"])
+    
     return true if error_mess == ""
     errors.add(:base, error_mess)
-
   end
 
   #Main method used for custom filtering. Should be redefined in subclasses to 
@@ -112,7 +112,7 @@ class CustomFilter < ActiveRecord::Base
     relative_to           = self.data["relative_to"]
     table_name            = self.target_filtered_table
     
-    scope = add_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
+    scope = add_time_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
                                      absolute_from, absolute_to, relative_from, relative_to,date_at );
   end
   

@@ -51,15 +51,7 @@
 </p>
 
   Filtering by date: <br/> 
-  <%= render :partial => '/shared/date_range', :locals  => {:date_attribute            => ['data[date_attribute]',            custom_filter[:data]["date_attribute"]], 
-                                                            :absolute_or_relative_from => ['data[absolute_or_relative_from]', custom_filter[:data]['absolute_or_relative_from']],
-                                                            :absolute_or_relative_to   => ['data[absolute_or_relative_to]',   custom_filter[:data]['absolute_or_relative_to']],
-                                                            :relative_from             => ['data[relative_from]',             custom_filter[:data]['relative_from']],
-                                                            :relative_to               => ['data[relative_to]',               custom_filter[:data]['relative_to']],
-                                                            :absolute_from             => ['data[absolute_from]',             custom_filter[:data]['absolute_from']],
-                                                            :absolute_to               => ['data[absolute_to]',               custom_filter[:data]['absolute_to']]
-                                                            }
-%>
+  <%= date_range_panel(custom_filter[:data] || {}, "data") %>
 
 <p>
    Archiving status: <br/>

@@ -110,7 +110,6 @@
           </th>
         <% end %>
       </tr>
-  
     </table>
     
     <p/><%= disk_usage_legend %>
@@ -128,9 +127,13 @@
 <!-- *********************************** -->
 
 <%= form_tag({ :action  => :rr_disk_usage }, :method => :get) do %>
-  Files reported in the <em>Caches</em> report were last accessed between
-  <%= select_tag("cache_older",   options_for_select( @offset_times, @cache_older )) %> and
-  <%= select_tag("cache_younger", options_for_select( @offset_times, @cache_younger )) %>
+  Files reported in the <em>Caches</em> report were last accessed:
+  <div class="display_table">
+  <% params[:date_range] ||= {} %>
+  <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
+  <% params[:date_range]["relative_to"]   ||= 1.months.to_i.to_s %>
+  <%= date_range_panel(params[:date_range], "date_range", []) %>
+  </div>
   <%= submit_tag 'Refresh' %>
-<% end %> <!-- form -->
+<% end %>
 
