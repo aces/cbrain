@@ -23,7 +23,6 @@
 -%>
 
 <% 
-
 # List of cache update offsets we support
 big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
 
@@ -66,9 +65,6 @@ offset_times = [
   [ "The Big Bang",   big_bang.to_s       ]
   ]]
 ]
-
-date_attributes ||= [ [:created_at, "By creation date"], [:updated_at, "By update date"] ]
-
 %>                                           
 
 

@@ -129,18 +129,10 @@
 <%= form_tag({ :action  => :rr_disk_usage }, :method => :get) do %>
   Files reported in the <em>Caches</em> report were last accessed:
   <div class="display_table">
-  <% date_filtration = params[:date_range] || {} %>
-  <%= render :partial => '/shared/date_range_panel', :locals  => {
-      :date_attributes           => [],
-      :date_attribute            => ['date_range[date_attribute]',            date_filtration["date_attribute"]], 
-      :absolute_or_relative_from => ['date_range[absolute_or_relative_from]', date_filtration['absolute_or_relative_from']],
-      :absolute_or_relative_to   => ['date_range[absolute_or_relative_to]',   date_filtration['absolute_or_relative_to']],
-      :relative_from             => ['date_range[relative_from]',             date_filtration['relative_from'] || 50.years.to_i],
-      :relative_to               => ['date_range[relative_to]',               date_filtration['relative_to']   || 1.months.to_i],
-      :absolute_from             => ['date_range[absolute_from]',             date_filtration['absolute_from']],
-      :absolute_to               => ['date_range[absolute_to]',               date_filtration['absolute_to']]
-      }
-  %>
+  <% params[:date_range] ||= {} %>
+  <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
+  <% params[:date_range]["relative_to"]   ||= 1.months.to_i.to_s %>
+  <%= date_range_panel(params[:date_range], "date_range", []) %>
   </div>
   <%= submit_tag 'Refresh' %>
 <% end %>
