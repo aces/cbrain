@@ -43,20 +43,8 @@
     <%= tool_config_select('task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
     <%= hijacker_submit_button("Update", :name => :update_tool_config_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
-  
-  
-  <%= button_with_dropdown_menu("For Running Tasks") do %>
-    <p class="dropmenu_info">
-      This panel allows you to affect tasks that are running on their Execution Servers.
-      Not all Execution Servers support these operations.
-    </p>
-    <p class="centered">
-      <%= hijacker_submit_button("Suspend Running Tasks",  :url => url_for(:action  => :operation, :operation => 'suspend'), :method  => :post, :datatype => :script, :class => "button") %>
-      <%= hijacker_submit_button("Resume Suspended Tasks", :url => url_for(:action  => :operation, :operation => 'resume'), :method  => :post, :datatype => :script, :class => "button") %>
-    <p/>
-  <% end %>
-  
-  
+
+
   <%= button_with_dropdown_menu("For Failed Tasks") do %>
     <p class="dropmenu_info">
       This panel allows you to affect tasks that have failed, one way or another.
