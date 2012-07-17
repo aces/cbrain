@@ -285,5 +285,10 @@ module ActiveRecord
 
   end
 
+  class Associations::AssociationCollection
+    delegate :raw_first_column, :raw_rows, :undo_where, :to => :scoped
+  end
+
 end
+
 
