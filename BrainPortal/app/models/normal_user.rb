@@ -44,7 +44,7 @@ class NormalUser < User
     if site
       site.users.where("users.type <> 'AdminUser'")
     else
-      []
+      User.where(:id => -1)  # empty scope!
     end
   end
   

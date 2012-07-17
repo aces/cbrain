@@ -42,7 +42,7 @@ class SiteManager < User
   end
   
   def available_users  #:nodoc:
-    self.site.users
+    self.site.users.where({})  # the final .where is needed to make sure we return a Relation
   end
   
   def visible_users #:nodoc:
