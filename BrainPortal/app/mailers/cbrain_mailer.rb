@@ -25,7 +25,7 @@ class CbrainMailer < ActionMailer::Base
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  default :from => "no_reply@cbrain.mcgill.ca"
+  default :from => "no-reply-cbrain@mcgill.ca"
 
   # Send a registration confirmation to new users.
   def registration_confirmation(user, plain_password, no_password_reset_needed = false)
