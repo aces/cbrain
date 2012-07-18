@@ -573,7 +573,7 @@ class TasksController < ApplicationController
         when :update_tool_config_id
           new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)  
           unable_to_update = "tool version" if 
-            ! tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
+            ! new_tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
           :tool_config
         else
         :unknown   
