@@ -47,6 +47,10 @@
       <% if help_url.present? %>
         <%= link_to "User Manual", help_url, :target => '_blank' %>
       <% end %>
+      <% support_email = RemoteResource.current_resource.support_email %>
+      <% if support_email.present? %>
+        <%= mail_to support_email, "Support Email" %>
+      <% end %>
     <% end %>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
   </span>
