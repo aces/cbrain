@@ -107,8 +107,10 @@
     <% t.cell("Size of Work Directory") do %>
       <% if @task.share_wd_tid %>
         ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
-      <% else %>
+      <% elsif @task.cluster_workdir %>
         <%= colored_pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+      <% else %>
+        (None)
       <% end %>
     <% end %>
 

@@ -49,7 +49,7 @@
       <% end %>
       <% support_email = RemoteResource.current_resource.support_email %>
       <% if support_email.present? %>
-        <%= mail_to support_email, "Support Email" %>
+        <%= mail_to support_email, "Email Support" %>
       <% end %>
     <% end %>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>

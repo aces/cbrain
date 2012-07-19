@@ -179,7 +179,7 @@ class BourreauSystemChecks < CbrainChecker
     return unless Dir.exists?(gridshare_dir)
 
     #-----------------------------------------------------------------------------
-    puts "C> Making sure work directories for local tasks exists..."
+    puts "C> Making sure work directories for local tasks exist..."
     #-----------------------------------------------------------------------------
 
     local_tasks_with_workdirs = CbrainTask.real_tasks.wd_present.not_shared_wd.where(
