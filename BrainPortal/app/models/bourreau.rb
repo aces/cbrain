@@ -232,7 +232,7 @@ class Bourreau < RemoteResource
 
     worker_pool  = WorkerPool.find_pool(BourreauWorker)
     workers      = worker_pool.workers
-    workers_pids = workers.map(&:pid).join(",")
+    worker_pids  = workers.map(&:pid).join(",")
 
     worker_revinfo    = BourreauWorker.revision_info.self_update
     worker_lc_rev     = worker_revinfo.commit
@@ -246,13 +246,25 @@ class Bourreau < RemoteResource
       :tasks_max          => queue_tasks_max,
       :tasks_tot          => queue_tasks_tot,
 
-      :worker_pids        => workers_pids,
+      :worker_pids        => worker_pids,
       :worker_lc_rev      => worker_lc_rev,
       :worker_lc_author   => worker_lc_author,
       :worker_lc_date     => worker_lc_date
     )
 
     return info
+  end
+
+  # Returns a lighter and faster-to-generate 'ping' information
+  # for this server; the object returned is RemoteResourceInfo
+  # with only two fields set: 'revision' and 'worker_pids'.
+  def self.ping_remote_resource_info
+    worker_pool      = WorkerPool.find_pool(BourreauWorker) rescue nil
+    workers          = worker_pool.workers rescue nil
+    worker_pids      = workers.map(&:pid).join(",") rescue '???'
+    info             = super
+    info.worker_pids = worker_pids
+    info
   end
 
   protected # internal methods for remote control operations above

@@ -555,6 +555,15 @@ class RemoteResource < ActiveRecord::Base
     return info
   end
 
+  # Returns a lighter and faster-to-generate 'ping' information
+  # for this server; the object returned is RemoteResourceInfo
+  # with only one field set: 'revision'.
+  def self.ping_remote_resource_info
+    info          = RemoteResourceInfo.new
+    info.revision = $CBRAIN_StartTime_Revision
+    info
+  end
+
   def get_ssh_public_key #:nodoc:
     cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
     return @ssh_public_key if @ssh_public_key
@@ -578,12 +587,14 @@ class RemoteResource < ActiveRecord::Base
   # called anyway if you call this instance method on the
   # remote resource object which represents the current Rails
   # app).
-  def remote_resource_info
+  def remote_resource_info(what = 'info')
 
     # In case we're asking about the CURRENT Rails
     # app, no need to connect to the network, eh?
     if self.id == CBRAIN::SelfRemoteResourceId
-      return self.class.remote_resource_info
+      return self.class.remote_resource_info      if what == 'info'
+      return self.class.ping_remote_resource_info if what == 'ping'
+      raise "Unknown info keyword '#{what}'."
     end
 
     info = nil
@@ -594,7 +605,7 @@ class RemoteResource < ActiveRecord::Base
       if self.ssh_master && self.ssh_master.is_alive?
         Control.site    = self.site
         Control.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout
-        control_info = Control.find('info')
+        control_info = Control.find(what)
         info = RemoteResourceInfo.new(control_info.attributes)
       end
     rescue => ex
