@@ -401,22 +401,22 @@ table.resource_list tr.subtitle_bordered {
 /* % in tasks forms, for historical reasons. */
 /* % ############################################## */
 
-.simple {
+table.simple {
     border: 0px;
 }
 
-.simple tr {
+table.simple tr {
     border: 1px;
     text-align: left;
 }
 
-.simple td {
+table.simple td {
     border: 0px;
     text-align: left;
-    padding: 1px 1em 1px 1em;
+    padding: 1px 0.5em 1px 0.5em;
 }
 
-.bordered {
+table.bordered {
     border: solid 1px black;
     margin: 2px;
 }
