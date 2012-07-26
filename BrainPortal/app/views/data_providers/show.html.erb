@@ -31,7 +31,7 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
     
-    <%= link_to 'File Registration Statistics', {:controller => :portal, :action => :report, :table_name => :userfiles, :data_provider_id => @provider.id, :row_type => :user_id , :col_type => :type, :generate => "ok" }, :class => "button" %>
+    <%= link_to 'File Registration Statistics', {:controller => :portal, :action => :report, :table_name => 'userfiles.combined_file_rep', :data_provider_id => @provider.id, :row_type => :user_id , :col_type => :type, :generate => "ok" }, :class => "button" %>
     
     <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
     
