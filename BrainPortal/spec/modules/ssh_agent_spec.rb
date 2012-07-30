@@ -176,7 +176,7 @@ describe SshAgent do
     it "should change the environment's SSH_AUTH_SOCK and SSH_AGENT_PID" do
       agent = SshAgent.new('test','/tmp/abcd','1234')
       with_modified_env('SSH_AUTH_SOCK' => nil, 'SSH_AGENT_PID' => nil) do
-        agent.apply.should == true
+        agent.apply.should be_true
         ENV['SSH_AUTH_SOCK'].should == '/tmp/abcd'
         ENV['SSH_AGENT_PID'].should == '1234'
       end
@@ -202,30 +202,60 @@ describe SshAgent do
 
     let!(:agent) { SshAgent.new('test','/tmp/abcd/wrong/socket','1234567') }
 
+    it "should return false if socket path is invalid" do
+      IO.stub!(:popen)
+      IO.should_not_receive(:popen)
+      agent.is_alive?.should be_false
+    end
+
     it "should invoke ssh-add to check that the agent is alive" do
+      File.stub!(:socket?).and_return true
       IO.stub!(:popen).and_return "OK"
       IO.should_receive(:popen)
       agent.is_alive?
     end
 
     it "should return false if ssh-add cannot connect" do
+      File.stub!(:socket?).and_return true
       IO.stub!(:popen).and_return "Could not open a connection to your authentication agent."
-      agent.is_alive?.should == false
+      agent.is_alive?.should be_false
     end
 
     it "should return true if ssh-add does connect to an agent with no identities" do
+      File.stub!(:socket?).and_return true
       IO.stub!(:popen).and_return "The agent has no identities."
-      agent.is_alive?.should == true
+      agent.is_alive?.should be_true
     end
 
     it "should return true if ssh-add does connect to an agent with some identities" do
+      File.stub!(:socket?).and_return true
       IO.stub!(:popen).and_return "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
-      agent.is_alive?.should == true
+      agent.is_alive?.should be_true
     end
 
   end
 
 
+
+  describe "#aliveness" do
+
+    it "should return self if is_alive? is true" do
+      agent = SshAgent.new('test','/tmp/abcd','12345678')
+      agent.stub!(:is_alive?).and_return true
+      agent.should_receive(:is_alive?)
+      agent.aliveness.should == agent
+    end
+
+    it "should invoke destroy and return nil if is_alive? is false" do
+      agent = SshAgent.new('test','/tmp/abcd','12345678')
+      agent.stub!(:is_alive?).and_return false
+      agent.should_receive(:is_alive?)
+      agent.stub!(:destroy)
+      agent.should_receive(:destroy)
+      agent.aliveness.should be_nil
+    end
+
+  end
 
   describe "#add_key_file" do
 
@@ -237,7 +267,7 @@ describe SshAgent do
 
     it "should return true if the identify was added" do
       IO.stub!(:popen).and_return "Identity added: blah blah"
-      agent.add_key_file('/tmp/does/not/exist').should == true
+      agent.add_key_file('/tmp/does/not/exist').should be_true
     end
 
   end
@@ -251,7 +281,7 @@ describe SshAgent do
       Process.should_receive(:kill).with('TERM',1234567)
       File.stub!(:unlink)
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket','1234567')
-      agent.destroy.should == true
+      agent.destroy.should be_true
     end
 
     it "should not kill the agent process if if it a forwarded agent" do
@@ -259,7 +289,7 @@ describe SshAgent do
       Process.should_not_receive(:kill)
       File.stub!(:unlink)
       agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
-      agent.destroy.should == true
+      agent.destroy.should be_true
     end
 
     it "should not attempt to erase the agent's config file if it a forwarded agent" do
@@ -268,7 +298,7 @@ describe SshAgent do
       File.stub!(:unlink)
       File.should_not_receive(:unlink)
       agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
-      agent.destroy.should == true
+      agent.destroy.should be_true
     end
 
     it "should erase the agent config file, if any, if it is a named agent" do
@@ -277,7 +307,7 @@ describe SshAgent do
       Process.stub!(:kill)
       File.stub!(:unlink)
       File.should_receive(:unlink).with(conf)
-      agent.destroy.should == true
+      agent.destroy.should be_true
     end
 
   end

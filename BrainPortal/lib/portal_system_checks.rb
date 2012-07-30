@@ -60,5 +60,28 @@ class PortalSystemChecks < CbrainChecker
     end
   end
 
+  def self.z000_ensure_we_have_a_local_ssh_agent
+
+    #----------------------------------------------------------------------------
+    puts "C> Making sure we have a SSH agent to provide our credentials..."
+    #----------------------------------------------------------------------------
+
+    message = 'Found existing agent'
+    agent = SshAgent.find_by_name('cbrain').try(:aliveness)
+    unless agent
+      begin
+        agent = SshAgent.create('cbrain')
+        message = 'Created new agent'
+      rescue
+        sleep 1
+        agent = SshAgent.find_by_name('cbrain').try(:aliveness) # in case of race condition
+      end
+      raise "Error: cannot create SSH agent named 'cbrain'." unless agent
+    end
+    agent.apply
+    puts "C> \t- #{message}: PID=#{agent.pid} SOCK=#{agent.socket}"
+
+  end
+
 end 
 

@@ -186,6 +186,7 @@ class SshAgent
 
   # Checks that the agent is alive and responding.
   def is_alive?
+    return false unless self.socket.present? && File.socket?(self.socket)
     with_modified_env('SSH_AUTH_SOCK' => self.socket, 'SSH_AGENT_PID' => self.pid) do
       out = IO.popen("ssh-add -l 2>&1","r") { |fh| fh.read }
       # "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
@@ -195,6 +196,19 @@ class SshAgent
       return false unless out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/
       true
     end
+  end
+
+  # Does a is_alive?() check; if it succeeds, returns the agent;
+  # otherwise does a destroy() and returns nil. Can be used just
+  # after a find:
+  #
+  #   agent = SshAgent.find_by_name('abcd').try(:aliveness)
+  #   agent = SshAgent.find_forwarded.try(:aliveness)
+  #
+  def aliveness
+    return self if self.is_alive?
+    self.destroy rescue nil
+    nil
   end
 
   # Adds a private key stored in file +keypath+ in the agent.
