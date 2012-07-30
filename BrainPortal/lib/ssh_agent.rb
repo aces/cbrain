@@ -270,7 +270,7 @@ echo Agent pid #{self.pid};
 
   def self.agent_config_file_path(name) #:nodoc:
     raise "Agent name is not a simple identifier." unless name.present? && (name =~ /^[a-z]\w*$/i || name == '_forwarded')
-    Pathname.new(CONFIG[:agent_bashrc_dir]) + "#{name}_#{CONFIG[:hostname]}.bashrc"
+    Pathname.new(CONFIG[:agent_bashrc_dir]) + "#{name}@#{CONFIG[:hostname]}.agent.bashrc"
   end
 
 
