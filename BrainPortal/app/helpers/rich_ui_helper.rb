@@ -46,9 +46,9 @@ module RichUiHelper
   end
   
   def hover_dropdown(header, options = {}, &block)
-    @@hover_dropdown_div_ids ||= 0
-    @@hover_dropdown_div_ids += 1
-    target_id = "hover_div_#{@@hover_dropdown_div_ids}"
+    @hover_dropdown_div_ids ||= 0
+    @hover_dropdown_div_ids += 1
+    target_id = "hover_div_#{@hover_dropdown_div_ids}"
     options[:target] = "##{target_id}"
     options[:style] = "display:inline-block"
     dropdown_class = "hover_dropdown "
@@ -185,10 +185,10 @@ module RichUiHelper
   #Text of the icon is provided as an argument.
   #Html to be displayed on mouseover is given as a block.
   def html_tool_tip(text = "<span class=\"action_link\">?</span>".html_safe, options = {}, &block)
-    @@html_tool_tip_id ||= 0
-    @@html_tool_tip_id += 1
+    @html_tool_tip_id ||= 0
+    @html_tool_tip_id += 1
 
-    html_tool_tip_id = @@html_tool_tip_id.to_s # we need a local var in case the block rendered ALSO calls html_tool_tip inside !
+    html_tool_tip_id = @html_tool_tip_id.to_s # we need a local var in case the block rendered ALSO calls html_tool_tip inside !
     html_tool_tip_id += "_#{Process.pid}_#{rand(1000000)}" # because of async ajax requests
 
     offset_x = options[:offset_x] || 30
@@ -199,12 +199,12 @@ module RichUiHelper
     content_signature = Digest::MD5.hexdigest(content_class + content)
 
     # Find out if we've already generated an identical tooltip before...
-    @@content_sig_cache ||= {}
-    if @@content_sig_cache[content_signature] # yes we did
-       html_tool_tip_id = @@content_sig_cache[content_signature]
+    @content_sig_cache ||= {}
+    if @content_sig_cache[content_signature] # yes we did
+       html_tool_tip_id = @content_sig_cache[content_signature]
        content_div = nil
     else # no we haven't
-       @@content_sig_cache[content_signature] = html_tool_tip_id
+       @content_sig_cache[content_signature] = html_tool_tip_id
        content_div = "<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">" +
                      h(content) +
                     "</div>"

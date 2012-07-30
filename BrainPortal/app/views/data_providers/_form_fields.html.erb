@@ -30,7 +30,7 @@
 <span title="Brief description of the data provider.">
   <p><%= f.label :description, "Description" %><br/>
   <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-  <small>The first line should be a short summary, and the rest are for any special notes for the users.</small>
+  <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
   </p>
 </span>
 
@@ -47,7 +47,7 @@
 
   <p><%= f.label :type, "Type" %><br/>
   <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
-  <small><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></small>
+  <div class="field_explanation"><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></div>
   </p>
 
   <div id="data_provider_classes" style="display:none">

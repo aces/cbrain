@@ -28,22 +28,6 @@
 
   <div class="menu_bar">
 
-    <!-- HOLD & RELEASE -->
-    <% if @task.status == 'Queued' %>
-      <%= link_to 'Hold Task', { :action => 'operation', :operation => 'hold', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-    <% end %>
-    <% if @task.status == 'On Hold' %>
-      <%= link_to 'Release Task', { :action => 'operation', :operation => 'release', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-    <% end %>
-
-    <!-- SUSPEND & RESUME -->
-    <% if @task.status == 'On CPU' %>
-      <%= link_to 'Suspend Task', { :action => 'operation', :operation => 'suspend', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-    <% end %>
-    <% if @task.status == 'Suspended' %>
-      <%= link_to 'Resume Task', { :action => 'operation', :operation => 'resume', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-    <% end %>
-
     <!-- TERMINATE & REMOVE -->
     <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
       <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "button menu_button", :method => :post %>
@@ -123,8 +107,10 @@
     <% t.cell("Size of Work Directory") do %>
       <% if @task.share_wd_tid %>
         ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
-      <% else %>
+      <% elsif @task.cluster_workdir %>
         <%= colored_pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+      <% else %>
+        (None)
       <% end %>
     <% end %>
 

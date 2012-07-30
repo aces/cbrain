@@ -38,7 +38,7 @@
     <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
     <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
       <%= text_area_tag "site[description]", @site.description, :rows => 10, :cols => 40 %><br/>
-      <small>The first line should be a short summary, and the<br> rest are for any special notes for the users.</small><br>
+      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
     <% end %>
   <% end %>
   <%= show_table(@site, :header => 'Resources') do |t| %>

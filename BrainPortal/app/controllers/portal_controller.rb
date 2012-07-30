@@ -205,6 +205,7 @@ class PortalController < ApplicationController
     signed_agreements = current_user.meta[:signed_license_agreements] || []
     signed_agreements << @license
     current_user.meta[:signed_license_agreements] = signed_agreements
+    current_user.addlog("Signed license agreement '#{@license}'.")
     redirect_to start_page_path
   end
   
@@ -274,7 +275,7 @@ class PortalController < ApplicationController
     error_mess = check_filter_date(date_filtration["date_attribute"], date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
                                    date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
     if error_mess.present?
-      flash[:error] = "#{error_mess}"
+      flash.now[:error] = "#{error_mess}"
       return
     end
     
@@ -305,7 +306,7 @@ class PortalController < ApplicationController
     # Add date filtration
     mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute" ? true : false
     mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute" ? true : false
-    table_content_scope = add_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
+    table_content_scope = add_time_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
         date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"], date_filtration["date_attribute"])
 
     # Compute content fetcher
@@ -320,8 +321,7 @@ class PortalController < ApplicationController
       file_counts        = table_content_fetcher.count
       file_sum_num_files = table_content_fetcher.sum(:num_files)
       file_cnt_size_unk  = table_content_fetcher.where(:size      => nil).count
-      file_cnt_nf_unk    = table_content_fetcher.where(:num_files => nil).count
-      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_cnt_size_unk, file_cnt_nf_unk) # create quintuplets as values
+      @table_content     = merge_vals_as_array(file_sum_size, file_counts, file_sum_num_files, file_cnt_size_unk) # create quadruplets as values
     elsif table_ops[0] == :combined_task_rep # special fetch of multiple values for task report
       task_sum_size      = table_content_fetcher.sum(:cluster_workdir_size)
       task_counts        = table_content_fetcher.count

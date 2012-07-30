@@ -116,7 +116,7 @@ class RemoteResource < ActiveRecord::Base
                    :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
                    :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
                    :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                   :spaced_dp_ignore_patterns, :license_agreements
+                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email
   
 
 
@@ -555,6 +555,15 @@ class RemoteResource < ActiveRecord::Base
     return info
   end
 
+  # Returns a lighter and faster-to-generate 'ping' information
+  # for this server; the object returned is RemoteResourceInfo
+  # with only one field set: 'revision'.
+  def self.ping_remote_resource_info
+    info          = RemoteResourceInfo.new
+    info.revision = $CBRAIN_StartTime_Revision
+    info
+  end
+
   def get_ssh_public_key #:nodoc:
     cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
     return @ssh_public_key if @ssh_public_key
@@ -578,12 +587,14 @@ class RemoteResource < ActiveRecord::Base
   # called anyway if you call this instance method on the
   # remote resource object which represents the current Rails
   # app).
-  def remote_resource_info
+  def remote_resource_info(what = 'info')
 
     # In case we're asking about the CURRENT Rails
     # app, no need to connect to the network, eh?
     if self.id == CBRAIN::SelfRemoteResourceId
-      return self.class.remote_resource_info
+      return self.class.remote_resource_info      if what == 'info'
+      return self.class.ping_remote_resource_info if what == 'ping'
+      raise "Unknown info keyword '#{what}'."
     end
 
     info = nil
@@ -594,7 +605,7 @@ class RemoteResource < ActiveRecord::Base
       if self.ssh_master && self.ssh_master.is_alive?
         Control.site    = self.site
         Control.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout
-        control_info = Control.find('info')
+        control_info = Control.find(what)
         info = RemoteResourceInfo.new(control_info.attributes)
       end
     rescue => ex
@@ -857,29 +868,20 @@ class RemoteResource < ActiveRecord::Base
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
-    user_ids    = command.user_ids
-    before_date = command.before_date || 1.year.ago
-    after_date  = command.after_date  || Time.now
+    user_ids    = command.user_ids    || 'all'
+    before_date = command.before_date
+    after_date  = command.after_date
     
-    userlist = []
-    user_ids.split(/,/).uniq.each do |idstring|
-      if idstring == 'all'
-        userlist |= User.all
-        break
-      end
-      uid = idstring.to_i
-      userlist << User.find(uid)
-    end
-    userlist.compact!
-    userlist.uniq!
+    user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
-      targetfiles = Userfile.where( :user_id => userlist )
-      targetfiles.each do |userfile|
-        syncstatus = userfile.local_sync_status rescue nil
-        next unless syncstatus
-        next if syncstatus.accessed_at >= before_date
-        next if syncstatus.accessed_at <= after_date
+      syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
+      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date.present?
+      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date.present?
+      syncs = syncs.joins(:userfile).where( 'userfiles.user_id' => user_id_list ) if user_id_list
+
+      syncs.all.each do |ss|
+        userfile = ss.userfile
         userfile.cache_erase rescue nil
       end
     end

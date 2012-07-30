@@ -71,7 +71,7 @@
     <% t.edit_cell(:city) { text_field_tag "user[city]", @user.city } %>
 
     <%
-      t.edit_cell("meta[pref_data_provider_id]", :header => "Default data provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
+      t.edit_cell("meta[pref_data_provider_id]", :header => "Default Data Provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
         data_provider_select("meta[pref_data_provider_id]",
                                  { :selector =>  @user.meta["pref_data_provider_id"] },
                                  { :include_blank => true } )

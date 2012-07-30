@@ -206,7 +206,7 @@ class DataProvidersController < ApplicationController
 
     unless @provider.is_browsable? && @provider.online?
       flash[:error]  = "You cannot browse Data Provider '#{@provider.name}'.\n"
-      flash[:error] += "It is currently marked as 'offline'." if ! @provider.online.
+      flash[:error] += "It is currently marked as 'offline'." if ! @provider.online
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }

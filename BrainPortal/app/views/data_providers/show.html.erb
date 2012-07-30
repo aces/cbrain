@@ -31,7 +31,7 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
     
-    <%= link_to 'File Registration Statistics', {:controller => :portal, :action => :report, :table_name => :userfiles, :data_provider_id => @provider.id, :row_type => :user_id , :col_type => :type, :generate => "ok" }, :class => "button" %>
+    <%= link_to 'File Registration Statistics', {:controller => :portal, :action => :report, :table_name => 'userfiles.combined_file_rep', :data_provider_id => @provider.id, :row_type => :user_id , :col_type => :type, :generate => "ok" }, :class => "button" %>
     
     <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
     
@@ -214,7 +214,7 @@
     <tr><th colspan="2" class="supertitle">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
     <% @ssh_keys.each do |pair| %>
       <tr><th><%= pair[0] %></th></tr>
-      <tr><td><SMALL><SMALL><PRE class="ssh_key"><%= pretty_ssh_key(pair[1]) %></PRE></SMALL></SMALL></td></tr>
+      <tr><td><pre class="ssh_key"><%= pretty_ssh_key(pair[1]) %></pre></td></tr>
     <% end %>
   </table>
 </div>

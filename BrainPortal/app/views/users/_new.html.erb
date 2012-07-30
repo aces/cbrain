@@ -34,7 +34,7 @@
 
         <p><%= f.label :login, "Login" %><br/>
         <%= f.text_field :login %><br>
-        <small>For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</small>
+        <div class="field_explanation">For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</div>
         </p>
 
         <p><%= f.label :email, "Email" %><br/>
@@ -62,7 +62,7 @@
 
         <% if current_user.has_role? :admin_user %>
           <p><%= f.label :site_id, "Site" %><br/>
-          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %></p>
+          <%= f.collection_select :site_id, Site.all.sort { |a,b| a.name <=> b.name }, :id, :name, { :include_blank  => true } %></p>
         <% end %>
 
         <p><%= f.label :password, "Password" %><br/>

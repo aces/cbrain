@@ -25,8 +25,6 @@ class CbrainMailer < ActionMailer::Base
   
   Revision_info=CbrainFileRevision[__FILE__]
   
-  default :from => "no_reply@cbrain.mcgill.ca"
-
   # Send a registration confirmation to new users.
   def registration_confirmation(user, plain_password, no_password_reset_needed = false)
     @user                     = user
@@ -34,6 +32,7 @@ class CbrainMailer < ActionMailer::Base
     @no_password_reset_needed = no_password_reset_needed
     return unless @user.is_a?(User) && ! @user.email.blank?
     mail(
+      :from    => build_from,
       :to      => user.email,
       :subject => 'Welcome to CBRAIN!'
     )
@@ -44,6 +43,7 @@ class CbrainMailer < ActionMailer::Base
     @user = user
     return unless @user.is_a?(User) && ! @user.email.blank?
     mail(
+      :from    => build_from,
       :to      => user.email,
       :subject => 'Account Reset'
     )
@@ -64,9 +64,17 @@ class CbrainMailer < ActionMailer::Base
     return false if emails.blank?
     
     mail(
+      :from    => build_from,
       :to      => emails,
       :subject => "CBRAIN Message: #{@subject}"
     )
+  end
+
+  private
+
+  def build_from #:nodoc:
+    RemoteResource.current_resource.system_from_email.presence ||
+    "#{CBRAIN::Rails_UserName}@#{Socket.gethostname}"
   end
 
 end

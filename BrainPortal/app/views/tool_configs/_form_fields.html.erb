@@ -37,7 +37,7 @@
   <span title="Brief description for this configuration.">
     <p><%= f.label :description, "Description:" %><br/>
     <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-    <small>The first line must be a short summary, and the rest are for any special notes for the users.</small>
+    <div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>
     </p>
   </span>
 
@@ -59,17 +59,17 @@
     <% 1.upto(5) do %>
       <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
     <% end %>
-    <small>In the generated script, the values shown here will be placed in double quotes automatically.</small>
+    <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
     </p>
   </span>
 
   <span title="BASH initialization prologue">
     <p><%= f.label :script_prologue, "BASH initialization prologue:" %><br/>
     <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
-    <small>This is a multi line partial BASH script. It can use the environment variables defined above,
+    <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
            and do anything else you feel is needed to activate this configuration.
-           <br/> Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
-           could interfere with the proper processing of the task's output.</small>
+           Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
+           could interfere with the proper processing of the task's output.</div>
     </p>
   </span>
 
@@ -77,7 +77,7 @@
   Option: Merge configuration from another existing entry:
   <%= tool_config_select :merge_from_tc_id, {}, { :include_blank => 'Merge from...' } %>
   <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
-  <small>
+  <div class="field_explanation">
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
     The description, environment variables and prologue script will be appended to whatever
     values are currently in the form. The project and suggested number of CPUs will be changed.
@@ -85,7 +85,7 @@
     The environment variables and prologue script will be appended to whatever
     values are currently in the form.
   <% end %>
-  </small>
+  </div>
   </p>
 
 </div>

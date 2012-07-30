@@ -28,6 +28,8 @@ class SingleFile < Userfile
   Revision_info=CbrainFileRevision[__FILE__]
   
   validates :type, :subclass => { :root_class => SingleFile }
+
+  before_create :set_num_files_to_one
   
   def self.valid_file_classes #:nodoc:
     @valid_file_classes ||= [SingleFile] + SingleFile.descendants
@@ -39,6 +41,10 @@ class SingleFile < Userfile
     self.save!
 
     true
+  end
+
+  def set_num_files_to_one #:nodoc:
+    self.num_files ||= 1
   end
 
 end

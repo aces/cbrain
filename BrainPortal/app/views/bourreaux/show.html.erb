@@ -22,13 +22,13 @@
 #
 -%>
 
-<% title 'Execution Server Info' %>
-
 <% 
   is_bourreau = @bourreau.is_a?(Bourreau)
   is_portal   = @bourreau.is_a?(BrainPortal) 
   info = @bourreau.info
  %>
+
+<% title is_portal ? 'Portal Info' : 'Execution Server Info' %>
    
 <% if check_role(:admin_user) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
@@ -56,17 +56,16 @@
 
     <% t.edit_cell(:name) do %>
       <%= text_field_tag "bourreau[name]", @bourreau.name %><br>
-      <small>
-        Important note: this name must also be changed accordingly in the config file<br/>
-        <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em><br/>
+      <div class="field_explanation">
+        Important note: this name must also be changed accordingly in the config file
+        <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em>
         for this server to restart properly later on.
-      </small>
+      </div>
     <% end %>
 
     <% t.edit_cell(:description, :content =>  overlay_description(@bourreau.description)) do %>
-      <small>The first line should be a short summary, and the rest are for any special notes for the users.</small><br>
       <%= text_area_tag "bourreau[description]", @bourreau.description, :rows => 10, :cols => 40 %><br>
-      <%= submit_tag "Update" %>
+      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
     <% end %>
 
     <% t.attribute_cell(:class) %>
@@ -92,19 +91,29 @@
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
 
     <% if is_portal %>
+
       <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>
-        <small>
-          Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
-        </small>
-        <br>
         <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+        <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
       <% end %>
       
-      <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
-        <%= text_field_tag "bourreau[help_url]", @bourreau.help_url %><br/>
-        <small>If set, the portal will show a link called 'User Manual' in the account bar at the top.</small>
+      <% t.edit_cell(:support_email, :header => "Support email address") do %>
+        <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :size => 30 %><br/>
+        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
       <% end %>
+
+      <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
+        <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :size => 40 %><br/>
+        <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
+      <% end %>
+
     <% end %>
+
+    <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do %>
+      <%= text_field_tag "bourreau[system_from_email]", @bourreau.system_from_email, :size => 30 %><br/>
+      <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+    <% end %>
+
   <% end %>
 
 
@@ -152,13 +161,13 @@
     <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
         <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
-        <small>Warning! Changing this field will result in resetting the synchronization<br>
-        status of all files from all Data Providers! Also, the Rails app will have to<br>
-        be restarted, and all files in that directory will be erased!</small>
+        <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
+        status of all files from all Data Providers! Also, the Rails app will have to
+        be restarted, and all files in that directory will be erased!</div>
       <% end %>
       <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
         <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
-        <small>Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</small>
+        <div class="field_explanation">Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</div>
       <% end %>
       <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
         <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
@@ -175,10 +184,10 @@
                 [ "Six months",    6.months.to_i.to_s  ]
             ], :selected => @bourreau.cache_trust_expire ))
         %></br>
-        <small>This means that in the execution server's cache, files that have been recorded<br/>
-        as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy</br/>
-        and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em></br/>
-        if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</small>
+        <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
+        as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
+        and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
+        if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
       <% end %>
     <% end %>
 
@@ -201,7 +210,7 @@
 
         <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do %>
           <%= text_field_tag "bourreau[cms_default_queue]", @bourreau.cms_default_queue %><br/>
-          <small>Optional.</small>
+          <div class="field_explanation">Optional.</div>
         <% end %>
 
         <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
@@ -213,7 +222,7 @@
 
         <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
           <%= text_field_tag :cms_extra_qsub_args, @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
-          <small>Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</small>
+          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
         <% t.edit_cell 'meta[task_limit_user_default]', 
@@ -223,7 +232,7 @@
               options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
                                   @bourreau.meta[:task_limit_user_default] )
           %>
-          <small>(Unless specified below)</small>
+          <div class="field_explanation">(Unless specified below)</div>
         <% end %>
 
         <% t.cell("Common configuration for all tasks") do %>
@@ -233,15 +242,15 @@
 
         <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do %>
           <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :size => 60 %><br/>
-          <small>Mandatory. This directory must be visible and writable from all nodes.<br>
-                 This is were the work subdirectories for all tasks will be created.</small>
+          <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
+                 This is were the work subdirectories for all tasks will be created.</div>
         <% end %>
 
         <% content = capture do %>
           <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
             <% metkey = "task_limit_user_#{user.id}".to_sym %>
             <%= link_to_user_with_tooltip(user) %>:
-            </td><td class="no_left_right_padding">
+            </td><td class="some_left_right_padding">
             <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
           <% end %>
         <% end %>
@@ -252,7 +261,7 @@
           <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
             <% metkey = "task_limit_user_#{user.id}".to_sym %>
             <%= link_to_user_with_tooltip(user) %>:
-            </td><td class="no_left_right_padding">
+            </td><td class="some_left_right_padding">
             <%= select_tag "meta[#{metkey}]",
                 options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
                                     @bourreau.meta[metkey] )
@@ -355,7 +364,7 @@
         <% t.blank_row %>
 
         <% t.cell("SSH Public Key", :show_width => 2) do %>
-          <SMALL><SMALL><PRE class="ssh_key"><%= info.ssh_public_key.strip %></PRE></SMALL></SMALL>
+          <pre class="ssh_key"><%= info.ssh_public_key.strip %></pre>
         <% end %>
 
       <% end %>

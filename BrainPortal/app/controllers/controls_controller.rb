@@ -41,9 +41,9 @@ class ControlsController < ApplicationController
   def show
     keyword = params[:id]
 
-    if keyword == 'info'
+    if keyword == 'info' || keyword == 'ping'
       myself = RemoteResource.current_resource
-      @info = myself.remote_resource_info
+      @info  = myself.remote_resource_info(keyword)
       respond_to do |format|
         format.html { head :method_not_allowed }
         format.xml  { render :xml => @info.to_xml }

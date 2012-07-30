@@ -1,0 +1,144 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% 
+# List of cache update offsets we support
+big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
+
+offset_times = [
+  [ "Past 24 Hours", [
+  [ "Right now",     0.seconds.to_i.to_s ],
+  [ "1 hour ago",    1.hour.to_i.to_s    ],
+  [ "3 hours ago",   3.hour.to_i.to_s    ],
+  [ "6 hours ago",   6.hour.to_i.to_s    ],
+  [ "12 hours ago", 12.hour.to_i.to_s    ],
+  ]],
+  [ "Days", [
+  [ "1 day ago",     1.day.to_i.to_s     ],
+  [ "2 days ago",    2.day.to_i.to_s     ],
+  [ "3 days ago",    3.day.to_i.to_s     ],
+  [ "4 days ago",    4.day.to_i.to_s     ],
+  [ "5 days ago",    5.day.to_i.to_s     ],
+  [ "6 days ago",    6.day.to_i.to_s     ],
+  ]],
+  [ "Weeks", [
+  [ "1 week ago",    1.week.to_i.to_s    ],
+  [ "2 weeks ago",   2.week.to_i.to_s    ],
+  [ "3 weeks ago",   3.week.to_i.to_s    ],
+  ]],
+  [ "Months", [
+  [ "1 month ago",   1.month.to_i.to_s   ],
+  [ "2 months ago",  2.month.to_i.to_s   ],
+  [ "3 months ago",  3.month.to_i.to_s   ],
+  [ "4 months ago",  4.month.to_i.to_s   ],
+  [ "5 months ago",  5.month.to_i.to_s   ],
+  [ "6 months ago",  6.month.to_i.to_s   ],
+  ]],
+  [ "Years", [
+  [ "1 year ago",     1.year.to_i.to_s    ],
+  [ "18 months ago", 18.month.to_i.to_s   ],
+  [ "2 years ago",    2.year.to_i.to_s    ],
+  [ "3 years ago",    3.year.to_i.to_s    ],
+  [ "4 years ago",    4.year.to_i.to_s    ],
+  [ "5 years ago",    5.year.to_i.to_s    ],
+  [ "The Big Bang",   big_bang.to_s       ]
+  ]]
+]
+
+# Fix the relative values so that they match the closest entries
+# in the offset table above.
+adjusted_relative_from = relative_from[1].present? ? relative_from[1].to_i : 1.weeks.to_i
+adjusted_relative_to   = relative_to[1].to_i
+
+all_vals   = offset_times.inject([]) { |flat,group| flat += (group[1].map { |e| e[1] }) }
+
+from_diffs = all_vals.index_by { |v| (v.to_i - adjusted_relative_from).abs }
+adjusted_relative_from = from_diffs[from_diffs.keys.sort { |a,b| a <=> b }.first]
+
+to_diffs = all_vals.index_by { |v| (v.to_i - adjusted_relative_to).abs }
+adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
+
+%>                                           
+
+
+<div class="date_range_display_table" >
+
+  <!-- First line date attribute selector -->
+  <% if !date_attributes.empty? %>
+    <div class="left_align">
+      <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
+      <% date_attributes.each do |attribute|  %>
+        <% attribute_name = attribute[0].to_s %>
+        <% attribute_text = attribute[1].to_s %>
+        <%= radio_button_tag date_attribute[0], attribute_name, date_attribute[1].to_s == attribute_name %> <%= attribute_text %> 
+      <% end %>
+    </div>
+  <% end %>
+  
+  <div>
+    <!-- from column-->
+    <span class="display_cell">
+      <div class="centered">From</div>
+      <!-- relative-->
+      <div class="date_range_with_size">
+        <% if !without_abs %>
+          <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
+        <% else %>
+          <%= hidden_field_tag absolute_or_relative_from[0], "relative" %>
+        <% end %>
+        <%= select_tag relative_from[0], grouped_options_for_select(offset_times, adjusted_relative_from ) %>
+      </div>
+      <!-- absolute-->
+      <% if !without_abs %>
+        <div class="date_range_with_size">
+          <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %> 
+          <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "from" %>
+        </div>                     
+      <% end %>
+    </span>
+    
+    <!-- to column -->
+    <span class="display_cell">
+      <div class="centered">To</div>
+      <!-- relative-->
+      <div class="date_range_with_size">
+        <% if !without_abs %>
+          <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
+        <% else %>
+          <%= hidden_field_tag absolute_or_relative_to[0], "relative" %>
+        <% end %>
+        <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ) %>
+      </div>
+      <!-- absolute-->  
+      <% if !without_abs %>
+        <div class="date_range_with_size">
+          <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %> 
+          <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "to" %>
+        </div>
+      <% end %>
+    </span>
+  </div>
+  
+</div>
+
