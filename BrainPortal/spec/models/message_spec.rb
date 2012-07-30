@@ -94,12 +94,13 @@ describe Message do
 
   describe "#send_internal_error_message" do
 
+
     it "send a message to all users and admin (only admin)" do
       lambda do
         exception = Exception.new("error") 
         exception.stub(:backtrace).and_return([""])
         Message.send_internal_error_message("","head", exception)
-      end.should change { Message.count }.by(User.all_admins.count)
+      end.should change { Message.count }.by(User.all_admins.map(&:own_group).compact.count)
     end
 
     it "send a message to all users and admin (admin + normal user)" do
@@ -108,7 +109,7 @@ describe Message do
         exception = Exception.new("error") 
         exception.stub(:backtrace).and_return([""])
         Message.send_internal_error_message(users,"head", exception)
-      end.should change { Message.count }.by(User.all_admins.count + users.size)
+      end.should change { Message.count }.by(User.all_admins.map(&:own_group).compact.count + users.size)
     end
   
   end

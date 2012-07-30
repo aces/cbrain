@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe ClusterTask do
-  let!(:cluster_task)    {Factory.create("cluster_task")}
+  let!(:cluster_task)    {Factory.create("cbrain_task/civet")}
   let!(:userfile1)       {Factory.create(:userfile)}
   let!(:userfile2)       {Factory.create(:userfile)}
   let!(:userfile3)       {Factory.create(:userfile)}
@@ -32,7 +32,6 @@ describe ClusterTask do
 
 
   context "Core Object Methods" do
-
     
     describe "record_cbraintask_revs" do 
       

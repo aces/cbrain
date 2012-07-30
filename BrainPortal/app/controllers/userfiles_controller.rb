@@ -636,17 +636,15 @@ class UserfilesController < ApplicationController
         else
           nil
       end
-
-    if unable_to_update.present? || !operation.present?
+    if unable_to_update.present? || operation.blank?
       flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-      flash[:error]   = "Unknown operation for the update files."             if !operation.present?
+      flash[:error]   = "Unknown operation for the update files."             if operation.blank?
       redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
       redirect_to redirect_action
       return
     end
 
     flash[:error] = "You do not have access to all tags you want to update." unless invalid_tags == 0
-
     do_in_spawn      = file_ids.size > 5
     success_count    = 0
     failure_count    = 0
@@ -671,7 +669,6 @@ class UserfilesController < ApplicationController
           failure_count += (filelist.size - new_filelist.size)
           filelist = new_filelist
       end
-
       # Update the attribute for each file
       filelist.each do |userfile|
         if userfile.send(*operation)
@@ -680,7 +677,6 @@ class UserfilesController < ApplicationController
           failure_count +=1
         end
       end
-      
       # Async Notification
       if do_in_spawn
        variable_text  = success_count > 0 ? "#{commit_humanize} successful for #{view_pluralize(success_count, "file")}.\n" : ""
@@ -936,11 +932,11 @@ class UserfilesController < ApplicationController
 
     # Delete in background
     CBRAIN.spawn_with_active_records(current_user, "Delete files.") do
+
       first_error        = nil
       deleted_count      = 0
       unregistered_count = 0
       error_count        = 0
-      
       Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
         begin
           basename = userfile.name
@@ -1189,7 +1185,7 @@ class UserfilesController < ApplicationController
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
-    
+
     yield
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?

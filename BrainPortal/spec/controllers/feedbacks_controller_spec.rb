@@ -34,7 +34,8 @@ describe FeedbacksController do
     context "collection action" do
       describe "index" do
         before(:each) do
-          controller.stub!(:base_filtered_scope).and_return(double("feedback_scope", :includes => [feedback]))
+          controller.stub!(:base_filtered_scope).and_return(double("feedback_scope", :includes => "includes"))
+          controller.stub!(:base_sorted_scope).and_return([feedback])
         end
         it "should use the basic filtered scope" do
           controller.should_receive(:base_filtered_scope)
@@ -118,7 +119,7 @@ describe FeedbacksController do
           put :update, :id => feedback.id
         end
         it "should update the record" do
-          feedback.should_receive(:update_attributes).with("summary" => "summary", "details" => "details")
+          feedback.should_receive(:update_attributes_with_logging)
           put :update, :id => feedback.id, :feedback => { :summary => "summary", :details => "details" }
         end
         context "when update is successful" do

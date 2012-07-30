@@ -288,7 +288,7 @@ class Message < ActiveRecord::Base
     # Find the group(s) associated with the destination
     groups = case destination
               when :admin
-                [ Group.find_by_login('admin') ]
+                [ Group.find_by_name('admin') ]
               when :nobody
                 []
               when Group, User, Site
@@ -304,6 +304,7 @@ class Message < ActiveRecord::Base
             end
 
     # Get a unique list of all users from all these groups
+    groups.compact!
     allusers = groups.inject([]) { |flat,group| flat |= group.users }
     allusers.reject! { |u| u.account_locked? }
 

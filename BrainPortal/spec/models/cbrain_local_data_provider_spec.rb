@@ -103,11 +103,6 @@ describe CbrainLocalDataProvider do
       FileUtils.stub!(:move).and_return(false)
       cbrain_local_data_provider.impl_provider_rename(userfile,"new_name").should be_false
     end
-    
-    it "should have change userfile name value" do
-      cbrain_local_data_provider.impl_provider_rename(userfile,"new_name")
-      userfile.name.should be == "new_name"
-    end
 
     it "should return true if all works correctly" do
       FileUtils.stub!(:remove_entry)

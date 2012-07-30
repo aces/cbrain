@@ -30,6 +30,7 @@ end
 
 Factory.define :user do |user|
   user.sequence(:login)      { |n| "user#{n}" }
+  user.type                  "NormalUser"
   user_factory.call(user)
 end
 
@@ -87,6 +88,7 @@ end
 
 Factory.define :data_provider do |data_provider|
   data_provider_factory.call(data_provider)
+  data_provider.type "LocalDataProvider"
 end
 
 Factory.define :ssh_data_provider do |ssh_data_provider|
@@ -148,6 +150,7 @@ end
 
 Factory.define :userfile do |userfile|
     userfile.sequence(:name) { |n| "file_#{n}" }
+    userfile.type            "SingleFile"
     userfile.association     :user
     userfile.association     :group
     userfile.association     :data_provider
@@ -155,6 +158,7 @@ end
 
 Factory.define :niak_fmri_study do |userfile|
     userfile.sequence(:name) { |n| "file_#{n}" }
+    userfile.type            "NiakFmriStudy"
     userfile.association     :user
     userfile.association     :group
     userfile.association     :data_provider
@@ -162,6 +166,7 @@ end
 
 Factory.define :single_file do |single_file|
     single_file.sequence(:name) { |n| "file_#{n}" }
+    single_file.type            "SingleFile"
     single_file.association     :user
     single_file.association     :group
     single_file.association     :data_provider
@@ -169,6 +174,7 @@ end
 
 Factory.define :file_collection do |file_collection|
     file_collection.sequence(:name) { |n| "file_#{n}" }
+    file_collection.type            "FileCollection"
     file_collection.association     :user
     file_collection.association     :group
     file_collection.association     :data_provider

@@ -23,14 +23,14 @@
 require 'spec_helper'
 
 describe UserfilesController do
-	let!(:admin) {Factory.create(:admin_user, :login => "admin" )}
+	let!(:admin) {Factory.create(:admin_user, :login => "admin_user" )}
   let!(:site_manager) {Factory.create(:site_manager)}
   let!(:user) {Factory.create(:normal_user, :site => site_manager.site)}
-  let!(:admin_userfile) {Factory.create(:userfile, :user => admin)}
-  let!(:site_manager_userfile) {Factory.create(:userfile, :user => site_manager)}
-  let!(:user_userfile) {Factory.create(:userfile, :user => user)}
-  let!(:child_userfile) {Factory.create(:userfile, :user => admin, :parent => admin_userfile)}
-  let!(:group_userfile) {Factory.create(:userfile, :group => user.groups.last, :data_provider => data_provider)}
+  let!(:admin_userfile) {Factory.create(:single_file, :user => admin)}
+  let!(:site_manager_userfile) {Factory.create(:single_file, :user => site_manager)}
+  let!(:user_userfile) {Factory.create(:single_file, :user => user)}
+  let!(:child_userfile) {Factory.create(:single_file, :user => admin, :parent => admin_userfile)}
+  let!(:group_userfile) {Factory.create(:single_file, :group => user.groups.last, :data_provider => data_provider)}
   let!(:mock_userfile) {mock_model(Userfile).as_null_object}
   let!(:data_provider)  {Factory.create(:data_provider, :user => user)}
   
@@ -58,11 +58,6 @@ describe UserfilesController do
         it "should only display user's files if 'view all' is off" do
           get :index, "userfiles" => { "view_all" => "off" }
           assigns[:userfiles].to_a.should =~ Userfile.all(:conditions => {:user_id => admin.id})
-        end
-        
-        it "should tree sort if tree sorting is on" do
-          get :index, "userfiles" => { "tree_sort" => "on", "view_all" => "on" }, "format" => "html"
-          assigns[:userfiles].to_a.should == Userfile.tree_sort(Userfile.all(:order => "userfiles.name"))
         end
         
         it "should not tree sort if tree sort not set" do
@@ -98,7 +93,7 @@ describe UserfilesController do
           it "should filter by custom filter" do
             custom_filter = UserfileCustomFilter.create(:name => "userfile_filter", :user => admin, :data => {"file_name_type"=>"match", "file_name_term" => admin_userfile.name})
             get :index, "userfiles" => { "filter_custom_filters_array" => custom_filter.id.to_s }
-            assigns[:userfiles].to_a.should =~ [admin_userfile]
+            assigns[:userfiles].to_a.first.should == admin_userfile
           end
           
           it "should filter for no parent" do
@@ -204,11 +199,11 @@ describe UserfilesController do
     
       it "should render error message of no files are selected" do
         get :new_parent_child
-        response.should include_text(/You must select at least one file to which you have write access./)
+        response.should include_text(/You must select at least two files to which you have write access./)
       end
       
       it "should render the parent-child selection template" do
-        get :new_parent_child, "file_ids" => [admin_userfile.id.to_s]
+        get :new_parent_child, "file_ids" => [admin_userfile.id.to_s, user_userfile.id.to_s]
         response.should render_template("new_parent_child")
       end
     end
@@ -347,7 +342,7 @@ describe UserfilesController do
           end
           
           it "should update the new userfile's log" do
-            mock_userfile.should_receive(:addlog_context)
+            mock_userfile.should_receive(:addlog)
             post :create, :upload_file => mock_upload_stream, :archive => "save"
           end
           
@@ -506,14 +501,14 @@ describe UserfilesController do
     describe "update_multiple" do
       before(:each) do
         session[:user_id] = admin.id
-        Userfile.stub!(:find_accessible_by_user).and_return([mock_userfile])
+        Userfile.stub_chain(:find_all_accessible_by_user, :where, :all).and_return([mock_userfile])
       end
     
       context "when no operation is selected" do
       
         it "should display an error message" do
           post :update_multiple, :file_ids => [1]
-          flash[:error].should include_text("No operation to perform.")
+          flash[:error].should include_text("Unknown operation")
         end
         
         it "should redirect to the index" do
@@ -524,40 +519,40 @@ describe UserfilesController do
       
       it "should update tags when requested" do
         mock_userfile.should_receive(:set_tags_for_user)
-        post :update_multiple, :file_ids => [1], :commit => "Update Tags"
+        post :update_multiple, :file_ids => [1], :update_tags => true
       end
       
-      it "should update the group when requested" do
+      it "should fail to update project when user does not have access" do
         group_id_hash = {:group_id => 4}
-        mock_userfile.should_receive(:update_attributes).with(hash_including(group_id_hash))
-        post :update_multiple, :file_ids => [1], :commit => "Update Projects", :userfile => group_id_hash
+        post :update_multiple, :file_ids => [1], :update_projects => true, :userfile => group_id_hash
+         flash[:error].should include_text(/project/)
       end
       
       it "should update permissions when requested" do
         permission_hash = {:group_writable => true}
-        mock_userfile.should_receive(:update_attributes).with(hash_including(permission_hash))
-        post :update_multiple, :file_ids => [1], :commit => "Update Permissions", :userfile => permission_hash
+        mock_userfile.should_receive(:update_attributes_with_logging)
+        post :update_multiple, :file_ids => [1], :update_permissions => true, :userfile => permission_hash
       end
       
       it "should update the file type when requested" do
         mock_userfile.should_receive(:update_file_type)
-        post :update_multiple, :file_ids => [1], :commit => "Update"
+        post :update_multiple, :file_ids => [1], :update_file_type => true
       end
       
       it "should display the number of succesful updates" do
         mock_userfile.stub!(:send).and_return(true)
-        post :update_multiple, :file_ids => [1], :commit => "Update Tags"
+        post :update_multiple, :file_ids => [1], :update_tags => true
         flash[:notice].should include_text(" successful ")
       end
       
       it "should display the number of failed updates" do
         mock_userfile.stub!(:send).and_return(false)
-        post :update_multiple, :file_ids => [1], :commit => "Update Tags"
+        post :update_multiple, :file_ids => [1], :update_tags => true
         flash[:error].should include_text(" unsuccessful ")
       end
       
       it "should redirect to the index" do
-        post :update_multiple, :file_ids => [1], :commit => "Update Tags"
+        post :update_multiple, :file_ids => [1], :update_tags => true
         response.should redirect_to(:action => :index, :format => :html)
       end
     end
@@ -604,7 +599,7 @@ describe UserfilesController do
       
       it "should update the tags if any were given" do
         mock_userfile.should_receive(:set_tags_for_user)
-        post :quality_control_panel, :commit => "Pass", :index => 1
+        post :quality_control_panel, :pass => true, :index => 1
       end
       
       it "should find the current file" do
@@ -707,37 +702,37 @@ describe UserfilesController do
       
         it "should check if the user has owner access" do
           mock_userfile.should_receive(:has_owner_access?)
-          post :change_provider, :file_ids => [1], :commit => "move"
+          post :change_provider, :file_ids => [1], :move => true
         end
         
         it "should attempt to move the file if the user has owner access" do
           mock_userfile.stub!(:has_owner_access?).and_return(true)
           mock_userfile.should_receive(:provider_move_to_otherprovider)
-          post :change_provider, :file_ids => [1], :commit => "move"
+          post :change_provider, :file_ids => [1], :move => true
         end
         
         it "should not attempt to move the file if the user does not have owner access" do
           mock_userfile.stub!(:has_owner_access?).and_return(false)
           mock_userfile.should_not_receive(:provider_move_to_otherprovider)
-          post :change_provider, :file_ids => [1], :commit => "move"
+          post :change_provider, :file_ids => [1], :move => true
         end
       end
       
       it "should attempt to copy the file when requested" do
         mock_userfile.should_receive(:provider_copy_to_otherprovider)
-        post :change_provider, :file_ids => [1], :commit => "copy"
+        post :change_provider, :file_ids => [1], :copy => true
       end
       
       it "should send message about successes" do
         mock_userfile.stub!(:provider_copy_to_otherprovider).and_return(true)
         Message.should_receive(:send_message).with(anything, hash_including(:message_type  => 'notice'))
-        post :change_provider, :file_ids => [1], :commit => "copy"
+        post :change_provider, :file_ids => [1], :copy => true
       end
       
       it "should send message about failures" do
         mock_userfile.stub!(:provider_copy_to_otherprovider).and_return(false)
         Message.should_receive(:send_message).with(anything, hash_including(:message_type  => 'error'))
-        post :change_provider, :file_ids => [1], :commit => "copy"
+        post :change_provider, :file_ids => [1], :copy => true
       end
       
       it "should display a flash message" do
@@ -806,6 +801,7 @@ describe UserfilesController do
       before(:each) do
         controller.stub!(:current_user).and_return(admin)
         Userfile.stub!(:find_accessible_by_user).and_return([mock_userfile])
+        CBRAIN.stub!(:spawn_with_active_records).and_yield
       end
     
       it "should find the userfiles" do
@@ -818,18 +814,11 @@ describe UserfilesController do
         delete :delete_files, :file_ids => [1]
       end
       
-      it "should display the number of deleted files" do
+      it "should announce that files are being deleted in the background" do
         mock_userfile.stub_chain(:data_provider, :is_browsable?).and_return(false)
         mock_userfile.stub_chain(:data_provider, :meta, :[], :blank?).and_return(false)
         delete :delete_files, :file_ids => [1]
-        flash[:notice].should include_text("deleted")
-      end
-      
-      it "should display the number of unregistered files" do
-        mock_userfile.stub_chain(:data_provider, :is_browsable?).and_return(true)
-        mock_userfile.stub_chain(:data_provider, :meta, :[], :blank?).and_return(true)
-        delete :delete_files, :file_ids => [1]
-        flash[:notice].should include_text("unregistered")
+        flash[:notice].should include_text("deleted in background")
       end
       
       it "should redirect to the index" do
@@ -1178,7 +1167,7 @@ describe UserfilesController do
       end
       
       it "should update attributes" do
-        mock_userfile.should_receive(:update_attributes)
+        mock_userfile.should_receive(:save_with_logging)
         put :update, :id => 1
       end
       
@@ -1223,8 +1212,8 @@ describe UserfilesController do
       context "when the update is unsuccesful" do
       
         it "should render the show action" do
-          mock_userfile.stub!(:update_file_type).and_return(nil)
-          put :update, :id => 1, :file_type => "InvalidType"
+          mock_userfile.stub!(:errors).and_return({:type => "Some errors"})
+          put :update, :id => 1
           response.should render_template(:show)
         end
       end

@@ -40,7 +40,7 @@ describe CbrainSshDataProvider do
       cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       cbrain_ssh_data_provider.stub!(:ssh_shared_options)
       SshDataProvider.class_eval { def impl_sync_to_provider(userfile); end; }
-      cbrain_ssh_data_provider.should_receive(:bash_this).with(/mkdir/)
+      cbrain_ssh_data_provider.should_receive(:remote_bash_this).with(/mkdir/)
       cbrain_ssh_data_provider.impl_sync_to_provider(userfile)
     end
     
@@ -51,14 +51,14 @@ describe CbrainSshDataProvider do
     it "should erase provider" do
       cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      cbrain_ssh_data_provider.should_receive(:bash_this).with(/rm -rf/)
+      cbrain_ssh_data_provider.should_receive(:remote_bash_this).with(/rm -rf/)
       cbrain_ssh_data_provider.impl_provider_erase(userfile)
     end
 
     it "should return true" do
       cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      cbrain_ssh_data_provider.stub!(:bash_this)
+      cbrain_ssh_data_provider.stub!(:remote_bash_this)
       cbrain_ssh_data_provider.impl_provider_erase(userfile).should be_true
     end
   

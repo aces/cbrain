@@ -34,7 +34,8 @@ describe ToolsController do
   
       describe "index", :current => true do
         before(:each) do
-          controller.stub(:base_filtered_scope).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return(double("scope").as_null_object)
+          controller.stub(:base_sorted_scope).and_return([tool])
         end
         
         it "should assign @tools" do
@@ -63,14 +64,6 @@ describe ToolsController do
         it "should display error text if go in rescue" do
           get(:bourreau_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
-        end
-      end
-  
-      describe "edit" do
-  
-        it "should redirect to tools" do
-          get(:edit, {"id" => "1"})
-          response.should redirect_to("/tools")
         end
       end
   
@@ -169,7 +162,8 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub(:base_filtered_scope).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return(double("scope").as_null_object)
+          controller.stub(:base_sorted_scope).and_return([tool])
         end
   
         it "should assign @tools" do
@@ -244,7 +238,8 @@ describe ToolsController do
   
       describe "index" do
         before(:each) do
-          controller.stub(:base_filtered_scope).and_return([tool])
+          controller.stub(:base_filtered_scope).and_return(double("scope").as_null_object)
+          controller.stub(:base_sorted_scope).and_return([tool])
         end
   
         it "should assign @tools" do

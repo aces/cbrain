@@ -40,7 +40,7 @@ describe ActiveRecordLog do
       arl.active_record_object.should be_nil
     end
     it "should return the associated ActiveRecord object" do
-      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_class => ar_object.class.to_s)
+      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_table_name => ar_object.class.table_name.to_s)
       arl.active_record_object.should == ar_object
     end
   end

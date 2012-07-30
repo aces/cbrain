@@ -488,8 +488,7 @@ describe UsersController do
         end
 
         it "should not allow site manager to destroy a user not from the site" do
-          delete :destroy, :id => user.id
-          User.all.should include(user)
+          lambda { delete :destroy, :id => user.id }.should raise_error(ActiveRecord::RecordNotFound)
         end
 
       end
@@ -531,7 +530,7 @@ describe UsersController do
         
         it "should redirect to the welcome page" do
           post :switch, :id => user.id
-          response.should redirect_to("/home")
+          response.should redirect_to("/groups")
         end
       end
       
@@ -546,7 +545,7 @@ describe UsersController do
         end
         
         it "should not allow switching to a user not from the site" do
-          post :switch, :id => user.id
+          lambda { post :switch, :id => user.id }.should raise_error(ActiveRecord::RecordNotFound)
           current_session[:user_id].should_not == user.id
         end
       end
