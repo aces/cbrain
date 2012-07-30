@@ -45,6 +45,7 @@ rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.
 program_name = Pathname.new(rails_command).basename(".rb").to_s if rails_command
 
 #puts_cyan "Program=#{program_name} ARGV=(#{ARGV.join(" | ")})"
+#puts_cyan "FirstArg=#{first_arg} RailsCommand=#{rails_command}"
 
 #
 # Exceptions By Program Name
@@ -62,6 +63,9 @@ if program_name =~ /console/ # console or dbconsole
   end
 elsif program_name == "rails" # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
   puts "C> \t- Running Rails utility."
+elsif program_name == 'rspec' # test suite
+  puts "C> \t- Testing with 'rspec'."
+  CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
 elsif program_name == "rake"
   #
   # Rake Exceptions By First Argument
