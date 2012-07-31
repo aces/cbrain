@@ -85,6 +85,15 @@ require 'active_support'
 # Just like for the method create(), a config file can also
 # be obtained with agent_bash_config_file_path().
 #
+# == Finding the current agent
+#
+# This creates an object representing the current ssh-agent,
+# whether it is a locally running process or a forwarded
+# one. Its name will be '_current' and no config file for
+# it can be created.
+#
+#   agent = SshAgent.find_current
+#
 class SshAgent
 
   #include Sys  # for ProcTable  TODO
@@ -99,7 +108,7 @@ class SshAgent
   attr_reader :name, :pid, :socket
 
   def initialize(name,socket=nil,pid=nil) #:nodoc:
-    raise "Invalid name" unless name =~ /^[a-z]\w*$/i || name == '_forwarded'
+    raise "Invalid name" unless name =~ /^[a-z]\w*$/i || name == '_forwarded' || name == '_current'
     @name   = name
     @socket = socket.present? ? socket.to_s : nil
     @pid    = pid.present?    ? pid.to_s    : nil
@@ -110,10 +119,11 @@ class SshAgent
   # Finder methods, class level
   #----------------------------
 
-  # If no +name+ is given, does a find_forwarded().
   # With a +name+, does a find_by_name(name).
+  # If no +name+ is given, attempts a find_forwarded()
+  # followed by a find_current() as a backup.
   def self.find(name=nil)
-    name.present? ? self.find_by_name(name) : self.find_forwarded
+    name.present? ? self.find_by_name(name) : (self.find_forwarded || self.find_current)
   end
 
   # Finds a previously created named agent called +name+.
@@ -134,12 +144,26 @@ class SshAgent
   # its info in a config file just like if it had been
   # created with the name '_forwarded'.
   def self.find_forwarded
-    socket = ENV['SSH_AUTH_SOCK']
-    return self.find_by_name('_forwarded') unless socket.present? && File.socket?(socket)
-    agent_pid = ENV['SSH_AGENT_PID']
-    return self.find_by_name('_forwarded') if agent_pid.present? # there is no ssh-agent process if it's forwarded
+    socket = ENV['SSH_AUTH_SOCK'].presence
+    return self.find_by_name('_forwarded') unless socket && File.socket?(socket)
+    agent_pid = ENV['SSH_AGENT_PID'].presence
+    return self.find_by_name('_forwarded') if agent_pid # there is no ssh-agent process if it's forwarded
     agent = self.new('_forwarded', socket, nil)
     agent.write_agent_config_file
+    agent
+  end
+
+  # Checks the current environment and returns an agent
+  # object representing whatever ssh-agent seems to be
+  # active. (this can be a forwarded connection or
+  # a standalone active process, and thus can correspond
+  # to the same agent returned by find_by_name() or
+  # find_forwarded().
+  def self.find_current
+    socket = ENV['SSH_AUTH_SOCK'].presence
+    return nil unless socket && File.socket?(socket)
+    agent_pid = ENV['SSH_AGENT_PID'].presence
+    agent = self.new('_current', socket, agent_pid)
     agent
   end
 
@@ -227,7 +251,7 @@ class SshAgent
       ENV['SSH_AGENT_PID'] = nil if ENV['SSH_AGENT_PID'] == self.pid
       @pid = nil
     end
-    if self.name.present? && self.name != '_forwarded'
+    if self.name.present? && self.name != '_forwarded' && self.name != '_current'
       File.unlink(self.agent_bash_config_file_path)
       @name = '_destroyed_'
       ENV['SSH_AUTH_SOCK'] = nil if ENV['SSH_AUTH_SOCK'] == self.socket
@@ -247,11 +271,13 @@ class SshAgent
   # settings for the ssh-agent process (or the
   # forwarded agent).
   def agent_bash_config_file_path
+    return nil if self.name == '_current'
     self.class.agent_config_file_path(self.name)
   end
 
   def write_agent_config_file #:nodoc:
     umask = File.umask(0077)
+    raise "Cannot write config file for the 'current' agent!" if self.name == '_current'
     filename = self.class.agent_config_file_path(self.name)
     File.open(filename,"w") do |fh|
       fh.write(<<-AGENT_CONF)

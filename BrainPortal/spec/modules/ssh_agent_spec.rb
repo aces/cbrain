@@ -27,15 +27,24 @@ describe SshAgent do
   describe ".find" do
 
     it "should call find_by_name if a name is given" do
-      SshAgent.stub!(:find_by_name)
-      SshAgent.should_receive(:find_by_name)
-      SshAgent.find("abcd")
+      SshAgent.should_receive(:find_by_name).and_return 'OK'
+      SshAgent.should_not_receive(:find_forwarded)
+      SshAgent.should_not_receive(:find_current)
+      SshAgent.find("abcd").should == 'OK'
     end
 
     it "should call find_forwarded if no name is given" do
-      SshAgent.stub!(:find_forwarded)
-      SshAgent.should_receive(:find_forwarded)
-      SshAgent.find()
+      SshAgent.should_not_receive(:find_by_name)
+      SshAgent.should_receive(:find_forwarded).and_return 'OK'
+      SshAgent.should_not_receive(:find_current)
+      SshAgent.find().should == 'OK'
+    end
+
+    it "should call find_current if find_forwarded returned nil" do
+      SshAgent.should_not_receive(:find_by_name)
+      SshAgent.should_receive(:find_forwarded).and_return nil
+      SshAgent.should_receive(:find_current).and_return 'OK'
+      SshAgent.find().should == 'OK'
     end
 
   end
@@ -101,6 +110,38 @@ describe SshAgent do
         agent = SshAgent.find_forwarded
         agent.should be_instance_of(SshAgent)
         agent.name.should == '_forwarded'
+      end
+    end
+
+  end
+
+
+
+  describe ".find_current" do
+
+    it "should return nil if no socket is detected" do
+      with_modified_env('SSH_AUTH_SOCK' => nil, 'SSH_AGENT_PID' => nil) do
+        SshAgent.find_current.should be_nil
+      end
+    end
+
+    it "should return an agent named '_current' if a socket is found" do
+      with_modified_env('SSH_AUTH_SOCK' => "/tmp/some/socket", 'SSH_AGENT_PID' => "12345678") do
+        File.stub!(:socket?).and_return true
+        agent = SshAgent.find_current
+        agent.name.should   == '_current'
+        agent.socket.should == '/tmp/some/socket'
+        agent.pid.should    == '12345678'
+      end
+    end
+
+    it "should never attempt to save a config file for the agent" do
+      with_modified_env('SSH_AUTH_SOCK' => "/tmp/some/socket", 'SSH_AGENT_PID' => "12345678") do
+        File.stub!(:socket?).and_return true
+        agent = SshAgent.new('_current', ENV['SSH_AUTH_SOCK'], ENV['SSH_AGENT_PID'])
+        SshAgent.stub(:new).and_return agent
+        agent.should_not_receive(:write_agent_config_file)
+        agent = SshAgent.find_current
       end
     end
 
@@ -301,6 +342,14 @@ describe SshAgent do
       agent.destroy.should be_true
     end
 
+    it "should not attempt to erase the agent's config file if it a 'current' agent" do
+      Process.stub!(:kill)
+      File.stub!(:unlink)
+      File.should_not_receive(:unlink)
+      agent = SshAgent.new('_current','/tmp/abcd/wrong/socket','123456')
+      agent.destroy.should be_true
+    end
+
     it "should erase the agent config file, if any, if it is a named agent" do
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket',nil)
       conf  = agent.agent_bash_config_file_path
@@ -316,10 +365,26 @@ describe SshAgent do
 
   describe "#agent_bash_config_file_path" do
 
+    it "should return nil if the current agent is '_current'" do
+      agent = SshAgent.new('_current','/tmp/path/to_socket','12345678')
+      agent.agent_bash_config_file_path.should be_nil
+    end
+
     it "should invoke the class method with its name" do
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket',nil)
       SshAgent.should_receive(:agent_config_file_path).with('test').and_return 'OK'
       agent.agent_bash_config_file_path.should == 'OK'
+    end
+
+  end
+
+
+
+  describe "#write_agent_config_file" do
+
+    it "should raise an exception if the agent is '_current'" do
+      agent = SshAgent.new('_current','/tmp/path/to_socket','12345678')
+      lambda { agent.write_agent_config_file }.should raise_error
     end
 
   end
