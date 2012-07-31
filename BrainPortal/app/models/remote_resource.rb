@@ -258,7 +258,8 @@ class RemoteResource < ActiveRecord::Base
   def ssh_master
     category = "#{self.class}"
     uniq     = "#{self.id}"
-    master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22, category, uniq)
+    master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
+               :category => category, :uniq => uniq)
     master
   end
 

@@ -300,7 +300,7 @@ class SshDataProvider < DataProvider
 
   # Returns the SshMaster object handling the tunnel to the Provider side.
   def master
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider")
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end

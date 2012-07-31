@@ -241,7 +241,7 @@ Dir.chdir(rails_home) do
   raw_system_cmd = (mode == "start") ?
       "set -o pipefail ; " + rails_cmd_ar.map(&:bash_escape).join(" ") + " 2>&1 | tee -a #{start_log_file.bash_escape}" :
       rails_cmd_ar.map(&:bash_escape).join(" ")
-  start_success=system(raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
+  start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
 end
 
 # If we were provided with a database.yml, we need

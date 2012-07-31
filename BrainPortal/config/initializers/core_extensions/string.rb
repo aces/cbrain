@@ -37,7 +37,7 @@ class String
   #
   def bash_escape(always_quote = false, no_empty = false)
     return (no_empty ? "" : "''") if     self == ''
-    return self                   if     !always_quote && self =~ %r{\A[0-9a-zA-Z.,:/=@+-]+\z}
+    return self                   if     !always_quote && self =~ %r{\A[0-9a-zA-Z_.,:/=@+-]+\z}
     return "'#{self}'"            unless self.index("'")
     comps = self.split(/('+)/)
     comps.each_with_index do |comp,idx|
