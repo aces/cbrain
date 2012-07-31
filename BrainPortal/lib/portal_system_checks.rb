@@ -81,6 +81,32 @@ class PortalSystemChecks < CbrainChecker
     agent.apply
     puts "C> \t- #{message}: PID=#{agent.pid} SOCK=#{agent.socket}"
 
+    #----------------------------------------------------------------------------
+    puts "C> Making sure we have a CBRAIN key for the agent..."
+    #----------------------------------------------------------------------------
+
+    cbrain_identity_file = "#{CBRAIN::Rails_UserHome}/.ssh/id_cbrain_portal"
+    if ! File.exists?(cbrain_identity_file)
+      puts "C> \t- Creating identity file '#{cbrain_identity_file}'."
+      with_modified_env('SSH_ASKPASS' => '/bin/true') do
+        system("/bin/bash","-c","ssh-keygen -t rsa -f #{cbrain_identity_file.bash_escape} -C 'CBRAIN_Portal_Key' </dev/null >/dev/null 2>/dev/null")
+      end
+    end
+
+    if ! File.exists?(cbrain_identity_file)
+      puts "C> \t- ERROR: Failed to create identity file '#{cbrain_identity_file}'."
+    else
+      with_modified_env('SSH_ASKPASS' => '/bin/true') do
+        ok = agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
+      end
+      if ok
+        puts "C> \t- Added identity to agent from file: '#{cbrain_identity_file}'"
+      else
+        puts "C> \t- ERROR: cannot add identity from file: '#{cbrain_identity_file}'"
+        puts "C> \t  You might want to add the identity yourself manually."
+      end
+    end
+
   end
 
 end 
