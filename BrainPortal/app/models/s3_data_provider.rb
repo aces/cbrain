@@ -20,12 +20,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Implements a DataProvider that stores its files
+# in a Amazon S3 bucket. Single files are saved
+# as-is, FileCollections are tar'ed and untar'ed
+# as needed.
 class S3DataProvider < DataProvider 
 
   Revision_info=CbrainFileRevision[__FILE__]
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
 
+  attr_accessor :s3_connection
+  
   def init_connection #:nodoc:
     @s3_connection = S3Connection.new(self.cloud_storage_client_identifier, self.cloud_storage_client_token)
   end
@@ -33,8 +39,6 @@ class S3DataProvider < DataProvider
   def bucket_name #:nodoc:
     "gbrain_#{self.name}"
   end
-  
-  attr_accessor :s3_connection
   
   def s3_filename(userfile,newname=nil) #:nodoc:
     namekey = newname.presence || userfile.name

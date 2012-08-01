@@ -20,6 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# A simple model to track the revision info
+# of the DB sanity check class,
+# and track whether or not it was applied.
 class SanityCheck < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]
