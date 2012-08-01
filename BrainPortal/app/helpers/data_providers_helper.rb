@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Helpers for DataProvider views.
 module DataProvidersHelper
 
   Revision_info=CbrainFileRevision[__FILE__]

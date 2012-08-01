@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# CBRAIN Internal Task Serializer
 class CbrainTask::CbSerializer
 
   def self.pretty_type #:nodoc:

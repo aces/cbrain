@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for graph files in .dot format.
 class DotGraphFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

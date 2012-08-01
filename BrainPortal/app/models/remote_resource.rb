@@ -23,7 +23,7 @@
 require 'socket'
 
 #Model representing a remote resource, which is always a
-#Rails applications with a 'control' controller. Typically,
+#Rails applications with a 'controls' controller. Typically,
 #the remote Rails application is a Bourreau or a BrainPortal,
 #or the current Rails application running locally.
 #
@@ -33,7 +33,7 @@ require 'socket'
 #[*read_only*] A boolean value set to whether or not the resource is read only.
 #[*description*] Text with a description of the remote resource.
 #
-#==ActiveResource Attributes:
+#==ActiveResource Attributes (DEPRECATED):
 #[*actres_user*] Username for the remote resource's ActiveResource connection;
 #                this is most often not used.
 #[*actres_host*] Hostname of the remote resource's ActiveResource connection.

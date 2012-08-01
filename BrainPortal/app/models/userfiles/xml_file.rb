@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for text files containing XML documents.
 class XMLFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

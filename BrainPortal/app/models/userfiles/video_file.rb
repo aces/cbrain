@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Generic model for video files.
 class VideoFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__]

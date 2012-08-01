@@ -22,7 +22,7 @@
 
 require 'socket'
 
-# This module includes all  'wrapper' methods for Smart Data Providers.
+# This module includes all the 'wrapper' methods for Smart Data Providers.
 module SmartDataProviderInterface
 
   Revision_info=CbrainFileRevision[__FILE__]
@@ -186,7 +186,7 @@ module SmartDataProviderInterface
   # class, even when the current smart provider is actually
   # configured to be local.
   def provider_full_path(userfile) #:nodoc:
-    if @network_provider.respond_to?(:provider_full_path) # this is not an official API method
+    if @network_provider.respond_to?(:provider_full_path)
       @network_provider.provider_full_path(userfile)
     else
       "(unknown remote path)"

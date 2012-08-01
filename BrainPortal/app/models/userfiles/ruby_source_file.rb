@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for script files written in the Ruby language.
 class RubySourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

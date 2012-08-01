@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for MP3 audio files.
 class Mp3AudioFile < AudioFile
 
   Revision_info=CbrainFileRevision[__FILE__]

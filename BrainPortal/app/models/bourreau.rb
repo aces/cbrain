@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#This model represents a remote execution server.
+# This model represents a remote execution server.
 class Bourreau < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__]

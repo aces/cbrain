@@ -20,6 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# This class contains methods invoked at boot time for
+# the Portal to perform essential validations of the state of
+# the system.
 class PortalSystemChecks < CbrainChecker
   
   Revision_info=CbrainFileRevision[__FILE__]

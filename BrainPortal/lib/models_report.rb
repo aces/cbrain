@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# This class contains utility methods for generating some
+# reports; it is slowly being phased out.
 class ModelsReport
   
   Revision_info=CbrainFileRevision[__FILE__]
