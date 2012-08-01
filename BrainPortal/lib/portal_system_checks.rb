@@ -99,8 +99,8 @@ class PortalSystemChecks < CbrainChecker
     if ! File.exists?(cbrain_identity_file)
       puts "C> \t- ERROR: Failed to create identity file '#{cbrain_identity_file}'."
     else
-      with_modified_env('SSH_ASKPASS' => '/bin/true') do
-        ok = agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
+      ok = with_modified_env('SSH_ASKPASS' => '/bin/true') do
+        agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
       end
       if ok
         puts "C> \t- Added identity to agent from file: '#{cbrain_identity_file}'"
