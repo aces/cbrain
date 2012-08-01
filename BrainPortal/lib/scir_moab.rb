@@ -28,7 +28,7 @@ class ScirMoab < Scir
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  class Session < Scir::Session
+  class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache
       xmltext, showqerr = bash_this_and_capture_out_err("showq --blocking --xml")
@@ -134,7 +134,7 @@ class ScirMoab < Scir
 
   end
 
-  class JobTemplate < Scir::JobTemplate
+  class JobTemplate < Scir::JobTemplate #:nodoc:
 
     def qsub_command
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless

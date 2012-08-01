@@ -29,7 +29,7 @@ class ScirUnix < Scir
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  class Session < Scir::Session
+  class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache
       @job_info_cache = {}
@@ -122,7 +122,7 @@ class ScirUnix < Scir
 
   end
 
-  class JobTemplate < Scir::JobTemplate
+  class JobTemplate < Scir::JobTemplate #:nodoc:
 
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
     def qsub_command
