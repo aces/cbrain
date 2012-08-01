@@ -467,10 +467,12 @@ class SshMaster
                       " -o PasswordAuthentication=no"         +
                       " -o KbdInteractiveAuthentication=no"   +
                       " -o KbdInteractiveDevices=none"        +
+    (@nomaster ?      "" : 
                       " -o ServerAliveInterval=10"            +
                       " -o ServerAliveCountMax=5"             +
-    (@nomaster ? "" : " -o ControlMaster=#{control_master}" ) +
-    (@nomaster ? "" : " -o ControlPath=#{socket}"           ) +
+                      " -o ControlMaster=#{control_master}"   +
+                      " -o ControlPath=#{socket}"             
+    )                                                         +
                       " #{@user}@#{@host} "
     args_string
   end
