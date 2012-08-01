@@ -42,7 +42,7 @@ class CbrainTask::BashScriptor < PortalTask
 
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
-  def before_form
+  def before_form #:nodoc:
     params   = self.params
     ids      = params[:interface_userfile_ids]
     cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin_user
