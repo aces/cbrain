@@ -86,8 +86,7 @@ describe SshAgent do
       with_modified_env('SSH_AUTH_SOCK' => nil) do
         agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
         agent.stub!(:write_agent_config_file)
-        SshAgent.stub!(:find_by_name).and_return agent
-        SshAgent.should_receive(:find_by_name).with('_forwarded')
+        SshAgent.should_receive(:find_by_name).with('_forwarded').and_return agent
         SshAgent.find_forwarded.should == agent
       end
     end
@@ -96,8 +95,7 @@ describe SshAgent do
       with_modified_env('SSH_AUTH_SOCK' => '/tmp/dummy_socket', 'SSH_AGENT_PID' => "12345") do
         agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
         agent.stub!(:write_agent_config_file)
-        SshAgent.stub!(:find_by_name).and_return agent
-        SshAgent.should_receive(:find_by_name).with('_forwarded')
+        SshAgent.should_receive(:find_by_name).with('_forwarded').and_return agent
         SshAgent.find_forwarded.should == agent
       end
     end
@@ -171,7 +169,6 @@ describe SshAgent do
       end
 
       it "should create a config file for the agent" do
-        dummy_agent.stub!(:write_agent_config_file)
         dummy_agent.should_receive(:write_agent_config_file)
         SshAgent.create('test').should == dummy_agent
       end
@@ -185,18 +182,14 @@ describe SshAgent do
   describe ".find_or_create" do
 
     it "should try to find an existing agent" do
-      SshAgent.stub!(:find_by_name).and_return 'ok'
-      SshAgent.stub!(:create)
-      SshAgent.should_receive(:find_by_name).with('abcd')
+      SshAgent.should_receive(:find_by_name).with('abcd').and_return 'ok'
       SshAgent.should_not_receive(:create)
       SshAgent.find_or_create('abcd').should == 'ok'
     end
 
     it "should create a new one if no named agent exists" do
-      SshAgent.stub!(:find_by_name).and_return nil
-      SshAgent.stub!(:create).and_return 'ok'
-      SshAgent.should_receive(:find_by_name).with('abcd')
-      SshAgent.should_receive(:create).with('abcd')
+      SshAgent.should_receive(:find_by_name).with('abcd').and_return nil
+      SshAgent.should_receive(:create).with('abcd').and_return 'ok'
       SshAgent.find_or_create('abcd').should == 'ok'
     end
 
@@ -244,15 +237,13 @@ describe SshAgent do
     let!(:agent) { SshAgent.new('test','/tmp/abcd/wrong/socket','1234567') }
 
     it "should return false if socket path is invalid" do
-      IO.stub!(:popen)
       IO.should_not_receive(:popen)
       agent.is_alive?.should be_false
     end
 
     it "should invoke ssh-add to check that the agent is alive" do
       File.stub!(:socket?).and_return true
-      IO.stub!(:popen).and_return "OK"
-      IO.should_receive(:popen)
+      IO.should_receive(:popen).and_return "OK"
       agent.is_alive?
     end
 
@@ -282,21 +273,20 @@ describe SshAgent do
 
     it "should return self if is_alive? is true" do
       agent = SshAgent.new('test','/tmp/abcd','12345678')
-      agent.stub!(:is_alive?).and_return true
-      agent.should_receive(:is_alive?)
+      agent.should_receive(:is_alive?).and_return true
       agent.aliveness.should == agent
     end
 
     it "should invoke destroy and return nil if is_alive? is false" do
       agent = SshAgent.new('test','/tmp/abcd','12345678')
-      agent.stub!(:is_alive?).and_return false
-      agent.should_receive(:is_alive?)
-      agent.stub!(:destroy)
-      agent.should_receive(:destroy)
+      agent.should_receive(:is_alive?).and_return false
+      agent.should_receive(:destroy).and_return true
       agent.aliveness.should be_nil
     end
 
   end
+
+
 
   describe "#add_key_file" do
 
@@ -315,18 +305,36 @@ describe SshAgent do
 
 
 
+  describe "#lock" do
+    it "should invoke ssh-add -x" do
+      Kernel.should_receive(:system).with("/bin/bash","-c",/ssh-add -x/).and_return true
+      agent = SshAgent.new('whatever','/path/to/socket',nil)
+      agent.lock('mypassword').should be_true
+    end
+  end
+
+
+
+  describe "#unlock" do
+    it "should invoke ssh-add -X" do
+      Kernel.should_receive(:system).with("/bin/bash","-c",/ssh-add -X/).and_return true
+      agent = SshAgent.new('whatever','/path/to/socket',nil)
+      agent.unlock('mypassword').should be_true
+    end
+  end
+
+
+
   describe "#destroy" do
 
     it "should kill the agent process if if it a named agent" do
-      Process.stub!(:kill)
-      Process.should_receive(:kill).with('TERM',1234567)
+      Process.should_receive(:kill).with('TERM',1234567).and_return nil
       File.stub!(:unlink)
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket','1234567')
       agent.destroy.should be_true
     end
 
     it "should not kill the agent process if if it a forwarded agent" do
-      Process.stub!(:kill)
       Process.should_not_receive(:kill)
       File.stub!(:unlink)
       agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
@@ -334,9 +342,7 @@ describe SshAgent do
     end
 
     it "should not attempt to erase the agent's config file if it a forwarded agent" do
-      Process.stub!(:kill)
       Process.should_not_receive(:kill)
-      File.stub!(:unlink)
       File.should_not_receive(:unlink)
       agent = SshAgent.new('_forwarded','/tmp/abcd/wrong/socket',nil)
       agent.destroy.should be_true
@@ -344,7 +350,6 @@ describe SshAgent do
 
     it "should not attempt to erase the agent's config file if it a 'current' agent" do
       Process.stub!(:kill)
-      File.stub!(:unlink)
       File.should_not_receive(:unlink)
       agent = SshAgent.new('_current','/tmp/abcd/wrong/socket','123456')
       agent.destroy.should be_true
@@ -354,8 +359,7 @@ describe SshAgent do
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket',nil)
       conf  = agent.agent_bash_config_file_path
       Process.stub!(:kill)
-      File.stub!(:unlink)
-      File.should_receive(:unlink).with(conf)
+      File.should_receive(:unlink).with(conf).and_return 1
       agent.destroy.should be_true
     end
 
@@ -414,7 +418,6 @@ describe SshAgent do
     it "should invoke parse_agent_config_file" do
       test_content = "TestContent"
       File.stub!(:read).and_return "TestContent"
-      SshAgent.stub!(:parse_agent_config_file)
       SshAgent.should_receive(:parse_agent_config_file).with(test_content)
       SshAgent.send(:read_agent_config_file, '/tmp/a/b/c/d2121/e/f/g/h')
     end
