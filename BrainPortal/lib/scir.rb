@@ -109,7 +109,7 @@ class Scir
     job
   end
 
-  class Session
+  class Session #:nodoc:
 
     public
 
@@ -199,7 +199,7 @@ class Scir
 
   end
 
-  class JobTemplate
+  class JobTemplate #:nodoc:
 
     # We only support a subset of DRMAA's job template
     attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime

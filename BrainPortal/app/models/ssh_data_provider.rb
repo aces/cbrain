@@ -298,9 +298,13 @@ class SshDataProvider < DataProvider
     self.master.ssh_shared_options("auto") # ControlMaster=auto
   end
 
-  # Returns the SshMaster object handling the tunnel to the Provider side.
+  # Returns the SshMaster object handling the persistent connection to the Provider side.
+  # Addendum, Aug 1st 2012: the connection is no longer persistent, by
+  # passing the :nomaster=true option to SshMaster when on a Bourreau!
+  # This incurs a costs, but increases security.
   def master
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,"DataProvider")
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider",
+      :nomaster => RemoteResource.current_resource.is_a?(Bourreau))
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end

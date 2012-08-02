@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for Matlb scripts.
 class MatlabScript < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

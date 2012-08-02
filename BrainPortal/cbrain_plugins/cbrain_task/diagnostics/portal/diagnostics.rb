@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#A subclass of PortalTask to launch diagnostics.
+# A subclass of PortalTask to launch diagnostics.
 class CbrainTask::Diagnostics < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__]

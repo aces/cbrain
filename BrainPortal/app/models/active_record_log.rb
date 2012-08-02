@@ -20,6 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# This model stores the logs for any other
+# ActiveRecord model objects. See the ActRecLog module
+# for more information about the API.
 class ActiveRecordLog < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__]

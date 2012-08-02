@@ -26,11 +26,11 @@ if ENV['CBRAIN_DEBUG_TRACES'].present? && ! defined?($CBRAIN_DEBUG_OVERRIDE)
 
   puts_red "CBRAIN: Enabling debug traces of some system functions."
 
-  module Kernel
+  module Kernel #:nodoc:
 
     puts_red "CBRAIN: Kernel.system() patched to track arguments and stack trace."
 
-    alias :cbrain_orig_system :system
+    alias :cbrain_orig_system :system #:nodoc:
 
     def system(*args) #:nodoc:
       puts_green "Kernel.system(): #{args.to_s}"
@@ -41,12 +41,12 @@ if ENV['CBRAIN_DEBUG_TRACES'].present? && ! defined?($CBRAIN_DEBUG_OVERRIDE)
     end
   end
 
-  class IO
+  class IO #:nodoc:
     class << self
 
       puts_red "CBRAIN: IO.popen() patched to track arguments and stack trace."
 
-      alias :cbrain_orig_popen :popen
+      alias :cbrain_orig_popen :popen #:nodoc:
 
       def popen(*args,&block) #:nodoc:
         puts_green "IO.popen: #{args.to_s}"

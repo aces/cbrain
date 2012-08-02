@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for archive files in .tar format.
 class TarArchive < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__]

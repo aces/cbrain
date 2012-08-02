@@ -23,8 +23,9 @@
 ###################################################################
 # CBRAIN ActiveRecord extensions
 ###################################################################
-module ActiveRecord
+module ActiveRecord #:nodoc:
 
+  # CBRAIN ActiveRecord::Base extensions
   class Base
 
     ############################################################################
@@ -172,6 +173,7 @@ module ActiveRecord
   
 
 
+  # CBRAIN ActiveRecord::Relation extensions
   class Relation
 
     #####################################################################
@@ -285,8 +287,11 @@ module ActiveRecord
 
   end
 
-  class Associations::AssociationCollection
-    delegate :raw_first_column, :raw_rows, :undo_where, :to => :scoped
+  # CBRAIN ActiveRecord::Associations::AssociationCollection extensions
+  module Associations #:nodoc:
+    class AssociationCollection #:nodoc:
+      delegate :raw_first_column, :raw_rows, :undo_where, :to => :scoped
+    end
   end
 
 end

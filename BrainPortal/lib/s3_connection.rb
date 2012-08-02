@@ -22,12 +22,16 @@
 
 require 'aws/s3'
 
+# A handler connections to Amazon's S3 service.
 class S3Connection
 
   Revision_info=CbrainFileRevision[__FILE__]
 
   include AWS::S3
 
+  attr_accessor :base,:service, :bucket, :s3object
+
+  # Establish a connection handler to S3
   def initialize(access_key, secret_key)
     @base     = Base
     @service  = Service
@@ -40,24 +44,26 @@ class S3Connection
     )
   end
   
-  attr_accessor :base,:service, :bucket, :s3object
-
-  def execute_on_s3
-     yield self                                 
+  def execute_on_s3 #:nodoc:
+     yield self
   end
   
+  # Create a bucket on the current connection.
   def create_bucket(bucket_name)
     @bucket.create(bucket_name)
   end
 
+  # Returns true if the connection is alive
   def connected?
     @base.connected?
   end
 
+  # List the buckets available
   def list_buckets
    @service.buckets
   end
   
+  # Returns true if a particular bucket exists.
   def bucket_exists?(name)
     list_buckets.include? name
   end

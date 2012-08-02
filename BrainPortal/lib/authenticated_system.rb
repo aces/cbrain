@@ -1,5 +1,5 @@
 
-module AuthenticatedSystem
+module AuthenticatedSystem #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__]
 

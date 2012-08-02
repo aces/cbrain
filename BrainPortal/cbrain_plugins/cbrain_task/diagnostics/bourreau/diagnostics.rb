@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#A subclass of ClusterTask to run diagnostics.
+# A subclass of ClusterTask to run diagnostics.
 class CbrainTask::Diagnostics < ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__]

@@ -277,4 +277,20 @@ class BourreauSystemChecks < CbrainChecker
 
   end
 
+  def self.z000_ensure_we_have_a_forwarded_ssh_agent
+
+    #----------------------------------------------------------------------------
+    puts "C> Making sure the portal is forwarding a SSH agent to us..."
+    #----------------------------------------------------------------------------
+
+    agent = SshAgent.find_forwarded.try(:aliveness)
+    if agent
+      puts "C> \t- Found a forwarded agent on SOCK=#{agent.socket}"
+      agent.apply
+    else
+      puts "C> \t- WARNING: no forwarded agent detected! Hope you exchanged all the SSH keys instead!"
+    end
+
+  end
+
 end

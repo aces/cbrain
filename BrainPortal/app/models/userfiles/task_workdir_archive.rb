@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for archives of CBRAIN task work directories.
 class TaskWorkdirArchive < TarArchive
 
   Revision_info=CbrainFileRevision[__FILE__]

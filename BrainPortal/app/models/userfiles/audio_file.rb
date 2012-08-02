@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for a generic audio file.
 class AudioFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__]

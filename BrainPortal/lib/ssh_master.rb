@@ -87,10 +87,12 @@ class SshMaster
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
   # remote host (there can only be a single master for
-  # each triplet [user,host,port] so we might as well remember
-  # the objects in the class).
-  def self.find(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
+  # each quintuplets [user,host,port,category,uniq] so we might
+  # as well remember the objects in the class).
+  def self.find(remote_user,remote_host,remote_port=22,options={:category=>nil,:uniq=>nil})
     remote_port ||= 22
+    category = options[:category]
+    uniq     = options[:uniq]
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
     key = "#{category}/#{key}" if category && category.to_s =~ /^\w+$/
     key = "#{key}/#{uniq}"     if uniq && uniq.to_s =~ /^\w+$/
@@ -111,10 +113,10 @@ class SshMaster
 
   # This method is like find() except that it will create
   # the necessary control object if necessary.
-  def self.find_or_create(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
+  def self.find_or_create(remote_user,remote_host,remote_port=22,options={:category=>nil,:uniq=>nil})
     remote_port ||= 22
-    masterobj = self.find(remote_user,remote_host,remote_port,category,uniq) ||
-                self.new( remote_user,remote_host,remote_port,category,uniq)
+    masterobj = self.find(remote_user,remote_host,remote_port,options) ||
+                self.new( remote_user,remote_host,remote_port,options)
     masterobj
   end
 
@@ -122,7 +124,7 @@ class SshMaster
   # in a format like "user@host:port".
   # If a +category+ string was supplied when initializing
   # the object, the format of the key is "category/user@host:port".
-  # If a +uniq+ string was supplied when initlializing
+  # If a +uniq+ string was supplied when initializing
   # the object, the format of the key is "user@host:port/uniq".
   # If both were supplied, the key is "category/user@host:port/uniq"
   def self.find_by_key(key)
@@ -157,36 +159,28 @@ class SshMaster
   # find() class method. This means that projects using
   # this library do not have to save the control object
   # anywhere.
-  def initialize(remote_user,remote_host,remote_port=22,category=nil,uniq=nil)
+  def initialize(remote_user,remote_host,remote_port=22,options={:category=>nil,:uniq=>nil})
 
-    remote_port ||= 22
-    if remote_port && remote_port.is_a?(String)
-      if remote_port =~ /^\s*$/
-        remote_port = 22 
-      else
-        remote_port = remote_port.to_i
-      end
-    end
+    @user       = remote_user
+    @host       = remote_host
+    @port       = (remote_port.presence || 22).to_i
+    @category   =   options[:category]
+    @uniq       =   options[:uniq]
+    @nomaster   = !!options[:nomaster]
 
     raise "SSH master's \"user\" is not a simple identifier." unless
-      remote_user =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
+      @user =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
     raise "SSH master's \"host\" is not a simple host name." unless
-      remote_host =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
+      @host =~ /^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$/
     raise "SSH master's \"port\" is not a port number." unless
-      remote_port.is_a?(Fixnum) && remote_port > 0 && remote_port < 65535
+      @port > 0 && @port < 65535
     raise "SSH master's \"category\" is not a simple identifer." unless
-      category.nil? || (category.is_a?(String) && category =~ /^\w+$/)
+      @category.nil? || (@category.is_a?(String) && @category =~ /^\w+$/)
     raise "SSH master's \"uniq\" is not a simple identifer." unless
-      uniq.nil? || (uniq.is_a?(String) && uniq =~ /^\w+$/)
-
-    @user     = remote_user
-    @host     = remote_host
-    @port     = remote_port
-    @category = category
-    @uniq     = uniq
+      @uniq.nil? || (@uniq.is_a?(String) && @uniq =~ /^\w+$/)
 
     raise "This master spec is already registered with the class." if
-      self.class.find(@user,@host,@port,@category,@uniq)
+      self.class.find(@user,@host,@port, :category => @category, :uniq => @uniq )
 
     @pid             = nil
     @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
@@ -291,6 +285,7 @@ class SshMaster
   def start(label = nil)
 
     self.properly_registered?
+    return true if @nomaster # special option: not a master at all!
     return true if self.read_pidfile
 
     sshcmd = "ssh -q -n -N -x -M "
@@ -371,6 +366,7 @@ class SshMaster
   # the master SSH.
   def stop
     self.properly_registered?
+    return true  if @nomaster # when no a master, stop means nothing
     return false unless self.read_pidfile
 
     debugTrace("STOP: #{$$} Killing master for #{@key}.")
@@ -386,6 +382,7 @@ class SshMaster
   # Check to see if the master SSH connection is alive and well.
   def is_alive?
 
+    return true if @nomaster
     self.properly_registered?
 
     socket = self.control_path
@@ -462,19 +459,22 @@ class SshMaster
   # string as part of another 'ssh' command.
   def ssh_shared_options(control_master="no")
     socket = self.control_path
-    " -p #{@port}"                        +
-#    " -A"                                 +   # experimental
-    " -o ConnectTimeout=10"               +
-    " -o StrictHostKeyChecking=no"        +
-    " -o PasswordAuthentication=no"       +
-    " -o KbdInteractiveAuthentication=no" +
-    " -o KbdInteractiveDevices=none"      +
-    " -o ServerAliveInterval=10"          +
-    " -o ServerAliveCountMax=5"           +
-#    " -o ForwardAgent=yes"                +   # experimental
-    " -o ControlMaster=#{control_master}" +
-    " -o ControlPath=#{socket}"           +
-    " #{@user}@#{@host} "
+    args_string =
+                      " -p #{@port}"                          +
+                      " -A"                                   +
+                      " -o ConnectTimeout=10"                 +
+                      " -o StrictHostKeyChecking=no"          +
+                      " -o PasswordAuthentication=no"         +
+                      " -o KbdInteractiveAuthentication=no"   +
+                      " -o KbdInteractiveDevices=none"        +
+    (@nomaster ?      "" : 
+                      " -o ServerAliveInterval=10"            +
+                      " -o ServerAliveCountMax=5"             +
+                      " -o ControlMaster=#{control_master}"   +
+                      " -o ControlPath=#{socket}"             
+    )                                                         +
+                      " #{@user}@#{@host} "
+    args_string
   end
 
   # Runs the specified +shell_command+ (a bash command) on
@@ -535,10 +535,12 @@ class SshMaster
     ssh_command += " #{stdout}" if direction == 'w' # with or without block
 
     if block_given? then
+      debugTrace("IO.popen() with command: #{ssh_command}")
       IO.popen(ssh_command, direction) { |io| yield(io) }
     else
       ssh_command += " #{stdout}" if direction == 'r' # the 'other' direction
       ssh_command += " #{stdin}"  if direction == 'w' # the 'other' direction
+      debugTrace("system() with command: #{ssh_command}")
       system(ssh_command)
     end
   end
@@ -626,7 +628,7 @@ class SshMaster
   end
 
   # Just reads the pidfile and returns the numeric
-  # pid foudn there. Returns nil if it seems incorrect.
+  # pid found there. Returns nil if it seems incorrect.
   def raw_read_pidfile #:nodoc:
     begin
       pidfile = self.pidfile_path
@@ -659,7 +661,7 @@ class SshMaster
 
   # Checks that the current instance is the one registered
   def properly_registered? #:nodoc:
-    found = self.class.find(@user,@host,@port,@category,@uniq)
+    found = self.class.find(@user,@host,@port, :category => @category, :uniq => @uniq )
     raise "This SSH master is no longer registered with the class." unless found
     raise "This SSH master object does not match the object registered in the class!" if
       found.object_id != self.object_id

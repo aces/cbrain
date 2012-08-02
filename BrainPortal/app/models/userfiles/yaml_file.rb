@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for text file containing YAML structures.
 class YAMLFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

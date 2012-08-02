@@ -28,7 +28,7 @@ class ScirSge < Scir
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  class Session < Scir::Session
+  class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache
       out, err = bash_this_and_capture_out_err("qstat -xml")
@@ -124,7 +124,7 @@ class ScirSge < Scir
 
   end
 
-  class JobTemplate < Scir::JobTemplate
+  class JobTemplate < Scir::JobTemplate #:nodoc:
 
     def qsub_command
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless

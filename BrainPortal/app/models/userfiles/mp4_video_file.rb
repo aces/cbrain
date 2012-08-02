@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for MP4 video files.
 class Mp4VideoFile < VideoFile
 
   Revision_info=CbrainFileRevision[__FILE__]

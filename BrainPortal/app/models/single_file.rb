@@ -22,7 +22,7 @@
 
 require 'fileutils'
 
-#Represents a single file uploaded to the system (as opposed to a FileCollection).
+# Represents a single file uploaded to the system (as opposed to a FileCollection).
 class SingleFile < Userfile
   
   Revision_info=CbrainFileRevision[__FILE__]

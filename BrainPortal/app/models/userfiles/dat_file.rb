@@ -19,6 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Generic model for data files (files with .dat extensions).
 class DatFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

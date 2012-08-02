@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model for scripts written in the Perl language.
 class PerlSourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__]

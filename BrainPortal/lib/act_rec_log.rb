@@ -29,7 +29,6 @@
 #
 # Original author: Pierre Rioux
 
-# 
 # = CBRAIN Data Tracking API
 # 
 # It's important operations performed by CBRAIN users be tracked
