@@ -34,18 +34,6 @@ describe CbrainSshDataProvider do
     
   end
 
-  describe "#impl_sync_to_provider" do
-    
-    it "should create directory" do
-      cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
-      cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      SshDataProvider.class_eval { def impl_sync_to_provider(userfile); end; }
-      cbrain_ssh_data_provider.should_receive(:remote_bash_this).with(/mkdir/)
-      cbrain_ssh_data_provider.impl_sync_to_provider(userfile)
-    end
-    
-  end
-
   describe "#impl_provider_erase" do
 
     it "should erase provider" do

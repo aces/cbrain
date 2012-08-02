@@ -139,7 +139,7 @@ describe User do
     let!(:admin_user) {Factory.create(:admin_user, :login => "admin_user")}
     
     it "should return all users with role admin" do
-      User.all_admins.should be == AdminUser.all
+      User.all_admins(true).should be == AdminUser.all
     end
     
   end
@@ -624,6 +624,7 @@ describe User do
     it "should not save a site manager without a site_id" do
       @user.type    = "SiteManager"
       @user.site_id = nil
+      @user = @user.class_update
       @user.save.should be_false
     end
     

@@ -42,31 +42,20 @@ describe EnCbrainSshDataProvider do
     
   end
 
-  describe "#impl_sync_to_provider" do
-    
-    it "should create directory" do
-      en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
-      en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      SshDataProvider.class_eval { def impl_sync_to_provider(userfile); end; }
-      en_cbrain_ssh_data_provider.should_receive(:bash_this).with(/mkdir/)
-      en_cbrain_ssh_data_provider.impl_sync_to_provider(userfile)
-    end
-    
-  end
 
   describe "#impl_provider_erase" do
 
     it "should erase provider" do
       en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      en_cbrain_ssh_data_provider.should_receive(:bash_this).with(/rm -rf/)
+      en_cbrain_ssh_data_provider.should_receive(:remote_bash_this).with(/rm -rf/)
       en_cbrain_ssh_data_provider.impl_provider_erase(userfile)
     end
 
     it "should return true" do
       en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
       en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      en_cbrain_ssh_data_provider.stub!(:bash_this)
+      en_cbrain_ssh_data_provider.stub!(:remote_bash_this)
       en_cbrain_ssh_data_provider.impl_provider_erase(userfile).should be_true
     end
   

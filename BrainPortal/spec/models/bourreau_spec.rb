@@ -26,7 +26,7 @@ describe Bourreau do
   let(:bourreau) {Factory.create(:bourreau)}
   describe "#tools" do
     it "should return the tools associated with this bourreaux" do
-      tool = Factory.create(:tool, :tool_configs => [Factory.create(:tool_config, :bourreau_id => bourreau.id)])
+      tool = Factory.create(:tool, :tool_configs => [Factory.create(:tool_config, :tool => nil, :bourreau_id => bourreau.id)])
       bourreau.tools.should =~ [tool]
     end
   end

@@ -24,6 +24,7 @@ require 'spec_helper'
 
 describe WorkGroup do
   let(:current_user) {Factory.create(:normal_user)}
+  let(:other_user) {Factory.create(:normal_user)}
   
   describe "#pretty_category_name" do
     it "should give pretty name 'My Work Project' if it belongs to the current user" do
@@ -31,12 +32,15 @@ describe WorkGroup do
     end
     
     it "should give pretty name 'Personal Work Project of...' if it's a personal project belonging to someone other than the current user" do
-      user  = Factory.create(:normal_user)
-      Factory.create(:work_group, :users => [user]).pretty_category_name(current_user).should == "Personal Work Project of #{user.login}"
+      Factory.create(:work_group, :users => [other_user]).pretty_category_name(current_user).should == "Personal Work Project of #{other_user.full_name}"
     end
     
-    it "should give pretty name 'Shared Work Project' if it does not belong to the current user" do
-      Factory.create(:work_group).pretty_category_name(current_user).should == "Shared Work Project"
+    it "should give pretty name 'Shared Work Project' if it contains more that one user" do
+      Factory.create(:work_group, :users => [other_user, current_user]).pretty_category_name(current_user).should == "Shared Work Project"
+    end
+    
+    it "should give pretty name 'Empty Work Project' if it contains no users" do
+      Factory.create(:work_group, :users => []).pretty_category_name(current_user).should == "Empty Work Project"
     end
   end
   
@@ -61,8 +65,8 @@ describe WorkGroup do
       group.can_be_edited_by?(user).should be_false
     end
     
-    it "should allow edit access to user if only user in group" do
-      group = Factory.create(:work_group, :users => [current_user])
+    it "should allow edit access to user if they are the creator" do
+      group = Factory.create(:work_group, :users => [current_user], :creator_id => current_user.id)
       group.can_be_edited_by?(current_user).should be_true
     end
     
@@ -72,8 +76,7 @@ describe WorkGroup do
     end
     
     it "should not allow edit access to user if not only user in group" do
-      user  = Factory.create(:normal_user)
-      group = Factory.create(:work_group, :users => [current_user, user])
+      group = Factory.create(:work_group, :users => [current_user])
       group.can_be_edited_by?(current_user).should be_false
     end 
   end

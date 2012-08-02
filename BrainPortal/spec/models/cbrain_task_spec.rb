@@ -85,7 +85,7 @@ describe CbrainTask do
     describe "self.pretty_name" do 
 
       it "should return a simple name for task" do
-        CbrainTask.pretty_name.should be == "CbrainTask"
+        CbrainTask.pretty_name.should be == "Cbrain Task"
       end
       
     end
@@ -181,44 +181,6 @@ describe CbrainTask do
       end
       
     end
-  
-  
-    
-    describe "cmp_by_batch_rank" do 
-      let!(:cb_civet_other) {Factory.create("cbrain_task/civet")}
-
-      it "should return 1 if self.rank > cb_civet_other.rank" do
-        cb_civet.rank       = 2
-        cb_civet_other.rank = 1
-        cb_civet.cmp_by_batch_rank(cb_civet_other).should be == 1
-      end
-
-      it "should return -1 if task have same rank and self.level < cb_civet_other.level" do
-        cb_civet.rank        = cb_civet_other.rank = 1
-        cb_civet.level       = 1
-        cb_civet_other.level = 2
-        cb_civet.cmp_by_batch_rank(cb_civet_other).should be == -1
-      end
-
-      it "should return 1 if task have same rank and same level and self.created_at > cb_civet_other.created_at" do
-        cb_civet.rank             = cb_civet_other.rank  = 1
-        cb_civet.level            = cb_civet_other.level = 1
-        cb_civet.created_at       = Date.today
-        cb_civet_other.created_at = Date.today - 1
-        cb_civet.cmp_by_batch_rank(cb_civet_other).should be == 1
-      end
-
-      it "should return -1 if task have same rank and same level and same created_at and self.id < cb_civet_other.id" do
-        cb_civet.rank             = cb_civet_other.rank  = 1
-        cb_civet.level            = cb_civet_other.level = 1
-        cb_civet.created_at       = cb_civet_other.created_at = Date.today
-        cb_civet.id               = 1
-        cb_civet_other.id         = 2
-        cb_civet.cmp_by_batch_rank(cb_civet_other).should be == -1
-      end
-      
-    end
-  
   
     
     describe "short_description" do 

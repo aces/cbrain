@@ -46,7 +46,8 @@ describe Site do
   it "should set new managers on save" do
     @site_user.type = "SiteManager"
     @site_user.save
-    @site.managers.include?(@site_user).should be(true)
+    @site.reload
+    @site.managers.map(&:id).should include(@site_user.id)
   end
     
 end

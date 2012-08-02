@@ -109,10 +109,6 @@ describe EnCbrainLocalDataProvider do
       en_cbrain_local_data_provider.impl_provider_rename(userfile,"new_name").should be_false
     end
 
-    it "should have changed userfile name value" do
-      en_cbrain_local_data_provider.impl_provider_rename(userfile,"new_name")
-      userfile.name.should be == "new_name"
-    end 
   end
   
 end

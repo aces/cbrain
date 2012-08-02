@@ -254,34 +254,6 @@ describe Userfile do
       userfile.update_file_type("new_type").should be_false
     end
   end
-  
-  #Testing the format_size method
-  describe "#format_size" do 
-    it "should return unknown for the format_size when size is blank" do
-      userfile.size = nil
-      userfile.format_size.should match("unknown")
-    end
-  
-    it "should return GB for format_size when the size is over 1GB" do
-      userfile.size = 1000000000
-      userfile.format_size.should match("1.0 Gb")
-    end
-  
-    it "should return MB for format_size when the size is less than 1GB and more than 1MB" do
-      userfile.size = 100000000
-      userfile.format_size.should match("100.0 Mb")
-    end
-  
-    it "should return KB for the format_size when the size is less than 1MB and more than 1KB" do
-      userfile.size = 10000
-      userfile.format_size.should match("10.0 Kb")
-    end
-  
-    it "should return bytes for the format_size when the size is less than 1KB and more than 0" do
-      userfile.size = 10
-      userfile.format_size.should match("10 bytes")
-    end
-  end
 
    describe "#add_format" do
      let(:userfile1) {Factory.create(:userfile)}
@@ -400,35 +372,6 @@ describe Userfile do
       userfile.set_tags_for_user(userfile.user, [1])
       userfile.tag_ids.should =~ [1,2]
     end 
-  end
-
-  describe "#self.tree_sort" do
-    let(:userfile1) {Factory.create(:userfile, :parent_id => userfile.id)}
-    let(:userfile2) {Factory.create(:userfile, :parent_id => userfile1.id)}
-    let(:userfile3) {Factory.create(:userfile, :parent_id => userfile2.id)}
-    let(:userfile4) {Factory.create(:userfile)}
-    let(:userfile5) {Factory.create(:userfile, :parent_id => userfile4.id)}
-    
-    it "should return sorted tree" do
-      Userfile.tree_sort([userfile, userfile2, userfile3, userfile1]).should be == 
-        [userfile, userfile1, userfile2, userfile3]
-    end
-
-    it "should return sorted tree" do
-      Userfile.tree_sort([userfile5, userfile, userfile2, userfile3, userfile1,userfile4]).should be ==
-        [userfile, userfile1, userfile2, userfile3, userfile4, userfile5]
-    end
-
-    it "should assign level for each userfiles" do
-      Userfile.tree_sort([userfile5, userfile, userfile2, userfile3, userfile1,userfile4])
-      userfile.level.should be  == 0
-      userfile1.level.should be == 1
-      userfile2.level.should be == 2
-      userfile3.level.should be == 3
-      userfile4.level.should be == 0
-      userfile5.level.should be == 1
-    end
-    
   end
 
   describe "#level" do
@@ -561,7 +504,7 @@ describe Userfile do
 
     it "should return file of all user and file where userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)" do
       scope = Userfile.scoped({})
-      DataProvider.stub_chain(:find_all_accessible_by_user, :map).and_return([userfile3.data_provider_id])     
+      DataProvider.stub_chain(:find_all_accessible_by_user, :all, :map).and_return([userfile3.data_provider_id])     
       Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all.should be =~ [userfile1,userfile2,userfile3]
     end
 
@@ -704,7 +647,7 @@ describe Userfile do
     it "should return next available file" do
       userfile.user_id = user.id
       userfile1; userfile2
-      userfile.next_available_file(user).should be == userfile1
+      userfile.next_available_file(user).id.should be == userfile1.id
     end
 
     it "should return nil if no next available file" do
@@ -723,7 +666,7 @@ describe Userfile do
     it "should return next available file" do
       userfile.user_id = user.id
       userfile1; userfile2
-      userfile.previous_available_file(user).should be == userfile1
+      userfile.previous_available_file(user).id.should be == userfile1.id
     end
 
     it "should return nil if no previous available file" do
@@ -762,33 +705,41 @@ describe Userfile do
 
   describe "#is_locally_synced?" do
     
-    it "should return true if status is InSync" do
-      syncstat = double("syncstat", :status => "InSync")
-      userfile.should_receive(:local_sync_status).any_number_of_times.and_return(syncstat)
-      userfile.is_locally_synced?.should be_true
-    end
+    let(:data_provider) {double("data_provider", :is_fast_syncing? => true, :not_syncable? => false, :rr_allowed_syncing? => true)}
+    let(:syncstat) {double("syncstat", :status => "Other")}
     
-    it "should return false if is fast syncing" do
-      syncstat = double("syncstat", :status => "Other")
+    before(:each) do
+      userfile.stub!(:data_provider).and_return(data_provider)
       userfile.should_receive(:local_sync_status).any_number_of_times.and_return(syncstat)
-      userfile.stub_chain(:data_provider, :is_fast_syncing?).and_return(false)
-      userfile.is_locally_synced?.should be_false
-    end
-    
-    it "should return true if after refresh status is InSync" do
-      syncstat = double("syncstat", :status => "Other")
-      userfile.should_receive(:local_sync_status).any_number_of_times.and_return(syncstat)
-      userfile.stub_chain(:data_provider, :is_fast_syncing?).and_return(true)
       userfile.stub!(:sync_to_cache)
+    end
+    
+    it "should return true if status is InSync" do
       syncstat.stub!(:status).and_return("InSync")
       userfile.is_locally_synced?.should be_true
     end
     
-    it "should return false in all other case" do
-      syncstat = double("syncstat", :status => "Other")
-      userfile.should_receive(:local_sync_status).any_number_of_times.and_return(syncstat)
-      userfile.stub_chain(:data_provider, :is_fast_syncing?).and_return(true)
-      userfile.stub!(:sync_to_cache)
+    it "should return false if the data provider isn't fast syncing" do
+      data_provider.stub(:is_fast_syncing?).and_return(false)
+      userfile.is_locally_synced?.should be_false
+    end
+    
+    it "should return false if the data provider isn't syncablw" do
+      data_provider.stub(:not_syncable?).and_return(true)
+      userfile.is_locally_synced?.should be_false
+    end
+    
+    it "should return false if the data provider doesn't allow syncing" do
+      data_provider.stub(:rr_allowed_syncing?).and_return(false)
+      userfile.is_locally_synced?.should be_false
+    end
+    
+    it "should return true if after refresh status is InSync" do
+      syncstat.stub!(:status).and_return("Other", "InSync")
+      userfile.is_locally_synced?.should be_true
+    end
+    
+    it "should return false in all other cases" do
       userfile.is_locally_synced?.should be_false
     end
   end

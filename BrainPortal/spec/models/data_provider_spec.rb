@@ -188,7 +188,7 @@ describe DataProvider do
         provider.cache_prepare(userfile).should be_true
       end
       it "should raise an exception if passed a string argument" do
-        lambda{provider.cache_prepare("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
+        lambda{provider.cache_prepare("userfile")}.should raise_error
       end
       it "should create the subdirectory if it does not exist" do
         Dir.should_receive(:mkdir).at_least(:once)
@@ -204,7 +204,7 @@ describe DataProvider do
   
   describe "#cache_full_path" do
     it "should raise an exception if called with a string argument" do
-      lambda{provider.cache_full_path("userfile")}.should raise_error(CbrainError, "DataProvider internal API change incompatibility (string vs userfile)")
+      lambda{provider.cache_full_path("userfile")}.should raise_error
     end
     context "building a cache directory" do
       before(:each) do
@@ -430,7 +430,7 @@ describe DataProvider do
       Dir.stub!(:rmdir)
     end
     it "should ensure that the cache is ready to be modifiedand update the sync status" do
-      SyncStatus.should_receive(:ready_to_modify_cache).with(anything, 'ProvNewer')
+      SyncStatus.should_receive(:ready_to_modify_cache)
       provider.cache_erase(userfile)
     end
     it "should erase content from the cache" do
