@@ -98,7 +98,7 @@ class FileCollection < Userfile
     
     suffix = Time.now.to_i
     
-    while self.user.userfiles.any?{ |f| f.name == "Collection-#{suffix}"}
+    while Userfile.where(:user_id => self.user_id, :name => "Collection-#{suffix}").first.present?
       suffix += 1
     end
     

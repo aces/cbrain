@@ -42,15 +42,15 @@ describe SshDataProvider do
       provider.impl_is_alive?.should be_false
     end
     it "should execute a bash command" do
-      provider.should_receive(:bash_this)
+      provider.should_receive(:remote_bash_this)
       provider.impl_is_alive?
     end
     it "should return true if the bash command returns nothing" do
-      provider.stub!(:bash_this).and_return("")
+      provider.stub!(:remote_bash_this).and_return("")
       provider.impl_is_alive?.should be_true
     end
     it "should return false if the bash command returns something" do
-      provider.stub!(:bash_this).and_return("ERRROR")
+      provider.stub!(:remote_bash_this).and_return("ERRROR")
       provider.impl_is_alive?.should be_false
     end
   end
@@ -109,23 +109,24 @@ describe SshDataProvider do
   end
   describe "#impl_sync_to_provider" do
     before(:each) do
-      provider.stub!(:bash_this).and_return("", "DestIsOk")
+      provider.stub!(:bash_this).and_return("")
       File.stub!(:exist?).and_return(true)
+      provider.stub!(:provider_file_exists?).and_return("file")
     end
     it "should raise an error if the file doesn't exist" do
       File.stub!(:exist?).and_return(false)
       lambda { provider.impl_sync_to_provider(single_file) }.should raise_error
     end
     it "should execute an rsync command" do
-      provider.should_receive(:bash_this).and_return("", "DestIsOk")
+      provider.should_receive(:bash_this).and_return("")
       provider.impl_sync_to_provider(single_file)
     end
     it "should raise an error if rsync returns something" do
-      provider.stub!(:bash_this).and_return("Error", "DestIsOk")
+      provider.stub!(:bash_this).and_return("Error")
       lambda { provider.impl_sync_to_provider(single_file) }.should raise_error
     end
     it "should raise an error the file doesn't exist on the provider" do
-      provider.stub!(:bash_this).and_return("", "DestIsNotOk")
+      provider.stub!(:provider_file_exists?).and_return("")
       lambda { provider.impl_sync_to_provider(single_file) }.should raise_error
     end
     it "should return true if everything goes well" do
@@ -134,7 +135,7 @@ describe SshDataProvider do
   end
   describe "#impl_provider_erase" do
     it "should execute rm command" do
-      provider.should_receive(:bash_this).with(/rm -rf/)
+      provider.should_receive(:remote_bash_this).with(/rm -rf/)
       provider.impl_provider_erase(single_file)
     end
     it "should return true" do

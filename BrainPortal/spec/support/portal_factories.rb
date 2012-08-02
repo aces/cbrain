@@ -232,6 +232,7 @@ end
 Factory.define :tool_config do |tool_config|
   tool_config.description "desc1"
   tool_config.association :bourreau
+  tool_config.association :tool
   tool_config.association :group
 end
 

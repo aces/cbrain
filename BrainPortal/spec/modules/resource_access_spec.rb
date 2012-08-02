@@ -145,7 +145,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        DataProvider.find_all_accessible_by_user(admin).sort_by(&:id).should == [free_resource, group_resource, site_resource, owned_resource].sort_by(&:id)
+        DataProvider.find_all_accessible_by_user(admin).map(&:id).should =~ [free_resource.id, group_resource.id, site_resource.id, owned_resource.id]
       end
     end
     
@@ -156,7 +156,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        DataProvider.find_all_accessible_by_user(site_manager).sort_by(&:id).should =~ [group_resource, site_resource, owned_resource].sort_by(&:id)
+        DataProvider.find_all_accessible_by_user(site_manager).map(&:id).should =~ [group_resource.id, site_resource.id, owned_resource.id]
       end
     end
     
@@ -167,7 +167,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        DataProvider.find_all_accessible_by_user(user).sort_by(&:id).should =~ [group_resource, owned_resource].sort_by(&:id)
+        DataProvider.find_all_accessible_by_user(user).map(&:id).should =~ [group_resource.id, owned_resource.id]
       end
     end
     
@@ -178,29 +178,29 @@ describe ResourceAccess do
       let(:user) { admin }
       
       it "should find owned resources" do
-        DataProvider.find_accessible_by_user(owned_resource.id, admin).should == owned_resource
+        DataProvider.find_accessible_by_user(owned_resource.id, admin).id.should == owned_resource.id
       end
       it "should find site-associated resources" do
-        DataProvider.find_accessible_by_user(site_resource.id, admin).should == site_resource
+        DataProvider.find_accessible_by_user(site_resource.id, admin).id.should == site_resource.id
       end
       it "should find group-associated resources" do
-        DataProvider.find_accessible_by_user(group_resource.id, admin).should == group_resource
+        DataProvider.find_accessible_by_user(group_resource.id, admin).id.should == group_resource.id
       end
       it "should find non-associated resources" do
-        DataProvider.find_accessible_by_user(free_resource.id, admin).should == free_resource
+        DataProvider.find_accessible_by_user(free_resource.id, admin).id.should == free_resource.id
       end
     end
     describe "for site managers" do      
       let(:user) { site_manager }
       
       it "should find owned resources" do
-        DataProvider.find_accessible_by_user(owned_resource.id, site_manager).should == owned_resource
+        DataProvider.find_accessible_by_user(owned_resource.id, site_manager).id.should == owned_resource.id
       end
       it "should find site-associated resources" do
-        DataProvider.find_accessible_by_user(site_resource.id, site_manager).should == site_resource
+        DataProvider.find_accessible_by_user(site_resource.id, site_manager).id.should == site_resource.id
       end
       it "should find group-associated resources" do
-        DataProvider.find_accessible_by_user(group_resource.id, site_manager).should == group_resource
+        DataProvider.find_accessible_by_user(group_resource.id, site_manager).id.should == group_resource.id
       end
       it "should raise ActiveRecord::RecordNotFound when used to find non-associated resources" do
         lambda{DataProvider.find_accessible_by_user(free_resource.id, site_manager)}.should raise_error(ActiveRecord::RecordNotFound)
@@ -210,13 +210,13 @@ describe ResourceAccess do
       let(:user) { normal_user }  
         
       it "should find owned resources" do
-        DataProvider.find_accessible_by_user(owned_resource.id, user).should == owned_resource
+        DataProvider.find_accessible_by_user(owned_resource.id, user).id.should == owned_resource.id
       end
       it "should rause ActiveRecord::RecordNotFound when used to find site-associated resources" do
         lambda{DataProvider.find_accessible_by_user(site_resource.id, user)}.should raise_error(ActiveRecord::RecordNotFound)
       end
       it "should find group-associated resources" do
-        DataProvider.find_accessible_by_user(group_resource.id, user).should == group_resource
+        DataProvider.find_accessible_by_user(group_resource.id, user).id.should == group_resource.id
       end
       it "should rause ActiveRecord::RecordNotFound when used to find non-associated resources" do
         lambda{DataProvider.find_accessible_by_user(free_resource.id, user)}.should raise_error(ActiveRecord::RecordNotFound)

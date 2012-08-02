@@ -67,7 +67,7 @@ describe Group do
     
     it "should allow admin access to any group" do
       admin_user = User.admin
-      group.can_be_accessed_by?(current_user).should be_true
+      group.can_be_accessed_by?(admin_user).should be_true
     end
     
     it "should not allow non-admin access to a group to which the user does not belong" do

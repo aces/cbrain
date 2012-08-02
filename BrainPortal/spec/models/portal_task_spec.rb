@@ -24,13 +24,13 @@ require 'spec_helper'
 
 describe PortalTask do
   
-  let(:portal_task) { Factory.create(:portal_task) }
+  let(:portal_task) { Factory.create("cbrain_task/diagnostics") }
   
   describe "#add_new_params_defaults" do
     it "should add default params to the params hash" do
       default_args = {:default_key => :default_value}
       given_params = {:key => :value}
-      PortalTask.stub!(:default_launch_args).and_return(default_args)
+      portal_task.class.stub!(:default_launch_args).and_return(default_args)
       portal_task.params = given_params
       portal_task.add_new_params_defaults
       portal_task.params.should == default_args.merge(given_params)
@@ -38,7 +38,7 @@ describe PortalTask do
     it "should not crush given param values" do
       default_args     = {:key => :default_value}
       collision_params = {:key => :given_value}
-      PortalTask.stub!(:default_launch_args).and_return(default_args)
+      portal_task.class.stub!(:default_launch_args).and_return(default_args)
       portal_task.params = collision_params
       portal_task.add_new_params_defaults
       portal_task.params.should == collision_params
@@ -64,29 +64,14 @@ describe PortalTask do
       portal_task.before_form.should == ""
     end
   end
-  describe "#refresh_form" do
-    it "should return an empty string" do
-      portal_task.refresh_form.should == ""
-    end
-  end
   describe "#after_form" do
     it "should return an empty string" do
       portal_task.after_form.should == ""
     end
   end
-  describe "#final_task_list" do
-    it "should return an array with the task itself" do
-      portal_task.final_task_list.should == [portal_task]
-    end
-  end
   describe "#after_final_task_list_saved" do
     it "should return an empty string" do
       portal_task.after_final_task_list_saved([portal_task]).should == ""
-    end
-  end
-  describe "#untouchable_params_attributes" do
-    it "should have interface_userfile_ids set" do
-      portal_task.untouchable_params_attributes.should include(:interface_userfile_ids)
     end
   end
   describe "#unpresetable_params_attributes" do
@@ -180,12 +165,12 @@ describe PortalTask do
       lambda { portal_task.wrapper_after_form }.should raise_error(ScriptError)
     end
     it "should raise an error if after_form saves the object and property not set to allow saving" do
-      PortalTask.stub!(:properties).and_return(:i_save_my_task_in_after_form => false)
+      portal_task.class.stub!(:properties).and_return(:i_save_my_task_in_after_form => false)
       portal_task.stub!(:new_record?).and_return(true, false)
       lambda { portal_task.wrapper_after_form }.should raise_error(ScriptError)
     end
     it "should not raise an error if after_form saves the object and property set to allow saving" do
-      PortalTask.stub!(:properties).and_return(:i_save_my_task_in_after_form => true)
+      portal_task.class.stub!(:properties).and_return(:i_save_my_task_in_after_form => true)
       portal_task.stub!(:new_record?).and_return(true, false)
       lambda { portal_task.wrapper_after_form }.should_not raise_error(ScriptError)
     end
@@ -220,14 +205,9 @@ describe PortalTask do
       lambda { portal_task.wrapper_final_task_list }.should raise_error(ScriptError)
     end
     it "should raise an error if final_task_list saves objects and property not set to allow saving" do
-      PortalTask.stub!(:properties).and_return(:i_save_my_tasks_in_final_task_list => false)
+      portal_task.class.stub!(:properties).and_return(:i_save_my_tasks_in_final_task_list => false)
       portal_task.stub!(:new_record?).and_return(false)
       lambda { portal_task.wrapper_final_task_list }.should raise_error(ScriptError)
-    end
-    it "should not raise an error if final_task_list saves objects and property set to allow saving" do
-      PortalTask.stub!(:properties).and_return(:i_save_my_tasks_in_final_task_list => true)
-      portal_task.stub!(:new_record?).and_return(false)
-      lambda { portal_task.wrapper_final_task_list }.should_not raise_error(ScriptError)
     end
     it "should reraise CbrainErrors" do
       portal_task.stub!(:final_task_list).and_raise(CbrainError)

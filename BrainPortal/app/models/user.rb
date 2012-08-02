@@ -118,8 +118,12 @@ class User < ActiveRecord::Base
   end
   
   #Return all users with admin users.
-  def self.all_admins
-    @@all_admins ||= AdminUser.all
+  def self.all_admins(reset = false)
+    if reset
+      @@all_admins = AdminUser.all
+    end
+    
+    @@all_admins ||= AdminUser.all  
   end
   
   # Authenticates a user by their login name and unencrypted password. Returns the user or nil.

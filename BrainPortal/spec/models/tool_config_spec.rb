@@ -26,23 +26,32 @@ describe ToolConfig do
   let(:tool_config) {Factory.create(:tool_config)}
 
   describe "#can_be_accessed_by?" do
+    let(:user) {Factory.create(:admin_user)}
+    let(:group) {Factory.create(:group, :users => [user])}
+    let(:group_tool_config) {Factory.create(:tool_config, :group => group)}
+    let(:no_b_tool_config) {Factory.create(:tool_config, :bourreau => nil)}
+    let(:no_t_tool_config) {Factory.create(:tool_config, :tool => nil)}
     
-    it "should allow admin access to any group" do
-      user  = Factory.create(:admin_user)
+    
+    it "should allow admin user to access a tool config even if they don't belong to its group" do
       tool_config.can_be_accessed_by?(user).should be_true
     end
     
-    it "should not allow non-admin user to access a group to which it is not" do
-      user  = Factory.create(:normal_user)
-      tool_config.can_be_accessed_by?(user).should be_false
+    it "should not allow non-admin user to access a tool config if they don't belong to its group" do
+      tool_config.can_be_accessed_by?(Factory.create(:normal_user)).should be_false
     end
 
-    it "should allow non-admin user to access a group to which it is" do
-      user  = Factory.create(:normal_user)
-      group = Factory.create(:group, :users => [user])
-      tool_config.group = group
+    it "should not allow user to access a tool config if the bourreau is not set" do
+      no_b_tool_config.can_be_accessed_by?(user).should be_false
+    end
+    
+    it "should not allow user to acces a tool config if the tool is not set" do
+      no_t_tool_config.can_be_accessed_by?(user).should be_false
+    end
+
+    it "should allow non-admin user to access a tool config to which it is" do
       user.reload
-      tool_config.can_be_accessed_by?(user).should be_true
+      group_tool_config.can_be_accessed_by?(user).should be_true
     end
   end
 
@@ -97,15 +106,13 @@ describe ToolConfig do
     it "should add env_array to ENV if use_extend is false" do
       increase = tool_config.env_array ? tool_config.env_array.size : 0
       lambda do
-        tool_config.apply_environment
+        tool_config.apply_environment {}
       end.should change{ ENV.size }.by(increase)
     end
 
     it "should add extended_environment to ENV if use_extend is true" do
       increase = tool_config.extended_environment ? tool_config.extended_environment.size : 0
-      lambda do
-        tool_config.apply_environment(true)
-      end.should change{ ENV.size }.by(increase)
+      tool_config.apply_environment(true) { ENV.keys.should include(tool_config.extended_environment.first.first)}
     end
   end
 
@@ -155,6 +162,7 @@ describe ToolConfig do
       end
 
       it "should print 'Tool: ALL' if specific tool is not defined"  do
+        tool_config.tool = nil
         tool_config.to_bash_prologue.should =~ /Tool\s?:\s+ALL/    
       end
 

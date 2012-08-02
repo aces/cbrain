@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe FileCollection do
-  let(:provider) {Factory.create(:data_provider, :online => true, :read_only => false)}
+  let(:provider) {Factory.create(:ssh_data_provider, :online => true, :read_only => false)}
   let(:file_collection) {Factory.create(:file_collection, :data_provider_id => provider.id) }
   
   describe "#collection_file" do
@@ -104,15 +104,6 @@ describe FileCollection do
       lambda{
         file_collection.extract_collection_from_archive_file("dir.unknown")
       }.should raise_error
-    end
-  end
-
-  describe "#format_size" do
-    
-    it "should format size with following format '\\s+size\\s+\(num_files\)'" do
-      file_collection.size      = 107246558
-      file_collection.num_files = 5
-      file_collection.format_size.should  =~ /\s+#\d+\.?\d?\s+K|M|GB\s+\(#{file_collection.num_files}\s+\files\)/
     end
   end
 

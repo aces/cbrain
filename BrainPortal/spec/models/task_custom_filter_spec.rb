@@ -66,28 +66,28 @@ describe TaskCustomFilter do
 
     context "with date" do
       
-      it "should only keep task created between 'data['abs_from'] and 'data['abs_to']'" do
-        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/04/2011", "abs_to" => "04/04/2011" }
+      it "should only keep task created between 'data['absolute_from'] and 'data['absolute_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/04/2011", "absolute_to" => "04/04/2011" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
       end
       
-      it "should only keep task updates between 'data['abs_from'] and 'data['abs_to']'" do
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"abs", "abs_from" => "04/05/2011", "abs_to" => "04/05/2011" }
+      it "should only keep task updates between 'data['absolute_from'] and 'data['absolute_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/05/2011", "absolute_to" => "04/05/2011" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
       end
 
-      it "should only keep task created between 'data['abs_from'] and 'data['rel_date_to']'" do
-        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/04/2011", "rel_date_to" => "0" }
+      it "should only keep task created between 'data['absolute_from'] and 'data['relative_date_to']'" do
+        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/04/2011", "relative_to" => "0" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task2]
       end
 
-      it "should only keep task updated between 'data['abs_from'] and 'data['rel_date_to']'" do
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"abs", "absolute_or_relative_to"=>"rel", "abs_from" => "29/05/2011", "rel_date_to" => "0" }
+      it "should only keep task updated between 'data['absolute_from'] and 'data['relative_date_to']'" do
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/05/2011", "relative_to" => "0" }
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task2]
       end
 
       it "should only keep task updated last week" do
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"rel", "absolute_or_relative_to"=>"rel", "rel_date_from" => "#{1.week}", "rel_date_to" => "0" }
+        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"relative", "absolute_or_relative_to"=>"relative", "relative_from" => "#{1.week}", "relative_to" => "0" }
         @cbrain_task1.updated_at = Date.today - 1.day
         @cbrain_task1.save!
         filter.filter_scope(CbrainTask.scoped({})).should =~ [@cbrain_task1]
