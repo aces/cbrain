@@ -92,12 +92,12 @@ module Kernel
   end
 
   # Run a given block with some environment variables
-  # changed to what the changed_env hash provides.
+  # changed to what the +changed_env+ hash provides.
   # Use a value of nil in changed_env to delete environment
   # variables.
   # The environment is restored to its original state
   # when the block completes.
-  def with_modified_env(changed_env={}) #:nodoc:
+  def with_modified_env(changed_env={})
     varnames = changed_env.keys.inject({}) { |names,n| names[n] = nil; names } # we use the nil values later on
     saved    = ENV.select { |name,_| varnames.has_key?(name) }
     ENV.update(changed_env)
@@ -105,6 +105,16 @@ module Kernel
   ensure
     ENV.reject!           { |name,_| varnames.has_key?(name) }
     ENV.update(saved)
+  end
+
+  # Run a given block with ONLY the environment variables
+  # set in the hash +new_env+.
+  # The environment is restored to its original state
+  # when the block completes.
+  def with_only_env(new_env=(),&block)
+    zapped = ENV.keys.inject({}) { |names,n| names[n] = nil ; names }
+    zapped.merge! new_env
+    with_modified_env(zapped, &block)
   end
 
 end

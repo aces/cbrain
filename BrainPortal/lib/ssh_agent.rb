@@ -103,6 +103,7 @@ class SshAgent
   CONFIG = {
     :agent_bashrc_dir => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp" : "/tmp",
     :hostname         => Socket.gethostname,
+    :askpass_exec     => (Rails.root rescue nil) ?  "#{Rails.root.to_s}/vendor/cbrain/bin/askpass.sh" : "/bin/true"
   }
 
   attr_reader :name, :pid, :socket
@@ -261,6 +262,15 @@ class SshAgent
     true
   end
 
+  # Lock the agent with a passphrase.
+  def lock(password)
+    lock_or_unlock(password,'x') # ssh-add option -x to lock
+  end
+
+  # Unlock the agent with a passphrase.
+  def unlock(password)
+    lock_or_unlock(password,'X') # ssh-add option -X to lock
+  end
 
 
   #---------------------
@@ -302,6 +312,18 @@ echo Agent pid #{self.pid};
 
 
   private
+
+  def lock_or_unlock(password, mode) #:nodoc:
+    ssh_add_exec=`which ssh-add`.strip
+    with_modified_env('SSH_AUTH_SOCK'         => self.socket,
+                      'SSH_ASKPASS'           => CONFIG[:askpass_exec],
+                      'DISPLAY'               => 'none:0.0',
+                      'CBRAIN_PASSPHRASE'     => password.to_s
+                 ) do
+      ret = Kernel.system("/bin/bash","-c","#{ssh_add_exec} -#{mode} </dev/null >/dev/null 2>/dev/null")
+      return ret
+    end
+  end
 
   def self.read_agent_config_file(filename) #:nodoc:
     content = File.read(filename)
