@@ -1,7 +1,7 @@
 <fieldset>
   <legend>Rails <%= Rails.env.capitalize %> Logs</legend>
 
-  <%= ajax_form_tag("/portal_log", :target => "#portal_log", :reset_form => false, :method => :get) do %>
+  <%= form_tag("/portal_log", :method => :get) do %>
     <div class="log_refresh">
     <%= submit_tag "Refresh", :class => "button" %>
     </div>

@@ -177,9 +177,6 @@ class PortalController < ApplicationController
     end
 
     @portal_log = log.html_safe
-
-    # Render the pretty log
-    render :partial => "portal_log"
   end
   
   def show_license

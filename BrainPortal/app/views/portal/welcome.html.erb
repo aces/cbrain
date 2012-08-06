@@ -57,6 +57,10 @@
       <% end %>
 
       <p>
+        <strong><%= link_to "View Portal Logs", url_for(:action => :portal_log, :hide_rendered => "1") %></strong>
+      </p>
+
+      <p>
         <strong>Recent activity:</strong>
       </p>
 
@@ -85,8 +89,6 @@
           </small>
         <% end %>
       <% end %>
-
-
 
       <p>
         <strong>Sessions</strong>
@@ -138,7 +140,7 @@
 
 
 
-  <div class="generalbox no_wrap">
+<div class="generalbox no_wrap">
   <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
     <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
@@ -166,30 +168,27 @@
     <p>
       <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
     </p>  
+</div>
+
+<% if @tasks.size > 0 %>
+  <div class="box_spacer"></div>
+  
+  <div class="generalbox no_wrap">
+
+    <h1><%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
+
+      <table class="task_summary_table">
+        <% for task in @tasks %>
+          <tr>
+            <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
+            <td><%= link_to_user_if_accessible(task.user) %></td>
+            <td><%= colored_status(task.status) %></td>
+            <td><%= to_localtime(task.updated_at,:datetime) %></td>
+          </tr>
+        <% end %>
+      </table>
   </div>
-
-  <% if @tasks.size > 0 %>
-    <div class="box_spacer"></div>
-    
-    <div class="generalbox no_wrap">
-
-      <h1><%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
-
-        <table class="task_summary_table">
-          <% for task in @tasks %>
-            <tr>
-              <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
-              <td><%= link_to_user_if_accessible(task.user) %></td>
-              <td><%= colored_status(task.status) %></td>
-              <td><%= to_localtime(task.updated_at,:datetime) %></td>
-            </tr>
-          <% end %>
-        </table>
-    </div>
-  <% end %>
-
-<% if current_user.has_role?(:admin_user) %>
-  <% log_url = url_for(:action => :portal_log, :hide_rendered => "1") %>
-  <%= ajax_element(log_url, :id => "portal_log") %>
 <% end %>
+
+
 
