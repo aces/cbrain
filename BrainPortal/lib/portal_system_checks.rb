@@ -70,16 +70,17 @@ class PortalSystemChecks < CbrainChecker
     #----------------------------------------------------------------------------
 
     message = 'Found existing agent'
-    agent = SshAgent.find_by_name('cbrain').try(:aliveness)
+    agent = SshAgent.find_by_name('portal').try(:aliveness)
     unless agent
       begin
-        agent = SshAgent.create('cbrain')
+        agent = SshAgent.create('portal', "#{Rails.root}/tmp/sockets/ssh-agent.portal.sock")
+       #agent = SshAgent.create('portal', "/tmp/ssh-agent.portal.sock")
         message = 'Created new agent'
       rescue
         sleep 1
-        agent = SshAgent.find_by_name('cbrain').try(:aliveness) # in case of race condition
+        agent = SshAgent.find_by_name('portal').try(:aliveness) # in case of race condition
       end
-      raise "Error: cannot create SSH agent named 'cbrain'." unless agent
+      raise "Error: cannot create SSH agent named 'portal'." unless agent
     end
     agent.apply
     puts "C> \t- #{message}: PID=#{agent.pid} SOCK=#{agent.socket}"
@@ -91,7 +92,7 @@ class PortalSystemChecks < CbrainChecker
     cbrain_identity_file = "#{CBRAIN::Rails_UserHome}/.ssh/id_cbrain_portal"
     if ! File.exists?(cbrain_identity_file)
       puts "C> \t- Creating identity file '#{cbrain_identity_file}'."
-      with_modified_env('SSH_ASKPASS' => '/bin/true') do
+      with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
         system("/bin/bash","-c","ssh-keygen -t rsa -f #{cbrain_identity_file.bash_escape} -C 'CBRAIN_Portal_Key' </dev/null >/dev/null 2>/dev/null")
       end
     end
@@ -99,15 +100,45 @@ class PortalSystemChecks < CbrainChecker
     if ! File.exists?(cbrain_identity_file)
       puts "C> \t- ERROR: Failed to create identity file '#{cbrain_identity_file}'."
     else
-      ok = with_modified_env('SSH_ASKPASS' => '/bin/true') do
-        agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
+      ok = CBRAIN.with_unlocked_agent do
+        with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
+          agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
+        end
       end
       if ok
-        puts "C> \t- Added identity to agent from file: '#{cbrain_identity_file}'"
+        puts "C> \t- Added identity to agent from file: '#{cbrain_identity_file}'."
       else
-        puts "C> \t- ERROR: cannot add identity from file: '#{cbrain_identity_file}'"
+        puts "C> \t- ERROR: cannot add identity from file: '#{cbrain_identity_file}'."
         puts "C> \t  You might want to add the identity yourself manually."
       end
+    end
+
+    #----------------------------------------------------------------------------
+    puts "C> Starting automatic Agent Locker in background..."
+    #----------------------------------------------------------------------------
+
+    allworkers = WorkerPool.find_pool(PortalAgentLocker)
+
+    allworkers.each do |worker|
+      puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
+    end
+
+    if allworkers.size == 0
+      puts "C> \t- No locker processes found. Creating one."
+
+      al_logger = Log4r::Logger.new('AgentLocker')
+      al_logger.add(Log4r::RollingFileOutputter.new('agent_locker_outputter',
+                      :filename  => "#{Rails.root}/log/AgentLocker..log",
+                      :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                      :maxsize   => 1000000, :trunc => 600000))
+      al_logger.level = Log4r::INFO # Log4r::INFO or Log4r::DEBUG or other levels...
+
+      WorkerPool.create_or_find_pool(PortalAgentLocker, 1, 
+        { :check_interval => 20,
+          :worker_log     => al_logger,
+          :name           => 'AgentLocker',
+        }
+      )
     end
 
   end

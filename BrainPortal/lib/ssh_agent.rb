@@ -103,7 +103,9 @@ class SshAgent
   CONFIG = {
     :agent_bashrc_dir => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp" : "/tmp",
     :hostname         => Socket.gethostname,
-    :askpass_exec     => (Rails.root rescue nil) ?  "#{Rails.root.to_s}/vendor/cbrain/bin/askpass.sh" : "/bin/true"
+    :exec_askpass     => (Rails.root rescue nil) ?  "#{Rails.root.to_s}/vendor/cbrain/bin/askpass.sh" : "/bin/true",
+    :exec_ssh_agent   => `which ssh-agent`.strip,
+    :exec_ssh_add     => `which ssh-add`.strip,
   }
 
   attr_reader :name, :pid, :socket
@@ -171,10 +173,11 @@ class SshAgent
   # Creates a new SshAgent object representing a launched
   # ssh-agent process, associated with the +name+. If a
   # process already seems to exists, raise an exception.
-  def self.create(name)
+  def self.create(name, socketpath=nil)
     exists = self.find_by_name(name)
     raise "Agent named '#{name}' already exists." if exists
-    agent_out  = IO.popen("ssh-agent -s","r") { |fh| fh.read }
+    dash_a     = socketpath.present? ? "-a #{socketpath.bash_escape}" : ""
+    agent_out  = IO.popen("#{CONFIG[:exec_ssh_agent]} -s #{dash_a}","r") { |fh| fh.read }
     socket,pid = parse_agent_config_file(agent_out)
     agent      = self.new(name, socket, pid)
     agent.write_agent_config_file
@@ -212,10 +215,11 @@ class SshAgent
   # Checks that the agent is alive and responding.
   def is_alive?
     return false unless self.socket.present? && File.socket?(self.socket)
-    with_modified_env('SSH_AUTH_SOCK' => self.socket, 'SSH_AGENT_PID' => self.pid) do
-      out = IO.popen("ssh-add -l 2>&1","r") { |fh| fh.read }
+    with_modified_env('SSH_AUTH_SOCK' => self.socket) do
+      out = IO.popen("#{CONFIG[:exec_ssh_add]} -l 2>&1","r") { |fh| fh.read }
       # "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
       # "Could not open a connection to your authentication agent."
+      # "The agent has no identities."
       return false if     out =~ /could not open/i
       return true  if     out =~ /agent has no identities/i
       return false unless out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/
@@ -239,7 +243,7 @@ class SshAgent
   # Adds a private key stored in file +keypath+ in the agent.
   # Raises an exception if the 'ssh-add' command complains.
   def add_key_file(keypath = "#{ENV['HOME']}/.ssh/id_rsa")
-    out = IO.popen("ssh-add #{keypath.to_s.bash_escape} 2>&1","r") { |fh| fh.read }
+    out = IO.popen("#{CONFIG[:exec_ssh_add]} #{keypath.to_s.bash_escape} 2>&1","r") { |fh| fh.read }
     raise "Key file doesn't exist, is invalid, or has improper permission" unless out =~ /^Identity added/i
     true
   end
@@ -271,6 +275,26 @@ class SshAgent
   def unlock(password)
     lock_or_unlock(password,'X') # ssh-add option -X to lock
   end
+
+  # Returns an array of public keys in the agent; by
+  # default each entry is a line as produced by 'ssh-add -l'.
+  # If options[:full] is true, the entries correspond to 'ssh-add -L'.
+  def list_keys(options = {})
+    l_or_L = options[:full].present? ? 'L' : 'l'
+    with_modified_env('SSH_AUTH_SOCK' => self.socket) do
+      out = IO.popen("#{CONFIG[:exec_ssh_add]} -#{l_or_L} 2>&1","r") { |fh| fh.read }
+      # -l "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
+      # -L "ssh-rsa AAAAB3NzaC1yc2E...aXdHJXq6+rmPGRAlQQWQTRSHw== /Users/prioux/.ssh/id_cbrain_portal"
+      #    "Could not open a connection to your authentication agent."
+      #    "The agent has no identities."
+      return [] if out =~ /agent has no identities/i
+      raise "Agent doesn't seem to exist anymore." if
+       (l_or_L == 'l' && out !~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/) ||
+       (l_or_L == 'L' && out !~ /^ssh-\S+\s+[a-zA-Z0-9\+\/]{30}/) # base 64 include let, dig, +, /
+      return out.split(/\r?\n/)
+    end
+  end
+
 
 
   #---------------------
@@ -314,13 +338,12 @@ echo Agent pid #{self.pid};
   private
 
   def lock_or_unlock(password, mode) #:nodoc:
-    ssh_add_exec=`which ssh-add`.strip
     with_modified_env('SSH_AUTH_SOCK'         => self.socket,
-                      'SSH_ASKPASS'           => CONFIG[:askpass_exec],
-                      'DISPLAY'               => 'none:0.0',
-                      'CBRAIN_PASSPHRASE'     => password.to_s
+                      'SSH_ASKPASS'           => CONFIG[:exec_askpass],
+                      'DISPLAY'               => 'none:0.0', # dummy, but needs to be set
+                      'CBRAIN_PASSPHRASE'     => password.to_s.tr("'\"","")
                  ) do
-      ret = Kernel.system("/bin/bash","-c","#{ssh_add_exec} -#{mode} </dev/null >/dev/null 2>/dev/null")
+      ret = Kernel.system("/bin/bash","-c","#{CONFIG[:exec_ssh_add]} -#{mode} </dev/null >/dev/null 2>/dev/null")
       return ret
     end
   end

@@ -230,6 +230,24 @@ class CBRAIN
     reader.close # Parent is done reading subchild's PID from child
     subchildpid
   end
-  
+
+  # Runs a block after having unlocked the SSH agent for the whole CBRAIN system.
+  # If no block is given, unlocks the agent and returns true.
+  def self.with_unlocked_agent
+
+    agent = SshAgent.find_current # cannot use find_by_name, because it has a name only on portal side
+
+    if agent
+      admin         = User.admin
+      passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
+      passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
+
+      agent.unlock(passphrase)
+      passphrase_md.touch
+    end
+
+    block_given? ? yield : true
+  end
+
 end  # End of CBRAIN class
 
