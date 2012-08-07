@@ -214,7 +214,7 @@ class BourreauxController < ApplicationController
     skipped_bourreaux   = []
 
     RemoteResource.find_all_accessible_by_user(current_user).all.each do |b|
-      if b.is_alive?
+      if b.is_alive?(:info)
         info = b.info
         ssh_key = info.ssh_public_key
         b.ssh_public_key = ssh_key
@@ -243,7 +243,7 @@ class BourreauxController < ApplicationController
 
     cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{pretty_elapsed(@bourreau.info.uptime)}." if @bourreau.is_alive?
+    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{pretty_elapsed(@bourreau.info(:ping).uptime)}." if @bourreau.is_alive?(:ping)
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?
@@ -255,7 +255,7 @@ class BourreauxController < ApplicationController
     cb_error "Could not start master SSH connection and tunnels for '#{@bourreau.name}'." unless @bourreau.ssh_master.is_alive?
 
     started_ok = @bourreau.start
-    alive_ok   = started_ok && (sleep 3) && @bourreau.is_alive?
+    alive_ok   = started_ok && (sleep 3) && @bourreau.is_alive?(:ping)
     workers_ok = false
 
     if alive_ok

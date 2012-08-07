@@ -105,7 +105,7 @@
         <% if @report_rrs.size == 0 && @report_users.size == 0 %>
           <th>(There are no entries in this report)</th>
         <% else %>
-          <th COLSPAN="<%= 1+@report_rrs.size %>">
+          <th colspan="<%= 1+@report_rrs.size %>">
             <%= submit_tag 'Cleanup Selected Caches' %>
           </th>
         <% end %>

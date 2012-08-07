@@ -30,7 +30,7 @@ class PortalAgentLocker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  def setup
+  def setup #:nodoc:
     @agent         = SshAgent.find('portal') # our agent
     raise "No SSH agent found?" unless @agent
 
@@ -43,39 +43,71 @@ class PortalAgentLocker < Worker
     worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
 
     @time_unlocked = nil # last time it was observed to be unlocked.
+
+    # For statistics
+    @sess_unlocked  = 0
+    @cumul_unlocked = 0;
+    @start_time     = Time.now.to_i
+    @interval       = self.check_interval
+    @half_int       = @interval / 2
+    @cycle_count    = 0
   end
 
   # Relocks the agent that was unlocked by CBRAIN.with_unlocked_agent() 
-  def do_regular_work
+  def do_regular_work #:nodoc:
+
+    @cycle_count += 1
+    return if @cycle_count == 1 # we skip very first cycle, for better statistics.
 
     # Get keys from agent; a locked agent returns an empty list.
     keys = @agent.list_keys # this will raise an exception and properly terminate this worker if the agent is dead.
     if keys.empty?
       @time_unlocked = nil
+      @sess_unlocked = 0
       worker_log.debug "No keys, or already locked."
       return 
     end
 
+    contrib = @time_unlocked.blank? ? @half_int : @interval # seconds unlocked contributed by latest cycle
+    @cumul_unlocked += contrib
+    @sess_unlocked  += contrib
+
     # OK, so how recently was it unlocked?
     @time_unlocked ||= Time.now.to_i # set the first time we encounter it unlocked
+#worker_log.debug "xxx TU1 #{@time_unlocked}"
     @passphrase_md.reload
     md_date          =  @passphrase_md.updated_at.to_i # this timestamp updated by CBRAIN.with_unlocked_agent()
+#worker_log.debug "xxx MD0 #{md_date}"
     @time_unlocked   = md_date if md_date > @time_unlocked # keep most recent of the two.
+#worker_log.debug "xxx TU2 #{md_date}"
+#worker_log.debug "xxx DIF #{Time.now.to_i - @time_unlocked}"
 
-    if Time.now.to_i - @time_unlocked <= 20 # change too recent
-      worker_log.debug "Agent unlocked, but too recently to lock again."
+    if Time.now.to_i - @time_unlocked < 20 # change too recent
+      worker_log.debug "Agent unlocked, but too recently to lock again. Session unlocked: #{@sess_unlocked} s."
       return # postpone until next check
     end
 
-    worker_log.info "Agent relocked."
     @agent.lock(@passphrase)
+    worker_log.info "Agent relocked. Agent was unlocked for #{@sess_unlocked} s."
+    self.log_statistics
 
   rescue => ex
 
     worker_log.info "Got exception: #{ex.class}: #{ex.message}"
-    worker_log.info "#{self.class} exiting"
+    worker_log.info "#{self.class} exiting."
     self.stop_me
 
+  end
+
+  def finalize #:nodoc:
+    self.log_statistics
+  end
+
+  def log_statistics #:nodoc:
+    total_time       = Time.now.to_i - @start_time ; total_time = 1     if total_time < 1
+    percent_unlocked = 100.0 * (@cumul_unlocked.to_f / total_time.to_f)
+    pretty_percent   = sprintf("%.1f",percent_unlocked)
+    worker_log.info "Total unlocked: #{@cumul_unlocked} s. ; Total time: #{total_time} s. ; Percent unlocked: #{pretty_percent} %"
   end
 
 end

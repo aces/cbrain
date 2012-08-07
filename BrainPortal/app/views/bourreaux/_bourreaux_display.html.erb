@@ -67,7 +67,7 @@
     t.sort_column("Server Type", RemoteResource, :type, :filters => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :type))
     t.sort_column("Server Name", RemoteResource, :name)
     if @filter_params["details"] == 'on'
-      t.column("Revision Numbers")
+      t.column("Live Revision")
       t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, User, :name_method => :login))
     end
     t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, Group))
@@ -78,9 +78,6 @@
     t.sort_column("Online?", RemoteResource, :online)
     t.column("Uptime")
     t.describe_column("Workers") do |col|
-      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
-    end
-    t.describe_column("Load") do |col|
       col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
     end
     t.describe_column("Tasks") do |col|

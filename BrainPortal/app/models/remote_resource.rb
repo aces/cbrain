@@ -449,11 +449,14 @@ class RemoteResource < ActiveRecord::Base
   # This must be a live check, not cached. A cached
   # way to check the state of the resource is to use the
   # info() method, which caches the information record.
-  def is_alive?
+  def is_alive?(what = :ping)
+    what = what.presence.try(:to_sym) || :ping
     self.reload
     return false if self.online == false 
-    @info = self.remote_resource_info
-    if @info.name != "???"
+    info_struct = self.remote_resource_info(what) # what is 'info' or 'ping'
+    @info = info_struct if what == :info
+    @ping = info_struct if what == :ping
+    if info_struct.name != "???"
       self.update_attributes( :time_of_death => nil ) if self.time_of_death
       return true
     end
@@ -558,10 +561,15 @@ class RemoteResource < ActiveRecord::Base
 
   # Returns a lighter and faster-to-generate 'ping' information
   # for this server; the object returned is RemoteResourceInfo
-  # with only one field set: 'revision'.
-  def self.ping_remote_resource_info
-    info          = RemoteResourceInfo.new
-    info.revision = $CBRAIN_StartTime_Revision
+  # with only a few fields set, fields that are 'quick' to
+  # generate.
+  def self.remote_resource_ping
+    rr                      = RemoteResource.current_resource
+    info                    = RemoteResourceInfo.new
+    info.id                 = rr.id
+    info.name               = rr.name
+    info.starttime_revision = $CBRAIN_StartTime_Revision
+    info.uptime             = Time.now.localtime - CBRAIN::Startup_LocalTime
     info
   end
 
@@ -588,13 +596,15 @@ class RemoteResource < ActiveRecord::Base
   # called anyway if you call this instance method on the
   # remote resource object which represents the current Rails
   # app).
-  def remote_resource_info(what = 'info')
+  def remote_resource_info(what = :info)
+
+    what = what.presence.try(:to_sym) || :info
 
     # In case we're asking about the CURRENT Rails
     # app, no need to connect to the network, eh?
     if self.id == CBRAIN::SelfRemoteResourceId
-      return self.class.remote_resource_info      if what == 'info'
-      return self.class.ping_remote_resource_info if what == 'ping'
+      return self.class.remote_resource_info if what == :info
+      return self.class.remote_resource_ping if what == :ping
       raise "Unknown info keyword '#{what}'."
     end
 
@@ -606,7 +616,7 @@ class RemoteResource < ActiveRecord::Base
       if self.ssh_master && self.ssh_master.is_alive?
         Control.site    = self.site
         Control.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout
-        control_info = Control.find(what)
+        control_info = Control.find(what) # asks for controls/info.xml or controls/ping.xml
         info = RemoteResourceInfo.new(control_info.attributes)
       end
     rescue => ex
@@ -626,39 +636,63 @@ class RemoteResource < ActiveRecord::Base
   # Returns and cache a record of run-time information about the resource.
   # This is the main entry point for querying a RemoteResource, along
   # with is_alive?
-  def info
-    return self.class.remote_resource_info if self.id == CBRAIN::SelfRemoteResourceId # no caching for local
-    return @info if @info # caching within Rails action
-    @info = self.info_cached? # caching between Rails actions, in meta data store
-    return @info if @info
-    running = self.is_alive? # this updates @info as a side-effect
-    if running
-      self.meta[:info_cache]             = @info
-      self.meta[:info_cache_last_update] = Time.now.utc
-      return @info
+  def info(what = :info)
+    if self.id == CBRAIN::SelfRemoteResourceId # no caching for local
+      return self.class.remote_resource_info if what == :info
+      return self.class.remote_resource_ping if what == :ping
+      raise "Unknown info keyword '#{what}'."
     end
-    self.zap_info_cache
-    @info = RemoteResourceInfo.dummy_record
-    @info
+    # The ping struct is a subset of info, so return info if cached
+    return @info if @info # caching within Rails action
+    @info = self.info_cached?(:info) # caching between Rails actions, in meta data store
+    return @info if @info
+    if what == :ping # see if we cached just the ping info
+      return @ping if @ping # caching within Rails action
+      @ping = self.info_cached?(:ping) # caching between Rails actions, in meta data store
+      return @ping if @ping
+    end
+    running = self.is_alive?(what) # this updates @info or @ping as a side-effect
+    if running
+      if what == :info
+        self.meta[:info_cache]             = @info
+        self.meta[:info_cache_last_update] = Time.now.utc
+        return @info
+      else
+        self.meta[:ping_cache]             = @ping
+        self.meta[:ping_cache_last_update] = Time.now.utc
+        return @ping
+      end
+    end
+    self.zap_info_cache(what)
+    dummy = RemoteResourceInfo.dummy_record
+    @info = dummy if what == :info
+    @ping = dummy if what == :ping
+    return what == :info ? @info : @ping
   end
 
   # Returns the info record for the resource if it is cached and
   # recent enough (less than a minute old), returns nil otherwise.
-  def info_cached?
-    last_meta_cached = self.meta[:info_cache_last_update] || 1.year.ago
+  def info_cached?(what = :info)
+    date_key = "#{what}_cache_last_update".to_sym
+    info_key = "#{what}_cache".to_sym
+    last_meta_cached = self.meta[date_key] || 1.year.ago
     if last_meta_cached > 1.minute.ago
-      info = self.meta[:info_cache] # caching between Rails actions
+      info = self.meta[info_key] # caching between Rails actions
       if info
-        @info = RemoteResourceInfo.new(info) # caching within a single Rails action
-        return @info
+        rri = RemoteResourceInfo.new(info) # caching within a single Rails action
+        @info = rri if what == :info
+        @ping = rri if what == :ping
+        return what == :info ? @info : @ping
       end
     end
     nil
   end
 
-  def zap_info_cache #:nodoc:
-    @info = nil
-    self.meta[:info_cache_last_update] = nil # zaps cache in DB
+  def zap_info_cache(what = :info) #:nodoc:
+    @info = nil if what == :info
+    @ping = nil if what == :ping
+    info_key = "#{what}_cache".to_sym
+    self.meta[info_key] = nil # zaps cache in DB
   end
 
 

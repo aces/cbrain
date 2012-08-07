@@ -23,9 +23,14 @@
 # This class contains methods invoked at boot time for
 # the Portal to perform essential validations of the state of
 # the system.
-class PortalSystemChecks < CbrainChecker
+class PortalSystemChecks < CbrainChecker #:nodoc:
   
   Revision_info=CbrainFileRevision[__FILE__]
+
+  def self.puts(*args) #:nodoc:
+    Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
+    Kernel.puts(*args)
+  end
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations

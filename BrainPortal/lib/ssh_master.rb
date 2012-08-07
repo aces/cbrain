@@ -83,6 +83,7 @@ class SshMaster
   # Advanced options for instances of Masters
   attr_accessor :debug    # if true, turn on verbose logging of subprocess tracking stuff
   attr_accessor :no_diag  # if true, no .oer files if created for diagnostics or logging
+  attr_reader   :nomaster # returns true if the SshMaster object was created with option :nomaster
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
@@ -366,7 +367,7 @@ class SshMaster
   # the master SSH.
   def stop
     self.properly_registered?
-    return true  if @nomaster # when no a master, stop means nothing
+    return true  if @nomaster # when not a master, stop means nothing
     return false unless self.read_pidfile
 
     debugTrace("STOP: #{$$} Killing master for #{@key}.")

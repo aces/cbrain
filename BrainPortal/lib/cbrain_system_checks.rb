@@ -21,9 +21,14 @@
 #
 
 # Runtime system checks common to both Portal and Bourreau
-class CbrainSystemChecks < CbrainChecker
+class CbrainSystemChecks < CbrainChecker #:nodoc:
   
   Revision_info=CbrainFileRevision[__FILE__]
+
+  def self.puts(*args) #:nodoc:
+    Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
+    Kernel.puts(*args)
+  end
 
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
