@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# This module contains utility methods in order to set a date restriction.
 module DateRangeRestriction
 
   Revision_info=CbrainFileRevision[__FILE__]
