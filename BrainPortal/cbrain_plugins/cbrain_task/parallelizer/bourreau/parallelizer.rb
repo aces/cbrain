@@ -26,7 +26,7 @@
 # by tasks to parallelize their own subtasks.
 class CbrainTask::Parallelizer < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   after_status_transition '*', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
 

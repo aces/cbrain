@@ -23,7 +23,7 @@
 # Model for a generic audio file.
 class AudioFile < SingleFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.pretty_type #:nodoc:
     "Audio File"

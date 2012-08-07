@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Controller helpers for handling authentication and permissions.
 module PermissionHelpers
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.class_eval do

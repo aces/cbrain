@@ -23,7 +23,7 @@
 #Helper methods for Userfile views.
 module UserfilesHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # For display of userfile names, including: 
   # type icon (collection or file), parentage icon,

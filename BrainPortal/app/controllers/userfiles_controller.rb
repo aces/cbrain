@@ -25,7 +25,7 @@ require 'fileutils'
 #RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available
 

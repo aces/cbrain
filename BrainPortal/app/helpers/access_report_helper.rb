@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# View helpers for creating access reports.
 module AccessReportHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Produces a pretty times symbol (used to show unavailable ressources)
   def times_icon(color="red")

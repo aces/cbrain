@@ -23,7 +23,7 @@
 # Controller for managing ToolConfig objects.
 class ToolConfigsController < ApplicationController
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
   before_filter :admin_role_required

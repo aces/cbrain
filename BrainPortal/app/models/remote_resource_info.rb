@@ -34,7 +34,7 @@
 # Rails applications.
 class RemoteResourceInfo < RestrictedHash
 
-   Revision_info=CbrainFileRevision[__FILE__]
+   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
    # List of allowed keys in the hash
    self.allowed_keys=[

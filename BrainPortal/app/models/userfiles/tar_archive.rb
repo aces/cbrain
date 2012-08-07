@@ -23,7 +23,7 @@
 # Model for archive files in .tar format.
 class TarArchive < SingleFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :tar_archive
   

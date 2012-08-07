@@ -23,7 +23,7 @@
 # Model for Matlab scripts.
 class MatlabScript < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.file_name_pattern #:nodoc:
     /\.m$/i

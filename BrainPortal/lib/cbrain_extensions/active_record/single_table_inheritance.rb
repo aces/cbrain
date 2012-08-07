@@ -20,16 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# ActiveRecord extensions to handle loading and saving STI models.
-# Mainly to load and create objects so they are of their actual STI
-# +type+, and to get around automatic appending of type to DB queries.
 module CBRAINExtensions
   module ActiveRecord
+    
+    # ActiveRecord extensions to handle loading and saving STI models.
+    # Mainly to load and create objects so they are of their actual STI
+    # +type+, and to get around automatic appending of type to DB queries.
     module SingleTableInheritance
       
-      Revision_info=CbrainFileRevision[__FILE__]
+      Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
-      def self.included(includer)
+      def self.included(includer) #:nodoc:
         includer.class_eval do
           extend ClassMethods
           

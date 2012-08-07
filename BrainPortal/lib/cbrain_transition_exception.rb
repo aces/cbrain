@@ -25,7 +25,7 @@
 # used on CbrainTask objects.
 class CbrainTransitionException < StandardError
 
-   Revision_info=CbrainFileRevision[__FILE__]
+   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
    attr_accessor :original_object, :from_state, :to_state, :found_state
 

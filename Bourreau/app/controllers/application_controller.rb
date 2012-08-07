@@ -25,7 +25,7 @@
 
 class ApplicationController < ActionController::Base #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   helper :all # include all helpers, all the time  
 

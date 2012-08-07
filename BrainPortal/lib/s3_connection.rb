@@ -25,7 +25,7 @@ require 'aws/s3'
 # A handler connections to Amazon's S3 service.
 class S3Connection
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include AWS::S3
 

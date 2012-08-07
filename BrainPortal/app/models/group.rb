@@ -38,7 +38,7 @@
 #                    have their group set to their owner's SystemGroup.
 class Group < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 

@@ -23,7 +23,7 @@
 # Model for graph files in .dot format.
 class DotGraphFile < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.pretty_type #:nodoc:
     "DOT graph file"

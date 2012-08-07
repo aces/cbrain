@@ -23,7 +23,7 @@
 # This model represents a BrainPortal RAILS app.
 class BrainPortal < RemoteResource
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   
   def self.pretty_type #:nodoc:

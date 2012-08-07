@@ -23,7 +23,7 @@
 #Helper methods for User views
 module UsersHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   #View helper to create a valid array for a role selection box on the
   #user create and edit pages.

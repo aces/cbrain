@@ -23,7 +23,7 @@
 # Model for a bash script.
 class BashSourceFile < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.pretty_type #:nodoc:
     "Bash script"

@@ -66,7 +66,7 @@ require 'fileutils'
 #Instructions in the files themselves will indicate how to integrate your task into the system.
 class ClusterTask < CbrainTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include NumericalSubdirTree
 

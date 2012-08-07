@@ -181,7 +181,7 @@
 # 
 module ActRecLog
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   ADDLOG_DEFAULT_ATTRIBUTES_LOGGING = %w(
        name type time_zone online

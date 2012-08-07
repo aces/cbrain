@@ -23,7 +23,7 @@
 # Helpers for resource links.
 module ResourceLinkHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Creates a link to the show page of a +userfile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is

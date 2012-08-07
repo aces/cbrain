@@ -20,12 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-module JavascriptOptionSetup
+module JavascriptOptionSetup #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   private
   
+  # Set up options for rich ui or ajax elements.
   def options_setup(element_class, options)
     options[:class] ||= ""
     options[:class] +=  " #{element_class}"

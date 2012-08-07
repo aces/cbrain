@@ -23,7 +23,7 @@
 # Model for TSV file.
 class TsvFile < CSVFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.pretty_type #:nodoc:
     "TSV File"

@@ -33,7 +33,7 @@
 #[*tags*] A serialized hash of tags to filter on.
 class UserfileCustomFilter < CustomFilter
                           
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   #See CustomFilter
   def filter_scope(scope)

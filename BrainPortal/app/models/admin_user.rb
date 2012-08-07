@@ -20,9 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model representing a user with adminstrative rights.
+# Admin users are meant to have access to all parts of the system.
 class AdminUser < User
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def available_tools  #:nodoc:
     Tool.scoped

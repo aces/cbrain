@@ -30,7 +30,7 @@
 # and more efficient CbrainLocalDataProvider will be used.
 class CbrainSmartDataProvider < DataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include SmartDataProviderInterface
 

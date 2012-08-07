@@ -30,7 +30,7 @@
 #* User
 class Feedback < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   belongs_to :user
   validates_presence_of     :details, :summary

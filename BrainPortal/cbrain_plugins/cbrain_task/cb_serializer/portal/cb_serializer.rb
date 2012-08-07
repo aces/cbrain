@@ -23,7 +23,7 @@
 # A subclass of PortalTask to serialize other tasks.
 class CbrainTask::CbSerializer < PortalTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.properties #:nodoc:
     { :no_presets => true }

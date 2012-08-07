@@ -32,7 +32,7 @@
 #[*bourreau_id*] The bourreau_id of the bourreau to filter against.
 class TaskCustomFilter < CustomFilter
                           
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   #See CustomFilter
   def filter_scope(scope)

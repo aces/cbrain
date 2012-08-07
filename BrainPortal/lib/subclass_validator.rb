@@ -22,7 +22,7 @@
 
 class SubclassValidator < ActiveModel::EachValidator #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def validate_each(object, attribute, value)    
     superklass = object.class.sti_root_class 

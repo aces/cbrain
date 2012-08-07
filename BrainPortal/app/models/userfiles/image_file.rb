@@ -23,7 +23,7 @@
 # Generic model for picture files.
 class ImageFile < SingleFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   has_viewer :partial  => "image_file", :if  => :is_locally_synced?
   

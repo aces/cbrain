@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+#Helpers for the CBRAIN web service API.
 module ApiHelpers
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
@@ -31,7 +32,7 @@ module ApiHelpers
     end
   end
   
-  #Before filter that checks that blocks certain actions
+  #Before filter that blocks certain actions
   #from the API
   def api_validity_check
     if request.format && request.format.to_sym == :xml

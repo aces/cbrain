@@ -23,7 +23,7 @@
 # Basic view helpers. Mainly text manipulation and icons.
 module BasicHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   #Sets the text to be displayed in the title bar when a given view is rendered.
   def title(page_title)

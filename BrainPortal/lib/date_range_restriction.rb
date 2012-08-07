@@ -23,7 +23,7 @@
 # This module contains utility methods in order to set a date restriction.
 module DateRangeRestriction
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Checks consistence of values for filtration by date.
   #The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.

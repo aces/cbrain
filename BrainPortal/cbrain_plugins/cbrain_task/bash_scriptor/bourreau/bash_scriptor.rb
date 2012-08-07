@@ -28,7 +28,7 @@
 # A subclass of ClusterTask to run BashScriptor.
 class CbrainTask::BashScriptor < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include RestartableTask
   include RecoverableTask

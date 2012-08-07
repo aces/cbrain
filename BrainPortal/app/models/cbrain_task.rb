@@ -29,7 +29,7 @@
 #
 class CbrainTask < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include ResourceAccess
 

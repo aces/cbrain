@@ -23,7 +23,7 @@
 # Generic model for text files.
 class TextFile < SingleFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   has_viewer :partial  => "text_file", :if  => :is_locally_synced?
   

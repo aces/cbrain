@@ -23,7 +23,7 @@
 #Controller for the entry point into the system.
 class PortalController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include DateRangeRestriction
 

@@ -28,7 +28,7 @@ module CBRAINExtensions
     # inheritance models as 'abstract'.
     module AbstractModelMethods
       
-      Revision_info=CbrainFileRevision[__FILE__]
+      Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
       def self.included(includer) #:nodoc:
         includer.class_eval do

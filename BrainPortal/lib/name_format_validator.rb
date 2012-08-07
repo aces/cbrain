@@ -22,7 +22,7 @@
 
 class NameFormatValidator < ActiveModel::EachValidator #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def validate_each(object, attribute, value)
     unless value.blank? || value =~ /^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/

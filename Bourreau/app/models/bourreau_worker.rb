@@ -28,7 +28,7 @@
 #This model is not an ActiveRecord class.
 class BourreauWorker < Worker
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Tasks that are considered actually active (not necessarily handled by this worker)
   ActiveTasks = [ 'Setting Up', 'Queued', 'On CPU',    # 'New' must NOT be here!

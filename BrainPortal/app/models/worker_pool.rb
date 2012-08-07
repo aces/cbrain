@@ -38,7 +38,7 @@
 # Original author: Anton Zoubarev
 class WorkerPool
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # The array of workers in the pool.
   attr_accessor :workers #TODO: read only?

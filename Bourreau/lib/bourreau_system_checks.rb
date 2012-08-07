@@ -24,7 +24,7 @@ require 'socket'
 
 class BourreauSystemChecks < CbrainChecker #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.puts(*args) #:nodoc:
     Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil

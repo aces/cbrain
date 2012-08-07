@@ -23,7 +23,7 @@
 #RESTful controller for the Group resource.
 class InvitationsController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
 

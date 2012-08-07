@@ -23,7 +23,7 @@
 # Model for text file containing YAML structures.
 class YAMLFile < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.file_name_pattern #:nodoc:
     /\.yml$/i

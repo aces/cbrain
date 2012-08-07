@@ -23,7 +23,7 @@
 # Model for archives of CBRAIN task work directories.
 class TaskWorkdirArchive < TarArchive
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :task_workdir_archive
   

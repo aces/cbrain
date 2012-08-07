@@ -23,7 +23,7 @@
 # CBRAIN Internal Task Serializer
 class CbrainTask::CbSerializer < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   after_status_transition '*', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
 

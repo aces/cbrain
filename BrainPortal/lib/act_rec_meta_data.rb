@@ -74,7 +74,7 @@
 #
 module ActRecMetaData
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:

@@ -48,7 +48,7 @@ end
 
 class String
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Given a revision info string such as
   #

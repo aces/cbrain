@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# View helpers for creating ajax widgets.
 module AjaxWidgetHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   include JavascriptOptionSetup
   
