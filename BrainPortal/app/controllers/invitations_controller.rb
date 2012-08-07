@@ -28,7 +28,7 @@ class InvitationsController < ApplicationController
   before_filter :login_required
 
   #Create an invitation
-  def new
+  def new #:nodoc:
     @group = Group.find(params[:group_id])
         
     unless @group.can_be_edited_by?(current_user)

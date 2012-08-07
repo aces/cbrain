@@ -329,7 +329,9 @@ class BourreauxController < ApplicationController
     end
   end
 
-  def rr_disk_usage #:nodoc:
+  # Define disk usage of remote ressource, 
+  # with date filtration if wanted.
+  def rr_disk_usage
     @providers = DataProvider.find_all_accessible_by_user(current_user).all
     date_filtration = params[:date_range] || {}
 
@@ -382,7 +384,7 @@ class BourreauxController < ApplicationController
   end
 
   # Provides the interface to trigger cache cleanup operations
-  def cleanup_caches #:nodoc:
+  def cleanup_caches
     flash[:notice] ||= ""
     
     # First param is cleanup_older, which is the number
@@ -460,12 +462,15 @@ class BourreauxController < ApplicationController
     redirect_to :action => :rr_disk_usage, :date_range => date_filtration
     
   end
-
-  def rr_access #:nodoc:
+  
+  # Define remote ressource and users accessible/available by
+  # the current user.
+  def rr_access
     @remote_r = RemoteResource.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
     @users    = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
 
+  # Define which remote resource can acces which data provider.
   def rr_access_dp
     @rrs = RemoteResource.find_all_accessible_by_user(current_user).all.sort do |a,b|
            (b.online?.to_s <=> a.online?.to_s).nonzero? ||

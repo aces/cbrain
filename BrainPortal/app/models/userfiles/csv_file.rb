@@ -22,7 +22,7 @@
 
 require 'csv'
 
-
+# Model for CSV file.
 class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
