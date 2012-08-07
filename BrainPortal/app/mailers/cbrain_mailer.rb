@@ -23,7 +23,7 @@
 #ActionMailer subclass for sending system e-mails.
 class CbrainMailer < ActionMailer::Base
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Send a registration confirmation to new users.
   def registration_confirmation(user, plain_password, no_password_reset_needed = false)

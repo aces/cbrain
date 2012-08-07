@@ -71,7 +71,7 @@ require 'sys/proctable'
 
 class Worker
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include Sys
   include Log4r

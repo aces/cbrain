@@ -23,7 +23,7 @@
 # PortalTask model BashScriptor
 class CbrainTask::BashScriptor < PortalTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.

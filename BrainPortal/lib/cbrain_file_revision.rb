@@ -31,7 +31,7 @@
 # require programmers to add this at the beginning of
 # their classes:
 #
-#   Revision_info=CbrainFileRevision[__FILE__]
+#   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 #
 # This initalize the constant to a handler object of
 # class CbrainFileRevision which records the file path
@@ -51,7 +51,7 @@
 #
 #   # At the top of a class:
 #   class Abcd
-#     Revision_info=CbrainFileRevision[__FILE__]
+#     Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 #   end
 #
 #   # Then later on, all these calls are similar:

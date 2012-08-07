@@ -41,7 +41,7 @@
 # shuffled back and forth is so polymorphic.
 class Control < ActiveResource::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
 end
 

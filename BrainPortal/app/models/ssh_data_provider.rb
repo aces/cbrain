@@ -37,7 +37,7 @@ require 'net/sftp'
 #
 class SshDataProvider < DataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?

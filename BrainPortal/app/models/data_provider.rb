@@ -202,7 +202,7 @@ require 'digest/md5'
 # * Group
 class DataProvider < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include ResourceAccess
   include NumericalSubdirTree

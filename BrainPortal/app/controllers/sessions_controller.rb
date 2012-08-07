@@ -27,7 +27,7 @@
 # Modified by: Tarek Sherif
 class SessionsController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   before_filter :no_logged_in_user, :only => [:new, :create]
   

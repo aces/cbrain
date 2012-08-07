@@ -23,7 +23,7 @@
 #Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :except => [:disk_usage, :cleanup]
 

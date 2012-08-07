@@ -20,9 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Model representing a user with site manager rights.
+# Site managers are meant to have access to all resources relating to
+# the site they manage.
 class SiteManager < User
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   validates_presence_of :site_id, :message => "must be set for site managers"
   

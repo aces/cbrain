@@ -24,7 +24,7 @@ require 'socket'
 
 class BourreauSystemChecks < CbrainChecker
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.a050_ensure_proper_cluster_management_layer_is_loaded
 

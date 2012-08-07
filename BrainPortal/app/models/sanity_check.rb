@@ -25,7 +25,7 @@
 # and track whether or not it was applied.
 class SanityCheck < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :revision_info
   

@@ -24,7 +24,7 @@
 # reports; it is slowly being phased out.
 class ModelsReport
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Creates and returns a table with statistics for Remote Resource caches.
   #

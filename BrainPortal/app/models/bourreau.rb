@@ -23,7 +23,7 @@
 # This model represents a remote execution server.
 class Bourreau < RemoteResource
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   has_many :cbrain_tasks, :dependent => :restrict
   has_many :tool_configs, :dependent => :destroy

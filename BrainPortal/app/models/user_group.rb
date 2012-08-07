@@ -23,7 +23,7 @@
 # This model represents the group specific to a user.
 class UserGroup < SystemGroup
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Returns a hash table with labels for the UserGroups
   # contained in argument +groups+ ; the key is the group ID,

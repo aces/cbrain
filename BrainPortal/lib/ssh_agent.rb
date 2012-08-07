@@ -98,7 +98,7 @@ class SshAgent
 
   #include Sys  # for ProcTable  TODO
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   CONFIG = {
     :agent_bashrc_dir => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp" : "/tmp",

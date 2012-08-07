@@ -30,7 +30,7 @@ require 'authenticated_system'
 # session.
 class ApplicationController < ActionController::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include AuthenticatedSystem
   include BasicFilterHelpers

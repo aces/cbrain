@@ -71,7 +71,7 @@ class SshMaster
 
   include Sys  # for ProcTable
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   CONTROL_SOCKET_DIR_1 = (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long

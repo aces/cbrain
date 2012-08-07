@@ -25,7 +25,7 @@
 # the system.
 class PortalSystemChecks < CbrainChecker
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations

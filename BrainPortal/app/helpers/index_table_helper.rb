@@ -119,7 +119,7 @@
 
 module IndexTableHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Class that actually builds the table.
   class TableBuilder

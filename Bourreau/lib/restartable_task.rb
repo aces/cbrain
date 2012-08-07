@@ -24,7 +24,7 @@
 # subclasses that are naturally restartable.
 module RestartableTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Just returns true; it's the responsability
   # of the CbrainTask developer to write the

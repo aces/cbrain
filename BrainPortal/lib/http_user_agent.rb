@@ -48,7 +48,7 @@
 #
 class HttpUserAgent
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   attr_accessor :browser_name, :browser_version,
                 :os_name, :os_version, :os_arch

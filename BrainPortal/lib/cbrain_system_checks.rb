@@ -23,7 +23,7 @@
 # Runtime system checks common to both Portal and Bourreau
 class CbrainSystemChecks < CbrainChecker
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.

@@ -23,7 +23,7 @@
 # ActiveRecord-specific CBRAIN exceptions
 class CbrainDeleteRestrictionError < ActiveRecord::DeleteRestrictionError
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   attr_reader :message
   

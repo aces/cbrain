@@ -23,7 +23,7 @@
 #Helper methods for resource select boxes.
 module SelectBoxHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   #Create a standard user select box for selecting a user id for a form.
   #The +parameter_name+ argument will be the name of the parameter 

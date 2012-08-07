@@ -41,7 +41,7 @@
 # For the list of API methods, see the DataProvider superclass.
 class VaultLocalDataProvider < LocalDataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def cache_prepare(userfile) #:nodoc:
     SyncStatus.ready_to_modify_cache(userfile) do

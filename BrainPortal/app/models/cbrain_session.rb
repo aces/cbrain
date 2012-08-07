@@ -39,7 +39,7 @@
 #*Note*: this is not a database-backed model.
 class CbrainSession
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def initialize(session, params, sess_model) #:nodoc:
     @session       = session # rails session

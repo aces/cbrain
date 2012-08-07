@@ -23,7 +23,7 @@
 # Model for MP3 audio files.
 class Mp3AudioFile < AudioFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :partial => :html5_mp3_audio, :if => :is_locally_synced?
   

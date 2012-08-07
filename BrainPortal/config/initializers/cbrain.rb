@@ -29,7 +29,7 @@ YAML::ENGINE.yamler = 'psych'
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   public
 

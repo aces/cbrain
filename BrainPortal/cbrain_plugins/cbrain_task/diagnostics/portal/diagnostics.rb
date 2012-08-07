@@ -23,7 +23,7 @@
 # A subclass of PortalTask to launch diagnostics.
 class CbrainTask::Diagnostics < PortalTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validate :validate_input_fields
 

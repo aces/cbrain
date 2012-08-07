@@ -27,7 +27,7 @@
 # Original author: Pierre Rioux
 class Scir
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Returns the full revision info string as created by SVN;
   # the value returned is for the current class or subclass.

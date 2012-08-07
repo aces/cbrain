@@ -6,7 +6,7 @@
 # A subclass of ClusterTask to run <%= class_name %>.
 class <%= "CbrainTask::#{class_name}" %> < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   ################################################################
   # For full documentation on how to write CbrainTasks,

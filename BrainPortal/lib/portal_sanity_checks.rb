@@ -40,7 +40,7 @@ require 'socket'
 # This rake task should be run before starting cbrain for the first time. 
 class PortalSanityChecks < CbrainChecker
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Checks to see if the validation was run since last change
   def self.done?

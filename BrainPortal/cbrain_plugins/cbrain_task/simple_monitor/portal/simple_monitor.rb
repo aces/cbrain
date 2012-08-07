@@ -24,7 +24,7 @@
 # Can be use to track other tasks through prerequisites.
 class CbrainTask::SimpleMonitor < PortalTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
 end
 

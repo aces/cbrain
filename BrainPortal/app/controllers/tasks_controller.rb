@@ -23,7 +23,7 @@
 #Restful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available
 

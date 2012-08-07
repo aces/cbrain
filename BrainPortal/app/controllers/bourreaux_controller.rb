@@ -28,7 +28,7 @@ class BourreauxController < ApplicationController
 
   include DateRangeRestriction
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   api_available :except  => :row_data
 

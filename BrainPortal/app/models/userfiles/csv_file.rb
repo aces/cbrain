@@ -25,7 +25,7 @@ require 'csv'
 
 class CSVFile < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :partial  => "csv_file", :name => 'CSV Viewer', :if  => :is_locally_synced?
 

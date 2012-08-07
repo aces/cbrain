@@ -26,7 +26,7 @@
 # Original author: Pierre Rioux
 class ScirMoab < Scir
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   class Session < Scir::Session #:nodoc:
 

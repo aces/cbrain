@@ -23,7 +23,7 @@
 # RESTful controller for managing Messages.
 class MessagesController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
   before_filter :manager_role_required, :only  => :create

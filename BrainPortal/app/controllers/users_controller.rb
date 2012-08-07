@@ -23,7 +23,7 @@
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :only => [ :create, :show ]
 

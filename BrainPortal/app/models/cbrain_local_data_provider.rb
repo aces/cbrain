@@ -45,7 +45,7 @@ require 'fileutils'
 #
 class CbrainLocalDataProvider < LocalDataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def cache_prepare(userfile) #:nodoc:
     SyncStatus.ready_to_modify_cache(userfile) do
