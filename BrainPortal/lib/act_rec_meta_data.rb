@@ -225,7 +225,7 @@ module ActRecMetaData
       self.md_cache     = meta_data_records.index_by { |ar| ar.meta_key }
     end
 
-    def set_attribute(mykey,myval) #:nodoc
+    def set_attribute(mykey,myval) #:nodoc:
       return delete_attribute(mykey) if myval.nil?
       mykey = mykey.to_s
       md = self.md_cache[mykey] || MetaDataStore.new( :ar_id => self.ar_id, :ar_table_name => self.ar_table_name, :meta_key => mykey )
@@ -237,7 +237,7 @@ module ActRecMetaData
       myval
     end
 
-    def get_attribute(mykey) #:nodoc
+    def get_attribute(mykey) #:nodoc:
       mykey = mykey.to_s
       md = md_cache[mykey]
       return nil unless md

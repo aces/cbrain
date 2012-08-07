@@ -128,7 +128,7 @@ class SessionsController < ApplicationController
 
   end
   
-  def show
+  def show #:nodoc:
     if current_user
       render :nothing  => true, :status  => 200
     else

@@ -28,7 +28,7 @@ class TagsController < ApplicationController
   before_filter :login_required
   layout false
 
-  def new
+  def new #:nodoc:
     @tag = Tag.new(:group_id => current_user.own_group.id)
   end
 
