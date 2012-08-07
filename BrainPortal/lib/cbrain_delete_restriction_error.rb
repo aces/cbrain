@@ -27,7 +27,7 @@ class CbrainDeleteRestrictionError < ActiveRecord::DeleteRestrictionError
 
   attr_reader :message
   
-  def initialize(message)
+  def initialize(message) #:nodoc:
     @message=message
   end
 end

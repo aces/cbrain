@@ -24,7 +24,7 @@ module ExceptionHelpers
 
   Revision_info=CbrainFileRevision[__FILE__]
 
-  def self.included(includer)
+  def self.included(includer) #:nodoc:
     includer.class_eval do 
       rescue_from Exception,                       :with => :generic_exception
       rescue_from ActiveRecord::RecordNotFound,    :with => :record_not_found
