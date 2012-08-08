@@ -233,17 +233,35 @@ class CBRAIN
 
   # Runs a block after having unlocked the SSH agent for the whole CBRAIN system.
   # If no block is given, unlocks the agent and returns true.
-  def self.with_unlocked_agent
+  def self.with_unlocked_agent(options = {})
 
     agent = SshAgent.find_current # cannot use find_by_name, because it has a name only on portal side
 
     if agent
+      @_rr_name   ||= RemoteResource.current_resource.name rescue "UnknownServer"
       admin         = User.admin
       passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
       passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
 
       agent.unlock(passphrase)
       passphrase_md.touch
+
+      mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
+      mytrace  = mytraces[options[:caller_level] || 0]
+      if mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
+        basename,linenum,method = Regexp.last_match[1,3]
+        pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
+        puts_red "Unlocking agent: #{pretty_context}" if ENV['CBRAIN_DEBUG_TRACES'].present?
+        if @_log_md.blank?
+          admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
+          @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
+        end
+        MetaDataStore.transaction do
+          @_log_md.lock!
+          @_log_md.meta_value += "#{pretty_context}\n"
+          @_log_md.save
+        end
+      end
     end
 
     block_given? ? yield : true

@@ -39,6 +39,9 @@ class PortalAgentLocker < Worker
     @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
     @passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
 
+    log            = admin.meta[:ssh_agent_unlock_history] ||= ""
+    @log_md        = admin.meta.md_for_key(:ssh_agent_unlock_history)
+
     rr = RemoteResource.current_resource
     worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
 
@@ -68,6 +71,19 @@ class PortalAgentLocker < Worker
       return 
     end
 
+    log = ""
+    MetaDataStore.transaction do
+      @log_md.reload
+      @log_md.lock!
+      log = @log_md.meta_value || ""
+      @log_md.meta_value = ""
+      @log_md.save
+    end
+
+    log.split(/\n/).each do |l|
+      worker_log.info "Unlocked by: #{l}"
+    end
+
     contrib = @time_unlocked.blank? ? @half_int : @interval # seconds unlocked contributed by latest cycle
     @cumul_unlocked += contrib
     @sess_unlocked  += contrib
@@ -90,6 +106,8 @@ class PortalAgentLocker < Worker
     @agent.lock(@passphrase)
     worker_log.info "Agent relocked. Agent was unlocked for #{@sess_unlocked} s."
     self.log_statistics
+    @time_unlocked = nil
+    @sess_unlocked = 0
 
   rescue => ex
 

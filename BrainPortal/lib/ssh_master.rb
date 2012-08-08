@@ -380,15 +380,25 @@ class SshMaster
     true
   end
 
+  # Returns true if the master SEEMS to be alive;
+  # this check is performed by checking that the
+  # socket file exists and a process is running,
+  # so it's not garanteed that the other end of
+  # the connection is responding.
+  def quick_is_alive?
+    self.properly_registered?
+    return true if @nomaster # when no master actually exists, we assume all's OK.
+
+    socket = self.control_path
+    return false unless File.exist?(socket) && File.socket?(socket)
+    return false unless self.read_pidfile
+    true
+  end
+
   # Check to see if the master SSH connection is alive and well.
   def is_alive?
 
-    return true if @nomaster
-    self.properly_registered?
-
-    socket = self.control_path
-    return false unless File.exist?(socket)
-    return false unless self.read_pidfile
+    return false unless self.quick_is_alive?
     
     shared_options = self.ssh_shared_options
     sshcmd = "ssh -q -x -n #{shared_options} " +

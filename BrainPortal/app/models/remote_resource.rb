@@ -310,6 +310,7 @@ class RemoteResource < ActiveRecord::Base
     end
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
+    CBRAIN.with_unlocked_agent if ! master.quick_is_alive? # unlock the agent so we can establish the tunnel
     return false unless master.start("#{self.class.to_s}_#{self.name}")
     true
   end
@@ -318,12 +319,12 @@ class RemoteResource < ActiveRecord::Base
   # including any present tunnels. This can seriously affect
   # the remote resource if DB tunnelling is in effect, as it
   # will kill its DB connection! Otherwise, the remote
-  # resource is not affected.
+  # resource may not be affected.
   def stop_tunnels
     return false if self.id == CBRAIN::SelfRemoteResourceId
     return false unless self.has_ssh_control_info?
     master = self.ssh_master
-    master.stop if master
+    master.destroy if master
     true
   end
 

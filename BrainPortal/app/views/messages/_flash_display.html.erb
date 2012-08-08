@@ -28,5 +28,5 @@
   # type : either 'notice' or 'error'
 %>
 
-<%= content_tag :div, (h(msg).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{type}" %>
+<%= content_tag :div, (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{type}" %>
 

@@ -167,9 +167,7 @@ class Bourreau < RemoteResource
     end
 
     stop_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
-    confirm=""
-    self.read_from_remote_shell_command(stop_command) {|io| confirm = io.read}   
-    self.stop_tunnels
+    confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}   
  
     return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl' 
     return false

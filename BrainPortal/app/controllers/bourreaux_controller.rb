@@ -299,23 +299,33 @@ class BourreauxController < ApplicationController
     cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 
+    flash[:notice] = flash[:error] = ""
+
     begin
       res = @bourreau.send_command_stop_workers
       raise "Failed command to stop workers" unless res && res[:command_execution_status] == "OK" # to trigger rescue
       @bourreau.addlog("Workers stopped by user #{current_user.login}.")
-      flash[:notice] = "Workers on Execution Server '#{@bourreau.name}' stopped."
+      flash[:notice] += "Workers on Execution Server '#{@bourreau.name}' stopped."
     rescue
-      flash[:notice] = "It seems we couldn't stop the workers on Execution Server '#{@bourreau.name}'. They'll likely die by themselves."
+      flash[:error]  += "It seems we couldn't stop the workers on Execution Server '#{@bourreau.name}'. They'll likely die by themselves."
     end
 
     @bourreau.online = true # to trick layers below into doing the 'stop' operation
-    success = @bourreau.stop
-    @bourreau.addlog("Rails application stopped.") if success
+    boustop = @bourreau.stop
+    tunstop = @bourreau.stop_tunnels
     @bourreau.online = false
     @bourreau.save
-    flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped. Tunnels stopped." if success
-    flash[:error]   = "Failed to stop tunnels for '#{@bourreau.name}'."                  if ! success
-    
+
+    @bourreau.addlog("Rails application stopped by user #{current_user.login}.")
+
+    if boustop
+      flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped."
+      flash[:notice] += "\nStopped Control SSH connection." if tunstop
+    else
+      flash[:error]  += "\nFailed to stop Rails application for '#{@bourreau.name}'."
+    end
+    flash[:error]  += "\nFailed to stop Control SSH connection." if ! tunstop
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.xml { head :ok  }

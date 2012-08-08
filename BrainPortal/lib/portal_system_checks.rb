@@ -105,10 +105,9 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     if ! File.exists?(cbrain_identity_file)
       puts "C> \t- ERROR: Failed to create identity file '#{cbrain_identity_file}'."
     else
-      ok = CBRAIN.with_unlocked_agent do
-        with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
-          agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
-        end
+      CBRAIN.with_unlocked_agent
+      ok = with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
+        agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
       end
       if ok
         puts "C> \t- Added identity to agent from file: '#{cbrain_identity_file}'."
