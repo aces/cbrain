@@ -88,6 +88,13 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- Scheduling restart for all of them ..."
       allworkers.stop_workers
     end
+
+    # Note: we cannot start the workers here because
+    # the current process will disappear once the HTTP server
+    # forks, and the workers want their parent to keep
+    # existing. A separate 'start_workers' command must
+    # be sent to the control channel explicitely later on.
+
   end
 
 
@@ -282,6 +289,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     end
 
   end
+
+
 
   def self.z000_ensure_we_have_a_forwarded_ssh_agent
 
