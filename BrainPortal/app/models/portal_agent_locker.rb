@@ -83,6 +83,9 @@ class PortalAgentLocker < Worker
     log.split(/\n/).each do |l|
       worker_log.info "Unlocked by: #{l}"
     end
+    if log.blank? && @time_unlocked.blank?
+      worker_log.warn "No reason found for unlocked agent!"
+    end
 
     contrib = @time_unlocked.blank? ? @half_int : @interval # seconds unlocked contributed by latest cycle
     @cumul_unlocked += contrib
