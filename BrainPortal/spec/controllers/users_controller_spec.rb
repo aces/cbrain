@@ -29,6 +29,8 @@ describe UsersController do
   let(:user) {Factory.create(:normal_user)}
   let(:mock_user) {mock_model(User).as_null_object}
   
+  let(:start_page_path) {controller.send :start_page_path}
+  
   context "collection action" do
     
     describe "index" do
@@ -336,6 +338,44 @@ describe UsersController do
       end
     end
     
+    describe "change_password" do
+      context "with admin user" do
+        before(:each) do
+          session[:user_id] = admin.id
+        end
+        it "should show the change password page" do
+          get :change_password, :id => user.id
+          response.status.should == 200
+        end
+      end
+      context "with site manager" do
+        before(:each) do
+          session[:user_id] = site_manager.id
+        end
+        it "should show the change password page if the user belongs to the site" do
+          get :change_password, :id => site_user.id
+          response.status.should == 200
+        end
+        it "should not show the change password page if the user does not belong to the site" do
+          get :change_password, :id => user.id
+          response.should redirect_to(start_page_path)
+        end
+      end
+      context "with normal user" do
+        before(:each) do
+          session[:user_id] = user.id
+        end
+        it "should allow a user to change their own password" do
+          get :change_password, :id => user.id
+          response.status.should == 200
+        end
+        it "should not allow the user to change anyone else's password'" do
+          get :change_password, :id => site_user.id
+          response.should redirect_to(start_page_path)
+        end
+      end
+    end
+    
     describe "update" do
       context "with admin user" do
         before(:each) do
@@ -390,7 +430,7 @@ describe UsersController do
 
         it "should not allow site manager to modify a user that does not belong to the site" do
           put :update, :id => user.id
-          response.should redirect_to("/home")
+          response.should redirect_to(start_page_path)
         end
 
         it "should not allow type to be set to admin" do
@@ -436,7 +476,7 @@ describe UsersController do
 
         it "should not allow another user to be modified" do
           put :update, :id => site_user.id
-          response.should redirect_to("/home")
+          response.should redirect_to(start_page_path)
         end
 
         it "should not allow type to be modified" do
@@ -449,7 +489,7 @@ describe UsersController do
           assigns[:user].site_id.should == user.site_id
         end
 
-        it "should not allow groups to be" do
+        it "should not allow groups to be modified" do
           new_group = Factory.create(:work_group)
           put :update, :id => user.id, :user => {:group_ids => [new_group.id]}
           user.reload
@@ -457,6 +497,23 @@ describe UsersController do
         end
 
       end
+      
+      context "when the update fails" do
+        before(:each) do
+          session[:user_id] = admin.id
+          User.stub!(:find).and_return(double("updated_user", :save_with_logging => false).as_null_object)
+        end
+        
+        it "should redirect to change_password if password change was attempted" do
+          put :update, :id => user.id, :user => {:password => "password"}
+          response.should render_template(:change_password)
+        end
+        it "should redirect to show otherwise" do
+          put :update, :id => user.id, :user => {:full_name => "NAME"}
+          response.should render_template(:show)
+        end
+      end
+      
     end
 
     describe "destroy" do

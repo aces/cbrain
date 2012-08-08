@@ -48,6 +48,7 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :users do
     member do
+      get  'change_password'
       post 'switch'
     end
     collection do

@@ -3,8 +3,9 @@
     object_name    ||= object.class.to_s.underscore.humanize.downcase
     header_message ||= "#{pluralize(object.errors.count, "error")} prohibited this #{object_name} from being saved:"
     message        ||= "There were problems with the following fields:"
+    html_options   ||= {}
   %>
-  <div id="errorExplanation" class="errorExplanation">
+  <div id="errorExplanation" class="errorExplanation" <%= html_options.to_html_attributes.html_safe %>>
     <h2><%= header_message %></h2>
     <p><%= message %></p>
     <ul>

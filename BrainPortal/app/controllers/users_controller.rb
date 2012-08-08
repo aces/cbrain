@@ -28,7 +28,7 @@ class UsersController < ApplicationController
   api_available :only => [ :create, :show ]
 
   before_filter :login_required,        :except => [:request_password, :send_password]  
-  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password]  
+  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]  
   
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'users.full_name'
@@ -137,12 +137,17 @@ class UsersController < ApplicationController
     end
   end
 
+  def change_password
+    @user = User.find(params[:id])
+    cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
+  end
+
   # PUT /users/1
   # PUT /users/1.xml
   def update #:nodoc:
     @user = User.find(params[:id], :include => :groups)
     params[:user] ||= {}
-    cb_error "You don't have permission to view this page.", :redirect => home_path unless edit_permission?(@user)
+    cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
   
     if params[:user][:group_ids]
       system_group_scope = SystemGroup.scoped
@@ -196,7 +201,13 @@ class UsersController < ApplicationController
         format.xml { head :ok }
       else
         @user.reload
-        format.html { render :action => "show" }
+        format.html do
+          if params[:user][:password]
+            render action: "change_password"
+          else
+            render action: "show"
+          end
+        end
         format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
       end
     end
