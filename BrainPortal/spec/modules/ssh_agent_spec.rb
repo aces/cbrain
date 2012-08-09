@@ -306,21 +306,53 @@ describe SshAgent do
 
 
   describe "#lock" do
+
     it "should invoke ssh-add -x" do
       Kernel.should_receive(:system).with("/bin/bash","-c",/ssh-add -x/).and_return true
       agent = SshAgent.new('whatever','/path/to/socket',nil)
       agent.lock('mypassword').should be_true
     end
+
   end
 
 
 
   describe "#unlock" do
+
     it "should invoke ssh-add -X" do
       Kernel.should_receive(:system).with("/bin/bash","-c",/ssh-add -X/).and_return true
       agent = SshAgent.new('whatever','/path/to/socket',nil)
       agent.unlock('mypassword').should be_true
     end
+
+  end
+
+
+
+  describe "#list_keys" do
+
+    it "should raise an exception if ssh-add doesn't output a key" do
+      IO.should_receive(:popen).with(/ssh-add/,anything()).and_return ""
+      agent = SshAgent.new('whatever','/path/to/socket',nil)
+      lambda { agent.list_keys }.should raise_error
+    end
+
+    it "should invoke ssh-add -l by default" do
+      IO.should_receive(:popen).with(/ssh-add -l/,anything()).and_return "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
+      agent = SshAgent.new('whatever','/path/to/socket',nil)
+      res = agent.list_keys
+      res.should be_instance_of(Array)
+      res.size.should == 1
+    end
+
+    it "should invoke ssh-add -L if options[:full] is true" do
+      IO.should_receive(:popen).with(/ssh-add -L/,anything()).and_return "ssh-rsa abcdefabcdefabcdefabcdefacadefabcdefabcdef comment" # the code checks for at list 30 characters.
+      agent = SshAgent.new('whatever','/path/to/socket',nil)
+      res = agent.list_keys(:full => true)
+      res.should be_instance_of(Array)
+      res.size.should == 1
+    end
+
   end
 
 

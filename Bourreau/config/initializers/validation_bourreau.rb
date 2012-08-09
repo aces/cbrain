@@ -51,7 +51,9 @@ else
       puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
     end
     CbrainSystemChecks.check(:all)
-    BourreauSystemChecks.check(:all)
+    BourreauSystemChecks.check([
+      :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
+    ])
   end
 end
 

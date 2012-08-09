@@ -41,9 +41,9 @@ class SshDataProvider < DataProvider
 
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?
-    remote_cmd = "test -d #{self.remote_dir.bash_escape} || echo Fail-Dir 2>&1"
+    remote_cmd = "test -d #{self.remote_dir.bash_escape} && echo OK-Dir 2>&1"
     text = self.remote_bash_this(remote_cmd)
-    return(text.blank? ? true : false)
+    return(text =~ /OK-Dir/ ? true : false)
   rescue
     false
   end
@@ -71,7 +71,7 @@ class SshDataProvider < DataProvider
 
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = unlocked_agent_bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache: rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
@@ -89,7 +89,7 @@ class SshDataProvider < DataProvider
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync = rsync_over_ssh_prefix
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
+    text = unlocked_agent_bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
@@ -150,8 +150,8 @@ class SshDataProvider < DataProvider
   
   def impl_provider_readhandle(userfile, rel_path = ".", &block) #:nodoc:
     full_path = provider_full_path(userfile) + rel_path
+    cb_error "Error: read handle cannot be provided for non-file." unless userfile.is_a?(SingleFile)
     IO.popen("ssh #{ssh_shared_options} cat #{remote_shell_escape(full_path)}","r") do |fh|
-      cb_error "Error: read handle cannot be provided for non-file." if fh.eof?
       yield(fh)
     end
   end
@@ -285,7 +285,7 @@ class SshDataProvider < DataProvider
   #
   #   rsync -e 'ssh_options_here user_host'  :/remote/file  local/file
   def rsync_over_ssh_prefix
-    ssh_opts = self.ssh_shared_options
+    ssh_opts = self.ssh_shared_options(:caller_level => 1)
     ssh      = "ssh -q -x #{ssh_opts}"
     rsync    = "rsync -e #{shell_escape(ssh)}"
     rsync
@@ -294,17 +294,23 @@ class SshDataProvider < DataProvider
   # Returns the necessary options to connect to a master SSH
   # command running in the background (which will be started if
   # necessary).
-  def ssh_shared_options
-    self.master.ssh_shared_options("auto") # ControlMaster=auto
+  def ssh_shared_options(options = {})
+    caller_level = options[:caller_level] || 0
+    self.master(:caller_level => caller_level + 1).ssh_shared_options("auto") # ControlMaster=auto
   end
 
   # Returns the SshMaster object handling the persistent connection to the Provider side.
-  # Addendum, Aug 1st 2012: the connection is no longer persistent, by
+  # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
   # passing the :nomaster=true option to SshMaster when on a Bourreau!
   # This incurs a costs, but increases security.
-  def master
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider",
-      :nomaster => RemoteResource.current_resource.is_a?(Bourreau))
+  def master(options = {})
+    persistent = RemoteResource.current_resource.is_a?(BrainPortal)
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider", :nomaster => ! persistent)
+    # Before starting the SSH master, we must unlock the agent, but only if it's just been created
+    unless persistent && ! @master.quick_is_alive?
+      caller_level = options[:caller_level] || 0
+      CBRAIN.with_unlocked_agent(:caller_level => caller_level + 1) if ! @master.quick_is_alive?
+    end
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end
@@ -313,10 +319,19 @@ class SshDataProvider < DataProvider
   # through the ssh tunnel. stdin is redirected from /dev/null.
   def remote_bash_this(command)
     text = ""
+    CBRAIN.with_unlocked_agent(:caller_level => 1) if self.master.nomaster # not persistent requires unlocking the agent
     self.master.remote_shell_command_reader(command, :stdin => '/dev/null') do |fh|
       text = fh.read
     end
     text
+  end
+
+  # This is identical to bash_this() defined in the DataProvider
+  # base class, except that the global SshAgent setup for CBRAIN
+  # will be unlocked first (if the master is not persistent only!)
+  def unlocked_agent_bash_this(command)
+    CBRAIN.with_unlocked_agent(:caller_level => 1) if self.master.nomaster # not persistent means unlock agent
+    bash_this(command)
   end
 
 end

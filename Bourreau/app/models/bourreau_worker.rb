@@ -433,7 +433,7 @@ class BourreauWorker < Worker
 
   # A CbrainTransitionException can occur just before we try
   # setup_and_submit_job() or post_process(); it's allowed, it means
-  # some other worker has beated us to the punch. So we just ignore it.
+  # some other worker has beaten us to the punch. So we just ignore it.
   rescue CbrainTransitionException => te
     worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}' FOUND='#{te.found_state}'"
     return
