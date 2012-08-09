@@ -20,8 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-module CBRAINExtensions
-  module ActiveRecord
+module CBRAINExtensions #:nodoc:
+  module ActiveRecord #:nodoc:
     
     # ActiveRecord extensions to handle loading and saving STI models.
     # Mainly to load and create objects so they are of their actual STI
