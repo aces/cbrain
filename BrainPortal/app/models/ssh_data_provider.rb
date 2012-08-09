@@ -309,7 +309,7 @@ class SshDataProvider < DataProvider
     # Before starting the SSH master, we must unlock the agent, but only if it's just been created
     unless persistent && ! @master.quick_is_alive?
       caller_level = options[:caller_level] || 0
-      CBRAIN.with_unlocked_agent(:caller_level => caller_level + 1) if ! @master.quick_is_alive?
+      CBRAIN.with_unlocked_agent(:caller_level => caller_level + 1)
     end
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
