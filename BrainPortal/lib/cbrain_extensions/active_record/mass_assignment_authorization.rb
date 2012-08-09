@@ -20,8 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-module CBRAINExtensions
-  module ActiveRecord
+module CBRAINExtensions #:nodoc:
+  module ActiveRecord #:nodoc:
     
     # Allows for the adjustment of mass-assignable attributes on an object by
     # object basis.
