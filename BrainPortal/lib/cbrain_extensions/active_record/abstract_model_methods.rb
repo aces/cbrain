@@ -20,13 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-module CBRAINExtensions
+module CBRAINExtensions #:nodoc:
 
-  module ActiveRecord
+  module ActiveRecord #:nodoc:
 
-    # ActiveRecord extensions to tag some ActiveRecord single table
-    # inheritance models as 'abstract'.
-    module AbstractModelMethods
+    module AbstractModelMethods #:nodoc:
       
       Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
@@ -36,7 +34,9 @@ module CBRAINExtensions
         end
       end
 
-      module ClassMethods #:nodoc:
+      # ActiveRecord extensions to tag some ActiveRecord single table
+      # inheritance models as 'abstract'.
+      module ClassMethods
   
         # Prevent instantiating an object if the class has been flagged
         # as a cbrain_abstract_model .

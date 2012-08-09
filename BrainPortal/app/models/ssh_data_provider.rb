@@ -41,9 +41,9 @@ class SshDataProvider < DataProvider
 
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?
-    remote_cmd = "test -d #{self.remote_dir.bash_escape} || echo Fail-Dir 2>&1"
+    remote_cmd = "test -d #{self.remote_dir.bash_escape} && echo OK-Dir 2>&1"
     text = self.remote_bash_this(remote_cmd)
-    return(text.blank? ? true : false)
+    return(text =~ /OK-Dir/ ? true : false)
   rescue
     false
   end
@@ -306,12 +306,12 @@ class SshDataProvider < DataProvider
   def master(options = {})
     persistent = RemoteResource.current_resource.is_a?(BrainPortal)
     @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider", :nomaster => ! persistent)
-    if persistent
+    # Before starting the SSH master, we must unlock the agent, but only if it's just been created
+    unless persistent && ! @master.quick_is_alive?
       caller_level = options[:caller_level] || 0
-      # Before starting the SSH master, we must unlock the agent, but only if it's just been created
       CBRAIN.with_unlocked_agent(:caller_level => caller_level + 1) if ! @master.quick_is_alive?
-      @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     end
+    @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end
 
