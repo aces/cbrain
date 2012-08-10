@@ -152,6 +152,10 @@ class CbrainTask::Diagnostics < ClusterTask
       echo "====================================================================" 1>&2
       echo ""                                                                     1>&2
 
+      echo "==== CBRAIN Info ===="
+      echo "Execution Server name: #{self.bourreau.try(:name).to_s.bash_escape}"
+      echo ""
+
       echo "==== Host Info ===="
       uname -a
       uptime

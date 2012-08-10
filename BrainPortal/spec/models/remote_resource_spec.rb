@@ -176,7 +176,7 @@ describe RemoteResource do
     end
     it "should stop the tunnels" do
       ssh_master = double("ssh_master")
-      ssh_master.should_receive(:stop)
+      ssh_master.should_receive(:destroy)
       remote_resource.stub!(:ssh_master).and_return(ssh_master)
       remote_resource.stop_tunnels
     end
