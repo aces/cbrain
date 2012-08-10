@@ -303,12 +303,15 @@ class SshDataProvider < DataProvider
   # Returns the SshMaster object handling the persistent connection to the Provider side.
   # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
   # passing the :nomaster=true option to SshMaster when on a Bourreau!
-  # This incurs a costs, but increases security.
+  # This incurs a costs, but increases security. Every access to this method
+  # will also, as a side effect, unlock the global CBRAIN SSH agent.
+  # This will open a 20 seconds window to perform a SSH or SFTP operation
+  # on the connection.
   def master
     persistent = RemoteResource.current_resource.is_a?(BrainPortal)
     @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider", :nomaster => ! persistent)
     # Unlock agent, in preparation for doing stuff on it
-    CBRAIN.with_unlocked_agent(:caller_level => 1) unless persistent && @master.quick_is_alive?
+    CBRAIN.with_unlocked_agent(:caller_level => 1)
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end
