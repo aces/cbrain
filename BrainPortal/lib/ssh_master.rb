@@ -399,6 +399,7 @@ class SshMaster
   def is_alive?
 
     return false unless self.quick_is_alive?
+    return false if     @pid.blank? && ! @nomaster
     
     shared_options = self.ssh_shared_options
     sshcmd = "ssh -q -x -n #{shared_options} " +
@@ -438,7 +439,7 @@ class SshMaster
       debugTrace("Master checking is_alive for #{@key} with alarm: #{alarm_pid}")
       okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
-      return true if okout.index("OK-#{Process.pid}") && ! @pid.blank?
+      return true if okout.index("OK-#{Process.pid}")
       return false
     rescue
       return false
