@@ -45,11 +45,11 @@ describe SshDataProvider do
       provider.should_receive(:remote_bash_this)
       provider.impl_is_alive?
     end
-    it "should return true if the bash command returns nothing" do
-      provider.stub!(:remote_bash_this).and_return("")
+    it "should return true if the bash command returns the expected string" do
+      provider.stub!(:remote_bash_this).and_return("OK-Dir")
       provider.impl_is_alive?.should be_true
     end
-    it "should return false if the bash command returns something" do
+    it "should return false if the bash command returns something other than the expected string" do
       provider.stub!(:remote_bash_this).and_return("ERRROR")
       provider.impl_is_alive?.should be_false
     end
