@@ -56,12 +56,10 @@
         </p>
       <% end %>
 
-      <p>
-        <strong><%= link_to "View Portal Logs", url_for(:action => :portal_log, :hide_rendered => "1") %></strong>
-      </p>
 
       <p>
         <strong>Recent activity:</strong>
+        <%= link_to "(View logs)", url_for(:action => :portal_log, :hide_rendered => "1") %>
       </p>
 
       <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
