@@ -74,6 +74,12 @@ module Kernel
     puts "\e[36m#{message}\e[0m"
   end
   
+  # This acts like 'puts' but also displays timing
+  # statistics since the last time puts_timer was
+  # invoked. If +color+ is set, the message will
+  # be colorized using one of the 'puts_{color}'
+  # methods. If reset is true, the timing information
+  # will be reset to 0.
   def puts_timer(message, colour = nil, reset = false)
     @@__DEBUG_TIMER__ ||= nil
     if reset

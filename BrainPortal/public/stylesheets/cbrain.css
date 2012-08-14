@@ -656,8 +656,15 @@ a {
     line-height: 1.5em;
 }
 
+
+
+/* % #################################################################### */
+/* % Rails Log Viewer */
+/* % #################################################################### */
+
 #log_contents {
-  max-height: 40em;
+  resize: both; /* supported by Safari, Chrome and Firefox */
+  max-height: 100em;
   overflow: auto;
   background-color: black;
   color: white;
@@ -675,6 +682,55 @@ a {
   vertical-align: middle;
   padding-left: 1em;
 }
+
+.log_started {
+  color: #00FFFF; /* cyan */
+  font-weight: bold;
+}
+
+.log_parameters {
+  color: yellow;
+}
+
+.log_processing {
+  color: orange; /* orangey */
+  font-weight: bold;
+}
+
+.log_completed_fast {
+  color: green;
+}
+
+.log_completed_slow {
+  color: yellow;
+}
+
+.log_completed_very_slow {
+  color: red;
+}
+
+.log_completed_atrociously_slow {
+  color: white;
+  background-color: red;
+  font-weight: bold;
+}
+
+.log_user {
+  color: lime;
+}
+
+.log_browser {
+  color: lime;
+}
+
+.log_alternating_1 {
+  color: skyblue;
+}
+
+.log_alternating_2 {
+  color: coral;
+}
+
 
 
 /* % #################################################################### */

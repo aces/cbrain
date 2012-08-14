@@ -26,7 +26,8 @@ if ENV['CBRAIN_DEBUG_TRACES'].present? && ! defined?($CBRAIN_DEBUG_OVERRIDE)
 
   puts_red "CBRAIN: Enabling debug traces of some system functions."
 
-  module Kernel #:nodoc:
+  #
+  module Kernel
 
     puts_red "CBRAIN: Kernel.system() patched to track arguments and stack trace."
 

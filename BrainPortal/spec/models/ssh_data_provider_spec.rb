@@ -33,6 +33,7 @@ describe SshDataProvider do
     provider.stub!(:cache_full_path).and_return(Pathname.new("cache_path"))
     provider.stub!(:bash_this).and_return("")
     provider.stub!(:mkdir_cache_subdirs)
+    provider.stub!(:master).and_return(ssh_master)
     SshMaster.stub!(:find_or_create).and_return(ssh_master)
     ssh_master.stub!(:is_alive?).and_return(true)
   end
@@ -42,6 +43,7 @@ describe SshDataProvider do
       provider.impl_is_alive?.should be_false
     end
     it "should execute a bash command" do
+      ssh_master.stub!(:is_alive?).and_return(true)
       provider.should_receive(:remote_bash_this)
       provider.impl_is_alive?
     end
