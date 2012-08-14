@@ -32,16 +32,16 @@ function modify_target(data, target, options){
     if(target == "__OVERLAY__"){
       var width = parseInt(options["width"], 10); // || 800);
       var height = parseInt(options["height"], 10); // || 500);
-      jQuery("<div class='overlay_content'></div>").html(new_content).appendTo(jQuery("body")).dialog({
+      $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
         position: 'center',
        	width: width,
        	height: height,
        	close: function(){
-       	  jQuery(this).remove();
+       	  $(this).remove();
        	}
        });
     }else{
-      current_target = jQuery(target);
+      current_target = $(target);
       if(options["replace"]){
         current_target.replaceWith(new_content);
       } else {
@@ -62,7 +62,7 @@ function modify_target(data, target, options){
 //
 //NOTE: DO NOT USE .live() or .delegate() in here.
 function load_behaviour(event){
-   var loaded_element = jQuery(event.target);
+   var loaded_element = $(event.target);
    
    /////////////////////////////////////////////////////////////////////
    //
@@ -88,9 +88,9 @@ function load_behaviour(event){
    loaded_element.find(".sortable_list").disableSelection();
 
    loaded_element.find(".slider_field").each( function() {
-     var slider_text_field = jQuery(this).children().filter("input");
-     jQuery(this).children().filter(".slider").slider({ change: function(event,ui) {
-       jQuery(slider_text_field).val(ui.value);
+     var slider_text_field = $(this).children().filter("input");
+     $(this).children().filter(".slider").slider({ change: function(event,ui) {
+       $(slider_text_field).val(ui.value);
      }});
    });
 
@@ -119,7 +119,7 @@ function load_behaviour(event){
    });
    
    loaded_element.find(".inline_text_field").each(function() {
-     var inline_text_field = jQuery(this);
+     var inline_text_field = $(this);
      var data_type = inline_text_field.attr("data-type");
      var target = inline_text_field.attr("data-target");
      var method = inline_text_field.attr("data-method");
@@ -173,7 +173,7 @@ function load_behaviour(event){
 
 
    loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e){
-     var menu    = jQuery(this);
+     var menu    = $(this);
      var button  = menu.closest(".button_with_drop_down");
      var keep_open = button.attr("data-open");
      if(keep_open != "true"){
@@ -191,7 +191,7 @@ function load_behaviour(event){
        secondary: 'ui-icon-triangle-1-s'
      }
    }).click(function(event){
-     var menu = jQuery(this).siblings(".drop_down_menu");
+     var menu = $(this).siblings(".drop_down_menu");
      if(menu.is(":visible")){
        menu.hide();
      } else {
@@ -208,7 +208,7 @@ function load_behaviour(event){
    /////////////////////////////////////////////////////////////////////
    
    loaded_element.find(".project_button").each(function(event){
-      var project_button = jQuery(this);
+      var project_button = $(this);
       var edit_button = project_button.find(".project_edit_button");
       var delete_button = project_button.find(".project_delete_button");
 
@@ -226,7 +226,7 @@ function load_behaviour(event){
       });
 
    }).mouseenter(function(){
-     var project_button = jQuery(this);
+     var project_button = $(this);
      
      project_button.css("-webkit-transform", "scale(1.1)");
      project_button.css("-moz-transform", "scale(1.1)");
@@ -234,7 +234,7 @@ function load_behaviour(event){
      project_button.css("-ms-transform", "scale(1.1)");
      
    }).mouseleave(function(){
-     var project_button = jQuery(this);
+     var project_button = $(this);
      
      project_button.css("-webkit-transform", "scale(1)");
      project_button.css("-moz-transform", "scale(1)");
@@ -246,14 +246,14 @@ function load_behaviour(event){
        return true;
      }
      
-     var project_button = jQuery(this);
+     var project_button = $(this);
      
      project_button.css("-webkit-transform", "scale(1.05)");
      project_button.css("-moz-transform", "scale(1.05)");
      project_button.css("-o-transform", "scale(1.05)");
      project_button.css("-ms-transform", "scale(1.05)");
    }).mouseup(function(){
-     var project_button = jQuery(this);
+     var project_button = $(this);
    
      project_button.css("-webkit-transform", "scale(1.1)");
      project_button.css("-moz-transform", "scale(1.1)");
@@ -263,11 +263,11 @@ function load_behaviour(event){
      if(event.target.nodeName == "A"){
        return true;
      }
-     var project_button = jQuery(this);
+     var project_button = $(this);
      
      var url = project_button.attr("data-href");
      var method = project_button.attr("data-method");
-     var link = jQuery("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
+     var link = $("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
      link.appendTo("body");
      link.click();
      
@@ -287,7 +287,7 @@ function load_behaviour(event){
           dataType: 'html',
           data: data,
           success: function(data) {
-              var new_content = jQuery(data);
+              var new_content = $(data);
               if(replace == "true"){
                 current_element.replaceWith(new_content);
               }else{
@@ -319,7 +319,7 @@ function load_behaviour(event){
     }
     
     function update_ajax_element(element){
-      var current_element = jQuery(element);
+      var current_element = $(element);
       var method = current_element.attr("data-method")
       if(!method) method = "GET";
       var url = current_element.attr("data-url");
@@ -350,8 +350,8 @@ function load_behaviour(event){
     });
 
     loaded_element.find(".ajax_element_refresh_button").click(function(){
-      var button = jQuery(this);
-      var target = jQuery(button.attr("data-target"));
+      var button = $(this);
+      var target = $(button.attr("data-target"));
       update_ajax_element(target);
       
       return false;
@@ -362,7 +362,7 @@ function load_behaviour(event){
     //it fetches javascript from the server that will be executed
     //update the page.
     loaded_element.find(".script_loader").each(function (index,element){
-      var current_element = jQuery(element);
+      var current_element = $(element);
       current_element.css("display", "none");
       var url = current_element.attr("data-url");
       jQuery.ajax({
@@ -384,7 +384,7 @@ function load_behaviour(event){
     function staggered_loading(index, element_array){
       if(index >= element_array.length) return;
     
-      var current_element = jQuery(element_array[index]);
+      var current_element = $(element_array[index]);
       var url = current_element.attr("data-url");
       var error_message = current_element.attr("data-error");
       var replace = current_element.attr("data-replace");
@@ -394,7 +394,7 @@ function load_behaviour(event){
         target: current_element,
         timeout: 50000,
         success: function(data) {
-            var new_content = jQuery(data);
+            var new_content = $(data);
             if(replace == "true"){
               current_element.replaceWith(new_content);
             }else{
@@ -421,7 +421,7 @@ function load_behaviour(event){
     //Overlay dialogs
     //See overlay_dialog_with_button()
     loaded_element.find(".overlay_dialog").each( function(index,element){
-      var enclosing_div = jQuery(this);
+      var enclosing_div = $(this);
       var dialog_link = enclosing_div.children('.overlay_content_link');
       var dialog = enclosing_div.children(".overlay_content")
       var content_width = parseInt(dialog_link.attr('data-width'), 10);
@@ -445,19 +445,19 @@ function load_behaviour(event){
    * a window with the url in data-url 
    */
 
-   jQuery(".auto_window_launch").each(function(){
-		 var url = jQuery(this).attr("data-url");
+   $(".auto_window_launch").each(function(){
+		 var url = $(this).attr("data-url");
 		 console.log(url);
-		 var name =jQuery(this).attr("data-window-name");
+		 var name =$(this).attr("data-window-name");
 		 console.log(name);
 		 window.open(url,name,false);
 	 });
 }
 
-jQuery(
+$(
  function() {
-   jQuery("body").bind("new_content", load_behaviour);
-   jQuery("body").trigger("new_content");
+   $("body").bind("new_content", load_behaviour);
+   $("body").trigger("new_content");
    
    
    /////////////////////////////////////////////////////////////////////
@@ -583,8 +583,8 @@ jQuery(
    });
         
    $(document).delegate(".show_toggle", "click", function(){
-     var current_element = jQuery(this);
-     var target_element = jQuery(current_element.attr("data-target"));
+     var current_element = $(this);
+     var target_element = $(current_element.attr("data-target"));
      var alternate_text = current_element.attr("data-alternate-text");
      var slide_effect   = current_element.attr("data-slide-effect");
      var slide_duration   = current_element.attr("data-slide-duration");  
@@ -614,7 +614,7 @@ jQuery(
    });
 
    $(document).delegate(".inline_edit_form_link", "click", function(){
-     var link = jQuery(this);
+     var link = $(this);
      var default_text = link.closest(".inline_edit_form_default_text");
      var form = default_text.siblings(".inline_edit_form");
      default_text.hide();
@@ -648,7 +648,7 @@ jQuery(
    $(document).delegate(".row_highlight", "hover", function() {highlightTableRowVersionA(this, '#FFFFE5');});
 
    $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr){
-     var link     = jQuery(this);
+     var link     = $(this);
      var target   = link.attr("data-target");
      var datatype = link.attr("data-type"); 
      var other_options = {};
@@ -658,19 +658,19 @@ jQuery(
      
      var remove_target = link.attr("data-remove-target");
      if(remove_target){
-        jQuery(remove_target).remove();
+        $(remove_target).remove();
       }else if(datatype != "script"){
        modify_target(data, target, other_options);
      }
    }).delegate(".ajax_link", "ajax:beforeSend", function(event, data, status, xhr){
      $("#loading_image").show();
-     var link = jQuery(this);
+     var link = $(this);
      var loading_message = link.attr("data-loading-message");
      var target = link.attr("data-target");
      if(loading_message){
        var loading_message_target = link.attr("data-loading-message-target");
        if(!loading_message_target) loading_message_target = target;
-       jQuery(loading_message_target).html(loading_message);
+       $(loading_message_target).html(loading_message);
      }
    }).delegate(".ajax_link", "ajax:complete", function(){
      $("#loading_image").hide();
@@ -686,7 +686,7 @@ jQuery(
    });
    
    $(document).delegate(".select_master", "change", function(){
-     var master_select = jQuery(this);
+     var master_select = $(this);
      var select_class = master_select.attr("data-select-class");
      var selection = master_select.find(":selected").text();
 
@@ -750,9 +750,9 @@ jQuery(
    //html_tool_tip_code based on xstooltip provided by
    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event){
-      var trigger = jQuery(this);
+      var trigger = $(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
-      var tool_tip = jQuery("#" + tool_tip_id);
+      var tool_tip = $("#" + tool_tip_id);
       
       var offset_x = trigger.attr("data-offset-x") || '30';
       var offset_y = trigger.attr("data-offset-y") || '0';
@@ -765,9 +765,9 @@ jQuery(
       
       tool_tip.show();
    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event){
-      var trigger = jQuery(this);
+      var trigger = $(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
-      var tool_tip = jQuery("#" + tool_tip_id);
+      var tool_tip = $("#" + tool_tip_id);
       
       tool_tip.hide();
    });
@@ -916,7 +916,7 @@ jQuery(
        type: "GET",
        resetForm: false,
        success: function(data){
-         jQuery("<div id='jiv_option_div'></div>").html(data).appendTo(jQuery("body")).dialog({
+         $("<div id='jiv_option_div'></div>").html(data).appendTo($("body")).dialog({
    	      position: 'center',
          	close: function(){
          	  $(this).remove();
@@ -948,12 +948,12 @@ jQuery(
      if(!replace_selector) {
        var replace_elem = onclick_elem;
      } else {
-       var replace_elem=jQuery("#" + replace_selector);
+       var replace_elem=$("#" + replace_selector);
      };
      if(!before_content) {
        before_content = "<span class='loading_message'>Loading...</span>";
      };
-     before_content = jQuery(before_content);
+     before_content = $(before_content);
      if(replace_position == "after") {
        replace_elem.after(before_content);
      }else if (replace_position == "replace"){
@@ -966,10 +966,10 @@ jQuery(
      onclick_elem.unbind('click');
      onclick_elem.addClass("ajax_onclick_hide_element");
      $.ajax({ type: 'GET',
-       url: jQuery(onclick_elem).attr("data-url"),
+       url: $(onclick_elem).attr("data-url"),
        dataType: 'html',
        success: function(data){
-         var new_data = jQuery(data);
+         var new_data = $(data);
          new_data.attr("data-parents", parents);
          new_data.addClass(parents);
          before_content.replaceWith(new_data);
@@ -978,7 +978,7 @@ jQuery(
          onclick_elem.find(".ajax_onclick_hide_child").show();
        },
        error:function(e) {
-         var new_data = jQuery("Error occured while processing this request");
+         var new_data = $("Error occured while processing this request");
          new_data.attr("data-parents", parents);
          new_data.addClass(parents);
          before_content.replaceWith(new_data);
@@ -1004,7 +1004,7 @@ jQuery(
    function ajax_onclick_hide(event){
      var onclick_elem = $(this);
      var parental_id = "__cbrain_parent_" + onclick_elem.attr("id");
-     jQuery("." + parental_id).remove();
+     $("." + parental_id).remove();
      onclick_elem.removeClass("ajax_onclick_hide_element");
      onclick_elem.unbind('click');
      onclick_elem.addClass("ajax_onclick_show_element");
