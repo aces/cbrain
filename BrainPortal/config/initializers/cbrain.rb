@@ -246,11 +246,21 @@ class CBRAIN
       agent.unlock(passphrase)
       passphrase_md.touch
 
+      # Prepare info line about the unlocking event
+      pretty_context = ""
       mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
       mytrace  = mytraces[options[:caller_level] || 0]
-      if mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
+      if mytrace.blank? # two alternative logging messages possible in this IF statement
+        mytrace = caller[0] 
+        #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
+      end
+      if pretty_context.blank? && mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
         basename,linenum,method = Regexp.last_match[1,3]
         pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
+      end
+
+      # Log info about what unlocked the agent
+      if pretty_context.present?
         puts_red "Unlocking agent: #{pretty_context}" if ENV['CBRAIN_DEBUG_TRACES'].present?
         if @_log_md.blank?
           admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
@@ -262,6 +272,7 @@ class CBRAIN
           @_log_md.save
         end
       end
+
     end
 
     block_given? ? yield : true
