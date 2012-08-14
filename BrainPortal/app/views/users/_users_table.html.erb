@@ -44,7 +44,7 @@
     t.sort_column("Login", "User", "login", :filters => basic_filters_for(@filtered_scope, @header_scope, 'users', 'account_locked') { |l| l ? "Locked" : "Unlocked"  }) { |u|  link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil } ) }
     t.describe_sort_column("Full name", "User", "full_name") { |col| col.cell :class => :left, &:full_name }
     t.sort_column("Email", "User", "email") { |u| mail_to u.email }
-    t.sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}
+    t.reverse_sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}
     t.column("Projects") do |u|  
       groups = u.available_groups.sort{|a, b| a.name.casecmp(b.name)}
       result = ""
