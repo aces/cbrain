@@ -75,7 +75,8 @@ class PortalController < ApplicationController
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
     user_ids     = current_user.available_users.raw_first_column(:id)
-    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(15).all
+    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(10).all
+    @files       = Userfile.find_all_accessible_by_user(current_user).order( "updated_at DESC" ).limit(10).all
   end
   
   def portal_log #:nodoc:

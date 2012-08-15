@@ -1321,12 +1321,13 @@ pre {
 /* % ############################################## */
 
 
-.task_summary_table {
+.latest_summary_table {
     border: 0px;
     background-color: #E4E4E4;
+    width: 100%;
 }
 
-.task_summary_table td {
+.latest_summary_table td {
     padding: 0.4em 1em 0.5em 1em;
     font-weight: bold;
     border: 0px;

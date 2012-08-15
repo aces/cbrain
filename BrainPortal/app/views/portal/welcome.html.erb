@@ -168,14 +168,16 @@
     </p>  
 </div>
 
-<% if @tasks.size > 0 %>
+<% if @tasks.size > 0 || @files.size > 0 %>
   <div class="box_spacer"></div>
   
   <div class="generalbox no_wrap">
 
+    <% if @tasks.size > 0 %>
+
     <h1><%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
 
-      <table class="task_summary_table">
+      <table class="latest_summary_table">
         <% for task in @tasks %>
           <tr>
             <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
@@ -185,7 +187,28 @@
           </tr>
         <% end %>
       </table>
+
+    <% end %>
+
+    <% if @files.size > 0 %>
+
+    <h1><%= sort_link("Latest Updated Files", Userfile, :updated_at, :dir => "DESC", :controller => :userfiles, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
+
+      <table class="latest_summary_table">
+        <% for file in @files %>
+          <tr>
+            <td><%= link_to_userfile_if_accessible(file, nil) %></td>
+            <td><%= link_to_user_if_accessible(file.user) %></td>
+            <td><%= colored_pretty_size(file.size) %></td>
+            <td><%= to_localtime(file.updated_at,:datetime) %></td>
+          </tr>
+        <% end %>
+      </table>
+
+    <% end %>
+   
   </div>
+
 <% end %>
 
 
