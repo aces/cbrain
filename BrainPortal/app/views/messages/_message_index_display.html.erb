@@ -59,7 +59,7 @@
         unless current_user.has_role?(:normal_user)
           t.sort_column("Recipient", User, :login)
         end
-        t.sort_column("Last Updated", Message, :last_sent)
+        t.reverse_sort_column("Last Updated", Message, :last_sent)
         t.column("Operations", :colspan => "3")
         t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
       %>  
