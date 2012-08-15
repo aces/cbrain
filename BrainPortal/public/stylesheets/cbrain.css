@@ -664,7 +664,7 @@ a {
 
 #log_contents {
   resize: both; /* supported by Safari, Chrome and Firefox */
-  max-height: 100em;
+  height: 40em;
   overflow: auto;
   background-color: black;
   color: white;
