@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Controller helpers to elegantly handle and log runtime exceptions.
 module ExceptionHelpers
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.class_eval do 
@@ -34,7 +35,7 @@ module ExceptionHelpers
   end
 
   protected
-  # Record not accessible
+  # Record not accessible.
   def record_not_found(exception)
     raise unless Rails.env == 'production' #Want to see stack trace in dev.
     flash[:error] = "The object you requested does not exist or is not accessible to you."
@@ -45,7 +46,7 @@ module ExceptionHelpers
     end
   end
 
-  # Action not accessible
+  # Action not accessible.
   def unknown_action(exception)
     raise unless Rails.env == 'production' #Want to see stack trace in dev.
     flash[:error] = "The page you requested does not exist."
@@ -56,7 +57,7 @@ module ExceptionHelpers
     end
   end
   
-  # Internal CBRAIN errors
+  # Internal CBRAIN errors.
   def cb_exception(exception)
     if exception.is_a? CbrainNotice
       flash[:notice] = exception.message    # + "\n" + cbm.backtrace[0..5].join("\n")
@@ -71,7 +72,7 @@ module ExceptionHelpers
     end
   end
 
-  # Anything else is serious
+  # Anything else is serious.
   def generic_exception(exception)
     raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
 

@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# View helpers for creating ajax-based or dynamic forms.
 module DynamicFormHelper
   
   Revision_info=CbrainFileRevision[__FILE__] 

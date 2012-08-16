@@ -23,7 +23,7 @@
 #Helpers for creating filter links.
 module FilterHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Add to currently active filters. Options include:
   # [:parameter] which filter parameter to adjust (default to :filter_hash).

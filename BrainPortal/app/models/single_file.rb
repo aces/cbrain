@@ -25,7 +25,7 @@ require 'fileutils'
 # Represents a single file uploaded to the system (as opposed to a FileCollection).
 class SingleFile < Userfile
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   validates :type, :subclass => { :root_class => SingleFile }
 

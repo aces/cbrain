@@ -20,13 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# Allows for the adjustment of mass-assignable attributes on an object by
-# object basis.
-module CBRAINExtensions
-  module ActiveRecord
+module CBRAINExtensions #:nodoc:
+  module ActiveRecord #:nodoc:
+    
+    # Allows for the adjustment of mass-assignable attributes on an object by
+    # object basis.
     module MassAssignmentAuthorization
       
-      Revision_info=CbrainFileRevision[__FILE__]
+      Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
       
       # Makes the list of attributes given available to mass-assignement.
       def make_accessible!(*args)

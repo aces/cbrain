@@ -26,7 +26,7 @@
 # by tasks to parallelize their own subtasks.
 class CbrainTask::Parallelizer < PortalTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.properties #:nodoc:
     { :no_presets => true }

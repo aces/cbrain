@@ -71,7 +71,7 @@ class SshMaster
 
   include Sys  # for ProcTable
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   CONTROL_SOCKET_DIR_1 = (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp"
   CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
@@ -83,6 +83,7 @@ class SshMaster
   # Advanced options for instances of Masters
   attr_accessor :debug    # if true, turn on verbose logging of subprocess tracking stuff
   attr_accessor :no_diag  # if true, no .oer files if created for diagnostics or logging
+  attr_reader   :nomaster # returns true if the SshMaster object was created with option :nomaster
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
@@ -366,7 +367,7 @@ class SshMaster
   # the master SSH.
   def stop
     self.properly_registered?
-    return true  if @nomaster # when no a master, stop means nothing
+    return true  if @nomaster # when not a master, stop means nothing
     return false unless self.read_pidfile
 
     debugTrace("STOP: #{$$} Killing master for #{@key}.")
@@ -379,15 +380,26 @@ class SshMaster
     true
   end
 
+  # Returns true if the master SEEMS to be alive;
+  # this check is performed by checking that the
+  # socket file exists and a process is running,
+  # so it's not garanteed that the other end of
+  # the connection is responding.
+  def quick_is_alive?
+    self.properly_registered?
+    return true if @nomaster # when no master actually exists, we assume all's OK.
+
+    socket = self.control_path
+    return false unless File.exist?(socket) && File.socket?(socket)
+    return false unless self.read_pidfile
+    true
+  end
+
   # Check to see if the master SSH connection is alive and well.
   def is_alive?
 
-    return true if @nomaster
-    self.properly_registered?
-
-    socket = self.control_path
-    return false unless File.exist?(socket)
-    return false unless self.read_pidfile
+    return false unless self.quick_is_alive?
+    return false if     @pid.blank? && ! @nomaster
     
     shared_options = self.ssh_shared_options
     sshcmd = "ssh -q -x -n #{shared_options} " +
@@ -427,7 +439,7 @@ class SshMaster
       debugTrace("Master checking is_alive for #{@key} with alarm: #{alarm_pid}")
       okout = ""
       IO.popen(sshcmd,"r") { |fh| okout=fh.read }
-      return true if okout.index("OK-#{Process.pid}") && ! @pid.blank?
+      return true if okout.index("OK-#{Process.pid}")
       return false
     rescue
       return false

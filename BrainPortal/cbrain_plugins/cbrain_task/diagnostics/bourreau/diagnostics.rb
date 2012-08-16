@@ -23,7 +23,7 @@
 # A subclass of ClusterTask to run diagnostics.
 class CbrainTask::Diagnostics < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Overrides the default addlog() method such that each
   # log entry is also sent to STDOUT.
@@ -151,6 +151,10 @@ class CbrainTask::Diagnostics < ClusterTask
       echo "STDERR Diagnostics Bash Script Starting `date`"                       1>&2
       echo "====================================================================" 1>&2
       echo ""                                                                     1>&2
+
+      echo "==== CBRAIN Info ===="
+      echo "Execution Server name: #{self.bourreau.try(:name).to_s.bash_escape}"
+      echo ""
 
       echo "==== Host Info ===="
       uname -a

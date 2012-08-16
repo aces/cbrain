@@ -23,7 +23,7 @@
 # This model represents a remote execution server.
 class Bourreau < RemoteResource
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   has_many :cbrain_tasks, :dependent => :restrict
   has_many :tool_configs, :dependent => :destroy
@@ -90,7 +90,8 @@ class Bourreau < RemoteResource
 
     self.online = true
 
-    self.zap_info_cache
+    self.zap_info_cache(:info)
+    self.zap_info_cache(:ping)
 
     unless self.has_remote_control_info?
       self.operation_messages = "Not configured for remote control."
@@ -154,7 +155,8 @@ class Bourreau < RemoteResource
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
     return false unless self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
-    self.zap_info_cache
+    self.zap_info_cache(:info)
+    self.zap_info_cache(:ping)
 
     # If the remote host is actually just a frontend before the REAL
     # host, add the "-R host -H http_port -D db_port" special options to the command
@@ -165,9 +167,7 @@ class Bourreau < RemoteResource
     end
 
     stop_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
-    confirm=""
-    self.read_from_remote_shell_command(stop_command) {|io| confirm = io.read}   
-    self.stop_tunnels
+    confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}   
  
     return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl' 
     return false
@@ -257,8 +257,10 @@ class Bourreau < RemoteResource
 
   # Returns a lighter and faster-to-generate 'ping' information
   # for this server; the object returned is RemoteResourceInfo
-  # with only two fields set: 'revision' and 'worker_pids'.
-  def self.ping_remote_resource_info
+  # with the same quick fields returned by
+  # RemoteResource.ping_remote_resource_info, plus the PIDs
+  # of the Bourreau's workers.
+  def self.remote_resource_ping
     worker_pool      = WorkerPool.find_pool(BourreauWorker) rescue nil
     workers          = worker_pool.workers rescue nil
     worker_pids      = workers.map(&:pid).join(",") rescue '???'

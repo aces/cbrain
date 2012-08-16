@@ -30,7 +30,7 @@
 # and more efficient VaultLocalDataProvider will be used.
 class VaultSmartDataProvider < DataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include SmartDataProviderInterface
 

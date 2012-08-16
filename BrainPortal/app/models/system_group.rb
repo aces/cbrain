@@ -31,7 +31,7 @@
 #These groups are *not* meant to be modified.
 class SystemGroup < Group
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   validates_uniqueness_of :name, :scope => :type
     

@@ -47,8 +47,8 @@
     t.sort_column("Current Status", 'CbrainTask', 'status', :filters => basic_filters_for(@filtered_scope, @header_scope, CbrainTask, :status))
     t.column("Run Number")
     t.sort_column("Workdir Size", 'CbrainTask', 'cluster_workdir_size')
-    t.sort_column("Time Submitted", 'CbrainTask', 'created_at')
-    t.sort_column("Last Updated", 'CbrainTask', 'updated_at')
+    t.reverse_sort_column("Time Submitted", 'CbrainTask', 'created_at')
+    t.reverse_sort_column("Last Updated", 'CbrainTask', 'updated_at')
     t.row_override do |batch_id|
       render :partial => 'tasks/batch_view', :locals => {:batch_id => batch_id}
     end

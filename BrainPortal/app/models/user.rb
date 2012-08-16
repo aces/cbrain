@@ -46,7 +46,7 @@ require 'digest/sha1'
 #                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
@@ -298,11 +298,11 @@ class User < ActiveRecord::Base
   
   #Create a random string (currently for passwords).
   def random_string
-    length = rand(4) + 4
+    length = rand(5) + 4
     s = ""
     length.times do
-      c = rand(75) + 48
-      c += 1 if c == 96
+      c = rand(75) + 48 # ascii range from '0' to 'z'
+      redo if c == 92 || c == 96  # \ or '
       s << c
     end
     s += ("A".."Z").to_a[rand(26)]

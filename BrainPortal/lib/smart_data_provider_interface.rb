@@ -25,7 +25,7 @@ require 'socket'
 # This module includes all the 'wrapper' methods for Smart Data Providers.
 module SmartDataProviderInterface
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # This method initialize an instance variable containing
   # the real data provider object we use to access the

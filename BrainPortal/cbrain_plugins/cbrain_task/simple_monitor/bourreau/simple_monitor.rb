@@ -24,7 +24,7 @@
 # Can be use to track other tasks through prerequisites.
 class CbrainTask::SimpleMonitor < ClusterTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include RestartableTask
   include RecoverableTask

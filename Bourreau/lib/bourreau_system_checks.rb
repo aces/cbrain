@@ -22,9 +22,14 @@
 
 require 'socket'
 
-class BourreauSystemChecks < CbrainChecker
+class BourreauSystemChecks < CbrainChecker #:nodoc:
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  def self.puts(*args) #:nodoc:
+    Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
+    Kernel.puts(*args)
+  end
 
   def self.a050_ensure_proper_cluster_management_layer_is_loaded
 
@@ -83,6 +88,13 @@ class BourreauSystemChecks < CbrainChecker
       puts "C> \t- Scheduling restart for all of them ..."
       allworkers.stop_workers
     end
+
+    # Note: we cannot start the workers here because
+    # the current process will disappear once the HTTP server
+    # forks, and the workers want their parent to keep
+    # existing. A separate 'start_workers' command must
+    # be sent to the control channel explicitely later on.
+
   end
 
 
@@ -129,7 +141,8 @@ class BourreauSystemChecks < CbrainChecker
       next if old_workdir.blank? # should not even happen
 
       # Bad entry? Just zap.
-      if ! Dir.exists?(task.full_cluster_workdir)
+      full = task.full_cluster_workdir({}, { :cms_shared_dir => gridshare_dir })
+      if ! Dir.exists?(full)
         adj_zap += 1
         task.update_attribute( :cluster_workdir, nil                  ) # just this attribute need to change.
         task.update_attribute( :updated_at,      last_updated         ) # to restore the original update date
@@ -194,7 +207,7 @@ class BourreauSystemChecks < CbrainChecker
     CBRAIN.spawn_with_active_records(User.admin, "TaskWorkdirCheck") do
       bad_tasks = []
       local_tasks_with_workdirs.all.each do |task|
-        full     = task.full_cluster_workdir
+        full = task.full_cluster_workdir({}, { :cms_shared_dir => gridshare_dir })
         next if Dir.exists?(full)
         bad_tasks << task.tname_tid
         task.cluster_workdir      = nil
@@ -277,6 +290,8 @@ class BourreauSystemChecks < CbrainChecker
 
   end
 
+
+
   def self.z000_ensure_we_have_a_forwarded_ssh_agent
 
     #----------------------------------------------------------------------------
@@ -294,3 +309,4 @@ class BourreauSystemChecks < CbrainChecker
   end
 
 end
+

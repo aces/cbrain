@@ -26,7 +26,7 @@
 # See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validate              :task_is_proper_subclass
 

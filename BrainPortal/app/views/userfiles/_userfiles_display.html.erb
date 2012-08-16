@@ -55,7 +55,7 @@
   %>
   <% unless @filter_params["details"] == 'off' %>
     <% t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :user, :name_method => "login")) { |u| link_to_user_if_accessible(u.user) } %>
-    <% t.sort_column("Creation Date", 'Userfile', 'created_at') do |u| %>
+    <% t.reverse_sort_column("Creation Date", 'Userfile', 'created_at') do |u| %>
      <%=  html_tool_tip(to_localtime(u.created_at,:date), :offset_x => 0, :offset_y => 20) do %>
           Created: <%= u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %><br/>
           Updated: <%= u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %>

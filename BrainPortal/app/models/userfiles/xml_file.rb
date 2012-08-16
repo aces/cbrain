@@ -23,7 +23,7 @@
 # Model for text files containing XML documents.
 class XMLFile < TextFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def self.file_name_pattern #:nodoc:
     /\.xml$/i

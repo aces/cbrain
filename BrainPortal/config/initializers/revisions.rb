@@ -26,9 +26,7 @@ class Object
   # named 'Revision_info', if it exists; otherwise it
   # returns a default string in the same format,
   #
-  #   "SId: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor S"
-  # 
-  # (where the uppercase letters 'S' at each end are in fact '$' signs)
+  #   "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   def self.revision_info
     if self.const_defined?("Revision_info")
       self.const_get("Revision_info")
@@ -48,11 +46,11 @@ end
 
 class String
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return the revision number as a string
   # (the first number after the file name). If the
@@ -67,7 +65,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return the filename. If the
   # string is unparsable, it returns "(file?)".
@@ -81,7 +79,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return the date (but not the time).
   # If the string is unparsable, it returns "(date?)".
@@ -95,7 +93,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return the time (but not the date).
   # If the string is unparsable, it returns "(time?)".
@@ -109,7 +107,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return the author.
   # If the string is unparsable, it returns "(author?)".
@@ -123,7 +121,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return a string composed
   # of two elements concatenated:
@@ -135,7 +133,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return a string composed
   # of three elements concatenated:
@@ -147,7 +145,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return a string composed
   # of two elements concatenated:
@@ -159,7 +157,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return a string composed
   # of three elements concatenated:
@@ -171,7 +169,7 @@ class String
 
   # Given a revision info string such as
   #
-  #  "$Id$"
+  #  "$Id: unknownFile 0 0000-00-00 00:00:00Z unknownAuthor $"
   #
   # it will return a string composed
   # of four elements concatenated:

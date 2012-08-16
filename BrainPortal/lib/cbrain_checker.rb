@@ -41,7 +41,7 @@ class CbrainChecker
 
   include Singleton
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Collects all the checks and start methods defined in the class 
   #Puts them in an array to be used by the run_checks command. 

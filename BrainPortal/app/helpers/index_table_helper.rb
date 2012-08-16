@@ -119,7 +119,7 @@
 
 module IndexTableHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Class that actually builds the table.
   class TableBuilder
@@ -157,7 +157,9 @@ module IndexTableHelper
       # done manually. See TableBuilder#sort_column or 
       # TableBuilder#describe_sort_column)
       def sort_header(text, klass, attribute, options = {})
-        @header_text = @template.instance_eval { table_header_sort_link text, klass, attribute }
+        default_sort_dir = options.delete :default_sort_dir
+
+        @header_text = @template.instance_eval { table_header_sort_link text, klass, attribute, :default_sort_dir => default_sort_dir }
         @header_options = options
       end
 
@@ -252,6 +254,14 @@ module IndexTableHelper
     def sort_column(header_text, klass, attribute, options = {}, &block)
       build_column do |col|
         col.sort_header header_text, klass, attribute, options
+        col.cell        &block
+      end
+    end
+    
+    # Describe a simple sorting column that starts with DESC
+    def reverse_sort_column(header_text, klass, attribute, options = {}, &block)
+      build_column do |col|
+        col.sort_header header_text, klass, attribute, options.reverse_merge(:default_sort_dir => "DESC")
         col.cell        &block
       end
     end
@@ -356,13 +366,15 @@ module IndexTableHelper
   
   def sort_link(name, sort_table, sort_column, options = {})
     sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
-    sort_dir = options.delete(:dir) || set_dir(sort_order, @filter_params["sort_hash"])
+    default_sort_dir = options.delete(:default_sort_dir)
+    sort_dir = options.delete(:dir) || set_dir(sort_order, @filter_params["sort_hash"], :default_sort_dir => default_sort_dir)
     controller = options.delete(:controller) || params[:controller]
     action = options.delete(:action) || params[:actions]
     ajax_request = true
     if options.has_key?(:ajax) && !options.delete(:ajax)
       ajax_request = false
     end  
+
     url_params = options.delete(:url_params) || {}
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => sort_dir}} }.merge(url_params)
     if ajax_request
@@ -383,14 +395,17 @@ module IndexTableHelper
   end
   
   #Set direction for resource list sorting
-  def set_dir(current_order, sort_params)
-    return unless sort_params
+  def set_dir(current_order, sort_params, options = {})
+    return  options[:default_sort_dir] unless sort_params
     prev_order = sort_params["order"]
-    sort_order = sort_params["dir"]
-    
+    prev_dir   = sort_params["dir"]
+
+    current_dir = options[:default_sort_dir]
     if(current_order.to_s == prev_order.to_s)
-      sort_order.to_s.upcase == 'DESC' ? '' : 'DESC'
+      current_dir = prev_dir.to_s.upcase == 'DESC' ? '' : 'DESC'
     end
+    
+    current_dir
   end
 
   #Show count of an association and link to association's page.

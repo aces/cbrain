@@ -23,7 +23,7 @@
 # Model for MP4 video files.
 class Mp4VideoFile < VideoFile
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :partial => :html5_mp4_video, :if => :is_locally_synced?
   

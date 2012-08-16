@@ -74,7 +74,7 @@
 #
 module ActRecMetaData
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
@@ -180,6 +180,16 @@ module ActRecMetaData
     # with the current ActiveRecord object.
     def all
       self.md_cache.values
+    end
+
+    # Returns the MetaDataStore object which stores
+    # the value for +key+ ; note that this object is
+    # fetched from an internal cache, so you may have
+    # to invoke reload() first to get it. This method
+    # is not really part of the standard API for dealing
+    # with meta data and should be used with caution.
+    def md_for_key(key)
+      self.md_cache[key.to_s]
     end
 
     # Reloads the meta data information associated

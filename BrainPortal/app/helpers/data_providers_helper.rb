@@ -23,7 +23,7 @@
 # Helpers for DataProvider views.
 module DataProvidersHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # This method reformats a long SSH key text so that it
   # is folded on several lines.

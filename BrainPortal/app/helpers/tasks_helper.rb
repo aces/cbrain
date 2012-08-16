@@ -23,7 +23,7 @@
 # Helper methods for tasks views.
 module TasksHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Given a plain name for a task's private partial, such
   # as 'my_stuff' or :my_stuff, will return a full path

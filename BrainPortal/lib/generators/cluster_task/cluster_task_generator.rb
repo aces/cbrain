@@ -22,7 +22,7 @@
 
 class ClusterTaskGenerator < Rails::Generators::Base
     
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   source_root File.expand_path("../templates", __FILE__)
 

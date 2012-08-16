@@ -27,7 +27,7 @@
 # Original author: Pierre Rioux
 class ScirUnix < Scir
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   class Session < Scir::Session #:nodoc:
 

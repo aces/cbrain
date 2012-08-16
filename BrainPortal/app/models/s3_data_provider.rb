@@ -26,7 +26,7 @@
 # as needed.
 class S3DataProvider < DataProvider 
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
 

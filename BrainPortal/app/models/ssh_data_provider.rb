@@ -37,13 +37,13 @@ require 'net/sftp'
 #
 class SshDataProvider < DataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?
-    remote_cmd = "test -d #{self.remote_dir.bash_escape} || echo Fail-Dir 2>&1"
+    remote_cmd = "test -d #{self.remote_dir.bash_escape} && echo OK-Dir 2>&1"
     text = self.remote_bash_this(remote_cmd)
-    return(text.blank? ? true : false)
+    return(text =~ /OK-Dir/ ? true : false)
   rescue
     false
   end
@@ -131,6 +131,7 @@ class SshDataProvider < DataProvider
     oldpath   = oldpath.to_s
     newpath   = newpath.to_s
 
+    self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       begin
         att = sftp.lstat!(newpath)
@@ -150,8 +151,8 @@ class SshDataProvider < DataProvider
   
   def impl_provider_readhandle(userfile, rel_path = ".", &block) #:nodoc:
     full_path = provider_full_path(userfile) + rel_path
+    cb_error "Error: read handle cannot be provided for non-file." unless userfile.is_a?(SingleFile)
     IO.popen("ssh #{ssh_shared_options} cat #{remote_shell_escape(full_path)}","r") do |fh|
-      cb_error "Error: read handle cannot be provided for non-file." if fh.eof?
       yield(fh)
     end
   end
@@ -161,6 +162,7 @@ class SshDataProvider < DataProvider
     attlist = [ 'symbolic_type', 'size', 'permissions',
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
+    self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       sftp.dir.foreach(self.browse_remote_dir(user)) do |entry|
         attributes = entry.attributes
@@ -207,7 +209,7 @@ class SshDataProvider < DataProvider
       
     types.map!(&:to_sym)
     
-    
+    self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       entries = []
       if userfile.is_a? FileCollection
@@ -299,12 +301,17 @@ class SshDataProvider < DataProvider
   end
 
   # Returns the SshMaster object handling the persistent connection to the Provider side.
-  # Addendum, Aug 1st 2012: the connection is no longer persistent, by
+  # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
   # passing the :nomaster=true option to SshMaster when on a Bourreau!
-  # This incurs a costs, but increases security.
+  # This incurs a costs, but increases security. Every access to this method
+  # will also, as a side effect, unlock the global CBRAIN SSH agent.
+  # This will open a 20 seconds window to perform a SSH or SFTP operation
+  # on the connection.
   def master
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider",
-      :nomaster => RemoteResource.current_resource.is_a?(Bourreau))
+    persistent = RemoteResource.current_resource.is_a?(BrainPortal)
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider", :nomaster => ! persistent)
+    # Unlock agent, in preparation for doing stuff on it
+    CBRAIN.with_unlocked_agent(:caller_level => 1)
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
     @master
   end

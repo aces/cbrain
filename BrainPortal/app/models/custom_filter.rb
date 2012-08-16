@@ -49,7 +49,7 @@
 #* User
 class CustomFilter < ActiveRecord::Base
       
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include DateRangeRestriction
   

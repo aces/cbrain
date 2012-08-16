@@ -24,7 +24,7 @@
 #to resources (as opposed to SystemGroup). 
 class WorkGroup < Group
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
     
   validates_uniqueness_of :name, :scope => :creator_id
 

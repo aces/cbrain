@@ -34,7 +34,7 @@
 #
 class MetaDataStore < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   self.table_name = "meta_data_store" # singular
 

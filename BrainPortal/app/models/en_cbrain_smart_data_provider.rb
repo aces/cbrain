@@ -30,7 +30,7 @@
 # and more efficient EnCbrainLocalDataProvider will be used.
 class EnCbrainSmartDataProvider < DataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include SmartDataProviderInterface
 

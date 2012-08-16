@@ -25,7 +25,7 @@
 # for more information about the API.
 class ActiveRecordLog < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   attr_accessible :ar_id, :ar_table_name, :log
 

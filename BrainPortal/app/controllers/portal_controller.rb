@@ -23,7 +23,7 @@
 #Controller for the entry point into the system.
 class PortalController < ApplicationController
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include DateRangeRestriction
 
@@ -34,6 +34,11 @@ class PortalController < ApplicationController
   def welcome #:nodoc:
     unless current_user
       redirect_to login_path 
+      return
+    end
+    
+    unless current_user.has_role?(:admin_user)
+      redirect_to start_page_path 
       return
     end
     
@@ -70,7 +75,8 @@ class PortalController < ApplicationController
     
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
     user_ids     = current_user.available_users.raw_first_column(:id)
-    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(15).all
+    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(10).all
+    @files       = Userfile.find_all_accessible_by_user(current_user).order( "updated_at DESC" ).limit(10).all
   end
   
   def portal_log #:nodoc:
@@ -371,20 +377,20 @@ class PortalController < ApplicationController
 
     # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)
 
-    data.gsub!(/^Started.+/)                    { |m| "<span style=\"color:lime\">#{m}</span>" }
-    data.gsub!(/  Parameters: .+/)              { |m| "<span style=\"color:yellow; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/^Completed.* in \d{1,3}ms/)     { |m| "<span style=\"color:green\">#{m}</span>" }
-    data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span style=\"color:yellow\">#{m}</span>" }
-    data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span style=\"color:red; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span style=\"background-color:red; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/^User: \S+/)                    { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
-    data.gsub!(/ using \S+/)                    { |m| "<span style=\"color:cyan; font-weight:bold\">#{m}</span>" }
+    data.gsub!(/^Started.+/)                    { |m| "<span class=\"log_started\">#{m}</span>" }
+    data.gsub!(/  Parameters: .+/)              { |m| "<span class=\"log_parameters\">#{m}</span>" }
+    data.gsub!(/  Processing by .+/)            { |m| "<span class=\"log_processing\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}ms/)     { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
+    data.gsub!(/^User: \S+/)                    { |m| "<span class=\"log_user\">#{m}</span>" }
+    data.gsub!(/ using \S+/)                    { |m| "<span class=\"log_browser\">#{m}</span>" }
 
-    pair = false
+    alt = :_1
     data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
-      color = pair ? "coral" : "skyblue"
-      pair  = !pair
-      "<span style=\"color:#{color} \">#{m}</span>"
+      alt = (alt == :_1) ? :_2 : :_1
+      "<span class=\"log_alternating#{alt}\">#{m}</span>"
     end
     
     data 

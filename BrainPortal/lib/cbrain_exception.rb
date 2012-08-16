@@ -26,7 +26,7 @@
 # a RAILS redirect structure.
 class CbrainException < StandardError
 
-   Revision_info=CbrainFileRevision[__FILE__]
+   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
    attr_accessor :redirect
    attr_accessor :status

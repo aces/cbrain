@@ -21,9 +21,14 @@
 #
 
 # Runtime system checks common to both Portal and Bourreau
-class CbrainSystemChecks < CbrainChecker
+class CbrainSystemChecks < CbrainChecker #:nodoc:
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  def self.puts(*args) #:nodoc:
+    Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
+    Kernel.puts(*args)
+  end
 
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
@@ -210,12 +215,12 @@ class CbrainSystemChecks < CbrainChecker
           newname    = "#{dir_to_remove}/#{entry}"
           renamed_ok = File.rename(entry,newname) rescue false
           if renamed_ok
-            puts "C> \t\t- Removing old cache subdirectory '#{entry}' in background..."
+            puts "C> \t\t- Removing old cache subdirectory '#{entry}' (in background)."
           end
         end
         system("{ /bin/rm -rf #{dir_to_remove.bash_escape} </dev/null >/dev/null 2>&1 & } &") if File.directory?(dir_to_remove)
       end
-      puts "C> \t- Synchronization objects are being wiped..."
+      puts "C> \t- Synchronization objects are being wiped."
       SyncStatus.where( :remote_resource_id => myself.id ).destroy_all
       puts "C> \t- Re-recording DataProvider 'code' DateTime in cache."
       DataProvider.cache_revision_of_last_init(:force)
@@ -223,7 +228,7 @@ class CbrainSystemChecks < CbrainChecker
     # Just crud removal needed.
     else 
 
-      puts "C> \t- Wiping old files in Data Provider cache (in background)..."
+      puts "C> \t- Wiping old files in Data Provider cache (in background)."
 
       CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
         wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!") rescue []

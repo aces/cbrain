@@ -61,6 +61,12 @@ describe CbrainSshDataProvider do
       cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
     end
 
+    it "should attempt to unlock the CBRAIN SSH agent" do
+      cbrain_ssh_data_provider.should_receive(:master)
+      Net::SFTP.should_receive(:start).and_return "OK"
+      cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should == "OK"
+    end
+
     it "should return false if file already exist" do
       sftp = mock('mock_sftp')
       sftp.stub!(:mkdir!)
@@ -68,6 +74,7 @@ describe CbrainSshDataProvider do
       req  = mock("req") 
       sftp.stub_chain(:lstat,:wait).and_return(req)
       req.stub_chain(:response, :ok?).and_return(true)
+      cbrain_ssh_data_provider.should_receive(:master) # just ignore it
       cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_false
     end
     
@@ -81,6 +88,7 @@ describe CbrainSshDataProvider do
       req2  = mock("req2") 
       sftp.stub_chain(:rename,:wait).and_return(req2)
       req2.stub_chain(:response, :ok?).and_return(false)
+      cbrain_ssh_data_provider.should_receive(:master) # just ignore it
       cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_false
     end
     
@@ -94,6 +102,7 @@ describe CbrainSshDataProvider do
       req2  = mock("req2") 
       sftp.stub_chain(:rename,:wait).and_return(req2)
       req2.stub_chain(:response, :ok?).and_return(true)
+      cbrain_ssh_data_provider.should_receive(:master) # just ignore it
       cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_true
     end
     

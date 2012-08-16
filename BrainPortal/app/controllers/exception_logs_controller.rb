@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# Controller for viewing or managing exception logs.
 class ExceptionLogsController < ApplicationController
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required 
   before_filter :admin_role_required

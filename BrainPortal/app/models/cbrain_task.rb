@@ -22,14 +22,17 @@
 
 # Model representing a job request made to an remote execution server (Bourreau) on a cluster.
 # Typically this class is not used directly, instead intermediate subclasses are
-# used on the Portal side and on the Bourreau side:
+# used on the BrainPortal side and on the Bourreau side:
 #
 #   PortalTask  < CbrainTask # on portal side
 #   ClusterTask < CbrainTask # on bourreau side
 #
+# Most of the methods here are useful both on the BrainPortal side and on
+# the Bourreau side; for methods that should only be used on a particular
+# side, see the classes PortalTask and ClusterTask respectively.
 class CbrainTask < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include ResourceAccess
 
@@ -58,6 +61,7 @@ class CbrainTask < ActiveRecord::Base
                         :params
 
   # Pseudo Attributes (not saved in DB)
+  # These are filled in by calling capture_job_out_err().
   attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
 
   # The attribute 'params' is a serialized hash table
@@ -153,32 +157,43 @@ class CbrainTask < ActiveRecord::Base
   # Status Lists
   ##################################################################
 
+  # List of status for tasks that have completed successfully.
   COMPLETED_STATUS  = [ "Completed" ]
 
+  # List of status for tasks that are proceeding on the normal processing path.
   QUEUED_STATUS     = [ "New", "Standby", "Configured", "Queued", "On Hold", "Suspended", "Data Ready" ] # waiting for something
 
+  # List of status for tasks that are actively processing (in Ruby stages or on CPU on the cluster)
   PROCESSING_STATUS = [ "Setting Up", "On CPU", "Post Processing" ] # actually running code
 
+  # List of status for tasks that are considered active on the normal processing path.
   RUNNING_STATUS    = [ "New", "Setting Up", "Queued", "On CPU", "Data Ready", "Post Processing"] # main path
 
+  # List of status for tasks that have failed.
   FAILED_STATUS     = [ "Failed To Setup", "Failed To PostProcess", "Failed On Cluster",
                         "Failed Setup Prerequisites", "Failed PostProcess Prerequisites",
                         "Terminated" ]
 
+  # List of status for tasks that are on the 'recover' paths.
   RECOVER_STATUS    = [ "Recover Setup",    "Recover Cluster",    "Recover PostProcess",
                         "Recovering Setup", "Recovering Cluster", "Recovering PostProcess" ]
 
+  # List of status for tasks that are on the 'restart' paths.
   RESTART_STATUS    = [ "Restart Setup",    "Restart Cluster",    "Restart PostProcess",
                         "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
 
+  # List of other administrative status.
   OTHER_STATUS      = [ "Preset", "Duplicated" ]
 
+  # List of status for tasks that are executing Ruby code.
   RUBY_STATUS       = [ "Setting Up", "Post Processing",
                         "Recovering Setup", "Recovering Cluster", "Recovering PostProcess",
                         "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
 
+  # List of status for tasks that active in any way.
   ACTIVE_STATUS    = QUEUED_STATUS | PROCESSING_STATUS | RECOVER_STATUS | RESTART_STATUS
 
+  # List of all status keywords.
   ALL_STATUS       = ACTIVE_STATUS | COMPLETED_STATUS | RUNNING_STATUS | FAILED_STATUS | OTHER_STATUS
 
   ##################################################################
@@ -286,14 +301,14 @@ class CbrainTask < ActiveRecord::Base
   #   CbrainTask#cluster_workdir => "00/00/00/taskdir"
   #
   # This code handle all conventions, for historical tasks.
-  def full_cluster_workdir(seen_tids = {}) # seen_tids is an internal args for breaking recursion
+  def full_cluster_workdir(seen_tids = {}, options = {}) # seen_tids is an internal arg for breaking recursion
     shared_wd_tid = self.share_wd_tid
 
     # The most common situation: a task with its own work directory
     if share_wd_tid.blank?
       attval = self.cluster_workdir
       return attval if attval.blank? || attval =~ /^\// # already full path?
-      shared_dir = self.cluster_shared_dir # from its bourreau's cms_shared_dir
+      shared_dir = options[:cms_shared_dir] || self.cluster_shared_dir # from its bourreau's cms_shared_dir
       return nil if shared_dir.blank?
       return "#{shared_dir}/#{attval}"
     end
@@ -304,7 +319,7 @@ class CbrainTask < ActiveRecord::Base
     other_task = CbrainTask.find_by_id(shared_wd_tid)
     cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got ID of missing task #{shared_wd_tid}" unless other_task
     cb_error "Trying to find the shared workdir of task #{self.bname_tid}, got sent to a task on a different Bourreau: #{other_task.bname_tid}" if other_task.bourreau_id != self.bourreau_id
-    return other_task.full_cluster_workdir(seen_tids) # recurse
+    return other_task.full_cluster_workdir(seen_tids, options) # recurse
   end
 
   # Returns the task's bourreau's cms_shared_dir (which might not be

@@ -36,7 +36,7 @@
 #
 class EnCbrainSshDataProvider < SshDataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def is_browsable? #:nodoc:
     false
@@ -78,6 +78,7 @@ class EnCbrainSshDataProvider < SshDataProvider
     newpath = newpath.to_s
 
     # We should create a nice state machine for the remote rename operations
+    self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
 
       req = sftp.lstat(newpath).wait

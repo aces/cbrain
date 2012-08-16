@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# View helpers for creating disk usage reports.
 module DiskUsageReportHelper
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # Returns a RGB color code '#000000' to '#ffffff'
   # for disk sizes; the values are all fully saturated

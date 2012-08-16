@@ -24,7 +24,7 @@
 class FeedbacksController < ApplicationController
   before_filter :login_required
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   # GET /feedbacks
   # GET /feedbacks.xml

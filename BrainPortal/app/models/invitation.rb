@@ -20,9 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+# A type of message specifically sent out by one user to invite another
+# user to their project.
 class Invitation < Message
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   belongs_to    :group
   
@@ -31,6 +33,7 @@ class Invitation < Message
   after_create  :add_description  #Need to put the id in there.
   
   
+  # Send an invitation to project +group+ from +sender+ to +users+. 
   def self.send_out(sender, group, users)
     self.send_message(users,
       message_type: "notice",
@@ -43,11 +46,11 @@ class Invitation < Message
   
   private
   
-  def make_active
+  def make_active #:nodoc:
     self.active = true
   end
   
-  def add_description
+  def add_description #:nodoc:
     self.description = "You've been invited to join project #{group.name}.\n\n"+
                        "[[Accept][/invitations/#{self.id}}][put]]"
     self.save!

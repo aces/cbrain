@@ -23,7 +23,7 @@
 # Helpers for making tables
 module TableMakerHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Renders an +array+ into a 2D table. This method is
   # useful when the +array+ contains a set of elements all

@@ -23,7 +23,7 @@
 #Helper methods for date range panel.
 module DateRangePanelHelper
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Display a panel in order to select a date range,
   #with relative date and absolute date.

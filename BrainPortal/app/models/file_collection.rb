@@ -28,7 +28,7 @@ require 'find'
 #the userfiles table. 
 class FileCollection < Userfile 
   
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   validates :type, :subclass => { :root_class => FileCollection }
   

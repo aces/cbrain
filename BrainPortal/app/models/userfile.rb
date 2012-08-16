@@ -41,7 +41,7 @@ require 'set'
 #
 class Userfile < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 

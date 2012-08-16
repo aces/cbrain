@@ -45,7 +45,7 @@ require 'fileutils'
 #
 class EnCbrainLocalDataProvider < LocalDataProvider
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def allow_file_owner_change? #:nodoc:
     true

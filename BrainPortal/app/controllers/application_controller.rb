@@ -30,7 +30,7 @@ require 'authenticated_system'
 # session.
 class ApplicationController < ActionController::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include AuthenticatedSystem
   include BasicFilterHelpers
@@ -154,9 +154,9 @@ class ApplicationController < ActionController::Base
 
     #Check if passwords been reset.
     if current_user.password_reset
-      unless params[:controller] == "users" && (params[:action] == "show" || params[:action] == "update")
+      unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
         flash[:error] = "Please reset your password."
-        redirect_to user_path(current_user)
+        redirect_to change_password_user_path(current_user)
       end
     end
   end

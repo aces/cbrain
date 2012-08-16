@@ -36,7 +36,7 @@
 #
 class ToolConfig < ActiveRecord::Base
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   serialize      :env_array
 

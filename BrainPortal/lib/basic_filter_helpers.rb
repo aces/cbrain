@@ -24,7 +24,7 @@
 # (see index_table_helper.rb).
 module BasicFilterHelpers
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.class_eval do

@@ -23,16 +23,12 @@
 -%>
 
 <%
-   info        = bourreau.info
+   info        = bourreau.info(:ping)
    b_alive     = info.name != "???"
-   diskrev     = info.revision
    runrev      = info.starttime_revision
    worker_pids = info.worker_pids
    worker_pids = nil if worker_pids == "???"
    num_workers = worker_pids ? worker_pids.count(',')+1 : 0
-   tasks_tot   = info.tasks_tot
-   tasks_max   = info.tasks_max
-   tasks_max   = 'unlimited' if tasks_max.to_s == '0'
    isbourreau  = bourreau.is_a?(Bourreau).presence # make sure it's 'nil' if false so substition -> empty string
    num_running = isbourreau ? CbrainTask.where( :bourreau_id => bourreau.id, :status => CbrainTask::ACTIVE_STATUS ).count : 0
    task_space_known = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)                                               : ""
@@ -44,14 +40,7 @@
   <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
-        <% creport = " Code: #{diskrev} " %>
-        <% lreport = " Live: #{runrev} " %>
-        <% if diskrev.first == "(" %>
-          <%= html_colorize(creport + lreport, 'purple') %>
-        <% else %>
-          <%= red_if(diskrev != '???' && diskrev != $CBRAIN_StartTime_Revision, creport, nil, :color2 => 'orange') %>
-          <%= red_if(runrev  != '???' && runrev  != diskrev                   , lreport, nil, :color2 => 'red') %>
-        <% end %>
+        <%= red_if(runrev  != '???' && runrev  != $CBRAIN_StartTime_Revision, runrev, nil, :color2 => 'red') %>
     </td>
     <td><%= link_to_user_with_tooltip(bourreau.user) %></td>
   <% end %>
@@ -81,7 +70,6 @@
       <%= red_if(num_workers != bourreau.workers_instances, "Running (x #{num_workers})", nil, :color2 => "orange") %>
     <% end %>
   </td>
-  <td><%= "#{tasks_tot}/#{tasks_max}" if isbourreau %></td>
   <td>
       <%= isbourreau && html_tool_tip(
          index_count_filter(num_running, :tasks, { :bourreau_id => bourreau.id, :status => :active }, :show_zeros => true),

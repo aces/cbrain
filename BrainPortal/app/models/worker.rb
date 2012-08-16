@@ -71,7 +71,7 @@ require 'sys/proctable'
 
 class Worker
 
-  Revision_info=CbrainFileRevision[__FILE__]
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include Sys
   include Log4r
@@ -345,7 +345,7 @@ class Worker
   def main_loop #:nodoc:
     self.validate_I_am_a_worker
     self.worker_log.info "Starting main worker loop."
-    self.worker_log.info "Revision " + self.revision_info.svn_id_pretty_rev_author_date
+    self.worker_log.info "#{self.class} rev. " + self.revision_info.svn_id_pretty_rev_author_date
 
     # Custom initialization method supplied by subclass.
     self.setup
@@ -367,7 +367,7 @@ class Worker
       # We have two 'wait' modes.
       #
       # The 'check_interval' mode is the rate at which the
-      # worker's do_regular_work() method is invoke in normal
+      # worker's do_regular_work() method is invoked in normal
       # times. While waiting in this mode, we cannot be awakened
       # but can we can be stopped.
       #
@@ -375,7 +375,7 @@ class Worker
       # interval that can be triggered ONCE, by the worker itself,
       # to tell this class that it is slowing down. The
       # sleep period can be interrupted at any time by an
-      # external program, to wake up or sotp the worker.
+      # external program, to wake up or stop the worker.
       if self.sleep_mode && ! self.sleep_interval.blank?
         self.sleep_for_requested_interval
       elsif ! self.check_interval.blank?
@@ -608,7 +608,7 @@ class Worker
 
   # Constructs pidfilename based on worker class and pid.
   # File name format: Worker-{WorkerClass}-{pid}.run
-  # This method is also used to build a glab pattern
+  # This method is also used to build a glob pattern
   # by calling it with the pid argument set to '*'.
   def self.construct_pidfile_name(pid) #:nodoc:
     return "Worker-#{self.to_s}-#{pid}.run"

@@ -35,7 +35,7 @@
 #   value = obj[:myattr]
 class RestrictedHash < Hash
 
-   Revision_info=CbrainFileRevision[__FILE__]
+   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
    # This must be a 'Class Instance Variable', not a class variable.
    @allowed_keys = {}
