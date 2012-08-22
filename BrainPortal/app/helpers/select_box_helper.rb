@@ -37,7 +37,7 @@ module SelectBoxHelper
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
     users    = options[:users] || current_user.available_users
-  
+
     if selector.respond_to?(:user_id)
       selected = selector.user_id.to_s
     elsif selector.is_a?(User)
@@ -47,13 +47,16 @@ module SelectBoxHelper
     else
       selected = selector.to_s
     end
-    grouped_options = options_for_select(users.sort_by(&:login).collect { |u| [ "#{u.login} (#{u.full_name})", u.id.to_s ] }, selected || current_user.id.to_s)
-    blank_label = select_tag_options.delete(:include_blank)
+
+    # Final HTML rendering of the options for select
+    user_by_lock_status = group_user_by_lock_status(users)
+    grouped_options     = grouped_options_for_select user_by_lock_status, selected
+    blank_label         = select_tag_options.delete(:include_blank)
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options, select_tag_options
   end
   
@@ -69,7 +72,7 @@ module SelectBoxHelper
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector] || current_project
     groups   = options[:groups]   || current_user.available_groups
-  
+
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
     elsif selector.is_a?(Group)
@@ -116,12 +119,12 @@ module SelectBoxHelper
 
     # Step 3: Other project categories, in that order
     [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects" ].each do |proj|
-       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+      ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
     end
 
     # Step 4: Other mysterious categories ?!?
     category_grouped_pairs.keys.each do |proj|
-       ordered_category_grouped << [ "X-#{proj}" , category_grouped_pairs.delete(proj) ]
+      ordered_category_grouped << [ "X-#{proj}" , category_grouped_pairs.delete(proj) ]
     end
 
     # Final HTML rendering of the options for select
@@ -132,7 +135,7 @@ module SelectBoxHelper
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options, select_tag_options
   end
   
@@ -531,6 +534,23 @@ module SelectBoxHelper
     end
     
     options_for_select ordered_type_grouped, selected
+  end
+
+  #Create an array, with 2 sub-category, one for active users 
+  #another for locked users
+  def group_user_by_lock_status(users) #:nodoc:
+    user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active user" : "Locked user"}
+    ordered_by_lock_status   = []
+    
+    user_by_lock_status_hash.sort.each do |status,users|
+      user_name_id = []
+      users.each do |u|
+        user_name_id << ["#{u.login} (#{u.full_name})" , u.id]
+      end
+      ordered_by_lock_status << [status, user_name_id]
+    end
+
+    ordered_by_lock_status
   end
   
 end
