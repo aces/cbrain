@@ -32,6 +32,11 @@
         <%= f.label :name, "Name" %><br />
         <%= f.text_field :name %>
       </p>
+      <p>
+        <%= f.label :description, "Description" %><br />
+        <%= f.text_area :description, :rows => 4, :cols => 40 %>
+        <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
+      </p>
       <% if current_user.has_role?(:admin_user) %>
         <p>
           <%= f.label :site_id, "Site" %><br/>

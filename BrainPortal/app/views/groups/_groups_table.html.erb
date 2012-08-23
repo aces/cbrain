@@ -86,16 +86,34 @@
           else
             css_project_type = "personal"
           end
+          desc_first = nil
+          desc_rest  = nil
+          if g.description.present?
+            desc_lines = h(g.description).lines.to_a
+            desc_first = desc_lines.shift.presence
+            desc_rest  = desc_lines.join.presence
+          end
          %>
         <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_project_type %>_project">
-            <h4 title="<%= g.name %>"><%= crop_text_to(25, g.name) %><%= "<br>(#{h(g.short_pretty_type)})".html_safe unless g.short_pretty_type.blank? %></h4>
-            <hr>
-            Files: <%= @group_id_2_userfile_counts[g.id] || "(None)" %><br>
-            Tasks: <%= @group_id_2_task_counts[g.id] || "(None)" %>
+          <h4><%= h crop_text_to(25, g.name) %></h4>
+          <hr>
+          <% if css_project_type != "personal" %>
+            Users: <%= @group_id_2_user_counts[g.id].to_i %>&nbsp;&nbsp;
+          <% end %>
+          Files: <%= @group_id_2_userfile_counts[g.id].to_i %>&nbsp;&nbsp;
+          Tasks: <%= @group_id_2_task_counts[g.id].to_i %>
+          <% if desc_first %>
+            <div class="project_button_description"><%= crop_text_to(35, desc_first) %></div>
+          <% end %>
+          <div class="project_button_details">
+            <% if desc_rest %>
+              <div class="project_button_description"><%= crop_text_to(120, desc_rest) %></div>
+            <% end %>
             <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
             <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>
               <%= delete_button "X", group_path(g), :class => "project_delete_button project_button_bottom_link", :title => "Delete", :confirm => "Are you sure you want to delete project '#{h g.name}'?" %>
             <% end %>
+          </div>
         </div>
       <% end %>
 
@@ -108,6 +126,7 @@
       t.describe_sort_column("Name", Group, "name") do |col|
         col.cell(:class => "left") { |g|  link_to_group_if_accessible g}
       end
+      t.sort_column("Description", Group, "description") { |g|  overlay_description(g.description) }
       t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) do |g|        
         g.pretty_category_name(current_user)
       end

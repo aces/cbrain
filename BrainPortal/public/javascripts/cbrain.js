@@ -209,38 +209,29 @@ function load_behaviour(event){
    
    loaded_element.find(".project_button").each(function(event){
       var project_button = $(this);
-      var edit_button = project_button.find(".project_edit_button");
-      var delete_button = project_button.find(".project_delete_button");
+      var project_details = project_button.find(".project_button_details");
 
-
-
-      edit_button.hide();
-      delete_button.hide();
+      project_details.hide();
 
       project_button.mouseenter(function(){
-        edit_button.show();
-        delete_button.show();
+        project_details.show();
       }).mouseleave(function(){
-        edit_button.hide();
-        delete_button.hide();
+        project_details.hide();
       });
 
    }).mouseenter(function(){
      var project_button = $(this);
-     
-     project_button.css("-webkit-transform", "scale(1.1)");
-     project_button.css("-moz-transform", "scale(1.1)");
-     project_button.css("-o-transform", "scale(1.1)");
-     project_button.css("-ms-transform", "scale(1.1)");
-     
+     project_button.css("-webkit-transform", "scale(1.2)");
+     project_button.css("-moz-transform", "scale(1.2)");
+     project_button.css("-o-transform", "scale(1.2)");
+     project_button.css("-ms-transform", "scale(1.2)");
    }).mouseleave(function(){
      var project_button = $(this);
      
      project_button.css("-webkit-transform", "scale(1)");
      project_button.css("-moz-transform", "scale(1)");
      project_button.css("-o-transform", "scale(1)");
-     project_button.css("-ms-transform", "scale(1)");
-   
+     project_button.css("-ms-transform", "scale(1)");   
    }).mousedown(function(event){
      if(event.target.nodeName == "A"){
        return true;
@@ -248,10 +239,10 @@ function load_behaviour(event){
      
      var project_button = $(this);
      
-     project_button.css("-webkit-transform", "scale(1.05)");
-     project_button.css("-moz-transform", "scale(1.05)");
-     project_button.css("-o-transform", "scale(1.05)");
-     project_button.css("-ms-transform", "scale(1.05)");
+     project_button.css("-webkit-transform", "scale(1.1)");
+     project_button.css("-moz-transform", "scale(1.1)");
+     project_button.css("-o-transform", "scale(1.1)");
+     project_button.css("-ms-transform", "scale(1.1)");
    }).mouseup(function(){
      var project_button = $(this);
    
@@ -753,7 +744,6 @@ $(
       var trigger = $(this);
       var tool_tip_id = trigger.attr("data-tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
-      
       var offset_x = trigger.attr("data-offset-x") || '30';
       var offset_y = trigger.attr("data-offset-y") || '0';
       

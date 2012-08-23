@@ -291,6 +291,7 @@ describe UsersController do
   context "member action" do
     
     describe "show" do
+      let(:start_path) {controller.send(:start_page_path)}
 
       context "with admin user" do
         before(:each) do
@@ -315,7 +316,7 @@ describe UsersController do
 
         it "should not show a user not associated with the site" do
           get :show, :id => user.id
-          response.should redirect_to("/home")
+          response.should redirect_to(start_path)
         end
 
       end
@@ -332,7 +333,7 @@ describe UsersController do
 
         it "should not show other users" do
           get :show, :id => site_user.id
-          response.should redirect_to("/home")
+          response.should redirect_to(start_path)
         end
 
       end

@@ -60,7 +60,7 @@ class Group < ActiveRecord::Base
   belongs_to              :creator,
                           :class_name   => "User"
   
-  attr_accessible         :name, :site_id, :creator_id, :user_ids
+  attr_accessible         :name, :description, :site_id, :creator_id, :user_ids
   
   scope                   :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
 
