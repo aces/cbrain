@@ -30,7 +30,7 @@
 
   <span class="home_credits">
     <% if current_user %>
-      <% if current_user.try(:has_role?, :admin_user) %>
+      <% unless current_user.try(:has_role?, :normal_user) %>
         <%= link_to "Dashboard", home_path %>
       <% end %>
       <%= link_to 'My Account', user_path(current_user) %>

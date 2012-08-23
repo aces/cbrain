@@ -55,7 +55,7 @@
                  <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
                </li>
              <% end %>
-             <% if !current_user.has_role?(:normal_user) %>
+             <% unless current_user.has_role?(:normal_user) %>
                <li <%= set_selected(params[:controller], :data_providers) %>>
                  <%= link_to 'Data Providers', data_providers_path %>
                </li>
