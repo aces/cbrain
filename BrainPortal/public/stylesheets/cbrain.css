@@ -1403,6 +1403,7 @@ pre {
 }
 
 .pagination_left_side {
+  width: 33.33%;
   display: table-cell;
   text-align: left;
   font-weight: bold;
@@ -1411,6 +1412,7 @@ pre {
 }
 
 .pagination_right_side {
+  width: 33.33%
   display: table-cell;
   text-align: right;
   font-weight: bold;
