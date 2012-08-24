@@ -22,12 +22,13 @@
 #
 -%>
 
-<span class="page_links">
+<div class="pagination_left_side"></div>
+<div class="page_links">
   <%= will_paginate @users, :container => false %>
-  (<%= pluralize @users.total_entries, "users" %>)
-</span>
-<span class="pagination_right_side">
+  (<%= pluralize @users.total_entries, "user" %>)
+</div>
+<div class="pagination_right_side">
   Search by name:
   <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
-</span>
+</div>
 

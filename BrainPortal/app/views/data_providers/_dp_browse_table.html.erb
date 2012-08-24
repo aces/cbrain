@@ -43,13 +43,15 @@
   <% end %>
 
   <div class="pagination">
-    <span class="page_links">
+    <div class="pagination_left_side"></div>
+  
+    <div class="page_links">
       <%= will_paginate @fileinfolist, :container => false %> (<%= pluralize @file_count, "files" %>)
-    </span>
+    </div>
 
-    <span class="pagination_right_side">
+    <div class="pagination_right_side">
       Search by name: <%= ajax_search_box :search, browse_data_provider_path %>
-    </span>
+    </div>
   </div>
   
   <table class="resource_list" id="dp_browse_table"> 
