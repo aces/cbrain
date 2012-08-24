@@ -107,7 +107,7 @@
           <% end %>
           <div class="project_button_details">
             <% if desc_rest %>
-              <div class="project_button_description"><%= crop_text_to(120, desc_rest) %></div>
+              <div class="project_button_description project_details"><%= crop_text_to(120, desc_rest) %></div>
             <% end %>
             <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
             <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>

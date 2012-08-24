@@ -221,10 +221,10 @@ function load_behaviour(event){
 
    }).mouseenter(function(){
      var project_button = $(this);
-     project_button.css("-webkit-transform", "scale(1.2)");
-     project_button.css("-moz-transform", "scale(1.2)");
-     project_button.css("-o-transform", "scale(1.2)");
-     project_button.css("-ms-transform", "scale(1.2)");
+     project_button.css("-webkit-transform", "scale(1.3)");
+     project_button.css("-moz-transform", "scale(1.3)");
+     project_button.css("-o-transform", "scale(1.3)");
+     project_button.css("-ms-transform", "scale(1.3)");
    }).mouseleave(function(){
      var project_button = $(this);
      
@@ -239,10 +239,10 @@ function load_behaviour(event){
      
      var project_button = $(this);
      
-     project_button.css("-webkit-transform", "scale(1.1)");
-     project_button.css("-moz-transform", "scale(1.1)");
-     project_button.css("-o-transform", "scale(1.1)");
-     project_button.css("-ms-transform", "scale(1.1)");
+     project_button.css("-webkit-transform", "scale(1.2)");
+     project_button.css("-moz-transform", "scale(1.2)");
+     project_button.css("-o-transform", "scale(1.2)");
+     project_button.css("-ms-transform", "scale(1.2)");
    }).mouseup(function(){
      var project_button = $(this);
    
