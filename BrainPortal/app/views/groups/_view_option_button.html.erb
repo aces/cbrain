@@ -1,7 +1,7 @@
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
     <%= 
-      filter_add_link (@filter_params["button_view"] == 'off' ? "Button View" : "List View"),
+      filter_add_link (@filter_params["button_view"] == 'on' ? "List View" : "Button View"),
                       :parameter => :button_view, 
                       :value     => set_toggle(@filter_params["button_view"])
     %>

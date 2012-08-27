@@ -24,27 +24,64 @@ require 'spec_helper'
 
 describe PortalController do
   let(:current_user) {Factory.create(:normal_user)}
+  let(:site_manager) {Factory.create(:site_manager)}
   let(:admin_user) {Factory.create(:admin_user)}
+  let(:start_path) {controller.send(:start_page_path)}
   
   context "with a logged in normal user" do
+    
     before(:each) do
       session[:user_id] = current_user.id
     end
 
     describe "welcome" do
-      it "should find the default data provider" do
-        DataProvider.should_receive(:find_by_id)
+      it "should redirect the login page" do
         get :welcome
+        response.status.should redirect_to(start_path)
       end
-      it "should find the default bourreau" do
-        Bourreau.should_receive(:find_by_id)
-        get :welcome
+    end
+    describe "portal_log" do
+      it "should redirect the login page" do
+        get :portal_log
+        response.status.should == 401
       end
-      it "should get a list of recent tasks" do
-        task_list = double("task_list").as_null_object
-        CbrainTask.stub_chain(:real_tasks, :not_archived, :where, :order, :limit, :all).and_return(task_list)
+    end
+    describe "show_license" do
+      it "should display the appropriate licence" do
+        get :show_license, :license =>  "12345"
+        assigns[:license].should == "12345"
+      end
+    end
+    describe "sign_license" do
+      it "should log the user out if the 'agree' parameter is not sent" do
+        post :sign_license, :license => "12345"
+        response.should redirect_to "/logout"
+      end
+      it "should update the appropriate licence" do
+        post :sign_license, :license => "12345", :agree => true
+        assigns[:license].should == "12345"
+      end
+      it "should redirect to the show license page if not all checkboxes were checked" do
+        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1
+        response.should redirect_to(:action => :show_license, :license => "12345")
+      end
+      it "should redirect to the start page if all checkboxes were checked" do
+        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"
+        response.should redirect_to(controller.send :start_page_path)
+      end
+    end
+  end
+  
+  context "with a logged in site manager" do
+        
+    before(:each) do
+      session[:user_id] = site_manager.id
+    end
+
+    describe "welcome" do
+      it "should redirect the login page" do
         get :welcome
-        assigns[:tasks].should == task_list
+        response.status.should render_template("welcome")
       end
     end
     describe "portal_log" do
@@ -79,12 +116,20 @@ describe PortalController do
     end
   end
     
-  context "with a logged in admin user" do
-    before(:each) do
-      session[:user_id] = admin_user.id
-      IO.stub!(:popen).and_return("log")
-    end
     
+  context "with a logged in admin user" do
+        
+     before(:each) do
+        session[:user_id] = admin_user.id
+        IO.stub!(:popen).and_return("log")
+      end
+
+    describe "welcome" do
+      it "should redirect the login page" do
+        get :welcome
+        response.status.should render_template("welcome")
+      end
+    end
     describe "portal_log" do
       it "should render the portal log template" do
         get :portal_log
@@ -96,7 +141,30 @@ describe PortalController do
         assigns[:portal_log].should include_text(/No logs entries found/)
       end
     end
-    
+    describe "show_license" do
+      it "should display the appropriate licence" do
+        get :show_license, :license =>  "12345"
+        assigns[:license].should == "12345"
+      end
+    end
+    describe "sign_license" do
+      it "should log the user out if the 'agree' parameter is not sent" do
+        post :sign_license, :license => "12345"
+        response.should redirect_to "/logout"
+      end
+      it "should update the appropriate licence" do
+        post :sign_license, :license => "12345", :agree => true
+        assigns[:license].should == "12345"
+      end
+      it "should redirect to the show license page if not all checkboxes were checked" do
+        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1
+        response.should redirect_to(:action => :show_license, :license => "12345")
+      end
+      it "should redirect to the start page if all checkboxes were checked" do
+        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"
+        response.should redirect_to(controller.send :start_page_path)
+      end
+    end
   end
  
   context "when the user is not logged in" do

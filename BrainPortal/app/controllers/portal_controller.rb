@@ -37,7 +37,7 @@ class PortalController < ApplicationController
       return
     end
     
-    unless current_user.has_role?(:admin_user)
+    if current_user.has_role?(:normal_user)
       redirect_to start_page_path 
       return
     end

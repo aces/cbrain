@@ -33,6 +33,9 @@
   </span>
 </div>
 
+<div class="centered">
+(<%= pluralize @sites.count, "site" %>)
+</div>
 <%= index_table(@sites, :class => "resource_list") do |t| %>
   <%
     t.sort_column("Name", Site, :name) { |s| link_to_site_if_accessible(s)  }

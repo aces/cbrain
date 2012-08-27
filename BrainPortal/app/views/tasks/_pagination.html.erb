@@ -22,21 +22,21 @@
 #
 -%>
 
-<span class="pagination_left_side">
+<div class="pagination_left_side">
   <% if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
     <strong>Currently in Batch View</strong>
   <% end %>  
-</span>
-<span class="page_links">
+</div>
+<div class="page_links">
   <%= will_paginate @paginated_list, :container => false %>
   (<%= pluralize @total_tasks, "task" %>)
-</span>
-<span class="pagination_right_side">
+</div>
+<div class="pagination_right_side">
   <% if @total_space_known > 0 %>
   Total task space used: <%= colored_pretty_size(@total_space_known) %>
   <% end %>
   <% if @total_space_unkn  > 0 %>
   (<%= pluralize @total_space_unkn, "task" %> without space estimates)
   <% end %>
-</span>
+</div>
 

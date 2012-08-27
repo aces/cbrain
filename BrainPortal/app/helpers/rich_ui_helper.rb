@@ -45,6 +45,8 @@ module RichUiHelper
     link.html_safe
   end
   
+  # Create an element that opens a dropdown when it's 
+  # hovered over.
   def hover_dropdown(header, options = {}, &block)
     @hover_dropdown_div_ids ||= 0
     @hover_dropdown_div_ids += 1

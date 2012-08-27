@@ -31,7 +31,9 @@ class GroupsController < ApplicationController
   # GET /groups.xml
   def index  #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "groups.name"
-    @filter_params["button_view"] ||= "on"
+    if current_user.has_role?(:normal_user)
+      @filter_params["button_view"] ||= "on"
+    end
     
     @header_scope   = current_user.available_groups
     @filtered_scope = base_filtered_scope @header_scope.includes(:site)
@@ -69,6 +71,7 @@ class GroupsController < ApplicationController
     
     @group_id_2_userfile_counts      = Userfile.group("group_id").count
     @group_id_2_task_counts          = CbrainTask.group("group_id").count
+    @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
     if @filter_params["button_view"] == "on"
       @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
       @group_id_2_task_counts[nil]     = current_user.available_tasks.count

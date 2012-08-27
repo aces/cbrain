@@ -206,7 +206,7 @@ tr.list-even {
 }
 
 tr.list-odd {
-    background-color: #F1F5FF;
+    background-color: #F1F1F1;
 }
 
 tr.list-unavailable {
@@ -908,7 +908,8 @@ pre {
 }
 
 #header a:hover {
-  background: gray;
+  color: #222;
+  background: #F1F1F1;
 }
 
 #loading_image {
@@ -1017,9 +1018,9 @@ pre {
   text-decoration: none;
   color: white;
   padding: 0.4em;
-  margin: 1em;
-  width: 20em;
-  height: 8em;
+  margin: 2em ;
+  width: 18em;
+  height: 9em;
   border: 0.4em gray solid;
   border-radius: 1em;
   -moz-border-radius: 1em;
@@ -1046,6 +1047,15 @@ pre {
   text-decoration: none;
   position: absolute;
   bottom: 1px;
+}
+
+.project_button_description {
+  font-style: italic;
+  line-height: 1.2em;
+}
+
+.project_details {
+  font-size: 0.8em;
 }
 
 .project_edit_button {
@@ -1129,8 +1139,8 @@ pre {
 }
 
 .project_select_dropdown {
-  border: 3px solid #0471B4;
-  background-color: #05A3D6;
+  border: 3px solid #05A3D6;
+  background-color: #F1F1F1;
   padding: 0.2em 1em 1em 1em;  
   margin-top: 0.2em;
   text-align: left;
@@ -1141,6 +1151,7 @@ pre {
 
 .project_select_dropdown a{
   font-size: 0.7em;
+  color: #222!important;
 }
 
 
@@ -1397,6 +1408,7 @@ pre {
 }
 
 .pagination_left_side {
+  width: 33.33%;
   display: table-cell;
   text-align: left;
   font-weight: bold;
@@ -1405,6 +1417,7 @@ pre {
 }
 
 .pagination_right_side {
+  width: 33.33%
   display: table-cell;
   text-align: right;
   font-weight: bold;
@@ -1784,18 +1797,27 @@ img {
 /* % ######################################################### */
 
 .filter_list {
-  border: 3px solid #0471B4;
-  margin: 0;
-  padding: 1em 2em 1em 2em;
-  background-color: #05A3D6;
+  border: 2px solid #0471B4;
+  margin-top: 0;
+  color: #222;
+  padding: 1.2em 1.2em 0 1.2em;
+  background-color: #F1F1F1; /* #eee;*/
   text-align: left;
   max-height: 30em;
   overflow: auto;
 }
 
-.filter_list li a:focus {
-  background: #FFFF99;
-  color: gray;
+.filter_list ul {
+  padding-left: 1.5em;
+}
+
+.filter_list li a:link {
+  color: #222;
+}
+
+.filter_list li a:hover {
+  background: #B9B9B9;
+  color: #0060A9;
 }
 
 .filter_list li a.filter_zero {

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120718195301) do
+ActiveRecord::Schema.define(:version => 20120815191559) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -126,7 +126,8 @@ ActiveRecord::Schema.define(:version => 20120718195301) do
     t.string   "type"
     t.integer  "site_id"
     t.integer  "creator_id"
-    t.boolean  "invisible",  :default => false
+    t.boolean  "invisible",   :default => false
+    t.text     "description"
   end
 
   add_index "groups", ["invisible"], :name => "index_groups_on_invisible"
@@ -340,6 +341,7 @@ ActiveRecord::Schema.define(:version => 20120718195301) do
     t.string   "full_name"
     t.string   "login"
     t.string   "email"
+    t.string   "type"
     t.string   "crypted_password",          :limit => 40
     t.string   "salt",                      :limit => 40
     t.string   "remember_token"
@@ -353,9 +355,9 @@ ActiveRecord::Schema.define(:version => 20120718195301) do
     t.string   "country"
     t.datetime "last_connected_at"
     t.boolean  "account_locked",                          :default => false, :null => false
-    t.string   "type"
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"
+  add_index "users", ["type"], :name => "index_users_on_type"
 
 end
