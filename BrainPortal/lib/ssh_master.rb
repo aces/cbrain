@@ -73,17 +73,30 @@ class SshMaster
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  CONTROL_SOCKET_DIR_1 = (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp"
-  CONTROL_SOCKET_DIR_2 = "/tmp" # alternate if DIR_1 path is too long
+  # Class configuration variables.
+  CONFIG = {
+    # Location of sockets and PID files
+    :CONTROL_SOCKET_DIR_1 => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp",
+    # Alternate location if DIR_1 path is too long (control path MUST be < 100 characters long!)
+    :CONTROL_SOCKET_DIR_2 => "/tmp",
+    # PID files location
+    :PID_DIR              => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/pids" : "/tmp",
 
-  # Internal timing limits; conservative enough and should not need to be changed.
-  IS_ALIVE_TIMEOUT     = 60
-  SPAWN_WAIT_TIME      = 40
+    # Internal timing limits; conservative enough and should not need to be changed.
+    :IS_ALIVE_TIMEOUT     => 60,
+    :SPAWN_WAIT_TIME      => 40,
+  }
 
-  # Advanced options for instances of Masters
-  attr_accessor :debug    # if true, turn on verbose logging of subprocess tracking stuff
-  attr_accessor :no_diag  # if true, no .oer files if created for diagnostics or logging
-  attr_reader   :nomaster # returns true if the SshMaster object was created with option :nomaster
+  # Advanced options for instances of SshMaster
+
+  # if true, turn on verbose logging of subprocess tracking stuff
+  attr_accessor :debug
+
+  # if true, no .oer files if created for diagnostics or logging
+  attr_accessor :no_diag
+
+  # returns true if the SshMaster object was created with option :nomaster
+  attr_reader   :nomaster
 
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
@@ -334,11 +347,11 @@ class SshMaster
       end
     end
 
-    # Wait for it to be fully established (up to SPAWN_WAIT_TIME seconds).
+    # Wait for it to be fully established (up to CONFIG[:SPAWN_WAIT_TIME] seconds).
     debugTrace("Started SSH master with PID #{pid}...")
     Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
-    SPAWN_WAIT_TIME.times do
+    CONFIG[:SPAWN_WAIT_TIME].times do
       break if File.exist?(socket) && File.exist?(pidfile)
       debugTrace("... waiting for confirmed creation of socket and PID file...")
       sleep 1
@@ -421,7 +434,7 @@ class SshMaster
           debugTrace("Alarm subprocess #{$$} for #{@key}: exiting.")
         end
         debugTrace("Alarm subprocess #{$$} for #{@key}: Waiting at #{Time.now}.")
-        Kernel.sleep(IS_ALIVE_TIMEOUT)
+        Kernel.sleep(CONFIG[:IS_ALIVE_TIMEOUT])
         debugTrace("Alarm subprocess #{$$} for #{@key}: Notifying master of timeout at #{Time.now}.")
         Process.kill(signal_name,my_pid)
       ensure
@@ -571,14 +584,14 @@ class SshMaster
 
   # Returns the path to the SSH ControlPath socket.
   def control_path #:nodoc:
-    simple_base = "ssh_ctrl.#{@simple_key}"
+    simple_base = "mstr.#{@simple_key}"
     simple_base = "#{simple_base}_#{@uniq}" if @uniq
     base      = simple_base
     base      = "#{@category}/#{simple_base}" if @category
-    sock_dir  = "#{CONTROL_SOCKET_DIR_1}"
+    sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_1]}"
     sock_path = "#{sock_dir}/#{base}" # prefered location
     if sock_path.size >= 100 || ! File.directory?(sock_dir) # limitation in control path length in ssh
-      sock_dir  = "#{CONTROL_SOCKET_DIR_2}"
+      sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_2]}"
       sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 100 chars long!
     end
     if @category
@@ -591,12 +604,15 @@ class SshMaster
   end
 
   def pidfile_path #:nodoc:
-    self.control_path + ".pid"
+    base = self.control_path.sub(/.*\//,"") + ".pid"
+    dir  = @category.presence ? "#{CONFIG[:PID_DIR]}/#{@category}" : CONFIG[:PID_DIR]
+    Dir.mkdir(dir,0700) if ! File.directory?(dir)
+    "#{dir}/#{base}"
   end
 
   def diag_path #:nodoc:
     return "/dev/null" if @no_diag
-    self.control_path + ".oer"
+    self.pidfile_path.sub(/\.pid$/,".oer")
   end
 
   def write_pidfile(pid,action) #:nodoc:
@@ -691,7 +707,7 @@ class SshMaster
   # returns
   #
   #   'Mike O'\''Connor'
-  def shell_escape(s)
+  def shell_escape(s) #:nodoc:
     "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
   end
   

@@ -96,23 +96,25 @@ class String
   # '{}' (curly braces) and those keywords are looked
   # up in the +keywords+ hash.
   #
-  # Example:
+  # ==== Example:
   #
-  #  mypat  = "abc{def}-{mach-3}{ext}"
-  #  mykeys = {  :def => 'XYZ', 'mach-3' => 'fast', :ext => '.zip' }
-  #  mypat.pattern_substitute( mykeys ) # return "abcXYZ-fast.zip"
+  #   mypat  = "abc{def}-{mach-3}{ext}"
+  #   mykeys = {  :def => 'XYZ', 'mach-3' => 'fast', :ext => '.zip' }
+  #   mypat.pattern_substitute( mykeys ) # return "abcXYZ-fast.zip"
   #
   # Note that keywords are limited to sequences of lowercase
   # characters and digits, like 'def', '3', or 'def23' or the same with
   # a number extension, like '4-34', 'def-23' and 'def23-3'.
   #
-  # Options:
+  # ==== Options:
   #
-  # :allow_unset, if true, allows substitution of an empty
-  # string if a keyword is defined in the pattern but not
-  # in the +keywords+ hash. Otherwise, an exception is raised.
-  # :leave_unset, if true, leaves unsubstituded keywords as-is
-  # in the string.
+  # [:allow_unset] if true, allows substitution of an empty
+  #                string if a keyword is defined in the pattern but not
+  #                in the +keywords+ hash. Otherwise, an exception is raised.
+  #
+  # [:leave_unset] if true, leaves unsubstituded keywords as-is
+  #                in the string.
+  #
   def pattern_substitute(keywords, options = {})
     pat_comps = self.split(/(\{(?:[a-z0-9_]+(?:-\d+)?)\})/i)
     final = []

@@ -49,11 +49,16 @@ else
     if program_name =~ /console/
       puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
       puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+      CbrainSystemChecks.check(:all)
+      BourreauSystemChecks.check([
+        :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
+      ])
+      $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+    else # normal server mode
+      CbrainSystemChecks.check(:all)
+      BourreauSystemChecks.check(:all)
+      $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
     end
-    CbrainSystemChecks.check(:all)
-    BourreauSystemChecks.check([
-      :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
-    ])
   end
 end
 
