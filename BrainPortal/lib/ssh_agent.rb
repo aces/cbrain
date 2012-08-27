@@ -43,17 +43,6 @@ require 'active_support'
 # The class is also capable of detecting and recording
 # a single forwarded agent.
 #
-# == Attributes
-#
-# *name* The name of the agent
-#
-# *pid* The ID of the ssh-agent process
-#
-# *socket* The path to the UNIX-domain socket to connect to the agent
-#
-# Note that the forwarded agent (discussed below) doesn't have
-# a pid, and its name is always '_forwarded'.
-#
 # == Creating an agent
 #
 # This will spawn a new ssh-agent process and store its
@@ -100,7 +89,8 @@ class SshAgent
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  CONFIG = {
+  # Class configuration.
+  CONFIG = { #:nodoc:
     :agent_bashrc_dir => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp" : "/tmp",
     :hostname         => Socket.gethostname,
     :exec_askpass     => (Rails.root rescue nil) ?  "#{Rails.root.to_s}/vendor/cbrain/bin/askpass.sh" : "/bin/true",
@@ -108,7 +98,18 @@ class SshAgent
     :exec_ssh_add     => `which ssh-add`.strip,
   }
 
-  attr_reader :name, :pid, :socket
+  # A name for the agent; there are two special names,
+  # '_forwarded' and '_current', to represent a
+  # agent forwarded by a SSH connection, and the
+  # currently active agent (no matter what it is).
+  attr_reader :name
+
+  # PID of the agent process; this is nil if the agent
+  # is forwarded.
+  attr_reader :pid
+
+  # Path to socket to connect to the agent.
+  attr_reader :socket
 
   def initialize(name,socket=nil,pid=nil) #:nodoc:
     raise "Invalid name" unless name =~ /^[a-z]\w*$/i || name == '_forwarded' || name == '_current'
