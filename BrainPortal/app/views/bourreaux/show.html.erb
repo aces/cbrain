@@ -267,7 +267,6 @@
                                     @bourreau.meta[metkey] )
             %>
           <% end %>
-          <%= submit_tag "Update" %>
         <% end %>
       <% end %>
       <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
