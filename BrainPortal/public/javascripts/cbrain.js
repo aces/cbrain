@@ -107,16 +107,16 @@ function load_behaviour(event){
    loaded_element.find(".tabs").tabs();
    
    
-   //Prevent forms where submit buttons decide behaviour
-   //from submitting on 'enter'.
-   loaded_element.find("form").each(function(){
-     var form = $(this);
-     if(form.find("input[type=submit]").length > 1){
-       form.keypress(function(event){
-         if(event.keyCode == 13) event.preventDefault();
-       });
-     }
-   });
+   // //Prevent forms where submit buttons decide behaviour
+   // //from submitting on 'enter'.
+   // loaded_element.find("form").each(function(){
+   //   var form = $(this);
+   //   if(form.find("input[type=submit]").length > 1){
+   //     form.keypress(function(event){
+   //       if(event.keyCode == 13) event.preventDefault();
+   //     });
+   //   }
+   // });
    
    loaded_element.find(".inline_text_field").each(function() {
      var inline_text_field = $(this);
