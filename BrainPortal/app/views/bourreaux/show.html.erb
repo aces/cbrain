@@ -221,7 +221,7 @@
         <% end %>
 
         <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
-          <%= text_field_tag :cms_extra_qsub_args, @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
+          <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
