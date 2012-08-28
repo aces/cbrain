@@ -368,7 +368,8 @@ class Bourreau < RemoteResource
     # Workers are started when created
     worker_pool = WorkerPool.create_or_find_pool(BourreauWorker,
        num_instances,
-       { :check_interval => chk_time,
+       { :name           => "BourreauWorker #{myself.name}",
+         :check_interval => chk_time,
          :worker_log     => logger, # nil, a logger object, or :auto
          :log_level      => verbose > 1 ? Log4r::DEBUG : Log4r::INFO # for :auto
        }

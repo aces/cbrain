@@ -69,15 +69,14 @@ class ToolConfigsController < ApplicationController
     id     = params[:id]
     config = ToolConfig.find(id)
 
-    @tool_config          = nil
-    @tool_glob_config     = nil
-    @bourreau_glob_config = nil
+    @tool_config          = config if   config.tool_id &&   config.bourreau_id # leaves nil otherwise
+    @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nul otherwise
+    @bourreau_glob_config = config if ! config.tool_id &&   config.bourreau_id # leaves nil otherwise
     
-    @tool_config          = config if config.tool_id && config.bourreau_id
-    @tool_glob_config     =
-      ToolConfig.where( :tool_id => config.tool_id, :bourreau_id => nil                ).first if config.tool_id
-    @bourreau_glob_config =
-      ToolConfig.where( :tool_id => nil,            :bourreau_id => config.bourreau_id ).first if config.bourreau_id
+    @tool_glob_config     ||=
+      ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
+    @bourreau_glob_config ||=
+      ToolConfig.where( :tool_id => nil,                  :bourreau_id => @tool_config.bourreau_id ).first if @tool_config
   end
 
   # The 'new' action is special in this controller.
