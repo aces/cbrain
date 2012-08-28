@@ -7,6 +7,7 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
+    ZenTest (4.8.2)
     abstract (1.0.0)
     actionmailer (3.0.7)
       actionpack (= 3.0.7)
@@ -35,6 +36,8 @@ GEM
       activesupport (= 3.0.7)
     activesupport (3.0.7)
     arel (2.0.10)
+    autotest (4.4.6)
+      ZenTest (>= 4.4.1)
     aws-s3 (0.6.2)
       builder
       mime-types
@@ -56,6 +59,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.16)
+    multi_json (1.3.6)
     mysql2 (0.2.7)
     net-sftp (2.0.5)
       net-ssh (>= 2.0.9)
@@ -94,6 +98,10 @@ GEM
       activesupport (~> 3.0)
       railties (~> 3.0)
       rspec (~> 2.6.0)
+    simplecov (0.6.4)
+      multi_json (~> 1.0)
+      simplecov-html (~> 0.5.3)
+    simplecov-html (0.5.3)
     test-unit (2.3.0)
     thin (1.2.11)
       daemons (>= 1.0.9)
@@ -111,6 +119,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  autotest
   aws-s3
   factory_girl
   hirb
@@ -123,6 +132,7 @@ DEPENDENCIES
   rails (= 3.0.7)
   rspec
   rspec-rails
+  simplecov
   sys-proctable!
   test-unit
   thin
