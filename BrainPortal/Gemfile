@@ -74,5 +74,8 @@ group :test do
   gem "rspec"
   gem "rspec-rails"
   gem "factory_girl"
+  gem "simplecov"
+  gem "autotest"
+  gem "autotest-rails"
 end
 
