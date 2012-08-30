@@ -76,5 +76,6 @@ group :test do
   gem "factory_girl"
   gem "simplecov"
   gem "autotest"
+  gem "autotest-rails"
 end
 
