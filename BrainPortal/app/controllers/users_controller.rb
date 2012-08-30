@@ -266,6 +266,14 @@ class UsersController < ApplicationController
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
     if @user
+      if @user.account_locked?
+        flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+        respond_to do |format|
+          format.html { redirect_to :action  => :request_password }
+          format.xml  { render :nothing => true, :status  => 401 }
+        end
+        return
+      end
       @user.password_reset = true
       @user.set_random_password
       if @user.save
