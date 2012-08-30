@@ -38,6 +38,8 @@ GEM
     arel (2.0.10)
     autotest (4.4.6)
       ZenTest (>= 4.4.1)
+    autotest-rails (4.1.2)
+      ZenTest (~> 4.5)
     aws-s3 (0.6.2)
       builder
       mime-types
@@ -120,6 +122,7 @@ PLATFORMS
 
 DEPENDENCIES
   autotest
+  autotest-rails
   aws-s3
   factory_girl
   hirb

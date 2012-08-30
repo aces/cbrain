@@ -403,9 +403,9 @@ class BourreauxController < ApplicationController
     cleanup_older = params[:cleanup_older] || 0
     if cleanup_older.to_s =~ /^\d+/
       cleanup_older = cleanup_older.to_i
-      cleanup_older = 1.year.to_i if cleanup_older > 1.year.to_i
+      cleanup_older = 50.year.to_i if cleanup_older > 50.year.to_i
     else
-      cleanup_older = 1.year.to_i
+      cleanup_older = 50.year.to_i
     end
 
     # Second param is cleanup_younger, which is the number
@@ -414,7 +414,7 @@ class BourreauxController < ApplicationController
     cleanup_younger = params[:cleanup_younger] || 0
     if cleanup_younger.to_s =~ /^\d+/
       cleanup_younger = cleanup_younger.to_i
-      cleanup_younger = 1.year.to_i if cleanup_younger > 1.year.to_i
+      cleanup_younger = 50.year.to_i if cleanup_younger > 50.year.to_i
     else
       cleanup_younger = 0
     end
