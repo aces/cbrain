@@ -24,13 +24,13 @@ require 'spec_helper'
 
 describe CbrainSession do
   
-  let!(:session)    {Hash.new}
-  let!(:sess_model) {double("sess_model").as_null_object}
-  let!(:cb_session) {CbrainSession.new(session, {:controller => "userfiles"}, sess_model)}
-
+  let(:session)    {Hash.new}
+  let(:sess_model) {double("sess_model").as_null_object}
+  let(:cb_session) {CbrainSession.new(session, {:controller => "userfiles"}, sess_model)}
+  let(:current_user) { mock_model(User).as_null_object }
 
   
-  describe "initialize" do
+  describe "#initialize" do
 
     it "should add a hash for contoller with filter_hash and sort_hash if doesn't exist" do
       cb_session[:userfiles]["filter_hash"].should be == {}
@@ -39,9 +39,44 @@ describe CbrainSession do
     
   end
 
-
+  describe "#load_preferences_for_user" do
+    let(:meta_data) { double("meta").as_null_object}
+    
+    it "should get meta data from the db" do
+      current_user.should_receive(:meta).and_return({})
+      cb_session.load_preferences_for_user(current_user)
+    end
+    
+    it "should get preferences from the meta data" do
+      current_user.stub(:meta).and_return(meta_data)
+      meta_data.should_receive(:[]).with(:preferences)
+      cb_session.load_preferences_for_user(current_user)
+    end
+    
+  end
   
-  describe "activate" do
+  describe "#save_preferences_for_user" do
+    let(:user_preferences) { Hash.new }
+    
+    before(:each) do
+      session[:controller] = {"key" => "value"}
+      current_user.stub_chain(:meta, :[], :cb_deep_clone).and_return(user_preferences)
+      current_user.stub_chain(:meta, :[]=)
+    end
+    
+    it "should add session preference to db if they are listed" do
+      cb_session.save_preferences_for_user(current_user, :controller, :key)
+      user_preferences[:controller].keys.should include("key")
+    end
+    
+    it "should add session preference to db if they are listed" do
+      cb_session.save_preferences_for_user(current_user, :controller)
+      user_preferences[:controller].keys.should_not include("key")
+    end
+    
+  end
+  
+  describe "#activate" do
 
     it "should call update_attributes!" do
       sess_model.should_receive(:update_attributes!).with(:user_id => cb_session.user_id, :active => true)
@@ -52,7 +87,7 @@ describe CbrainSession do
 
 
   
-  describe "deactivate" do
+  describe "#deactivate" do
     
     it "should call update_attributes!" do
       sess_model.should_receive(:update_attributes!).with(:active => false)
@@ -135,7 +170,7 @@ describe CbrainSession do
 
 
   
-  describe "clear_data!" do
+  describe "#clear_data!" do
    
     it "should erase all entries in the data section exception of guessed_remote_host and raw_user_agent" do
       cb_session[:guessed_remote_host] = "guessed_remote_host"

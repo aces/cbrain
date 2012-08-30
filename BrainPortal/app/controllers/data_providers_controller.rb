@@ -296,6 +296,8 @@ class DataProvidersController < ApplicationController
       @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
     end
     
+    current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
+        
     respond_to do |format|
       format.html
       format.xml { render :xml  => @fileinfolist }
