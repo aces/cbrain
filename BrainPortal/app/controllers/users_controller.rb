@@ -267,7 +267,7 @@ class UsersController < ApplicationController
 
     if @user
       if @user.account_locked?
-        flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+        flash[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
         respond_to do |format|
           format.html { redirect_to :action  => :request_password }
           format.xml  { render :nothing => true, :status  => 401 }
