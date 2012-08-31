@@ -439,7 +439,7 @@ class Userfile < ActiveRecord::Base
     query_user_string = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
     if access_requested.to_sym != :read
-      query_group_string += " AND userfiles.group_writable = true"
+      query_group_string += " AND userfiles.group_writable = 1"
     end
     query_string = "(#{query_user_string}) OR (#{query_group_string})"
     query_array  = [user.id, user.group_ids, data_provider_ids]
