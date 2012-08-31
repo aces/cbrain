@@ -601,7 +601,7 @@ describe User do
 
   
   describe "#system_group_site_update" do
-    let!(:site1) {Factory.create(:site, :id => "1") }
+    let!(:site1) {Factory.create(:site)}
     
     it "should add user to new site" do
       @user.site = site1

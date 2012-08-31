@@ -640,7 +640,7 @@ class UserfilesController < ApplicationController
       end
     if unable_to_update.present? || operation.blank?
       flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-      flash[:error]   = "Unknown operation for the update files."             if operation.blank?
+      flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
       redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
       redirect_to redirect_action
       return

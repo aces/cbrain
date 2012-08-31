@@ -423,6 +423,15 @@ describe SshAgent do
       lambda { agent.write_agent_config_file }.should raise_error
     end
 
+    it "should write the config file" do
+      agent = SshAgent.new('dummy','/tmp/path/to_socket','12345678')
+      path  = agent.agent_bash_config_file_path
+      fh    = mock('filehandle')
+      File.should_receive(:open).with(path, 'w').and_yield(fh)
+      fh.should_receive(:write)
+      agent.write_agent_config_file
+    end
+
   end
 
 

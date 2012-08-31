@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe UserfilesController do
-	let!(:admin) {Factory.create(:admin_user, :login => "admin_user" )}
+  let!(:admin) {Factory.create(:admin_user, :login => "admin_user" )}
   let!(:site_manager) {Factory.create(:site_manager)}
   let!(:user) {Factory.create(:normal_user, :site => site_manager.site)}
   let!(:admin_userfile) {Factory.create(:single_file, :user => admin)}
@@ -500,7 +500,7 @@ describe UserfilesController do
     
     describe "update_multiple" do
       before(:each) do
-        session[:user_id] = admin.id
+        session[:user_id] = user.id
         Userfile.stub_chain(:find_all_accessible_by_user, :where, :all).and_return([mock_userfile])
       end
     
@@ -525,7 +525,7 @@ describe UserfilesController do
       it "should fail to update project when user does not have access" do
         group_id_hash = {:group_id => 4}
         post :update_multiple, :file_ids => [1], :update_projects => true, :userfile => group_id_hash
-         flash[:error].should include_text(/project/)
+        flash[:error].should include_text(/project/)
       end
       
       it "should update permissions when requested" do
