@@ -34,14 +34,13 @@
     <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
 
     <p>
-      <%= f.label :name, "Filter name:" %><br>
-      <%= f.text_field :name %>
-    </p>
+    <%= f.label :name, "Filter name" %><br>
+    <%= f.text_field :name %>
 
+    <p>
     <%= render :partial => "custom_filters/#{filter_type}" %>
 
     <p>
-
     <%= f.submit "Create" %>
   <% end %>
 
