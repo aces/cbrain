@@ -539,7 +539,7 @@ module SelectBoxHelper
   #Create an array, with 2 sub-category, one for active users 
   #another for locked users
   def group_user_by_lock_status(users) #:nodoc:
-    user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active user" : "Locked user"}
+    user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
     
     user_by_lock_status_hash.sort.each do |status,users|
