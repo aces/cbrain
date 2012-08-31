@@ -70,7 +70,6 @@ group :development do
 end
 
 group :test do
-  gem "test-unit"
   gem "rspec"
   gem "rspec-rails"
   gem "factory_girl"

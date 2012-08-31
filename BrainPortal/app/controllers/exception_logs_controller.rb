@@ -35,6 +35,8 @@ class ExceptionLogsController < ApplicationController
     @filtered_scope = base_filtered_scope
     @exception_logs = base_sorted_scope(@filtered_scope).paginate(:page => @current_page, :per_page => @per_page)
 
+    current_session.save_preferences_for_user(current_user, :exception_logs, :per_page)
+
     respond_to do |format|
       format.html # index.html.erb
       format.js

@@ -91,6 +91,8 @@ class SessionsController < ApplicationController
     #  current_user.remember_me unless current_user.remember_token?
     #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
     #end
+    
+    current_session.load_preferences_for_user(current_user)
 
     # Record the best guess for browser's remote host name
     reqenv = request.env

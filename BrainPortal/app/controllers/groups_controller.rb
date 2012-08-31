@@ -83,6 +83,8 @@ class GroupsController < ApplicationController
       @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
     end
 
+    current_session.save_preferences_for_user(current_user, :groups, :button_view, :per_page)
+
     respond_to do |format|
       format.js
       format.html # index.html.erb

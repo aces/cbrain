@@ -102,6 +102,8 @@ class TasksController < ApplicationController
       pager.total_entries = @total_entries
       pager
     end
+    
+    current_session.save_preferences_for_user(current_user, :tasks, :per_page)
 
     @bourreau_status = {}
     bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }

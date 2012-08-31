@@ -216,6 +216,17 @@ describe UsersController do
           assigns[:user].password.should_not == user.password
         end
 
+        context "when the account is locked" do
+
+          it "should display a message" do
+            mock_user.stub(:account_locked?).and_return(true)
+            User.stub_chain(:where, :first).and_return(mock_user)
+            post :send_password, :login => user.login, :email => user.email
+            flash[:error].should =~ /locked/i
+          end
+
+        end
+
         context "when reset is succesful" do
 
           it "should send an e-mail" do
@@ -228,7 +239,7 @@ describe UsersController do
         context "when reset fails" do
 
           it "should display flash message about problem" do
-            mock_user = mock_model(User, :save => false).as_null_object
+            mock_user = mock_model(User, :save => false, :account_locked? => false).as_null_object
             User.stub_chain(:where, :first).and_return(mock_user)
             post :send_password
             flash[:error].should =~ /^Unable to reset password/

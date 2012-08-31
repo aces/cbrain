@@ -53,6 +53,37 @@ class CbrainSession
     @session[controller.to_sym]["sort_hash"] ||= {}
   end
   
+  #Import a user's saved preferences from the db into the session.
+  def load_preferences_for_user(current_user)
+    user_preferences = current_user.meta[:preferences] || {}
+    user_preferences.each { |k, v|  @session[k.to_sym] = v || {}}
+  end
+  
+  # Save given preferences from session into the db.
+  def save_preferences_for_user(current_user, cont, *ks)
+    controller = cont.to_sym
+    keys = ks.map(&:to_s)
+    user_preferences = current_user.meta[:preferences].cb_deep_clone || {}
+    user_preferences[controller] ||= {}
+    keys.each do |k|
+      if @session[controller][k] && user_preferences[controller][k] != @session[controller][k]
+        if @session[controller][k].is_a? Hash
+          user_preferences[controller][k] ||= {}
+          user_preferences[controller][k].merge!(@session[controller][k].cb_deep_clone)
+        elsif @session[controller][k].is_a? Array
+          user_preferences[controller][k] ||= []
+          user_preferences[controller][k] |= @session[controller][k].cb_deep_clone
+        else
+          user_preferences[controller][k] = @session[controller][k].cb_deep_clone
+        end
+      end
+    end
+
+    unless user_preferences[controller].blank?
+      current_user.meta[:preferences] = user_preferences
+    end
+  end
+  
   #Mark this session as active in the database.
   def activate
     @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)

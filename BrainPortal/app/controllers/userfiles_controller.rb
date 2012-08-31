@@ -208,6 +208,8 @@ class UserfilesController < ApplicationController
       @hidden_total = @filtered_scope.undo_where(:hidden).where(:hidden => true).count
     end
     
+    current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
+    
     respond_to do |format|
       format.html
       format.js

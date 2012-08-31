@@ -48,6 +48,8 @@ class MessagesController < ApplicationController
    
     @messages = scope.paginate(:page => @current_page, :per_page => @per_page)
     
+    current_session.save_preferences_for_user(current_user, :messages, :per_page)
+    
     respond_to do |format|
       format.html # index.html.erb
       format.js

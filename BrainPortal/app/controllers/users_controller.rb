@@ -52,6 +52,8 @@ class UsersController < ApplicationController
     # Turn the array ordered_real into the final paginated collection
     @users = @users.paginate(:page => @current_page, :per_page => @per_page)
     
+    current_session.save_preferences_for_user(current_user, :users, :per_page)
+    
     respond_to do |format|
       format.html # index.html.erb
       format.js
@@ -264,6 +266,14 @@ class UsersController < ApplicationController
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
     if @user
+      if @user.account_locked?
+        flash[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+        respond_to do |format|
+          format.html { redirect_to :action  => :request_password }
+          format.xml  { render :nothing => true, :status  => 401 }
+        end
+        return
+      end
       @user.password_reset = true
       @user.set_random_password
       if @user.save
