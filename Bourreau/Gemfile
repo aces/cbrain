@@ -63,7 +63,6 @@ gem "thin"
 #gem "exception_logger", "~> 0.1.10"
 
 group :development, :test do
-  gem "test-unit"
   gem "wirble"
   gem "looksee"
   gem "hirb"

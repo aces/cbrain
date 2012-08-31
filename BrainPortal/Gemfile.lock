@@ -104,7 +104,6 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
-    test-unit (2.3.0)
     thin (1.2.11)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
@@ -137,7 +136,6 @@ DEPENDENCIES
   rspec-rails
   simplecov
   sys-proctable!
-  test-unit
   thin
   will_paginate (= 3.0.pre2)
   wirble
