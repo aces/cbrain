@@ -23,7 +23,7 @@
 require 'spec_helper'
 
 describe Tool do
-  let(:tool) {Factory.build(:tool, :id => 1)}
+  let(:tool) {Factory.build(:tool)}
 
   it "should keep description if present" do
    tool.description = "keep this"
@@ -51,11 +51,11 @@ describe Tool do
 
   describe "#global_tool_config" do
     it "should return the single ToolConfig that describes the configuration for this tool for all Bourreaux" do
-      tool_config1 = Factory.create(:tool_config, :id => 1, :tool_id => tool.id, :bourreau_id => nil)
+      tool_config1 = Factory.create(:tool_config, :tool_id => tool.id, :bourreau_id => nil)
       tool.global_tool_config.should == tool_config1
     end
     it "should return nil if no single ToolConfig exist for this tool" do
-      tool_config1 = Factory.create(:tool_config, :id => 1, :tool_id => tool.id)
+      tool_config1 = Factory.create(:tool_config, :tool_id => tool.id)
       tool.global_tool_config.should == nil  
     end
   end

@@ -63,8 +63,39 @@
 #######################################
 %>
 
-  <label>Members:</label>
-  <%= array_to_table(@users,
+<!-- Separation between active and locked users -->
+<% 
+  user_by_lock_status_hash = @users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"} 
+  active_users = user_by_lock_status_hash["Active users"] || []
+  locked_users = user_by_lock_status_hash["Locked users"] || []
+%>
+
+<!-- Active Users -->
+<fieldset style="border:0px; margin:0px; padding:0px">
+  <legend>Active users</legend>
+  <div id="active_users" style="display:block">
+  <%= array_to_table(active_users,
+    :cols        => 5,
+    :table_class => 'button_table',
+    :td_class    => 'left_align no_wrap',
+    :fill_by_columns => true
+    ) do |user,r,c| %>
+      <%= check_box_tag("#{parameter_name}[]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
+      <%= link_to_user_with_tooltip(user) %>
+    <% end %>
+  </div>
+</fiedset>
+
+<% if !locked_users.empty?%>
+  <br/>
+  <!-- Locked Users -->
+  <fieldset style="border:0px; margin:0px; padding:0px">
+    <legend>
+      Locked users
+      <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link' %>
+    </legend>
+    <div id="locked_users" style="display:none">
+    <%= array_to_table(locked_users,
       :cols        => 5,
       :table_class => 'button_table',
       :td_class    => 'left_align no_wrap',
@@ -72,9 +103,10 @@
       ) do |user,r,c| %>
         <%= check_box_tag("#{parameter_name}[]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || "") } ) %>
         <%= link_to_user_with_tooltip(user) %>
-  <% end %>
-
-
+      <% end %>
+    </div>
+  </fiedset>
+<%end%>
 
 <%
 #######################################
@@ -83,10 +115,9 @@
 %>
 
 <% if @other_work_groups.size > 0 %>
-
   <br/>
 
-  <label>Quick select based on other work Projects:</label>
+  <label>Quick select based on other work Projects</label>
   <%= array_to_table(@other_work_groups,
       :cols        => 5,
       :table_class => 'button_table',
@@ -108,10 +139,9 @@
 %>
 
 <% if @other_site_groups.size > 0 %>
-
   <br/>
 
-  <label>Quick select based on other site Projects:</label>
+  <label>Quick select based on other site Projects</label>
   <%= array_to_table(@other_site_groups,
       :cols        => 5,
       :table_class => 'button_table',

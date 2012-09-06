@@ -353,9 +353,9 @@ describe Userfile do
    end
 
   describe "#set_tags_for_user" do
-    let(:tag1) {Factory.create(:tag, :id => 1, :name => "tag_1")}
-    let(:tag2) {Factory.create(:tag, :id => 2, :name => "tag_2")}
-    let(:tag3) {Factory.create(:tag, :id => 3, :name => "tag_3")}
+    let(:tag1) {Factory.create(:tag, :name => "tag_1")}
+    let(:tag2) {Factory.create(:tag, :name => "tag_2")}
+    let(:tag3) {Factory.create(:tag, :name => "tag_3")}
     
     it "should accept a nil for set_tags_for_user so no addition in tag_ids" do
       userfile.set_tags_for_user(userfile.user, nil)
@@ -364,16 +364,16 @@ describe Userfile do
     
     it "should add tags arg to userfile.tag_ids if not already in userfile.tag_ids" do
       tag1; tag2; tag3;
-      userfile.tag_ids = [1,2]
-      userfile.set_tags_for_user(userfile.user, [3])
-      userfile.tag_ids.should =~ [1,2,3]
+      userfile.tag_ids = [tag1.id,tag2.id]
+      userfile.set_tags_for_user(userfile.user, [tag3.id])
+      userfile.tag_ids.should =~ [tag1.id, tag2.id, tag3.id]
     end
     
     it "should not add tags arg to userfile.tag_ids if already in userfile.tag_ids" do
       tag1; tag2; tag3;
-      userfile.tag_ids = [1,2]
-      userfile.set_tags_for_user(userfile.user, [1])
-      userfile.tag_ids.should =~ [1,2]
+      userfile.tag_ids = [tag1.id,tag2.id]
+      userfile.set_tags_for_user(userfile.user, [tag1.id])
+      userfile.tag_ids.should =~ [tag1.id,tag2.id]
     end 
   end
 
