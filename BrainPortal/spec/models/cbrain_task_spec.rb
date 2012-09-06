@@ -434,16 +434,16 @@ describe CbrainTask do
 
   
   describe "share_workdir_with" do 
-    let!(:cb_civet_other) {Factory.create("cbrain_task/civet")}
+    let!(:cb_civet_other) {mock_model(CbrainTask, :id => 1).as_null_object}
 
     it "should raise an error if othertask.id is nil" do
-      cb_civet_other.id = nil
+      cb_civet_other.stub!(:id).and_return(nil)
       lambda{cb_civet.share_workdir_with(cb_civet_other)}.should raise_error("No task or task ID provided?")
     end
 
     it "should set share_wd_tid with othertask.id" do 
+      cb_civet.should_receive(:share_wd_tid=).with(cb_civet_other.id)
       cb_civet.share_workdir_with(cb_civet_other)
-      cb_civet.share_wd_tid.should be ==  cb_civet_other.id
     end
 
     it "should call add_prerequisites_for_setup on self" do

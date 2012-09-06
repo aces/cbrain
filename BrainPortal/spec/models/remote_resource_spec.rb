@@ -386,6 +386,8 @@ describe RemoteResource do
       Socket.stub!(:gethostname)
       Socket.stub!(:gethostbyname).and_raise(StandardError)
       IO.stub!(:popen)
+      CbrainFileRevision.stub!(:cbrain_head_revinfo).and_return(double("head_info").as_null_object)
+      CbrainFileRevision.stub!(:cbrain_head_tag).and_return(double("head_tag").as_null_object)
     end
     it "should get the host name" do
       Socket.should_receive(:gethostname)

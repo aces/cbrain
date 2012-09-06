@@ -237,6 +237,9 @@ describe Userfile do
   end
 
   describe "#update_file_type" do
+    before(:each) do
+      userfile.stub!(:save_with_logging)
+    end
     
     it "should call is_valid_file_type" do
       userfile.should_receive(:is_valid_file_type?)
@@ -488,8 +491,8 @@ describe Userfile do
     let!(:userfile4) {Factory.create(:userfile)}
     
     it "should return scope if user is admin" do
-      scope = Userfile.scoped({})
-      Userfile.restrict_access_on_query(admin,scope).should be == scope
+      scope = double("scope")
+      Userfile.restrict_access_on_query(admin, scope).should be == scope
     end
 
     it "should return only file writable by user" do
@@ -622,19 +625,17 @@ describe Userfile do
   end
 
   describe "#descendants" do
-    let(:userfile1) {Factory.create(:userfile, :parent_id => userfile.id)}
-    let(:userfile2) {Factory.create(:userfile, :parent_id => userfile1.id)}
-    let(:userfile3) {Factory.create(:userfile, :parent_id => userfile2.id)}
-    let(:userfile4) {Factory.create(:userfile, :parent_id => userfile2.id)}
     
-    it "should return descendants if it have descendants" do
-      userfile; userfile1; userfile2; userfile3
-      userfile1.descendants().should be =~ [userfile2, userfile3, userfile4]
+    it "should add this userfile's children to the list" do
+      userfile.should_receive(:children).and_return([])
+      userfile.descendants
     end
 
-    it "should return empty array if it have not descendants" do
-      userfile; userfile1; userfile2; userfile3
-      userfile3.descendants().should be_empty
+    it "it should add the childrens' descendents to the list" do
+      child = mock_model(Userfile).as_null_object
+      userfile.stub!(:children).and_return([child])
+      child.should_receive(:descendants).and_return([])
+      userfile.descendants
     end
     
   end
@@ -659,20 +660,16 @@ describe Userfile do
   end
 
   describe "#previous_available_file" do
-    let(:user) {Factory.create(:normal_user)}
-    let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 1).to_i)}
-    let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id - 2).to_i)}
+    let(:user) {mock_model(NormalUser)}
 
-    it "should return next available file" do
-      userfile.user_id = user.id
-      userfile1; userfile2
-      userfile.previous_available_file(user).id.should be == userfile1.id
+    it "should only check files available to the user" do
+      Userfile.should_receive(:accessible_for_user).with(user, anything).and_return(double("files").as_null_object)
+      userfile.previous_available_file(user).id
     end
 
-    it "should return nil if no previous available file" do
-      userfile.user_id = user.id
-      userfile1; userfile2
-      userfile2.previous_available_file(user).should be_nil
+    it "should return the last element it finds" do
+      Userfile.stub_chain(:accessible_for_user, :order, :where).and_return(["file1", "file2"])
+      userfile.previous_available_file(user).should == "file2"
     end
     
   end

@@ -55,7 +55,7 @@ class UserfilesController < ApplicationController
     else
       @header_scope = @header_scope.where( :user_id => current_user.id )
     end
-    
+
     # Filter by current project
     if current_project
       @header_scope = @header_scope.where( :group_id  => current_project.id )

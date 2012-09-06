@@ -43,5 +43,3 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
 end
 
-RSpec::Matchers::OperatorMatcher.register(ActiveRecord::Relation, '=~', RSpec::Matchers::MatchArray)
-
