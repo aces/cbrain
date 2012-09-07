@@ -137,42 +137,10 @@ if portal_name.blank?
 end
 
 
-
 puts <<-STEP
 
 ----------------------------
-Step 2: Admin User Password
-----------------------------
-
-Enter a password for the admin user. If the admin user
-already exists, this will reset it. Leave blank to leave
-the existing password unchanged.
-
-STEP
-
-print "Admin's password: "
-system("stty","-echo")
-passwd = STDIN.readline.chomp # Readline.readline
-system("stty","echo")
-puts "\n"
-
-print "Confirm admin password: "
-system("stty","-echo")
-passwd2 = STDIN.readline.chomp # Readline.readline
-system("stty","echo")
-puts "\n"
-
-if passwd != passwd2
-  puts "Password mismatch. Quitting."
-  Kernel.exit(20)
-end
-
-
-
-puts <<-STEP
-
-----------------------------
-Step 3: Seeding The Database
+Step 2: Seeding The Database
 ----------------------------
 
 STEP
@@ -187,13 +155,15 @@ everyone = SystemGroup.seed_record!(
 )
 
 # Create admin user.
+passwd = "Cbr@iN_#{rand(1000000)}"
 admin = AdminUser.seed_record!(
   {
     :login     => 'admin',
   },
   {
     :full_name             => "CBRAIN Administrator",
-    :email                 => "nobody@localhost"
+    :email                 => "nobody@localhost",
+    :password_reset        => true
   },
   { :info_name_method => :login }
 ) do |u|
@@ -228,7 +198,7 @@ portal = BrainPortal.seed_record!(
 puts <<-STEP
 
 ----------------------------
-Step 4: Portal config file
+Step 3: Portal config file
 ----------------------------
 
 STEP
@@ -252,6 +222,10 @@ puts <<-STEP
 ----------------------------
 Step 5: ALL DONE !
 ----------------------------
+
+The admin password is: #{passwd}
+
+This will have to be changed after the first login.
 
 Exiting.
 
