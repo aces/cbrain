@@ -23,7 +23,7 @@
 require 'action_view/helpers/form_helper'
 
 #
-# = Helper Methods For Forms Accessing CbrainTask Params
+# == Helper Methods For Forms Accessing CbrainTask Params
 #
 # This class provides helper methods for building forms
 # for CbrainTasks; in particular, it provides methods to
@@ -52,7 +52,7 @@ require 'action_view/helpers/form_helper'
 # in the params hash of the current CbrainTask object used by
 # the form.
 #
-# == Examples
+# === Examples
 #
 # Assuming we start with a CbrainTask initialized
 # with these parameters:

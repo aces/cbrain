@@ -434,7 +434,7 @@ describe CbrainTask do
 
   
   describe "share_workdir_with" do 
-    let!(:cb_civet_other) {mock_model(CbrainTask, :id => 1).as_null_object}
+    let!(:cb_civet_other) {mock_model(CbrainTask, :id => 1239191).as_null_object}
 
     it "should raise an error if othertask.id is nil" do
       cb_civet_other.stub!(:id).and_return(nil)

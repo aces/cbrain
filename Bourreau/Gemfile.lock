@@ -78,7 +78,6 @@ GEM
       rake (>= 0.8.7)
       thor (~> 0.14.4)
     rake (0.9.2)
-    test-unit (2.3.0)
     thin (1.2.11)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
@@ -103,6 +102,5 @@ DEPENDENCIES
   net-ssh
   rails (= 3.0.7)
   sys-proctable!
-  test-unit
   thin
   wirble

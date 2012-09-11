@@ -145,7 +145,7 @@ class PortalSanityChecks < CbrainChecker
       
       user_group = u.own_group
       if ! user_group
-        puts "C> \t- User #{u.login} doesn't have their own system group. Creating one."
+        puts "C> \t- User #{u.login} doesn't have its own system group. Creating one."
         user_group = UserGroup.create!(:name  => u.login)
         u.groups  << user_group
         u.save!
