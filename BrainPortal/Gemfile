@@ -76,5 +76,7 @@ group :test do
   gem "simplecov"
   gem "autotest"
   gem "autotest-rails"
+  gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
+  gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
 
