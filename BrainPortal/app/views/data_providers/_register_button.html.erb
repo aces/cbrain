@@ -52,7 +52,12 @@
     <tr>
       <td class="centered">&darr; ... assign them to project ... &darr;</td>
       <td class="centered">&darr; ... move or copy them ... &darr;</td>
-      <td class="centered">&darr; ... to ... &darr;</td>
+      <td class="centered">&darr; ... to ... &darr;
+        <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
+        <%= html_tool_tip("(info)", :offset_y => 25, :offset_x => -200 ) do %>
+          <%= data_providers_descriptions(main_dp_set) %>
+        <% end %>
+      </td>
       <td rowspan="2" class="centered">
         <%= external_submit_button("Register the files!", "browse_form", :name => :register, :class => "button" ) %> 
       </td>
@@ -71,15 +76,10 @@
     </td>
   
     <td>
-    <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
     <%= data_provider_select :other_data_provider_id,
         { :data_providers => main_dp_set },
         { :include_blank => "(Select another Data Provider)" }
     %>
-    
-    <%= html_tool_tip("(info)", :offset_y => 25) do %>
-      <%= data_providers_descriptions(main_dp_set) %>
-    <% end %>
     </td>
   </table>
 

@@ -86,6 +86,10 @@
                     
                 <% if @report_rrs.include?(rr) && @report_users.include?(user) %>
                   </br><%= check_box_tag('clean_cache[]', "#{user.id},#{rr.id}", false, :class => "clean_cache_users_#{user.id} clean_cache_rrs_#{rr.id}" ) %>
+                  <% if user.is_a?(User) && rr.is_a?(Bourreau) # && @cache_older <= 6.days.to_i %>
+                    <%  active_cnt = CbrainTask.real_tasks.status(:active).where(:user_id => user.id, :bourreau_id => rr.id).count %>
+                    <%= red_if(active_cnt > 0, "", "(" + pluralize(active_cnt,"active task") + "!)") %>
+                  <% end %>
                 <% elsif @report_users_all[-1] == user && ! @report_users.include?(user) %>
                   <br/>
                   <% if user.is_a?(String) %>

@@ -254,7 +254,19 @@ class Worker
           self.sleep_mode    = false
         end
 
-        self.worker_log.debug "Registered signal handlers for INT, TERM and USR1."
+        Signal.trap("XCPU") do
+          self.worker_log.info "Got SIGXCPU, scheduling stop."
+          self.stop_received = true
+          self.sleep_mode    = false
+        end
+
+        Signal.trap("XFSZ") do
+          self.worker_log.info "Got SIGXFSZ, scheduling stop."
+          self.stop_received = true
+          self.sleep_mode    = false
+        end
+
+        self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, XCPU and XFSZ."
 
         # This sleep is needed unfortunately to give the time for the
         # proxy side to call its own create_pidfile() so that a quick
