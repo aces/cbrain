@@ -80,8 +80,17 @@
   </td>
   <% if @filter_params["details"] == 'on' %>
     <td>
-      <%= colored_pretty_size(task_space_known) if isbourreau %>
-      <%= "(#{task_space_unkn} unkn)" if isbourreau && task_space_unkn > 0 %>
+      <% if isbourreau %>
+      <%= link_to colored_pretty_size(task_space_known), report_path(
+          :table_name  => "cbrain_tasks.combined_task_rep",
+          :col_type    => "bourreau_id",
+          :row_type    => "user_id",
+          :bourreau_id => bourreau.id,
+          :generate    => "Go"
+          ), { :class => 'no_decorations' }
+      %>
+      <%= "(#{task_space_unkn} unkn)" if task_space_unkn > 0 %>
+      <% end %>
     </td>
   <% end %>
 

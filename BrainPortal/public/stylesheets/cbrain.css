@@ -591,6 +591,10 @@ a {
     color: red !important;
 }
 
+.no_decorations {
+    text-decoration: none;
+}
+
 /* % ######################################################### */
 /* % General box layouts for miscellaneous content */
 /* % ######################################################### */
