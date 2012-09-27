@@ -25,6 +25,12 @@
 
 <% if @users.present? %>
   <%= form_tag invitations_path do -%>
+    <small>
+      Note that only users from your site, <%= current_user.site.try(:name) || "(unassigned)" %>,  are visible to you. <br>
+      If you wish to add a user who is not visible to you, please<br>
+      contact your site manager or a CBRAIN administrator. 
+    </small>
+    <br><br>
     <%= hidden_field_tag :group_id, @group.id %>
     <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids"} %>
   

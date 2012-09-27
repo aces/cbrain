@@ -33,13 +33,14 @@
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
       
       <%= render :partial => "userfiles/file_menu" %>
-      <div id="userfiles_display" class="index_block">
-        <%= render :partial => 'userfiles_display' %>
+      <div class="index_block">
+        <div id="userfiles_display">
+          <%= render :partial => 'userfiles_display' %>
+        </div>
         
         <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
         <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [ status_html_symbol(s), s ] } ) %>
       </div>
-  
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
 
