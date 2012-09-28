@@ -60,8 +60,8 @@ class CbrainMailer < ActionMailer::Base
     
     return true if @users.blank? || @users.empty?
 
-    emails = users.map(&:email).compact.uniq
-    return false if emails.blank?
+    emails = users.map(&:email).compact.uniq.reject { |email| email.blank? || email =~ /^(nobody|no-?reply|sink)@/i }
+    return false if emails.empty?
     
     mail(
       :from    => build_from,
