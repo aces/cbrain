@@ -25,6 +25,17 @@
 var macacc;
 var brainbrowser;
 
+//General ajax error handler
+$(document).ajaxError(function(evt, req, set){
+  $('.flash_error').remove();
+  var message = "<div class=\"flash_error\">Error sending background request."; 
+  message += "<BR> Status: " + req.status + " " + req.statusText;
+  message += "<BR>The CBRAIN adminstrators have been alerted about this problem.</div>";
+  $("#main").prepend(message);
+
+  return true;
+});
+
 function modify_target(data, target, options){
   if(!options) options = {};
   if(target){ 
