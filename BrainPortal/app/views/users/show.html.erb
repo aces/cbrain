@@ -30,7 +30,7 @@
     <%= link_to 'Switch To User',  switch_user_path(@user), :class => 'button', :method => 'POST' %>
   <% end %>
 
-  <%= link_to 'Report Maker',   { :controller => :portal, :action => :report }, :class => "button" %>
+  <%= link_to 'Report Maker', report_path, :class => "button" %>
   
   <% if delete_permission?(@user) %>
     <%= link_to 'Delete', user_path(@user), { :confirm => "Are you sure you want to delete '#{@user.name}' ?", :method => :delete, :class => "button" } %>

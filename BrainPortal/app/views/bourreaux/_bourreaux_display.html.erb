@@ -25,30 +25,30 @@
 <div class="menu_bar">
   <% if check_role(:site_manager) || check_role(:admin_user) %>
     <%= new_model_button 'Create New Server', new_bourreau_path %>
-    <%= link_to "Refresh SSH Public Keys", {:action  => :refresh_ssh_keys }, { :method  => :post, :class  => "button" } %>
+    <%= link_to "Refresh SSH Public Keys", refresh_ssh_keys_bourreaux_path, { :method  => :post, :class  => "button" } %>
   <% end %>
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
-              {:controller  => :bourreaux, :action  => :index, :bourreaux  => {:details  => set_toggle(@filter_params["details"])}},
+              bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
               :datatype  => 'script', :class  => "button"
   %>
   
-  <%= link_to "User Access Report",
-             {:controller  => :bourreaux, :action  => :rr_access},
+  <%= link_to "User Access Report", rr_access_bourreaux_path,
               :datatype  => 'script', :class  => "button"
   %>   
   
-  <%= link_to "Disk Cache Report",
-              {:controller  => :bourreaux, :action  => :rr_disk_usage},
+  <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
               :datatype  => 'script', :class  => "button"
   %>
   
-  <%= link_to "Task Workdir Size Report",
-             {:controller  => :portal, :action  => :report, :table_name => "cbrain_tasks.combined_task_rep", 
-             :row_type => :user_id, :col_type => :bourreau_id, :generate => "ok" }, :class  => "button"
+  <%= link_to "Task Workdir Size Report", report_path(
+                :table_name => "cbrain_tasks.combined_task_rep", 
+                :row_type   => :user_id,
+                :col_type   => :bourreau_id,
+                :generate   => "ok"
+              ), :class  => "button"
   %>
   
-  <%= link_to "Access to Data Providers",
-              {:controller  => :bourreaux, :action  => :rr_access_dp},
+  <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
               :datatype  => 'script', :class  => "button"
   %>
   

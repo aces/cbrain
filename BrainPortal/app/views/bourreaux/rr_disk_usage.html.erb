@@ -29,6 +29,15 @@
 
 <% title "Disk Usage Caches" %>
 
+<% # Precompute a hash of active tasks for all pairs [user_id,bourreau_id]
+   # Used to provde red warnings when there are active tasks on a bourreau
+   uids = @report_users.map(&:id)
+   bids = @report_rrs.select { |b| b.is_a?(Bourreau) }.map(&:id)
+   active_counts_by_uid_bid = (uids.empty? || bids.empty?) ?
+     {} :
+     CbrainTask.status(:active).where(:user_id => uids, :bourreau_id => bids).group(:user_id,:bourreau_id).count
+%>
+
 <h2>Disk Usage Statistics for Server's Data Provider Caches</h2>
 
 <span class="display_cell">  
@@ -87,7 +96,7 @@
                 <% if @report_rrs.include?(rr) && @report_users.include?(user) %>
                   </br><%= check_box_tag('clean_cache[]', "#{user.id},#{rr.id}", false, :class => "clean_cache_users_#{user.id} clean_cache_rrs_#{rr.id}" ) %>
                   <% if user.is_a?(User) && rr.is_a?(Bourreau) # && @cache_older <= 6.days.to_i %>
-                    <%  active_cnt = CbrainTask.real_tasks.status(:active).where(:user_id => user.id, :bourreau_id => rr.id).count %>
+                    <%  active_cnt = active_counts_by_uid_bid[[user.id, rr.id]] || 0 %>
                     <%= red_if(active_cnt > 0, "", "(" + pluralize(active_cnt,"active task") + "!)") %>
                   <% end %>
                 <% elsif @report_users_all[-1] == user && ! @report_users.include?(user) %>
