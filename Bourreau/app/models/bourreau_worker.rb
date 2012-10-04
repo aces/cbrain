@@ -65,6 +65,9 @@ class BourreauWorker < Worker
       return false
     end
 
+    # Flush AR caches
+    ActiveRecord::Base.connection.clear_query_cache
+
     # Check for tasks stuck in Ruby, at most once per 20 minutes
     if @last_ruby_stuck_check < (20.minutes + rand(3.minutes)).ago
       self.check_for_tasks_stuck_in_ruby
