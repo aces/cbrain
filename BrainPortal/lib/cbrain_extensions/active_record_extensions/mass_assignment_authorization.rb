@@ -21,7 +21,7 @@
 #
 
 module CBRAINExtensions #:nodoc:
-  module ActiveRecord #:nodoc:
+  module ActiveRecordExtensions #:nodoc:
     
     # Allows for the adjustment of mass-assignable attributes on an object by
     # object basis.

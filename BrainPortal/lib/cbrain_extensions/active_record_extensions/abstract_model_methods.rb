@@ -22,7 +22,7 @@
 
 module CBRAINExtensions #:nodoc:
 
-  module ActiveRecord #:nodoc:
+  module ActiveRecordExtensions #:nodoc:
 
     module AbstractModelMethods #:nodoc:
       

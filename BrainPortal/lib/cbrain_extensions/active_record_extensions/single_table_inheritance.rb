@@ -21,7 +21,7 @@
 #
 
 module CBRAINExtensions #:nodoc:
-  module ActiveRecord #:nodoc:
+  module ActiveRecordExtensions #:nodoc:
     
     # ActiveRecord extensions to handle loading and saving STI models.
     # Mainly to load and create objects so they are of their actual STI
