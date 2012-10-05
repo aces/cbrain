@@ -75,6 +75,7 @@ require 'active_support/core_ext.rb'
 require 'etc'
 require File.dirname(__FILE__) + '/../lib/cbrain_file_revision.rb' # ugly
 require File.dirname(__FILE__) + '/../lib/ssh_master.rb' # ugly
+require File.dirname(__FILE__) + '/../lib/cbrain_extensions/string_extensions/utilities.rb' # SO UGLEEEEE!!!!
 require File.dirname(__FILE__) + '/../config/initializers/core_extensions/string.rb' # ugly
 
 
