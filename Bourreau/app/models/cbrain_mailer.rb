@@ -29,11 +29,18 @@ class CbrainMailer < ActionMailer::Base
   
   #Send an e-mail notification of a CBRAIN message.
   #Meant to be used by Message.send_message.
-  def message(users, content = {})
-    subject    "Dummy"
-    recipients users.map(&:email)
-    from       "no_reply@cbrain.mcgill.ca"
-    body       ""
+  def cbrain_message(users, content = {})
+    @users   = users
+
+    @subject = content[:subject] || "No subject"
+    @cb_body = content[:body]    || ""  # NOTE: @body is used by Rails!
+    @cb_body.gsub!(/\s+\(?\[\[.*?\]\]\)?/, "")
+    
+    return true if @users.blank? || @users.empty?
+
+    emails = users.map(&:email).compact.uniq.reject { |email| email.blank? || email =~ /^(nobody|no-?reply|sink)@/i }
+    return false if emails.empty?
+    nil # this is where the normal mail-sending code was
   end
 
 end
