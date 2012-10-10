@@ -28,7 +28,7 @@
 
       <%= error_messages_for(@site) %>
 
-      <div class="display_row">
+      <div>
         <%= f.label :name %><br/>
         <%= f.text_field :name %>
         <P/>
@@ -42,7 +42,7 @@
 
       </div>
 
-      <div class="display_cell">
+      <div class="button_div">
         <!-- Separation between active and locked users -->
         <% 
         user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"} 
@@ -51,11 +51,11 @@
         %>
         
         <!-- Active Users -->
-        <fieldset style="border:0px; margin:0px">
-          <legend>Active users</legend>
-            
-          <div id="active_users" style="display:block">
-            <table class="button_table">
+        <div style="margin:0px">
+          Active users
+          <br>
+          <div id="active_users" class="button_inner_div">
+            <table class="button_table" style="border:0px;">
               <tr>
                 <td>Login</td>
                 <td>Regular User</td>
@@ -70,44 +70,17 @@
               <% end %>
             </table>
           </div>
-        </fieldset>
+        </div>
         
-        <%if !locked_users.empty? %>
-          <!-- Locked Users -->
-          <br/>
-          <fieldset style="border:0px; margin:0px">
-            <legend>
-              Locked users
-              <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link' %>
-            </legend>
-            
-            <div id="locked_users" style="display:none">
-              <table class="button_table">
-                <tr>
-                  <td>Login</td>
-                  <td>Regular User</td>
-                  <td>Site Manager</td>
-                </tr>
-                <% for user in locked_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
-                  <tr>
-                    <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
-                    <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
-                    <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
-                  </tr>
-                <% end %>
-              </table>
-            </div>
-          </fieldset>
-        <% end %>
       </div>
 
       <!-- Projects -->
-      <div class="display_cell">
-        <fieldset style="border:0px; margin:0px">
-          <legend>Projects</legend>
-            
-          <div id="projects" style="display:block">
-            <table class="button_table">
+      <div class="button_div">
+        <div style="margin:0px">
+          Projects
+          <br>
+          <div id="projects" class="button_inner_div">
+            <table class="button_table" style="border:0px;">
               <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
                 <tr>
                   <td class="left_align"><%= group.name -%></td>
@@ -116,8 +89,34 @@
               <% end %>
             </table>
           </div>
-        </fieldset>
+        </div>
       </div>
+      
+      <%if !locked_users.empty? %>
+      <div>
+        <!-- Locked Users -->
+        <br/>
+            Locked users
+            <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link', :alternate_text => "(Hide)" %>            
+          <div id="locked_users" style="display:none" class="button_inner_div">
+            <table class="button_table" style="border:0px;">
+              <tr>
+                <td>Login</td>
+                <td>Regular User</td>
+                <td>Site Manager</td>
+              </tr>
+              <% for user in locked_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
+                <tr>
+                  <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
+                  <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
+                  <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
+                </tr>
+              <% end %>
+            </table>
+          </div>
+      </div>
+        
+      <% end %>
 
       <div class="display_row">
         <P/>

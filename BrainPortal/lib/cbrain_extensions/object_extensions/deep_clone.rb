@@ -20,12 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-###################################################################
-# CBRAIN Object extensions
-###################################################################
-class Object #:nodoc:
-
-  include CBRAINExtensions::ObjectExtensions::DeepClone
+module CBRAINExtensions #:nodoc:
+  module ObjectExtensions #:nodoc:
+    # Make a thorough deep clone of a data structure.
+    # To be included in Object.
+    module DeepClone
+    
+      Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
+      # Make a deep clone of self.
+      def cb_deep_clone
+        Marshal.load(Marshal.dump(self))
+      end
+  
+    end
+  end
 end
-

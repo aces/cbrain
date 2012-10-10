@@ -25,26 +25,7 @@
 ###################################################################
 class Symbol
 
-  # Used by views for CbrainTasks to transform a
-  # symbol such as :abc into a path to a variable
-  # inside the params[] hash, as "cbrain_task[params][abc]".
-  #
-  # CBRAIN adds a similar method in the String class.
-  def to_la
-    "cbrain_task[params][#{self}]"
-  end
-
-  # Used by views for CbrainTasks to transform a
-  # symbol such as :abc (representing a path to a
-  # variable inside the params[] hash) into the name
-  # of a pseudo accessor method for that variable.
-  # This is also the name of the input field's HTML ID
-  # attribute, used for error validations.
-  #
-  # CBRAIN adds a similar method in the String class.
-  def to_la_id
-    self.to_s.to_la_id
-  end
+  include CBRAINExtensions::SymbolExtensions::Utilities
 
 end
 

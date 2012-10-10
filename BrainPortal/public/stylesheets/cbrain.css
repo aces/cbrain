@@ -1945,6 +1945,17 @@ td.middle {
     padding: 4px;
 }
 
+.button_div {
+  display:inline-block; 
+  margin: 0.2em;
+}
+
+.button_inner_div {
+  max-height:20em; 
+  overflow-y: auto;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
 
 
 /* ######################################################### */
