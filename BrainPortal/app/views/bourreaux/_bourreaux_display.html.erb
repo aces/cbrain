@@ -25,7 +25,6 @@
 <div class="menu_bar">
   <% if check_role(:site_manager) || check_role(:admin_user) %>
     <%= new_model_button 'Create New Server', new_bourreau_path %>
-    <%= link_to "Refresh SSH Public Keys", refresh_ssh_keys_bourreaux_path, { :method  => :post, :class  => "button" } %>
   <% end %>
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
               bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),

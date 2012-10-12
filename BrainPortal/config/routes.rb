@@ -74,7 +74,6 @@ CbrainRailsPortal::Application.routes.draw do
       get  'row_data'
     end
     collection do
-      post 'refresh_ssh_keys'
       get  'load_info'
       get  'rr_disk_usage'
       get  'rr_access'

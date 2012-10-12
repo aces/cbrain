@@ -208,35 +208,6 @@ class BourreauxController < ApplicationController
     #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Information Available</strong>'
   end
-  
-  def refresh_ssh_keys #:nodoc:
-    refreshed_bourreaux = []
-    skipped_bourreaux   = []
-
-    RemoteResource.find_all_accessible_by_user(current_user).all.each do |b|
-      if b.is_alive?(:info)
-        info = b.info
-        ssh_key = info.ssh_public_key
-        b.ssh_public_key = ssh_key
-        b.save
-        refreshed_bourreaux << b.name
-      else
-        skipped_bourreaux << b.name
-      end
-    end
-    
-    if refreshed_bourreaux.size > 0
-      flash[:notice] = "SSH public keys have been refreshed for these Servers: " + refreshed_bourreaux.join(", ") + "\n"
-    end
-    if skipped_bourreaux.size > 0
-      flash[:error]  = "These Servers are not alive and SSH keys couldn't be updated: " + skipped_bourreaux.join(", ") + "\n"
-    end
-    
-    respond_to do |format|
-      format.html { redirect_to :action  => :index }
-      format.xml  { render :xml  => { "refreshed_bourreaux"  => refreshed_bourreaux.size, "skipped_bourreaux"  => skipped_bourreaux.size } }
-    end   
-  end
 
   def start #:nodoc:
     @bourreau = Bourreau.find(params[:id])

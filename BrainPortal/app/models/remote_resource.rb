@@ -112,7 +112,7 @@ class RemoteResource < ActiveRecord::Base
   attr_accessible  :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port, 
                    :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host, 
                    :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port, 
-                   :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death, :ssh_public_key, 
+                   :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
                    :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
                    :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
                    :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
@@ -500,7 +500,6 @@ class RemoteResource < ActiveRecord::Base
     myself            = self.current_resource
     host_uptime       = `uptime 2>/dev/null`.strip   # TODO make more robust
     elapsed           = Time.now.localtime - CBRAIN::Startup_LocalTime
-    @ssh_public_key ||= myself.get_ssh_public_key
     @host_name      ||= Socket.gethostname
     @host_ip        ||= ""
     @host_uname     ||= `uname -a`.strip
@@ -546,7 +545,6 @@ class RemoteResource < ActiveRecord::Base
       :host_uname         => @host_uname,
       :host_uptime        => host_uptime,
       :rails_time_zone    => time_zone_name,
-      :ssh_public_key     => @ssh_public_key,
 
       # Svn info
       :revision           => @git_tag,                  # 'live' value

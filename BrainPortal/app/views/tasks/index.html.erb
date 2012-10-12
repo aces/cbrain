@@ -27,12 +27,13 @@
 <div id="tasks_div">
   <%= form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
       
-      <%= render :partial => 'task_menu' %>
-      
-      <div id="tasks_display" class="index_block">
-        <%= render :partial => "tasks/tasks_display" %>
+      <div class="index_block">
+        <%= render :partial => 'task_menu' %>
+        
+        <div id="tasks_display">
+          <%= render :partial => "tasks/tasks_display" %>
+        </div>
       </div>
-
   <% end %>  <!-- End form -->
 </div>
 

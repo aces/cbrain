@@ -359,13 +359,13 @@
           <% t.cell("Workers Last Change Date") { info.worker_lc_date } %>
           <% t.empty_cell %>
         <% end %>
+        <% if @bourreau.id == BrainPortal.current_resource.id %>
+          <% t.blank_row %>
 
-        <% t.blank_row %>
-
-        <% t.cell("SSH Public Key", :show_width => 2) do %>
-          <pre class="ssh_key"><%= info.ssh_public_key.strip %></pre>
+          <% t.cell("SSH Public Key", :show_width => 2) do %>
+            <pre class="ssh_key"><%= @bourreau.get_ssh_public_key %></pre>
+          <% end %>
         <% end %>
-
       <% end %>
     <% end %>
   <% end %>

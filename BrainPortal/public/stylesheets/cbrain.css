@@ -1365,7 +1365,6 @@ pre {
 /* % ######################################################### */
 
 .menu_bar {
-    display: table;
     padding-top: 0.2em;
     padding-bottom: 0.2em;
     margin-left: 0;
@@ -2024,12 +2023,8 @@ td.middle {
 }
 
 .button_with_drop_down {
-    z-index: 501;
-    float: left;
-}
-
-.menu_button {
-  float:left;
+  display: inline-block;
+  z-index: 501;  
 }
 
 .button_with_drop_down > .drop_down_menu {

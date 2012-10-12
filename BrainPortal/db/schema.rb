@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120815191559) do
+ActiveRecord::Schema.define(:version => 20121011151807) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -201,7 +201,6 @@ ActiveRecord::Schema.define(:version => 20120815191559) do
     t.boolean  "portal_locked",         :default => false, :null => false
     t.integer  "cache_trust_expire",    :default => 0
     t.datetime "time_of_death"
-    t.text     "ssh_public_key"
     t.string   "time_zone"
     t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
