@@ -49,7 +49,6 @@ class RemoteResourceInfo < RestrictedHash
      :host_ip,              # IP address as "1.2.3.4"
      :host_uptime,          # Output of 'uptime' command
      :rails_time_zone,      # Time zone name as configured in config/environment.rb
-     :ssh_public_key,
 
      # Svn info (Rails app)
      :revision,             # From 'svn info' on disk AT QUERYTIME

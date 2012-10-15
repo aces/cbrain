@@ -211,17 +211,15 @@
 
 <p>
 
-<% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+<% if (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
 
 <P>
 
 <div>
   <table>
-    <tr><th colspan="2" class="supertitle">Public SSH Keys for this CBRAIN Portal and all accessible Execution Servers.</th></tr>
-    <% @ssh_keys.each do |pair| %>
-      <tr><th><%= pair[0] %></th></tr>
-      <tr><td><pre class="ssh_key"><%= pretty_ssh_key(pair[1]) %></pre></td></tr>
-    <% end %>
+    <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
+    <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
+    <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
   </table>
 </div>
 

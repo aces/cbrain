@@ -56,8 +56,6 @@ class DataProvidersController < ApplicationController
 
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-    @ssh_keys = get_ssh_public_keys
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml { render :xml => @provider }
@@ -73,7 +71,6 @@ class DataProvidersController < ApplicationController
                                 )
     
     @typelist = get_type_list
-    @ssh_keys = get_ssh_public_keys
     
     render :partial => "new"
   end
@@ -85,9 +82,6 @@ class DataProvidersController < ApplicationController
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
     end
-    
-    @typelist = get_type_list
-    @ssh_keys = get_ssh_public_keys
 
     if @provider.errors.empty?
       flash[:notice] = "Provider successfully created."
@@ -96,6 +90,7 @@ class DataProvidersController < ApplicationController
         format.xml { render :xml  => @provider }
       end
     else
+      @typelist = get_type_list
       respond_to do |format|
         format.js  { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
         format.xml { render :xml  => @provider.errors, :status  => :unprocessable_entity }
@@ -580,16 +575,6 @@ class DataProvidersController < ApplicationController
                     }
     end
     typelist
-  end
-  
-  def get_ssh_public_keys #:nodoc:
-    # Get SSH key for this BrainPortal
-    portal_ssh_key = RemoteResource.current_resource.get_ssh_public_key
-    portal_ssh_key = 'Unknown! Talk to sysadmin!' if portal_ssh_key.blank?
-    keys = [ [ 'This CBRAIN Portal', portal_ssh_key ] ]
-    # Get those of all other Bourreaux
-    keys += Bourreau.find_all_accessible_by_user(current_user).map{ |b| ["Execution Server '#{b.name}'", b.ssh_public_key] }
-    keys
   end
 
   def get_recent_provider_list_all(refresh = false, as_user = current_user) #:nodoc:
