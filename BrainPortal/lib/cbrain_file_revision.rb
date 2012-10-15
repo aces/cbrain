@@ -291,7 +291,7 @@ class CbrainFileRevision
         seen[git_tag] = true
       end
       if git_tag
-        num_new_commits = `git rev-list #{git_tag.bash_escape}..HEAD'`.split.size
+        num_new_commits = `git rev-list #{git_tag.bash_escape}..HEAD`.split.size
         git_tag += "-#{num_new_commits}" if num_new_commits > 0
       end
     end
