@@ -282,16 +282,16 @@ class CbrainFileRevision
     git_tag = nil
     seen = {}
     Dir.chdir(Rails.root.to_s) do
-      tags_set = `git tag -l`.split # initial list: all tags we can find
+      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
       git_tag = tags_set.shift unless tags_set.empty? # extract one as a starting point
       seen[git_tag] = true
       while tags_set.size > 0
-        tags_set = `git tag --contains '#{git_tag}'`.split.sort.reject { |v| seen[v] }
+        tags_set = `git tag --contains #{git_tag.bash_escape}`.split.shuffle.reject { |v| seen[v] }
         git_tag = tags_set.shift unless tags_set.empty? # new first
         seen[git_tag] = true
       end
       if git_tag
-        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+        num_new_commits = `git rev-list #{git_tag.bash_escape}..HEAD'`.split.size
         git_tag += "-#{num_new_commits}" if num_new_commits > 0
       end
     end

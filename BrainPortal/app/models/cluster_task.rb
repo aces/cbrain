@@ -308,6 +308,7 @@ class ClusterTask < CbrainTask
     cb_error "Class for file must be a subclass of Userfile." unless klass < Userfile
     attlist = attlist.dup
     attlist[:data_provider_id] ||= self.results_data_provider_id.presence
+    attlist[:data_provider_id] ||= Userfile.find(self.params[:interface_userfile_ids].first).data_provider_id
     cb_error "Attribute list missing a required attribute." if
       [ :name, :data_provider_id ].any? { |i| attlist[i].blank? } # minimal set!
     unless attlist.has_key?(:user_id)
