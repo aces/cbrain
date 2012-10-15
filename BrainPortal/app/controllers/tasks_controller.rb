@@ -428,7 +428,7 @@ class TasksController < ApplicationController
 
       unless spawn_messages.blank?
         Message.send_message(current_user, {
-          :header        => "Submitted #{tasklist.size} #{@task.name} tasks; some messages follow.",
+          :header        => "Submitted #{tasklist.size} #{@task.pretty_name} tasks; some messages follow.",
           :message_type  => :notice,
           :variable_text => spawn_messages
           }
@@ -438,9 +438,9 @@ class TasksController < ApplicationController
     end
 
     if tasklist.size == 1
-      flash[:notice] += "Launching a #{@task.name} task in background."
+      flash[:notice] += "Launching a #{@task.pretty_name} task in background."
     else
-      flash[:notice] += "Launching #{tasklist.size} #{@task.name} tasks in background."
+      flash[:notice] += "Launching #{tasklist.size} #{@task.pretty_name} tasks in background."
     end
     flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
     flash[:notice] += messages + "\n" unless messages.blank?

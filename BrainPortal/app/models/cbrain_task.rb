@@ -246,13 +246,18 @@ class CbrainTask < ActiveRecord::Base
     "#{self.name_and_bourreau}/#{myid}"
   end
 
+  # Use the associated tool name to define the pretty type
+  def self.pretty_type
+    self.tool.name
+  end
+
   # This method can be used to return a 'pretty' version of
   # the name of this task, which can contain a bit of task-specific
   # information. e.g. "MyTask (2 files)". It's used in the task
   # index page. Don't make it too long, though, it's not a report.
   # The default is the same as the +name+ instance method.
   def pretty_name
-    self.name
+    self.class.pretty_name
   end
 
   # For backward compatibility.

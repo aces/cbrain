@@ -24,6 +24,7 @@ require 'spec_helper'
 
 describe CbrainTask do
   let!(:cb_civet) {Factory.create("cbrain_task/civet")}
+  let(:cb_tool) {double("tool", :name => "Tool!")}
 
   context "Utility Methods" do 
   
@@ -73,9 +74,10 @@ describe CbrainTask do
   
     
     describe "pretty_name" do 
-
+      
       it "should return name" do
-        cb_civet.pretty_name.should be == cb_civet.name
+        CbrainTask.stub!(:tool).and_return(cb_tool)
+        cb_civet.pretty_name.should be == cb_tool.name
       end
       
     end
@@ -85,7 +87,8 @@ describe CbrainTask do
     describe "self.pretty_name" do 
 
       it "should return a simple name for task" do
-        CbrainTask.pretty_name.should be == "Cbrain Task"
+        CbrainTask.stub!(:tool).and_return(cb_tool)
+        CbrainTask.pretty_name.should be == cb_tool.name
       end
       
     end
