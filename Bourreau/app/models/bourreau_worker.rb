@@ -294,7 +294,11 @@ class BourreauWorker < Worker
 
         # Check special case where we can reconnect to a running task!
         if fromwhat =~ /Cluster|PostProcess/
-          clusterstatus = task.send :cluster_status  # this is normally a protected method
+          clusterstatus = task.send(:cluster_status) rescue nil # this is normally a protected method
+          if clusterstatus.blank? # postpone, can't get status
+            task.status_transition!(task.status, "Recover #{fromwhat}")  # 'Recovering X' to 'Recover X'
+            return
+          end
           if clusterstatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
             task.addlog_context(self,"Woh there Nelly! While attempting recovery from #{fromwhat} failure we found a cluster task still running! Resetting to #{clusterstatus}")
             task.status_transition!(task.status,clusterstatus) # try to update; ignore errors.
