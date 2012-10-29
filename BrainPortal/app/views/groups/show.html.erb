@@ -65,7 +65,7 @@
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
     
-    <% if current_user.has_role?(:admin_user) %>
+    <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
       <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do %>
         <%= hidden_field_tag "group[invisible]", "0" %>
         <%= check_box_tag("group[invisible]", "1", @group.invisible?) %>
