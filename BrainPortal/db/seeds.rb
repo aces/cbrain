@@ -146,7 +146,7 @@ Step 2: Seeding The Database
 STEP
 
 # Create the 'everyone' group.
-everyone = SystemGroup.seed_record!(
+everyone = EveryoneGroup.seed_record!(
   {
      :name  => "everyone"
   },
@@ -156,7 +156,7 @@ everyone = SystemGroup.seed_record!(
 
 # Create admin user.
 passwd = "Cbr@iN_#{rand(1000000)}"
-admin = AdminUser.seed_record!(
+admin = CoreAdmin.seed_record!(
   {
     :login     => 'admin',
   },
