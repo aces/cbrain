@@ -20,13 +20,14 @@
 #
 
 # Rails console initialization code.
+puts "C> CBRAIN Rails Console Initalization starting"
 
-logger = Logger.new(STDOUT)
-ActiveRecord::Base.logger = logger
-ActiveResource::Base.logger = logger
+# Create a new logger for ActiveRecord operations
+console_logger              = Logger.new(STDOUT)
+ActiveRecord::Base.logger   = console_logger
+ActiveResource::Base.logger = console_logger
 
-
-# Custom prompt
+# Custom prompt: insert the name of the CBRAIN RemoteResource (portal or Bourreau)
 rr_name = RemoteResource.current_resource.name rescue "Rails Console"
 IRB.conf[:PROMPT][:CUSTOM] = {
   :PROMPT_I => "#{rr_name} :%03n > ",
@@ -38,7 +39,14 @@ IRB.conf[:PROMPT][:CUSTOM] = {
 }
 IRB.conf[:PROMPT_MODE] = :CUSTOM
 
-Bourreau.first # does nothing but loads the class
+
+
+# Adds two wrapper commands to connect to the Rails Console
+# of remote Bourreaux:
+#
+# bourreau.console  # connects to the console of object 'bourreau'
+# Bourreau.console(id_or_name_or_regex) # finds a bourreau and connects
+Bourreau.nil? # does nothing but loads the class
 class Bourreau
   def console
     start_remote_console
@@ -56,11 +64,17 @@ class Bourreau
   end
 end
 
-# Run command on each Bourreau
-def bb_bash(*bb)
 
-  ActiveRecord::Base.logger.level=Logger::ERROR rescue true
-  ActiveResource::Base.logger.level=Logger::ERROR rescue true
+
+#####################################################
+# Bourreau Control Methods
+#####################################################
+
+# Run a bash command on each Bourreau
+# The bash command must be a string returned by the block
+# The list of bourreau can be provided as ids, as names,
+# or as bourreau objects themselves.
+def bb_bash(*bb)
 
   if ! block_given?
     puts <<-USAGE
@@ -70,23 +84,15 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
     return false
   end
 
-  bb = bb[0] if bb.size == 1 && bb[0].is_a?(Array)
-  bb = Bourreau.find_all_by_online(true) if bb.blank?
-  bb = bb.map do |b|
-    if b.is_a?(String)
-      Bourreau.find_by_name(b)
-    elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
-      Bourreau.find_by_id(b)
-    else
-      b
-    end
-  end
-  unless bb.all? { |b| b.is_a?(Bourreau) }
-    puts "Not all Bourreaux."
-    return false
-  end
+  # Find list of target bourreaux
+  bourreau_list = resolve_bourreaux(bb)
+  return false if bourreau_list.blank
 
-  bb.each do |b|
+  # Prevents AR logging while we work here
+  no_log()
+
+  # Run command on each
+  bourreau_list.each do |b|
     puts "================ #{b.name} ================"
     comm = yield(b)
     if ! comm.is_a?(String)
@@ -98,20 +104,20 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
       b.ssh_master.remote_shell_command_reader(comm)
     end
   end
-
-  true
-
+  return true
 ensure
-  ActiveRecord::Base.logger.level=Logger::DEBUG
-  ActiveResource::Base.logger.level=Logger::DEBUG
+  do_log()
 end
 
 
-# Utility for mass restarts of bourreaux
+# Utility for mass control of bourreaux
+#
+# cycle_bb :start,   [list of bourreaux]   # starts bourreaux
+# cycle_bb :stop,    [list of bourreaux]   # stops bourreaux (implies :workoff)
+# cycle_bb :workon,  [list of bourreaux]   # starts bourreau workers
+# cycle_bb :workoff, [list of bourreaux]   # starts bourreau workers
+# cycle_bb :cycle,   [list of bourreaux]   # does 'workoff,stop,start,workon'
 def cycle_bb(*bb)
-
-  ActiveRecord::Base.logger.level=Logger::ERROR rescue true
-  ActiveResource::Base.logger.level=Logger::ERROR rescue true
 
   what = bb.shift
 
@@ -120,86 +126,64 @@ def cycle_bb(*bb)
 
 Usage: cycle_bb(what, bourreau_list = <online bourreaux>)
 where 'what' is "start", "stop", "workon", "workoff" or a combination,
-or the keyword "all" which means "stop start workon".
+or the keyword "cycle" which means "stop start workon".
 
     USAGE
     return false
   end
 
-  bb = bb[0] if bb.size == 1 && bb[0].is_a?(Array)
-  bb = Bourreau.find_all_by_online(true) if bb.blank?
-  bb = bb.map do |b|
-    if b.is_a?(String)
-      Bourreau.find_by_name(b)
-    elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
-      Bourreau.find_by_id(b)
-    else
-      b
-    end
-  end
-  unless bb.all? { |b| b.is_a?(Bourreau) }
-    puts "Not all Bourreaux."
-    return false
-  end
+  # Find list of target bourreaux
+  bourreau_list = resolve_bourreaux(bb)
+  return false if bourreau_list.blank
 
+  # Prevents AR logging while we work here
+  no_log()
+  bourreau_list = resolve_bourreaux(bb)
+
+  # Figure out what to do
   started = {}
-  what = "stop start workon" if what =~ /all/
+  what = "stop start workon" if what =~ /all|cycle/
 
-
-
+  # WORKERS STOP
   if what =~ /workoff|stop/
-
     puts "\nStopping Workers..."
-
-    bb.each do |b|
+    bourreau_list.each do |b|
       printf "... %15s : ", b.name
       r=b.send_command_stop_workers rescue "(Exc)"
       r=r.command_execution_status if r.is_a?(RemoteCommand)
       puts   r.to_s
     end
-
   end
 
-
-
+  # BOURREAUX STOP
   if what =~ /stop/
-
     puts "\nStopping Bourreaux..."
-
-    bb.each do |b|
+    bourreau_list.each do |b|
       printf "... %15s : ", b.name
       r1=b.stop         rescue "(Exc)"
       r2=b.stop_tunnels rescue "(Exc)"
       puts   "App: #{r1.to_s}    SSH Master: #{r2.to_s}"
       b.update_attribute(:online, false)
     end
-
   end
 
-
-
+  # BOURREAUX START
   if what =~ /start/
-
     puts "\nStarting Bourreaux..."
-
-    bb.each do |b|
+    bourreau_list.each do |b|
       printf "... %15s : ", b.name
       r=b.start rescue "(Exc)"
       rev = (r == true) ? b.info(:ping).starttime_revision : "???"
       puts   "#{r.to_s}\tRev: #{rev}"
       started[b]=true if r == true
     end
-
   end
 
-
-
+  # WORKERS START (why am I shouting?)
   if what =~ /workon/
-
     puts "\nStarting Workers..."
     sleep 4
-
-    bb.each do |b|
+    bourreau_list.each do |b|
       printf "... %15s : ", b.name
       if (what =~ /all|start/ && started[b]) || what =~ /work/
         r=b.send_command_start_workers rescue "(Exc)"
@@ -209,30 +193,131 @@ or the keyword "all" which means "stop start workon".
       end
       puts   r.to_s
     end
-
   end
-
-
 
   puts ""
   true
 ensure
-  ActiveRecord::Base.logger.level=Logger::DEBUG
-  ActiveResource::Base.logger.level=Logger::DEBUG
+  do_log()
 end
 
 # Show bourreau worker processes on given bourreau(x).
 def ps_work(*arg)
-  bb_bash(*arg){ |b| "ps ax -o euser,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'BourreauWorker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'BourreauWorker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
 end
 
 # Show all processes on given bourreau(x).
 def ps_bb(*arg)
-  bb_bash(*arg){ |b| "ps ax -o euser,pid,%cpu,%mem,vsize,state,stime,time,command | grep ^$USER | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep ^$USER | sed -e 's/  *$//'" }
+end
+
+# Disable AR logging (actually, just sets logging level to ERROR)
+def no_log
+  ActiveRecord::Base.logger.level   = Logger::ERROR rescue true
+  ActiveResource::Base.logger.level = Logger::ERROR rescue true
+end
+
+# Enable AR logging
+def do_log
+  ActiveRecord::Base.logger.level   = Logger::DEBUG
+  ActiveResource::Base.logger.level = Logger::DEBUG
+end
+
+# Utility method used by bb_bash() etc
+def resolve_bourreaux(bb)
+  bb = bb[0] if bb.size == 1 && bb[0].is_a?(Array)
+  bb = Bourreau.find_all_by_online(true) if bb.blank?
+  bourreau_list = bb.map do |b|
+    if b.is_a?(String)
+      Bourreau.find_by_name(b)
+    elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
+      Bourreau.find_by_id(b)
+    else
+      b
+    end
+  end
+  unless bourreau_list.all? { |b| b.is_a?(Bourreau) }
+    puts "Not all Bourreaux."
+    return nil
+  end
+  bourreau_list
+end
+
+# Reconnects to the database
+def recon
+  ActiveRecord::Base.verify_active_connections!
+  ActiveRecord::Base.connected?
 end
 
 
+
+#####################################################
+# Current User / Current Project Utility Methods
+#####################################################
+
+def current_user
+  $_current_user
+end
+
+def current_project
+  $_current_project
+end
+
+# Sets the current user. Invoke on the
+# console's command line with:
+#
+#   cu 'name'
+#   cu id
+#   cu /regex/
+def self.cu(user=:show)
+  return $_current_user if user == :show
+  if user.nil? || user.is_a?(User)
+    $_current_user = user
+  elsif user.is_a?(Fixnum) || (user.is_a?(String) && user =~ /^\d+$/)
+    $_current_user = User.find(user)
+  elsif user.is_a?(String)
+    $_current_user = User.where([ "(login like ?) OR (full_name like ?)", "%#{user}%", "%#{user}%" ]).first
+  elsif user.is_a?(Regexp)
+    $_current_user = User.all.detect { |u| (u.login =~ user) || (u.full_name =~ user) }
+  else
+    raise "Need a ID, User object, regex, or a string."
+  end
+  puts "Current user is now: #{$_current_user.try(:login) || "(nil)"}"
+end
+
+# Sets the current project. Invoke on the
+# console's command line with:
+#
+#   cp 'name'
+#   cp id
+#   cp /regex/
+def self.cp(group='show me')
+  return $_current_project if group == 'show me'
+  if group.nil? || group.is_a?(Group)
+    $_current_project = group
+  elsif group.is_a?(Fixnum) || (group.is_a?(String) && group =~ /^\d+$/)
+    $_current_project = Group.find(group)
+  elsif group.is_a?(Regexp)
+    $_current_project = Group.all.detect { |g| g.name =~ group }
+  elsif group.is_a?(String)
+    $_current_project = Group.where([ "name like ?", "%#{group}%" ]).first
+  else
+    raise "Need a ID, Group object, regex or a string."
+  end
+  puts "Current project is now: #{$_current_project.try(:name) || "(nil)"}"
+end
+
+cu User.admin
+cp nil
+
+
+
+#####################################################
+# Preload single table inheritance models
+#####################################################
+
 begin
+  no_log()
   Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
     Dir.glob("*.rb").each do |model|
       model.sub!(/.rb$/,"")
@@ -255,10 +340,16 @@ rescue => error
   else
     raise
   end
+ensure
+  do_log()
 end
 
 
+
+#####################################################
 # Load external IRBRC file
+#####################################################
+
 IRB.rc_file_generators do |rcgen|
   rc_file_path = rcgen.call("rc")
   if File.exist?(rc_file_path)
