@@ -86,7 +86,7 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
 
   # Find list of target bourreaux
   bourreau_list = resolve_bourreaux(bb)
-  return false if bourreau_list.blank
+  return false if bourreau_list.blank?
 
   # Prevents AR logging while we work here
   no_log()
@@ -134,7 +134,7 @@ or the keyword "cycle" which means "stop start workon".
 
   # Find list of target bourreaux
   bourreau_list = resolve_bourreaux(bb)
-  return false if bourreau_list.blank
+  return false if bourreau_list.blank?
 
   # Prevents AR logging while we work here
   no_log()
