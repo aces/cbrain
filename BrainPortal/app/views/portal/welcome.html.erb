@@ -41,13 +41,22 @@
               <%= hidden_field_tag :lock_portal, "unlock" %>
               <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
         <% else %>
-              <%= hidden_field_tag :lock_portal, "lock" %>
-              <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
               <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
               <% message = "(lock message)" if message.blank? %>
+              <%= hidden_field_tag :lock_portal, "lock" %>
               <%= text_field_tag :message, message, :size => 30 %>
+              <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
         <% end %>
       <% end %>  
+      Error messages mailed to project: 
+      <%= ajax_onchange_select(
+            "meta[error_message_mailing_list]", 
+            url_for(:controller  => :bourreaux, :action => :update, :id => BrainPortal.current_resource.id), 
+            "<option value=\"\">None (all administrators)</option>".html_safe + options_for_select(WorkGroup.order(:name).all.map{ |p| [p.name, p.id]}),
+            :method => :put,
+            :datatype => :script
+        ) 
+      %>
 
 
       <% if @active_users %>
