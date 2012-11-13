@@ -83,7 +83,6 @@ class User < ActiveRecord::Base
   before_create             :add_system_groups
   before_save               :encrypt_password
   after_update              :system_group_site_update
-  before_destroy            :admin_check
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
 
@@ -202,7 +201,7 @@ class User < ActiveRecord::Base
   
   #Does this user's role match +role+?
   def has_role?(role)
-    return self.class == role.to_s.classify.constantize
+    return self.is_a?(role.to_s.classify.constantize)
   end
   
   #Find the tools that this user has access to.
@@ -321,13 +320,6 @@ class User < ActiveRecord::Base
   def immutable_login #:nodoc:
     if self.changed.include? "login"
       errors.add(:login, "is immutable.")
-    end
-  end
-  
-  #Ensure that the system will be in a valid state if this user is destroyed.
-  def admin_check
-    if self.login == 'admin'
-      raise CbrainDeleteRestrictionError.new("Default admin user cannot be destroyed.")
     end
   end
   

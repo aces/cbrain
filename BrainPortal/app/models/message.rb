@@ -225,8 +225,10 @@ class Message < ActiveRecord::Base
       error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"
     end
     
+    admin_list = WorkGroup.find_by_id(BrainPortal.current_resource.meta[:error_message_mailing_list]) || User.all_admins
+    
     # Message for developers/admin
-    Message.send_message(User.all_admins,
+    Message.send_message(admin_list,
       :message_type  => :error,
       :header        => "Internal error: #{header}; Exception: #{exception.class.to_s}\n",
 

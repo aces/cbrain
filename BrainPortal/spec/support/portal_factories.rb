@@ -63,6 +63,10 @@ Factory.define :system_group do |system_group|
   system_group.name { Factory.next :group_name }
 end
 
+Factory.define :everyone_group do |everyone_group| 
+  everyone_group.name { Factory.next :group_name }
+end
+
 Factory.define :site_group do |site_group| 
   site_group.name { Factory.next :group_name }
 end

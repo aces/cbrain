@@ -79,6 +79,13 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::Serialization
     
+    
+    ###################################################################
+    # ActiveRecord Added Behavior For Core Models
+    ###################################################################
+
+    include CBRAINExtensions::ActiveRecordExtensions::CoreModels
+    
   end # class Base of ActiveRecord
   
 

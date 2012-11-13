@@ -128,7 +128,7 @@ class BourreauxController < ApplicationController
 
     # Adjust task limits, and store them into the meta data store
     syms_limit_users = @users.map { |u| "task_limit_user_#{u.id}".to_sym }
-    add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default ] + syms_limit_users )
+    add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default, :error_message_mailing_list ] + syms_limit_users )
 
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
@@ -156,6 +156,7 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
+      format.js { render :partial => "shared/flash_update"}
       format.xml  { head        :ok }
     end
   end
