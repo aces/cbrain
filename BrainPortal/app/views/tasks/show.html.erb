@@ -122,7 +122,8 @@
       <% elsif as == :workdir %>
         : Archived on cluster.
       <% else %>
-        : Archived as file <%= link_to_userfile_if_accessible(@task.workdir_archive_userfile_id) %>
+        <% ar_file = @task.workdir_archive %>
+        : Archived as file <%= link_to_userfile_if_accessible(ar_file) %> <%= colored_pretty_size(ar_file.size) if ar_file %>
       <% end %>
     <% end %>
 
