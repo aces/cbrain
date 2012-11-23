@@ -206,7 +206,9 @@ class Worker
     # We are saving pid in the worker 'proxy' instance that stays on rails app side.
     self.pid = CBRAIN.spawn_with_active_records(self.message_notifiee,self.name) do
 
-      # This block is excecuted by the newly created worker process.
+      # This block is executed by the newly created worker process.
+
+      # Init some stuff
       self.pid  = Process.pid # the worker's PID now
       self.role = :worker
       @pretty_name = nil # need to be reset as it is cached inside pretty_name()
@@ -238,9 +240,8 @@ class Worker
 
         # Register signal handlers
         Signal.trap("INT") do
-          self.worker_log.info "Got SIGINT, scheduling stop."
-          self.stop_received = true
-          self.sleep_mode    = false
+          self.worker_log.info "Got SIGINT, exiting worker!"
+          raise SystemExit.new("Received SIGINT")
         end
 
         Signal.trap("TERM") do
@@ -264,6 +265,15 @@ class Worker
           self.worker_log.info "Got SIGXFSZ, scheduling stop."
           self.stop_received = true
           self.sleep_mode    = false
+        end
+
+        Signal.trap("USR2") do
+          self.worker_log.info "Got SIGUSR2, dumping trace."
+          mystack = caller
+          mystack.each do |traceline|  # e.g. /homeb/inm1/prioux/CBRAIN/Bourreau/app/models/cluster_task.rb:1443:in `mkdir'
+            self.worker_log.info traceline.to_s
+          end
+          self.worker_log.info "End of trace dump."
         end
 
         self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, XCPU and XFSZ."
