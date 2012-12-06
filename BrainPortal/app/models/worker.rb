@@ -241,6 +241,7 @@ class Worker
         # Register signal handlers
         Signal.trap("INT") do
           self.worker_log.info "Got SIGINT, exiting worker!"
+          dump_trace()
           raise SystemExit.new("Received SIGINT")
         end
 
@@ -257,23 +258,21 @@ class Worker
 
         Signal.trap("XCPU") do
           self.worker_log.info "Got SIGXCPU, scheduling stop."
+          dump_trace() unless self.stop_received # just first time
           self.stop_received = true
           self.sleep_mode    = false
         end
 
         Signal.trap("XFSZ") do
           self.worker_log.info "Got SIGXFSZ, scheduling stop."
+          dump_trace() unless self.stop_received # just first time
           self.stop_received = true
           self.sleep_mode    = false
         end
 
         Signal.trap("USR2") do
           self.worker_log.info "Got SIGUSR2, dumping trace."
-          mystack = caller
-          mystack.each do |traceline|  # e.g. /homeb/inm1/prioux/CBRAIN/Bourreau/app/models/cluster_task.rb:1443:in `mkdir'
-            self.worker_log.info traceline.to_s
-          end
-          self.worker_log.info "End of trace dump."
+          dump_trace()
         end
 
         self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, XCPU and XFSZ."
@@ -476,6 +475,18 @@ class Worker
     prefixer.true_logger = self.worker_log
     prefixer.prefix      = self.pretty_name + ": "
     self.worker_log      = prefixer
+  end
+
+  # Dump trace to logger at 'info' level
+  def dump_trace #:nodoc:
+    self.worker_log.info "-------- Start of trace dump."
+    mystack = caller
+    mystack.each do |traceline|  # e.g. /homeb/inm1/prioux/CBRAIN/Bourreau/app/models/cluster_task.rb:1443:in `mkdir'
+      self.worker_log.info traceline.to_s
+    end
+    self.worker_log.info "-------- End of trace dump."
+  rescue
+    nil
   end
 
 
