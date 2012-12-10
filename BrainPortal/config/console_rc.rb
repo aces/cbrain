@@ -232,6 +232,8 @@ def resolve_bourreaux(bb)
       Bourreau.find_by_name(b)
     elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
       Bourreau.find_by_id(b)
+    elsif b.is_a?(Regexp)
+      Bourreau.all.detect { |x| x.name =~ b }
     else
       b
     end
@@ -240,7 +242,7 @@ def resolve_bourreaux(bb)
     puts "Not all Bourreaux."
     return nil
   end
-  bourreau_list
+  bourreau_list.uniq
 end
 
 # Reconnects to the database

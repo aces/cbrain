@@ -48,8 +48,17 @@
     <td><%= colored_status(task.status) %></td>
     <td><%= task.run_number %></td>
     <td>
-       <%= task.share_wd_tid ? "(Shared)" : colored_pretty_size(task.cluster_workdir_size, :blank => "") %>
-       <%= colored_archived_status(task.archived_status) %>
+       <% if task.share_wd_tid %>
+         (Shared)
+       <% else %>
+         <% as = task.archived_status %>
+         <%= colored_archived_status(as) %>
+         <% if task.cluster_workdir_size.present? %>
+           <%= colored_pretty_size(task.cluster_workdir_size, :blank => "") %>
+         <% elsif as == :userfile && ar_file_size = Userfile.where(:id => task.workdir_archive_userfile_id).raw_first_column(:size)[0] %>
+           (<%= colored_pretty_size(ar_file_size, :blank => "") %>)
+         <% end %>
+       <% end %>
     </td>
     <td><%= to_localtime(task.created_at,:datetime) -%></td>
     <td><%= to_localtime(task.updated_at,:datetime) -%></td>
