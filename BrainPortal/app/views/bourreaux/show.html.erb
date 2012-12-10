@@ -96,11 +96,6 @@
         <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
         <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
       <% end %>
-      
-      <% t.edit_cell(:support_email, :header => "Support email address") do %>
-        <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :size => 30 %><br/>
-        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
-      <% end %>
 
       <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
         <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :size => 40 %><br/>
@@ -109,13 +104,23 @@
 
     <% end %>
 
-    <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do %>
-      <%= text_field_tag "bourreau[system_from_email]", @bourreau.system_from_email, :size => 30 %><br/>
-      <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
-    <% end %>
-
   <% end %>
 
+  <% if is_portal %>
+    <%= show_table(@bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <% t.edit_cell(:support_email, :header => "Support email address") do %>
+        <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :size => 30 %><br/>
+        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
+      <% end %>
+      <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do %>
+        <%= text_field_tag "bourreau[system_from_email]", @bourreau.system_from_email, :size => 30 %><br/>
+        <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+      <% end %>
+      <% t.edit_cell("meta[error_message_mailing_list]", :header => "Error notifications sent to members of project", :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
+        <%= group_select("meta[error_message_mailing_list]", {:include_blank => "All admins", :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) } ) %>
+      <% end %>
+    <% end %>
+  <% end %>
 
 
   <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
