@@ -229,14 +229,14 @@ module SelectBoxHelper
        end
        opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
     end
-    options = options_for_select(bourreaux_pairs, selected)
+    options_html = options_for_select(bourreaux_pairs, selected)
     blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
-      options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
+      options_html = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options_html
     end
     
-    select_tag parameter_name, options, select_tag_options
+    select_tag parameter_name, options_html, select_tag_options
   end
 
   #Create a standard tool config select box for selecting a tool config in a form.
@@ -349,7 +349,7 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-#------------------
+  #------------------
   #Create a standard task by status select box for selecting a task status for a form.
   #The +parameter_name+ argument will be the name of the parameter 
   #when the form is submitted and the +select_tag_options+ hash will be sent
