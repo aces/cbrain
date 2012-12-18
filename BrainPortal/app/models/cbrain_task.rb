@@ -248,7 +248,7 @@ class CbrainTask < ActiveRecord::Base
 
   # Use the associated tool name to define the pretty type
   def self.pretty_type
-    self.tool.name
+    self.tool.try(:name) || self.to_s.demodulize # if no tool is found, produces a default using the task's class
   end
 
   # This method can be used to return a 'pretty' version of

@@ -383,79 +383,89 @@ in a tabular layout. Proceed as follow:
 
   </div>
 
-  <br>
+  <% if @table_ok %>
+    <p>
+    <%= submit_tag('Refresh Report',    :name => :refresh) %>
+    <%= submit_tag('Flip Rows/Columns', :name => :flip) %>
+  <% else %>
+    <p>
+    <%= submit_tag('Generate Report', :name => :generate) if att_ok %>
+  <% end %>
 
   <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
+    <p>
     <div class="notesbox" style="width: auto">
 
       <table class="simple">
 
       <tr>
-        <td class="centered"><strong>Optional:</strong> fix some attributes:</td>
-        <td class="centered"><strong>Optional:</strong> select a date range:</td>
+        <th class="centered" colspan="2"><strong>Optional:</strong> fix some attributes:</th>
       </tr>
 
-      <tr>
-        <td>
-
           <% if @model_atts.include?(:user_id) %>
-            <%= user_select          :user_id,          { :selector => params[:user_id] },                                  :include_blank => '(Any User)' %><br>
+            <tr class="report_fix_attributes">
+            <th>Users:</th>
+            <td><%= user_select          :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %></td>
+            </tr>
           <% end %>
 
           <% if @model_atts.include?(:group_id) %>
-            <%= group_select         :group_id,         { :selector => params[:group_id] },                                 :include_blank => '(Any Project)' %><br>
+            <tr class="report_fix_attributes">
+            <th>Projects:</th>
+            <td><%= group_select         :group_id,         { :selector => params[:group_id] },                                 :multiple => true, :size => 5 %></td>
+            </tr>
           <% end %>
 
           <% if @model_atts.include?(:data_provider_id) %>
-            <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :include_blank => '(Any Data Provider)' %><br>
+            <tr class="report_fix_attributes">
+            <th>Data Providers:</th>
+            <td><%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :multiple => true, :size => 5 %></td>
+            </tr>
           <% end %>
 
           <% if @model_atts.include?(:bourreau_id) %>
-            <%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :include_blank => '(Any Server)' %><br>
+            <tr class="report_fix_attributes">
+            <th>Execution Servers:</th>
+            <td><%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :multiple => true, :size => 5 %></td>
+            </tr>
           <% end %>
 
           <% if @model_atts.include?(:type) %>
+            <tr class="report_fix_attributes">
+            <th>Types:</th>
+            <td>
             <% if @model <= Userfile %>
-              <%= userfile_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+              <%= userfile_type_select :type, {:selector => params[:type]} , :multiple => true, :size => 5 %>
             <% elsif @model <= CbrainTask %>
-              <%= task_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+              <%= task_type_select :type, {:selector => params[:type]} , :multiple => true, :size => 5 %>
             <% elsif @model <= Group %>
-              <%= group_type_select(:type, {:selector => params[:type]} , :include_blank => '(Any Type)') %><br>
+              <%= group_type_select :type, {:selector => params[:type]} , :multiple => true, :size => 5 %>
             <% else %>
-              <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :include_blank => '(Any Type)' %><br>
+              <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :multiple => true, :size => 5 %>
             <% end%>
+            </td>
+            </tr>
           <% end %>
 
           <% if @model_atts.include?(:status) %>
-            <% if @model <= CbrainTask %>
-              <%= task_status_select(:status, {:selector => params[:status]}, :include_blank => '(Any Status)') %><br>
-            <% else %>
-              <%= select_tag :status, options_for_select( ApplicationController.helpers.all_ordered_status, params[:status] ), :include_blank => '(Any Status)' %>
-            <% end %>
+            <tr class="report_fix_attributes">
+            <th>Status:</th>
+              <td><%= task_status_select :status, {:selector => params[:status]}, :multiple => true, :size => 5 %></td>
+            </tr>
           <% end %>
 
+       <tr>
+        <th>Dates:</th>
+        <td colspan="2"><%= date_range_panel(date_filtration) %>
+        <small>(Note: the links in the report will NOT include the date restrictions)</small>
         </td>
-
-        <td>
-
-        <%= date_range_panel(date_filtration) %>
-        (Note: the links in the report will NOT include the date restrictions)
-      
-        </td>
-
       </tr>
+
       </table>
 
     </div>
       
     <br>
-  <% end %>
-
-  <% if @table_ok %>
-    <%= submit_tag('Refresh Report',    :name => :refresh) %>
-    <%= submit_tag('Flip Rows/Columns', :name => :flip) %>
-  <% else %>
-    <%= submit_tag('Generate Report', :name => :generate) if att_ok %>
   <% end %>
 
 </div>

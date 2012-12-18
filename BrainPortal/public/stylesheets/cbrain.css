@@ -2159,3 +2159,13 @@ td.middle {
   display: table;
 }
 
+/* % ######################################################### */
+/* % Report Generator Styles */
+/* % ######################################################### */
+
+.report_fix_attributes td select {
+  width: 100%;
+  resize: both;
+}
+
+
