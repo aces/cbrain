@@ -51,7 +51,7 @@ module SelectBoxHelper
     # Final HTML rendering of the options for select
     user_by_lock_status = group_user_by_lock_status(users)
     grouped_options     = grouped_options_for_select user_by_lock_status, selected
-    blank_label         = select_tag_options.delete(:include_blank)
+    blank_label         = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
@@ -130,7 +130,7 @@ module SelectBoxHelper
     # Final HTML rendering of the options for select
     grouped_options = grouped_options_for_select ordered_category_grouped, selected || current_user.own_group.id.to_s
 
-    blank_label = select_tag_options.delete(:include_blank)
+    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
@@ -183,7 +183,7 @@ module SelectBoxHelper
     end
     grouped_options = grouped_options_for_select(grouped_oplists.compact, selected)
 
-    blank_label = select_tag_options.delete(:include_blank)
+    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
@@ -230,7 +230,7 @@ module SelectBoxHelper
        opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
     end
     options = options_for_select(bourreaux_pairs, selected)
-    blank_label = select_tag_options.delete(:include_blank)
+    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options
@@ -340,7 +340,7 @@ module SelectBoxHelper
     # Create the selection tag
     grouped_options = grouped_options_for_select(tool_config_options, selected)
 
-    blank_label = select_tag_options.delete(:include_blank)
+    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
@@ -394,7 +394,7 @@ module SelectBoxHelper
 
     grouped_options = grouped_options_for_select grouped_by_category, selected
     
-    blank_label = select_tag_options.delete(:include_blank)
+    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
@@ -480,7 +480,7 @@ module SelectBoxHelper
     generate_descendants = options[:generate_descendants]
     types                = options[:types]
     include_top          = options[:include_top]
-    blank_label          = select_tag_options.delete(:include_blank)
+    blank_label          = select_tag_options.delete(:include_blank) || options[:include_blank]
     blank_label          = "" if blank_label == true
     selected             = options[:selector]
     
