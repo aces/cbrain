@@ -74,7 +74,7 @@
     <% t.cell("Task Name") do %>
       <%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %>
     <% end %>
-    <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>") } %>
+    <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>").html_safe } %>
 
     <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
     <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
